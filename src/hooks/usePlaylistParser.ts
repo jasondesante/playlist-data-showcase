@@ -1,0 +1,57 @@
+import { useState, useCallback } from 'react';
+import { PlaylistParser } from 'playlist-data-engine';
+import { usePlaylistStore } from '@/store/playlistStore';
+import { logger } from '@/utils/logger';
+import { handleError } from '@/utils/errorHandling';
+
+export const usePlaylistParser = () => {
+    const { setPlaylist, setLoading, setError } = usePlaylistStore();
+    const [parser] = useState(() => new PlaylistParser());
+
+    const parsePlaylist = useCallback(async (input: string) => {
+        logger.info('PlaylistParser', 'Parsing playlist', { inputLength: input.length });
+        setLoading(true);
+        setError(null);
+
+        try {
+            // Determine if input is JSON or ID (simple heuristic)
+            const isJson = input.trim().startsWith('{');
+
+            let playlist;
+            if (isJson) {
+                const json = JSON.parse(input);
+                playlist = await parser.parse(json);
+            } else {
+                // Assume Arweave ID
+                // Note: Engine might need a fetcher for ID, but let's assume parse handles it or we fetch first
+                // If engine only takes JSON, we need to fetch. 
+                // Checking engine docs/source would be ideal, but assuming parse takes RawArweavePlaylist
+                // For now, let's assume the input IS the JSON string or we fetch it.
+                // If it's an ID, we'd need to fetch from Arweave gateway.
+                // Let's implement a basic fetch if it looks like an ID.
+
+                logger.info('PlaylistParser', 'Fetching from Arweave', input);
+                const response = await fetch(`https://arweave.net/${input}`);
+                if (!response.ok) throw new Error(`Failed to fetch playlist: ${response.statusText}`);
+                const json = await response.json();
+                playlist = await parser.parse(json);
+            }
+
+            logger.info('PlaylistParser', 'Playlist parsed successfully', {
+                name: playlist.name,
+                tracks: playlist.tracks.length
+            });
+
+            setPlaylist(playlist);
+            return playlist;
+        } catch (error) {
+            handleError(error, 'PlaylistParser');
+            setError(error instanceof Error ? error.message : 'Failed to parse playlist');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [parser, setPlaylist, setLoading, setError]);
+
+    return { parsePlaylist };
+};

@@ -1,0 +1,878 @@
+import { useState, useEffect } from 'react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Play, Pause } from 'lucide-react';
+import { usePlaylistParser } from './hooks/usePlaylistParser';
+import { usePlaylistStore } from './store/playlistStore';
+import { useAudioAnalyzer } from './hooks/useAudioAnalyzer';
+import { useCharacterGenerator } from './hooks/useCharacterGenerator';
+import { useSessionTracker } from './hooks/useSessionTracker';
+import { useXPCalculator } from './hooks/useXPCalculator';
+import { useCharacterUpdater } from './hooks/useCharacterUpdater';
+import { useEnvironmentalSensors } from './hooks/useEnvironmentalSensors';
+import { useGamingPlatforms } from './hooks/useGamingPlatforms';
+import { useCombatEngine } from './hooks/useCombatEngine';
+import { useCharacterStore } from './store/characterStore';
+import type { PlaylistTrack, AudioProfile } from './types';
+
+type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+
+function App() {
+  const [activeTab, setActiveTab] = useState<Tab>('playlist');
+
+  const tabs = [
+    { id: 'playlist' as Tab, label: 'Playlist', icon: Music },
+    { id: 'audio' as Tab, label: 'Audio Analysis', icon: Music },
+    { id: 'character' as Tab, label: 'Character Gen', icon: User },
+    { id: 'session' as Tab, label: 'Session', icon: Activity },
+    { id: 'xp' as Tab, label: 'XP Calc', icon: Zap },
+    { id: 'leveling' as Tab, label: 'Leveling', icon: User },
+    { id: 'sensors' as Tab, label: 'Sensors', icon: Activity },
+    { id: 'gaming' as Tab, label: 'Gaming', icon: Gamepad2 },
+    { id: 'combat' as Tab, label: 'Combat', icon: Swords },
+    { id: 'settings' as Tab, label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-primary">Playlist Data Engine Showcase</h1>
+          <p className="text-sm text-muted-foreground">Technical validation • Console logging enabled</p>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          <aside className="w-64 shrink-0">
+            <nav className="space-y-1">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === tab.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-accent text-foreground'
+                      }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <main className="flex-1">
+            <div className="bg-card border border-border rounded-lg p-6">
+              {activeTab === 'playlist' && <PlaylistTab />}
+              {activeTab === 'audio' && <AudioTab />}
+              {activeTab === 'character' && <CharacterTab />}
+              {activeTab === 'session' && <SessionTab />}
+              {activeTab === 'xp' && <XPTab />}
+              {activeTab === 'leveling' && <LevelingTab />}
+              {activeTab === 'sensors' && <SensorsTab />}
+              {activeTab === 'gaming' && <GamingTab />}
+              {activeTab === 'combat' && <CombatTab />}
+              {activeTab === 'settings' && <SettingsTab />}
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaylistTab() {
+  const [txId, setTxId] = useState('');
+  const { parsePlaylist } = usePlaylistParser();
+  const { currentPlaylist, selectedTrack, isLoading, error, selectTrack } = usePlaylistStore();
+
+  const handleParse = async () => {
+    if (!txId.trim()) return;
+    await parsePlaylist(txId.trim());
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold mb-4">Playlist Parser</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Arweave Transaction ID</label>
+            <input
+              type="text"
+              value={txId}
+              onChange={(e) => setTxId(e.target.value)}
+              className="w-full px-3 py-2 bg-background border border-input rounded-md"
+              placeholder="Enter Arweave TX ID..."
+              disabled={isLoading}
+            />
+          </div>
+          <button
+            onClick={handleParse}
+            disabled={isLoading || !txId.trim()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+          >
+            {isLoading ? 'Loading...' : 'Fetch & Parse Playlist'}
+          </button>
+
+          {error && (
+            <div className="p-4 bg-destructive/10 border border-destructive rounded-md">
+              <p className="text-destructive font-medium">Error:</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {currentPlaylist && (
+        <div className="space-y-4">
+          <div className="p-4 bg-accent rounded-md">
+            <h3 className="font-bold text-lg">{currentPlaylist.name}</h3>
+            <p className="text-sm text-muted-foreground">{currentPlaylist.tracks.length} tracks</p>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium">Tracks:</h4>
+            {currentPlaylist.tracks.map((track: PlaylistTrack, idx: number) => (
+              <div
+                key={idx}
+                onClick={() => selectTrack(track)}
+                className={`p-3 border rounded-md cursor-pointer transition-colors ${selectedTrack?.title === track.title
+                  ? 'bg-primary/20 border-primary'
+                  : 'bg-card border-border hover:bg-accent'
+                  }`}
+              >
+                <p className="font-medium">{track.title}</p>
+                <p className="text-sm text-muted-foreground">{track.artist}</p>
+                {track.duration && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {Math.floor(track.duration / 60)}:{String(Math.floor(track.duration % 60)).padStart(2, '0')}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AudioTab() {
+  const { selectedTrack } = usePlaylistStore();
+  const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
+  const [audioProfile, setAudioProfile] = useState<AudioProfile | null>(null);
+
+  const handleAnalyze = async () => {
+    if (!selectedTrack?.audio_url) return;
+    const profile = await analyzeTrack(selectedTrack.audio_url);
+    if (profile) setAudioProfile(profile);
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Audio Analysis</h2>
+
+      {!selectedTrack ? (
+        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
+      ) : (
+        <>
+          <div className="p-4 bg-accent rounded-md">
+            <p className="font-medium">{selectedTrack.title}</p>
+            <p className="text-sm text-muted-foreground">{selectedTrack.artist}</p>
+          </div>
+
+          <button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+          >
+            {isAnalyzing ? `Analyzing... ${progress}%` : 'Analyze Audio'}
+          </button>
+
+          {audioProfile && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 bg-card border border-border rounded-md">
+                  <p className="text-sm text-muted-foreground">Bass</p>
+                  <p className="text-2xl font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+                </div>
+                <div className="p-4 bg-card border border-border rounded-md">
+                  <p className="text-sm text-muted-foreground">Mid</p>
+                  <p className="text-2xl font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
+                </div>
+                <div className="p-4 bg-card border border-border rounded-md">
+                  <p className="text-sm text-muted-foreground">Treble</p>
+                  <p className="text-2xl font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                </div>
+              </div>
+              <div className="p-4 bg-card border border-border rounded-md">
+                <p className="text-sm text-muted-foreground">Average Amplitude</p>
+                <p className="text-lg font-bold">{audioProfile.average_amplitude.toFixed(3)}</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function CharacterTab() {
+  const { generateCharacter, isGenerating } = useCharacterGenerator();
+  const { characters } = useCharacterStore();
+
+  // Only show the most recent character
+  const character = characters.length > 0 ? characters[characters.length - 1] : null;
+
+  const handleGenerate = async () => {
+    // Create a mock audio profile for testing
+    const mockProfile: AudioProfile = {
+      bass_dominance: Math.random() * 0.5 + 0.3,
+      mid_dominance: Math.random() * 0.4 + 0.2,
+      treble_dominance: Math.random() * 0.4 + 0.2,
+      average_amplitude: Math.random() * 0.3 + 0.4,
+      analysis_metadata: {
+        duration_analyzed: 180,
+        full_buffer_analyzed: false,
+        sample_positions: [0.05, 0.4, 0.7],
+        analyzed_at: new Date().toISOString()
+      }
+    };
+    await generateCharacter(mockProfile);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Character Generator</h2>
+        <button
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+        >
+          {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
+        </button>
+      </div>
+
+      {character && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
+            <h3 className="text-2xl font-bold">{character.name}</h3>
+            <p className="text-lg text-muted-foreground">
+              Level {character.level} {character.race} {character.class}
+            </p>
+            <div className="mt-2 text-sm text-muted-foreground">
+              XP: {character.xp.current} / {character.xp.next_level}
+            </div>
+          </div>
+
+          {/* Core Stats */}
+          <div className="grid grid-cols-4 gap-4">
+            <div className="p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-sm text-muted-foreground">HP</p>
+              <p className="text-2xl font-bold">{character.hp.max}</p>
+            </div>
+            <div className="p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-sm text-muted-foreground">AC</p>
+              <p className="text-2xl font-bold">{character.armor_class}</p>
+            </div>
+            <div className="p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-sm text-muted-foreground">Initiative</p>
+              <p className="text-2xl font-bold">+{character.initiative}</p>
+            </div>
+            <div className="p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-sm text-muted-foreground">Speed</p>
+              <p className="text-2xl font-bold">{character.speed} ft</p>
+            </div>
+          </div>
+
+          {/* Ability Scores */}
+          <div>
+            <h4 className="font-bold mb-3">Ability Scores</h4>
+            <div className="grid grid-cols-6 gap-3">
+              {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
+                <div key={ability} className="p-3 bg-card border border-border rounded-md text-center">
+                  <p className="text-xs text-muted-foreground font-medium">{ability}</p>
+                  <p className="text-xl font-bold">{character.ability_scores[ability]}</p>
+                  <p className="text-sm text-primary">
+                    {character.ability_modifiers[ability] >= 0 ? '+' : ''}
+                    {character.ability_modifiers[ability]}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div>
+            <h4 className="font-bold mb-3">Skills</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(character.skills).map(([skill, prof]) => (
+                <div key={skill} className="flex items-center justify-between p-2 bg-card border border-border rounded text-sm">
+                  <span className="capitalize">{skill.replace(/_/g, ' ')}</span>
+                  <span className={prof !== 'none' ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                    {prof === 'expertise' ? '★★' : prof === 'proficient' ? '★' : '○'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          {character.equipment && (
+            <div>
+              <h4 className="font-bold mb-3">Equipment</h4>
+              <div className="space-y-2">
+                {character.equipment.weapons.length > 0 && (
+                  <div className="p-3 bg-card border border-border rounded">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Weapons</p>
+                    <p className="text-sm">{character.equipment.weapons.join(', ')}</p>
+                  </div>
+                )}
+                {character.equipment.armor.length > 0 && (
+                  <div className="p-3 bg-card border border-border rounded">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Armor</p>
+                    <p className="text-sm">{character.equipment.armor.join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Spells */}
+          {character.spells && (
+            <div>
+              <h4 className="font-bold mb-3">Spells</h4>
+              <div className="space-y-2">
+                {character.spells.cantrips.length > 0 && (
+                  <div className="p-3 bg-card border border-border rounded">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Cantrips</p>
+                    <p className="text-sm">{character.spells.cantrips.join(', ')}</p>
+                  </div>
+                )}
+                {character.spells.known_spells.length > 0 && (
+                  <div className="p-3 bg-card border border-border rounded">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Known Spells</p>
+                    <p className="text-sm">{character.spells.known_spells.join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SessionTab() {
+  const { selectedTrack } = usePlaylistStore();
+  const { startSession, endSession, isActive, elapsedTime } = useSessionTracker();
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+  const handleStart = () => {
+    if (!selectedTrack) return;
+
+    // Start session tracker
+    startSession(selectedTrack.title);
+
+    // Start audio playback
+    if (selectedTrack.audio_url) {
+      const audioElement = new Audio(selectedTrack.audio_url);
+      audioElement.play();
+      setAudio(audioElement);
+    }
+  };
+
+  const handleEnd = () => {
+    // Stop audio
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      setAudio(null);
+    }
+
+    // End session
+    endSession();
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Session Tracker</h2>
+
+      {!selectedTrack ? (
+        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
+      ) : (
+        <>
+          <div className="p-4 bg-accent rounded-md">
+            <p className="font-medium">{selectedTrack.title}</p>
+            <p className="text-sm text-muted-foreground">{selectedTrack.artist}</p>
+          </div>
+
+          {!isActive ? (
+            <button
+              onClick={handleStart}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              Start Session & Play Audio
+            </button>
+          ) : (
+            <>
+              <div className="p-6 bg-card border border-border rounded-md text-center">
+                <p className="text-sm text-muted-foreground mb-2">Elapsed Time</p>
+                <p className="text-4xl font-bold font-mono">
+                  {Math.floor(elapsedTime / 60)}:{String(elapsedTime % 60).padStart(2, '0')}
+                </p>
+                <div className="mt-4">
+                  <div className="h-2 bg-background rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-1000"
+                      style={{ width: `${Math.min((elapsedTime / (selectedTrack.duration || 180)) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleEnd}
+                className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:opacity-90 flex items-center gap-2"
+              >
+                <Pause className="w-4 h-4" />
+                End Session & Stop Audio
+              </button>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function XPTab() {
+  const { calculateXP } = useXPCalculator();
+  const [duration, setDuration] = useState(180);
+  const [result, setResult] = useState<any>(null);
+
+  const handleCalculate = () => {
+    const xpResult = calculateXP(duration);
+    setResult(xpResult);
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">XP Calculator</h2>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
+          <input
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            min="0"
+            max="3600"
+          />
+        </div>
+
+        <button
+          onClick={handleCalculate}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+        >
+          Calculate XP
+        </button>
+
+        {result && (
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm text-muted-foreground">Total XP</p>
+            <p className="text-3xl font-bold">{result.totalXp}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LevelingTab() {
+  const { characters, updateCharacter } = useCharacterStore();
+  const [xpAmount, setXpAmount] = useState(100);
+  const [currentXP, setCurrentXP] = useState(0);
+
+  const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
+
+  // Sync currentXP with character when it changes
+  useEffect(() => { // Changed from useState to useEffect for proper side effect handling
+    if (activeChar) {
+      setCurrentXP(activeChar.xp.current);
+    }
+  }, [activeChar]); // Dependency array to re-run when activeChar changes
+
+  const addXP = (amount: number) => {
+    if (!activeChar) return;
+
+    const newXP = currentXP + amount;
+    setCurrentXP(newXP);
+
+    // Check if we should level up
+    let newLevel = activeChar.level;
+    let newNextLevel = activeChar.xp.next_level;
+
+    // Simple level-up check (level 1->2 at 300 XP, 2->3 at 900 XP, etc.)
+    const xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+
+    for (let i = activeChar.level; i < xpThresholds.length; i++) {
+      if (newXP >= xpThresholds[i]) {
+        newLevel = i + 1;
+        newNextLevel = xpThresholds[i + 1] || 999999;
+      } else {
+        break;
+      }
+    }
+
+    // Update the character
+    const updatedChar = {
+      ...activeChar,
+      level: newLevel,
+      xp: {
+        current: newXP,
+        next_level: newNextLevel
+      }
+    };
+
+    updateCharacter(updatedChar);
+
+    if (newLevel > activeChar.level) {
+      console.log(`🎉 LEVEL UP! Now level ${newLevel}!`);
+    }
+    console.log(`Added ${amount} XP. Total: ${newXP} (Level ${newLevel})`);
+  };
+
+  if (!activeChar) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold">Character Leveling</h2>
+        <p className="text-muted-foreground">Generate a character first</p>
+      </div>
+    );
+  }
+
+  const nextLevel = activeChar.xp.next_level;
+  const progress = (currentXP / nextLevel) * 100;
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Character Leveling</h2>
+
+      <div className="p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
+        <h3 className="text-xl font-bold">{activeChar.name}</h3>
+        <p className="text-lg text-muted-foreground">Level {activeChar.level} {activeChar.race} {activeChar.class}</p>
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-muted-foreground">XP Progress</p>
+            <p className="font-mono text-sm">{currentXP} / {nextLevel}</p>
+          </div>
+          <div className="h-3 bg-background rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-3">Quick Add XP</label>
+          <div className="grid grid-cols-4 gap-2">
+            <button
+              onClick={() => addXP(50)}
+              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+            >
+              +50 XP
+            </button>
+            <button
+              onClick={() => addXP(100)}
+              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+            >
+              +100 XP
+            </button>
+            <button
+              onClick={() => addXP(300)}
+              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+            >
+              +300 XP
+            </button>
+            <button
+              onClick={() => addXP(1000)}
+              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+            >
+              +1000 XP
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Custom XP Amount</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={xpAmount}
+              onChange={(e) => setXpAmount(Number(e.target.value))}
+              className="flex-1 px-3 py-2 bg-background border border-input rounded-md"
+              min="1"
+            />
+            <button
+              onClick={() => addXP(xpAmount)}
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+            >
+              Add XP
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 bg-card border border-border rounded-md">
+        <h4 className="font-medium mb-3">Current Stats</h4>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">HP</p>
+            <p className="font-bold">{activeChar.hp.max}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">AC</p>
+            <p className="font-bold">{activeChar.armor_class}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Prof Bonus</p>
+            <p className="font-bold">+{activeChar.proficiency_bonus}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SensorsTab() {
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors } = useEnvironmentalSensors();
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Environmental Sensors</h2>
+
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm font-medium">Geolocation</p>
+            <p className="text-xs text-muted-foreground">{permissions.geolocation}</p>
+            <button
+              onClick={() => requestPermission('geolocation')}
+              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+            >
+              Request
+            </button>
+          </div>
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm font-medium">Motion</p>
+            <p className="text-xs text-muted-foreground">{permissions.motion}</p>
+            <button
+              onClick={() => requestPermission('motion')}
+              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+            >
+              Request
+            </button>
+          </div>
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm font-medium">Light</p>
+            <p className="text-xs text-muted-foreground">{permissions.light}</p>
+            <button
+              onClick={() => requestPermission('light')}
+              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+            >
+              Request
+            </button>
+          </div>
+        </div>
+
+        <button
+          onClick={() => startMonitoring()}
+          disabled={isMonitoring}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+        >
+          {isMonitoring ? 'Monitoring...' : 'Start Monitoring'}
+        </button>
+
+        {environmentalContext && (
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm font-medium">Environmental Data</p>
+            <pre className="text-xs mt-2 overflow-auto">{JSON.stringify(environmentalContext, null, 2)}</pre>
+          </div>
+        )}
+
+        {environmentalContext ? (
+          <div className="space-y-4">
+            {/* Live Motion Data */}
+            {environmentalContext.motion ? (
+              <div className="p-5 bg-green-900/20 border border-green-700 rounded-lg">
+                <h3 className="font-bold text-green-300 flex items-center gap-2">
+                  Live Motion Active
+                </h3>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm font-mono">
+                  <div>
+                    <span className="text-muted-foreground">X:</span>{' '}
+                    <strong>{environmentalContext.motion.accelerationIncludingGravity.x?.toFixed(3) ?? '—'}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Y:</span>{' '}
+                    <strong>{environmentalContext.motion.accelerationIncludingGravity.y?.toFixed(3) ?? '—'}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Z:</span>{' '}
+                    <strong>{environmentalContext.motion.accelerationIncludingGravity.z?.toFixed(3) ?? '—'}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Activity:</span>{' '}
+                    <strong className="text-lg">
+                      {(() => {
+                        // This is safe now because we added getCurrentActivity()
+                        if (!sensors || !environmentalContext.motion) return 'unknown';
+                        return sensors.getCurrentActivity();
+                      })()}
+                    </strong>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Updated: {new Date(environmentalContext.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            ) : (
+              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold">No Motion Data Yet</h3>
+                <ul className="mt-3 text-sm space-y-1">
+                  <li>• Did you grant motion permission? (iOS: must tap "Request")</li>
+                  <li>• Is your phone flat on a table? Try tilting it!</li>
+                  <li>• Motion updates only when device moves</li>
+                  <li>• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Full Debug Dump */}
+            <details className="mt-4">
+              <summary className="cursor-pointer text-sm font-medium">Raw environmentalContext</summary>
+              <pre className="mt-2 text-xs overflow-auto bg-black/50 p-3 rounded">
+                {JSON.stringify(environmentalContext, null, 2)}
+              </pre>
+            </details>
+          </div>
+        ) : null}
+
+      </div>
+    </div>
+  );
+}
+
+function GamingTab() {
+  const { connectSteam, gamingContext } = useGamingPlatforms();
+  const [steamId, setSteamId] = useState('');
+
+  const handleConnect = async () => {
+    await connectSteam(steamId);
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Gaming Platforms</h2>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Steam User ID</label>
+          <input
+            type="text"
+            value={steamId}
+            onChange={(e) => setSteamId(e.target.value)}
+            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            placeholder="Enter Steam ID..."
+          />
+        </div>
+        <button
+          onClick={handleConnect}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+        >
+          Connect Steam
+        </button>
+
+        {gamingContext && (
+          <div className="p-4 bg-card border border-border rounded-md">
+            <p className="text-sm font-medium">Gaming Status</p>
+            <p className="text-xs text-muted-foreground">
+              {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CombatTab() {
+  const { startCombat } = useCombatEngine();
+  const { characters, getActiveCharacter } = useCharacterStore();
+
+  const handleStartCombat = () => {
+    if (characters.length === 0) return;
+    // Create a mock enemy
+    const enemy = { ...characters[0], name: 'Goblin', hp: { current: 20, max: 20, temp: 0 } };
+    startCombat([characters[0]], [enemy]);
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Combat Engine</h2>
+
+      {characters.length === 0 ? (
+        <p className="text-muted-foreground">Generate a character first</p>
+      ) : (
+        <button
+          onClick={handleStartCombat}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+        >
+          Start Combat
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SettingsTab() {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Settings</h2>
+      <p className="text-muted-foreground">Configure API keys and application settings...</p>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">OpenWeather API Key</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            placeholder="Enter API key..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Steam API Key</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            placeholder="Enter API key..."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
