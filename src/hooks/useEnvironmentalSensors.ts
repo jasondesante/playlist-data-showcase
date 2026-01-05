@@ -85,7 +85,7 @@ export const useEnvironmentalSensors = () => {
                     const updated = await sensors.updateSnapshot();
                     updateEnvironmentalContext({ ...updated } as any);
                 } catch (err) {
-                    logger.warn('Snapshot update failed', err);
+                    logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
                 }
             }, 30_000);
 

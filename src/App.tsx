@@ -6,7 +6,6 @@ import { useAudioAnalyzer } from './hooks/useAudioAnalyzer';
 import { useCharacterGenerator } from './hooks/useCharacterGenerator';
 import { useSessionTracker } from './hooks/useSessionTracker';
 import { useXPCalculator } from './hooks/useXPCalculator';
-import { useCharacterUpdater } from './hooks/useCharacterUpdater';
 import { useEnvironmentalSensors } from './hooks/useEnvironmentalSensors';
 import { useGamingPlatforms } from './hooks/useGamingPlatforms';
 import { useCombatEngine } from './hooks/useCombatEngine';
@@ -820,7 +819,7 @@ function GamingTab() {
 
 function CombatTab() {
   const { startCombat } = useCombatEngine();
-  const { characters, getActiveCharacter } = useCharacterStore();
+  const { characters } = useCharacterStore();
 
   const handleStartCombat = () => {
     if (characters.length === 0) return;
