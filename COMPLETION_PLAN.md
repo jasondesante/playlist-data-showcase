@@ -725,15 +725,65 @@ Still missing from CombatSimulatorTab:
 
 **Purpose:** Understand exactly what each tab does and what it needs.
 
+**Duration:** 1-2 hours
+
 **Tasks:**
 
 For each of the 10 tabs in App.tsx:
-- [ ] Read the tab implementation
-- [ ] List which hooks it uses
-- [ ] List which stores it accesses
-- [ ] Document what's displayed
-- [ ] Document what's missing
-- [ ] Note any bugs or issues
+- [x] Read the tab implementation - COMPLETED 2026-01-24
+- [x] List which hooks it uses - COMPLETED 2026-01-24
+- [x] List which stores it accesses - COMPLETED 2026-01-24
+- [x] Document what's displayed - COMPLETED 2026-01-24
+- [x] Document what's missing - COMPLETED 2026-01-24
+- [x] Note any bugs or issues - COMPLETED 2026-01-24
+
+**Detailed Tab-by-Tab Analysis:**
+
+| Tab | File | Hooks Used | Stores Accessed | What's Displayed | What's Missing | Issues |
+|-----|------|------------|-----------------|------------------|---------------|--------|
+| **Playlist Loader** | `PlaylistLoaderTab.tsx` | `usePlaylistParser` | `playlistStore` | - Arweave TX input<br>- Playlist parsing<br>- Track list with selection<br>- Raw JSON dump sections<br>- Status indicator | None | None |
+| **Audio Analysis** | `AudioAnalysisTab.tsx` | `useAudioAnalyzer` | `playlistStore` | - Audio analysis button<br>- Frequency band bar chart (Bass/Mid/Treble)<br>- Color palette display<br>- Advanced metrics (spectral)<br>- Sampling timeline<br>- Analysis metadata<br>- Raw JSON dump | None | None |
+| **Character Gen** | `CharacterGenTab.tsx` | `useCharacterGenerator` | `playlistStore`, `characterStore` | - Generate button using real audio profile<br>- Determinism verification (regenerate with same seed)<br>- Audio trait mapping table<br>- Full character sheet display<br>- Export/Import character JSON<br>- Raw JSON dump | None | None |
+| **Session Tracking** | `SessionTrackingTab.tsx` | `useSessionTracker` | `playlistStore` | - Start/End session buttons<br>- Elapsed time display with progress bar<br>- Session ID display<br>- Last session JSON dump<br>- Status indicator | None | None |
+| **XP Calculator** | `XPCalculatorTab.tsx` | `useXPCalculator` | `sensorStore` | - Duration input<br>- Environmental context display<br>- Gaming context display<br>- Mastery bonus toggle<br>- Manual override mode<br>- Bonus breakdown table<br>- Pie chart visualization<br>- Raw JSON dump | None | None |
+| **Character Leveling** | `CharacterLevelingTab.tsx` | None | `characterStore` | - Character header with level<br>- XP progress bar<br>- Quick add XP buttons<br>- Custom XP input<br>- Current stats (HP, AC, Prof Bonus)<br>- Raw JSON dump | None | Uses custom XP thresholds (not from engine) |
+| **Environmental Sensors** | `EnvironmentalSensorsTab.tsx` | `useEnvironmentalSensors` | None (via hook) | - Permission buttons (Geo/Motion/Light)<br>- Start monitoring button<br>- Live motion data display<br>- Activity type detection<br>- Raw context dump | - Advanced visualizations<br>- Permission status indicators<br>- Raw JSON dump component | None |
+| **Gaming Platforms** | `GamingPlatformsTab.tsx` | `useGamingPlatforms` | None (via hook) | - Steam ID input<br>- Connect button<br>- Gaming status display | - Discord music status UI<br>- Game details display<br>- Gaming bonus display<br>- Raw JSON dump | Very minimal implementation |
+| **Combat Simulator** | `CombatSimulatorTab.tsx` | `useCombatEngine` | `characterStore` | - Start combat button<br>- Combatant cards (HP, Initiative)<br>- Round/Turn display<br>- Full combat log with color coding<br>- Next Turn button<br>- Combat result display<br>- Raw JSON dump | - Manual attack controls<br>- Auto-play button<br>- Spell casting UI<br>- Combat result overlay | None |
+| **Settings** | `SettingsTab.tsx` | None | `appStore` | - OpenWeather API key input<br>- Steam API key input<br>- Discord Client ID input<br>- Save indicator | - Audio FFT Size dropdown<br>- Base XP Rate slider<br>- Export All Data<br>- Import Data<br>- Reset to Defaults<br>- Verbose Logging toggle | None |
+
+**Summary:** All tabs are implemented as modular components. No tabs are still inlined in App.tsx. The most incomplete tab is **Gaming Platforms** which needs Discord music status UI and game details display. The **Combat Simulator** is functional but missing advanced features like auto-play and manual attack controls.
+
+**Phase 2.4 Status: ✅ COMPLETE** - All tab implementations analyzed and documented.
+
+**Purpose:** Understand exactly what each tab does and what it needs.
+
+**Tasks:**
+
+For each of the 10 tabs in App.tsx:
+- [x] Read the tab implementation - COMPLETED 2026-01-24
+- [x] List which hooks it uses - COMPLETED 2026-01-24
+- [x] List which stores it accesses - COMPLETED 2026-01-24
+- [x] Document what's displayed - COMPLETED 2026-01-24
+- [x] Document what's missing - COMPLETED 2026-01-24
+- [x] Note any bugs or issues - COMPLETED 2026-01-24
+
+**Detailed Tab-by-Tab Analysis:**
+
+| Tab | File | Hooks Used | Stores Accessed | What's Displayed | What's Missing | Issues |
+|-----|------|------------|-----------------|------------------|---------------|--------|
+| **Playlist Loader** | `PlaylistLoaderTab.tsx` | `usePlaylistParser` | `playlistStore` | - Arweave TX input<br>- Playlist parsing<br>- Track list with selection<br>- Raw JSON dump sections<br>- Status indicator | None | None |
+| **Audio Analysis** | `AudioAnalysisTab.tsx` | `useAudioAnalyzer` | `playlistStore` | - Audio analysis button<br>- Frequency band bar chart (Bass/Mid/Treble)<br>- Color palette display<br>- Advanced metrics (spectral)<br>- Sampling timeline<br>- Analysis metadata<br>- Raw JSON dump | None | None |
+| **Character Gen** | `CharacterGenTab.tsx` | `useCharacterGenerator` | `playlistStore`, `characterStore` | - Generate button using real audio profile<br>- Determinism verification (regenerate with same seed)<br>- Audio trait mapping table<br>- Full character sheet display<br>- Export/Import character JSON<br>- Raw JSON dump | None | None |
+| **Session Tracking** | `SessionTrackingTab.tsx` | `useSessionTracker` | `playlistStore` | - Start/End session buttons<br>- Elapsed time display with progress bar<br>- Session ID display<br>- Last session JSON dump<br>- Status indicator | None | None |
+| **XP Calculator** | `XPCalculatorTab.tsx` | `useXPCalculator` | `sensorStore` | - Duration input<br>- Environmental context display<br>- Gaming context display<br>- Mastery bonus toggle<br>- Manual override mode<br>- Bonus breakdown table<br>- Pie chart visualization<br>- Raw JSON dump | None | None |
+| **Character Leveling** | `CharacterLevelingTab.tsx` | None | `characterStore` | - Character header with level<br>- XP progress bar<br>- Quick add XP buttons<br>- Custom XP input<br>- Current stats (HP, AC, Prof Bonus)<br>- Raw JSON dump | None | Uses custom XP thresholds (not from engine) |
+| **Environmental Sensors** | `EnvironmentalSensorsTab.tsx` | `useEnvironmentalSensors` | None (via hook) | - Permission buttons (Geo/Motion/Light)<br>- Start monitoring button<br>- Live motion data display<br>- Activity type detection<br>- Raw context dump | - Advanced visualizations<br>- Permission status indicators<br>- Raw JSON dump component | None |
+| **Gaming Platforms** | `GamingPlatformsTab.tsx` | `useGamingPlatforms` | None (via hook) | - Steam ID input<br>- Connect button<br>- Gaming status display | - Discord music status UI<br>- Game details display<br>- Gaming bonus display<br>- Raw JSON dump | Very minimal implementation |
+| **Combat Simulator** | `CombatSimulatorTab.tsx` | `useCombatEngine` | `characterStore` | - Start combat button<br>- Combatant cards (HP, Initiative)<br>- Round/Turn display<br>- Full combat log with color coding<br>- Next Turn button<br>- Combat result display<br>- Raw JSON dump | - Manual attack controls<br>- Auto-play button<br>- Spell casting UI<br>- Combat result overlay | None |
+| **Settings** | `SettingsTab.tsx` | None | `appStore` | - OpenWeather API key input<br>- Steam API key input<br>- Discord Client ID input<br>- Save indicator | - Audio FFT Size dropdown<br>- Base XP Rate slider<br>- Export All Data<br>- Import Data<br>- Reset to Defaults<br>- Verbose Logging toggle | None |
+
+**Summary:** All tabs are implemented as modular components. No tabs are still inlined in App.tsx. The most incomplete tab is **Gaming Platforms** which needs Discord music status UI and game details display. The **Combat Simulator** is functional but missing advanced features like auto-play and manual attack controls.
 
 Create a table in IMPLEMENTATION_STATUS.md with this information.
 
