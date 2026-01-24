@@ -1591,12 +1591,16 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (577.26 kB output)
 
 #### 4.9.9 Add Combat Result Overlay
-- [ ] When combat ends, show overlay:
-  - [ ] Winner name
-  - [ ] XP awarded
-  - [ ] Rounds elapsed
-  - [ ] Total turns
-  - [ ] "Close" button to return to tab
+- [x] When combat ends, show overlay: - COMPLETED 2026-01-24
+  - [x] Winner name - Shows winner.character.name in large bold text
+  - [x] XP awarded - Shows combatResult.xpAwarded in green with + prefix
+  - [x] Rounds elapsed - Shows combatResult.roundsElapsed
+  - [x] Total turns - Shows combatResult.totalTurns
+  - [x] "Close" button to return to tab - "Restart Combat" button calls resetCombat()
+  - Fixed full-screen overlay with semi-transparent black background
+  - Victory styling with large "⚔️ Victory! ⚔️" heading
+  - All combat stats displayed in bordered table format
+  - Build verification: TypeScript compilation passes
 
 #### 4.9.10 Add Raw JSON Dump Section
 - [x] Add `<RawJsonDump>` for CombatInstance - ALREADY EXISTS
