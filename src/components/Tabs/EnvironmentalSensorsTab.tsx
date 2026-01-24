@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { MotionGraph } from '../ui/MotionGraph';
 
 // Helper function to map PermissionState to StatusType
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
@@ -17,6 +19,31 @@ function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded'
 
 export function EnvironmentalSensorsTab() {
   const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors } = useEnvironmentalSensors();
+
+  // Store motion data history for graphs (max 100 points each)
+  const [xData, setXData] = useState<number[]>([]);
+  const [yData, setYData] = useState<number[]>([]);
+  const [zData, setZData] = useState<number[]>([]);
+
+  // Update motion data when environmental context changes
+  useEffect(() => {
+    if (environmentalContext?.motion?.accelerationIncludingGravity) {
+      const acc = environmentalContext.motion.accelerationIncludingGravity;
+
+      setXData(prev => {
+        const next = [...prev, acc.x ?? 0];
+        return next.slice(-100);
+      });
+      setYData(prev => {
+        const next = [...prev, acc.y ?? 0];
+        return next.slice(-100);
+      });
+      setZData(prev => {
+        const next = [...prev, acc.z ?? 0];
+        return next.slice(-100);
+      });
+    }
+  }, [environmentalContext?.motion?.accelerationIncludingGravity]);
 
   return (
     <div className="space-y-6">
@@ -88,30 +115,26 @@ export function EnvironmentalSensorsTab() {
                 <h3 className="font-bold text-green-300 flex items-center gap-2">
                   Live Motion Active
                 </h3>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm font-mono">
-                  <div>
-                    <span className="text-muted-foreground">X:</span>{' '}
-                    <strong>{environmentalContext.motion.accelerationIncludingGravity.x?.toFixed(3) ?? '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Y:</span>{' '}
-                    <strong>{environmentalContext.motion.accelerationIncludingGravity.y?.toFixed(3) ?? '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Z:</span>{' '}
-                    <strong>{environmentalContext.motion.accelerationIncludingGravity.z?.toFixed(3) ?? '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Activity:</span>{' '}
-                    <strong className="text-lg">
-                      {(() => {
-                        // This is safe now because we added getCurrentActivity()
-                        if (!sensors || !environmentalContext.motion) return 'unknown';
-                        return sensors.getCurrentActivity();
-                      })()}
-                    </strong>
-                  </div>
+
+                {/* Activity Type Display */}
+                <div className="mt-3 text-sm">
+                  <span className="text-muted-foreground">Activity:</span>{' '}
+                  <strong className="text-lg">
+                    {(() => {
+                      // This is safe now because we added getCurrentActivity()
+                      if (!sensors || !environmentalContext.motion) return 'unknown';
+                      return sensors.getCurrentActivity();
+                    })()}
+                  </strong>
                 </div>
+
+                {/* Motion Graphs */}
+                <div className="mt-4 space-y-3">
+                  <MotionGraph data={xData} color="#22c55e" label="X Acceleration" />
+                  <MotionGraph data={yData} color="#3b82f6" label="Y Acceleration" />
+                  <MotionGraph data={zData} color="#f59e0b" label="Z Acceleration" />
+                </div>
+
                 <p className="text-xs text-muted-foreground mt-2">
                   Updated: {new Date(environmentalContext.timestamp).toLocaleTimeString()}
                 </p>

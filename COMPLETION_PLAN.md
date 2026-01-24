@@ -1280,11 +1280,18 @@ For each tab, create a separate file and extract the implementation:
   - Shows 🟢 (healthy) for 'granted', 🟡 (degraded) for 'prompt', 🔴 (error) for 'denied'
 
 #### 4.7.4 Add Live Motion Visualization
-- [ ] Create simple line graph for X acceleration
-- [ ] Create simple line graph for Y acceleration
-- [ ] Create simple line graph for Z acceleration
-- [ ] Update graphs in real-time as data comes in
-- [ ] Show current activity type (stationary/walking/running)
+- [x] Create simple line graph for X acceleration - COMPLETED 2026-01-24
+- [x] Create simple line graph for Y acceleration - COMPLETED 2026-01-24
+- [x] Create simple line graph for Z acceleration - COMPLETED 2026-01-24
+- [x] Update graphs in real-time as data comes in - COMPLETED 2026-01-24
+- [x] Show current activity type (stationary/walking/running) - COMPLETED 2026-01-24
+  - Created `src/components/ui/MotionGraph.tsx` component with Canvas-based line graph
+  - Added state to EnvironmentalSensorsTab to track motion data history (xData, yData, zData arrays)
+  - Graphs update in real-time as environmentalContext changes via useEffect
+  - Each graph shows 100 data points with color-coded lines (green=X, blue=Y, amber=Z)
+  - Current activity type displayed above graphs (uses sensors.getCurrentActivity())
+  - Latest acceleration value shown in graph header
+  - Build verification: TypeScript compilation passes (534.79 kB output)
 
 #### 4.7.5 Add GPS Coordinate Display
 - [ ] Show latitude/longitude on a mini map placeholder
