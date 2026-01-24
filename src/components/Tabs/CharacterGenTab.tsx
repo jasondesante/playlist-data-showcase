@@ -1,6 +1,6 @@
+import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
-import type { AudioProfile } from '../../types';
 
 /**
  * CharacterGenTab Component
@@ -8,12 +8,14 @@ import type { AudioProfile } from '../../types';
  * Demonstrates the CharacterGenerator engine module by:
  * 1. Generating a D&D 5e character from an audio profile
  * 2. Displaying character sheet with all attributes (HP, AC, stats, skills, equipment, spells)
- * 3. Using a mock audio profile for testing purposes
- * 4. Storing generated characters in the character store
+ * 3. Using real audio profile from the Audio Analysis tab (via playlistStore)
+ * 4. Using track UUID as deterministic seed for consistent character generation
+ * 5. Storing generated characters in the character store
  *
- * TODO: Phase 4.3 - Add real audio profile integration, determinism verification, and export/import
+ * TODO: Phase 4.3 - Add determinism verification, audio trait mapping display, and export/import
  */
 export function CharacterGenTab() {
+  const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
   const { characters } = useCharacterStore();
 
@@ -21,21 +23,19 @@ export function CharacterGenTab() {
   const character = characters.length > 0 ? characters[characters.length - 1] : null;
 
   const handleGenerate = async () => {
-    // Create a mock audio profile for testing
-    // TODO: Phase 4.3.1 - Connect to real audio profile from playlistStore
-    const mockProfile: AudioProfile = {
-      bass_dominance: Math.random() * 0.5 + 0.3,
-      mid_dominance: Math.random() * 0.4 + 0.2,
-      treble_dominance: Math.random() * 0.4 + 0.2,
-      average_amplitude: Math.random() * 0.3 + 0.4,
-      analysis_metadata: {
-        duration_analyzed: 180,
-        full_buffer_analyzed: false,
-        sample_positions: [0.05, 0.4, 0.7],
-        analyzed_at: new Date().toISOString()
-      }
-    };
-    await generateCharacter(mockProfile);
+    if (!audioProfile) {
+      console.warn('[CharacterGenTab] No audio profile available. Please analyze audio first.');
+      return;
+    }
+    if (!selectedTrack) {
+      console.warn('[CharacterGenTab] No track selected.');
+      return;
+    }
+
+    // Use track UUID as deterministic seed for consistent character generation
+    // This ensures the same track always generates the same character
+    const seed = selectedTrack.id;
+    await generateCharacter(audioProfile, seed);
   };
 
   return (
@@ -44,12 +44,31 @@ export function CharacterGenTab() {
         <h2 className="text-xl font-bold">Character Generator</h2>
         <button
           onClick={handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || !audioProfile}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
         >
           {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
         </button>
       </div>
+
+      {/* Show helpful messages when prerequisites aren't met */}
+      {!selectedTrack && (
+        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
+      )}
+      {selectedTrack && !audioProfile && (
+        <p className="text-muted-foreground">Analyze the audio in the Audio Analysis tab first</p>
+      )}
+      {selectedTrack && audioProfile && (
+        <div className="p-3 bg-accent/50 rounded-md border border-border">
+          <p className="text-sm">
+            <span className="font-medium">Ready to generate:</span> Using audio profile from{' '}
+            <span className="font-medium">{selectedTrack.title}</span> by {selectedTrack.artist}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Seed: {selectedTrack.id} (deterministic - same track always generates same character)
+          </p>
+        </div>
+      )}
 
       {character && (
         <div className="space-y-6">

@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
-import type { AudioProfile } from '../../types';
 
 /**
  * AudioAnalysisTab Component
@@ -14,11 +12,11 @@ import type { AudioProfile } from '../../types';
  * 4. Showing average amplitude metrics
  * 5. Displaying color palette (if available from artwork)
  * 6. Displaying analysis metadata (duration, sample positions)
+ * 7. Storing audioProfile in playlistStore for Character Gen tab to use
  */
 export function AudioAnalysisTab() {
-  const { selectedTrack } = usePlaylistStore();
+  const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
   const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
-  const [audioProfile, setAudioProfile] = useState<AudioProfile | null>(null);
 
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
