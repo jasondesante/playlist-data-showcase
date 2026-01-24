@@ -1679,13 +1679,24 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (580.19 kB output)
 
 #### 4.10.7 Implement Import Data
-- [ ] Add "Import from JSON File" button
-- [ ] Add file input (accept .json)
-- [ ] On file select:
-  - [ ] Read file
-  - [ ] Validate JSON structure
-  - [ ] Load data into each store
-  - [ ] Show success/error message
+- [x] Add "Import from JSON File" button - COMPLETED 2026-01-24
+- [x] Add file input (accept .json) - COMPLETED 2026-01-24
+- [x] On file select: - COMPLETED 2026-01-24
+  - [x] Read file - Uses FileReader API
+  - [x] Validate JSON structure - Validates required fields (version, stores)
+  - [x] Load data into each store - Restores all 4 stores
+  - [x] Show success/error message - Shows status with timestamp
+  - Added `handleImportFromFile` function to SettingsTab
+  - Added `importStatus` and `importMessage` state
+  - File input accepts .json files only
+  - Validates structure: checks for version, playlistStore, characterStore, sensorStore, appStore
+  - Restores playlist (currentPlaylist, selectedTrack, audioProfile, error, rawResponseData)
+  - Restores characters (adds non-existing characters, sets active character)
+  - Restores sensor permissions and contexts
+  - Restores app settings
+  - Shows success message with export timestamp
+  - Shows error message with specific error details
+  - Build verification: TypeScript compilation passes (583.42 kB output)
 
 #### 4.10.8 Add Reset to Defaults
 - [ ] Add "Reset to Defaults" button

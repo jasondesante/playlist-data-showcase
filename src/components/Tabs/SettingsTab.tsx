@@ -69,6 +69,8 @@ export function SettingsTab() {
   const [baseXpRate, setBaseXpRate] = useState(settings.baseXpRate);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
+  const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
+  const [importMessage, setImportMessage] = useState<string>('');
 
   // Initialize local state from store
   useEffect(() => {
@@ -170,6 +172,115 @@ export function SettingsTab() {
       setExportStatus('error');
       logger.error('Settings', 'Export failed', error);
       setTimeout(() => setExportStatus('idle'), 3000);
+    }
+  };
+
+  const handleImportFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setImportStatus('importing');
+      setImportMessage('');
+      logger.info('Settings', 'Importing data from file', { fileName: file.name, fileSize: file.size });
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonContent = e.target?.result as string;
+          const importedData = JSON.parse(jsonContent) as ExportedData;
+
+          // Validate the imported data structure
+          if (!importedData.version || !importedData.playlistStore || !importedData.characterStore ||
+              !importedData.sensorStore || !importedData.appStore) {
+            throw new Error('Invalid file structure: missing required fields');
+          }
+
+          // Load data into each store
+
+          // 1. Restore playlist store data
+          if (importedData.playlistStore.currentPlaylist) {
+            playlistStore.setPlaylist(
+              importedData.playlistStore.currentPlaylist,
+              importedData.playlistStore.rawResponseData
+            );
+            if (importedData.playlistStore.selectedTrack) {
+              playlistStore.selectTrack(importedData.playlistStore.selectedTrack);
+            }
+            if (importedData.playlistStore.audioProfile) {
+              playlistStore.setAudioProfile(importedData.playlistStore.audioProfile);
+            }
+            if (importedData.playlistStore.error) {
+              playlistStore.setError(importedData.playlistStore.error);
+            }
+          }
+
+          // 2. Restore character store data
+          if (importedData.characterStore.characters.length > 0) {
+            importedData.characterStore.characters.forEach(character => {
+              const existing = characterStore.characters.find(c => c.seed === character.seed);
+              if (!existing) {
+                characterStore.addCharacter(character);
+              }
+            });
+            if (importedData.characterStore.activeCharacterId) {
+              characterStore.setActiveCharacter(importedData.characterStore.activeCharacterId);
+            }
+          }
+
+          // 3. Restore sensor store data
+          if (importedData.sensorStore.permissions) {
+            Object.entries(importedData.sensorStore.permissions).forEach(([sensor, status]) => {
+              sensorStore.setPermission(sensor as 'geolocation' | 'motion' | 'light', status as PermissionState);
+            });
+          }
+          if (importedData.sensorStore.environmentalContext) {
+            sensorStore.updateEnvironmentalContext(importedData.sensorStore.environmentalContext);
+          }
+          if (importedData.sensorStore.gamingContext) {
+            sensorStore.updateGamingContext(importedData.sensorStore.gamingContext);
+          }
+
+          // 4. Restore app store settings
+          if (importedData.appStore.settings) {
+            updateSettings(importedData.appStore.settings);
+          }
+
+          setImportStatus('success');
+          setImportMessage(`Imported data from ${new Date(importedData.exportedAt).toLocaleString()}`);
+          logger.info('Settings', 'Import completed successfully', {
+            version: importedData.version,
+            exportedAt: importedData.exportedAt,
+            characters: importedData.characterStore.characters.length,
+            playlist: importedData.playlistStore.currentPlaylist?.name
+          });
+
+          // Reset status after 5 seconds
+          setTimeout(() => {
+            setImportStatus('idle');
+            setImportMessage('');
+          }, 5000);
+        } catch (parseError) {
+          setImportStatus('error');
+          setImportMessage(parseError instanceof Error ? parseError.message : 'Failed to parse JSON file');
+          logger.error('Settings', 'Import failed - parse error', parseError);
+          setTimeout(() => setImportStatus('idle'), 5000);
+        }
+      };
+
+      reader.onerror = () => {
+        setImportStatus('error');
+        setImportMessage('Failed to read file');
+        logger.error('Settings', 'Import failed - file read error');
+        setTimeout(() => setImportStatus('idle'), 5000);
+      };
+
+      reader.readAsText(file);
+    } catch (error) {
+      setImportStatus('error');
+      setImportMessage(error instanceof Error ? error.message : 'Import failed');
+      logger.error('Settings', 'Import failed', error);
+      setTimeout(() => setImportStatus('idle'), 5000);
     }
   };
 
@@ -341,6 +452,40 @@ export function SettingsTab() {
             </span>
           </button>
 
+          <div className="relative">
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportFromFile}
+              disabled={importStatus === 'importing'}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+              id="import-file-input"
+            />
+            <button
+              disabled={importStatus === 'importing'}
+              className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {importStatus === 'importing' && (
+                <span className="animate-spin">⏳</span>
+              )}
+              {importStatus === 'success' && (
+                <span>✓</span>
+              )}
+              {importStatus === 'error' && (
+                <span>✗</span>
+              )}
+              {importStatus === 'idle' && (
+                <span>📤</span>
+              )}
+              <span>
+                {importStatus === 'importing' && 'Importing...'}
+                {importStatus === 'success' && 'Import Complete!'}
+                {importStatus === 'error' && 'Import Failed'}
+                {importStatus === 'idle' && 'Import from JSON File'}
+              </span>
+            </button>
+          </div>
+
           {exportStatus === 'success' && (
             <p className="text-xs text-green-600 text-center">
               Data exported successfully! Check your downloads folder.
@@ -350,6 +495,18 @@ export function SettingsTab() {
           {exportStatus === 'error' && (
             <p className="text-xs text-red-600 text-center">
               Failed to export data. Please try again.
+            </p>
+          )}
+
+          {importStatus === 'success' && importMessage && (
+            <p className="text-xs text-green-600 text-center">
+              ✓ {importMessage}
+            </p>
+          )}
+
+          {importStatus === 'error' && importMessage && (
+            <p className="text-xs text-red-600 text-center">
+              ✗ {importMessage}
             </p>
           )}
 
