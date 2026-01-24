@@ -130,11 +130,67 @@ export const useGamingPlatforms = () => {
         }
     }, [sensors, updateGamingContext]);
 
+    /**
+     * Set music activity on Discord Rich Presence
+     * Displays "Listening to {song}" on the user's Discord profile
+     */
+    const setMusicStatus = useCallback(async (musicDetails: {
+        songName: string;
+        artistName?: string;
+        startTime?: number;
+        durationSeconds?: number;
+    }) => {
+        logger.info('GamingPlatformSensors', 'Setting Discord music status', musicDetails);
+        try {
+            // Check if Discord is connected first
+            const diagnostics = sensors.getDiagnostics();
+            if (!diagnostics.discord.isConnected) {
+                logger.warn('GamingPlatformSensors', 'Discord not connected, cannot set music status');
+                return false;
+            }
+
+            // Call the setMusicActivity method on the sensors instance
+            // @ts-ignore - Method exists in source but may not be in dist declarations yet
+            const result = await sensors.setMusicActivity(musicDetails);
+            if (result) {
+                logger.info('GamingPlatformSensors', 'Discord music status set successfully');
+            } else {
+                logger.warn('GamingPlatformSensors', 'Failed to set Discord music status');
+            }
+            return result;
+        } catch (error) {
+            handleError(error, 'GamingPlatformSensors');
+            return false;
+        }
+    }, [sensors]);
+
+    /**
+     * Clear music activity from Discord Rich Presence
+     */
+    const clearMusicStatus = useCallback(async () => {
+        logger.info('GamingPlatformSensors', 'Clearing Discord music status');
+        try {
+            // @ts-ignore - Method exists in source but may not be in dist declarations yet
+            const result = await sensors.clearMusicActivity();
+            if (result) {
+                logger.info('GamingPlatformSensors', 'Discord music status cleared successfully');
+            } else {
+                logger.warn('GamingPlatformSensors', 'Failed to clear Discord music status');
+            }
+            return result;
+        } catch (error) {
+            handleError(error, 'GamingPlatformSensors');
+            return false;
+        }
+    }, [sensors]);
+
     return {
         connectSteam,
         connectDiscord,
         disconnectDiscord,
         checkActivity,
+        setMusicStatus,
+        clearMusicStatus,
         gamingContext,
         discordConnectionStatus,
         discordConnectionError

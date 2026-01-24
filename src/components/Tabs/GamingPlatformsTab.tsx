@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
+import { usePlaylistStore } from '@/store/playlistStore';
 
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, gamingContext, discordConnectionStatus, discordConnectionError } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, gamingContext, discordConnectionStatus, discordConnectionError } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
+  const { selectedTrack } = usePlaylistStore();
   const [steamId, setSteamId] = useState('');
   const [steamConnected, setSteamConnected] = useState(false);
+  const [musicStatusActive, setMusicStatusActive] = useState(false);
 
   const handleConnectSteam = async () => {
     const success = await connectSteam(steamId);
@@ -115,11 +118,79 @@ export function GamingPlatformsTab() {
           <p className="text-sm text-red-500">{discordConnectionError}</p>
         )}
         {isDiscordConnected && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-            <p className="text-sm text-green-800 dark:text-green-200">
-              ✓ Discord is connected! When you play music, your status will update to show what you&apos;re listening to.
-            </p>
-          </div>
+          <>
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                ✓ Discord is connected! When you play music, your status will update to show what you&apos;re listening to.
+              </p>
+            </div>
+
+            {/* Music Status Section */}
+            <div className="mt-4 p-4 bg-card border border-border rounded-md">
+              <h4 className="text-sm font-semibold mb-2">Set Music Status</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Set your Discord status to show what music you&apos;re listening to. Select a track from the Playlist Loader tab first.
+              </p>
+
+              {selectedTrack ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{selectedTrack.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{selectedTrack.artist || 'Unknown Artist'}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {selectedTrack.duration ? `${Math.floor(selectedTrack.duration / 60)}:${(selectedTrack.duration % 60).toString().padStart(2, '0')}` : 'Unknown duration'}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {!musicStatusActive ? (
+                      <button
+                        onClick={async () => {
+                          const success = await setMusicStatus({
+                            songName: selectedTrack.title,
+                            artistName: selectedTrack.artist,
+                            startTime: Math.floor(Date.now() / 1000),
+                            durationSeconds: selectedTrack.duration
+                          });
+                          if (success) {
+                            setMusicStatusActive(true);
+                          }
+                        }}
+                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Set Music Status
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={async () => {
+                            const success = await clearMusicStatus();
+                            if (success) {
+                              setMusicStatusActive(false);
+                            }
+                          }}
+                          className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Clear Music Status
+                        </button>
+                        <span className="text-sm text-green-600 flex items-center">
+                          ✓ Status Active
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    No track selected. Go to the Playlist Loader tab to select a track first.
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
         )}
         {discordConnectionStatus === 'unavailable' && (
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
