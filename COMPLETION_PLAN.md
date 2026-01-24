@@ -1398,11 +1398,28 @@ For each tab, create a separate file and extract the implementation:
   - Button toggles between Set/Clear based on active state
 
 #### 4.8.3 Improve Steam Integration
-- [ ] Display current Steam game name
-- [ ] Display game genre if available
-- [ ] Show session duration
-- [ ] Show lifetime gaming minutes
-- [ ] Show games played while listening list
+- [x] Display current Steam game name - COMPLETED 2026-01-24
+  - Added comprehensive Steam gaming status display section
+  - Shows game name with large bold text
+  - Shows platform source (via Steam)
+  - Includes game controller icon
+  - Auto-polls gaming activity every 30 seconds when Steam is connected
+- [x] Display game genre if available - COMPLETED 2026-01-24
+  - Shows genre tags as colored pill badges
+  - Displays all genres in flex-wrap layout
+  - Only shown when genre data is available
+- [x] Show session duration - COMPLETED 2026-01-24
+  - Displays session duration in minutes
+  - Shown in 2-column grid with party size
+  - Only shown when sessionDuration is defined
+- [x] Show lifetime gaming minutes - COMPLETED 2026-01-24
+  - Added "Gaming Summary (While Listening)" section
+  - Shows total gaming time in minutes
+  - Displays hour conversion for sessions >= 60 minutes
+- [x] Show games played while listening list - COMPLETED 2026-01-24
+  - Lists all games played while listening
+  - Shows green checkmark for each game
+  - Part of Gaming Summary section
 
 #### 4.8.4 Add Gaming Bonus Display
 - [ ] Calculate and display gaming XP multiplier

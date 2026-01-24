@@ -1,15 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
+import { logger } from '@/utils/logger';
 
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, gamingContext, discordConnectionStatus, discordConnectionError } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
   const { selectedTrack } = usePlaylistStore();
   const [steamId, setSteamId] = useState('');
   const [steamConnected, setSteamConnected] = useState(false);
   const [musicStatusActive, setMusicStatusActive] = useState(false);
+
+  // Poll for gaming activity every 30 seconds when Steam is connected
+  useEffect(() => {
+    if (!steamConnected) return;
+
+    // Initial check
+    checkActivity();
+
+    const pollInterval = setInterval(() => {
+      logger.info('GamingPlatformSensors', 'Polling gaming activity');
+      checkActivity();
+    }, 30000);
+
+    return () => clearInterval(pollInterval);
+  }, [steamConnected, checkActivity]);
 
   const handleConnectSteam = async () => {
     const success = await connectSteam(steamId);
@@ -201,17 +217,99 @@ export function GamingPlatformsTab() {
         )}
       </div>
 
-      {/* Gaming Status Display */}
-      {gamingContext && (
-        <div className="p-4 bg-card border border-border rounded-md">
-          <p className="text-sm font-medium">Gaming Status</p>
-          <p className="text-xs text-muted-foreground">
-            {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
-          </p>
-          {gamingContext.currentGame && (
-            <p className="text-sm mt-2">
-              Playing: <span className="font-semibold">{gamingContext.currentGame.name}</span>
-            </p>
+      {/* Steam Gaming Status Display */}
+      {gamingContext?.isActivelyGaming && gamingContext.currentGame && (
+        <div className="p-4 bg-card border border-border rounded-md space-y-4">
+          <h3 className="text-lg font-semibold">Steam Gaming Status</h3>
+
+          {/* Current Game */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Currently Playing</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">🎮</span>
+              </div>
+              <div>
+                <p className="text-lg font-bold">{gamingContext.currentGame.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {gamingContext.currentGame.source === 'steam' ? 'via Steam' : gamingContext.currentGame.source}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Game Genre */}
+          {gamingContext.currentGame.genre && gamingContext.currentGame.genre.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-1">Genre</p>
+              <div className="flex flex-wrap gap-2">
+                {gamingContext.currentGame.genre.map((genre, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Session Details */}
+          {gamingContext.currentGame.sessionDuration !== undefined && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Session Duration</p>
+                <p className="text-lg font-semibold">
+                  {gamingContext.currentGame.sessionDuration} min
+                </p>
+              </div>
+              {gamingContext.currentGame.partySize !== undefined && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Party Size</p>
+                  <p className="text-lg font-semibold">
+                    {gamingContext.currentGame.partySize} {gamingContext.currentGame.partySize === 1 ? 'player' : 'players'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Gaming Summary Stats */}
+      {gamingContext && (gamingContext.totalGamingMinutes > 0 || (gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0)) && (
+        <div className="p-4 bg-card border border-border rounded-md space-y-4">
+          <h3 className="text-lg font-semibold">Gaming Summary (While Listening)</h3>
+
+          {/* Lifetime Gaming Minutes */}
+          {gamingContext.totalGamingMinutes > 0 && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Gaming Time</p>
+              <p className="text-lg font-semibold">
+                {gamingContext.totalGamingMinutes} minutes
+                {gamingContext.totalGamingMinutes >= 60 && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    (~{Math.floor(gamingContext.totalGamingMinutes / 60)} hours)
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* Games Played While Listening */}
+          {gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Games Played While Listening</p>
+              <ul className="space-y-1">
+                {gamingContext.gamesPlayedWhileListening.map((gameName, index) => (
+                  <li key={index} className="text-sm flex items-center gap-2">
+                    <span className="text-green-500">✓</span>
+                    <span>{gameName}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       )}
