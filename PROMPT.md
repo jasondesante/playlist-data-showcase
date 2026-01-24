@@ -1,3 +1,5 @@
+study DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md
+
 study COMPLETION_PLAN.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
