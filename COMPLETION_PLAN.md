@@ -1472,15 +1472,23 @@ For each tab, create a separate file and extract the implementation:
 - [x] Added helpful description with link to discord.com/developers - COMPLETED 2026-01-24
 
 #### 4.10.4 Add Audio FFT Size Dropdown
-- [ ] Create dropdown with options: 1024, 2048, 4096
-- [ ] Get current value from appStore
-- [ ] On change, call appStore.updateSettings
+- [x] Create dropdown with options: 1024, 2048, 4096 - COMPLETED 2026-01-24
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+  - Added dropdown with 4 options (1024, 2048, 4096, 8192)
+  - Shows current selection in label
+  - Includes detailed explanation of each option
+  - Updates appStore.audioFftSize on change
 
 #### 4.10.5 Add Base XP Rate Slider
-- [ ] Create slider from 0.1 to 5.0
-- [ ] Show current value
-- [ ] Get current value from appStore
-- [ ] On change, call appStore.updateSettings
+- [x] Create slider from 0.1 to 5.0 - COMPLETED 2026-01-24
+- [x] Show current value - COMPLETED 2026-01-24
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+  - Added range slider with 0.1 step increments
+  - Shows current value with 1 decimal place in label
+  - Visual indicators for slow/normal/fast ranges
+  - Includes explanation of XP rate and multiplier cap
 
 #### 4.10.6 Implement Export All Data
 - [ ] Add "Export All Data to JSON" button
