@@ -48,19 +48,45 @@ export function AudioAnalysisTab() {
 
           {audioProfile && (
             <div className="space-y-4">
-              {/* Frequency Band Visualization */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-card border border-border rounded-md">
-                  <p className="text-sm text-muted-foreground">Bass</p>
-                  <p className="text-2xl font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+              {/* Frequency Band Bar Chart Visualization */}
+              <div className="p-4 bg-card border border-border rounded-md">
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">Frequency Band Visualization</h3>
+                <div className="flex items-end justify-center gap-8 h-48">
+                  {/* Bass Bar */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-16 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.bass_dominance * 100) * 1.5}px` }}
+                      title={`Bass: ${(audioProfile.bass_dominance * 100).toFixed(1)}%`}
+                    />
+                    <p className="text-sm font-medium text-blue-500">Bass</p>
+                    <p className="text-lg font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+                  </div>
+
+                  {/* Mid Bar */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-16 bg-gradient-to-t from-green-600 to-green-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.mid_dominance * 100) * 1.5}px` }}
+                      title={`Mid: ${(audioProfile.mid_dominance * 100).toFixed(1)}%`}
+                    />
+                    <p className="text-sm font-medium text-green-500">Mid</p>
+                    <p className="text-lg font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
+                  </div>
+
+                  {/* Treble Bar */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="w-16 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.treble_dominance * 100) * 1.5}px` }}
+                      title={`Treble: ${(audioProfile.treble_dominance * 100).toFixed(1)}%`}
+                    />
+                    <p className="text-sm font-medium text-orange-500">Treble</p>
+                    <p className="text-lg font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                  </div>
                 </div>
-                <div className="p-4 bg-card border border-border rounded-md">
-                  <p className="text-sm text-muted-foreground">Mid</p>
-                  <p className="text-2xl font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
-                </div>
-                <div className="p-4 bg-card border border-border rounded-md">
-                  <p className="text-sm text-muted-foreground">Treble</p>
-                  <p className="text-2xl font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                <div className="flex justify-center mt-3">
+                  <div className="w-64 h-0.5 bg-border rounded" />
                 </div>
               </div>
 
