@@ -1715,10 +1715,17 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (586.38 kB output)
 
 #### 4.10.9 Add Verbose Logging Toggle
-- [ ] Add toggle for verbose logging
-- [ ] Connect to logger utility
-- [ ] Get current value from appStore
-- [ ] On change, call appStore.updateSettings
+- [x] Add toggle for verbose logging - COMPLETED 2026-01-24
+- [x] Connect to logger utility - COMPLETED 2026-01-24
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+  - Added `verboseLogging: boolean` to AppSettings interface in appStore
+  - Added `verboseLogging` to DEFAULT_SETTINGS (false by default)
+  - Added "Debug Settings" section to SettingsTab with toggle switch
+  - Toggle syncs with logger.setVerbose() via useEffect
+  - Shows green confirmation message when enabled
+  - Includes explanatory text about debug logs
+  - Build verification: TypeScript compilation passes (587.80 kB output)
 
 #### 4.10.10 Test Settings Persistence
 - [ ] Set a setting

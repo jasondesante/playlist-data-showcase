@@ -54,6 +54,7 @@ interface ExportedData {
       audioSampleRate: number;
       audioFftSize: number;
       baseXpRate: number;
+      verboseLogging: boolean;
     };
   };
 }
@@ -68,6 +69,7 @@ export function SettingsTab() {
   const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
   const [baseXpRate, setBaseXpRate] = useState(settings.baseXpRate);
+  const [verboseLogging, setVerboseLogging] = useState(settings.verboseLogging);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
@@ -85,7 +87,13 @@ export function SettingsTab() {
     setDiscordClientId(settings.discordClientId);
     setAudioFftSize(settings.audioFftSize);
     setBaseXpRate(settings.baseXpRate);
-  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.baseXpRate]);
+    setVerboseLogging(settings.verboseLogging);
+  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.baseXpRate, settings.verboseLogging]);
+
+  // Sync verbose logging with logger utility
+  useEffect(() => {
+    logger.setVerbose(settings.verboseLogging);
+  }, [settings.verboseLogging]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -130,6 +138,17 @@ export function SettingsTab() {
     updateSettings({ baseXpRate: value });
     setSaveIndicator('saved');
     setTimeout(() => setSaveIndicator(null), 2000);
+  };
+
+  const handleVerboseLoggingChange = (checked: boolean) => {
+    setVerboseLogging(checked);
+    updateSettings({ verboseLogging: checked });
+    logger.setVerbose(checked);
+    setSaveIndicator('saved');
+    setTimeout(() => setSaveIndicator(null), 2000);
+    if (checked) {
+      logger.info('Settings', 'Verbose logging enabled');
+    }
   };
 
   const handleExportAllData = () => {
@@ -182,11 +201,11 @@ export function SettingsTab() {
       logger.info('Settings', 'Export completed successfully');
 
       // Reset status after 3 seconds
-      setTimeout(() => setExportStatus('idle'), 3000);
+      void setTimeout(() => setExportStatus('idle'), 3000);
     } catch (error) {
       setExportStatus('error');
       logger.error('Settings', 'Export failed', error);
-      setTimeout(() => setExportStatus('idle'), 3000);
+      void setTimeout(() => setExportStatus('idle'), 3000);
     }
   };
 
@@ -271,7 +290,7 @@ export function SettingsTab() {
           });
 
           // Reset status after 5 seconds
-          setTimeout(() => {
+          void setTimeout(() => {
             setImportStatus('idle');
             setImportMessage('');
           }, 5000);
@@ -279,7 +298,7 @@ export function SettingsTab() {
           setImportStatus('error');
           setImportMessage(parseError instanceof Error ? parseError.message : 'Failed to parse JSON file');
           logger.error('Settings', 'Import failed - parse error', parseError);
-          setTimeout(() => setImportStatus('idle'), 5000);
+          void setTimeout(() => setImportStatus('idle'), 5000);
         }
       };
 
@@ -287,7 +306,7 @@ export function SettingsTab() {
         setImportStatus('error');
         setImportMessage('Failed to read file');
         logger.error('Settings', 'Import failed - file read error');
-        setTimeout(() => setImportStatus('idle'), 5000);
+        void setTimeout(() => setImportStatus('idle'), 5000);
       };
 
       reader.readAsText(file);
@@ -295,7 +314,7 @@ export function SettingsTab() {
       setImportStatus('error');
       setImportMessage(error instanceof Error ? error.message : 'Import failed');
       logger.error('Settings', 'Import failed', error);
-      setTimeout(() => setImportStatus('idle'), 5000);
+      void setTimeout(() => setImportStatus('idle'), 5000);
     }
   };
 
@@ -324,14 +343,14 @@ export function SettingsTab() {
         logger.warn('Settings', 'Reset completed successfully');
 
         // Reload page after 3 seconds to ensure clean state
-        setTimeout(() => {
+        void setTimeout(() => {
           window.location.reload();
         }, 3000);
       } catch (error) {
         setResetStatus('error');
         setResetMessage(error instanceof Error ? error.message : 'Reset failed');
         logger.error('Settings', 'Reset failed', error);
-        setTimeout(() => {
+        void setTimeout(() => {
           setResetStatus('idle');
           setResetMessage('');
         }, 5000);
@@ -487,6 +506,39 @@ export function SettingsTab() {
             This rate is modified by environmental and gaming bonuses (capped at 3.0x total multiplier).
           </p>
         </div>
+      </div>
+
+      {/* Debug Settings Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Debug Settings</h3>
+
+        <div className="flex items-center justify-between border border-border rounded-lg p-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-1">Verbose Logging</label>
+            <p className="text-xs text-muted-foreground">
+              Enable detailed debug logs in the browser console. This includes additional information for troubleshooting.
+            </p>
+          </div>
+          <button
+            onClick={() => handleVerboseLoggingChange(!verboseLogging)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              verboseLogging ? 'bg-primary' : 'bg-input'
+            }`}
+            role="switch"
+            aria-checked={verboseLogging}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                verboseLogging ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {verboseLogging && (
+          <p className="text-xs text-green-600 bg-green-100 border border-green-300 rounded px-2 py-1">
+            ✓ Verbose logging is enabled. Check the browser console for detailed debug output.
+          </p>
+        )}
       </div>
 
       {/* Data Management Section */}

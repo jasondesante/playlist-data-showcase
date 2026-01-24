@@ -11,6 +11,7 @@ interface AppSettings {
     audioSampleRate: number;
     audioFftSize: number;
     baseXpRate: number;
+    verboseLogging: boolean;
 }
 
 interface AppState {
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     audioSampleRate: 44100,
     audioFftSize: 2048,
     baseXpRate: 1.0,
+    verboseLogging: false,
 };
 
 export const useAppStore = create<AppState>()(
