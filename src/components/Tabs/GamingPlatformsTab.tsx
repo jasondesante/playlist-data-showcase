@@ -5,7 +5,7 @@ import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
   const { selectedTrack } = usePlaylistStore();
   const [steamId, setSteamId] = useState('');
@@ -274,6 +274,79 @@ export function GamingPlatformsTab() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Gaming Bonus Display */}
+      {gamingContext?.isActivelyGaming && (
+        <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-md space-y-3">
+          <h3 className="text-lg font-semibold">Gaming XP Bonus</h3>
+
+          <p className="text-sm text-muted-foreground">
+            Active gaming boosts your XP gain while listening to music.
+          </p>
+
+          {/* Bonus Multiplier Display */}
+          <div className="flex items-center gap-4">
+            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+              {calculateGamingBonus().toFixed(2)}x
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">XP Multiplier</p>
+              <p className="text-xs text-muted-foreground">
+                Applied to all XP earned while gaming
+              </p>
+            </div>
+          </div>
+
+          {/* Bonus Formula Breakdown */}
+          <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-semibold mb-2">Bonus Formula Breakdown</p>
+            <div className="text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Base gaming bonus:</span>
+                <span className="font-mono">1.0x</span>
+              </div>
+              {gamingContext.currentGame?.sessionDuration && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Session bonus (minutes × 0.01):</span>
+                  <span className="font-mono">+{Math.min(gamingContext.currentGame.sessionDuration * 0.01, 0.75).toFixed(2)}x</span>
+                </div>
+              )}
+              {gamingContext.currentGame?.genre && gamingContext.currentGame.genre.length > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Genre bonus:</span>
+                  <span className="font-mono">
+                    +{gamingContext.currentGame.genre.some(g =>
+                      g.toLowerCase().includes('rpg')
+                    ) ? '0.20x' :
+                      gamingContext.currentGame.genre.some(g =>
+                        g.toLowerCase().includes('action') || g.toLowerCase().includes('fps')
+                      ) ? '0.15x' : '0.10x'
+                    }
+                  </span>
+                </div>
+              )}
+              {gamingContext.currentGame?.partySize && gamingContext.currentGame.partySize > 1 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Multiplayer bonus:</span>
+                  <span className="font-mono">+0.15x</span>
+                </div>
+              )}
+              <div className="border-t border-gray-200 dark:border-gray-600 pt-1 mt-1 flex justify-between font-semibold">
+                <span className="text-muted-foreground">Total (capped at 1.75x):</span>
+                <span className="font-mono text-blue-600 dark:text-blue-400">{calculateGamingBonus().toFixed(2)}x</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bonus Active Indicator */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="text-sm font-medium text-green-700 dark:text-green-400">
+              Bonus Active
+            </span>
+          </div>
         </div>
       )}
 

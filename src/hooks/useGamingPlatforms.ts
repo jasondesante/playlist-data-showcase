@@ -184,6 +184,17 @@ export const useGamingPlatforms = () => {
         }
     }, [sensors]);
 
+    /**
+     * Calculate the gaming XP multiplier based on current gaming activity
+     * Formula: 1.0 + (sessionMinutes × 0.01), max 1.75
+     * Plus bonuses for game genre and multiplayer
+     */
+    const calculateGamingBonus = useCallback(() => {
+        const bonus = sensors.calculateGamingBonus();
+        logger.info('GamingPlatformSensors', 'Gaming bonus calculated', { bonus });
+        return bonus;
+    }, [sensors]);
+
     return {
         connectSteam,
         connectDiscord,
@@ -191,6 +202,7 @@ export const useGamingPlatforms = () => {
         checkActivity,
         setMusicStatus,
         clearMusicStatus,
+        calculateGamingBonus,
         gamingContext,
         discordConnectionStatus,
         discordConnectionError

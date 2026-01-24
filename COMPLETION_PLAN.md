@@ -1422,9 +1422,21 @@ For each tab, create a separate file and extract the implementation:
   - Part of Gaming Summary section
 
 #### 4.8.4 Add Gaming Bonus Display
-- [ ] Calculate and display gaming XP multiplier
-- [ ] Show formula: 1.0 + (sessionMinutes × 0.01), max 1.75
-- [ ] Show when bonus is active
+- [x] Calculate and display gaming XP multiplier - COMPLETED 2026-01-24
+- [x] Show formula: 1.0 + (sessionMinutes × 0.01), max 1.75 - COMPLETED 2026-01-24
+- [x] Show when bonus is active - COMPLETED 2026-01-24
+  - Added calculateGamingBonus() to useGamingPlatforms hook
+  - Added Gaming XP Bonus section to GamingPlatformsTab with:
+    - Large bonus multiplier display (e.g., "1.55x")
+    - Formula breakdown table showing:
+      - Base gaming bonus: 1.0x
+      - Session bonus (minutes × 0.01)
+      - Genre bonus (RPG: +0.20x, Action/FPS: +0.15x, Other: +0.10x)
+      - Multiplayer bonus: +0.15x (when partySize > 1)
+      - Total capped at 1.75x
+    - "Bonus Active" indicator with animated green pulse
+    - Displayed only when isActivelyGaming is true
+  - Build verification: TypeScript compilation passes (556.29 kB output)
 
 #### 4.8.5 Add Raw JSON Dump Section
 - [ ] Add `<RawJsonDump>` for gamingContext
