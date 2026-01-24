@@ -487,10 +487,81 @@ Discord RPC **CANNOT** read game activity (only music status). The hook should f
 **No blocking issues found.** The hook is well-implemented for Steam integration and properly structured for Discord music status functionality.
 
 #### 2.1.8 Test useCombatEngine
-- [ ] Read `src/hooks/useCombatEngine.ts`
-- [ ] Verify it imports CombatEngine from engine
-- [ ] Verify startCombat method works
-- [ ] Document what needs to be added (turn resolution, logging, etc.)
+- [x] Read `src/hooks/useCombatEngine.ts` - COMPLETED 2026-01-24
+- [x] Verify it imports CombatEngine from engine - COMPLETED 2026-01-24
+- [x] Verify startCombat method works - COMPLETED 2026-01-24
+- [x] Document what needs to be added (turn resolution, logging, etc.) - COMPLETED 2026-01-24
+
+**Verification Summary for useCombatEngine:**
+- ✅ **Import:** Correctly imports `CombatEngine` and `CharacterSheet` from `playlist-data-engine`
+- ✅ **Engine Path:** Uses `file:/playlist-data-engine` local path (package.json line 18)
+- ✅ **Constructor Options:** Creates engine with default config (no custom options passed)
+- ✅ **startCombat Method:** Works correctly:
+  - Calls `engine.startCombat(party, enemies)` - matches engine API (line 58)
+  - Returns `CombatInstance | null` (null on error)
+  - Logs combat initialization with combat ID and turn order
+- ✅ **getCurrentCombatant Method:** Works correctly:
+  - Calls `engine.getCurrentCombatant(combat)` - matches engine API (line 75)
+- ✅ **executeAttack Method:** Well-implemented attack resolution:
+  - Creates attack object from character equipment or defaults to unarmed strike (lines 82-96)
+  - Calls `engine.executeAttack(combat, attacker, target, attack)` - matches engine API (line 98)
+  - Returns `CombatAction | null`
+- ✅ **nextTurn Method:** Works correctly:
+  - Calls `engine.nextTurn(combat)` - matches engine API (line 103)
+  - Updates local state with returned combat instance
+- ✅ **getCombatResult Method:** Works correctly:
+  - Calls `engine.getCombatResult(combat)` - matches engine API (line 110)
+- ✅ **resetCombat Method:** Resets combat state to null
+- ✅ **State Management:**
+  - Uses useState for combat instance
+  - All methods memoized with useCallback
+  - Returns combat state for UI access
+- ✅ **Logging:** Uses logger utility for info/error logs
+- ✅ **Error Handling:** Comprehensive error handling via `handleError()` utility
+- ✅ **Build Verification:** TypeScript compilation passes
+
+**Engine API Alignment (per USAGE_IN_OTHER_PROJECTS.md):**
+The hook correctly uses the `CombatEngine` class with the following methods:
+- Constructor: `new CombatEngine(config?)` (matches USAGE_IN_OTHER_PROJECTS.md lines 316-321)
+- `startCombat(playerCharacters, enemies, environment?)` (matches lines 333-337)
+- `getCurrentCombatant(combat)` (matches line 341)
+- `executeAttack(combat, current, target, attack)` (matches lines 344-350)
+- `nextTurn(combat)` (matches line 359)
+- `getCombatResult(combat)` (matches lines 362-367)
+
+**Available Engine Methods Not Exposed by Hook:**
+- `executeCastSpell(combat, caster, spell, targets)` - For spellcasting combatants
+- `executeDodge(combat, combatant)` - Dodge action
+- `executeDash(combat, combatant)` - Dash action
+- `executeDisengage(combat, combatant)` - Disengage action
+- `getLivingCombatants(combat)` - Get non-defeated combatants
+- `getDefeatedCombatants(combat)` - Get defeated combatants
+- `applyDamage(combatant, damage)` - Direct damage application
+- `healCombatant(combatant, healing)` - Heal combatant
+- `applyTemporaryHP(combatant, tempHP)` - Apply temporary HP
+- `getCombatSummary(combat)` - Get combat status string
+
+**What Needs to Be Added to Complete Combat Tab (Per Phase 4.9):**
+The CombatSimulatorTab already has:
+- ✅ Combat state storage (task 4.9.1)
+- ✅ Combatant cards display (task 4.9.2) - with HP bars, initiative, current turn highlighting
+- ✅ Full combat log (task 4.9.3) - with color coding, round numbers, hit/miss, damage, criticals
+- ✅ "Next Turn" button (task 4.9.4) - auto-attacks first living target
+- ✅ Combat resolution display (task 4.9.5) - shows winner, XP, rounds, turns
+- ✅ Raw JSON dump (task 4.9.10) - CombatInstance JSON with RawJsonDump component
+
+Still missing from CombatSimulatorTab:
+- ⚠️ Task 4.9.6: Manual attack controls (select specific attack and target)
+- ⚠️ Task 4.9.7: Auto-play button (run entire combat automatically)
+- ⚠️ Task 4.9.8: Spell casting UI (for spellcasting characters)
+- ⚠️ Task 4.9.9: Combat result overlay (currently inline, should be overlay)
+
+**Hook Status:** The hook is well-implemented and correctly integrates the CombatEngine from the engine. To support remaining UI features, the hook should expose:
+- `executeCastSpell` method for spellcasting UI
+- `executeDodge`, `executeDash`, `executeDisengage` for action selection UI
+- `getLivingCombatants` for target selection UI
+
+**No blocking issues found.** The hook is well-implemented and correctly integrates the CombatEngine from the engine.
 
 ---
 
