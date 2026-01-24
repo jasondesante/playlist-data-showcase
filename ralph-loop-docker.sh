@@ -1,6 +1,7 @@
 # # Step 1: Start container and login (you'll see Claude Code UI)
 # docker run -it \
 #   -v $(pwd):/workspace \
+#   -v /Users/jasondesante/playlist-data-engine:/playlist-data-engine \
 #   --name claude-pds \
 #   docker/sandbox-templates:claude-code \
 #   claude
@@ -26,6 +27,12 @@ docker stop claude-pds
 
 # # End of Step 2
 # # 
+# 
+#  "playlist-data-engine": "file:/Users/jasondesante/playlist-data-engine", When used normally 
+#  "playlist-data-engine": "file:/playlist-data-engine", when used in docker container
+# 
+# 
+# 
 # # Alternative:
 # # 
 # # try #6 loops but doesn't automatically because it shows the ui
