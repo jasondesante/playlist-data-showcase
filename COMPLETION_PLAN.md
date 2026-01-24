@@ -667,11 +667,16 @@ For each tab, create a separate file and extract the implementation:
   - Added explanatory text at bottom
 
 #### 4.3.4 Add Character Export/Import
-- [ ] Add "Export Character" button
-- [ ] Download character as JSON file
-- [ ] Add "Import Character" button
-- [ ] Read JSON file and validate with Zod schema
-- [ ] Load imported character into store
+- [x] Add "Export Character" button - COMPLETED 2026-01-24
+- [x] Download character as JSON file - COMPLETED 2026-01-24
+- [x] Add "Import Character" button - COMPLETED 2026-01-24
+- [x] Read JSON file and validate with Zod schema - COMPLETED 2026-01-24
+- [x] Load imported character into store - COMPLETED 2026-01-24
+  - Created `/workspace/src/schemas/characterSchema.ts` with Zod validation
+  - Added export/import handlers to CharacterGenTab
+  - Added success/error status messages
+  - Export includes metadata (exportedAt, exportedFrom, version)
+  - Import validates structure and adds to characterStore
 
 #### 4.3.5 Add Raw JSON Dump Section
 - [ ] Add `<RawJsonDump>` for character sheet

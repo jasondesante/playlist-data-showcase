@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
 import type { CharacterSheet } from 'playlist-data-engine';
+import { validateCharacterSheet } from '../../schemas/characterSchema';
 
 /**
  * CharacterGenTab Component
@@ -18,7 +19,7 @@ import type { CharacterSheet } from 'playlist-data-engine';
 export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
-  const { characters } = useCharacterStore();
+  const { characters, addCharacter } = useCharacterStore();
 
   // State for determinism verification
   const [determinismResult, setDeterminismResult] = useState<{
@@ -26,6 +27,11 @@ export function CharacterGenTab() {
     original: CharacterSheet | null;
     regenerated: CharacterSheet | null;
   }>({ isMatch: null, original: null, regenerated: null });
+
+  // State for import/export
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Only show the most recent character
   const character = characters.length > 0 ? characters[characters.length - 1] : null;
@@ -83,6 +89,121 @@ export function CharacterGenTab() {
     });
   };
 
+  const handleExportCharacter = () => {
+    if (!character) {
+      console.warn('[CharacterGenTab] No character to export');
+      return;
+    }
+
+    try {
+      // Create a clean export object with metadata
+      const exportData = {
+        ...character,
+        _exportMetadata: {
+          exportedAt: new Date().toISOString(),
+          exportedFrom: 'playlist-data-showcase',
+          version: '1.0.0'
+        }
+      };
+
+      // Convert to JSON string with pretty formatting
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      // Create download link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${character.name.replace(/[^a-z0-9]/gi, '_')}_level${character.level}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      URL.revokeObjectURL(url);
+
+      console.log('[CharacterGenTab] Character exported successfully', {
+        name: character.name,
+        filename: link.download
+      });
+    } catch (error) {
+      console.error('[CharacterGenTab] Export failed', error);
+      setImportError('Export failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setTimeout(() => setImportError(null), 5000);
+    }
+  };
+
+  const handleImportCharacter = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset states
+    setImportError(null);
+    setImportSuccess(false);
+
+    console.log('[CharacterGenTab] Importing character from file:', file.name);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const jsonContent = e.target?.result as string;
+        if (!jsonContent) {
+          throw new Error('Empty file content');
+        }
+
+        const parsedData = JSON.parse(jsonContent);
+
+        // Remove export metadata if present (it's not part of CharacterSheet type)
+        const { _exportMetadata, ...characterData } = parsedData as any;
+
+        // Validate with Zod schema
+        const validation = validateCharacterSheet(characterData);
+
+        if (!validation.success) {
+          console.error('[CharacterGenTab] Validation failed', validation.error);
+          setImportError(validation.error || 'Invalid character file');
+          setTimeout(() => setImportError(null), 5000);
+          return;
+        }
+
+        if (validation.data) {
+          // Add the validated character to the store
+          addCharacter(validation.data);
+
+          console.log('[CharacterGenTab] Character imported successfully', {
+            name: validation.data.name,
+            race: validation.data.race,
+            class: validation.data.class
+          });
+
+          setImportSuccess(true);
+          setTimeout(() => setImportSuccess(false), 3000);
+        }
+      } catch (error) {
+        console.error('[CharacterGenTab] Import failed', error);
+        setImportError('Import failed: ' + (error instanceof Error ? error.message : 'Invalid JSON file'));
+        setTimeout(() => setImportError(null), 5000);
+      }
+
+      // Reset file input so same file can be selected again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      console.error('[CharacterGenTab] File read error');
+      setImportError('Failed to read file');
+      setTimeout(() => setImportError(null), 5000);
+    };
+
+    reader.readAsText(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   // Helper to get the difference key path between two objects
   const getDiffPath = (obj1: any, obj2: any, path = ''): string[] | null => {
     if (obj1 === obj2) return null;
@@ -128,8 +249,47 @@ export function CharacterGenTab() {
           >
             {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
           </button>
+          {character && (
+            <>
+              <button
+                onClick={handleExportCharacter}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                title="Download character as JSON file"
+              >
+                Export Character
+              </button>
+              <button
+                onClick={triggerFileInput}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                title="Import character from JSON file"
+              >
+                Import Character
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportCharacter}
+                className="hidden"
+              />
+            </>
+          )}
         </div>
       </div>
+
+      {/* Import Status Messages */}
+      {importError && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-md">
+          <p className="text-sm font-medium text-red-400">Import Error</p>
+          <p className="text-sm text-red-300 mt-1">{importError}</p>
+        </div>
+      )}
+      {importSuccess && (
+        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-md">
+          <p className="text-sm font-medium text-green-400">Success!</p>
+          <p className="text-sm text-green-300 mt-1">Character imported successfully. Check the Character Leveling tab to view all stored characters.</p>
+        </div>
+      )}
 
       {/* Show helpful messages when prerequisites aren't met */}
       {!selectedTrack && (
