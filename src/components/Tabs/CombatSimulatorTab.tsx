@@ -3,6 +3,7 @@ import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
+import { SPELL_DATABASE } from 'playlist-data-engine';
 
 // Helper function to determine log entry color based on action type and result
 function getLogEntryColor(action: any): string {
@@ -21,11 +22,24 @@ function getActionRound(actionIndex: number, totalCombatants: number): number {
 // Auto-play configuration (task 4.9.7)
 const AUTO_PLAY_INTERVAL_MS = 1500; // Advance turns every 1.5 seconds
 
+// Helper function to check if a character is a spellcaster
+function isSpellcaster(character: any): boolean {
+  const spellcastingClasses = ['Wizard', 'Cleric', 'Sorcerer', 'Bard', 'Druid', 'Warlock', 'Paladin', 'Ranger'];
+  return spellcastingClasses.includes(character.class) && character.spells;
+}
+
+// Helper function to get spell level as a readable string
+function getSpellLevelText(level: number): string {
+  if (level === 0) return 'Cantrip';
+  return `Level ${level}`;
+}
+
 export function CombatSimulatorTab() {
   const {
     startCombat,
     getCurrentCombatant,
     executeAttack,
+    executeCastSpell,
     nextTurn,
     getCombatResult,
     resetCombat,
@@ -36,6 +50,10 @@ export function CombatSimulatorTab() {
 
   // State for manual attack selection (task 4.9.6)
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+
+  // State for spell casting (task 4.9.8)
+  const [selectedSpellName, setSelectedSpellName] = useState<string | null>(null);
+  const [selectedTargetIds, setSelectedTargetIds] = useState<string[]>([]);
 
   // State for auto-play functionality (task 4.9.7)
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
@@ -146,6 +164,56 @@ export function CombatSimulatorTab() {
   // Pause auto-play (task 4.9.7)
   const handlePauseAutoPlay = () => {
     setIsAutoPlaying(false);
+  };
+
+  // Spell casting handlers (task 4.9.8)
+  const handleCastSpell = () => {
+    if (!combat || !selectedSpellName) return;
+
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Get the spell from database
+    const spell = SPELL_DATABASE[selectedSpellName];
+    if (!spell) {
+      console.warn('[Combat] Spell not found:', selectedSpellName);
+      return;
+    }
+
+    // Get selected targets
+    const targets = selectedTargetIds
+      .map(id => combat.combatants.find((c: Combatant) => c.id === id))
+      .filter((c): c is Combatant => c !== undefined && !c.isDefeated);
+
+    if (targets.length === 0) {
+      console.warn('[Combat] No valid targets selected for spell');
+      return;
+    }
+
+    // Execute spell cast
+    const action = executeCastSpell(current, spell, targets);
+    if (action) {
+      console.log('[Combat]', action.result?.description);
+    }
+
+    // Reset selections
+    setSelectedSpellName(null);
+    setSelectedTargetIds([]);
+
+    // Advance to next turn
+    const updated = nextTurn();
+    if (updated && !updated.isActive) {
+      const result = getCombatResult();
+      console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
+    }
+  };
+
+  const handleTargetToggle = (targetId: string) => {
+    setSelectedTargetIds(prev =>
+      prev.includes(targetId)
+        ? prev.filter(id => id !== targetId)
+        : [...prev, targetId]
+    );
   };
 
   // Auto-play interval effect (task 4.9.7)
@@ -274,6 +342,148 @@ export function CombatSimulatorTab() {
               <p className="text-xs text-muted-foreground italic">
                 Click a target to perform an attack with your current combatant's available weapon(s).
               </p>
+            </div>
+          )}
+
+          {/* Spell Casting UI - Task 4.9.8 */}
+          {isActive && combat && (() => {
+            const current = getCurrentCombatant();
+            return current && isSpellcaster(current.character);
+          })() && (
+            <div className="bg-blue-950/30 dark:bg-blue-950/50 rounded-lg p-4 border border-blue-800/50">
+              <h3 className="font-bold mb-3 flex items-center gap-2">
+                <span>✨ Spell Casting</span>
+                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
+                  {getCurrentCombatant()?.character.class}
+                </span>
+              </h3>
+
+              {/* Spell slots remaining */}
+              <div className="mb-3 p-2 bg-background/50 rounded">
+                <div className="text-sm font-semibold mb-1">Spell Slots Remaining:</div>
+                {(() => {
+                  const current = getCurrentCombatant();
+                  if (!current?.spellSlots) return null;
+
+                  const slots = Object.entries(current.spellSlots)
+                    .filter(([_, count]) => count > 0 || parseInt(_) > 0)
+                    .sort(([a], [b]) => parseInt(a) - parseInt(b));
+
+                  if (slots.length === 0) {
+                    return <p className="text-xs text-muted-foreground">No spell slots remaining</p>;
+                  }
+
+                  return (
+                    <div className="flex flex-wrap gap-2">
+                      {slots.map(([level, count]) => (
+                        <div key={level} className="text-xs bg-blue-900/30 px-2 py-1 rounded border border-blue-700/50">
+                          Level {level}: <span className={`font-bold ${count === 0 ? 'text-red-400' : 'text-green-400'}`}>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Known spells */}
+              <div className="mb-3">
+                <div className="text-sm font-semibold mb-2">Known Spells:</div>
+                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                  {(() => {
+                    const current = getCurrentCombatant();
+                    if (!current?.character.spells) return <p className="text-sm text-muted-foreground">No spells available</p>;
+
+                    const allSpells = [
+                      ...(current.character.spells.cantrips || []).map(name => ({ name, level: 0 })),
+                      ...(current.character.spells.known_spells || []).map(name => {
+                        const spell = SPELL_DATABASE[name];
+                        return { name, level: spell?.level || 1 };
+                      })
+                    ];
+
+                    return allSpells.map((spell) => {
+                      const spellData = SPELL_DATABASE[spell.name];
+                      if (!spellData) return null;
+
+                      const isSelected = selectedSpellName === spell.name;
+                      const isCantrip = spell.level === 0;
+                      const hasSlot = isCantrip || (current.spellSlots && (current.spellSlots[spell.level] || 0) > 0);
+
+                      return (
+                        <button
+                          key={spell.name}
+                          onClick={() => setSelectedSpellName(spell.name)}
+                          disabled={!hasSlot}
+                          className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                            !hasSlot
+                              ? 'bg-muted opacity-50 cursor-not-allowed'
+                              : isSelected
+                              ? 'bg-blue-600 text-white border-blue-500'
+                              : 'bg-background hover:bg-blue-100 dark:hover:bg-blue-900/30 border-muted'
+                          }`}
+                        >
+                          <div className="font-semibold">{spell.name}</div>
+                          <div className="text-xs opacity-80">
+                            {getSpellLevelText(spell.level)} • {spellData.school}
+                            {!hasSlot && !isCantrip && ' • No slots'}
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* Target selection for spells */}
+              {selectedSpellName && (
+                <div className="mb-3 p-3 bg-background/50 rounded">
+                  <div className="text-sm font-semibold mb-2">Select Target(s):</div>
+                  <div className="flex flex-wrap gap-2">
+                    {getLivingCombatants()
+                      .filter((c: Combatant) => {
+                        const current = getCurrentCombatant();
+                        return current && c.id !== current.id;
+                      })
+                      .map((target: Combatant) => (
+                        <button
+                          key={target.id}
+                          onClick={() => handleTargetToggle(target.id)}
+                          className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                            selectedTargetIds.includes(target.id)
+                              ? 'bg-purple-600 text-white border-purple-500'
+                              : 'bg-background hover:bg-purple-100 dark:hover:bg-purple-900/30 border-muted'
+                          }`}
+                        >
+                          <div className="font-semibold">{target.character.name}</div>
+                          <div className="text-xs opacity-80">
+                            HP: {target.currentHP}/{target.character.hp.max}
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cast button */}
+              {selectedSpellName && selectedTargetIds.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCastSpell}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center gap-2"
+                  >
+                    <span>✨</span> Cast {selectedSpellName}
+                  </button>
+                  <span className="text-xs text-muted-foreground">
+                    on {selectedTargetIds.length} target{selectedTargetIds.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+
+              {selectedSpellName && selectedTargetIds.length === 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  ⚠️ Select at least one target to cast this spell
+                </p>
+              )}
             </div>
           )}
 

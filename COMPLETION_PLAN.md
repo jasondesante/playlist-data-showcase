@@ -1567,11 +1567,28 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (564.45 kB output)
 
 #### 4.9.8 Add Spell Casting UI
-- [ ] For spellcasting combatants, show:
-  - [ ] List of known spells
-  - [ ] Spell slots remaining
-  - [ ] Target selection
-  - [ ] "Cast" button
+- [x] For spellcasting combatants, show: - COMPLETED 2026-01-24
+  - [x] List of known spells - COMPLETED 2026-01-24
+  - [x] Spell slots remaining - COMPLETED 2026-01-24
+  - [x] Target selection - COMPLETED 2026-01-24
+  - [x] "Cast" button - COMPLETED 2026-01-24
+  - Added `isSpellcaster()` helper to detect spellcasting classes
+  - Added `getSpellLevelText()` helper for spell level display
+  - Added `executeCastSpell` to useCombatEngine hook with spell slot deduction
+  - Added spell selection state (selectedSpellName, selectedTargetIds)
+  - Added handleCastSpell and handleTargetToggle handlers
+  - Imported SPELL_DATABASE from playlist-data-engine
+  - Created dedicated Spell Casting UI section with:
+    - Blue-themed styling to differentiate from attack controls
+    - Spell slots display (shows remaining slots per level)
+    - Known spells list (cantrips + known spells from character)
+    - Visual indicators for cantrips vs leveled spells
+    - Disabled state for spells without available slots
+    - Multi-target selection support (toggle targets)
+    - Cast button only enabled when spell and targets selected
+    - Warning message when no targets selected
+  - Spell casting deducts spell slot and advances to next turn
+  - Build verification: TypeScript compilation passes (577.26 kB output)
 
 #### 4.9.9 Add Combat Result Overlay
 - [ ] When combat ends, show overlay:

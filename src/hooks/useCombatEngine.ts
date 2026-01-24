@@ -115,6 +115,32 @@ export const useCombatEngine = () => {
         return combat.combatants.filter(c => !c.isDefeated);
     }, [combat]);
 
+    const executeCastSpell = useCallback((
+        caster: Combatant,
+        spell: any,
+        targets: Combatant[]
+    ) => {
+        if (!combat) return null;
+
+        // Deduct spell slot
+        const spellLevel = spell.level || 0;
+        if (spellLevel > 0 && caster.spellSlots) {
+            const availableSlots = caster.spellSlots[spellLevel] || 0;
+            if (availableSlots <= 0) {
+                console.warn('[CombatEngine] No spell slots remaining for level', spellLevel);
+                return null;
+            }
+            caster.spellSlots[spellLevel] = availableSlots - 1;
+        }
+
+        const action = engine.executeCastSpell(combat, caster, spell, targets);
+
+        // Update combat state to reflect spell slot changes
+        setCombat({ ...combat });
+
+        return action;
+    }, [combat, engine]);
+
     const resetCombat = useCallback(() => {
         setCombat(null);
     }, []);
@@ -123,6 +149,7 @@ export const useCombatEngine = () => {
         startCombat,
         getCurrentCombatant,
         executeAttack,
+        executeCastSpell,
         nextTurn,
         getCombatResult,
         resetCombat,
