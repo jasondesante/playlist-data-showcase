@@ -522,11 +522,12 @@ For each tab, create a separate file and extract the implementation:
 - [x] Export as default - COMPLETED 2026-01-24
 
 #### 3.6.2 Create StatusIndicator Component
-- [ ] Create `src/components/UI/StatusIndicator.tsx`
-- [ ] Accept props: status ('healthy' | 'degraded' | 'error'), label
-- [ ] Display emoji: 🟢 for healthy, 🟡 for degraded, 🔴 for error
-- [ ] Style as badge
-- [ ] Export as default
+- [x] Create `src/components/ui/StatusIndicator.tsx` - COMPLETED 2026-01-24
+- [x] Accept props: status ('healthy' | 'degraded' | 'error'), label - COMPLETED 2026-01-24
+- [x] Display emoji: 🟢 for healthy, 🟡 for degraded, 🔴 for error - COMPLETED 2026-01-24
+- [x] Style as badge - COMPLETED 2026-01-24
+- [x] Export as default - COMPLETED 2026-01-24
+- [x] Created `src/utils/cn.ts` utility function for className merging - COMPLETED 2026-01-24
 
 #### 3.6.3 Create LoadingSpinner Component
 - [ ] Create `src/components/UI/LoadingSpinner.tsx`
