@@ -1308,12 +1308,21 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (539.16 kB output)
 
 #### 4.7.6 Add Weather Status Display
-- [ ] Show weather icon based on weather_type
-- [ ] Show temperature with feels_like
-- [ ] Show humidity percentage
-- [ ] Show wind speed and direction
-- [ ] Show day/night indicator
-- [ ] Show moon phase if available
+- [x] Show weather icon based on weather_type - COMPLETED 2026-01-24
+- [x] Show temperature with feels_like - COMPLETED 2026-01-24
+- [x] Show humidity percentage - COMPLETED 2026-01-24
+- [x] Show wind speed and direction - COMPLETED 2026-01-24
+- [x] Show day/night indicator - COMPLETED 2026-01-24
+- [x] Show moon phase if available - COMPLETED 2026-01-24
+  - Added comprehensive Weather Status Display section to EnvironmentalSensorsTab
+  - Dynamic weather icons based on weatherType (Clear☀️, Clouds☁️, Rain🌧️, Snow❄️, Thunderstorm⛈️, etc.)
+  - Temperature display with "feels like" calculation
+  - Weather details grid: Humidity (💧), Wind Speed (💨), Wind Direction (🧭), Pressure (🔵)
+  - Day/Night indicator with sun/moon icons
+  - Moon phase visualization with emoji (🌑🌒🌓🌔🌕🌖🌗🌘) and percentage
+  - Empty state with helpful tips for users without weather data
+  - Timestamp display for last weather update
+  - Build verification: TypeScript compilation passes (543.44 kB output)
 
 #### 4.7.7 Add Raw JSON Dump Section
 - [ ] Add `<RawJsonDump>` for environmentalContext

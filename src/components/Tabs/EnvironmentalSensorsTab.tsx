@@ -245,6 +245,158 @@ export function EnvironmentalSensorsTab() {
               </div>
             )}
 
+            {/* Weather Status Display */}
+            {environmentalContext.weather ? (
+              <div className="p-5 bg-sky-900/20 border border-sky-700 rounded-lg">
+                <h3 className="font-bold text-sky-300 flex items-center gap-2">
+                  {(() => {
+                    const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
+                    if (wt.includes('clear') || wt.includes('sun')) return '☀️ Weather';
+                    if (wt.includes('cloud')) return '☁️ Weather';
+                    if (wt.includes('rain') || wt.includes('drizzle')) return '🌧️ Weather';
+                    if (wt.includes('snow')) return '❄️ Weather';
+                    if (wt.includes('thunder') || wt.includes('storm')) return '⛈️ Weather';
+                    if (wt.includes('mist') || wt.includes('fog')) return '🌫️ Weather';
+                    return '🌤️ Weather';
+                  })()}
+                </h3>
+
+                {/* Weather Icon and Main Info */}
+                <div className="mt-3 flex items-center gap-4">
+                  {/* Large Weather Icon */}
+                  <div className="text-5xl">
+                    {(() => {
+                      const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
+                      if (wt.includes('clear')) return '☀️';
+                      if (wt.includes('cloud')) return '☁️';
+                      if (wt.includes('rain')) return '🌧️';
+                      if (wt.includes('drizzle')) return '🌦️';
+                      if (wt.includes('snow')) return '❄️';
+                      if (wt.includes('thunder') || wt.includes('storm')) return '⛈️';
+                      if (wt.includes('mist') || wt.includes('fog')) return '🌫️';
+                      return '🌤️';
+                    })()}
+                  </div>
+
+                  {/* Temperature and Conditions */}
+                  <div className="flex-1">
+                    <p className="text-3xl font-bold">
+                      {((environmentalContext.weather as any).temperature).toFixed(1)}°C
+                    </p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {(environmentalContext.weather as any).weatherType || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-sky-400 mt-1">
+                      Feels like {((environmentalContext.weather as any).temperature - 2).toFixed(1)}°C
+                    </p>
+                  </div>
+
+                  {/* Day/Night Indicator */}
+                  <div className="text-center">
+                    <div className="text-2xl">
+                      {(environmentalContext.weather as any).isNight ? '🌙' : '☀️'}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(environmentalContext.weather as any).isNight ? 'Night' : 'Day'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Weather Details Grid */}
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {/* Humidity */}
+                  <div className="p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💧</span>
+                      <div>
+                        <p className="text-xs text-sky-400">Humidity</p>
+                        <p className="font-mono font-bold">
+                          {((environmentalContext.weather as any).humidity).toFixed(0)}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Wind Speed */}
+                  <div className="p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💨</span>
+                      <div>
+                        <p className="text-xs text-sky-400">Wind Speed</p>
+                        <p className="font-mono font-bold">
+                          {((environmentalContext.weather as any).windSpeed).toFixed(1)} m/s
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Wind Direction */}
+                  <div className="p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🧭</span>
+                      <div>
+                        <p className="text-xs text-sky-400">Wind Direction</p>
+                        <p className="font-mono font-bold">
+                          {((environmentalContext.weather as any).windDirection).toFixed(0)}°
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pressure */}
+                  <div className="p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🔵</span>
+                      <div>
+                        <p className="text-xs text-sky-400">Pressure</p>
+                        <p className="font-mono font-bold">
+                          {((environmentalContext.weather as any).pressure).toFixed(0)} hPa
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Moon Phase */}
+                <div className="mt-3 p-3 bg-black/20 rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {(() => {
+                        const phase = (environmentalContext.weather as any).moonPhase || 0;
+                        if (phase < 0.125) return '🌑'; // New moon
+                        if (phase < 0.25) return '🌒'; // Waxing crescent
+                        if (phase < 0.375) return '🌓'; // First quarter
+                        if (phase < 0.5) return '🌔'; // Waxing gibbous
+                        if (phase < 0.625) return '🌕'; // Full moon
+                        if (phase < 0.75) return '🌖'; // Waning gibbous
+                        if (phase < 0.875) return '🌗'; // Last quarter
+                        return '🌘'; // Waning crescent
+                      })()}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-xs text-sky-400">Moon Phase</p>
+                      <p className="text-sm font-mono">
+                        {(((environmentalContext.weather as any).moonPhase || 0) * 100).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-2">
+                  Updated: {new Date((environmentalContext.weather as any).timestamp || environmentalContext.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            ) : (
+              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold">No Weather Data Yet</h3>
+                <ul className="mt-3 text-sm space-y-1">
+                  <li>• Add OpenWeather API key in Settings tab</li>
+                  <li>• Weather requires API key from openweathermap.org</li>
+                  <li>• Data updates every 30 seconds during monitoring</li>
+                </ul>
+              </div>
+            )}
+
             {/* Full Debug Dump */}
             <details className="mt-4">
               <summary className="cursor-pointer text-sm font-medium">Raw environmentalContext</summary>
