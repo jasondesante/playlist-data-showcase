@@ -1357,7 +1357,7 @@ For each tab, create a separate file and extract the implementation:
   - Discord is for music status setting only
 
 #### 4.8.2 Add Discord Music Status Setting
-- [ ] Add "Connect Discord" button
+- [x] Add "Connect Discord" button - COMPLETED 2026-01-24
 - [ ] Add Discord Client ID input field
 - [ ] Implement connection flow
 - [ ] Show connection status (🟢 connected / 🔴 disconnected)
