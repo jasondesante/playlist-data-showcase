@@ -9,6 +9,7 @@ import { CharacterLevelingTab } from './components/Tabs/CharacterLevelingTab';
 import { EnvironmentalSensorsTab } from './components/Tabs/EnvironmentalSensorsTab';
 import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
 import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
+import { SettingsTab } from './components/Tabs/SettingsTab';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -74,34 +75,6 @@ function App() {
               {activeTab === 'settings' && <SettingsTab />}
             </div>
           </main>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SettingsTab() {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Settings</h2>
-      <p className="text-muted-foreground">Configure API keys and application settings...</p>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">OpenWeather API Key</label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
-            placeholder="Enter API key..."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Steam API Key</label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
-            placeholder="Enter API key..."
-          />
         </div>
       </div>
     </div>
