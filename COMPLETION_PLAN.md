@@ -590,17 +590,16 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.2.1 Add Color Palette Display
-- [ ] Check if audioProfile.color_palette exists
-- [ ] If exists, display color swatches:
-  - [ ] Primary color
-  - [ ] Secondary color
-  - [ ] Tertiary color
-  - [ ] Background color
-  - [ ] Text color
-- [ ] Show hex codes for each color
-- [ ] Show isMonochrome boolean
-- [ ] Show brightness value (0-1)
-- [ ] Show saturation value (0-1)
+- [x] Check if audioProfile.color_palette exists - COMPLETED 2026-01-24
+- [x] If exists, display color swatches - COMPLETED 2026-01-24:
+  - [x] Primary color
+  - [x] Secondary color
+  - [x] Accent color (Note: ColorPalette type has accent_color, not tertiary/background/text)
+- [x] Show hex codes for each color - COMPLETED 2026-01-24
+- [x] Show all detected colors array - COMPLETED 2026-01-24
+- [x] Show isMonochrome boolean - COMPLETED 2026-01-24
+- [x] Show brightness value (0-1) - COMPLETED 2026-01-24
+- [x] Show saturation value (0-1) - COMPLETED 2026-01-24
 
 #### 4.2.2 Add Advanced Metrics Display
 - [ ] Check if spectral_centroid exists
