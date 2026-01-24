@@ -624,9 +624,9 @@ For each tab, create a separate file and extract the implementation:
 - [x] Show whether full buffer was analyzed - COMPLETED 2026-01-24
 
 #### 4.2.5 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for audioProfile
-- [ ] Show all analysis metadata
-- [ ] Add status indicator for analysis result
+- [x] Add `<RawJsonDump>` for audioProfile - COMPLETED 2026-01-24
+- [x] Show all analysis metadata - COMPLETED 2026-01-24
+- [x] Add status indicator for analysis result - COMPLETED 2026-01-24
 
 ---
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
+import { RawJsonDump } from '../ui/RawJsonDump';
 import type { AudioProfile } from '../../types';
 
 /**
@@ -276,6 +277,15 @@ export function AudioAnalysisTab() {
                   </p>
                 </div>
               </div>
+
+              {/* Raw JSON Dump Section */}
+              <RawJsonDump
+                data={audioProfile}
+                title="Raw Audio Profile JSON"
+                defaultOpen={false}
+                timestamp={audioProfile.analysis_metadata.analyzed_at}
+                status="healthy"
+              />
             </div>
           )}
         </>
