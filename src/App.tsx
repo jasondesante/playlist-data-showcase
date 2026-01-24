@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings } from 'lucide-react';
-import { useCombatEngine } from './hooks/useCombatEngine';
-import { useCharacterStore } from './store/characterStore';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
 import { CharacterGenTab } from './components/Tabs/CharacterGenTab';
@@ -10,6 +8,7 @@ import { XPCalculatorTab } from './components/Tabs/XPCalculatorTab';
 import { CharacterLevelingTab } from './components/Tabs/CharacterLevelingTab';
 import { EnvironmentalSensorsTab } from './components/Tabs/EnvironmentalSensorsTab';
 import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
+import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -71,41 +70,12 @@ function App() {
               {activeTab === 'leveling' && <CharacterLevelingTab />}
               {activeTab === 'sensors' && <EnvironmentalSensorsTab />}
               {activeTab === 'gaming' && <GamingPlatformsTab />}
-              {activeTab === 'combat' && <CombatTab />}
+              {activeTab === 'combat' && <CombatSimulatorTab />}
               {activeTab === 'settings' && <SettingsTab />}
             </div>
           </main>
         </div>
       </div>
-    </div>
-  );
-}
-
-function CombatTab() {
-  const { startCombat } = useCombatEngine();
-  const { characters } = useCharacterStore();
-
-  const handleStartCombat = () => {
-    if (characters.length === 0) return;
-    // Create a mock enemy
-    const enemy = { ...characters[0], name: 'Goblin', hp: { current: 20, max: 20, temp: 0 } };
-    startCombat([characters[0]], [enemy]);
-  };
-
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Combat Engine</h2>
-
-      {characters.length === 0 ? (
-        <p className="text-muted-foreground">Generate a character first</p>
-      ) : (
-        <button
-          onClick={handleStartCombat}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-        >
-          Start Combat
-        </button>
-      )}
     </div>
   );
 }
