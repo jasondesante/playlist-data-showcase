@@ -1266,11 +1266,16 @@ For each tab, create a separate file and extract the implementation:
 - [ ] Note any Android-specific issues
 
 #### 4.7.3 Add Permission Status Indicators
-- [ ] Add `<StatusIndicator>` for each sensor type
-- [ ] Show 🟢 when permission granted
-- [ ] Show 🔴 when permission denied
-- [ ] Show 🟡 when permission not requested yet
-- [ ] Display sensor type label next to indicator
+- [x] Add `<StatusIndicator>` for each sensor type - COMPLETED 2026-01-24
+- [x] Show 🟢 when permission granted - COMPLETED 2026-01-24
+- [x] Show 🔴 when permission denied - COMPLETED 2026-01-24
+- [x] Show 🟡 when permission not requested yet - COMPLETED 2026-01-24
+- [x] Display sensor type label next to indicator - COMPLETED 2026-01-24
+  - Added StatusIndicator import to EnvironmentalSensorsTab
+  - Created permissionToStatus() helper to map PermissionState → StatusType
+  - Added StatusIndicator to each sensor card (Geolocation, Motion, Light)
+  - Positioned indicator at top-right of each card with sensor label
+  - Shows 🟢 (healthy) for 'granted', 🟡 (degraded) for 'prompt', 🔴 (error) for 'denied'
 
 #### 4.7.4 Add Live Motion Visualization
 - [ ] Create simple line graph for X acceleration

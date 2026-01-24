@@ -1,4 +1,19 @@
 import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
+import { StatusIndicator } from '../ui/StatusIndicator';
+
+// Helper function to map PermissionState to StatusType
+function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
+  switch (permission) {
+    case 'granted':
+      return 'healthy';
+    case 'prompt':
+      return 'degraded';
+    case 'denied':
+      return 'error';
+    default:
+      return 'degraded';
+  }
+}
 
 export function EnvironmentalSensorsTab() {
   const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors } = useEnvironmentalSensors();
@@ -10,7 +25,10 @@ export function EnvironmentalSensorsTab() {
       <div className="space-y-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="p-4 bg-card border border-border rounded-md">
-            <p className="text-sm font-medium">Geolocation</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Geolocation</p>
+              <StatusIndicator status={permissionToStatus(permissions.geolocation)} />
+            </div>
             <p className="text-xs text-muted-foreground">{permissions.geolocation}</p>
             <button
               onClick={() => requestPermission('geolocation')}
@@ -20,7 +38,10 @@ export function EnvironmentalSensorsTab() {
             </button>
           </div>
           <div className="p-4 bg-card border border-border rounded-md">
-            <p className="text-sm font-medium">Motion</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Motion</p>
+              <StatusIndicator status={permissionToStatus(permissions.motion)} />
+            </div>
             <p className="text-xs text-muted-foreground">{permissions.motion}</p>
             <button
               onClick={() => requestPermission('motion')}
@@ -30,7 +51,10 @@ export function EnvironmentalSensorsTab() {
             </button>
           </div>
           <div className="p-4 bg-card border border-border rounded-md">
-            <p className="text-sm font-medium">Light</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Light</p>
+              <StatusIndicator status={permissionToStatus(permissions.light)} />
+            </div>
             <p className="text-xs text-muted-foreground">{permissions.light}</p>
             <button
               onClick={() => requestPermission('light')}
