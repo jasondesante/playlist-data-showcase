@@ -1439,10 +1439,18 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (556.29 kB output)
 
 #### 4.8.5 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for gamingContext
-- [ ] Show Steam activity data
-- [ ] Show Discord connection status
-- [ ] Add status indicators
+- [x] Add `<RawJsonDump>` for gamingContext - COMPLETED 2026-01-24
+- [x] Show Steam activity data - COMPLETED 2026-01-24
+- [x] Show Discord connection status - COMPLETED 2026-01-24
+- [x] Add status indicators - COMPLETED 2026-01-24
+  - Imported RawJsonDump and StatusIndicator components
+  - Added "Raw Gaming Platform Data" section with status indicator
+  - Added Gaming Context JSON dump showing Steam + Discord data
+  - Added Discord Connection Details JSON dump with connection state
+  - Added Steam Connection Details JSON dump when Steam ID is present
+  - All dumps include timestamps and appropriate status indicators
+  - Empty state message when no gaming data is available
+  - Build verification: TypeScript compilation passes (558.04 kB output)
 
 ---
 

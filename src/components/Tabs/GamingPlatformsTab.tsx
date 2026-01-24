@@ -3,6 +3,8 @@ import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
+import { RawJsonDump } from '../ui/RawJsonDump';
+import { StatusIndicator } from '../ui/StatusIndicator';
 
 export function GamingPlatformsTab() {
   const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
@@ -386,6 +388,71 @@ export function GamingPlatformsTab() {
           )}
         </div>
       )}
+
+      {/* Raw JSON Dump Section - Task 4.8.5 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">Raw Gaming Platform Data</h3>
+          <StatusIndicator
+            status={gamingContext?.isActivelyGaming ? 'healthy' : gamingContext ? 'degraded' : 'error'}
+            label={gamingContext?.isActivelyGaming ? 'Active Gaming' : gamingContext ? 'Connected' : 'No Data'}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Complete gaming context data from the GamingPlatformSensors module, including Steam activity and Discord connection status.
+        </p>
+
+        {/* Gaming Context JSON Dump */}
+        {gamingContext ? (
+          <RawJsonDump
+            data={gamingContext}
+            title="Gaming Context (Steam + Discord)"
+            timestamp={new Date().toISOString()}
+            status={gamingContext.isActivelyGaming ? 'healthy' : 'degraded'}
+          />
+        ) : (
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              No gaming data available. Connect to Steam or Discord to see gaming context data.
+            </p>
+          </div>
+        )}
+
+        {/* Discord Connection Status JSON Dump */}
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Discord Connection Status</h4>
+          <RawJsonDump
+            data={{
+              status: discordConnectionStatus,
+              error: discordConnectionError || null,
+              isConnected: isDiscordConnected,
+              isConnecting: isDiscordConnecting,
+              clientId: settings.discordClientId || null
+            }}
+            title="Discord Connection Details"
+            timestamp={new Date().toISOString()}
+            status={isDiscordConnected ? 'healthy' : discordConnectionStatus === 'error' ? 'error' : 'degraded'}
+          />
+        </div>
+
+        {/* Steam Connection Status JSON Dump */}
+        {steamId && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Steam Connection Status</h4>
+            <RawJsonDump
+              data={{
+                steamId: steamId,
+                isConnected: steamConnected,
+                hasActivity: gamingContext?.isActivelyGaming || false,
+                currentGame: gamingContext?.currentGame || null
+              }}
+              title="Steam Connection Details"
+              timestamp={new Date().toISOString()}
+              status={steamConnected ? 'healthy' : 'error'}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
