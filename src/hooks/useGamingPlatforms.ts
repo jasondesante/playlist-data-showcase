@@ -30,8 +30,11 @@ export const useGamingPlatforms = () => {
         }
     }, [sensors]);
 
+    // Discord RPC cannot read game activity (platform limitation)
+    // Discord RPC can ONLY set music status, NOT read what game is being played
+    // This function connects Discord for music status setting purposes only
     const connectDiscord = useCallback(async () => {
-        logger.info('GamingPlatformSensors', 'Connecting Discord');
+        logger.info('GamingPlatformSensors', 'Connecting Discord (music status only, not game activity)');
         try {
             await sensors.authenticate(undefined, 'discord-user-id');
             logger.info('GamingPlatformSensors', 'Discord connected');
@@ -42,6 +45,8 @@ export const useGamingPlatforms = () => {
         }
     }, [sensors]);
 
+    // Gets current gaming context from Steam only
+    // Discord RPC cannot read game activity (platform limitation)
     const checkActivity = useCallback(async () => {
         try {
             const context = sensors.getContext();

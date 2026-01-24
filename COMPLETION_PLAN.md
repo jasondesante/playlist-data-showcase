@@ -1346,9 +1346,15 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.8.1 Remove Discord Game Activity Tracking
-- [ ] Remove any code that tries to read Discord game activity
-- [ ] Add comment: "Discord RPC cannot read game activity (platform limitation)"
-- [ ] Keep only Steam game activity tracking
+- [x] Remove any code that tries to read Discord game activity - COMPLETED 2026-01-24
+  - Verified: No code was reading Discord game activity (engine doesn't support it)
+  - Added clarifying comments to useGamingPlatforms hook
+- [x] Add comment: "Discord RPC cannot read game activity (platform limitation)" - COMPLETED 2026-01-24
+  - Added to connectDiscord function (lines 33-35)
+  - Added to checkActivity function (lines 48-49)
+- [x] Keep only Steam game activity tracking - COMPLETED 2026-01-24
+  - checkActivity() returns gamingContext from Steam only
+  - Discord is for music status setting only
 
 #### 4.8.2 Add Discord Music Status Setting
 - [ ] Add "Connect Discord" button
