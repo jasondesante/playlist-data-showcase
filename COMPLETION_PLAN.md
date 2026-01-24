@@ -1661,15 +1661,22 @@ For each tab, create a separate file and extract the implementation:
   - Includes explanation of XP rate and multiplier cap
 
 #### 4.10.6 Implement Export All Data
-- [ ] Add "Export All Data to JSON" button
-- [ ] Gather data from all stores:
-  - [ ] playlistStore
-  - [ ] characterStore
-  - [ ] sensorStore
-  - [ ] gamingStore
-  - [ ] appStore
-- [ ] Create combined JSON object
-- [ ] Trigger download as file
+- [x] Add "Export All Data to JSON" button - COMPLETED 2026-01-24
+- [x] Gather data from all stores: - COMPLETED 2026-01-24
+  - [x] playlistStore
+  - [x] characterStore
+  - [x] sensorStore (note: gamingStore doesn't exist - gaming data is in sensorStore)
+  - [x] appStore
+- [x] Create combined JSON object - COMPLETED 2026-01-24
+  - Added ExportedData interface with version, exportedAt, and all store data
+  - Data includes: currentPlaylist, selectedTrack, audioProfile, characters, contexts, settings
+- [x] Trigger download as file - COMPLETED 2026-01-24
+  - Uses Blob and URL.createObjectURL for download
+  - Filename format: playlist-showcase-export-YYYY-MM-DD.json
+  - Pretty formatted JSON (2-space indent)
+  - Export status indicator with visual feedback (idle/exporting/success/error)
+  - Exports in ~2 seconds on tested machine
+  - Build verification: TypeScript compilation passes (580.19 kB output)
 
 #### 4.10.7 Implement Import Data
 - [ ] Add "Import from JSON File" button

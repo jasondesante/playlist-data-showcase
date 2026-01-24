@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/appStore';
+import { usePlaylistStore } from '@/store/playlistStore';
+import { useCharacterStore } from '@/store/characterStore';
+import { useSensorStore } from '@/store/sensorStore';
+import { logger } from '@/utils/logger';
+import type { ServerlessPlaylist, PlaylistTrack, AudioProfile } from '@/types';
+import type { CharacterSheet } from '@/types';
+import type { EnvironmentalContext, GamingContext } from '@/types';
 
 /**
  * SettingsTab Component
@@ -12,14 +19,56 @@ import { useAppStore } from '@/store/appStore';
 const FFT_SIZE_OPTIONS = [1024, 2048, 4096, 8192] as const;
 type FFTSizeOption = (typeof FFT_SIZE_OPTIONS)[number];
 
+// Combined export data structure
+interface ExportedData {
+  version: string;
+  exportedAt: string;
+  playlistStore: {
+    currentPlaylist: ServerlessPlaylist | null;
+    selectedTrack: PlaylistTrack | null;
+    audioProfile: AudioProfile | null;
+    isLoading: boolean;
+    error: string | null;
+    rawResponseData: unknown;
+    parsedTimestamp: string | null;
+  };
+  characterStore: {
+    characters: CharacterSheet[];
+    activeCharacterId: string | null;
+  };
+  sensorStore: {
+    permissions: {
+      geolocation: PermissionState;
+      motion: PermissionState;
+      light: PermissionState;
+    };
+    environmentalContext: EnvironmentalContext | null;
+    gamingContext: GamingContext | null;
+  };
+  appStore: {
+    settings: {
+      openWeatherApiKey: string;
+      steamApiKey: string;
+      discordClientId: string;
+      audioSampleRate: number;
+      audioFftSize: number;
+      baseXpRate: number;
+    };
+  };
+}
+
 export function SettingsTab() {
   const { settings, updateSettings } = useAppStore();
+  const playlistStore = usePlaylistStore();
+  const characterStore = useCharacterStore();
+  const sensorStore = useSensorStore();
   const [openWeatherKey, setOpenWeatherKey] = useState(settings.openWeatherApiKey);
   const [steamKey, setSteamKey] = useState(settings.steamApiKey);
   const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
   const [baseXpRate, setBaseXpRate] = useState(settings.baseXpRate);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
 
   // Initialize local state from store
   useEffect(() => {
@@ -64,6 +113,64 @@ export function SettingsTab() {
     updateSettings({ baseXpRate: value });
     setSaveIndicator('saved');
     setTimeout(() => setSaveIndicator(null), 2000);
+  };
+
+  const handleExportAllData = () => {
+    try {
+      setExportStatus('exporting');
+      logger.info('Settings', 'Exporting all data');
+
+      // Gather data from all stores - extract state directly from hook returns
+      const exportedData: ExportedData = {
+        version: '1.0.0',
+        exportedAt: new Date().toISOString(),
+        playlistStore: {
+          currentPlaylist: playlistStore.currentPlaylist,
+          selectedTrack: playlistStore.selectedTrack,
+          audioProfile: playlistStore.audioProfile,
+          isLoading: playlistStore.isLoading,
+          error: playlistStore.error,
+          rawResponseData: playlistStore.rawResponseData,
+          parsedTimestamp: playlistStore.parsedTimestamp,
+        },
+        characterStore: {
+          characters: characterStore.characters,
+          activeCharacterId: characterStore.activeCharacterId,
+        },
+        sensorStore: {
+          permissions: sensorStore.permissions,
+          environmentalContext: sensorStore.environmentalContext,
+          gamingContext: sensorStore.gamingContext,
+        },
+        appStore: {
+          settings: settings,
+        },
+      };
+
+      // Create JSON string with pretty formatting
+      const jsonString = JSON.stringify(exportedData, null, 2);
+
+      // Create a blob and trigger download
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `playlist-showcase-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setExportStatus('success');
+      logger.info('Settings', 'Export completed successfully');
+
+      // Reset status after 3 seconds
+      setTimeout(() => setExportStatus('idle'), 3000);
+    } catch (error) {
+      setExportStatus('error');
+      logger.error('Settings', 'Export failed', error);
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
   };
 
   return (
@@ -197,6 +304,64 @@ export function SettingsTab() {
             <br />
             This rate is modified by environmental and gaming bonuses (capped at 3.0x total multiplier).
           </p>
+        </div>
+      </div>
+
+      {/* Data Management Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Data Management</h3>
+
+        <div className="border border-border rounded-lg p-4 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Export all your data from the showcase app, including playlists, characters, sensor data, and settings.
+          </p>
+
+          <button
+            onClick={handleExportAllData}
+            disabled={exportStatus === 'exporting'}
+            className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {exportStatus === 'exporting' && (
+              <span className="animate-spin">⏳</span>
+            )}
+            {exportStatus === 'success' && (
+              <span>✓</span>
+            )}
+            {exportStatus === 'error' && (
+              <span>✗</span>
+            )}
+            {exportStatus === 'idle' && (
+              <span>📥</span>
+            )}
+            <span>
+              {exportStatus === 'exporting' && 'Exporting...'}
+              {exportStatus === 'success' && 'Export Complete!'}
+              {exportStatus === 'error' && 'Export Failed'}
+              {exportStatus === 'idle' && 'Export All Data to JSON'}
+            </span>
+          </button>
+
+          {exportStatus === 'success' && (
+            <p className="text-xs text-green-600 text-center">
+              Data exported successfully! Check your downloads folder.
+            </p>
+          )}
+
+          {exportStatus === 'error' && (
+            <p className="text-xs text-red-600 text-center">
+              Failed to export data. Please try again.
+            </p>
+          )}
+
+          <div className="text-xs text-muted-foreground border-t border-border pt-3 mt-3">
+            <p className="font-medium mb-1">Export includes:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li>Playlist: Current playlist, selected track, audio profile</li>
+              <li>Characters: All generated characters with stats and XP</li>
+              <li>Sensors: Environmental context, gaming context, permissions</li>
+              <li>Settings: API keys, audio config, XP rate</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
