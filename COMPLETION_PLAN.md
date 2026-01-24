@@ -385,11 +385,60 @@ The hook's `calculateXP` method is a custom implementation that provides a detai
 **No issues found.** The hook is well-implemented and correctly integrates the XPCalculator from the engine.
 
 #### 2.1.6 Test useEnvironmentalSensors
-- [ ] Read `src/hooks/useEnvironmentalSensors.ts`
-- [ ] Verify it imports EnvironmentalSensors from engine
-- [ ] Check permission handling
-- [ ] Check monitoring functions
-- [ ] Document iOS-specific considerations
+- [x] Read `src/hooks/useEnvironmentalSensors.ts` - COMPLETED 2026-01-24
+- [x] Verify it imports EnvironmentalSensors from engine - COMPLETED 2026-01-24
+- [x] Check permission handling - COMPLETED 2026-01-24
+- [x] Check monitoring functions - COMPLETED 2026-01-24
+- [x] Document iOS-specific considerations - COMPLETED 2026-01-24
+
+**Verification Summary for useEnvironmentalSensors:**
+- ✅ **Import:** Correctly imports `EnvironmentalSensors` from `playlist-data-engine`
+- ✅ **Engine Path:** Uses `file:/playlist-data-engine` local path (package.json line 18)
+- ✅ **Constructor:** Properly passes `openWeatherApiKey` from appStore settings to EnvironmentalSensors constructor
+- ✅ **Permission Handling:** Well-implemented for iOS and Android:
+  - **Motion:** Uses `DeviceMotionEvent.requestPermission()` for iOS 13+ (lines 36-42)
+  - **Geolocation:** Uses `navigator.geolocation.getCurrentPosition()` (lines 44-48)
+  - **Light:** Auto-granted (no explicit permission required) (lines 49-52)
+  - Stores permissions in sensorStore for persistence
+- ✅ **Monitoring Functions:**
+  - `startMonitoring()` properly calls engine's `startMonitoring()` with callback (line 72)
+  - `startMonitoring()` calls engine's `updateSnapshot()` for initial data (line 79)
+  - Sets up 30-second interval to refresh geolocation/weather data (lines 83-90)
+  - Properly implements cleanup function for interval and `stopMonitoring()` (lines 93-96)
+- ✅ **State Management:**
+  - Integrates with `sensorStore` for permissions and environmental context
+  - Returns sensors instance for direct access to engine methods (line 104)
+  - `isMonitoring` state tracks monitoring status
+- ✅ **Logging:** Uses logger utility for info/warn logs
+- ✅ **Error Handling:** Comprehensive error handling via `handleError()` utility
+- ✅ **Build Verification:** TypeScript compilation passes (build successful, 530.97 kB output)
+
+**Engine API Alignment (per USAGE_IN_OTHER_PROJECTS.md):**
+The hook correctly uses the `EnvironmentalSensors` class with the following methods:
+- Constructor: `new EnvironmentalSensors(apiKey?: string)` (matches line 17)
+- `requestPermissions(sensorTypes[]): Promise<Permissions>` (custom implementation in hook)
+- `updateSnapshot(): Promise<EnvironmentalContext>` (matches lines 79, 85)
+- `startMonitoring(callback): void` (matches line 72)
+- `stopMonitoring(): void` (matches line 95)
+- `calculateXPModifier(): number` (available via returned sensors instance)
+
+**iOS-Specific Considerations Documented:**
+- **Motion Permission (iOS 13+):** Requires user gesture via `DeviceMotionEvent.requestPermission()`
+  - Hook implements this correctly (lines 36-38)
+  - Must be triggered by button click, not automatic
+- **Geolocation Permission:** iOS requires explicit user approval via system dialog
+  - Hook triggers this via `navigator.geolocation.getCurrentPosition()` (lines 44-48)
+- **Light Sensor:** Not available on iOS (AmbientLightSensor API not supported)
+  - Hook returns `granted = true` for compatibility (lines 49-52)
+- **Background Sensors:** iOS restricts sensor access when app is in background
+  - Monitoring pauses automatically (browser behavior, not handled by hook)
+
+**Engine API Limitation Noted:**
+- The EnvironmentalSensors constructor doesn't support dynamic API key updates
+- Hook includes TODO comment about this limitation (lines 22-26)
+- Workaround: Users must reload page after changing API key in settings
+
+**No issues found.** The hook is well-implemented and correctly integrates the EnvironmentalSensors from the engine.
 
 #### 2.1.7 Test useGamingPlatforms
 - [ ] Read `src/hooks/useGamingPlatforms.ts`
