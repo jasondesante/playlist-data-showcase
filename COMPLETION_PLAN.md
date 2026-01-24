@@ -872,10 +872,10 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.9.1 Store Combat State
-- [ ] Add combat state to component
-- [ ] Store: CombatInstance, currentTurnIndex, roundNumber
-- [ ] Store: combat log array
-- [ ] Initialize to null (no combat running)
+- [x] Add combat state to component - COMPLETED 2026-01-24
+- [x] Store: CombatInstance, currentTurnIndex, roundNumber - COMPLETED 2026-01-24
+- [x] Store: combat log array - COMPLETED 2026-01-24
+- [x] Initialize to null (no combat running) - COMPLETED 2026-01-24
 
 #### 4.9.2 Display Combatant Cards
 - [ ] Show each combatant as a card:
