@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { RawJsonDump } from '../ui/RawJsonDump';
+import { StatusIndicator } from '../ui/StatusIndicator';
 import type { PlaylistTrack } from '../../types';
 
 /**
@@ -15,44 +17,66 @@ import type { PlaylistTrack } from '../../types';
 export function PlaylistLoaderTab() {
   const [txId, setTxId] = useState('');
   const { parsePlaylist } = usePlaylistParser();
-  const { currentPlaylist, selectedTrack, isLoading, error, selectTrack } = usePlaylistStore();
+  const {
+    currentPlaylist,
+    selectedTrack,
+    isLoading,
+    error,
+    selectTrack,
+    rawResponseData,
+    parsedTimestamp
+  } = usePlaylistStore();
 
   const handleParse = async () => {
     if (!txId.trim()) return;
     await parsePlaylist(txId.trim());
   };
 
+  // Determine status indicator based on current state
+  const getFetchStatus = (): 'healthy' | 'degraded' | 'error' => {
+    if (error) return 'error';
+    if (isLoading) return 'degraded';
+    if (currentPlaylist) return 'healthy';
+    return 'degraded'; // Default state
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold mb-4">Playlist Parser</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Arweave Transaction ID</label>
-            <input
-              type="text"
-              value={txId}
-              onChange={(e) => setTxId(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md"
-              placeholder="Enter Arweave TX ID..."
-              disabled={isLoading}
-            />
-          </div>
-          <button
-            onClick={handleParse}
-            disabled={isLoading || !txId.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
-          >
-            {isLoading ? 'Loading...' : 'Fetch & Parse Playlist'}
-          </button>
+      {/* Header with Status Indicator */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Playlist Parser</h2>
+        <StatusIndicator
+          status={getFetchStatus()}
+          label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
+        />
+      </div>
 
-          {error && (
-            <div className="p-4 bg-destructive/10 border border-destructive rounded-md">
-              <p className="text-destructive font-medium">Error:</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Arweave Transaction ID</label>
+          <input
+            type="text"
+            value={txId}
+            onChange={(e) => setTxId(e.target.value)}
+            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            placeholder="Enter Arweave TX ID..."
+            disabled={isLoading}
+          />
         </div>
+        <button
+          onClick={handleParse}
+          disabled={isLoading || !txId.trim()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+        >
+          {isLoading ? 'Loading...' : 'Fetch & Parse Playlist'}
+        </button>
+
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive rounded-md">
+            <p className="text-destructive font-medium">Error:</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
       </div>
 
       {currentPlaylist && (
@@ -82,6 +106,33 @@ export function PlaylistLoaderTab() {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Raw JSON Dump Section - for debugging and engine verification */}
+          <div className="space-y-4 pt-4 border-t border-border">
+            <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Raw Data (Debug)</h4>
+
+            {/* Raw Arweave Response */}
+            {rawResponseData != null && parsedTimestamp && (
+              <RawJsonDump
+                data={rawResponseData}
+                title="Raw Arweave Response / Input JSON"
+                timestamp={parsedTimestamp}
+                status={error ? 'error' : 'healthy'}
+                defaultOpen={false}
+              />
+            )}
+
+            {/* Parsed ServerlessPlaylist Object */}
+            {parsedTimestamp && (
+              <RawJsonDump
+                data={currentPlaylist}
+                title="Parsed ServerlessPlaylist Object"
+                timestamp={parsedTimestamp}
+                status="healthy"
+                defaultOpen={false}
+              />
+            )}
           </div>
         </div>
       )}

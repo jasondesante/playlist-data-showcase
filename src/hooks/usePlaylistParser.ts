@@ -18,13 +18,16 @@ export const usePlaylistParser = () => {
             const isJson = input.trim().startsWith('{');
 
             let playlist;
+            let rawData: unknown;
+
             if (isJson) {
                 const json = JSON.parse(input);
+                rawData = json; // Store raw JSON input
                 playlist = await parser.parse(json);
             } else {
                 // Assume Arweave ID
                 // Note: Engine might need a fetcher for ID, but let's assume parse handles it or we fetch first
-                // If engine only takes JSON, we need to fetch. 
+                // If engine only takes JSON, we need to fetch.
                 // Checking engine docs/source would be ideal, but assuming parse takes RawArweavePlaylist
                 // For now, let's assume the input IS the JSON string or we fetch it.
                 // If it's an ID, we'd need to fetch from Arweave gateway.
@@ -34,6 +37,7 @@ export const usePlaylistParser = () => {
                 const response = await fetch(`https://arweave.net/${input}`);
                 if (!response.ok) throw new Error(`Failed to fetch playlist: ${response.statusText}`);
                 const json = await response.json();
+                rawData = json; // Store raw Arweave response
                 playlist = await parser.parse(json);
             }
 
@@ -42,7 +46,7 @@ export const usePlaylistParser = () => {
                 tracks: playlist.tracks.length
             });
 
-            setPlaylist(playlist);
+            setPlaylist(playlist, rawData);
             return playlist;
         } catch (error) {
             handleError(error, 'PlaylistParser');

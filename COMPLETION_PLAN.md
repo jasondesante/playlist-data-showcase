@@ -557,26 +557,26 @@ For each tab, create a separate file and extract the implementation:
 
 ### 4.1 Playlist Loader Tab
 
-**Status:** Mostly complete ✅
+**Status:** Complete ✅
 **Missing:** Raw JSON dump section
 
 **Tasks:**
 
 #### 4.1.1 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` component after track list
-- [ ] Show raw Arweave response data
-- [ ] Show parsed ServerlessPlaylist object
-- [ ] Add status indicator for parsing result
+- [x] Add `<RawJsonDump>` component after track list - COMPLETED 2026-01-24
+- [x] Show raw Arweave response data - COMPLETED 2026-01-24
+- [x] Show parsed ServerlessPlaylist object - COMPLETED 2026-01-24
+- [x] Add status indicator for parsing result - COMPLETED 2026-01-24
 
 #### 4.1.2 Add Status Indicator
-- [ ] Add `<StatusIndicator>` for fetch state
-- [ ] Show 🟢 when playlist loads successfully
-- [ ] Show 🔴 when fetch fails
-- [ ] Show 🟡 when fetching
+- [x] Add `<StatusIndicator>` for fetch state - COMPLETED 2026-01-24
+- [x] Show 🟢 when playlist loads successfully - COMPLETED 2026-01-24
+- [x] Show 🔴 when fetch fails - COMPLETED 2026-01-24
+- [x] Show 🟡 when fetching - COMPLETED 2026-01-24
 
 #### 4.1.3 (SKIPPED) File Upload Feature
-- [ ] PER USER: Not needed - file upload exists on another site
-- [ ] Mark FR-004 as "Not applicable for this showcase"
+- [x] PER USER: Not needed - file upload exists on another site - COMPLETED 2026-01-24
+- [x] Mark FR-004 as "Not applicable for this showcase" - COMPLETED 2026-01-24
 
 ---
 

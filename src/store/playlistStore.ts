@@ -9,8 +9,10 @@ interface PlaylistState {
     selectedTrack: PlaylistTrack | null;
     isLoading: boolean;
     error: string | null;
+    rawResponseData: unknown; // Raw Arweave response or input JSON (for debugging/engine verification)
+    parsedTimestamp: string | null; // ISO timestamp of when playlist was parsed
 
-    setPlaylist: (playlist: ServerlessPlaylist) => void;
+    setPlaylist: (playlist: ServerlessPlaylist, rawData?: unknown) => void;
     selectTrack: (track: PlaylistTrack) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
@@ -24,10 +26,17 @@ export const usePlaylistStore = create<PlaylistState>()(
             selectedTrack: null,
             isLoading: false,
             error: null,
+            rawResponseData: null,
+            parsedTimestamp: null,
 
-            setPlaylist: (playlist) => {
+            setPlaylist: (playlist, rawData) => {
                 logger.info('Store', 'Setting playlist', { name: playlist.name, tracks: playlist.tracks.length });
-                set({ currentPlaylist: playlist, error: null });
+                set({
+                    currentPlaylist: playlist,
+                    error: null,
+                    rawResponseData: rawData ?? null,
+                    parsedTimestamp: new Date().toISOString()
+                });
             },
 
             selectTrack: (track) => {
@@ -44,7 +53,13 @@ export const usePlaylistStore = create<PlaylistState>()(
 
             clearPlaylist: () => {
                 logger.info('Store', 'Clearing playlist');
-                set({ currentPlaylist: null, selectedTrack: null, error: null });
+                set({
+                    currentPlaylist: null,
+                    selectedTrack: null,
+                    error: null,
+                    rawResponseData: null,
+                    parsedTimestamp: null
+                });
             },
         }),
         {
