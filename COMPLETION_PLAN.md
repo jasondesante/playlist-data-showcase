@@ -1505,16 +1505,16 @@ For each tab, create a separate file and extract the implementation:
 - [x] Round indicator badge on each entry - COMPLETED 2026-01-24
 
 #### 4.9.4 Implement "Next Turn" Button
-- [ ] Add button to advance to next combatant
-- [ ] On click:
-  - [ ] Get current combatant
-  - [ ] Execute their action (auto-attack for now)
-  - [ ] Log the action
-  - [ ] Apply damage if hit
-  - [ ] Check for defeated combatants
-  - [ ] Check for combat end
-  - [ ] Advance to next combatant
-  - [ ] Increment round if back to first combatant
+- [x] Add button to advance to next combatant - COMPLETED 2026-01-24
+- [x] On click: - COMPLETED 2026-01-24
+  - [x] Get current combatant
+  - [x] Execute their action (auto-attack for now)
+  - [x] Log the action
+  - [x] Apply damage if hit
+  - [x] Check for defeated combatants
+  - [x] Check for combat end
+  - [x] Advance to next combatant
+  - [x] Increment round if back to first combatant
 
 #### 4.9.5 Implement Combat Resolution
 - [ ] When only one side remains:
