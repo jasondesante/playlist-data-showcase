@@ -1,5 +1,18 @@
 # Playlist Data Engine - TypeScript Build Errors Bug Report
 
+> **NOTE:** This file documents `playlist-data-engine` bugs, not showcase bugs.
+>
+> **Verification Status (2026-01-24):**
+> - ✅ AttackResolver.ts - All bugs FIXED (uses `??` null coalescing)
+> - ✅ InitiativeRoller.ts - All bugs FIXED (uses `??` null coalescing)
+> - ✅ SpellCaster.ts - All bugs FIXED (uses `?.` optional chaining and `??` null coalescing)
+> - ✅ GamingPlatformSensors.ts - All bugs FIXED or non-blocking
+>   - NodeJS.Timeout: Works with tsconfig.json configuration
+>   - discordUserId: Intentionally not stored (comment: "Future: store discordUserId")
+>   - partySize: Properly type-checked with `('partySize' in steamGame && typeof steamGame.partySize === 'number')`
+>
+> **Not blocking showcase development** - Engine version installed has all documented fixes applied.
+
 ## Overview
 
 This document contains all TypeScript build errors from the `playlist-data-engine` dependency that need to be fixed. These errors were discovered when running `npm run build` on the `playlist-data-showcase` project.
