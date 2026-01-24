@@ -711,11 +711,13 @@ Still missing from CombatSimulatorTab:
 
 **Tasks:**
 
-- [ ] Document: AudioAnalyzer doesn't support smoothingTimeConstant option
-- [ ] Document: EnvironmentalSensors doesn't support dynamic config updates
-- [ ] Document: Discord RPC CANNOT read game activity (music status only)
-- [ ] Document: Any other limitations discovered during testing
-- [ ] Add all findings to IMPLEMENTATION_STATUS.md under "Engine API Limitations"
+- [x] Document: AudioAnalyzer doesn't support smoothingTimeConstant option - COMPLETED 2026-01-24
+- [x] Document: EnvironmentalSensors doesn't support dynamic config updates - COMPLETED 2026-01-24
+- [x] Document: Discord RPC CANNOT read game activity (music status only) - COMPLETED 2026-01-24
+- [x] Document: Any other limitations discovered during testing - COMPLETED 2026-01-24
+- [x] Add all findings to IMPLEMENTATION_STATUS.md under "Engine API Limitations" - COMPLETED 2026-01-24
+
+**Summary:** Added comprehensive "Engine API Limitations Discovered" table to IMPLEMENTATION_STATUS.md with 9 documented limitations including AudioAnalyzer options, EnvironmentalSensors config updates, Discord RPC platform limitations, SessionTracker API signature (fixed), CombatEngine unexposed methods, and browser API requirements.
 
 ---
 

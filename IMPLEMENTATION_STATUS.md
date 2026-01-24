@@ -155,10 +155,17 @@ This allows for local development - changes to the engine source are immediately
 
 ### Engine API Limitations Discovered
 
-| Limitation | Impact |
-|------------|--------|
-| Discord RPC cannot read game activity | Can only set music status, not detect what game is playing |
-| EnvironmentalSensors requires browser APIs | Not available in Node.js without polyfills |
+| Limitation | Impact | Location | Workaround |
+|------------|--------|----------|------------|
+| **AudioAnalyzer: smoothingTimeConstant not supported** | Constructor option is ignored by engine | `src/hooks/useAudioAnalyzer.ts` line 18 comment | Hook correctly omits this option |
+| **AudioAnalyzer: No real-time progress callbacks** | `extractSonicFingerprint()` doesn't expose progress during analysis | `src/hooks/useAudioAnalyzer.ts` | Hook simulates progress updates (0-90% intervals) for UX |
+| **EnvironmentalSensors: No dynamic config updates** | API key changes require full page reload/re-instantiation | `src/hooks/useEnvironmentalSensors.ts` lines 22-26 (TODO comment) | Users must reload page after changing OpenWeather API key in settings |
+| **Discord RPC: Cannot read game activity** | Platform limitation - Discord RPC can only SET music status, not read game activity | `src/hooks/useGamingPlatforms.ts` | Focus on music status functionality ("Listening to {song}") |
+| **SessionTracker: startSession requires 2-3 args** | Original bug: hook was calling with only 1 argument (trackId) | `src/hooks/useSessionTracker.ts` | **FIXED**: Now correctly calls `startSession(trackId, track, options?)` |
+| **GamingPlatformSensors: No automatic polling** | Engine requires manual `startMonitoring()` call with callback | `src/hooks/useGamingPlatforms.ts` | Hook exposes `startMonitoring()` method for caller to invoke |
+| **CombatEngine: Several methods not exposed** | Hook doesn't expose all engine methods (executeCastSpell, executeDodge, etc.) | `src/hooks/useCombatEngine.ts` | Available for future implementation if needed |
+| **EnvironmentalSensors: Requires browser APIs** | Not available in Node.js without polyfills (Web Audio API, DeviceMotionEvent, etc.) | All sensor hooks | Browser-only environment required for full functionality |
+| **Light Sensor: Not available on iOS** | AmbientLightSensor API not supported on iOS Safari | `src/hooks/useEnvironmentalSensors.ts` line 51 | Hook returns `granted = true` for compatibility (simulated) |
 
 ---
 
