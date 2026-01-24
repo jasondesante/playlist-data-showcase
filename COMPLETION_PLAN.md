@@ -1014,21 +1014,24 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.10.1 Wire OpenWeather API Key
-- [ ] Get current value from appStore
-- [ ] Set as input default value
-- [ ] On change, call appStore.updateSettings
-- [ ] Show save indicator
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] Set as input default value - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+- [x] Show save indicator - COMPLETED 2026-01-24
+- [x] Added helpful description with link to openweathermap.org - COMPLETED 2026-01-24
 
 #### 4.10.2 Wire Steam API Key
-- [ ] Get current value from appStore
-- [ ] Set as input default value
-- [ ] On change, call appStore.updateSettings
-- [ ] Show save indicator
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] Set as input default value - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+- [x] Show save indicator (shared with OpenWeather) - COMPLETED 2026-01-24
+- [x] Added helpful description with link to steamcommunity.com - COMPLETED 2026-01-24
 
 #### 4.10.3 Add Discord Client ID Input
-- [ ] Add input field for Discord Client ID
-- [ ] Get current value from appStore
-- [ ] On change, call appStore.updateSettings
+- [x] Add input field for Discord Client ID - COMPLETED 2026-01-24
+- [x] Get current value from appStore - COMPLETED 2026-01-24
+- [x] On change, call appStore.updateSettings - COMPLETED 2026-01-24
+- [x] Added helpful description with link to discord.com/developers - COMPLETED 2026-01-24
 
 #### 4.10.4 Add Audio FFT Size Dropdown
 - [ ] Create dropdown with options: 1024, 2048, 4096
