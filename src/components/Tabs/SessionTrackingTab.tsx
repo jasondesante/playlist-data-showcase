@@ -25,7 +25,9 @@ export function SessionTrackingTab() {
     if (!selectedTrack) return;
 
     // Start session tracker and store the session ID
-    const newSessionId = startSession(selectedTrack.id);
+    // Per engine API: startSession(trackId: string, track: PlaylistTrack, options?: { environmental_context, gaming_context })
+    // Reference: USAGE_IN_OTHER_PROJECTS.md lines 146, 414-417
+    const newSessionId = startSession(selectedTrack.id, selectedTrack);
     setSessionId(newSessionId);
   };
 
