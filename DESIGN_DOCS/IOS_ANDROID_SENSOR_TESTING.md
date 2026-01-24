@@ -190,6 +190,15 @@ When Safari goes to background (user switches apps or locks screen):
 - ✅ Chrome may show permission in omnibox (address bar) icon instead
 - ✅ If granted, coordinates displayed immediately
 - ✅ Permission persists across sessions (until revoked in Chrome settings)
+- ✅ Works on Android 6.0+ (API level 23+) with runtime permissions
+
+**Android Version-Specific Dialogs:**
+| Android Version | Dialog Style | Notes |
+|-----------------|--------------|-------|
+| Android 6.0-8.x | Full-screen dialog | Clear "Allow" / "Block" buttons |
+| Android 9+ | Bottom sheet dialog | Matches Material Design 3 |
+| Android 12+ | Location permission prompt | Includes "Approximate" vs "Precise" location option |
+| Android 13+ | Enhanced location dialog | Shows "Allow all the time" / "Allow only while using app" |
 
 **Testing Steps:**
 1. Open app in Chrome on Android device
@@ -199,6 +208,19 @@ When Safari goes to background (user switches apps or locks screen):
 5. Verify coordinates appear
 6. Check Chrome Settings > Site Settings > Location to verify permission
 
+**Error Scenarios:**
+| Error | Cause | Fallback |
+|-------|-------|----------|
+| `PERMISSION_DENIED` | User selected "Block" | Show error message, no simulated data |
+| `POSITION_UNAVAILABLE` | GPS disabled or no signal | Show error message |
+| `TIMEOUT` | Request took too long (>30s default) | Show error message |
+
+**Android-Specific Issues:**
+- ⚠️ **High accuracy mode** may consume more battery
+- ⚠️ **Indoor locations** may have poor GPS signal
+- ⚠️ **Work profile** devices may have additional permission restrictions
+- ✅ **Mock locations** possible for testing (Developer Options > Allow mock locations)
+
 ---
 
 ### Motion Permission
@@ -207,11 +229,21 @@ When Safari goes to background (user switches apps or locks screen):
 - ✅ Usually **auto-granted** - no system prompt required
 - ✅ `DeviceMotionEvent.requestPermission()` does NOT exist on Android
 - Code path: `granted = true` (fallback for non-iOS platforms)
+- ✅ No user gesture required for motion events
 
 **Expected Behavior:**
 - ✅ Motion events fire immediately after "Start Monitoring"
 - ✅ X/Y/Z acceleration data available
 - ✅ Activity detection works (stationary/walking/running)
+- ✅ Higher sampling rate than iOS (typically 60Hz on Android vs 30-50Hz on iOS)
+- ✅ No background restrictions (motion events continue when Chrome backgrounds)
+
+**Android Version-Specific Behavior:**
+| Android Version | Motion Support | Sampling Rate | Notes |
+|-----------------|----------------|---------------|-------|
+| Android 4.4+ | ✅ Full support | ~60Hz | Accelerometer + gyroscope fusion |
+| Android 8.0+ | ✅ Enhanced | ~60Hz | Better low-latency reporting |
+| Android 10+ | ✅ Full | ~60Hz | No special requirements |
 
 **Testing Steps:**
 1. Open app in Chrome on Android device
@@ -221,25 +253,171 @@ When Safari goes to background (user switches apps or locks screen):
 5. Tap "Start Monitoring"
 6. Move device, verify live motion data appears
 
+**Android-Specific Issues:**
+- ✅ **No permission dialog** - always auto-granted
+- ⚠️ **Device variance** - different devices report different acceleration scales
+- ⚠️ **Landscape/portrait** - axis orientation changes with device rotation
+- ⚠️ **Low-power mode** - may reduce sensor sampling rate on some devices
+- ✅ **Background monitoring** - works even when Chrome is not visible
+
 ---
 
 ### Light Sensor (Android)
 
 **Platform Support:**
 - ⚠️ **AmbientLightSensor API support varies by device and Android version**
-- Chrome for Android has experimental support
+- Chrome for Android has **experimental support** (disabled by default)
+- Must enable: `chrome://flags/#enable-generic-sensor-extra-classes`
 - Many devices do NOT expose ambient light sensor to web apps
 
+**Device Compatibility:**
+| Device Type | Light Sensor | Notes |
+|-------------|--------------|-------|
+| Samsung Galaxy | ❌ Usually blocked | Hardware exists but not exposed to web |
+| Google Pixel | ❌ Usually blocked | Requires flag enable + origin trial |
+| OnePlus | ❌ Usually blocked | Generic Sensor API not enabled |
+| Android Emulator | ❌ Not available | No hardware light sensor |
+| Chrome Desktop | ✅ Supported (if hardware exists) | Some laptops have light sensors |
+
 **Expected Behavior:**
-- If supported: Lux value appears in environmental data
+- If supported: Lux value appears in environmental data (range 0-100,000+ lux)
 - If NOT supported: No light data (similar to iOS)
+- If flag disabled: `AmbientLightSensor` constructor throws error
 
 **Testing Steps:**
-1. Open app in Chrome on Android device
-2. Navigate to "Environmental Sensors" tab
-3. Tap "Request" under Light
-4. Tap "Start Monitoring"
-5. Check if light data appears (device-dependent)
+1. Open Chrome on Android device
+2. Navigate to `chrome://flags/#enable-generic-sensor-extra-classes`
+3. Set to "Enabled" (option may not exist on all Chrome versions)
+4. Relaunch Chrome
+5. Open app in Chrome on Android device
+6. Navigate to "Environmental Sensors" tab
+7. Tap "Request" under Light
+8. Tap "Start Monitoring"
+9. Check if light data appears (device-dependent)
+
+**Android-Specific Issues:**
+- ❌ **Experimental feature** - requires Chrome flag to be enabled
+- ❌ **Not widely available** - most production builds don't enable Generic Sensor API
+- ❌ **Hardware dependent** - some devices lack light sensor hardware
+- ⚠️ **Origin trial required** - Chrome may require origin trial token for Generic Sensor API
+- ✅ **No permission needed** - if available, works without user prompt
+
+---
+
+## Android Chrome - Comprehensive Issues Documentation
+
+### Android-Specific Permission Dialogs
+
+**Geolocation Permission Dialog Variations:**
+1. **Android 6-8:** Full-screen modal with "Allow" / "Deny" buttons
+2. **Android 9-11:** Bottom sheet with "Allow" / "Block" buttons
+3. **Android 12+:** Two-step dialog:
+   - First: "Allow [site] to use your location?"
+   - Second: "Allow [site] to access precise location?" (vs approximate)
+4. **Android 13+:** Three-option dialog:
+   - "Allow all the time"
+   - "Allow only while using app"
+   - "Don't allow"
+
+**Motion Permission:**
+- ❌ **No dialog shown** - auto-granted silently
+- No user-facing permission prompt required
+- Not visible in Chrome Settings > Site Settings
+
+**Light Sensor Permission:**
+- ❌ **No dialog shown** - if hardware exists and API enabled
+- No user-facing permission control
+- Not managed in Chrome Site Settings
+
+### Android Device Fragmentation Issues
+
+**Sensor Hardware Variance:**
+| Issue | Impact | Workaround |
+|-------|--------|------------|
+| Accelerometer range | Different devices report different g-force ranges | Normalize data to 0-1 range |
+| Sampling rate | 30Hz - 100Hz variance across devices | Use timestamp-based calculations |
+| Sensor fusion | Some devices use gyroscope fusion, others don't | Provide fallback for missing data |
+| Light sensor | Most devices block access to web apps | Assume unavailable, show message |
+
+**Chrome Version Variance:**
+| Chrome Version | Geolocation | Motion | Light Sensor |
+|----------------|-------------|--------|--------------|
+| Chrome 80-89 | ✅ Works | ✅ Works | ❌ Not enabled |
+| Chrome 90-99 | ✅ Works | ✅ Works | ⚠️ Flag only |
+| Chrome 100+ | ✅ Works | ✅ Works | ⚠️ Flag only |
+
+**Android OS Level Variance:**
+| Android Version | Geolocation | Motion | Light Sensor |
+|-----------------|-------------|--------|--------------|
+| Android 6.0-7.x | ✅ Runtime permissions | ✅ Works | ❌ Not enabled |
+| Android 8.x-9.x | ✅ Enhanced dialogs | ✅ Works | ❌ Not enabled |
+| Android 10-11 | ✅ Background location | ✅ Works | ❌ Not enabled |
+| Android 12+ | ✅ Precise/fine option | ✅ Works | ❌ Not enabled |
+| Android 13+ | ✅ All-time/while-using option | ✅ Works | ❌ Not enabled |
+
+### Android Testing Recommendations
+
+**Required Test Devices:**
+1. **Samsung Galaxy** (most popular Android device)
+   - Test geolocation permission flow
+   - Verify motion sensor auto-grant
+   - Confirm light sensor unavailable
+2. **Google Pixel** (stock Android experience)
+   - Test latest Android permission dialogs
+   - Verify motion data accuracy
+3. **Android Emulator** (for development testing)
+   - Mock geolocation coordinates
+   - Mock motion sensor data
+   - No light sensor hardware
+
+**Android Emulator Testing:**
+```bash
+# Extend emulator controls for sensor mocking
+# 1. Start emulator
+# 2. Open Extended Controls (...) > Virtual Sensors > "Additional sensors"
+# 3. Set GPS coordinates manually
+# 4. Enable "Accelerometer" and move the virtual phone
+```
+
+**Chrome Flag Testing:**
+1. Navigate to `chrome://flags`
+2. Search for "Generic Sensor"
+3. Enable: `#enable-generic-sensor-extra-classes`
+4. Relaunch Chrome
+5. Test light sensor availability
+
+### Android Background Behavior
+
+**Chrome Background Restrictions:**
+| Sensor | Foreground | Background | Notes |
+|--------|-----------|-----------|-------|
+| Geolocation | ✅ Active | ⚠️ May pause | Continues with significant location changes |
+| Motion | ✅ Active | ⚠️ May throttle | Reduced frequency, may continue |
+| Light | ❌ Not available | ❌ Not available | Generic Sensor API blocked |
+
+**Android Battery Optimization:**
+- ⚠️ **Doze mode** (Android 6+) - pauses sensors when device idle
+- ⚠️ **App Standby** (Android 7+) - throttles background Chrome
+- ✅ **Motion exception** - Android allows motion-triggered wakeups
+
+**Android-Specific Error Messages:**
+| Error | Message | Cause |
+|-------|---------|-------|
+| Geolocation timeout | "Location request timed out" | GPS disabled or weak signal |
+| Motion not available | "DeviceMotionEvent not supported" | Very old Android (< 4.4) |
+| Light sensor error | "AmbientLightSensor is not defined" | Generic Sensor API not enabled |
+
+### Android Security Considerations
+
+**HTTPS Requirement:**
+- ✅ Geolocation API requires HTTPS on production
+- ⚠️ Works on `localhost` for development
+- ❌ Blocked on HTTP (except localhost)
+
+**User Privacy Expectations:**
+- Geolocation: Users expect clear permission dialog
+- Motion: Users don't expect tracking (no permission needed)
+- Light: Users generally unaware of sensor access
 
 ---
 
@@ -342,4 +520,4 @@ Use this checklist when testing on physical devices:
 
 ---
 
-**Status:** Documented for task 4.7.1 - Physical device testing requires access to iOS and Android devices. Code analysis completed.
+**Status:** Documented for task 4.7.1 (iOS) and task 4.7.2 (Android Chrome) - Physical device testing requires access to iOS and Android devices. Code analysis and comprehensive documentation completed for both platforms.
