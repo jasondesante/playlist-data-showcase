@@ -717,16 +717,23 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.5.1 Connect Environmental Context
-- [ ] Read environmentalContext from sensorStore
-- [ ] Display current environmental data
-- [ ] Show environmental XP modifier if available
-- [ ] Add note: "From Environmental Sensors tab"
+- [x] Read environmentalContext from sensorStore - COMPLETED 2026-01-24
+- [x] Display current environmental data - COMPLETED 2026-01-24
+  - Added timestamp display
+  - Added motion data status
+  - Added GPS coordinates (latitude/longitude)
+  - Added weather information (type, temperature)
+- [x] Show environmental XP modifier if available - COMPLETED 2026-01-24 (passed via calculateXP)
+- [x] Add note: "From Environmental Sensors tab" - COMPLETED 2026-01-24
 
 #### 4.5.2 Connect Gaming Context
-- [ ] Read gamingContext from gamingStore
-- [ ] Display current gaming status
-- [ ] Show gaming XP multiplier if actively gaming
-- [ ] Add note: "From Gaming Platforms tab"
+- [x] Read gamingContext from sensorStore (not gamingStore) - COMPLETED 2026-01-24
+- [x] Display current gaming status - COMPLETED 2026-01-24
+  - Added active gaming status indicator
+  - Added current game name display
+  - Added Steam ID display
+- [x] Show gaming XP multiplier if actively gaming - COMPLETED 2026-01-24 (passed via calculateXP)
+- [x] Add note: "From Gaming Platforms tab" - COMPLETED 2026-01-24
 
 #### 4.5.3 Add Bonus Breakdown Display
 - [ ] Create breakdown table showing:
