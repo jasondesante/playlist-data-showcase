@@ -697,10 +697,15 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.4.1 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for active session
-- [ ] Show session ID, start time, track info
-- [ ] Show elapsed time
-- [ ] Add status indicator for session state
+- [x] Add `<RawJsonDump>` for active session - COMPLETED 2026-01-24
+- [x] Show session ID, start time, track info - COMPLETED 2026-01-24
+- [x] Show elapsed time - COMPLETED 2026-01-24
+- [x] Add status indicator for session state - COMPLETED 2026-01-24
+  - Added StatusIndicator to show session state (Active/Session Complete/No Session)
+  - Added session ID display during active session
+  - Added RawJsonDump section showing complete ListeningSession data after session ends
+  - Imported StatusIndicator and RawJsonDump components
+  - Stored lastSession state to display session data after session ends
 
 ---
 

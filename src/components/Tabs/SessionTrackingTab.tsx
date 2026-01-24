@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
+import { StatusIndicator } from '../ui/StatusIndicator';
+import { RawJsonDump } from '../ui/RawJsonDump';
+import type { ListeningSession } from 'playlist-data-engine';
 
 /**
  * SessionTrackingTab Component
@@ -13,38 +16,42 @@ import { useSessionTracker } from '../../hooks/useSessionTracker';
  */
 export function SessionTrackingTab() {
   const { selectedTrack } = usePlaylistStore();
-  const { startSession, endSession, isActive, elapsedTime } = useSessionTracker();
+  const { startSession, endSession: hookEndSession, isActive, elapsedTime } = useSessionTracker();
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleStart = () => {
     if (!selectedTrack) return;
 
-    // Start session tracker
-    startSession(selectedTrack.title);
-
-    // Start audio playback
-    if (selectedTrack.audio_url) {
-      const audioElement = new Audio(selectedTrack.audio_url);
-      audioElement.play();
-      setAudio(audioElement);
-    }
+    // Start session tracker and store the session ID
+    const newSessionId = startSession(selectedTrack.id);
+    setSessionId(newSessionId);
   };
 
   const handleEnd = () => {
+    // End session and capture the session data
+    const session = hookEndSession();
+    if (session) {
+      setLastSession(session);
+    }
     // Stop audio
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
       setAudio(null);
     }
-
-    // End session
-    endSession();
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold">Session Tracker</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Session Tracker</h2>
+        <StatusIndicator
+          status={isActive ? 'healthy' : lastSession ? 'healthy' : 'degraded'}
+          label={isActive ? 'Active' : lastSession ? 'Session Complete' : 'No Session'}
+        />
+      </div>
 
       {!selectedTrack ? (
         <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
@@ -78,6 +85,11 @@ export function SessionTrackingTab() {
                     />
                   </div>
                 </div>
+                {sessionId && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Session ID: {sessionId}
+                  </p>
+                )}
               </div>
               <button
                 onClick={handleEnd}
@@ -87,6 +99,17 @@ export function SessionTrackingTab() {
                 End Session & Stop Audio
               </button>
             </>
+          )}
+
+          {/* Show last session data after session ends */}
+          {lastSession && !isActive && (
+            <RawJsonDump
+              data={lastSession}
+              title="Last Session Data"
+              defaultOpen={true}
+              timestamp={new Date(lastSession.end_time * 1000)}
+              status="healthy"
+            />
           )}
         </>
       )}
