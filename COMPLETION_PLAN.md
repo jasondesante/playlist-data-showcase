@@ -1358,9 +1358,14 @@ For each tab, create a separate file and extract the implementation:
 
 #### 4.8.2 Add Discord Music Status Setting
 - [x] Add "Connect Discord" button - COMPLETED 2026-01-24
-- [ ] Add Discord Client ID input field
+- [x] Add Discord Client ID input field - COMPLETED 2026-01-24
+  - Input field already existed, but wasn't wired to save to appStore
+  - Fixed: onChange now calls `updateSettings({ discordClientId: e.target.value })`
+  - Removed unnecessary local state and useEffect
+  - Input reads from `settings.discordClientId` directly
+  - Button disabled check uses `settings.discordClientId?.trim()`
 - [ ] Implement connection flow
-- [ ] Show connection status (🟢 connected / 🔴 disconnected)
+- [x] Show connection status (🟢 connected / 🔴 disconnected) - ALREADY EXISTS
 - [ ] When connected, add "Set Music Status" button
 - [ ] Set Discord status to "Listening to {song}" when playing
 - [ ] Show progress bar on Discord status

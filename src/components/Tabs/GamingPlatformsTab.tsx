@@ -1,19 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 
 export function GamingPlatformsTab() {
   const { connectSteam, connectDiscord, gamingContext } = useGamingPlatforms();
-  const { settings } = useAppStore();
+  const { settings, updateSettings } = useAppStore();
   const [steamId, setSteamId] = useState('');
-  const [discordClientId, setDiscordClientId] = useState(settings.discordClientId || '');
   const [discordConnected, setDiscordConnected] = useState(false);
   const [steamConnected, setSteamConnected] = useState(false);
-
-  // Update Discord Client ID input when settings change
-  useEffect(() => {
-    setDiscordClientId(settings.discordClientId || '');
-  }, [settings.discordClientId]);
 
   const handleConnectSteam = async () => {
     const success = await connectSteam(steamId);
@@ -71,8 +65,8 @@ export function GamingPlatformsTab() {
           <label className="block text-sm font-medium mb-2">Discord Client ID</label>
           <input
             type="text"
-            value={discordClientId}
-            onChange={(e) => setDiscordClientId(e.target.value)}
+            value={settings.discordClientId || ''}
+            onChange={(e) => updateSettings({ discordClientId: e.target.value })}
             className="w-full px-3 py-2 bg-background border border-input rounded-md"
             placeholder="Enter Discord Client ID..."
             disabled={discordConnected}
@@ -92,7 +86,7 @@ export function GamingPlatformsTab() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleConnectDiscord}
-            disabled={discordConnected || !discordClientId.trim()}
+            disabled={discordConnected || !settings.discordClientId?.trim()}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {discordConnected ? 'Connected' : 'Connect Discord'}
