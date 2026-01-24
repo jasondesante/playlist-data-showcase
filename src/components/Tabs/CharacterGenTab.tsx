@@ -4,6 +4,7 @@ import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
 import type { CharacterSheet } from 'playlist-data-engine';
 import { validateCharacterSheet } from '../../schemas/characterSchema';
+import { RawJsonDump } from '../ui/RawJsonDump';
 
 /**
  * CharacterGenTab Component
@@ -599,6 +600,20 @@ export function CharacterGenTab() {
               </div>
             </div>
           )}
+
+          {/* Raw JSON Dump - Character Sheet */}
+          <div>
+            <h4 className="font-bold mb-3">Raw Character Data</h4>
+            <p className="text-sm text-muted-foreground mb-3">
+              Complete character sheet data from the playlist-data-engine CharacterGenerator module
+            </p>
+            <RawJsonDump
+              data={character}
+              title={`Character Sheet: ${character.name}`}
+              timestamp={new Date()}
+              status="healthy"
+            />
+          </div>
         </div>
       )}
     </div>
