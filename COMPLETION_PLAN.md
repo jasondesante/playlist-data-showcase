@@ -592,10 +592,30 @@ Still missing from CombatSimulatorTab:
 **No issues found.** The store is well-structured, properly typed, uses persistence correctly, and has good logging.
 
 #### 2.2.2 Test characterStore
-- [ ] Read `src/store/characterStore.ts`
-- [ ] Verify state structure
-- [ ] Test addCharacter function
-- [ ] Test updateCharacter function
+- [x] Read `src/store/characterStore.ts` - COMPLETED 2026-01-24
+- [x] Verify state structure - COMPLETED 2026-01-24
+- [x] Test addCharacter function - COMPLETED 2026-01-24
+- [x] Test updateCharacter function - COMPLETED 2026-01-24
+
+**Verification Summary for characterStore:**
+- ✅ **State Structure:** Well-defined with proper TypeScript types
+  - `characters: CharacterSheet[]` - Array of character sheets
+  - `activeCharacterId: string | null` - ID of currently active character (uses seed as ID)
+- ✅ **Persistence:** Uses Zustand's `persist` middleware with LocalForage
+  - Storage name: `'character-storage'`
+  - Survives page refreshes
+- ✅ **addCharacter Function:** Works correctly
+  - Accepts `character: CharacterSheet` parameter
+  - Adds character to `characters` array
+  - Sets `activeCharacterId` to `character.seed` (uses seed as unique identifier)
+  - Logs operation with character name and class
+- ✅ **updateCharacter Function:** Works correctly
+  - Accepts `updatedCharacter: CharacterSheet` parameter
+  - Maps through characters array and replaces character with matching `seed`
+  - Logs operation with seed, level, currentXP, and nextLevelXP
+  - Properly finds characters by `seed` property
+
+**No issues found.** The store is well-structured, properly typed, uses persistence correctly, and has good logging.
 
 #### 2.2.3 Test sensorStore
 - [ ] Read `src/store/sensorStore.ts`
