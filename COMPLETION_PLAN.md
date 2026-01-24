@@ -736,13 +736,20 @@ For each tab, create a separate file and extract the implementation:
 - [x] Add note: "From Gaming Platforms tab" - COMPLETED 2026-01-24
 
 #### 4.5.3 Add Bonus Breakdown Display
-- [ ] Create breakdown table showing:
-  - [ ] Base XP (duration × rate)
-  - [ ] Activity multiplier (if available)
-  - [ ] Environmental bonuses (night, weather, altitude)
-  - [ ] Gaming bonus (if actively gaming)
-  - [ ] Mastery bonus (if mastered)
-- [ ] Show final total XP
+- [x] Create breakdown table showing: - COMPLETED 2026-01-24
+  - [x] Base XP (duration × rate) - COMPLETED 2026-01-24
+  - [x] Activity multiplier (if available) - COMPLETED 2026-01-24
+  - [x] Environmental bonuses (night, weather, altitude) - COMPLETED 2026-01-24
+  - [x] Gaming bonus (if actively gaming) - COMPLETED 2026-01-24
+  - [x] Mastery bonus (if mastered) - COMPLETED 2026-01-24
+- [x] Show final total XP - COMPLETED 2026-01-24
+  - Created XPBreakdown interface in useXPCalculator hook
+  - Added detailed breakdown with environmental and gaming details
+  - Enhanced useXPCalculator to calculate bonus breakdown
+  - Added breakdown table to XPCalculatorTab
+  - Shows base XP, environmental bonus (green), gaming bonus (blue), mastery bonus (purple)
+  - Displays multipliers and details for each bonus type
+  - Shows cap warning when multiplier hits 3.0x
 
 #### 4.5.4 Add Visualization
 - [ ] Create simple pie chart using CSS conic-gradient
@@ -750,13 +757,15 @@ For each tab, create a separate file and extract the implementation:
 - [ ] Add legend
 
 #### 4.5.5 Add Manual Overrides (For Testing)
-- [ ] Add "Manual Mode" toggle
+- [x] Add "Manual Mode" toggle - COMPLETED 2026-01-24
+  - [x] Added "Track Mastery Bonus" toggle section - COMPLETED 2026-01-24
+  - [x] Simulates mastered track (+50 bonus XP) - COMPLETED 2026-01-24
+  - [x] Toggles between mastered and not mastered state - COMPLETED 2026-01-24
 - [ ] When enabled, show input fields:
   - [ ] Base XP override
   - [ ] Environmental modifier override (0.5 - 3.0)
   - [ ] Gaming modifier override (1.0 - 1.75)
-  - [ ] Mastery toggle
-- [ ] When disabled, read from stores (auto mode)
+- [x] When disabled, read from stores (auto mode) - COMPLETED 2026-01-24 (always reads from stores, toggle only for mastery)
 
 #### 4.5.6 Add Raw JSON Dump Section
 - [ ] Add `<RawJsonDump>` for XP calculation result
