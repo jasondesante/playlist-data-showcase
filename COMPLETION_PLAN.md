@@ -602,13 +602,13 @@ For each tab, create a separate file and extract the implementation:
 - [x] Show saturation value (0-1) - COMPLETED 2026-01-24
 
 #### 4.2.2 Add Advanced Metrics Display
-- [ ] Check if spectral_centroid exists
-- [ ] If exists, display value with label
-- [ ] Check if spectral_rolloff exists
-- [ ] If exists, display value with label
-- [ ] Check if zero_crossing_rate exists
-- [ ] If exists, display value with label
-- [ ] Add note: "Only shown when includeAdvancedMetrics=true"
+- [x] Check if spectral_centroid exists - COMPLETED 2026-01-24
+- [x] If exists, display value with label - COMPLETED 2026-01-24
+- [x] Check if spectral_rolloff exists - COMPLETED 2026-01-24
+- [x] If exists, display value with label - COMPLETED 2026-01-24
+- [x] Check if zero_crossing_rate exists - COMPLETED 2026-01-24
+- [x] If exists, display value with label - COMPLETED 2026-01-24
+- [x] Add note: "Only shown when includeAdvancedMetrics=true" - COMPLETED 2026-01-24
 
 #### 4.2.3 Add Frequency Band Visualization
 - [ ] Create simple bar chart using HTML/CSS

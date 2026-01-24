@@ -70,6 +70,38 @@ export function AudioAnalysisTab() {
                 <p className="text-lg font-bold">{audioProfile.average_amplitude.toFixed(3)}</p>
               </div>
 
+              {/* Advanced Metrics (Optional) */}
+              {(audioProfile.spectral_centroid !== undefined ||
+                audioProfile.spectral_rolloff !== undefined ||
+                audioProfile.zero_crossing_rate !== undefined) && (
+                <div className="p-4 bg-card border border-border rounded-md">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                    Advanced Metrics
+                    <span className="ml-2 text-xs font-normal">(Only shown when includeAdvancedMetrics=true)</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {audioProfile.spectral_centroid !== undefined && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground">Spectral Centroid:</span>{' '}
+                        <span className="font-medium">{audioProfile.spectral_centroid.toFixed(2)} Hz</span>
+                      </p>
+                    )}
+                    {audioProfile.spectral_rolloff !== undefined && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground">Spectral Rolloff:</span>{' '}
+                        <span className="font-medium">{audioProfile.spectral_rolloff.toFixed(2)} Hz</span>
+                      </p>
+                    )}
+                    {audioProfile.zero_crossing_rate !== undefined && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground">Zero Crossing Rate:</span>{' '}
+                        <span className="font-medium">{audioProfile.zero_crossing_rate.toFixed(4)}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Color Palette Display */}
               {audioProfile.color_palette && (
                 <div className="p-4 bg-card border border-border rounded-md">
