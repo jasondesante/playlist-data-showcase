@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings } from 'lucide-react';
+import { AppHeader } from './components/Layout/AppHeader';
+import { MainLayout } from './components/Layout/MainLayout';
+import type { TabItem } from './components/Layout/Sidebar';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
 import { CharacterGenTab } from './components/Tabs/CharacterGenTab';
@@ -16,67 +19,42 @@ type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
 
-  const tabs = [
-    { id: 'playlist' as Tab, label: 'Playlist', icon: Music },
-    { id: 'audio' as Tab, label: 'Audio Analysis', icon: Music },
-    { id: 'character' as Tab, label: 'Character Gen', icon: User },
-    { id: 'session' as Tab, label: 'Session', icon: Activity },
-    { id: 'xp' as Tab, label: 'XP Calc', icon: Zap },
-    { id: 'leveling' as Tab, label: 'Leveling', icon: User },
-    { id: 'sensors' as Tab, label: 'Sensors', icon: Activity },
-    { id: 'gaming' as Tab, label: 'Gaming', icon: Gamepad2 },
-    { id: 'combat' as Tab, label: 'Combat', icon: Swords },
-    { id: 'settings' as Tab, label: 'Settings', icon: Settings },
+  const tabs: TabItem[] = [
+    { id: 'playlist', label: 'Playlist', icon: Music },
+    { id: 'audio', label: 'Audio Analysis', icon: Music },
+    { id: 'character', label: 'Character Gen', icon: User },
+    { id: 'session', label: 'Session', icon: Activity },
+    { id: 'xp', label: 'XP Calc', icon: Zap },
+    { id: 'leveling', label: 'Leveling', icon: User },
+    { id: 'sensors', label: 'Sensors', icon: Activity },
+    { id: 'gaming', label: 'Gaming', icon: Gamepad2 },
+    { id: 'combat', label: 'Combat', icon: Swords },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'playlist': return <PlaylistLoaderTab />;
+      case 'audio': return <AudioAnalysisTab />;
+      case 'character': return <CharacterGenTab />;
+      case 'session': return <SessionTrackingTab />;
+      case 'xp': return <XPCalculatorTab />;
+      case 'leveling': return <CharacterLevelingTab />;
+      case 'sensors': return <EnvironmentalSensorsTab />;
+      case 'gaming': return <GamingPlatformsTab />;
+      case 'combat': return <CombatSimulatorTab />;
+      case 'settings': return <SettingsTab />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Playlist Data Engine Showcase</h1>
-          <p className="text-sm text-muted-foreground">Technical validation • Console logging enabled</p>
-        </div>
-      </header>
+      <AppHeader />
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          <aside className="w-64 shrink-0">
-            <nav className="space-y-1">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === tab.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-accent text-foreground'
-                      }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </aside>
-
-          <main className="flex-1">
-            <div className="bg-card border border-border rounded-lg p-6">
-              {activeTab === 'playlist' && <PlaylistLoaderTab />}
-              {activeTab === 'audio' && <AudioAnalysisTab />}
-              {activeTab === 'character' && <CharacterGenTab />}
-              {activeTab === 'session' && <SessionTrackingTab />}
-              {activeTab === 'xp' && <XPCalculatorTab />}
-              {activeTab === 'leveling' && <CharacterLevelingTab />}
-              {activeTab === 'sensors' && <EnvironmentalSensorsTab />}
-              {activeTab === 'gaming' && <GamingPlatformsTab />}
-              {activeTab === 'combat' && <CombatSimulatorTab />}
-              {activeTab === 'settings' && <SettingsTab />}
-            </div>
-          </main>
-        </div>
-      </div>
+      <MainLayout tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)}>
+        {renderActiveTab()}
+      </MainLayout>
     </div>
   );
 }
