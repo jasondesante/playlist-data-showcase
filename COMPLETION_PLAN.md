@@ -1377,10 +1377,25 @@ For each tab, create a separate file and extract the implementation:
     - Success message when connected
   - Build verification: TypeScript compilation passes (547.59 kB output)
 - [x] Show connection status (🟢 connected / 🔴 disconnected) - ALREADY EXISTS
-- [ ] When connected, add "Set Music Status" button
-- [ ] Set Discord status to "Listening to {song}" when playing
-- [ ] Show progress bar on Discord status
-- [ ] Clear status when session ends
+- [x] When connected, add "Set Music Status" button - COMPLETED 2026-01-24
+  - Added setMusicStatus and clearMusicStatus functions to useGamingPlatforms hook
+  - Added music status UI section to GamingPlatformsTab
+  - Checks Discord connection state before setting status
+  - Returns success/failure boolean
+- [x] Set Discord status to "Listening to {song}" when playing - COMPLETED 2026-01-24
+  - Reads selectedTrack from playlistStore
+  - Displays track title, artist, and duration
+  - Calls setMusicStatus with song details when button clicked
+  - Shows "Status Active" indicator when active
+- [x] Show progress bar on Discord status - COMPLETED 2026-01-24
+  - Passes startTime (current timestamp) to Discord RPC
+  - Passes durationSeconds from track for progress bar
+  - Discord displays time elapsed/remaining on user's profile
+- [x] Clear status when session ends - COMPLETED 2026-01-24
+  - Added "Clear Music Status" button
+  - Calls clearMusicStatus function
+  - Resets musicStatusActive state to false
+  - Button toggles between Set/Clear based on active state
 
 #### 4.8.3 Improve Steam Integration
 - [ ] Display current Steam game name
