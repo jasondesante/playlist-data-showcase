@@ -348,10 +348,41 @@ The hook now correctly uses the `SessionTracker` methods:
 **No further issues found.** The hook is now properly implemented and correctly integrates the SessionTracker from the engine.
 
 #### 2.1.5 Test useXPCalculator
-- [ ] Read `src/hooks/useXPCalculator.ts`
-- [ ] Verify it imports XPCalculator from engine
-- [ ] Verify calculateXP method works
-- [ ] Document what it returns
+- [x] Read `src/hooks/useXPCalculator.ts` - COMPLETED 2026-01-24
+- [x] Verify it imports XPCalculator from engine - COMPLETED 2026-01-24
+- [x] Verify calculateXP method works - COMPLETED 2026-01-24
+- [x] Document what it returns - COMPLETED 2026-01-24
+
+**Verification Summary for useXPCalculator:**
+- ✅ **Import:** Correctly imports `XPCalculator`, `EnvironmentalContext`, `GamingContext` from `playlist-data-engine`
+- ✅ **Engine Path:** Uses `file:/playlist-data-engine` local path (package.json line 18)
+- ✅ **Constructor Options:** Properly passes `xp_per_second` from appStore settings to XPCalculator constructor
+  - Uses `settings.baseXpRate` which defaults to 1.0
+- ✅ **calculateXP Method:** Well-implemented custom calculation that extends engine functionality:
+  - Returns `XPBreakdown | null` (null on error)
+  - Accepts: durationSeconds, envContext, gamingContext, isMastered, and optional manualOverrides
+  - Provides detailed breakdown of XP sources (not available in engine)
+  - Correctly implements environmental bonuses: activity (1.0-1.5x), night (1.25x), weather (1.4x), altitude (1.3x)
+  - Correctly implements gaming bonuses: base (1.25x), genre-specific (up to +0.20x), multiplayer (+0.15x)
+  - Correctly caps total multiplier at 3.0x
+  - Includes mastery bonus (+50 XP flat)
+- ✅ **State Management:**
+  - Creates single XPCalculator instance via useState (stable reference)
+  - Returns memoized `calculateXP` function via useCallback
+- ✅ **Logging:** Uses logger utility for info/error logs
+- ✅ **Error Handling:** Comprehensive error handling via `handleError()` utility
+- ✅ **Build Verification:** TypeScript compilation passes
+
+**Engine API Alignment (per USAGE_IN_OTHER_PROJECTS.md):**
+The hook correctly uses the `XPCalculator` class with the signature:
+```typescript
+new XPCalculator({ xp_per_second?: number })
+```
+
+**Design Note:**
+The hook's `calculateXP` method is a custom implementation that provides a detailed breakdown for UI display. The engine's `calculateSessionXP()` method doesn't expose the breakdown details, so the hook implements its own calculation logic aligned with the engine's bonus structure. This is intentional and well-documented in the JSDoc comments (lines 37-43).
+
+**No issues found.** The hook is well-implemented and correctly integrates the XPCalculator from the engine.
 
 #### 2.1.6 Test useEnvironmentalSensors
 - [ ] Read `src/hooks/useEnvironmentalSensors.ts`
