@@ -17,6 +17,7 @@ interface SensorState {
     updateEnvironmentalContext: (context: EnvironmentalContext) => void;
     updateGamingContext: (context: GamingContext) => void;
     resetPermissions: () => void;
+    resetAll: () => void;
 }
 
 export const useSensorStore = create<SensorState>()(
@@ -54,6 +55,19 @@ export const useSensorStore = create<SensorState>()(
                         motion: 'prompt',
                         light: 'prompt',
                     }
+                });
+            },
+
+            resetAll: () => {
+                logger.warn('Store', 'Resetting all sensor data');
+                set({
+                    permissions: {
+                        geolocation: 'prompt',
+                        motion: 'prompt',
+                        light: 'prompt',
+                    },
+                    environmentalContext: null,
+                    gamingContext: null
                 });
             }
         }),

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSensorStore } from '@/store/sensorStore';
 import { logger } from '@/utils/logger';
+import { storage } from '@/utils/storage';
 import type { ServerlessPlaylist, PlaylistTrack, AudioProfile } from '@/types';
 import type { CharacterSheet } from '@/types';
 import type { EnvironmentalContext, GamingContext } from '@/types';
@@ -58,7 +59,7 @@ interface ExportedData {
 }
 
 export function SettingsTab() {
-  const { settings, updateSettings } = useAppStore();
+  const { settings, updateSettings, resetSettings } = useAppStore();
   const playlistStore = usePlaylistStore();
   const characterStore = useCharacterStore();
   const sensorStore = useSensorStore();
@@ -71,6 +72,11 @@ export function SettingsTab() {
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
   const [importMessage, setImportMessage] = useState<string>('');
+  const [resetStatus, setResetStatus] = useState<'idle' | 'confirming' | 'resetting' | 'success' | 'error'>('idle');
+  const [resetMessage, setResetMessage] = useState<string>('');
+
+  // Ref to track if confirmation timeout is active
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize local state from store
   useEffect(() => {
@@ -80,6 +86,15 @@ export function SettingsTab() {
     setAudioFftSize(settings.audioFftSize);
     setBaseXpRate(settings.baseXpRate);
   }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.baseXpRate]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleOpenWeatherKeyChange = (value: string) => {
     setOpenWeatherKey(value);
@@ -281,6 +296,62 @@ export function SettingsTab() {
       setImportMessage(error instanceof Error ? error.message : 'Import failed');
       logger.error('Settings', 'Import failed', error);
       setTimeout(() => setImportStatus('idle'), 5000);
+    }
+  };
+
+  const handleResetToDefaults = () => {
+    if (resetStatus === 'confirming') {
+      // User confirmed - proceed with reset
+      try {
+        setResetStatus('resetting');
+        logger.warn('Settings', 'Resetting all data to defaults');
+
+        // Reset all stores to initial state
+        resetSettings(); // Reset appStore settings
+        playlistStore.clearPlaylist(); // Clear playlist data
+        characterStore.resetCharacters(); // Clear all characters
+        sensorStore.resetAll(); // Clear sensor data and permissions
+
+        // Clear LocalForage storage
+        storage.clear().then(() => {
+          logger.info('Settings', 'LocalForage cleared successfully');
+        }).catch((err: unknown) => {
+          logger.error('Settings', 'Failed to clear LocalForage', err);
+        });
+
+        setResetStatus('success');
+        setResetMessage('All data has been reset to defaults. The page will reload in 3 seconds...');
+        logger.warn('Settings', 'Reset completed successfully');
+
+        // Reload page after 3 seconds to ensure clean state
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } catch (error) {
+        setResetStatus('error');
+        setResetMessage(error instanceof Error ? error.message : 'Reset failed');
+        logger.error('Settings', 'Reset failed', error);
+        setTimeout(() => {
+          setResetStatus('idle');
+          setResetMessage('');
+        }, 5000);
+      }
+    } else {
+      // First click - show confirmation
+      setResetStatus('confirming');
+      setResetMessage('Are you sure? This will delete all your data. Click again to confirm.');
+
+      // Clear any existing timeout
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+
+      // Reset to idle after 5 seconds if not confirmed
+      resetTimeoutRef.current = setTimeout(() => {
+        setResetStatus('idle');
+        setResetMessage('');
+        resetTimeoutRef.current = null;
+      }, 5000);
     }
   };
 
@@ -519,6 +590,68 @@ export function SettingsTab() {
               <li>Settings: API keys, audio config, XP rate</li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      {/* Danger Zone Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
+
+        <div className="border border-destructive/50 rounded-lg p-4 space-y-3 bg-destructive/5">
+          <p className="text-sm text-muted-foreground">
+            Reset all application data to default values. This will delete all your playlists, characters, sensor data, and settings.
+          </p>
+
+          <button
+            onClick={handleResetToDefaults}
+            disabled={resetStatus === 'resetting' || resetStatus === 'success'}
+            className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+              resetStatus === 'confirming'
+                ? 'bg-amber-600 text-white hover:bg-amber-700'
+                : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+          >
+            {resetStatus === 'resetting' && (
+              <span className="animate-spin">⏳</span>
+            )}
+            {resetStatus === 'success' && (
+              <span>✓</span>
+            )}
+            {resetStatus === 'error' && (
+              <span>✗</span>
+            )}
+            {resetStatus === 'idle' && (
+              <span>⚠️</span>
+            )}
+            {resetStatus === 'confirming' && (
+              <span>🔴</span>
+            )}
+            <span>
+              {resetStatus === 'resetting' && 'Resetting...'}
+              {resetStatus === 'success' && 'Reset Complete!'}
+              {resetStatus === 'error' && 'Reset Failed'}
+              {resetStatus === 'idle' && 'Reset to Defaults'}
+              {resetStatus === 'confirming' && 'Confirm Reset'}
+            </span>
+          </button>
+
+          {resetStatus === 'confirming' && resetMessage && (
+            <p className="text-xs text-amber-700 bg-amber-100 border border-amber-300 rounded px-2 py-1 text-center">
+              ⚠️ {resetMessage}
+            </p>
+          )}
+
+          {resetStatus === 'success' && resetMessage && (
+            <p className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-2 py-1 text-center">
+              ✓ {resetMessage}
+            </p>
+          )}
+
+          {resetStatus === 'error' && resetMessage && (
+            <p className="text-xs text-red-700 bg-red-100 border border-red-300 rounded px-2 py-1 text-center">
+              ✗ {resetMessage}
+            </p>
+          )}
         </div>
       </div>
     </div>

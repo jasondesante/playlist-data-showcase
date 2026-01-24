@@ -1699,12 +1699,20 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (583.42 kB output)
 
 #### 4.10.8 Add Reset to Defaults
-- [ ] Add "Reset to Defaults" button
-- [ ] On click:
-  - [ ] Confirm with user
-  - [ ] Reset all stores to initial state
-  - [ ] Clear LocalForage
-  - [ ] Show success message
+- [x] Add "Reset to Defaults" button - COMPLETED 2026-01-24
+- [x] On click: - COMPLETED 2026-01-24
+  - [x] Confirm with user (two-click confirmation with 5-second timeout)
+  - [x] Reset all stores to initial state
+    - Added resetCharacters() to characterStore
+    - Added resetAll() to sensorStore
+    - Used existing resetSettings() from appStore
+    - Used existing clearPlaylist() from playlistStore
+  - [x] Clear LocalForage (called storage.clear())
+  - [x] Show success message (reload page after 3 seconds)
+  - Added "Danger Zone" section with warning styling
+  - State tracking: idle → confirming → resetting → success/error
+  - Visual feedback with emoji icons and color changes
+  - Build verification: TypeScript compilation passes (586.38 kB output)
 
 #### 4.10.9 Add Verbose Logging Toggle
 - [ ] Add toggle for verbose logging

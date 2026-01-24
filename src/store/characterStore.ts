@@ -13,6 +13,7 @@ interface CharacterState {
     setActiveCharacter: (id: string) => void;
     deleteCharacter: (id: string) => void;
     getActiveCharacter: () => CharacterSheet | undefined;
+    resetCharacters: () => void;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -59,6 +60,14 @@ export const useCharacterStore = create<CharacterState>()(
             getActiveCharacter: () => {
                 const { characters, activeCharacterId } = get();
                 return characters.find((c) => c.seed === activeCharacterId);
+            },
+
+            resetCharacters: () => {
+                logger.warn('Store', 'Resetting all characters');
+                set({
+                    characters: [],
+                    activeCharacterId: null
+                });
             }
         }),
         {
