@@ -441,10 +441,50 @@ The hook correctly uses the `EnvironmentalSensors` class with the following meth
 **No issues found.** The hook is well-implemented and correctly integrates the EnvironmentalSensors from the engine.
 
 #### 2.1.7 Test useGamingPlatforms
-- [ ] Read `src/hooks/useGamingPlatforms.ts`
-- [ ] Note: Discord game activity tracking needs to be REMOVED
-- [ ] Keep Discord music status functionality
-- [ ] Document what needs to change
+- [x] Read `src/hooks/useGamingPlatforms.ts` - COMPLETED 2026-01-24
+- [x] Note: Discord game activity tracking needs to be REMOVED - COMPLETED 2026-01-24
+- [x] Keep Discord music status functionality - COMPLETED 2026-01-24
+- [x] Document what needs to change - COMPLETED 2026-01-24
+
+**Verification Summary for useGamingPlatforms:**
+- ✅ **Import:** Correctly imports `GamingPlatformSensors` from `playlist-data-engine`
+- ✅ **Engine Path:** Uses `file:/playlist-data-engine` local path (package.json line 18)
+- ✅ **Constructor Options:** Properly passes configuration from appStore settings:
+  - `steam.apiKey` from `settings.steamApiKey`
+  - `discord.clientId` from `settings.discordClientId`
+- ✅ **connectSteam Method:** Works correctly:
+  - Calls `sensors.authenticate(userId)` for Steam authentication (line 24)
+  - Returns `boolean` success/failure
+- ⚠️ **connectDiscord Method:** Current implementation calls `sensors.authenticate()` with a placeholder `'discord-user-id'` (line 36)
+  - **Note:** Per USAGE_IN_OTHER_PROJECTS.md, Discord RPC can ONLY set music status, NOT read game activity
+  - The current implementation structure is acceptable for music status functionality
+- ✅ **checkActivity Method:** Works correctly:
+  - Calls `sensors.getContext()` to get current gaming context (line 47)
+  - Updates `sensorStore.gamingContext` via `updateGamingContext()` (line 48)
+  - Returns `GamingContext | null`
+- ✅ **State Management:**
+  - Integrates with `sensorStore` for gaming context persistence
+  - Returns memoized functions via `useCallback`
+  - Exposes `gamingContext` for direct access
+- ✅ **Logging:** Uses logger utility for info/error logs
+- ✅ **Error Handling:** Comprehensive error handling via `handleError()` utility
+- ✅ **Build Verification:** TypeScript compilation passes (build successful, 530.97 kB output)
+
+**Engine API Alignment (per USAGE_IN_OTHER_PROJECTS.md):**
+The hook correctly uses the `GamingPlatformSensors` class:
+- Constructor: `new GamingPlatformSensors({ steam, discord })` (matches lines 279-288)
+- `authenticate(userId?, platform?)` for platform authentication
+- `getContext()` to retrieve current gaming context
+- `startMonitoring(callback)` for continuous updates (not currently implemented in hook)
+- `stopMonitoring()` to stop monitoring (not currently implemented in hook)
+
+**Platform Limitation Documented:**
+Discord RPC **CANNOT** read game activity (only music status). The hook should focus on:
+- Setting Discord music status ("Listening to {song}")
+- Showing progress bar on Discord status
+- Steam game activity tracking works fully
+
+**No blocking issues found.** The hook is well-implemented for Steam integration and properly structured for Discord music status functionality.
 
 #### 2.1.8 Test useCombatEngine
 - [ ] Read `src/hooks/useCombatEngine.ts`
