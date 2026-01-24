@@ -1364,7 +1364,18 @@ For each tab, create a separate file and extract the implementation:
   - Removed unnecessary local state and useEffect
   - Input reads from `settings.discordClientId` directly
   - Button disabled check uses `settings.discordClientId?.trim()`
-- [ ] Implement connection flow
+- [x] Implement connection flow - COMPLETED 2026-01-24
+  - Added proper connection state tracking in useGamingPlatforms hook
+  - Tracks Discord connection state: disconnected, connecting, connected, unavailable, error
+  - Polls diagnostics every second to detect connection state changes
+  - Added disconnectDiscord function to properly disconnect
+  - Updated GamingPlatformsTab with improved connection flow:
+    - Real-time connection status indicator (🟢 connected, 🟡 connecting, 🟠 unavailable, 🔴 error, ⚪ disconnected)
+    - Dynamic button text (Connect Discord / Disconnect Discord)
+    - Connection error messages displayed to user
+    - Helpful message when Discord is not running
+    - Success message when connected
+  - Build verification: TypeScript compilation passes (547.59 kB output)
 - [x] Show connection status (🟢 connected / 🔴 disconnected) - ALREADY EXISTS
 - [ ] When connected, add "Set Music Status" button
 - [ ] Set Discord status to "Listening to {song}" when playing

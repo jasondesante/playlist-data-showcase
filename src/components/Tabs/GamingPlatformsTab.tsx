@@ -3,10 +3,9 @@ import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, gamingContext } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, gamingContext, discordConnectionStatus, discordConnectionError } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
   const [steamId, setSteamId] = useState('');
-  const [discordConnected, setDiscordConnected] = useState(false);
   const [steamConnected, setSteamConnected] = useState(false);
 
   const handleConnectSteam = async () => {
@@ -17,11 +16,30 @@ export function GamingPlatformsTab() {
   };
 
   const handleConnectDiscord = async () => {
-    const success = await connectDiscord();
-    if (success) {
-      setDiscordConnected(true);
+    if (discordConnectionStatus === 'connected') {
+      await disconnectDiscord();
+    } else {
+      await connectDiscord();
     }
   };
+
+  const getDiscordStatusIndicator = () => {
+    switch (discordConnectionStatus) {
+      case 'connected':
+        return <span className="text-sm text-green-500">🟢 Connected</span>;
+      case 'connecting':
+        return <span className="text-sm text-yellow-500">🟡 Connecting...</span>;
+      case 'unavailable':
+        return <span className="text-sm text-orange-500">🟠 Discord not running</span>;
+      case 'error':
+        return <span className="text-sm text-red-500">🔴 Connection error</span>;
+      default:
+        return <span className="text-sm text-gray-500">⚪ Disconnected</span>;
+    }
+  };
+
+  const isDiscordConnected = discordConnectionStatus === 'connected';
+  const isDiscordConnecting = discordConnectionStatus === 'connecting';
 
   return (
     <div className="space-y-6">
@@ -69,7 +87,7 @@ export function GamingPlatformsTab() {
             onChange={(e) => updateSettings({ discordClientId: e.target.value })}
             className="w-full px-3 py-2 bg-background border border-input rounded-md"
             placeholder="Enter Discord Client ID..."
-            disabled={discordConnected}
+            disabled={isDiscordConnected || isDiscordConnecting}
           />
           <p className="text-xs text-muted-foreground mt-1">
             Get your Client ID from the{' '}
@@ -86,18 +104,30 @@ export function GamingPlatformsTab() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleConnectDiscord}
-            disabled={discordConnected || !settings.discordClientId?.trim()}
+            disabled={isDiscordConnecting || !settings.discordClientId?.trim()}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {discordConnected ? 'Connected' : 'Connect Discord'}
+            {isDiscordConnecting ? 'Connecting...' : isDiscordConnected ? 'Disconnect Discord' : 'Connect Discord'}
           </button>
-          {discordConnected && (
-            <span className="text-sm text-green-500">🟢 Connected</span>
-          )}
-          {!discordConnected && (
-            <span className="text-sm text-red-500">🔴 Disconnected</span>
-          )}
+          {getDiscordStatusIndicator()}
         </div>
+        {discordConnectionError && (
+          <p className="text-sm text-red-500">{discordConnectionError}</p>
+        )}
+        {isDiscordConnected && (
+          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+            <p className="text-sm text-green-800 dark:text-green-200">
+              ✓ Discord is connected! When you play music, your status will update to show what you&apos;re listening to.
+            </p>
+          </div>
+        )}
+        {discordConnectionStatus === 'unavailable' && (
+          <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
+            <p className="text-sm text-orange-800 dark:text-orange-200">
+              Discord is not running or no user is logged in. Please open Discord and try again.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Gaming Status Display */}
