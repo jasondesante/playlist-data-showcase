@@ -752,9 +752,9 @@ For each tab, create a separate file and extract the implementation:
   - Shows cap warning when multiplier hits 3.0x
 
 #### 4.5.4 Add Visualization
-- [ ] Create simple pie chart using CSS conic-gradient
-- [ ] Show percentage of XP from each source
-- [ ] Add legend
+- [x] Create simple pie chart using CSS conic-gradient - COMPLETED 2026-01-24
+- [x] Show percentage of XP from each source - COMPLETED 2026-01-24
+- [x] Add legend - COMPLETED 2026-01-24
 
 #### 4.5.5 Add Manual Overrides (For Testing)
 - [x] Add "Manual Mode" toggle - COMPLETED 2026-01-24

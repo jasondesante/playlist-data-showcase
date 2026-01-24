@@ -1,7 +1,17 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
+
+/**
+ * Pie chart data for XP source visualization
+ */
+interface XPPieSlice {
+  label: string;
+  value: number;
+  color: string;
+  percentage: number;
+}
 
 /**
  * XPCalculatorTab - XP Calculator Tab Component
@@ -33,6 +43,80 @@ export function XPCalculatorTab() {
     );
     setResult(xpResult);
   };
+
+  /**
+   * Calculate pie chart data from XP breakdown
+   * Shows the percentage of XP from each source
+   */
+  const pieData = useMemo<XPPieSlice[] | null>(() => {
+    if (!result) return null;
+
+    const slices: XPPieSlice[] = [];
+    const total = result.totalXP;
+
+    // Base XP (gray)
+    slices.push({
+      label: 'Base XP',
+      value: result.baseXP,
+      color: '#9ca3af', // gray-400
+      percentage: (result.baseXP / total) * 100
+    });
+
+    // Environmental Bonus (green)
+    if (result.environmentalBonusXP > 0) {
+      slices.push({
+        label: 'Environmental',
+        value: result.environmentalBonusXP,
+        color: '#22c55e', // green-500
+        percentage: (result.environmentalBonusXP / total) * 100
+      });
+    }
+
+    // Gaming Bonus (blue)
+    if (result.gamingBonusXP > 0) {
+      slices.push({
+        label: 'Gaming',
+        value: result.gamingBonusXP,
+        color: '#3b82f6', // blue-500
+        percentage: (result.gamingBonusXP / total) * 100
+      });
+    }
+
+    // Mastery Bonus (purple)
+    if (result.masteryBonusXP > 0) {
+      slices.push({
+        label: 'Mastery',
+        value: result.masteryBonusXP,
+        color: '#a855f7', // purple-500
+        percentage: (result.masteryBonusXP / total) * 100
+      });
+    }
+
+    return slices;
+  }, [result]);
+
+  /**
+   * Generate CSS conic-gradient for pie chart
+   */
+  const pieChartGradient = useMemo(() => {
+    if (!pieData || pieData.length === 0) return '';
+
+    let gradient = '';
+    let currentPercentage = 0;
+
+    pieData.forEach((slice, index) => {
+      const endPercentage = currentPercentage + slice.percentage;
+      if (index === pieData.length - 1) {
+        // Last slice extends to 100%
+        gradient += `${slice.color} ${currentPercentage}% 100%`;
+      } else {
+        gradient += `${slice.color} ${currentPercentage}% ${endPercentage}%, `;
+      }
+      currentPercentage = endPercentage;
+    });
+
+    return `conic-gradient(${gradient})`;
+  }, [pieData]);
 
   return (
     <div className="space-y-6">
@@ -297,6 +381,53 @@ export function XPCalculatorTab() {
                 )}
               </div>
             </div>
+
+            {/* XP Source Visualization - Task 4.5.4 */}
+            {pieData && pieData.length > 0 && (
+              <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                <h3 className="font-semibold text-sm mb-3">XP Source Distribution</h3>
+                <div className="flex items-center gap-6">
+                  {/* Pie Chart */}
+                  <div className="relative flex-shrink-0">
+                    <div
+                      className="w-32 h-32 rounded-full"
+                      style={{
+                        background: pieChartGradient,
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    {/* Center hole for donut chart effect */}
+                    <div className="absolute inset-0 m-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold">{result.totalXP}</span>
+                    </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex-1 space-y-2 text-sm">
+                    {pieData.map((slice) => (
+                      <div key={slice.label} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: slice.color }}
+                          />
+                          <span className="text-muted-foreground">{slice.label}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium">{slice.value} XP</span>
+                          <span className="text-xs text-muted-foreground w-12 text-right">
+                            {slice.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Visual breakdown of XP sources for this session
+                </p>
+              </div>
+            )}
 
             {/* Multiplier Cap Info */}
             {result.totalMultiplier >= 3.0 && (
