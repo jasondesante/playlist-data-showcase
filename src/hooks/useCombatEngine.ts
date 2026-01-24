@@ -110,6 +110,11 @@ export const useCombatEngine = () => {
         return engine.getCombatResult(combat);
     }, [combat, engine]);
 
+    const getLivingCombatants = useCallback((): Combatant[] => {
+        if (!combat) return [];
+        return combat.combatants.filter(c => !c.isDefeated);
+    }, [combat]);
+
     const resetCombat = useCallback(() => {
         setCombat(null);
     }, []);
@@ -121,6 +126,7 @@ export const useCombatEngine = () => {
         nextTurn,
         getCombatResult,
         resetCombat,
+        getLivingCombatants,
         combat
     };
 };

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -25,9 +26,13 @@ export function CombatSimulatorTab() {
     nextTurn,
     getCombatResult,
     resetCombat,
+    getLivingCombatants,
     combat
   } = useCombatEngine();
   const { characters } = useCharacterStore();
+
+  // State for manual attack selection (task 4.9.6)
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
 
   const handleStartCombat = () => {
     if (characters.length === 0) return;
@@ -42,13 +47,25 @@ export function CombatSimulatorTab() {
     const current = getCurrentCombatant();
     if (!current) return;
 
-    // Find a living target
-    const livingTargets = combat.combatants.filter((c: Combatant) => !c.isDefeated && c.id !== current.id);
-    if (livingTargets.length > 0) {
-      const target = livingTargets[0];
-      const action = executeAttack(current, target);
-      if (action) {
-        console.log('[Combat]', action.result?.description);
+    // If a target is selected, execute manual attack
+    if (selectedTargetId) {
+      const target = combat.combatants.find((c: Combatant) => c.id === selectedTargetId);
+      if (target && !target.isDefeated) {
+        const action = executeAttack(current, target);
+        if (action) {
+          console.log('[Combat]', action.result?.description);
+        }
+      }
+      setSelectedTargetId(null);
+    } else {
+      // Auto-attack first living target (original behavior)
+      const livingTargets = combat.combatants.filter((c: Combatant) => !c.isDefeated && c.id !== current.id);
+      if (livingTargets.length > 0) {
+        const target = livingTargets[0];
+        const action = executeAttack(current, target);
+        if (action) {
+          console.log('[Combat]', action.result?.description);
+        }
       }
     }
 
@@ -57,6 +74,27 @@ export function CombatSimulatorTab() {
       const result = getCombatResult();
       console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
     }
+  };
+
+  // Manual attack handler for specific attack and target (task 4.9.6)
+  const handleManualAttack = (target: Combatant) => {
+    if (!combat) return;
+
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    const action = executeAttack(current, target);
+    if (action) {
+      console.log('[Combat]', action.result?.description);
+    }
+
+    const updated = nextTurn();
+    if (updated && !updated.isActive) {
+      const result = getCombatResult();
+      console.log('[Combat]', `Combat ended! Winner: ${result?.winner.character.name}`);
+    }
+
+    setSelectedTargetId(null);
   };
 
   // Combat state from task 4.9.1
@@ -91,6 +129,80 @@ export function CombatSimulatorTab() {
             <div>Round: <span className="font-bold">{roundNumber}</span></div>
             <div>Turn: <span className="font-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
           </div>
+
+          {/* Manual Attack Controls - Task 4.9.6 */}
+          {isActive && combat && (
+            <div className="bg-muted rounded-lg p-4">
+              <h3 className="font-bold mb-3">Manual Attack Controls</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Choose a target to attack instead of auto-attacking the first available target.
+              </p>
+
+              {/* Available attacks for current combatant */}
+              <div className="mb-3">
+                <div className="text-sm font-semibold mb-2">Available Attacks:</div>
+                {(() => {
+                  const current = getCurrentCombatant();
+                  if (!current) return <p className="text-sm text-muted-foreground">No current combatant</p>;
+
+                  const weapons = current.character.equipment?.weapons ?? [];
+                  if (weapons.length === 0) {
+                    return (
+                      <div className="text-sm">
+                        <span className="bg-background px-2 py-1 rounded border">Unarmed Strike</span>
+                        <span className="text-muted-foreground ml-2">1 damage, bludgeoning</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="flex flex-wrap gap-2">
+                      {weapons.map((weapon: any, index: number) => (
+                        <div key={index} className="bg-background px-3 py-2 rounded border text-sm">
+                          <div className="font-semibold">{weapon.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {weapon.damage_dice} {weapon.damage_type} {weapon.type === 'melee' ? '⚔️' : '🏹'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Available targets */}
+              <div className="mb-3">
+                <div className="text-sm font-semibold mb-2">Available Targets:</div>
+                <div className="flex flex-wrap gap-2">
+                  {getLivingCombatants()
+                    .filter((c: Combatant) => {
+                      const current = getCurrentCombatant();
+                      return current && c.id !== current.id;
+                    })
+                    .map((target: Combatant) => (
+                      <button
+                        key={target.id}
+                        onClick={() => handleManualAttack(target)}
+                        className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                          selectedTargetId === target.id
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background hover:bg-muted border-muted'
+                        }`}
+                      >
+                        <div className="font-semibold">{target.character.name}</div>
+                        <div className="text-xs opacity-80">
+                          {target.character.race} {target.character.class} • HP: {target.currentHP}/{target.character.hp.max}
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground italic">
+                Click a target to perform an attack with your current combatant's available weapon(s).
+              </p>
+            </div>
+          )}
 
           {/* Combat Area: Initiative Order + Combatant Cards */}
           <div className="flex flex-col lg:flex-row gap-6">

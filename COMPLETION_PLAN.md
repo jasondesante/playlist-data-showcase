@@ -1534,11 +1534,19 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (559.86 kB output)
 
 #### 4.9.6 Add Manual Attack Controls
-- [ ] For current combatant, show:
-  - [ ] List of available attacks
-  - [ ] List of available targets
-  - [ ] "Attack" button for each combination
-- [ ] Allow user to choose action instead of auto-attack
+- [x] For current combatant, show: - COMPLETED 2026-01-24
+  - [x] List of available attacks
+  - [x] List of available targets
+  - [x] "Attack" button for each combination
+- [x] Allow user to choose action instead of auto-attack - COMPLETED 2026-01-24
+  - Added `getLivingCombatants()` method to useCombatEngine hook
+  - Added manual attack controls section to CombatSimulatorTab
+  - Displays available weapons/attacks for current combatant
+  - Displays clickable target buttons for all living enemies
+  - Clicking a target executes an attack and advances to next turn
+  - Shows weapon details (name, damage dice, damage type, melee/ranged)
+  - Falls back to Unarmed Strike when no weapons equipped
+  - Build verification: TypeScript compilation passes (562.74 kB output)
 
 #### 4.9.7 Add "Auto-Play" Button
 - [ ] Add button to run entire combat automatically
