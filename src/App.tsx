@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings } from 'lucide-react';
-import { useXPCalculator } from './hooks/useXPCalculator';
 import { useEnvironmentalSensors } from './hooks/useEnvironmentalSensors';
 import { useGamingPlatforms } from './hooks/useGamingPlatforms';
 import { useCombatEngine } from './hooks/useCombatEngine';
@@ -9,6 +8,7 @@ import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
 import { CharacterGenTab } from './components/Tabs/CharacterGenTab';
 import { SessionTrackingTab } from './components/Tabs/SessionTrackingTab';
+import { XPCalculatorTab } from './components/Tabs/XPCalculatorTab';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -66,7 +66,7 @@ function App() {
               {activeTab === 'audio' && <AudioAnalysisTab />}
               {activeTab === 'character' && <CharacterGenTab />}
               {activeTab === 'session' && <SessionTrackingTab />}
-              {activeTab === 'xp' && <XPTab />}
+              {activeTab === 'xp' && <XPCalculatorTab />}
               {activeTab === 'leveling' && <LevelingTab />}
               {activeTab === 'sensors' && <SensorsTab />}
               {activeTab === 'gaming' && <GamingTab />}
@@ -80,51 +80,6 @@ function App() {
   );
 }
 
-
-function XPTab() {
-  const { calculateXP } = useXPCalculator();
-  const [duration, setDuration] = useState(180);
-  const [result, setResult] = useState<any>(null);
-
-  const handleCalculate = () => {
-    const xpResult = calculateXP(duration);
-    setResult(xpResult);
-  };
-
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">XP Calculator</h2>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
-          <input
-            type="number"
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
-            min="0"
-            max="3600"
-          />
-        </div>
-
-        <button
-          onClick={handleCalculate}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-        >
-          Calculate XP
-        </button>
-
-        {result && (
-          <div className="p-4 bg-card border border-border rounded-md">
-            <p className="text-sm text-muted-foreground">Total XP</p>
-            <p className="text-3xl font-bold">{result.totalXp}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function LevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
