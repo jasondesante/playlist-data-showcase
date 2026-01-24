@@ -766,9 +766,14 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 4.6.1 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for character state
-- [ ] Show XP, level, thresholds
-- [ ] Add status indicator
+- [x] Add `<RawJsonDump>` for character state - COMPLETED 2026-01-24
+- [x] Show XP, level, thresholds - COMPLETED 2026-01-24
+- [x] Add status indicator - COMPLETED 2026-01-24
+  - Imported RawJsonDump component
+  - Added "Raw Character Leveling Data" section at end of tab
+  - Displays seed, name, race, class, level, xp, hp, armor_class, proficiency_bonus, ability_scores
+  - Includes timestamp and healthy status indicator
+  - Added explanatory text about CharacterStore and CharacterUpdater module
 
 ---
 

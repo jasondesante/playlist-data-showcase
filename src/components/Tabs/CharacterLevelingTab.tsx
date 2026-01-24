@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
+import { RawJsonDump } from '../ui/RawJsonDump';
 
 export function CharacterLevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
@@ -156,6 +157,29 @@ export function CharacterLevelingTab() {
           </div>
         </div>
       </div>
+
+      {/* Raw JSON Dump Section - Phase 4.6.1 */}
+      <RawJsonDump
+        data={{
+          seed: activeChar.seed,
+          name: activeChar.name,
+          race: activeChar.race,
+          class: activeChar.class,
+          level: activeChar.level,
+          xp: activeChar.xp,
+          hp: activeChar.hp,
+          armor_class: activeChar.armor_class,
+          proficiency_bonus: activeChar.proficiency_bonus,
+          ability_scores: activeChar.ability_scores,
+        }}
+        title="Raw Character Leveling Data"
+        timestamp={new Date()}
+        status="healthy"
+      />
+      <p className="text-xs text-muted-foreground">
+        This data comes from the CharacterStore and is managed by the CharacterLevelingTab.
+        XP changes and level-ups are tracked here via the CharacterUpdater engine module.
+      </p>
     </div>
   );
 }
