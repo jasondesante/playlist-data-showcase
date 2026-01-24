@@ -1549,11 +1549,22 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (562.74 kB output)
 
 #### 4.9.7 Add "Auto-Play" Button
-- [ ] Add button to run entire combat automatically
-- [ ] Use setInterval to advance turns every 1-2 seconds
-- [ ] Scroll log to bottom as it updates
-- [ ] Stop when combat ends
-- [ ] Add "Pause" button
+- [x] Add button to run entire combat automatically - COMPLETED 2026-01-24
+- [x] Use setInterval to advance turns every 1-2 seconds - COMPLETED 2026-01-24
+- [x] Scroll log to bottom as it updates - COMPLETED 2026-01-24
+- [x] Stop when combat ends - COMPLETED 2026-01-24
+- [x] Add "Pause" button - COMPLETED 2026-01-24
+  - Added auto-play state management with `isAutoPlaying` and interval ref
+  - Created `executeAutoPlayTurn()` function to handle single auto-play turn
+  - Added `handleStartAutoPlay()` and `handlePauseAutoPlay()` button handlers
+  - Implemented useEffect with setInterval for 1.5 second intervals (AUTO_PLAY_INTERVAL_MS)
+  - Auto-play automatically stops when combat ends (`!updated.isActive`)
+  - Added combatLogRef with useEffect to auto-scroll log to bottom on new entries
+  - Added visual indicators: disabled Next Turn during auto-play, "Auto-scrolling" badge in log header
+  - Auto-play status indicator with animated pulse showing interval timing
+  - Styled Auto-Play button (green, play icon) and Pause button (amber, pause icon)
+  - Cleanup on unmount and proper interval clearing
+  - Build verification: TypeScript compilation passes (564.45 kB output)
 
 #### 4.9.8 Add Spell Casting UI
 - [ ] For spellcasting combatants, show:

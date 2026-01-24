@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -18,6 +18,9 @@ function getActionRound(actionIndex: number, totalCombatants: number): number {
   return Math.floor(actionIndex / totalCombatants) + 1;
 }
 
+// Auto-play configuration (task 4.9.7)
+const AUTO_PLAY_INTERVAL_MS = 1500; // Advance turns every 1.5 seconds
+
 export function CombatSimulatorTab() {
   const {
     startCombat,
@@ -33,6 +36,17 @@ export function CombatSimulatorTab() {
 
   // State for manual attack selection (task 4.9.6)
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+
+  // State for auto-play functionality (task 4.9.7)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const combatLogRef = useRef<HTMLDivElement>(null);
+
+  // Combat state from task 4.9.1 (moved before useEffect hooks to fix TS error)
+  const currentTurnIndex = combat?.currentTurnIndex ?? null;
+  const roundNumber = combat?.roundNumber ?? null;
+  const combatLog = combat?.history ?? [];
+  const isActive = combat?.isActive ?? false;
 
   const handleStartCombat = () => {
     if (characters.length === 0) return;
@@ -97,11 +111,70 @@ export function CombatSimulatorTab() {
     setSelectedTargetId(null);
   };
 
-  // Combat state from task 4.9.1
-  const currentTurnIndex = combat?.currentTurnIndex ?? null;
-  const roundNumber = combat?.roundNumber ?? null;
-  const combatLog = combat?.history ?? [];
-  const isActive = combat?.isActive ?? false;
+  // Auto-play functionality (task 4.9.7)
+  // Execute a single turn for auto-play
+  const executeAutoPlayTurn = () => {
+    if (!combat) return;
+
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Auto-attack first living target
+    const livingTargets = combat.combatants.filter((c: Combatant) => !c.isDefeated && c.id !== current.id);
+    if (livingTargets.length > 0) {
+      const target = livingTargets[0];
+      const action = executeAttack(current, target);
+      if (action) {
+        console.log('[Combat Auto-Play]', action.result?.description);
+      }
+    }
+
+    const updated = nextTurn();
+    if (updated && !updated.isActive) {
+      const result = getCombatResult();
+      console.log('[Combat Auto-Play]', `Combat ended! Winner: ${result?.winner.character.name}`);
+      // Stop auto-play when combat ends
+      setIsAutoPlaying(false);
+    }
+  };
+
+  // Start auto-play (task 4.9.7)
+  const handleStartAutoPlay = () => {
+    setIsAutoPlaying(true);
+  };
+
+  // Pause auto-play (task 4.9.7)
+  const handlePauseAutoPlay = () => {
+    setIsAutoPlaying(false);
+  };
+
+  // Auto-play interval effect (task 4.9.7)
+  useEffect(() => {
+    if (isAutoPlaying && isActive) {
+      autoPlayIntervalRef.current = setInterval(() => {
+        executeAutoPlayTurn();
+      }, AUTO_PLAY_INTERVAL_MS);
+    } else {
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+        autoPlayIntervalRef.current = null;
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (autoPlayIntervalRef.current) {
+        clearInterval(autoPlayIntervalRef.current);
+      }
+    };
+  }, [isAutoPlaying, isActive]); // Note: executeAutoPlayTurn is not in deps to avoid recreating interval
+
+  // Auto-scroll combat log to bottom (task 4.9.7)
+  useEffect(() => {
+    if (combatLogRef.current && combatLog.length > 0) {
+      combatLogRef.current.scrollTop = combatLogRef.current.scrollHeight;
+    }
+  }, [combatLog.length]);
 
   // Get combat result if combat has ended
   const combatResult = combat && !combat.isActive ? getCombatResult() : null;
@@ -284,8 +357,11 @@ export function CombatSimulatorTab() {
           {/* Combat Log - Task 4.9.3 */}
           {combatLog.length > 0 && (
             <div>
-              <h3 className="font-bold mb-2">Combat Log</h3>
-              <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold">Combat Log</h3>
+                {isAutoPlaying && <span className="text-xs text-green-600 animate-pulse">● Auto-scrolling</span>}
+              </div>
+              <div ref={combatLogRef} className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto space-y-2 scroll-smooth">
                 {combatLog.map((action: any, index: number) => {
                   const borderColor = getLogEntryColor(action);
                   const actionRound = getActionRound(index, combat.combatants.length);
@@ -444,19 +520,47 @@ export function CombatSimulatorTab() {
 
           {/* Action Buttons - Hide when combat ended */}
           {isActive && (
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
+              {/* Manual control buttons */}
               <button
                 onClick={handleNextTurn}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+                disabled={isAutoPlaying}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Turn
               </button>
+
+              {/* Auto-play buttons (task 4.9.7) */}
+              {!isAutoPlaying ? (
+                <button
+                  onClick={handleStartAutoPlay}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                >
+                  <span>▶</span> Auto-Play
+                </button>
+              ) : (
+                <button
+                  onClick={handlePauseAutoPlay}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 flex items-center gap-2"
+                >
+                  <span>⏸</span> Pause
+                </button>
+              )}
+
               <button
                 onClick={resetCombat}
                 className="px-4 py-2 bg-muted text-muted-foreground rounded-md hover:opacity-90"
               >
                 Reset Combat
               </button>
+
+              {/* Auto-play status indicator (task 4.9.7) */}
+              {isAutoPlaying && (
+                <div className="flex items-center gap-2 text-sm text-green-600 animate-pulse">
+                  <span className="font-semibold">Auto-playing...</span>
+                  <span className="text-muted-foreground">({AUTO_PLAY_INTERVAL_MS / 1000}s per turn)</span>
+                </div>
+              )}
             </div>
           )}
 
