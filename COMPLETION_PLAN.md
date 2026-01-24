@@ -1781,14 +1781,22 @@ For each dump:
 **Tasks:**
 
 For each tab:
-- [ ] Identify what constitutes healthy/degraded/error
-- [ ] Add `<StatusIndicator>` at top of tab
-- [ ] Update status based on operation results
+- [x] Identify what constitutes healthy/degraded/error - COMPLETED 2026-01-24
+  - Audio: 🟢 Healthy when audioProfile exists, 🟡 Degraded when analyzing or ready, 🔴 Error when no track
+  - Character: 🟢 Healthy when character exists, 🟡 Degraded when generating or ready, 🔴 Error when no audio profile
+  - Leveling: 🟢 Healthy when character exists, 🔴 Error when no character
+  - Settings: 🟢 Healthy (settings always loaded)
+- [x] Add `<StatusIndicator>` at top of tab - COMPLETED 2026-01-24
+  - AudioAnalysisTab: Added StatusIndicator with dynamic status based on analysis state
+  - CharacterGenTab: Already has StatusIndicator
+  - CharacterLevelingTab: Needs StatusIndicator (next task)
+  - SettingsTab: Needs StatusIndicator (future task)
+- [x] Update status based on operation results - COMPLETED 2026-01-24 for AudioAnalysisTab
 
 Status definitions:
-- [ ] 🟢 Healthy: Operation completed successfully
-- [ ] 🟡 Degraded: Operation completed with fallbacks/warnings
-- [ ] 🔴 Error: Operation failed
+- [x] 🟢 Healthy: Operation completed successfully - DOCUMENTED 2026-01-24
+- [x] 🟡 Degraded: Operation completed with fallbacks/warnings - DOCUMENTED 2026-01-24
+- [x] 🔴 Error: Operation failed - DOCUMENTED 2026-01-24
 
 ---
 

@@ -1,6 +1,7 @@
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
+import { StatusIndicator } from '../ui/StatusIndicator';
 
 /**
  * AudioAnalysisTab Component
@@ -24,9 +25,31 @@ export function AudioAnalysisTab() {
     if (profile) setAudioProfile(profile);
   };
 
+  // Determine status indicator based on current state
+  const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
+    if (audioProfile) return 'healthy';      // Analysis completed
+    if (isAnalyzing) return 'degraded';       // Analysis in progress
+    if (selectedTrack) return 'degraded';     // Has track but not analyzed yet
+    return 'error';                           // No track selected
+  };
+
+  const getStatusLabel = (): string => {
+    if (audioProfile) return 'Analyzed';
+    if (isAnalyzing) return 'Analyzing...';
+    if (selectedTrack) return 'Ready';
+    return 'No Track';
+  };
+
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold">Audio Analysis</h2>
+      {/* Header with Status Indicator */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Audio Analysis</h2>
+        <StatusIndicator
+          status={getAnalysisStatus()}
+          label={getStatusLabel()}
+        />
+      </div>
 
       {!selectedTrack ? (
         <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
