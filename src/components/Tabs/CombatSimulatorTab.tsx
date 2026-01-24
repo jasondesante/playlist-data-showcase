@@ -3,6 +3,20 @@ import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 
+// Helper function to determine log entry color based on action type and result
+function getLogEntryColor(action: any): string {
+  if (action.type === 'spell') return 'border-blue-500';
+  if (action.result?.success) return 'border-green-500';
+  if (action.result?.success === false) return 'border-red-500';
+  return 'border-yellow-500';
+}
+
+// Helper function to calculate which round an action occurred in
+function getActionRound(actionIndex: number, totalCombatants: number): number {
+  // Approximate round number based on action index and number of combatants
+  return Math.floor(actionIndex / totalCombatants) + 1;
+}
+
 export function CombatSimulatorTab() {
   const {
     startCombat,
@@ -118,19 +132,117 @@ export function CombatSimulatorTab() {
             })}
           </div>
 
-          {/* Combat Log */}
+          {/* Combat Log - Task 4.9.3 */}
           {combatLog.length > 0 && (
             <div>
               <h3 className="font-bold mb-2">Combat Log</h3>
-              <div className="bg-muted rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                {combatLog.map((action: any, index: number) => (
-                  <div key={index} className="text-sm border-l-2 border-primary pl-2">
-                    <span className="font-bold">{action.actor.character.name}</span> used{' '}
-                    <span className="font-bold">{action.type}</span>
-                    {action.target && <span> on {action.target.character.name}</span>}
-                    {action.result && <p className="text-muted-foreground">{action.result.description}</p>}
-                  </div>
-                ))}
+              <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto space-y-2">
+                {combatLog.map((action: any, index: number) => {
+                  const borderColor = getLogEntryColor(action);
+                  const actionRound = getActionRound(index, combat.combatants.length);
+                  const isSuccessHit = action.result?.success === true && action.type === 'attack';
+                  const isMiss = action.result?.success === false;
+                  const isSpell = action.type === 'spell';
+
+                  return (
+                    <div
+                      key={index}
+                      className={`text-sm border-l-4 ${borderColor} bg-background rounded-r-lg p-3`}
+                    >
+                      {/* Round number and action type */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold bg-muted px-2 py-0.5 rounded">
+                          Round {actionRound}
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {action.actor.character.name}
+                        </span>
+                        <span className="text-muted-foreground">
+                          used {action.type === 'attack' ? 'an attack' : action.type}
+                        </span>
+                        {action.target && (
+                          <span className="text-muted-foreground">
+                            on <span className="font-semibold">{action.target.character.name}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Action details */}
+                      {action.attack && (
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Weapon: <span className="font-semibold">{action.attack.name}</span>
+                        </div>
+                      )}
+
+                      {/* Roll values */}
+                      {action.result?.roll !== undefined && (
+                        <div className="text-xs">
+                          <span className="text-muted-foreground">Roll:</span>{' '}
+                          <span className={`font-bold ${isSuccessHit ? 'text-green-600' : isMiss ? 'text-red-600' : ''}`}>
+                            d20 {action.result.roll >= 0 ? '+' : ''}{action.result.roll}
+                          </span>
+                          {action.result.isCritical && (
+                            <span className="ml-2 text-yellow-600 font-bold">🎯 CRITICAL!</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Hit/Miss result */}
+                      {action.result?.success !== undefined && (
+                        <div className="text-xs">
+                          <span className="text-muted-foreground">Result:</span>{' '}
+                          <span className={`font-bold ${isSuccessHit ? 'text-green-600' : 'text-red-600'}`}>
+                            {isSuccessHit ? '✓ HIT' : '✗ MISS'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Damage dealt */}
+                      {action.result?.damage !== undefined && action.result?.success && (
+                        <div className="text-xs">
+                          <span className="text-muted-foreground">Damage:</span>{' '}
+                          <span className="font-bold text-orange-600">
+                            {action.result.damage} {action.result.damageType || ''}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* HP change */}
+                      {action.result?.targetHP !== undefined && (
+                        <div className="text-xs">
+                          <span className="text-muted-foreground">Target HP:</span>{' '}
+                          <span className={`font-bold ${action.result.targetHP < 10 ? 'text-red-600' : ''}`}>
+                            {action.result.targetHP} / {action.target?.character.hp.max || '?'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Spell details */}
+                      {isSpell && action.spell && (
+                        <div className="text-xs text-blue-600">
+                          <span className="font-bold">{action.spell.name}</span>
+                          {action.result?.description && (
+                            <span className="text-muted-foreground ml-2">({action.result.description})</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Status effects */}
+                      {action.result?.statusEffects && action.result.statusEffects.length > 0 && (
+                        <div className="text-xs text-yellow-600">
+                          Status: {action.result.statusEffects.map((e: any) => e.name).join(', ')}
+                        </div>
+                      )}
+
+                      {/* Description as fallback */}
+                      {!action.result?.roll && !action.result?.damage && action.result?.description && (
+                        <div className="text-xs text-muted-foreground italic">
+                          {action.result.description}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

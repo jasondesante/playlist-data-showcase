@@ -896,20 +896,25 @@ For each tab, create a separate file and extract the implementation:
 - [ ] Show initiative order on side
 
 #### 4.9.3 Implement Combat Log
-- [ ] Create scrollable log section
-- [ ] Each log entry shows:
-  - [ ] Round number
-  - [ ] Combatant name
-  - [ ] Action type (Attack, Spell, Dodge, etc.)
-  - [ ] Roll values (d20 + modifier = total)
-  - [ ] Hit/miss result
-  - [ ] Damage dealt (if any)
-  - [ ] HP change
-- [ ] Use color coding:
-  - [ ] Green for hits
-  - [ ] Red for misses
-  - [ ] Blue for spells
-  - [ ] Yellow for status effects
+- [x] Create scrollable log section - COMPLETED 2026-01-24
+- [x] Each log entry shows: - COMPLETED 2026-01-24
+  - [x] Round number (calculated from action index and combatant count)
+  - [x] Combatant name
+  - [x] Action type (Attack, Spell, Dodge, etc.)
+  - [x] Roll values (d20 roll with modifier)
+  - [x] Hit/miss result (✓ HIT / ✗ MISS)
+  - [x] Damage dealt (if any)
+  - [x] HP change (Target HP: X / Y)
+- [x] Use color coding: - COMPLETED 2026-01-24
+  - [x] Green for hits (border-green-500, text-green-600)
+  - [x] Red for misses (border-red-500, text-red-600)
+  - [x] Blue for spells (border-blue-500, text-blue-600)
+  - [x] Yellow for status effects (text-yellow-600)
+  - [x] Orange for damage (text-orange-600)
+- [x] Show critical hits with 🎯 CRITICAL! indicator - COMPLETED 2026-01-24
+- [x] Show weapon name for attacks - COMPLETED 2026-01-24
+- [x] Show spell name for spell casts - COMPLETED 2026-01-24
+- [x] Round indicator badge on each entry - COMPLETED 2026-01-24
 
 #### 4.9.4 Implement "Next Turn" Button
 - [ ] Add button to advance to next combatant
