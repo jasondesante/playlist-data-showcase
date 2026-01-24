@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import RawJsonDump from '../ui/RawJsonDump';
 
 /**
  * Pie chart data for XP source visualization
@@ -437,6 +438,14 @@ export function XPCalculatorTab() {
                 </p>
               </div>
             )}
+
+            {/* Raw JSON Dump Section - Task 4.5.6 */}
+            <RawJsonDump
+              data={result}
+              title="Raw XP Calculation Result"
+              timestamp={new Date().toISOString()}
+              status="healthy"
+            />
           </div>
         )}
       </div>

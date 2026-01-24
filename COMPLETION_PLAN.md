@@ -768,9 +768,13 @@ For each tab, create a separate file and extract the implementation:
 - [x] When disabled, read from stores (auto mode) - COMPLETED 2026-01-24 (always reads from stores, toggle only for mastery)
 
 #### 4.5.6 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for XP calculation result
-- [ ] Show all inputs and outputs
-- [ ] Add status indicator
+- [x] Add `<RawJsonDump>` for XP calculation result - COMPLETED 2026-01-24
+- [x] Show all inputs and outputs - COMPLETED 2026-01-24
+- [x] Add status indicator - COMPLETED 2026-01-24
+  - Imported RawJsonDump component
+  - Added "Raw XP Calculation Result" section at end of results
+  - Displays complete XPBreakdown object with title, timestamp, and healthy status
+  - Section shows all inputs (duration, environmental context, gaming context, mastery) and outputs (base XP, multipliers, bonuses, totals)
 
 ---
 
