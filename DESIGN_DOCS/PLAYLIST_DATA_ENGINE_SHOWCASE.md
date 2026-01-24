@@ -1,3 +1,14 @@
+<!--
+  HISTORICAL DOCUMENT - Last updated December 2025
+
+  For current implementation status, see /IMPLEMENTATION_STATUS.md
+  For current task breakdown, see /COMPLETION_PLAN.md
+
+  This document describes the original vision and requirements for the
+  Playlist Data Engine Showcase app. It is kept here as historical reference.
+  The actual implementation may differ from this original design.
+-->
+
 # Playlist Data Engine Showcase App
 ## Design Document: Technology Proof-of-Concept
 

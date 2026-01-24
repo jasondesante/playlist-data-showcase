@@ -1,3 +1,14 @@
+<!--
+  ORIGINAL TASK LIST - For reference only
+
+  See /COMPLETION_PLAN.md for current task breakdown
+  See /IMPLEMENTATION_STATUS.md for current implementation status
+
+  This document contains the original task list for the Playlist Data Engine
+  Showcase App. It is kept here for historical context. The actual
+  implementation status may differ from this original task list.
+-->
+
 ---
 
 description: "Task list for Playlist Data Engine Showcase App implementation"
