@@ -15,6 +15,15 @@ interface XPPieSlice {
 }
 
 /**
+ * Manual override values for testing
+ */
+interface ManualOverrides {
+  baseXP?: number;
+  environmentalMultiplier?: number;
+  gamingMultiplier?: number;
+}
+
+/**
  * XPCalculatorTab - XP Calculator Tab Component
  *
  * Demonstrates the XPCalculator from playlist-data-engine.
@@ -27,6 +36,7 @@ interface XPPieSlice {
  * - Environmental context integration
  * - Gaming context integration
  * - Detailed bonus breakdown table (Task 4.5.3)
+ * - Manual override mode for testing (Task 4.5.5)
  */
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
@@ -35,14 +45,24 @@ export function XPCalculatorTab() {
   const [result, setResult] = useState<XPBreakdown | null>(null);
   const [isMastered, setIsMastered] = useState(false);
 
+  // Manual mode state (Task 4.5.5)
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualOverrides, setManualOverrides] = useState<ManualOverrides>({});
+
   const handleCalculate = () => {
     const xpResult = calculateXP(
       duration,
-      environmentalContext || undefined,
-      gamingContext || undefined,
-      isMastered
+      isManualMode ? undefined : environmentalContext || undefined,
+      isManualMode ? undefined : gamingContext || undefined,
+      isMastered,
+      isManualMode ? manualOverrides : undefined
     );
     setResult(xpResult);
+  };
+
+  const handleManualOverrideChange = (field: keyof ManualOverrides, value: string) => {
+    const numValue = value === '' ? undefined : parseFloat(value);
+    setManualOverrides(prev => ({ ...prev, [field]: numValue }));
   };
 
   /**
@@ -271,6 +291,103 @@ export function XPCalculatorTab() {
               <span className="text-sm font-medium">Mastered</span>
             </label>
           </div>
+        </div>
+
+        {/* Manual Mode - Task 4.5.5 (For Testing) */}
+        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-semibold text-sm">Manual Mode</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Override automatic calculation with custom values
+              </p>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isManualMode}
+                onChange={(e) => setIsManualMode(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <span className="text-sm font-medium">Enable</span>
+            </label>
+          </div>
+
+          {isManualMode && (
+            <div className="space-y-4 mt-4 pt-4 border-t border-border">
+              {/* Base XP Override */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Base XP Override
+                </label>
+                <input
+                  type="number"
+                  value={manualOverrides.baseXP ?? ''}
+                  onChange={(e) => handleManualOverrideChange('baseXP', e.target.value)}
+                  placeholder="Leave empty to use duration × rate"
+                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  min="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {manualOverrides.baseXP
+                    ? `${manualOverrides.baseXP} XP (manual)`
+                    : `${Math.floor(duration * 1)} XP (auto: ${duration}s × 1.0)`}
+                </p>
+              </div>
+
+              {/* Environmental Multiplier Override */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Environmental Multiplier Override (0.5 - 3.0)
+                </label>
+                <input
+                  type="number"
+                  value={manualOverrides.environmentalMultiplier ?? ''}
+                  onChange={(e) => handleManualOverrideChange('environmentalMultiplier', e.target.value)}
+                  placeholder="Leave empty to use sensor data"
+                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  min="0.5"
+                  max="3.0"
+                  step="0.1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {manualOverrides.environmentalMultiplier
+                    ? `${manualOverrides.environmentalMultiplier}x (manual)`
+                    : environmentalContext
+                      ? 'Using sensor data'
+                      : '1.0x (no data)'}
+                </p>
+              </div>
+
+              {/* Gaming Multiplier Override */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Gaming Multiplier Override (1.0 - 1.75)
+                </label>
+                <input
+                  type="number"
+                  value={manualOverrides.gamingMultiplier ?? ''}
+                  onChange={(e) => handleManualOverrideChange('gamingMultiplier', e.target.value)}
+                  placeholder="Leave empty to use gaming data"
+                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  min="1.0"
+                  max="1.75"
+                  step="0.05"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {manualOverrides.gamingMultiplier
+                    ? `${manualOverrides.gamingMultiplier}x (manual)`
+                    : gamingContext?.isActivelyGaming
+                      ? 'Using gaming data'
+                      : '1.0x (not gaming)'}
+                </p>
+              </div>
+
+              <p className="text-xs text-muted-foreground italic">
+                Leave fields empty to use automatic values from sensors/stores
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Calculate Button */}

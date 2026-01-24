@@ -761,11 +761,15 @@ For each tab, create a separate file and extract the implementation:
   - [x] Added "Track Mastery Bonus" toggle section - COMPLETED 2026-01-24
   - [x] Simulates mastered track (+50 bonus XP) - COMPLETED 2026-01-24
   - [x] Toggles between mastered and not mastered state - COMPLETED 2026-01-24
-- [ ] When enabled, show input fields:
-  - [ ] Base XP override
-  - [ ] Environmental modifier override (0.5 - 3.0)
-  - [ ] Gaming modifier override (1.0 - 1.75)
+- [x] When enabled, show input fields: - COMPLETED 2026-01-24
+  - [x] Base XP override - COMPLETED 2026-01-24
+  - [x] Environmental modifier override (0.5 - 3.0) - COMPLETED 2026-01-24
+  - [x] Gaming modifier override (1.0 - 1.75) - COMPLETED 2026-01-24
 - [x] When disabled, read from stores (auto mode) - COMPLETED 2026-01-24 (always reads from stores, toggle only for mastery)
+  - Updated useXPCalculator hook to accept manualOverrides parameter
+  - Added isManualOverride flag to XPBreakdown interface
+  - Added ManualOverrides interface for type safety
+  - Added handleManualOverrideChange function for input changes
 
 #### 4.5.6 Add Raw JSON Dump Section
 - [x] Add `<RawJsonDump>` for XP calculation result - COMPLETED 2026-01-24

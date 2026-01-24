@@ -13,6 +13,7 @@ export interface XPBreakdown {
     masteryBonusXP: number;
     totalMultiplier: number;
     totalXP: number;
+    isManualOverride?: boolean;
     environmentalDetails?: {
         activity?: string;
         isNightTime?: boolean;
@@ -39,27 +40,43 @@ export const useXPCalculator = () => {
      * The actual XPCalculator.calculateSessionXP() in the engine is more complex
      * and handles internal state differently. This implementation provides a
      * detailed breakdown for UI display purposes.
+     *
+     * @param durationSeconds - Length of the listening session in seconds
+     * @param envContext - Environmental context (optional, for environmental bonuses)
+     * @param gamingContext - Gaming context (optional, for gaming bonuses)
+     * @param isMastered - Whether the track is mastered (for mastery bonus)
+     * @param manualOverrides - Optional manual override values for testing
      */
     const calculateXP = useCallback((
         durationSeconds: number,
         envContext?: EnvironmentalContext,
         gamingContext?: GamingContext,
-        isMastered: boolean = false
+        isMastered: boolean = false,
+        manualOverrides?: {
+            baseXP?: number;
+            environmentalMultiplier?: number;
+            gamingMultiplier?: number;
+        }
     ): XPBreakdown | null => {
         logger.info('XPCalculator', 'Calculating XP', { durationSeconds, isMastered });
 
         try {
-            // Base XP: 1 XP per second (configurable via settings)
-            const baseXP = Math.floor(durationSeconds * settings.baseXpRate);
+            // Use manual overrides if provided, otherwise calculate automatically
+            const isManualMode = !!manualOverrides;
 
-            // Calculate environmental modifier (1.0 - 2.0x based on conditions)
+            // Base XP: use override if provided, otherwise calculate from duration
+            const baseXP = manualOverrides?.baseXP ?? Math.floor(durationSeconds * settings.baseXpRate);
+
+            // Calculate or override environmental modifier
             let envMultiplier = 1.0;
             const envDetails: NonNullable<XPBreakdown['environmentalDetails']> = {};
 
-            // Note: MotionData doesn't have activity_type in the engine types
-            // The activity_type is on ListeningSession instead.
-            // For now, we'll simulate activity-based bonuses if motion data shows movement
-            if (envContext?.motion) {
+            if (manualOverrides?.environmentalMultiplier !== undefined) {
+                // Use manual override
+                envMultiplier = manualOverrides.environmentalMultiplier;
+                envDetails.activity = 'Manual override';
+            } else if (envContext?.motion) {
+                // Auto-calculate from context
                 const x = envContext.motion.acceleration.x ?? 0;
                 const y = envContext.motion.acceleration.y ?? 0;
                 const z = envContext.motion.acceleration.z ?? 0;
@@ -79,13 +96,13 @@ export const useXPCalculator = () => {
             }
 
             // Night time bonus (1.25x) - check from weather data
-            if (envContext?.weather?.isNight) {
+            if (envContext?.weather?.isNight && !isManualMode) {
                 envDetails.isNightTime = true;
                 envMultiplier = Math.max(envMultiplier, 1.25);
             }
 
             // Weather bonus (1.4x for extreme weather)
-            if (envContext?.weather) {
+            if (envContext?.weather && !isManualMode) {
                 const weatherType = envContext.weather.weatherType?.toLowerCase();
                 envDetails.weather = envContext.weather.weatherType;
                 if (weatherType && ['rain', 'snow', 'thunderstorm', 'mist', 'fog'].some(w => weatherType.includes(w))) {
@@ -94,16 +111,22 @@ export const useXPCalculator = () => {
             }
 
             // High altitude bonus (1.3x for >=2000m)
-            if (envContext?.geolocation?.altitude && envContext.geolocation.altitude >= 2000) {
+            if (envContext?.geolocation?.altitude && envContext.geolocation.altitude >= 2000 && !isManualMode) {
                 envDetails.altitude = envContext.geolocation.altitude;
                 envMultiplier = Math.max(envMultiplier, 1.3);
             }
 
-            // Calculate gaming modifier (1.0 - 1.75x)
+            // Calculate or override gaming modifier
             let gamingMultiplier = 1.0;
             const gamingDetails: NonNullable<XPBreakdown['gamingDetails']> = {};
 
-            if (gamingContext?.isActivelyGaming) {
+            if (manualOverrides?.gamingMultiplier !== undefined) {
+                // Use manual override
+                gamingMultiplier = manualOverrides.gamingMultiplier;
+                gamingDetails.isActivelyGaming = true;
+                gamingDetails.gameName = 'Manual override';
+            } else if (gamingContext?.isActivelyGaming) {
+                // Auto-calculate from context
                 gamingDetails.isActivelyGaming = true;
 
                 // Base gaming bonus: +0.25x
@@ -157,6 +180,7 @@ export const useXPCalculator = () => {
                 masteryBonusXP,
                 totalMultiplier,
                 totalXP,
+                isManualOverride: !!manualOverrides,
                 environmentalDetails: Object.keys(envDetails).length > 0 ? envDetails : undefined,
                 gamingDetails: Object.keys(gamingDetails).length > 0 ? gamingDetails : undefined
             };
