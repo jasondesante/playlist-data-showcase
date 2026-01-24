@@ -1325,10 +1325,15 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (543.44 kB output)
 
 #### 4.7.7 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for environmentalContext
-- [ ] Show all sensor data
-- [ ] Add timestamp
-- [ ] Add status indicators for each sensor
+- [x] Add `<RawJsonDump>` for environmentalContext - COMPLETED 2026-01-24
+- [x] Show all sensor data - COMPLETED 2026-01-24
+- [x] Add timestamp - COMPLETED 2026-01-24
+- [x] Add status indicators for each sensor - COMPLETED 2026-01-24
+  - Imported RawJsonDump component to EnvironmentalSensorsTab
+  - Replaced basic `<details>` element with RawJsonDump component
+  - Displays complete environmentalContext with title, timestamp, and healthy status
+  - Section includes copy-to-clipboard functionality
+  - Build verification: TypeScript compilation passes (543.28 kB output)
 
 ---
 

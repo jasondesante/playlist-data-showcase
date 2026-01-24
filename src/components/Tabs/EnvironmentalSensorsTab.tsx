@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { MotionGraph } from '../ui/MotionGraph';
+import { RawJsonDump } from '../ui/RawJsonDump';
 
 // Helper function to map PermissionState to StatusType
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
@@ -397,13 +398,13 @@ export function EnvironmentalSensorsTab() {
               </div>
             )}
 
-            {/* Full Debug Dump */}
-            <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium">Raw environmentalContext</summary>
-              <pre className="mt-2 text-xs overflow-auto bg-black/50 p-3 rounded">
-                {JSON.stringify(environmentalContext, null, 2)}
-              </pre>
-            </details>
+            {/* Raw JSON Dump Section */}
+            <RawJsonDump
+              data={environmentalContext}
+              title="Raw Environmental Sensor Data"
+              timestamp={new Date(environmentalContext.timestamp)}
+              status="healthy"
+            />
           </div>
         ) : null}
 
