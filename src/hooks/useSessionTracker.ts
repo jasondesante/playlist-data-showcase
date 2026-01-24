@@ -1,13 +1,11 @@
 import { useState, useCallback, useRef } from 'react';
 import { SessionTracker, ListeningSession } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
-import { useSensorStore } from '@/store/sensorStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
 export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession } = useSessionStore();
-    const { environmentalContext, gamingContext } = useSensorStore();
     const [tracker] = useState(() => new SessionTracker());
     const [isActive, setIsActive] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -67,7 +65,7 @@ export const useSessionTracker = () => {
             handleError(error, 'SessionTracker');
             return null;
         }
-    }, [tracker, isActive, storeEndSession, environmentalContext, gamingContext]);
+    }, [tracker, isActive, storeEndSession]);
 
     return { startSession, endSession, isActive, elapsedTime };
 };
