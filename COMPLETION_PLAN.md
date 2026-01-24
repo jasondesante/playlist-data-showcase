@@ -1469,13 +1469,19 @@ For each tab, create a separate file and extract the implementation:
 - [x] Initialize to null (no combat running) - COMPLETED 2026-01-24
 
 #### 4.9.2 Display Combatant Cards
-- [ ] Show each combatant as a card:
-  - [ ] Name, race, class
-  - [ ] HP bar (green >50%, yellow 25-50%, red <25%)
-  - [ ] Current HP / Max HP
-  - [ ] Initiative roll
-  - [ ] Highlight current turn combatant
-- [ ] Show initiative order on side
+- [x] Show each combatant as a card:
+  - [x] Name, race, class
+  - [x] HP bar (green >50%, yellow 25-50%, red <25%)
+  - [x] Current HP / Max HP
+  - [x] Initiative roll
+  - [x] Highlight current turn combatant
+- [x] Show initiative order on side - COMPLETED 2026-01-24
+  - Added initiative order sidebar on the left side of combat area
+  - Shows combatants sorted by initiative (highest to lowest)
+  - Displays position number, name, and initiative value
+  - Highlights current turn combatant with primary color
+  - Shows defeated combatants with strikethrough and opacity
+  - Sticky positioning on larger screens for better UX
 
 #### 4.9.3 Implement Combat Log
 - [x] Create scrollable log section - COMPLETED 2026-01-24

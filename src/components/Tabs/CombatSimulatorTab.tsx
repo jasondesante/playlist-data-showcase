@@ -92,44 +92,81 @@ export function CombatSimulatorTab() {
             <div>Turn: <span className="font-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
           </div>
 
-          {/* Combatant Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {combat.combatants.map((combatant: Combatant) => {
-              const current = getCurrentCombatant();
-              const isCurrentTurn = current?.id === combatant.id;
-              const hpPercent = (combatant.currentHP / combatant.character.hp.max) * 100;
-              const hpColor = hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500';
+          {/* Combat Area: Initiative Order + Combatant Cards */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Initiative Order Sidebar - Task 4.9.2 */}
+            <div className="lg:w-1/4">
+              <div className="bg-muted rounded-lg p-4 sticky top-4">
+                <h3 className="font-bold mb-3 text-sm">Initiative Order</h3>
+                <div className="space-y-2">
+                  {combat.combatants
+                    .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative)
+                    .map((combatant: Combatant, index: number) => {
+                      const current = getCurrentCombatant();
+                      const isCurrentTurn = current?.id === combatant.id;
 
-              return (
-                <div
-                  key={combatant.id}
-                  className={`border rounded-lg p-4 ${isCurrentTurn ? 'ring-2 ring-primary' : ''} ${combatant.isDefeated ? 'opacity-50' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-bold">{combatant.character.name}</h3>
-                      <p className="text-sm text-muted-foreground">{combatant.character.race} {combatant.character.class}</p>
-                    </div>
-                    {isCurrentTurn && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Current</span>}
-                  </div>
-
-                  <div className="mb-2">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>HP</span>
-                      <span>{combatant.currentHP} / {combatant.character.hp.max}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className={`h-2 rounded-full ${hpColor}`} style={{ width: `${hpPercent}%` }} />
-                    </div>
-                  </div>
-
-                  <div className="text-sm space-y-1">
-                    <div>Initiative: <span className="font-bold">{combatant.initiative}</span></div>
-                    {combatant.isDefeated && <span className="text-red-500">Defeated</span>}
-                  </div>
+                      return (
+                        <div
+                          key={combatant.id}
+                          className={`text-xs p-2 rounded border ${
+                            isCurrentTurn
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : combatant.isDefeated
+                              ? 'bg-background opacity-50 border-muted line-through'
+                              : 'bg-background border-muted'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold w-5">{index + 1}.</span>
+                            <span className="flex-1 truncate">{combatant.character.name}</span>
+                            <span className="font-mono">{combatant.initiative}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Combatant Cards */}
+            <div className="lg:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {combat.combatants.map((combatant: Combatant) => {
+                const current = getCurrentCombatant();
+                const isCurrentTurn = current?.id === combatant.id;
+                const hpPercent = (combatant.currentHP / combatant.character.hp.max) * 100;
+                const hpColor = hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500';
+
+                return (
+                  <div
+                    key={combatant.id}
+                    className={`border rounded-lg p-4 ${isCurrentTurn ? 'ring-2 ring-primary' : ''} ${combatant.isDefeated ? 'opacity-50' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-bold">{combatant.character.name}</h3>
+                        <p className="text-sm text-muted-foreground">{combatant.character.race} {combatant.character.class}</p>
+                      </div>
+                      {isCurrentTurn && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Current</span>}
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>HP</span>
+                        <span>{combatant.currentHP} / {combatant.character.hp.max}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className={`h-2 rounded-full ${hpColor}`} style={{ width: `${hpPercent}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="text-sm space-y-1">
+                      <div>Initiative: <span className="font-bold">{combatant.initiative}</span></div>
+                      {combatant.isDefeated && <span className="text-red-500">Defeated</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Combat Log - Task 4.9.3 */}
