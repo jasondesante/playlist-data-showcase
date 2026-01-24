@@ -117,14 +117,14 @@ PHASE 6: Polish & Final Verification
 - [x] Document project purpose: testing + demo of all engine features - COMPLETED 2025-01-24
 
 #### 1.1.2 Document Built Components
-- [ ] Create section "Hooks - What's Built"
-  - [ ] List all 9 hooks with file paths
-  - [ ] Document each hook's purpose and key methods
-  - [ ] Note any known issues or limitations
-- [ ] Create section "Stores - What's Built"
-  - [ ] List all 5 Zustand stores
-  - [ ] Document what each store manages
-  - [ ] Note persistence strategy (LocalForage)
+- [x] Create section "Hooks - What's Built" - COMPLETED 2025-01-24
+  - [x] List all 9 hooks with file paths
+  - [x] Document each hook's purpose and key methods
+  - [x] Note any known issues or limitations
+- [x] Create section "Stores - What's Built" - COMPLETED 2025-01-24
+  - [x] List all 5 Zustand stores
+  - [x] Document what each store manages
+  - [x] Note persistence strategy (LocalForage)
 
 #### 1.1.3 Document Tab Implementations
 - [ ] Create table of all 10 tabs with:

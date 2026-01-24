@@ -62,26 +62,29 @@ This showcase is both:
 
 ### Hooks - What's Built
 
-| Hook | File | Purpose | Key Methods | Status |
-|------|------|---------|-------------|--------|
-| usePlaylistParser | `src/hooks/usePlaylistParser.ts` | Parse playlist JSON from Arweave TX ID | `parsePlaylist(txId)` | ✅ Working |
-| useAudioAnalyzer | `src/hooks/useAudioAnalyzer.ts` | Analyze audio frequency characteristics | `analyzeTrack(track)` | ✅ Working |
-| useCharacterGenerator | `src/hooks/useCharacterGenerator.ts` | Generate D&D 5e characters deterministically | `generateCharacter(seed, audio, name)` | ✅ Working |
-| useSessionTracker | `src/hooks/useSessionTracker.ts` | Track listening sessions with start/end | `startSession()`, `endSession()` | ⚠️ Minor fix needed |
-| useXPCalculator | `src/hooks/useXPCalculator.ts` | Calculate XP earned from sessions | `calculateXP(session, track)` | ✅ Working |
-| useEnvironmentalSensors | `src/hooks/useEnvironmentalSensors.ts` | GPS, motion, weather, light integration | `requestPermissions()`, `startMonitoring()` | ✅ Working |
-| useGamingPlatforms | `src/hooks/useGamingPlatforms.ts` | Steam and Discord integration | `connectSteam()`, `connectDiscord()` | ⚠️ Discord game to remove |
-| useCombatEngine | `src/hooks/useCombatEngine.ts` | Turn-based D&D 5e combat | `startCombat()`, `executeAttack()` | ✅ Working |
+| Hook | File | Purpose | Key Methods | Known Issues/Limitations |
+|------|------|---------|-------------|--------------------------|
+| usePlaylistParser | `src/hooks/usePlaylistParser.ts` | Parse playlist JSON from Arweave TX ID or raw JSON string | `parsePlaylist(input)` - Accepts Arweave TX ID or JSON string; Auto-detects input type; Fetches from arweave.net gateway for TX IDs | None |
+| useAudioAnalyzer | `src/hooks/useAudioAnalyzer.ts` | Analyze audio frequency characteristics | `analyzeTrack(audioUrl)` - Returns AudioProfile with sonic fingerprint; Progress reporting via simulated updates (0-100%); Re-creates analyzer when audioFftSize setting changes | smoothingTimeConstant option not supported in engine; Progress simulation used since engine doesn't expose progress callback |
+| useCharacterGenerator | `src/hooks/useCharacterGenerator.ts` | Generate D&D 5e characters deterministically | `generateCharacter(audioProfile, seed?)` - Uses seed or auto-generates from timestamp; Auto-adds generated character to characterStore; Returns CharacterSheet with full D&D 5e stats | None |
+| useSessionTracker | `src/hooks/useSessionTracker.ts` | Track listening sessions with start/end | `startSession(trackId)` - Returns sessionId; Stores active session; Starts 1-second elapsed timer; `endSession()` - Ends session, returns ListeningSession; Cleans up timer | **Minor bug**: Unused dependencies (environmentalContext, gamingContext) in endSession useCallback dependency array (line 70) - these are destructured but not used in the function |
+| useXPCalculator | `src/hooks/useXPCalculator.ts` | Calculate XP earned from sessions | `calculateXP(durationSeconds, envContext?, gamingContext?, isMastered?)` - Creates mock session internally; Returns { totalXp, baseXp, bonusXp } breakdown; Uses baseXpRate from appStore | None |
+| useEnvironmentalSensors | `src/hooks/useEnvironmentalSensors.ts` | GPS, motion, weather, light integration | `requestPermission(sensorType)` - Handles iOS DeviceMotionEvent.requestPermission for motion; Triggers actual browser geolocation prompt; `startMonitoring()` - Starts push-based monitoring with callback; Auto-updates geolocation/weather every 30s; Returns cleanup function | **Engine limitation**: EnvironmentalSensors doesn't support dynamic config updates - API key changes require re-instantiation (noted in comment line 23) |
+| useGamingPlatforms | `src/hooks/useGamingPlatforms.ts` | Steam and Discord integration | `connectSteam(userId)` - Authenticates with Steam API; `connectDiscord()` - Authenticates with Discord RPC; `checkActivity()` - Gets current gaming context | **To remove**: Discord game activity tracking (not supported by platform); Keep only music status functionality |
+| useCombatEngine | `src/hooks/useCombatEngine.ts` | Turn-based D&D 5e combat | `startCombat(party, enemies)` - Initializes combat with initiative rolls; Returns CombatInstance with turn order; Logs combatant names for debugging | None |
+| useCharacterUpdater | `src/hooks/useCharacterUpdater.ts` | Apply sessions to characters, handle level-ups | `processSession(character, session)` - Applies XP, checks level-ups; Logs level-up events; `addManualXP(character, amount)` - Adds XP via dummy session | None |
 
 ### Stores - What's Built
 
-| Store | File | Manages | Persistence |
-|-------|------|---------|-------------|
-| playlistStore | `src/store/playlistStore.ts` | Loaded playlists, selected track, track audio profiles | LocalForage |
-| characterStore | `src/store/characterStore.ts` | Generated characters, XP, levels | LocalForage |
-| sensorStore | `src/store/sensorStore.ts` | Environmental context, permissions | LocalForage |
-| gamingStore | `src/store/gamingStore.ts` | Steam/Discord connection status, gaming context | LocalForage |
-| appStore | `src/store/appStore.ts` | App settings (API keys, preferences) | LocalForage |
+| Store | File | State Managed | Key Actions | Persistence |
+|-------|------|---------------|-------------|-------------|
+| playlistStore | `src/store/playlistStore.ts` | `currentPlaylist: ServerlessPlaylist \| null`; `selectedTrack: PlaylistTrack \| null`; `isLoading: boolean`; `error: string \| null` | `setPlaylist(playlist)` - Sets playlist, clears error; `selectTrack(track)` - Sets active track; `setLoading(loading)` - Updates loading state; `setError(error)` - Sets/clears error; `clearPlaylist()` - Resets all state | LocalForage (`playlist-storage`) |
+| characterStore | `src/store/characterStore.ts` | `characters: CharacterSheet[]`; `activeCharacterId: string \| null` | `addCharacter(character)` - Adds to array, sets as active; `updateCharacter(updatedCharacter)` - Replaces by seed; `setActiveCharacter(id)` - Changes active character; `deleteCharacter(id)` - Removes character; `getActiveCharacter()` - Returns active character sheet | LocalForage (`character-storage`) |
+| sessionStore | `src/store/sessionStore.ts` | `currentSessionId: string \| null`; `sessionHistory: ListeningSession[]` | `startSession(sessionId)` - Sets active session ID; `endSession(session)` - Adds to history (newest first); `clearHistory()` - Empties session array | LocalForage (`session-storage`) |
+| sensorStore | `src/store/sensorStore.ts` | `permissions: { geolocation, motion, light }` (PermissionState); `environmentalContext: EnvironmentalContext \| null`; `gamingContext: GamingContext \| null` | `setPermission(sensor, status)` - Updates individual permission; `updateEnvironmentalContext(context)` - Sets current sensor data; `updateGamingContext(context)` - Sets gaming state; `resetPermissions()` - Resets all to 'prompt' | LocalForage (`sensor-storage`) |
+| appStore | `src/store/appStore.ts` | `settings: AppSettings` (openWeatherApiKey, steamApiKey, discordClientId, audioSampleRate, audioFftSize, baseXpRate) | `updateSettings(newSettings)` - Partial merge with existing; `resetSettings()` - Restores DEFAULT_VALUES | LocalForage (`app-settings`) |
+
+**Note:** All stores use `LocalForage` for persistence via `zustand/middleware` with `createJSONStorage()`. The storage utility is imported from `@/utils/storage`.
 
 ---
 
@@ -170,6 +173,16 @@ Last updated: 2025-01-24
 - [x] Document relationship to playlist-data-engine (local import) - COMPLETED 2025-01-24
 - [x] List engine version being used - COMPLETED 2025-01-24
 - [x] Document project purpose: testing + demo of all engine features - COMPLETED 2025-01-24
+
+#### 1.1.2 Document Built Components
+- [x] Create section "Hooks - What's Built" - COMPLETED 2025-01-24
+  - [x] List all 9 hooks with file paths
+  - [x] Document each hook's purpose and key methods
+  - [x] Note any known issues or limitations
+- [x] Create section "Stores - What's Built" - COMPLETED 2025-01-24
+  - [x] List all 5 Zustand stores
+  - [x] Document what each store manages
+  - [x] Note persistence strategy (LocalForage)
 
 *Remaining tasks in Phase 1 continue...*
 
