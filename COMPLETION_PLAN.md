@@ -644,12 +644,12 @@ For each tab, create a separate file and extract the implementation:
 - [x] Update generateCharacter call to use real data - COMPLETED 2026-01-24
 
 #### 4.3.2 Add Determinism Verification
-- [ ] Add "Regenerate with Same Seed" button
-- [ ] Store first character in state
-- [ ] On regeneration, compare new character to stored
-- [ ] Display "✓ Deterministic match!" if identical
-- [ ] Display "✗ Mismatch!" if different (shouldn't happen)
-- [ ] Show side-by-side comparison if mismatch
+- [x] Add "Regenerate with Same Seed" button - COMPLETED 2026-01-24
+- [x] Store first character in state - COMPLETED 2026-01-24
+- [x] On regeneration, compare new character to stored - COMPLETED 2026-01-24
+- [x] Display "✓ Deterministic match!" if identical - COMPLETED 2026-01-24
+- [x] Display "✗ Mismatch!" if different (shouldn't happen) - COMPLETED 2026-01-24
+- [x] Show side-by-side comparison if mismatch - COMPLETED 2026-01-24
 
 #### 4.3.3 Add Audio Trait Mapping Display
 - [ ] Show which audio traits influenced which attributes:

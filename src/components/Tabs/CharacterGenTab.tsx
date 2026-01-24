@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
+import type { CharacterSheet } from 'playlist-data-engine';
 
 /**
  * CharacterGenTab Component
@@ -11,13 +13,19 @@ import { useCharacterStore } from '../../store/characterStore';
  * 3. Using real audio profile from the Audio Analysis tab (via playlistStore)
  * 4. Using track UUID as deterministic seed for consistent character generation
  * 5. Storing generated characters in the character store
- *
- * TODO: Phase 4.3 - Add determinism verification, audio trait mapping display, and export/import
+ * 6. Verifying determinism by regenerating with the same seed and comparing results
  */
 export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
   const { characters } = useCharacterStore();
+
+  // State for determinism verification
+  const [determinismResult, setDeterminismResult] = useState<{
+    isMatch: boolean | null;
+    original: CharacterSheet | null;
+    regenerated: CharacterSheet | null;
+  }>({ isMatch: null, original: null, regenerated: null });
 
   // Only show the most recent character
   const character = characters.length > 0 ? characters[characters.length - 1] : null;
@@ -36,19 +44,91 @@ export function CharacterGenTab() {
     // This ensures the same track always generates the same character
     const seed = selectedTrack.id;
     await generateCharacter(audioProfile, seed);
+
+    // Reset determinism verification state on new generation
+    setDeterminismResult({ isMatch: null, original: null, regenerated: null });
+  };
+
+  const handleVerifyDeterminism = async () => {
+    if (!audioProfile || !selectedTrack || !character) {
+      console.warn('[CharacterGenTab] Cannot verify determinism - missing prerequisites');
+      return;
+    }
+
+    // Store the current character as the original for comparison
+    const original = character;
+
+    console.log('[CharacterGenTab] Verifying determinism with seed:', selectedTrack.id);
+
+    // Regenerate with the same seed
+    await generateCharacter(audioProfile, selectedTrack.id);
+
+    // Get the regenerated character
+    const regenerated = characters.length > 0 ? characters[characters.length - 1] : null;
+
+    if (!regenerated) {
+      console.error('[CharacterGenTab] Regeneration failed - no character returned');
+      return;
+    }
+
+    // Compare the two characters deeply
+    const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
+
+    console.log('[CharacterGenTab] Determinism check result:', isMatch ? 'MATCH' : 'MISMATCH');
+
+    setDeterminismResult({
+      isMatch,
+      original,
+      regenerated
+    });
+  };
+
+  // Helper to get the difference key path between two objects
+  const getDiffPath = (obj1: any, obj2: any, path = ''): string[] | null => {
+    if (obj1 === obj2) return null;
+
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
+      return [path];
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    const allKeys = new Set([...keys1, ...keys2]);
+
+    for (const key of allKeys) {
+      const newPath = path ? `${path}.${key}` : key;
+      if (!(key in obj1) || !(key in obj2)) {
+        return [newPath];
+      }
+      const diff = getDiffPath(obj1[key], obj2[key], newPath);
+      if (diff) return diff;
+    }
+
+    return null;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Character Generator</h2>
-        <button
-          onClick={handleGenerate}
-          disabled={isGenerating || !audioProfile}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
-        >
-          {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
-        </button>
+        <div className="flex gap-2">
+          {character && (
+            <button
+              onClick={handleVerifyDeterminism}
+              disabled={isGenerating || !audioProfile}
+              className="px-4 py-2 bg-accent text-accent-foreground border border-border rounded-md hover:opacity-90 disabled:opacity-50"
+            >
+              {isGenerating ? 'Regenerating...' : 'Regenerate with Same Seed'}
+            </button>
+          )}
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating || !audioProfile}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+          >
+            {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
+          </button>
+        </div>
       </div>
 
       {/* Show helpful messages when prerequisites aren't met */}
@@ -67,6 +147,64 @@ export function CharacterGenTab() {
           <p className="text-xs text-muted-foreground mt-1">
             Seed: {selectedTrack.id} (deterministic - same track always generates same character)
           </p>
+        </div>
+      )}
+
+      {/* Determinism Verification Result */}
+      {determinismResult.isMatch !== null && (
+        <div className={`p-4 rounded-md border ${
+          determinismResult.isMatch
+            ? 'bg-green-500/10 border-green-500/30'
+            : 'bg-red-500/10 border-red-500/30'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">
+              {determinismResult.isMatch ? '✓' : '✗'}
+            </span>
+            <div>
+              <p className="font-bold">
+                {determinismResult.isMatch ? 'Deterministic match!' : 'Mismatch!'}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {determinismResult.isMatch
+                  ? `The character was regenerated identically with the same seed (${selectedTrack?.id}).`
+                  : 'The regenerated character differs from the original (this should not happen).'}
+              </p>
+            </div>
+          </div>
+
+          {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
+            <div className="mt-4 p-3 bg-background/50 rounded">
+              <p className="text-sm font-medium mb-2">Difference detected:</p>
+              {(() => {
+                const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
+                return diffPath ? (
+                  <code className="text-xs bg-background px-2 py-1 rounded">
+                    {diffPath.join(' → ')}
+                  </code>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Deep comparison shows differences</p>
+                );
+              })()}
+
+              <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="font-medium text-muted-foreground mb-1">Original:</p>
+                  <p className="font-mono">{determinismResult.original.name}</p>
+                  <p className="text-muted-foreground">
+                    {determinismResult.original.race} {determinismResult.original.class}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground mb-1">Regenerated:</p>
+                  <p className="font-mono">{determinismResult.regenerated.name}</p>
+                  <p className="text-muted-foreground">
+                    {determinismResult.regenerated.race} {determinismResult.regenerated.class}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
