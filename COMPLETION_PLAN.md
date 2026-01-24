@@ -513,13 +513,13 @@ For each tab, create a separate file and extract the implementation:
 **Tasks:**
 
 #### 3.6.1 Create RawJsonDump Component
-- [ ] Create `src/components/UI/RawJsonDump.tsx`
-- [ ] Accept props: data, title, defaultOpen
-- [ ] Use HTML `<details>` and `<summary>` for collapsible
-- [ ] Format JSON with 2-space indent
-- [ ] Add syntax highlighting colors (optional)
-- [ ] Add timestamp display
-- [ ] Export as default
+- [x] Create `src/components/ui/RawJsonDump.tsx` - COMPLETED 2026-01-24
+- [x] Accept props: data, title, defaultOpen - COMPLETED 2026-01-24
+- [x] Use HTML `<details>` and `<summary>` for collapsible - COMPLETED 2026-01-24
+- [x] Format JSON with 2-space indent - COMPLETED 2026-01-24
+- [x] Add syntax highlighting colors (optional) - COMPLETED 2026-01-24 (added colored border-left)
+- [x] Add timestamp display - COMPLETED 2026-01-24
+- [x] Export as default - COMPLETED 2026-01-24
 
 #### 3.6.2 Create StatusIndicator Component
 - [ ] Create `src/components/UI/StatusIndicator.tsx`
