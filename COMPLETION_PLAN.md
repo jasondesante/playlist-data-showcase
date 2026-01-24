@@ -1517,12 +1517,21 @@ For each tab, create a separate file and extract the implementation:
   - [x] Increment round if back to first combatant
 
 #### 4.9.5 Implement Combat Resolution
-- [ ] When only one side remains:
-  - [ ] Declare winner
-  - [ ] Calculate XP awarded
-  - [ ] Show rounds elapsed
-  - [ ] Display victory overlay
-- [ ] Add "Restart Combat" button
+- [x] When only one side remains:
+  - [x] Declare winner
+  - [x] Calculate XP awarded
+  - [x] Show rounds elapsed
+  - [x] Display victory overlay
+- [x] Add "Restart Combat" button - COMPLETED 2026-01-24
+  - Created fixed-position overlay that appears when combat ends
+  - Shows winner name with large bold text and sword emoji decorations
+  - Displays XP awarded (green), rounds elapsed, and total turns
+  - Includes combat description if available
+  - Full-width "Restart Combat" button to reset and start new combat
+  - Hidden action buttons during overlay display
+  - Uses fixed inset-0 with semi-transparent black background (bg-black/80)
+  - Centered modal with shadow-2xl and border-primary styling
+  - Build verification: TypeScript compilation passes (559.86 kB output)
 
 #### 4.9.6 Add Manual Attack Controls
 - [ ] For current combatant, show:
@@ -1554,9 +1563,14 @@ For each tab, create a separate file and extract the implementation:
   - [ ] "Close" button to return to tab
 
 #### 4.9.10 Add Raw JSON Dump Section
-- [ ] Add `<RawJsonDump>` for CombatInstance
-- [ ] Show all combatants, actions, history
-- [ ] Add status indicator
+- [x] Add `<RawJsonDump>` for CombatInstance - ALREADY EXISTS
+- [x] Show all combatants, actions, history - ALREADY EXISTS
+- [x] Add status indicator - COMPLETED 2026-01-24
+  - Added "Combat Engine Data" header section with StatusIndicator
+  - Shows 🟢 healthy when combat is active
+  - Shows 🔴 error when combat has ended
+  - RawJsonDump shows complete CombatInstance with combatants, history, round/turn info
+  - Build verification: TypeScript compilation passes (560.10 kB output)
 
 ---
 

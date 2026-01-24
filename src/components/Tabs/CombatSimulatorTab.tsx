@@ -284,19 +284,54 @@ export function CombatSimulatorTab() {
             </div>
           )}
 
-          {/* Combat Result */}
+          {/* Victory Overlay - Task 4.9.5 */}
           {combatResult && (
-            <div className="bg-primary/10 border border-primary rounded-lg p-6">
-              <h3 className="text-xl font-bold mb-4">Combat Ended!</h3>
-              <p className="mb-2">Winner: <span className="font-bold">{combatResult.winner.character.name}</span></p>
-              <p className="mb-2">Rounds Elapsed: <span className="font-bold">{combatResult.roundsElapsed}</span></p>
-              <p className="mb-2">Total Turns: <span className="font-bold">{combatResult.totalTurns}</span></p>
-              <p>XP Awarded: <span className="font-bold">{combatResult.xpAwarded}</span></p>
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+              <div className="bg-background border-2 border-primary rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+                <h2 className="text-3xl font-bold text-center mb-6 text-primary">⚔️ Victory! ⚔️</h2>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <span className="text-muted-foreground">Winner</span>
+                    <span className="text-2xl font-bold">{combatResult.winner.character.name}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <span className="text-muted-foreground">XP Awarded</span>
+                    <span className="text-xl font-bold text-green-600">+{combatResult.xpAwarded} XP</span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <span className="text-muted-foreground">Rounds Elapsed</span>
+                    <span className="text-lg font-semibold">{combatResult.roundsElapsed}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <span className="text-muted-foreground">Total Turns</span>
+                    <span className="text-lg font-semibold">{combatResult.totalTurns}</span>
+                  </div>
+
+                  {combatResult.description && (
+                    <div className="pt-2">
+                      <p className="text-sm text-center text-muted-foreground italic">
+                        {combatResult.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={resetCombat}
+                  className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 transition-opacity"
+                >
+                  Restart Combat
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          {isActive ? (
+          {/* Action Buttons - Hide when combat ended */}
+          {isActive && (
             <div className="flex gap-4">
               <button
                 onClick={handleNextTurn}
@@ -311,17 +346,16 @@ export function CombatSimulatorTab() {
                 Reset Combat
               </button>
             </div>
-          ) : (
-            <button
-              onClick={resetCombat}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-            >
-              New Combat
-            </button>
           )}
 
-          {/* Raw JSON Dump */}
-          <RawJsonDump data={combat} title="Combat Instance JSON" defaultOpen={false} />
+          {/* Raw JSON Dump - Task 4.9.10 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold">Combat Engine Data</h3>
+              <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />
+            </div>
+            <RawJsonDump data={combat} title="Combat Instance JSON" defaultOpen={false} />
+          </div>
         </div>
       )}
     </div>
