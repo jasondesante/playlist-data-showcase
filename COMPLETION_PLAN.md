@@ -652,14 +652,19 @@ For each tab, create a separate file and extract the implementation:
 - [x] Show side-by-side comparison if mismatch - COMPLETED 2026-01-24
 
 #### 4.3.3 Add Audio Trait Mapping Display
-- [ ] Show which audio traits influenced which attributes:
-  - [ ] Bass → STR
-  - [ ] Treble → DEX
-  - [ ] Amplitude → CON
-  - [ ] Mid → INT
-  - [ ] Balance → WIS
-  - [ ] Mid + Amplitude → CHA
-- [ ] Display as a table or list
+- [x] Show which audio traits influenced which attributes: - COMPLETED 2026-01-24
+  - [x] Bass → STR
+  - [x] Treble → DEX
+  - [x] Amplitude → CON
+  - [x] Mid → INT
+  - [x] Balance → WIS
+  - [x] Mid + Amplitude → CHA
+- [x] Display as a table or list - COMPLETED 2026-01-24
+  - Added "Audio Trait Mapping" section to CharacterGenTab
+  - Shows mapping table with audio traits, values, and resulting ability scores
+  - Includes visual indicators (colored dots) for each trait
+  - Shows calculated values (percentages and ratios)
+  - Added explanatory text at bottom
 
 #### 4.3.4 Add Character Export/Import
 - [ ] Add "Export Character" button

@@ -241,6 +241,131 @@ export function CharacterGenTab() {
             </div>
           </div>
 
+          {/* Audio Trait Mapping */}
+          {audioProfile && (
+            <div>
+              <h4 className="font-bold mb-3">Audio Trait Mapping</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                How the audio characteristics influenced this character's ability scores
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left p-2 font-medium">Audio Trait</th>
+                      <th className="text-left p-2 font-medium">Value</th>
+                      <th className="text-left p-2 font-medium">Maps To</th>
+                      <th className="text-center p-2 font-medium">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span>Bass Dominance</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">{(audioProfile.bass_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
+                          STR (Strength)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.STR}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-orange-500" />
+                          <span>Treble Dominance</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">{(audioProfile.treble_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
+                          DEX (Dexterity)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.DEX}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-purple-500" />
+                          <span>Average Amplitude</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">{(audioProfile.average_amplitude * 100).toFixed(1)}%</td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
+                          CON (Constitution)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.CON}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-green-500" />
+                          <span>Mid Dominance</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">{(audioProfile.mid_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
+                          INT (Intelligence)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.INT}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-gray-500" />
+                          <span>Balance</span>
+                          <span className="text-xs text-muted-foreground">(Bass ÷ Treble)</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">
+                        {audioProfile.treble_dominance > 0
+                          ? (audioProfile.bass_dominance / audioProfile.treble_dominance).toFixed(2)
+                          : 'N/A'}
+                      </td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
+                          WIS (Wisdom)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.WIS}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-pink-500" />
+                          <span>Mid + Amplitude</span>
+                          <span className="text-xs text-muted-foreground">(Combined)</span>
+                        </div>
+                      </td>
+                      <td className="p-2 font-mono text-xs">
+                        {((audioProfile.mid_dominance + audioProfile.average_amplitude) / 2 * 100).toFixed(1)}%
+                      </td>
+                      <td className="p-2">
+                        <span className="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs font-medium">
+                          CHA (Charisma)
+                        </span>
+                      </td>
+                      <td className="p-2 text-center font-bold">{character.ability_scores.CHA}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Higher values in each audio trait contribute to higher ability scores. The combination of traits creates unique character builds based on the audio profile.
+              </p>
+            </div>
+          )}
+
           {/* Ability Scores */}
           <div>
             <h4 className="font-bold mb-3">Ability Scores</h4>
