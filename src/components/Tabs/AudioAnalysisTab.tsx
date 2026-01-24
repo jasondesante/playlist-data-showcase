@@ -205,6 +205,55 @@ export function AudioAnalysisTab() {
                 </div>
               )}
 
+              {/* Sampling Timeline Visualization */}
+              <div className="p-4 bg-card border border-border rounded-md">
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">Sampling Timeline</h3>
+
+                {/* Timeline bar */}
+                <div className="relative h-12 bg-muted rounded-md overflow-hidden mb-2">
+                  {/* Timeline background track */}
+                  <div className="absolute inset-0 flex items-center px-2">
+                    <div className="w-full h-1 bg-border rounded" />
+                  </div>
+
+                  {/* Start marker */}
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary/50" />
+                  <div className="absolute left-1 bottom-0 text-xs text-muted-foreground">0%</div>
+
+                  {/* End marker */}
+                  <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-primary/50" />
+                  <div className="absolute right-1 bottom-0 text-xs text-muted-foreground">100%</div>
+
+                  {/* Sample position markers */}
+                  {audioProfile.analysis_metadata.sample_positions.map((position, idx) => (
+                    <div key={idx} className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: `${position * 100}%` }}>
+                      {/* Marker line */}
+                      <div className="w-0.5 h-full bg-primary" />
+                      {/* Percentage label above */}
+                      <div className="absolute -top-5 text-xs font-medium text-primary whitespace-nowrap">
+                        {(position * 100).toFixed(0)}%
+                      </div>
+                      {/* Sample dot */}
+                      <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full border-2 border-background shadow-sm" />
+                      {/* Sample number label */}
+                      <div className="absolute -bottom-5 text-xs text-muted-foreground">
+                        #{idx + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Timeline legend/info */}
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                  <span>Track Duration</span>
+                  <span className="font-medium">
+                    {audioProfile.analysis_metadata.full_buffer_analyzed
+                      ? 'Full buffer analyzed'
+                      : `Duration: ${audioProfile.analysis_metadata.duration_analyzed.toFixed(2)}s`}
+                  </span>
+                </div>
+              </div>
+
               {/* Analysis Metadata */}
               <div className="p-4 bg-card border border-border rounded-md">
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Analysis Metadata</h3>

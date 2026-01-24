@@ -618,10 +618,10 @@ For each tab, create a separate file and extract the implementation:
 - [x] Show exact percentages below each bar - COMPLETED 2026-01-24
 
 #### 4.2.4 Add Sampling Timeline
-- [ ] Create horizontal timeline visualization
-- [ ] Mark positions: 5%, 40%, 70%
-- [ ] Show total duration analyzed
-- [ ] Show whether full buffer was analyzed
+- [x] Create horizontal timeline visualization - COMPLETED 2026-01-24
+- [x] Mark positions: 5%, 40%, 70% - COMPLETED 2026-01-24 (dynamic from metadata.sample_positions)
+- [x] Show total duration analyzed - COMPLETED 2026-01-24
+- [x] Show whether full buffer was analyzed - COMPLETED 2026-01-24
 
 #### 4.2.5 Add Raw JSON Dump Section
 - [ ] Add `<RawJsonDump>` for audioProfile
