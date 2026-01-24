@@ -1294,10 +1294,18 @@ For each tab, create a separate file and extract the implementation:
   - Build verification: TypeScript compilation passes (534.79 kB output)
 
 #### 4.7.5 Add GPS Coordinate Display
-- [ ] Show latitude/longitude on a mini map placeholder
-- [ ] Show altitude, speed, heading if available
-- [ ] Show detected biome (urban/forest/etc.)
-- [ ] Link to Google Maps for actual location
+- [x] Show latitude/longitude on a mini map placeholder - COMPLETED 2026-01-24
+- [x] Show altitude, speed, heading if available - COMPLETED 2026-01-24
+- [x] Show detected biome (urban/forest/etc.) - COMPLETED 2026-01-24
+- [x] Link to Google Maps for actual location - COMPLETED 2026-01-24
+  - Added GPS Location section to EnvironmentalSensorsTab
+  - Shows latitude/longitude in large font boxes with 6 decimal precision
+  - Mini map placeholder with grid pattern and location pin icon
+  - Opens Google Maps with coordinates in new tab
+  - Displays additional GPS data: altitude (meters), speed (km/h converted from m/s), heading (degrees), accuracy (± meters)
+  - Timestamp display for last GPS update
+  - Conditional rendering: shows data when available, prompts user when missing
+  - Build verification: TypeScript compilation passes (539.16 kB output)
 
 #### 4.7.6 Add Weather Status Display
 - [ ] Show weather icon based on weather_type

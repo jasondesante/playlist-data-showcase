@@ -109,6 +109,100 @@ export function EnvironmentalSensorsTab() {
 
         {environmentalContext ? (
           <div className="space-y-4">
+            {/* GPS Location Display */}
+            {(environmentalContext as any).location ? (
+              <div className="p-5 bg-blue-900/20 border border-blue-700 rounded-lg">
+                <h3 className="font-bold text-blue-300 flex items-center gap-2">
+                  📍 GPS Location
+                </h3>
+
+                {/* Mini Map Placeholder with Coordinates */}
+                <div className="mt-3 grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-black/30 rounded border border-blue-600">
+                    <p className="text-xs text-blue-400">Latitude</p>
+                    <p className="text-lg font-mono font-bold">
+                      {(environmentalContext as any).location?.coords?.latitude?.toFixed(6) ?? 'N/A'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-black/30 rounded border border-blue-600">
+                    <p className="text-xs text-blue-400">Longitude</p>
+                    <p className="text-lg font-mono font-bold">
+                      {(environmentalContext as any).location?.coords?.longitude?.toFixed(6) ?? 'N/A'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mini Map Placeholder */}
+                <div className="mt-3 p-4 bg-gradient-to-br from-green-900/40 to-blue-900/40 rounded border border-blue-600/50 flex items-center justify-center min-h-[120px] relative overflow-hidden">
+                  {/* Simple grid pattern to represent a map */}
+                  <div className="absolute inset-0 opacity-20" style={{
+                    backgroundImage: 'linear-gradient(rgba(59,130,246,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.3) 1px, transparent 1px)',
+                    backgroundSize: '20px 20px'
+                  }}></div>
+
+                  {/* Location pin icon */}
+                  <div className="relative z-10 text-center">
+                    <div className="text-4xl">📍</div>
+                    <p className="text-xs text-blue-300 mt-1">
+                      {(environmentalContext as any).location?.coords?.latitude?.toFixed(4) ?? '0.0000'}, {(environmentalContext as any).location?.coords?.longitude?.toFixed(4) ?? '0.0000'}
+                    </p>
+                  </div>
+
+                  {/* Google Maps Link */}
+                  <a
+                    href={`https://www.google.com/maps?q=${(environmentalContext as any).location?.coords?.latitude ?? 0},${(environmentalContext as any).location?.coords?.longitude ?? 0}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded flex items-center gap-1 transition-colors"
+                  >
+                    <span>Open in Google Maps</span>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+
+                {/* Additional GPS Data */}
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                  {(environmentalContext as any).location?.coords?.altitude != null && (
+                    <div className="p-2 bg-black/20 rounded">
+                      <span className="text-blue-400">Altitude:</span>{' '}
+                      <span className="font-mono">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
+                    </div>
+                  )}
+                  {(environmentalContext as any).location?.coords?.speed != null && (
+                    <div className="p-2 bg-black/20 rounded">
+                      <span className="text-blue-400">Speed:</span>{' '}
+                      <span className="font-mono">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
+                    </div>
+                  )}
+                  {(environmentalContext as any).location?.coords?.heading != null && (
+                    <div className="p-2 bg-black/20 rounded">
+                      <span className="text-blue-400">Heading:</span>{' '}
+                      <span className="font-mono">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
+                    </div>
+                  )}
+                  <div className="p-2 bg-black/20 rounded">
+                    <span className="text-blue-400">Accuracy:</span>{' '}
+                    <span className="font-mono">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-2">
+                  Updated: {new Date((environmentalContext as any).location?.timestamp ?? environmentalContext.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            ) : (
+              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold">No GPS Data Yet</h3>
+                <ul className="mt-3 text-sm space-y-1">
+                  <li>• Did you grant geolocation permission?</li>
+                  <li>• GPS requires clear view of sky</li>
+                  <li>• Indoor locations may have poor accuracy</li>
+                </ul>
+              </div>
+            )}
+
             {/* Live Motion Data */}
             {environmentalContext.motion ? (
               <div className="p-5 bg-green-900/20 border border-green-700 rounded-lg">
