@@ -5,14 +5,22 @@ import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
 interface CharacterState {
+    /** All generated characters */
     characters: CharacterSheet[];
+    /** Seed of the currently active character (uses seed as unique ID) */
     activeCharacterId: string | null;
 
+    /** Add a new character to the store and set as active */
     addCharacter: (character: CharacterSheet) => void;
+    /** Update an existing character's data (finds by seed) */
     updateCharacter: (character: CharacterSheet) => void;
+    /** Set the active character by seed ID */
     setActiveCharacter: (id: string) => void;
+    /** Delete a character by seed ID */
     deleteCharacter: (id: string) => void;
+    /** Get the currently active character object */
     getActiveCharacter: () => CharacterSheet | undefined;
+    /** Clear all characters and reset state */
     resetCharacters: () => void;
 }
 
@@ -22,6 +30,16 @@ export const useCharacterStore = create<CharacterState>()(
             characters: [],
             activeCharacterId: null,
 
+            /**
+             * Add a new character to the store and set as active
+             * The character's seed is used as the unique identifier
+             * @param character - The CharacterSheet to add
+             * @example
+             * ```ts
+             * const character = CharacterGenerator.generate(seed, audioProfile, name);
+             * addCharacter(character);
+             * ```
+             */
             addCharacter: (character) => {
                 logger.info('Store', 'Adding character', { name: character.name, class: character.class });
                 set((state) => ({
@@ -30,6 +48,16 @@ export const useCharacterStore = create<CharacterState>()(
                 }));
             },
 
+            /**
+             * Update an existing character's data (finds by seed)
+             * Useful for applying level-ups, XP gains, or stat changes
+             * @param updatedCharacter - The CharacterSheet with updated data
+             * @example
+             * ```ts
+             * const result = await updater.updateCharacterFromSession(character, session, track, listenCount);
+             * updateCharacter(result.character);
+             * ```
+             */
             updateCharacter: (updatedCharacter) => {
                 logger.info('Store', 'Updating character', {
                     seed: updatedCharacter.seed,
@@ -44,11 +72,20 @@ export const useCharacterStore = create<CharacterState>()(
                 }));
             },
 
+            /**
+             * Set the active character by seed ID
+             * @param id - The seed of the character to set as active
+             */
             setActiveCharacter: (id) => {
                 logger.debug('Store', 'Set active character', id);
                 set({ activeCharacterId: id });
             },
 
+            /**
+             * Delete a character by seed ID
+             * If the deleted character was active, clears activeCharacterId
+             * @param id - The seed of the character to delete
+             */
             deleteCharacter: (id) => {
                 logger.info('Store', 'Deleting character', id);
                 set((state) => ({
@@ -57,11 +94,24 @@ export const useCharacterStore = create<CharacterState>()(
                 }));
             },
 
+            /**
+             * Get the currently active character object
+             * @returns The active CharacterSheet or undefined if none set
+             * @example
+             * ```ts
+             * const active = getActiveCharacter();
+             * if (active) console.log(active.name);
+             * ```
+             */
             getActiveCharacter: () => {
                 const { characters, activeCharacterId } = get();
                 return characters.find((c) => c.seed === activeCharacterId);
             },
 
+            /**
+             * Clear all characters and reset state
+             * Useful for resetting the app or clearing all data
+             */
             resetCharacters: () => {
                 logger.warn('Store', 'Resetting all characters');
                 set({

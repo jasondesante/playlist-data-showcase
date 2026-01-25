@@ -2020,7 +2020,12 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
   - Added JSDoc to useGamingPlatforms
   - Added JSDoc to useCombatEngine
   - All JSDoc comments include @example, @returns, and @param documentation
-- [ ] Add JSDoc to all store actions
+- [x] Add JSDoc to all store actions - COMPLETED 2026-01-25
+  - Added JSDoc to all 6 actions in playlistStore (setPlaylist, selectTrack, setAudioProfile, setLoading, setError, clearPlaylist)
+  - Added JSDoc to all 6 actions in characterStore (addCharacter, updateCharacter, setActiveCharacter, deleteCharacter, getActiveCharacter, resetCharacters)
+  - Added JSDoc to all 5 actions in sensorStore (setPermission, updateEnvironmentalContext, updateGamingContext, resetPermissions, resetAll)
+  - Added JSDoc to all 2 actions in appStore (updateSettings, resetSettings)
+  - All JSDoc comments include @param tags with descriptions and @example usage
 - [ ] Add JSDoc to all component props
 
 ---

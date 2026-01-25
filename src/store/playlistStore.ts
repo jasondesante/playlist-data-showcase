@@ -5,19 +5,32 @@ import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
 interface PlaylistState {
+    /** Currently loaded playlist with tracks */
     currentPlaylist: ServerlessPlaylist | null;
+    /** Track selected for analysis/character generation */
     selectedTrack: PlaylistTrack | null;
-    audioProfile: AudioProfile | null; // Audio analysis result for selected track (shared with Character Gen tab)
+    /** Audio analysis result for selected track (shared with Character Gen tab) */
+    audioProfile: AudioProfile | null;
+    /** Loading state for playlist operations */
     isLoading: boolean;
+    /** Error message from playlist operations */
     error: string | null;
-    rawResponseData: unknown; // Raw Arweave response or input JSON (for debugging/engine verification)
-    parsedTimestamp: string | null; // ISO timestamp of when playlist was parsed
+    /** Raw Arweave response or input JSON (for debugging/engine verification) */
+    rawResponseData: unknown;
+    /** ISO timestamp of when playlist was parsed */
+    parsedTimestamp: string | null;
 
+    /** Set the current playlist and clear previous state */
     setPlaylist: (playlist: ServerlessPlaylist, rawData?: unknown) => void;
+    /** Select a track for analysis and clear any previous audio profile */
     selectTrack: (track: PlaylistTrack) => void;
-    setAudioProfile: (profile: AudioProfile | null) => void; // Set audio profile for current track
+    /** Set audio profile for current track after analysis */
+    setAudioProfile: (profile: AudioProfile | null) => void;
+    /** Set loading state for playlist operations */
     setLoading: (loading: boolean) => void;
+    /** Set error message from playlist operations */
     setError: (error: string | null) => void;
+    /** Clear all playlist state including tracks and audio data */
     clearPlaylist: () => void;
 }
 
@@ -32,6 +45,16 @@ export const usePlaylistStore = create<PlaylistState>()(
             rawResponseData: null,
             parsedTimestamp: null,
 
+            /**
+             * Set the current playlist and update state
+             * @param playlist - The parsed ServerlessPlaylist object
+             * @param rawData - Optional raw response data for debugging
+             * @example
+             * ```ts
+             * const playlist = await parser.parse(jsonString);
+             * setPlaylist(playlist, jsonString);
+             * ```
+             */
             setPlaylist: (playlist, rawData) => {
                 logger.info('Store', 'Setting playlist', { name: playlist.name, tracks: playlist.tracks.length });
                 set({
@@ -44,11 +67,29 @@ export const usePlaylistStore = create<PlaylistState>()(
                 });
             },
 
+            /**
+             * Select a track from the playlist for analysis
+             * Automatically clears any previous audio profile
+             * @param track - The PlaylistTrack to select
+             * @example
+             * ```ts
+             * selectTrack(playlist.tracks[0]);
+             * ```
+             */
             selectTrack: (track) => {
                 logger.debug('Store', 'Selected track', track.title);
                 set({ selectedTrack: track, audioProfile: null }); // Clear audio profile when changing tracks
             },
 
+            /**
+             * Set the audio profile result after analysis
+             * @param profile - AudioProfile from AudioAnalyzer or null to clear
+             * @example
+             * ```ts
+             * const profile = await analyzer.extractSonicFingerprint(audioUrl);
+             * setAudioProfile(profile);
+             * ```
+             */
             setAudioProfile: (profile) => {
                 logger.debug('Store', 'Setting audio profile', {
                     bass: profile?.bass_dominance,
@@ -58,13 +99,29 @@ export const usePlaylistStore = create<PlaylistState>()(
                 set({ audioProfile: profile });
             },
 
+            /**
+             * Set the loading state for playlist operations
+             * @param loading - True when loading, false when complete
+             */
             setLoading: (loading) => set({ isLoading: loading }),
 
+            /**
+             * Set or clear error message from playlist operations
+             * @param error - Error message string, or null to clear
+             */
             setError: (error) => {
                 if (error) logger.error('Store', 'Playlist error', error);
                 set({ error });
             },
 
+            /**
+             * Clear all playlist state including tracks and audio data
+             * Useful for resetting the app or loading a new playlist
+             * @example
+             * ```ts
+             * clearPlaylist(); // Resets all playlist state
+             * ```
+             */
             clearPlaylist: () => {
                 logger.info('Store', 'Clearing playlist');
                 set({
