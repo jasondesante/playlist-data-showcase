@@ -88,16 +88,16 @@ export function MotionGraph({ data, color, label }: MotionGraphProps) {
   }, [data, color]);
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono">{data[data.length - 1]?.toFixed(2) ?? '—'}</span>
+    <div className="motion-graph-container">
+      <div className="motion-graph-header">
+        <span className="motion-graph-label">{label}</span>
+        <span className="motion-graph-value">{data[data.length - 1]?.toFixed(2) ?? '—'}</span>
       </div>
       <canvas
         ref={canvasRef}
         width={300}
         height={60}
-        className="w-full border border-border rounded bg-black/30"
+        className="motion-graph-canvas"
       />
     </div>
   );

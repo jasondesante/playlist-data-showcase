@@ -351,16 +351,16 @@ export function CharacterGenTab() {
       {/* Ready State - Ready to generate */}
       {selectedTrack && audioProfile && !character && (
         <Card variant="flat" padding="sm" className="character-ready-card fade-in">
-          <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
-              <Sparkles className="w-5 h-5 text-primary" />
+          <div className="character-ready-content">
+            <div className="character-ready-icon-wrapper">
+              <Sparkles className="character-ready-icon" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Ready to generate</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Using audio profile from <span className="font-medium text-foreground">{selectedTrack.title}</span> by {selectedTrack.artist}
+            <div className="character-ready-text">
+              <p className="character-ready-title">Ready to generate</p>
+              <p className="character-ready-description">
+                Using audio profile from <span>{selectedTrack.title}</span> by {selectedTrack.artist}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="character-ready-seed">
                 Seed: {selectedTrack.id} (deterministic - same track always generates same character)
               </p>
             </div>
@@ -384,40 +384,40 @@ export function CharacterGenTab() {
             <span className={`character-determinism-icon ${determinismResult.isMatch ? 'match' : 'mismatch'}`}>
               {determinismResult.isMatch ? '✓' : '✗'}
             </span>
-            <div className="flex-1">
-              <p className="font-bold">
+            <div className="character-determinism-content">
+              <p className="character-determinism-title">
                 {determinismResult.isMatch ? 'Deterministic match!' : 'Mismatch!'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="character-determinism-description">
                 {determinismResult.isMatch
                   ? `The character was regenerated identically with the same seed (${selectedTrack?.id}).`
                   : 'The regenerated character differs from the original (this should not happen).'}
               </p>
               {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
-                <div className="mt-3 p-3 bg-background/50 rounded">
-                  <p className="text-sm font-medium mb-2">Difference detected:</p>
+                <div className="character-determinism-mismatch">
+                  <p className="character-determinism-mismatch-title">Difference detected:</p>
                   {(() => {
                     const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
                     return diffPath ? (
-                      <code className="text-xs bg-background px-2 py-1 rounded">
+                      <code className="character-determinism-diff-code">
                         {diffPath.join(' → ')}
                       </code>
                     ) : (
-                      <p className="text-xs text-muted-foreground">Deep comparison shows differences</p>
+                      <p className="character-determinism-deep-note">Deep comparison shows differences</p>
                     );
                   })()}
-                  <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
+                  <div className="character-determinism-comparison">
                     <div>
-                      <p className="font-medium text-muted-foreground mb-1">Original:</p>
-                      <p className="font-mono">{determinismResult.original.name}</p>
-                      <p className="text-muted-foreground">
+                      <p className="character-determinism-comparison-label">Original:</p>
+                      <p className="character-determinism-comparison-name">{determinismResult.original.name}</p>
+                      <p className="character-determinism-comparison-details">
                         {determinismResult.original.race} {determinismResult.original.class}
                       </p>
                     </div>
                     <div>
-                      <p className="font-medium text-muted-foreground mb-1">Regenerated:</p>
-                      <p className="font-mono">{determinismResult.regenerated.name}</p>
-                      <p className="text-muted-foreground">
+                      <p className="character-determinism-comparison-label">Regenerated:</p>
+                      <p className="character-determinism-comparison-name">{determinismResult.regenerated.name}</p>
+                      <p className="character-determinism-comparison-details">
                         {determinismResult.regenerated.race} {determinismResult.regenerated.class}
                       </p>
                     </div>
@@ -573,7 +573,7 @@ export function CharacterGenTab() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="character-audio-trait-note">
                 Higher values in each audio trait contribute to higher ability scores. The combination of traits creates unique character builds based on the audio profile.
               </p>
             </Card>

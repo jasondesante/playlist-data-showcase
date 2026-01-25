@@ -55,26 +55,17 @@ export function RawJsonDump({ data, title, defaultOpen = false, timestamp, statu
     }
   };
 
-  const getStatusBgColor = () => {
-    switch (status) {
-      case 'healthy': return 'border-l-green-500';
-      case 'degraded': return 'border-l-yellow-500';
-      case 'error': return 'border-l-red-500';
-      default: return 'border-l-border';
-    }
-  };
-
   return (
     <details
       open={defaultOpen}
-      className="group/details border border-border rounded-md overflow-hidden"
+      className="raw-json-dump"
     >
-      <summary className="flex items-center justify-between cursor-pointer bg-muted/50 hover:bg-muted transition-colors select-none">
-        <div className="flex items-center gap-2 px-4 py-3">
+      <summary className="raw-json-summary">
+        <div className="raw-json-summary-content">
           {status && <span>{getStatusEmoji()}</span>}
-          <span className="font-medium">{title}</span>
+          <span className="raw-json-summary-title">{title}</span>
           {timestamp && (
-            <span className="text-xs text-muted-foreground">
+            <span className="raw-json-summary-timestamp">
               {formatTimestamp(timestamp)}
             </span>
           )}
@@ -85,19 +76,19 @@ export function RawJsonDump({ data, title, defaultOpen = false, timestamp, statu
             e.stopPropagation();
             handleCopy();
           }}
-          className="mr-3 p-2 rounded hover:bg-background transition-colors"
+          className="raw-json-copy-button"
           title="Copy to clipboard"
         >
           {copied ? (
-            <Check className="w-4 h-4 text-green-500" />
+            <Check className="copied" />
           ) : (
-            <Copy className="w-4 h-4 text-muted-foreground" />
+            <Copy className="uncopied" />
           )}
         </button>
       </summary>
-      <div className={`border-l-4 ${getStatusBgColor()}`}>
-        <pre className="p-4 text-xs overflow-x-auto bg-background">
-          <code>{JSON.stringify(data, null, 2)}</code>
+      <div className={`raw-json-content ${status || 'healthy'}`}>
+        <pre className="raw-json-pre">
+          <code className="raw-json-code">{JSON.stringify(data, null, 2)}</code>
         </pre>
       </div>
     </details>

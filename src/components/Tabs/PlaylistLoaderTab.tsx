@@ -119,7 +119,7 @@ export function PlaylistLoaderTab() {
           </CardDescription>
         </CardHeader>
 
-        <div className="space-y-4">
+        <div className="playlist-input-section">
           <Input
             id="arweave-tx-id"
             label="Arweave Transaction ID"
@@ -138,17 +138,17 @@ export function PlaylistLoaderTab() {
             leftIcon={Download}
             variant="primary"
             size="md"
-            className="w-full sm:w-auto"
+            className="playlist-load-button"
           >
             {isLoading ? 'Fetching...' : 'Fetch & Parse Playlist'}
           </Button>
 
           {error && (
-            <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-md">
-              <span className="text-xl" role="img" aria-label="Warning">⚠️</span>
-              <div className="flex-1">
-                <p className="text-destructive font-semibold">Error Loading Playlist</p>
-                <p className="text-sm text-destructive/80 mt-1">{error}</p>
+            <div className="playlist-error">
+              <span className="playlist-error-icon" role="img" aria-label="Warning">⚠️</span>
+              <div className="playlist-error-content">
+                <p className="playlist-error-title">Error Loading Playlist</p>
+                <p className="playlist-error-message">{error}</p>
               </div>
             </div>
           )}
@@ -204,7 +204,7 @@ export function PlaylistLoaderTab() {
           <div className="playlist-display-header">
             <div className="playlist-display-header-inner">
               {/* Refined Album Art - Using pure CSS classes instead of tailwind */}
-              <div className="playlist-header-art group">
+              <div className="playlist-header-art">
                 <div className="album-art-wrapper">
                   {currentPlaylist.image ? (
                     <img

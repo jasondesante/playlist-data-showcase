@@ -659,7 +659,13 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Clean, professional styling with proper spacing and typography
 
 ### Sprint 14: Polish
-17. Cross-tab consistency review
+- [x] ~~17. Cross-tab consistency review~~
+   - **Completed (2025-01-25)**: Removed remaining Tailwind classes from CharacterGenTab.tsx, PlaylistLoaderTab.tsx, MotionGraph.tsx, and RawJsonDump.tsx
+   - Added pure CSS classes for: `character-ready-content`, `character-ready-icon-wrapper`, `character-ready-text`, `character-ready-title`, `character-ready-description`, `character-ready-seed`, `character-determinism-content`, `character-determinism-title`, `character-determinism-description`, `character-determinism-mismatch`, `character-determinism-mismatch-title`, `character-determinism-diff-code`, `character-determinism-deep-note`, `character-determinism-comparison`, `character-determinism-comparison-label`, `character-determinism-comparison-name`, `character-determinism-comparison-details`, `playlist-input-section`, `playlist-load-button`, `playlist-error`, `playlist-error-icon`, `playlist-error-content`, `playlist-error-title`, `playlist-error-message`, `motion-graph-container`, `motion-graph-header`, `motion-graph-label`, `motion-graph-value`, `motion-graph-canvas`, `raw-json-dump`, `raw-json-summary`, `raw-json-summary-content`, `raw-json-summary-title`, `raw-json-summary-timestamp`, `raw-json-copy-button`, `raw-json-content`, `raw-json-pre`, `raw-json-code`, `character-audio-trait-note`
+   - Removed `group` class from playlist header art (unused)
+   - Removed unused `getStatusBgColor` function from RawJsonDump.tsx
+   - All tabs now use consistent pure CSS classes
+   - TypeScript compilation passes, CSS brace balance verified (2112/2112)
 18. Performance optimization
 19. Accessibility audit
 20. Final bug fixes
