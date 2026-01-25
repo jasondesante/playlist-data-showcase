@@ -5,6 +5,7 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { SPELL_DATABASE } from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
+import './CombatSimulatorTab.css';
 
 /**
  * CombatSimulatorTab Component

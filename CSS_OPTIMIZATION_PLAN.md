@@ -1279,11 +1279,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Gaming tab looks identical
 
 **Task 21: Combat Tab**
-- [ ] Create `CombatSimulatorTab.css`
-- [ ] Copy all combat styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: Combat tab looks identical
+- [x] Create `CombatSimulatorTab.css`
+- [x] Copy all combat styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: Combat tab looks identical
 
 **Task 22: Settings Tab**
 - [ ] Create `SettingsTab.css`
