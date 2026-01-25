@@ -27,11 +27,11 @@ interface MainLayoutProps {
 export function MainLayout({ tabs, activeTab, onTabChange, children }: MainLayoutProps) {
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         <Sidebar tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
 
-        <main className="flex-1">
-          <div className="bg-card border border-border rounded-lg p-6">
+        <main className="flex-1 min-w-0">
+          <div className="bg-card border border-border rounded-lg p-4 md:p-6">
             {children}
           </div>
         </main>
