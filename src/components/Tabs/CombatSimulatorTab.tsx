@@ -41,10 +41,10 @@ import { logger } from '../../utils/logger';
 
 // Helper function to determine log entry color based on action type and result
 function getLogEntryColor(action: any): string {
-  if (action.type === 'spell') return 'border-blue-500';
-  if (action.result?.success) return 'border-green-500';
-  if (action.result?.success === false) return 'border-red-500';
-  return 'border-yellow-500';
+  if (action.type === 'spell') return 'combat-log-entry-spell';
+  if (action.result?.success) return 'combat-log-entry-success';
+  if (action.result?.success === false) return 'combat-log-entry-fail';
+  return 'combat-log-entry-neutral';
 }
 
 // Helper function to calculate which round an action occurred in
@@ -334,60 +334,60 @@ export function CombatSimulatorTab() {
   const combatResult = combat && !combat.isActive ? getCombatResult() : null;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg md:text-xl font-bold">Combat Engine</h2>
+    <div className="combat-container">
+      <div className="combat-header">
+        <h2 className="combat-title">Combat Engine</h2>
         {combat && <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />}
       </div>
 
       {characters.length === 0 ? (
-        <p className="text-sm md:text-base text-muted-foreground">Generate a character first</p>
+        <p className="combat-prompt">Generate a character first</p>
       ) : !combat ? (
         <button
           onClick={handleStartCombat}
-          className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 text-sm md:text-base"
+          className="combat-generate-button combat-button-base"
         >
           Start Combat
         </button>
       ) : (
-        <div className="space-y-4 md:space-y-6">
+        <div className="combat-content">
           {/* Combat Info */}
-          <div className="grid grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm">
-            <div className="p-2 md:p-0">Round: <span className="font-bold">{roundNumber}</span></div>
-            <div className="p-2 md:p-0">Turn: <span className="font-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
+          <div className="combat-stats">
+            <div className="combat-stat-text combat-stat-padding">Round: <span className="combat-stat-bold">{roundNumber}</span></div>
+            <div className="combat-stat-text combat-stat-padding">Turn: <span className="combat-stat-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
           </div>
 
           {/* Manual Attack Controls - Task 4.9.6 */}
           {isActive && combat && (
-            <div className="bg-muted rounded-lg p-3 md:p-4">
-              <h3 className="font-bold mb-2 md:mb-3 text-sm md:text-base">Manual Attack Controls</h3>
-              <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3">
+            <div className="combat-controls">
+              <h3 className="combat-controls-title">Manual Attack Controls</h3>
+              <p className="combat-controls-description">
                 Choose a target to attack instead of auto-attacking the first available target.
               </p>
 
               {/* Available attacks for current combatant */}
-              <div className="mb-2 md:mb-3">
-                <div className="text-xs md:text-sm font-semibold mb-2">Available Attacks:</div>
+              <div className="combat-controls-section">
+                <div className="combat-controls-label">Available Attacks:</div>
                 {(() => {
                   const current = getCurrentCombatant();
-                  if (!current) return <p className="text-sm text-muted-foreground">No current combatant</p>;
+                  if (!current) return <p className="combat-attacks-empty">No current combatant</p>;
 
                   const weapons = current.character.equipment?.weapons ?? [];
                   if (weapons.length === 0) {
                     return (
-                      <div className="text-xs md:text-sm">
-                        <span className="bg-background px-2 py-1 rounded border text-xs md:text-sm">Unarmed Strike</span>
-                        <span className="text-muted-foreground ml-2">1 damage, bludgeoning</span>
+                      <div className="combat-unarmed-attack">
+                        <span className="combat-attack-badge">Unarmed Strike</span>
+                        <span className="combat-attack-muted">1 damage, bludgeoning</span>
                       </div>
                     );
                   }
 
                   return (
-                    <div className="flex flex-wrap gap-1 md:gap-2">
+                    <div className="combat-attacks-grid">
                       {weapons.map((weapon: any, index: number) => (
-                        <div key={index} className="bg-background px-2 md:px-3 py-2 rounded border text-xs md:text-sm">
-                          <div className="font-semibold text-xs md:text-sm">{weapon.name}</div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground">
+                        <div key={index} className="combat-attack-card">
+                          <div className="combat-attack-name">{weapon.name}</div>
+                          <div className="combat-attack-damage">
                             {weapon.damage_dice} {weapon.damage_type} {weapon.type === 'melee' ? '⚔️' : '🏹'}
                           </div>
                         </div>
@@ -398,9 +398,9 @@ export function CombatSimulatorTab() {
               </div>
 
               {/* Available targets */}
-              <div className="mb-2 md:mb-3">
-                <div className="text-xs md:text-sm font-semibold mb-2">Available Targets:</div>
-                <div className="flex flex-wrap gap-1 md:gap-2">
+              <div className="combat-controls-section">
+                <div className="combat-controls-label">Available Targets:</div>
+                <div className="combat-targets-grid">
                   {getLivingCombatants()
                     .filter((c: Combatant) => {
                       const current = getCurrentCombatant();
@@ -410,14 +410,10 @@ export function CombatSimulatorTab() {
                       <button
                         key={target.id}
                         onClick={() => handleManualAttack(target)}
-                        className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
-                          selectedTargetId === target.id
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background hover:bg-muted border-muted'
-                        }`}
+                        className={`combat-target-button ${selectedTargetId === target.id ? 'combat-target-button-selected' : ''}`}
                       >
-                        <div className="font-semibold text-xs md:text-sm truncate">{target.character.name}</div>
-                        <div className="text-[10px] md:text-xs opacity-80">
+                        <div className="combat-target-name truncate">{target.character.name}</div>
+                        <div className="combat-target-hp">
                           {target.character.race} {target.character.class} • HP: {target.currentHP}/{target.character.hp.max}
                         </div>
                       </button>
@@ -436,17 +432,17 @@ export function CombatSimulatorTab() {
             const current = getCurrentCombatant();
             return current && isSpellcaster(current.character);
           })() && (
-            <div className="bg-blue-950/30 dark:bg-blue-950/50 rounded-lg p-3 md:p-4 border border-blue-800/50">
-              <h3 className="font-bold mb-2 md:mb-3 flex items-center gap-2 text-sm md:text-base">
+            <div className="combat-spell-section">
+              <h3 className="combat-spell-header">
                 <span>✨ Spell Casting</span>
-                <span className="text-[10px] md:text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
+                <span className="combat-spell-class-badge">
                   {getCurrentCombatant()?.character.class}
                 </span>
               </h3>
 
               {/* Spell slots remaining */}
-              <div className="mb-2 md:mb-3 p-2 bg-background/50 rounded">
-                <div className="text-xs md:text-sm font-semibold mb-1">Spell Slots Remaining:</div>
+              <div className="combat-spell-slots">
+                <div className="combat-spell-slots-label">Spell Slots Remaining:</div>
                 {(() => {
                   const current = getCurrentCombatant();
                   if (!current?.spellSlots) return null;
@@ -460,10 +456,10 @@ export function CombatSimulatorTab() {
                   }
 
                   return (
-                    <div className="flex flex-wrap gap-1 md:gap-2">
+                    <div className="combat-spell-slots-grid">
                       {slots.map(([level, count]) => (
-                        <div key={level} className="text-[10px] md:text-xs bg-blue-900/30 px-2 py-1 rounded border border-blue-700/50">
-                          Level {level}: <span className={`font-bold ${count === 0 ? 'text-red-400' : 'text-green-400'}`}>{count}</span>
+                        <div key={level} className="combat-spell-slot-badge">
+                          Level {level}: <span className={`font-bold ${count === 0 ? 'combat-spell-slot-unavailable' : 'combat-spell-slot-available'}`}>{count}</span>
                         </div>
                       ))}
                     </div>
@@ -472,12 +468,12 @@ export function CombatSimulatorTab() {
               </div>
 
               {/* Known spells */}
-              <div className="mb-2 md:mb-3">
-                <div className="text-xs md:text-sm font-semibold mb-2">Known Spells:</div>
-                <div className="flex flex-wrap gap-1 md:gap-2 max-h-32 md:max-h-40 overflow-y-auto">
+              <div className="combat-spells-list">
+                <div className="combat-spells-label">Known Spells:</div>
+                <div className="combat-spells-grid">
                   {(() => {
                     const current = getCurrentCombatant();
-                    if (!current?.character.spells) return <p className="text-xs md:text-sm text-muted-foreground">No spells available</p>;
+                    if (!current?.character.spells) return <p className="combat-stat-text">No spells available</p>;
 
                     const allSpells = [
                       ...(current.character.spells.cantrips || []).map(name => ({ name, level: 0 })),
@@ -500,16 +496,10 @@ export function CombatSimulatorTab() {
                           key={spell.name}
                           onClick={() => setSelectedSpellName(spell.name)}
                           disabled={!hasSlot}
-                          className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
-                            !hasSlot
-                              ? 'bg-muted opacity-50 cursor-not-allowed'
-                              : isSelected
-                              ? 'bg-blue-600 text-white border-blue-500'
-                              : 'bg-background hover:bg-blue-100 dark:hover:bg-blue-900/30 border-muted'
-                          }`}
+                          className={`combat-spell-button ${!hasSlot ? 'combat-spell-button-disabled' : ''} ${isSelected ? 'combat-spell-button-selected' : ''}`}
                         >
-                          <div className="font-semibold text-xs md:text-sm truncate">{spell.name}</div>
-                          <div className="text-[10px] md:text-xs opacity-80">
+                          <div className="combat-spell-name truncate">{spell.name}</div>
+                          <div className="combat-spell-details">
                             {getSpellLevelText(spell.level)} • {spellData.school}
                             {!hasSlot && !isCantrip && ' • No slots'}
                           </div>
@@ -522,9 +512,9 @@ export function CombatSimulatorTab() {
 
               {/* Target selection for spells */}
               {selectedSpellName && (
-                <div className="mb-2 md:mb-3 p-2 md:p-3 bg-background/50 rounded">
-                  <div className="text-xs md:text-sm font-semibold mb-2">Select Target(s):</div>
-                  <div className="flex flex-wrap gap-1 md:gap-2">
+                <div className="combat-spell-targets">
+                  <div className="combat-spell-targets-label">Select Target(s):</div>
+                  <div className="combat-targets-grid">
                     {getLivingCombatants()
                       .filter((c: Combatant) => {
                         const current = getCurrentCombatant();
@@ -534,14 +524,10 @@ export function CombatSimulatorTab() {
                         <button
                           key={target.id}
                           onClick={() => handleTargetToggle(target.id)}
-                          className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
-                            selectedTargetIds.includes(target.id)
-                              ? 'bg-purple-600 text-white border-purple-500'
-                              : 'bg-background hover:bg-purple-100 dark:hover:bg-purple-900/30 border-muted'
-                          }`}
+                          className={`combat-target-button ${selectedTargetIds.includes(target.id) ? 'combat-target-button-selected' : ''}`}
                         >
-                          <div className="font-semibold text-xs md:text-sm truncate">{target.character.name}</div>
-                          <div className="text-[10px] md:text-xs opacity-80">
+                          <div className="combat-target-name truncate">{target.character.name}</div>
+                          <div className="combat-target-hp">
                             HP: {target.currentHP}/{target.character.hp.max}
                           </div>
                         </button>
@@ -552,21 +538,21 @@ export function CombatSimulatorTab() {
 
               {/* Cast button */}
               {selectedSpellName && selectedTargetIds.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center gap-2">
+                <div className="combat-spell-cast-row">
                   <button
                     onClick={handleCastSpell}
-                    className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
+                    className="combat-spell-cast-button"
                   >
                     <span>✨</span> Cast {selectedSpellName}
                   </button>
-                  <span className="text-[10px] md:text-xs text-muted-foreground">
+                  <span className="combat-spell-target-count">
                     on {selectedTargetIds.length} target{selectedTargetIds.length > 1 ? 's' : ''}
                   </span>
                 </div>
               )}
 
               {selectedSpellName && selectedTargetIds.length === 0 && (
-                <p className="text-[10px] md:text-xs text-amber-600 dark:text-amber-400">
+                <p className="combat-spell-warning">
                   ⚠️ Select at least one target to cast this spell
                 </p>
               )}
@@ -574,12 +560,12 @@ export function CombatSimulatorTab() {
           )}
 
           {/* Combat Area: Initiative Order + Combatant Cards */}
-          <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+          <div className="combat-area">
             {/* Initiative Order Sidebar - Task 4.9.2 */}
-            <div className="lg:w-1/4">
-              <div className="bg-muted rounded-lg p-3 md:p-4 sticky top-4">
-                <h3 className="font-bold mb-2 md:mb-3 text-xs md:text-sm">Initiative Order</h3>
-                <div className="space-y-1 md:space-y-2">
+            <div className="combat-initiative">
+              <div className="combat-initiative-inner">
+                <h3 className="combat-initiative-title">Initiative Order</h3>
+                <div className="combat-initiative-list">
                   {combat.combatants
                     .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative)
                     .map((combatant: Combatant, index: number) => {
@@ -589,18 +575,18 @@ export function CombatSimulatorTab() {
                       return (
                         <div
                           key={combatant.id}
-                          className={`text-[10px] md:text-xs p-1 md:p-2 rounded border ${
+                          className={`combat-initiative-item ${
                             isCurrentTurn
-                              ? 'bg-primary text-primary-foreground border-primary'
+                              ? 'combat-initiative-item-current'
                               : combatant.isDefeated
-                              ? 'bg-background opacity-50 border-muted line-through'
-                              : 'bg-background border-muted'
+                              ? 'combat-initiative-item-defeated'
+                              : ''
                           }`}
                         >
-                          <div className="flex items-center gap-1 md:gap-2">
-                            <span className="font-bold w-4 md:w-5 text-[10px] md:text-xs">{index + 1}.</span>
-                            <span className="flex-1 truncate text-[10px] md:text-xs">{combatant.character.name}</span>
-                            <span className="font-mono text-[10px] md:text-xs">{combatant.initiative}</span>
+                          <div className="combat-initiative-row">
+                            <span className="combat-initiative-number">{index + 1}.</span>
+                            <span className="combat-initiative-name truncate">{combatant.character.name}</span>
+                            <span className="combat-initiative-value">{combatant.initiative}</span>
                           </div>
                         </div>
                       );
@@ -610,54 +596,56 @@ export function CombatSimulatorTab() {
             </div>
 
             {/* Combatant Cards */}
-            <div className="lg:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              {combat.combatants.map((combatant: Combatant) => {
-                const current = getCurrentCombatant();
-                const isCurrentTurn = current?.id === combatant.id;
-                const hpPercent = (combatant.currentHP / combatant.character.hp.max) * 100;
-                const hpColor = hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500';
+            <div className="combat-combatants">
+              <div className="combat-combatants-grid">
+                {combat.combatants.map((combatant: Combatant) => {
+                  const current = getCurrentCombatant();
+                  const isCurrentTurn = current?.id === combatant.id;
+                  const hpPercent = (combatant.currentHP / combatant.character.hp.max) * 100;
+                  const hpColor = hpPercent > 50 ? 'combat-combatant-hp-fill-green' : hpPercent > 25 ? 'combat-combatant-hp-fill-yellow' : 'combat-combatant-hp-fill-red';
 
-                return (
-                  <div
-                    key={combatant.id}
-                    className={`border rounded-lg p-3 md:p-4 ${isCurrentTurn ? 'ring-2 ring-primary' : ''} ${combatant.isDefeated ? 'opacity-50' : ''}`}
-                  >
-                    <div className="flex justify-between items-start mb-1 md:mb-2">
-                      <div>
-                        <h3 className="font-bold text-sm md:text-base">{combatant.character.name}</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground">{combatant.character.race} {combatant.character.class}</p>
+                  return (
+                    <div
+                      key={combatant.id}
+                      className={`combat-combatant-card ${isCurrentTurn ? 'combat-combatant-card-current' : ''} ${combatant.isDefeated ? 'combat-combatant-card-defeated' : ''}`}
+                    >
+                      <div className="combat-combatant-header">
+                        <div>
+                          <h3 className="combat-combatant-name">{combatant.character.name}</h3>
+                          <p className="combat-combatant-class">{combatant.character.race} {combatant.character.class}</p>
+                        </div>
+                        {isCurrentTurn && <span className="combat-combatant-badge">Current</span>}
                       </div>
-                      {isCurrentTurn && <span className="text-[10px] md:text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Current</span>}
-                    </div>
 
-                    <div className="mb-1 md:mb-2">
-                      <div className="flex justify-between text-xs md:text-sm mb-1">
-                        <span>HP</span>
-                        <span>{combatant.currentHP} / {combatant.character.hp.max}</span>
+                      <div className="combat-combatant-hp-section">
+                        <div className="combat-combatant-hp-header">
+                          <span>HP</span>
+                          <span>{combatant.currentHP} / {combatant.character.hp.max}</span>
+                        </div>
+                        <div className="combat-combatant-hp-bar">
+                          <div className={`combat-combatant-hp-fill ${hpColor}`} style={{ width: `${hpPercent}%` }} />
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2">
-                        <div className={`h-1.5 md:h-2 rounded-full ${hpColor}`} style={{ width: `${hpPercent}%` }} />
-                      </div>
-                    </div>
 
-                    <div className="text-xs md:text-sm space-y-0.5 md:space-y-1">
-                      <div>Initiative: <span className="font-bold">{combatant.initiative}</span></div>
-                      {combatant.isDefeated && <span className="text-red-500">Defeated</span>}
+                      <div className="combat-combatant-stats space-y-0\.5">
+                        <div>Initiative: <span className="combat-stat-bold">{combatant.initiative}</span></div>
+                        {combatant.isDefeated && <span className="combat-combatant-defeated">Defeated</span>}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Combat Log - Task 4.9.3 */}
           {combatLog.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-sm md:text-base">Combat Log</h3>
-                {isAutoPlaying && <span className="text-[10px] md:text-xs text-green-600 animate-pulse">● Auto-scrolling</span>}
+            <div className="combat-log-section">
+              <div className="combat-log-header">
+                <h3 className="combat-log-title">Combat Log</h3>
+                {isAutoPlaying && <span className="combat-log-autoscroll combat-log-autoscroll-pulse">● Auto-scrolling</span>}
               </div>
-              <div ref={combatLogRef} className="bg-muted rounded-lg p-3 md:p-4 max-h-80 md:max-h-96 overflow-y-auto space-y-1 md:space-y-2 scroll-smooth">
+              <div ref={combatLogRef} className="combat-log-container">
                 {combatLog.map((action: any, index: number) => {
                   const borderColor = getLogEntryColor(action);
                   const actionRound = getActionRound(index, combat.combatants.length);
@@ -668,51 +656,51 @@ export function CombatSimulatorTab() {
                   return (
                     <div
                       key={index}
-                      className={`text-[10px] md:text-sm border-l-4 ${borderColor} bg-background rounded-r-lg p-2 md:p-3`}
+                      className={`combat-log-entry ${borderColor}`}
                     >
                       {/* Round number and action type */}
-                      <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1 flex-wrap">
-                        <span className="text-[10px] md:text-xs font-bold bg-muted px-1 md:px-2 py-0.5 rounded">
+                      <div className="combat-log-meta flex-wrap items-center gap-1 md:gap-2 mb-0\.5 md:mb-1">
+                        <span className="combat-log-round">
                           Round {actionRound}
                         </span>
-                        <span className="font-bold text-foreground text-[10px] md:text-xs">
+                        <span className="combat-log-actor">
                           {action.actor.character.name}
                         </span>
-                        <span className="text-muted-foreground text-[10px] md:text-xs">
+                        <span className="combat-log-action">
                           used {action.type === 'attack' ? 'an attack' : action.type}
                         </span>
                         {action.target && (
-                          <span className="text-muted-foreground text-[10px] md:text-xs">
-                            on <span className="font-semibold">{action.target.character.name}</span>
+                          <span className="combat-log-action">
+                            on <span className="combat-log-target-name">{action.target.character.name}</span>
                           </span>
                         )}
                       </div>
 
                       {/* Action details */}
                       {action.attack && (
-                        <div className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">
-                          Weapon: <span className="font-semibold">{action.attack.name}</span>
+                        <div className="combat-log-detail mb-0\.5 md:mb-1">
+                          Weapon: <span className="combat-log-detail-value">{action.attack.name}</span>
                         </div>
                       )}
 
                       {/* Roll values */}
                       {action.result?.roll !== undefined && (
-                        <div className="text-[10px] md:text-xs">
-                          <span className="text-muted-foreground">Roll:</span>{' '}
-                          <span className={`font-bold ${isSuccessHit ? 'text-green-600' : isMiss ? 'text-red-600' : ''}`}>
+                        <div className="combat-log-detail">
+                          <span className="combat-log-detail-label">Roll:</span>{' '}
+                          <span className={`combat-log-detail-value ${isSuccessHit ? 'combat-log-roll' : isMiss ? 'combat-log-roll-miss' : ''}`}>
                             d20 {action.result.roll >= 0 ? '+' : ''}{action.result.roll}
                           </span>
                           {action.result.isCritical && (
-                            <span className="ml-1 md:ml-2 text-yellow-600 font-bold text-[10px] md:text-xs">🎯 CRITICAL!</span>
+                            <span className="combat-log-roll-crit">🎯 CRITICAL!</span>
                           )}
                         </div>
                       )}
 
                       {/* Hit/Miss result */}
                       {action.result?.success !== undefined && (
-                        <div className="text-[10px] md:text-xs">
-                          <span className="text-muted-foreground">Result:</span>{' '}
-                          <span className={`font-bold ${isSuccessHit ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="combat-log-detail">
+                          <span className="combat-log-detail-label">Result:</span>{' '}
+                          <span className={`combat-log-detail-value ${isSuccessHit ? 'combat-log-roll' : 'combat-log-roll-miss'}`}>
                             {isSuccessHit ? '✓ HIT' : '✗ MISS'}
                           </span>
                         </div>
@@ -720,9 +708,9 @@ export function CombatSimulatorTab() {
 
                       {/* Damage dealt */}
                       {action.result?.damage !== undefined && action.result?.success && (
-                        <div className="text-[10px] md:text-xs">
-                          <span className="text-muted-foreground">Damage:</span>{' '}
-                          <span className="font-bold text-orange-600">
+                        <div className="combat-log-detail">
+                          <span className="combat-log-detail-label">Damage:</span>{' '}
+                          <span className="combat-log-detail-value combat-log-damage">
                             {action.result.damage} {action.result.damageType || ''}
                           </span>
                         </div>
@@ -730,9 +718,9 @@ export function CombatSimulatorTab() {
 
                       {/* HP change */}
                       {action.result?.targetHP !== undefined && (
-                        <div className="text-[10px] md:text-xs">
-                          <span className="text-muted-foreground">Target HP:</span>{' '}
-                          <span className={`font-bold ${action.result.targetHP < 10 ? 'text-red-600' : ''}`}>
+                        <div className="combat-log-detail">
+                          <span className="combat-log-detail-label">Target HP:</span>{' '}
+                          <span className={`combat-log-detail-value ${action.result.targetHP < 10 ? 'combat-log-low-hp' : ''}`}>
                             {action.result.targetHP} / {action.target?.character.hp.max || '?'}
                           </span>
                         </div>
@@ -740,24 +728,24 @@ export function CombatSimulatorTab() {
 
                       {/* Spell details */}
                       {isSpell && action.spell && (
-                        <div className="text-[10px] md:text-xs text-blue-600">
-                          <span className="font-bold">{action.spell.name}</span>
+                        <div className="combat-log-detail combat-log-spell">
+                          <span className="combat-log-detail-value">{action.spell.name}</span>
                           {action.result?.description && (
-                            <span className="text-muted-foreground ml-1 md:ml-2">({action.result.description})</span>
+                            <span className="combat-log-detail-label ml-1 md:ml-2">({action.result.description})</span>
                           )}
                         </div>
                       )}
 
                       {/* Status effects */}
                       {action.result?.statusEffects && action.result.statusEffects.length > 0 && (
-                        <div className="text-[10px] md:text-xs text-yellow-600">
+                        <div className="combat-log-detail combat-log-status">
                           Status: {action.result.statusEffects.map((e: any) => e.name).join(', ')}
                         </div>
                       )}
 
                       {/* Description as fallback */}
                       {!action.result?.roll && !action.result?.damage && action.result?.description && (
-                        <div className="text-[10px] md:text-xs text-muted-foreground italic">
+                        <div className="combat-log-description">
                           {action.result.description}
                         </div>
                       )}
@@ -770,46 +758,46 @@ export function CombatSimulatorTab() {
 
           {/* Victory Overlay - Task 4.9.5 */}
           {combatResult && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-              <div className="bg-background border-2 border-primary rounded-lg p-4 md:p-8 max-w-md w-full mx-0 md:mx-4 shadow-2xl">
-                <h2 className="text-xl md:text-3xl font-bold text-center mb-4 md:mb-6 text-primary">⚔️ Victory! ⚔️</h2>
+            <div className="combat-victory-overlay">
+              <div className="combat-victory-card">
+                <h2 className="combat-victory-title">⚔️ Victory! ⚔️</h2>
 
-                <div className="space-y-2 md:space-y-4 mb-4 md:mb-6">
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-xs md:text-sm text-muted-foreground">Winner</span>
-                    <span className="text-base md:text-2xl font-bold">{combatResult.winner.character.name}</span>
+                <div className="combat-victory-stats">
+                  <div className="combat-victory-stat">
+                    <span className="combat-victory-stat-label">Winner</span>
+                    <span className="combat-victory-stat-value">{combatResult.winner.character.name}</span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-xs md:text-sm text-muted-foreground">XP Awarded</span>
-                    <span className="text-base md:text-xl font-bold text-green-600">+{combatResult.xpAwarded} XP</span>
+                  <div className="combat-victory-stat">
+                    <span className="combat-victory-stat-label">XP Awarded</span>
+                    <span className="combat-victory-stat-value combat-victory-xp">+{combatResult.xpAwarded} XP</span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-xs md:text-sm text-muted-foreground">Rounds Elapsed</span>
-                    <span className="text-sm md:text-lg font-semibold">{combatResult.roundsElapsed}</span>
+                  <div className="combat-victory-stat">
+                    <span className="combat-victory-stat-label">Rounds Elapsed</span>
+                    <span className="combat-victory-stat-value">{combatResult.roundsElapsed}</span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-xs md:text-sm text-muted-foreground">Total Turns</span>
-                    <span className="text-sm md:text-lg font-semibold">{combatResult.totalTurns}</span>
+                  <div className="combat-victory-stat">
+                    <span className="combat-victory-stat-label">Total Turns</span>
+                    <span className="combat-victory-stat-value">{combatResult.totalTurns}</span>
                   </div>
 
                   {/* Performance metrics (Phase 5.5.2) */}
                   {combatPerformance && (
                     <>
-                      <div className="flex justify-between items-center border-b pb-2">
-                        <span className="text-xs md:text-sm text-muted-foreground">Combat Time</span>
-                        <span className={`text-sm md:text-lg font-semibold ${combatPerformance.performanceTarget === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className="combat-victory-stat">
+                        <span className="combat-victory-stat-label">Combat Time</span>
+                        <span className={`combat-victory-stat-value ${combatPerformance.performanceTarget === 'PASS' ? 'combat-victory-performance-pass' : 'combat-victory-performance-fail'}`}>
                           {combatPerformance.totalTimeSeconds}s
                         </span>
                       </div>
-                      <div className="flex justify-between items-center border-b pb-2">
-                        <span className="text-xs md:text-sm text-muted-foreground">Performance</span>
-                        <span className={`text-xs md:text-sm font-bold px-2 py-1 rounded ${
+                      <div className="combat-victory-stat">
+                        <span className="combat-victory-stat-label">Performance</span>
+                        <span className={`combat-victory-performance-badge ${
                           combatPerformance.performanceTarget === 'PASS'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                         }`}>
                           {combatPerformance.performanceTarget}
                         </span>
@@ -818,8 +806,8 @@ export function CombatSimulatorTab() {
                   )}
 
                   {combatResult.description && (
-                    <div className="pt-2">
-                      <p className="text-xs md:text-sm text-center text-muted-foreground italic">
+                    <div className="combat-victory-description">
+                      <p className="combat-victory-description-text">
                         {combatResult.description}
                       </p>
                     </div>
@@ -828,7 +816,7 @@ export function CombatSimulatorTab() {
 
                 <button
                   onClick={resetCombat}
-                  className="w-full px-4 md:px-6 py-3 md:py-3 min-h-[44px] bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 transition-opacity text-sm md:text-base"
+                  className="combat-victory-restart"
                 >
                   Restart Combat
                 </button>
@@ -838,12 +826,12 @@ export function CombatSimulatorTab() {
 
           {/* Action Buttons - Hide when combat ended */}
           {isActive && (
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4">
+            <div className="combat-actions">
               {/* Manual control buttons */}
               <button
                 onClick={handleNextTurn}
                 disabled={isAutoPlaying}
-                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                className={`combat-action-button combat-button combat-button-primary ${isAutoPlaying ? 'combat-button-disabled' : ''}`}
               >
                 Next Turn
               </button>
@@ -852,14 +840,14 @@ export function CombatSimulatorTab() {
               {!isAutoPlaying ? (
                 <button
                   onClick={handleStartAutoPlay}
-                  className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center gap-2 text-sm md:text-base"
+                  className="combat-action-button combat-button combat-button-green"
                 >
                   <span>▶</span> Auto-Play
                 </button>
               ) : (
                 <button
                   onClick={handlePauseAutoPlay}
-                  className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-amber-600 text-white rounded-md hover:bg-amber-700 flex items-center justify-center gap-2 text-sm md:text-base"
+                  className="combat-action-button combat-button combat-button-amber"
                 >
                   <span>⏸</span> Pause
                 </button>
@@ -867,25 +855,25 @@ export function CombatSimulatorTab() {
 
               <button
                 onClick={resetCombat}
-                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-muted text-muted-foreground rounded-md hover:opacity-90 text-sm md:text-base"
+                className="combat-action-button combat-button combat-button-muted"
               >
                 Reset Combat
               </button>
 
               {/* Auto-play status indicator (task 4.9.7) */}
               {isAutoPlaying && (
-                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-green-600 animate-pulse w-full sm:w-auto">
-                  <span className="font-semibold">Auto-playing...</span>
-                  <span className="text-muted-foreground">({AUTO_PLAY_INTERVAL_MS / 1000}s per turn)</span>
+                <div className="combat-autoplay-status">
+                  <span className="combat-autoplay-label">Auto-playing...</span>
+                  <span className="combat-autoplay-interval">({AUTO_PLAY_INTERVAL_MS / 1000}s per turn)</span>
                 </div>
               )}
             </div>
           )}
 
           {/* Raw JSON Dump - Task 4.9.10 */}
-          <div className="space-y-2 md:space-y-4">
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm md:text-base">Combat Engine Data</h3>
+          <div className="combat-dump-section">
+            <div className="combat-dump-header">
+              <h3 className="combat-dump-title">Combat Engine Data</h3>
               <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />
             </div>
             <RawJsonDump data={combat} title="Combat Instance JSON" defaultOpen={false} />

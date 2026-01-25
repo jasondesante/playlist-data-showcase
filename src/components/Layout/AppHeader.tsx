@@ -14,10 +14,10 @@ interface AppHeaderProps {
 
 export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 'Technical validation • Console logging enabled' }: AppHeaderProps) {
   return (
-    <header className="border-b border-border bg-card">
-      <div className="container mx-auto px-4 py-4">
-        <h1 className="text-2xl font-bold text-primary">{title}</h1>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
+    <header className="app-header">
+      <div className="app-header-inner">
+        <h1 className="app-header-title">{title}</h1>
+        <p className="app-header-subtitle">{subtitle}</p>
       </div>
     </header>
   );

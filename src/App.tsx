@@ -49,7 +49,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="app-root">
       <AppHeader />
 
       <MainLayout tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)}>

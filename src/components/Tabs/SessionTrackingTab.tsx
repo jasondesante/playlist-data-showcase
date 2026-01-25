@@ -46,9 +46,9 @@ export function SessionTrackingTab() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg md:text-xl font-bold">Session Tracker</h2>
+    <div className="session-container">
+      <div className="session-header">
+        <h2 className="session-header-title">Session Tracker</h2>
         <StatusIndicator
           status={isActive ? 'healthy' : lastSession ? 'healthy' : 'degraded'}
           label={isActive ? 'Active' : lastSession ? 'Session Complete' : 'No Session'}
@@ -56,49 +56,49 @@ export function SessionTrackingTab() {
       </div>
 
       {!selectedTrack ? (
-        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
+        <p className="session-prompt">Select a track from the Playlist tab first</p>
       ) : (
         <>
-          <div className="p-3 md:p-4 bg-accent rounded-md">
-            <p className="font-medium text-sm md:text-base">{selectedTrack.title}</p>
-            <p className="text-xs md:text-sm text-muted-foreground">{selectedTrack.artist}</p>
+          <div className="session-selected-track">
+            <p className="session-track-title">{selectedTrack.title}</p>
+            <p className="session-track-artist">{selectedTrack.artist}</p>
           </div>
 
           {!isActive ? (
             <button
               onClick={handleStart}
-              className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+              className="session-start-button session-button-base session-button-primary"
             >
-              <Play className="w-4 h-4" />
-              <span className="text-sm md:text-base">Start Session & Play Audio</span>
+              <Play className="session-button-icon" />
+              <span>Start Session & Play Audio</span>
             </button>
           ) : (
             <>
-              <div className="p-4 md:p-6 bg-card border border-border rounded-md text-center">
-                <p className="text-xs md:text-sm text-muted-foreground mb-2">Elapsed Time</p>
-                <p className="text-3xl md:text-4xl font-bold font-mono tabular-nums">
+              <div className="session-timer-section">
+                <p className="session-timer-label">Elapsed Time</p>
+                <p className="session-timer-time">
                   {Math.floor(elapsedTime / 60)}:{String(elapsedTime % 60).padStart(2, '0')}
                 </p>
-                <div className="mt-3 md:mt-4">
-                  <div className="h-2 bg-background rounded-full overflow-hidden">
+                <div className="session-progress-section">
+                  <div className="session-progress-bar">
                     <div
-                      className="h-full bg-primary transition-all duration-1000"
+                      className="session-progress-fill"
                       style={{ width: `${Math.min((elapsedTime / (selectedTrack.duration || 180)) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
                 {sessionId && (
-                  <p className="text-xs text-muted-foreground mt-2 break-all">
+                  <p className="session-track-url">
                     Session ID: {sessionId}
                   </p>
                 )}
               </div>
               <button
                 onClick={handleEnd}
-                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-destructive text-destructive-foreground rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+                className="session-start-button session-button-base session-button-destructive"
               >
-                <Pause className="w-4 h-4" />
-                <span className="text-sm md:text-base">End Session & Stop Audio</span>
+                <Pause className="session-button-icon" />
+                <span>End Session & Stop Audio</span>
               </button>
             </>
           )}
