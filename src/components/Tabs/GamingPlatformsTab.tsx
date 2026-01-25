@@ -88,41 +88,41 @@ export function GamingPlatformsTab() {
   const isDiscordConnecting = discordConnectionStatus === 'connecting';
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Gaming Platforms</h2>
+    <div className="space-y-4 md:space-y-6">
+      <h2 className="text-lg md:text-xl font-bold">Gaming Platforms</h2>
 
       {/* Steam Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Steam Integration</h3>
+      <div className="space-y-3 md:space-y-4">
+        <h3 className="text-base md:text-lg font-semibold">Steam Integration</h3>
         <div>
           <label className="block text-sm font-medium mb-2">Steam User ID</label>
           <input
             type="text"
             value={steamId}
             onChange={(e) => setSteamId(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            className="w-full px-3 md:px-4 py-3 md:py-2 min-h-[44px] bg-background border border-input rounded-md text-base md:text-sm"
             placeholder="Enter Steam ID..."
             disabled={steamConnected}
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <button
             onClick={handleConnectSteam}
             disabled={steamConnected || !steamId.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-4 md:px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
           >
             {steamConnected ? 'Connected' : 'Connect Steam'}
           </button>
           {steamConnected && (
-            <span className="text-sm text-green-500">🟢 Connected</span>
+            <span className="text-sm text-green-500 flex items-center">🟢 Connected</span>
           )}
         </div>
       </div>
 
       {/* Discord Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Discord Music Status</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="space-y-3 md:space-y-4">
+        <h3 className="text-base md:text-lg font-semibold">Discord Music Status</h3>
+        <p className="text-xs md:text-sm text-muted-foreground">
           Connect Discord to set your music status. Discord RPC can only show what music you&apos;re listening to, not read game activity.
         </p>
         <div>
@@ -131,11 +131,11 @@ export function GamingPlatformsTab() {
             type="text"
             value={settings.discordClientId || ''}
             onChange={(e) => updateSettings({ discordClientId: e.target.value })}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            className="w-full px-3 md:px-4 py-3 md:py-2 min-h-[44px] bg-background border border-input rounded-md text-base md:text-sm"
             placeholder="Enter Discord Client ID..."
             disabled={isDiscordConnected || isDiscordConnecting}
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
             Get your Client ID from the{' '}
             <a
               href="https://discord.com/developers/applications"
@@ -147,47 +147,49 @@ export function GamingPlatformsTab() {
             </a>
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <button
             onClick={handleConnectDiscord}
             disabled={isDiscordConnecting || !settings.discordClientId?.trim()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-4 md:px-4 py-3 md:py-2 min-h-[44px] bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
           >
             {isDiscordConnecting ? 'Connecting...' : isDiscordConnected ? 'Disconnect Discord' : 'Connect Discord'}
           </button>
-          {getDiscordStatusIndicator()}
+          <span className="flex items-center">
+            {getDiscordStatusIndicator()}
+          </span>
         </div>
         {discordConnectionError && (
-          <p className="text-sm text-red-500">{discordConnectionError}</p>
+          <p className="text-xs md:text-sm text-red-500">{discordConnectionError}</p>
         )}
         {isDiscordConnected && (
           <>
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-              <p className="text-sm text-green-800 dark:text-green-200">
+            <div className="p-3 md:p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-xs md:text-sm text-green-800 dark:text-green-200">
                 ✓ Discord is connected! When you play music, your status will update to show what you&apos;re listening to.
               </p>
             </div>
 
             {/* Music Status Section */}
-            <div className="mt-4 p-4 bg-card border border-border rounded-md">
+            <div className="mt-3 md:mt-4 p-3 md:p-4 bg-card border border-border rounded-md">
               <h4 className="text-sm font-semibold mb-2">Set Music Status</h4>
-              <p className="text-xs text-muted-foreground mb-3">
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-2 md:mb-3">
                 Set your Discord status to show what music you&apos;re listening to. Select a track from the Playlist Loader tab first.
               </p>
 
               {selectedTrack ? (
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between p-2 bg-muted rounded-md">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{selectedTrack.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{selectedTrack.artist || 'Unknown Artist'}</p>
+                      <p className="text-xs md:text-sm font-medium truncate">{selectedTrack.title}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{selectedTrack.artist || 'Unknown Artist'}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground ml-2">
+                    <span className="text-[10px] md:text-xs text-muted-foreground ml-2 whitespace-nowrap">
                       {selectedTrack.duration ? `${Math.floor(selectedTrack.duration / 60)}:${(selectedTrack.duration % 60).toString().padStart(2, '0')}` : 'Unknown duration'}
                     </span>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                     {!musicStatusActive ? (
                       <button
                         onClick={async () => {
@@ -201,7 +203,7 @@ export function GamingPlatformsTab() {
                             setMusicStatusActive(true);
                           }
                         }}
-                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-indigo-600 text-white text-xs md:text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Set Music Status
                       </button>
@@ -214,11 +216,11 @@ export function GamingPlatformsTab() {
                               setMusicStatusActive(false);
                             }
                           }}
-                          className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-red-600 text-white text-xs md:text-sm rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Clear Music Status
                         </button>
-                        <span className="text-sm text-green-600 flex items-center">
+                        <span className="text-xs md:text-sm text-green-600 flex items-center justify-center">
                           ✓ Status Active
                         </span>
                       </>
@@ -227,7 +229,7 @@ export function GamingPlatformsTab() {
                 </div>
               ) : (
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200">
                     No track selected. Go to the Playlist Loader tab to select a track first.
                   </p>
                 </div>
@@ -237,7 +239,7 @@ export function GamingPlatformsTab() {
         )}
         {discordConnectionStatus === 'unavailable' && (
           <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
-            <p className="text-sm text-orange-800 dark:text-orange-200">
+            <p className="text-xs md:text-sm text-orange-800 dark:text-orange-200">
               Discord is not running or no user is logged in. Please open Discord and try again.
             </p>
           </div>
@@ -246,19 +248,19 @@ export function GamingPlatformsTab() {
 
       {/* Steam Gaming Status Display */}
       {gamingContext?.isActivelyGaming && gamingContext.currentGame && (
-        <div className="p-4 bg-card border border-border rounded-md space-y-4">
-          <h3 className="text-lg font-semibold">Steam Gaming Status</h3>
+        <div className="p-3 md:p-4 bg-card border border-border rounded-md space-y-3 md:space-y-4">
+          <h3 className="text-base md:text-lg font-semibold">Steam Gaming Status</h3>
 
           {/* Current Game */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Currently Playing</p>
+            <p className="text-xs md:text-sm font-medium text-muted-foreground">Currently Playing</p>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🎮</span>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-xl md:text-2xl">🎮</span>
               </div>
-              <div>
-                <p className="text-lg font-bold">{gamingContext.currentGame.name}</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="flex-1 min-w-0">
+                <p className="text-base md:text-lg font-bold truncate">{gamingContext.currentGame.name}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {gamingContext.currentGame.source === 'steam' ? 'via Steam' : gamingContext.currentGame.source}
                 </p>
               </div>
@@ -268,12 +270,12 @@ export function GamingPlatformsTab() {
           {/* Game Genre */}
           {gamingContext.currentGame.genre && gamingContext.currentGame.genre.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Genre</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Genre</p>
+              <div className="flex flex-wrap gap-1 md:gap-2">
                 {gamingContext.currentGame.genre.map((genre, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full"
+                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] md:text-xs rounded-full"
                   >
                     {genre}
                   </span>
@@ -284,17 +286,17 @@ export function GamingPlatformsTab() {
 
           {/* Session Details */}
           {gamingContext.currentGame.sessionDuration !== undefined && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Session Duration</p>
-                <p className="text-lg font-semibold">
+                <p className="text-[10px] md:text-sm font-medium text-muted-foreground">Session Duration</p>
+                <p className="text-base md:text-lg font-semibold">
                   {gamingContext.currentGame.sessionDuration} min
                 </p>
               </div>
               {gamingContext.currentGame.partySize !== undefined && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Party Size</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-[10px] md:text-sm font-medium text-muted-foreground">Party Size</p>
+                  <p className="text-base md:text-lg font-semibold">
                     {gamingContext.currentGame.partySize} {gamingContext.currentGame.partySize === 1 ? 'player' : 'players'}
                   </p>
                 </div>
@@ -306,37 +308,37 @@ export function GamingPlatformsTab() {
 
       {/* Gaming Bonus Display */}
       {gamingContext?.isActivelyGaming && (
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-md space-y-3">
-          <h3 className="text-lg font-semibold">Gaming XP Bonus</h3>
+        <div className="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-md space-y-3">
+          <h3 className="text-base md:text-lg font-semibold">Gaming XP Bonus</h3>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-[10px] md:text-sm text-muted-foreground">
             Active gaming boosts your XP gain while listening to music.
           </p>
 
           {/* Bonus Multiplier Display */}
-          <div className="flex items-center gap-4">
-            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
               {calculateGamingBonus().toFixed(2)}x
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">XP Multiplier</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium">XP Multiplier</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">
                 Applied to all XP earned while gaming
               </p>
             </div>
           </div>
 
           {/* Bonus Formula Breakdown */}
-          <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-semibold mb-2">Bonus Formula Breakdown</p>
-            <div className="text-xs space-y-1">
+          <div className="mt-2 md:mt-3 p-2 md:p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+            <p className="text-[10px] md:text-xs font-semibold mb-1 md:mb-2">Bonus Formula Breakdown</p>
+            <div className="text-[10px] md:text-xs space-y-0.5 md:space-y-1">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Base gaming bonus:</span>
                 <span className="font-mono">1.0x</span>
               </div>
               {gamingContext.currentGame?.sessionDuration && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Session bonus (minutes × 0.01):</span>
+                  <span className="text-muted-foreground">Session bonus:</span>
                   <span className="font-mono">+{Math.min(gamingContext.currentGame.sessionDuration * 0.01, 0.75).toFixed(2)}x</span>
                 </div>
               )}
@@ -361,7 +363,7 @@ export function GamingPlatformsTab() {
                 </div>
               )}
               <div className="border-t border-gray-200 dark:border-gray-600 pt-1 mt-1 flex justify-between font-semibold">
-                <span className="text-muted-foreground">Total (capped at 1.75x):</span>
+                <span className="text-muted-foreground">Total (max 1.75x):</span>
                 <span className="font-mono text-blue-600 dark:text-blue-400">{calculateGamingBonus().toFixed(2)}x</span>
               </div>
             </div>
@@ -370,7 +372,7 @@ export function GamingPlatformsTab() {
           {/* Bonus Active Indicator */}
           <div className="flex items-center gap-2 mt-2">
             <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
-            <span className="text-sm font-medium text-green-700 dark:text-green-400">
+            <span className="text-xs md:text-sm font-medium text-green-700 dark:text-green-400">
               Bonus Active
             </span>
           </div>
@@ -379,17 +381,17 @@ export function GamingPlatformsTab() {
 
       {/* Gaming Summary Stats */}
       {gamingContext && (gamingContext.totalGamingMinutes > 0 || (gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0)) && (
-        <div className="p-4 bg-card border border-border rounded-md space-y-4">
-          <h3 className="text-lg font-semibold">Gaming Summary (While Listening)</h3>
+        <div className="p-3 md:p-4 bg-card border border-border rounded-md space-y-3 md:space-y-4">
+          <h3 className="text-base md:text-lg font-semibold">Gaming Summary (While Listening)</h3>
 
           {/* Lifetime Gaming Minutes */}
           {gamingContext.totalGamingMinutes > 0 && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Gaming Time</p>
-              <p className="text-lg font-semibold">
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Gaming Time</p>
+              <p className="text-base md:text-lg font-semibold">
                 {gamingContext.totalGamingMinutes} minutes
                 {gamingContext.totalGamingMinutes >= 60 && (
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                  <span className="text-xs md:text-sm font-normal text-muted-foreground ml-2">
                     (~{Math.floor(gamingContext.totalGamingMinutes / 60)} hours)
                   </span>
                 )}
@@ -400,12 +402,12 @@ export function GamingPlatformsTab() {
           {/* Games Played While Listening */}
           {gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Games Played While Listening</p>
-              <ul className="space-y-1">
+              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Games Played While Listening</p>
+              <ul className="space-y-0.5 md:space-y-1">
                 {gamingContext.gamesPlayedWhileListening.map((gameName, index) => (
-                  <li key={index} className="text-sm flex items-center gap-2">
+                  <li key={index} className="text-xs md:text-sm flex items-center gap-2">
                     <span className="text-green-500">✓</span>
-                    <span>{gameName}</span>
+                    <span className="truncate">{gameName}</span>
                   </li>
                 ))}
               </ul>
@@ -415,15 +417,15 @@ export function GamingPlatformsTab() {
       )}
 
       {/* Raw JSON Dump Section - Task 4.8.5 */}
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold">Raw Gaming Platform Data</h3>
+          <h3 className="text-base md:text-lg font-semibold">Raw Gaming Platform Data</h3>
           <StatusIndicator
             status={gamingContext?.isActivelyGaming ? 'healthy' : gamingContext ? 'degraded' : 'error'}
             label={gamingContext?.isActivelyGaming ? 'Active Gaming' : gamingContext ? 'Connected' : 'No Data'}
           />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[10px] md:text-sm text-muted-foreground">
           Complete gaming context data from the GamingPlatformSensors module, including Steam activity and Discord connection status.
         </p>
 
@@ -436,16 +438,16 @@ export function GamingPlatformsTab() {
             status={gamingContext.isActivelyGaming ? 'healthy' : 'degraded'}
           />
         ) : (
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+          <div className="p-3 md:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+            <p className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200">
               No gaming data available. Connect to Steam or Discord to see gaming context data.
             </p>
           </div>
         )}
 
         {/* Discord Connection Status JSON Dump */}
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">Discord Connection Status</h4>
+        <div className="mt-3 md:mt-4">
+          <h4 className="text-[10px] md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Discord Connection Status</h4>
           <RawJsonDump
             data={{
               status: discordConnectionStatus,
@@ -462,8 +464,8 @@ export function GamingPlatformsTab() {
 
         {/* Steam Connection Status JSON Dump */}
         {steamId && (
-          <div className="mt-4">
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Steam Connection Status</h4>
+          <div className="mt-3 md:mt-4">
+            <h4 className="text-[10px] md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Steam Connection Status</h4>
             <RawJsonDump
               data={{
                 steamId: steamId,
