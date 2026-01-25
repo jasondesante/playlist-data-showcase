@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Music, Download, Sparkles } from 'lucide-react';
+import { Music, Download, Sparkles, Search } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -21,6 +21,7 @@ import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists
  */
 export function PlaylistLoaderTab() {
   const [txId, setTxId] = useState(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
+  const [searchQuery, setSearchQuery] = useState('');
   const { parsePlaylist } = usePlaylistParser();
   const {
     currentPlaylist,
@@ -36,6 +37,17 @@ export function PlaylistLoaderTab() {
     if (!txId.trim()) return;
     await parsePlaylist(txId.trim());
   };
+
+  // Filter tracks based on search query
+  const filteredTracks = currentPlaylist?.tracks.filter((track) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      track.title?.toLowerCase().includes(query) ||
+      track.artist?.toLowerCase().includes(query) ||
+      track.album?.toLowerCase().includes(query)
+    );
+  }) || [];
 
   // Determine status indicator based on current state
   const getFetchStatus = (): 'healthy' | 'degraded' | 'error' => {
@@ -202,27 +214,57 @@ export function PlaylistLoaderTab() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="font-medium">Tracks ({currentPlaylist.tracks.length}):</h4>
-            <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto space-y-2 pr-2">
-              {currentPlaylist.tracks.map((track: PlaylistTrack, idx: number) => (
-              <div
-                key={idx}
-                onClick={() => selectTrack(track)}
-                className={`p-3 border rounded-md cursor-pointer transition-colors ${selectedTrack?.title === track.title
-                  ? 'bg-primary/20 border-primary'
-                  : 'bg-card border-border hover:bg-accent'
-                  }`}
-              >
-                <p className="font-medium">{track.title}</p>
-                <p className="text-sm text-muted-foreground">{track.artist}</p>
-                {track.duration && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {Math.floor(track.duration / 60)}:{String(Math.floor(track.duration % 60)).padStart(2, '0')}
+          {/* Search Bar Section */}
+          <div className="space-y-4">
+            {/* Sticky Search Bar */}
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-2 -mx-2 px-2">
+              <Input
+                id="track-search"
+                label="Search Tracks"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter by title, artist, or album..."
+                leftIcon={Search}
+                helperText={searchQuery.trim()
+                  ? `Found ${filteredTracks.length} of ${currentPlaylist.tracks.length} tracks`
+                  : `${currentPlaylist.tracks.length} tracks total`
+                }
+              />
+            </div>
+
+            {/* Track List */}
+            <div className="space-y-2">
+              {filteredTracks.length === 0 ? (
+                /* No Search Results State */
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <span className="text-4xl mb-3" role="img" aria-label="Search">🔍</span>
+                  <h4 className="font-semibold text-lg mb-1">No tracks found</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Try adjusting your search query
                   </p>
-                )}
-              </div>
-            ))}
+                </div>
+              ) : (
+                <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto space-y-2 pr-2">
+                  {filteredTracks.map((track: PlaylistTrack, idx: number) => (
+                    <div
+                      key={idx}
+                      onClick={() => selectTrack(track)}
+                      className={`p-3 border rounded-md cursor-pointer transition-colors ${selectedTrack?.title === track.title
+                        ? 'bg-primary/20 border-primary'
+                        : 'bg-card border-border hover:bg-accent'
+                        }`}
+                    >
+                      <p className="font-medium">{track.title}</p>
+                      <p className="text-sm text-muted-foreground">{track.artist}</p>
+                      {track.duration && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {Math.floor(track.duration / 60)}:{String(Math.floor(track.duration % 60)).padStart(2, '0')}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
