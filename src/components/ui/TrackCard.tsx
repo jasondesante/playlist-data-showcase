@@ -181,6 +181,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
                 className="track-art-image"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
+                loading="lazy"
               />
             </>
           ) : (

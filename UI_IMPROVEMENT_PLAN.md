@@ -519,35 +519,11 @@ Note that you were building this with retarded tailwind which I fucking hate so 
    -  Loading skeletons
 
 
-   ### Sprint 0 : make sure the css looks good
-   - [x] make sure the site doesn't look like shit
-   - [x] actual good looking css for the page
-   - [x] FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
-     - Reduced playlist header image from 192px-224px to 128px-160px (w-32 h-32 sm:w-40 sm:h-40)
-     - Further reduced playlist header to 96px-112px (w-24 h-24 sm:w-28 sm:h-28) for better proportions
-     - Reduced header padding from p-4 md:p-6 to p-3 md:p-4
-     - Reduced header title from text-2xl md:text-3xl to text-xl md:text-2xl
-     - Reduced TrackCard image sizes: compact 64px→48px, default 80px→56px, large 96px→64px
-     - Adjusted padding, fonts, and icons proportionally to match smaller images
-     - Made layout more balanced with responsive spacing (gap-4 instead of gap-6)
-   - [x] Added comprehensive CSS improvements:
-     - Enhanced form element styling (inputs, selects, sliders)
-     - Custom scrollbar styling for all browsers
-     - Better typography (headings, line-height, letter-spacing)
-     - Improved focus styles for accessibility
-     - Smooth animations and transitions
-     - Glass morphism effects
-     - Text gradient utilities
-     - Border glow effects
-     - Card elevation hover effects
-     - Button press animations
-     - Link hover states
-     - Reduced motion support for accessibility
-   - [x] REPLACE TAILWIND WITH PURE CSS:
-     - Removed @tailwind directives from index.css
-     - Converted all UI components (TrackCard, Button, Input, Card, Skeleton) to use semantic CSS classes
-     - Added comprehensive pure CSS implementations for all components
-     - All functionality preserved without requiring Tailwind installation
+### Bug fixes and Extra requests
+
+- currently the tracks in the playlist tab all have 2 play buttons that show up when you hover the track yet clicking on them doesn't make the song start playing. There should only be 1 play button, not 2, and clicking should actually trigger playback.
+-the audio playback in the session tab also doesn't play the audio. the audio needs to be able to be played.
+
      
 <!-- DO NOT DO ANYTHING ELSE DO NOT DO ANY OF THESE EXTRA SPRINTS -->
 <!-- ### Sprint 4-13: Remaining Tabs

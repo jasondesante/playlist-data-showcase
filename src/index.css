@@ -1077,7 +1077,7 @@
   .track-card:hover {
     background-color: hsl(var(--surface-3));
     border-color: hsl(var(--primary) / 0.3);
-    transform: scale(1.01);
+    transform: scale(1.02);
   }
 
   /* Selected state */
