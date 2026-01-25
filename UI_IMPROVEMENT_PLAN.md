@@ -508,11 +508,11 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - ✅ Input section
    - ✅ Playlist header with large artwork
    - ✅ Search functionality
-   - Track list with TrackCard components
+   - ✅ Track list with TrackCard components
    - Empty states
    - Loading skeletons
 
-### Sprint 4-13: Remaining Tabs
+<!-- ### Sprint 4-13: Remaining Tabs
 8. Audio Analysis Tab
 9. Character Gen Tab
 10. Session Tab
@@ -521,13 +521,13 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 13. Sensors Tab
 14. Gaming Tab
 15. Combat Tab
-16. Settings Tab
+16. Settings Tab -->
 
-### Sprint 14: Polish
+<!-- ### Sprint 14: Polish
 17. Cross-tab consistency review
 18. Performance optimization
 19. Accessibility audit
-20. Final bug fixes
+20. Final bug fixes -->
 
 ---
 

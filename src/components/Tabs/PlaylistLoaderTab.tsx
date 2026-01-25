@@ -7,6 +7,7 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
+import { TrackCard } from '../ui/TrackCard';
 import type { PlaylistTrack } from '../../types';
 import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists';
 
@@ -246,22 +247,14 @@ export function PlaylistLoaderTab() {
               ) : (
                 <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto space-y-2 pr-2">
                   {filteredTracks.map((track: PlaylistTrack, idx: number) => (
-                    <div
+                    <TrackCard
                       key={idx}
+                      track={track}
+                      index={idx + 1}
+                      isSelected={selectedTrack?.title === track.title}
                       onClick={() => selectTrack(track)}
-                      className={`p-3 border rounded-md cursor-pointer transition-colors ${selectedTrack?.title === track.title
-                        ? 'bg-primary/20 border-primary'
-                        : 'bg-card border-border hover:bg-accent'
-                        }`}
-                    >
-                      <p className="font-medium">{track.title}</p>
-                      <p className="text-sm text-muted-foreground">{track.artist}</p>
-                      {track.duration && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {Math.floor(track.duration / 60)}:{String(Math.floor(track.duration % 60)).padStart(2, '0')}
-                        </p>
-                      )}
-                    </div>
+                      size="default"
+                    />
                   ))}
                 </div>
               )}
