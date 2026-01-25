@@ -596,6 +596,146 @@
 .selection-ring { animation: selectionRing var(--duration-slow) var(--ease-out-quart); }
 
 /* ========================================
+   PERFORMANCE OPTIMIZATION UTILITIES
+   ======================================== */
+
+/* GPU acceleration for smooth animations */
+.gpu-accel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* For 3D transforms */
+.gpu-accel-3d {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Hardware accelerated animations */
+@keyframes hwAccelerated {
+  0% { transform: translateZ(0) scale(1); }
+  100% { transform: translateZ(0) scale(1.05); }
+}
+
+.hw-animate {
+  animation: hwAccelerated var(--duration-normal) var(--ease-out-cubic);
+  will-change: transform;
+}
+
+/* Paint containment - isolates element from rest of page */
+.contain-paint {
+  contain: paint;
+}
+
+/* Layout containment - element layout is independent */
+.contain-layout {
+  contain: layout;
+}
+
+/* Size containment - element size is independent */
+.contain-size {
+  contain: size;
+}
+
+/* Style containment - counters/quotes don't escape */
+.contain-style {
+  contain: style;
+}
+
+/* Strict containment - all of the above */
+.contain-strict {
+  contain: strict;
+}
+
+/* Content visibility optimization for off-screen content */
+.content-visibility-auto {
+  content-visibility: auto;
+}
+
+.content-visibility-hidden {
+  content-visibility: hidden;
+}
+
+/* Optimize large lists with content-visibility and contain-intrinsic-size */
+.optimize-list {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Optimize images for performance */
+.optimize-img {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
+}
+
+/* will-change utilities for animated elements */
+/* Use sparingly - only on elements that will actually animate */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-transform-opacity {
+  will-change: transform, opacity;
+}
+
+.will-change-top-left {
+  will-change: top, left;
+}
+
+/* Composite layer promotion for frequently animated elements */
+.promote-layer {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth scroll behavior */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Prevent layout shift during image load */
+.img-aspect-ratio {
+  aspect-ratio: var(--ratio, 1 / 1);
+  object-fit: cover;
+}
+
+/* Rendering performance hints */
+.render-crisp {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.render-fast {
+  text-rendering: optimizeSpeed;
+}
+
+/* Reduce animation for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .gpu-accel,
+  .gpu-accel-3d,
+  .hw-animate,
+  .promote-layer {
+    transform: none;
+    will-change: auto;
+    animation: none;
+    transition: none;
+  }
+
+  .will-change-transform,
+  .will-change-opacity,
+  .will-change-transform-opacity,
+  .will-change-top-left {
+    will-change: auto;
+  }
+}
+
+/* ========================================
    PLAYLIST HEADER IMAGE SIZING
    ======================================== */
 
@@ -6850,7 +6990,7 @@
   color: hsl(var(--foreground));
 }
 
-@media (min-width: 768md) {
+@media (min-width: 768px) {
   .xp-toggle-label {
     font-size: 0.875rem;
   }

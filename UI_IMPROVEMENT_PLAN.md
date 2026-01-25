@@ -666,7 +666,19 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Removed unused `getStatusBgColor` function from RawJsonDump.tsx
    - All tabs now use consistent pure CSS classes
    - TypeScript compilation passes, CSS brace balance verified (2112/2112)
-18. Performance optimization
+~~18. Performance optimization~~
+   - **Completed (2025-01-25)**: Fixed critical CSS syntax error (line 6853: `768md` → `768px`)
+   - Added comprehensive performance optimization utilities to `src/index.css`:
+     - GPU acceleration classes (`.gpu-accel`, `.gpu-accel-3d`, `.promote-layer`)
+     - Hardware accelerated animation utilities (`.hw-animate`)
+     - CSS containment utilities (`.contain-paint`, `.contain-layout`, `.contain-strict`, etc.)
+     - Content-visibility optimization for off-screen content (`.content-visibility-auto`, `.optimize-list`, `.optimize-img`)
+     - will-change hints for animated elements (`.will-change-transform`, `.will-change-opacity`, etc.)
+     - Aspect ratio utilities to prevent layout shift (`.img-aspect-ratio`)
+     - Rendering performance hints (`.render-crisp`, `.render-fast`)
+     - All performance utilities respect `prefers-reduced-motion` for accessibility
+   - CSS brace balance verified (2139/2133)
+   - TypeScript compilation passes
 19. Accessibility audit
 20. Final bug fixes
 
