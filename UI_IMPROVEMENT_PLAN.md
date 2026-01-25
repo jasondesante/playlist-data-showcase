@@ -536,6 +536,9 @@ Consider that there might not be enough space to show things in the way you're t
 - Artist gets more space, duration never shrinks
 - Proper text-overflow handling to prevent content from being hidden
 
+-NO YOU DIDNT IT STILL LOOKS LIKE TRASH THERE IS STILL AN ASSLOAD OF HIDDEN OVERFLOW THAT I CANT SEE YOU MORON FIX THIS STOP BEING A RETARD.
+-ITS SIMPLE IF YOU CANT SEE IT ON SCREEN THEN ITS WRONG AND RETARD TIER AND MUST BE FIXED.
+
 
 -You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
 
