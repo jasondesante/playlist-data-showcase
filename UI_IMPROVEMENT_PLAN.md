@@ -575,7 +575,7 @@ Note that you were building this with retarded tailwind which I fucking hate so 
 
 **Playlist Tab**:
 - [x] Album art displays correctly (with and without image_url)
-- [ ] Fallback gradient + icon shows when no artwork
+- [x] Fallback gradient + icon shows when no artwork
 - [ ] Track numbers display in sequence
 - [ ] Hover effect scales card slightly (1.02)
 - [ ] Selection state shows 2p  primary border with left accent bar

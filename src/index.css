@@ -545,7 +545,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to bottom right, hsl(var(--primary) / 0.3), hsl(var(--accent)));
+    /* Rich, vibrant gradient for missing artwork */
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.35), hsl(var(--cute-purple) / 0.4));
+    position: relative;
+  }
+
+  /* Subtle pattern overlay for depth */
+  .album-art-fallback::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, hsl(255 80% 70% / 0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 70%, hsl(200 80% 60% / 0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .album-art-fallback svg,
+  .album-art-fallback .lucide-music {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px hsl(0 0% 0% / 0.2));
   }
 }
 
@@ -949,13 +968,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to bottom right, hsl(var(--primary) / 0.25), hsl(var(--accent)));
+    /* Rich, vibrant gradient for missing artwork */
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.35), hsl(var(--cute-purple) / 0.4));
+    position: relative;
+  }
+
+  /* Subtle pattern overlay for depth */
+  .track-art-fallback::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, hsl(255 80% 70% / 0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 70%, hsl(200 80% 60% / 0.15) 0%, transparent 50%);
+    pointer-events: none;
   }
 
   .track-art-icon {
     width: 40%;
     height: 40%;
-    color: hsl(var(--primary) / 0.4);
+    color: hsl(var(--primary-foreground) / 0.7);
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px hsl(0 0% 0% / 0.2));
   }
 
   .track-art-shimmer {
