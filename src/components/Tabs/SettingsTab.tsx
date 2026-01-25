@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Star, Bug, Database, AlertTriangle, Check, X, Download, Upload } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSensorStore } from '@/store/sensorStore';
 import { logger } from '@/utils/logger';
 import { storage } from '@/utils/storage';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import type { ServerlessPlaylist, PlaylistTrack, AudioProfile } from '@/types';
 import type { CharacterSheet } from '@/types';
 import type { EnvironmentalContext, GamingContext } from '@/types';
@@ -13,7 +17,7 @@ import type { EnvironmentalContext, GamingContext } from '@/types';
  * SettingsTab Component
  *
  * Application settings for API keys and configuration.
- * Phase 4.10 - Settings Tab Implementation
+ * Phase 11 - Settings Tab Implementation (Redesigned with pure CSS)
  */
 
 // Valid FFT sizes for Web Audio API (must be power of 2)
@@ -31,8 +35,6 @@ interface ApiKeyValidationResult {
 
 /**
  * Validates OpenWeather API key by making a test API call
- * @param apiKey - The OpenWeather API key to validate
- * @returns Promise resolving to validation result
  */
 async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
   if (!apiKey || apiKey.trim().length === 0) {
@@ -40,7 +42,6 @@ async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidati
   }
 
   try {
-    // Use a simple weather query for London (lat=51.5074, lon=-0.1278) as a test
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=51.5074&lon=-0.1278&appid=${apiKey.trim()}&units=metric`;
     const response = await fetch(url);
 
@@ -65,7 +66,6 @@ async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidati
       };
     }
 
-    // If we get here, the key is valid
     return {
       status: 'valid',
       message: 'API key validated successfully!'
@@ -80,8 +80,6 @@ async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidati
 
 /**
  * Validates Steam API key by making a test API call
- * @param apiKey - The Steam API key to validate
- * @returns Promise resolving to validation result
  */
 async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
   if (!apiKey || apiKey.trim().length === 0) {
@@ -89,13 +87,11 @@ async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResu
   }
 
   try {
-    // Use the GetPlayerSummaries endpoint with a known test Steam ID (Valve's account: 76561197960287930)
     const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey.trim()}&steamids=76561197960287930`;
     const response = await fetch(url);
 
     const data = await response.json();
 
-    // Steam API returns 403 with {"error": "Forbidden"} for invalid keys
     if (response.status === 403 || (data.error && data.error === 'Forbidden')) {
       return {
         status: 'invalid',
@@ -103,7 +99,6 @@ async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResu
       };
     }
 
-    // Check for specific Steam API error responses
     if (data.error) {
       return {
         status: 'invalid',
@@ -111,7 +106,6 @@ async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResu
       };
     }
 
-    // If we get valid response structure, the key is working
     if (data.response && data.response.players) {
       return {
         status: 'valid',
@@ -194,6 +188,7 @@ export function SettingsTab() {
 
   // Ref to track if confirmation timeout is active
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize local state from store (only on mount to avoid bidirectional sync loops)
   const isInitialized = useRef(false);
@@ -281,7 +276,7 @@ export function SettingsTab() {
       } else {
         setOpenWeatherValidation({ status: 'idle' });
       }
-    }, 1500); // 1.5 second debounce
+    }, 1500);
 
     return () => clearTimeout(timeoutId);
   }, [openWeatherKey]);
@@ -297,7 +292,7 @@ export function SettingsTab() {
       } else {
         setSteamValidation({ status: 'idle' });
       }
-    }, 1500); // 1.5 second debounce
+    }, 1500);
 
     return () => clearTimeout(timeoutId);
   }, [steamKey]);
@@ -307,10 +302,8 @@ export function SettingsTab() {
       setExportStatus('exporting');
       logger.info('Settings', 'Exporting all data');
 
-      // Performance timing: Start timer
       const startTime = performance.now();
 
-      // Gather data from all stores - extract state directly from hook returns
       const exportedData: ExportedData = {
         version: '1.0.0',
         exportedAt: new Date().toISOString(),
@@ -337,10 +330,8 @@ export function SettingsTab() {
         },
       };
 
-      // Create JSON string with pretty formatting
       const jsonString = JSON.stringify(exportedData, null, 2);
 
-      // Create a blob and trigger download
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -351,21 +342,17 @@ export function SettingsTab() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Performance timing: Calculate elapsed time
       const endTime = performance.now();
       const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
       const fileSizeKB = (jsonString.length / 1024).toFixed(2);
-      const performanceTarget = parseFloat(elapsedSeconds) < 5.0 ? 'PASS' : 'FAIL';
 
       setExportStatus('success');
       logger.info('Settings', 'Export completed successfully', {
         characters: exportedData.characterStore.characters.length,
         fileSizeKB,
         exportTimeSeconds: elapsedSeconds,
-        performanceTarget,
       });
 
-      // Reset status after 3 seconds
       void setTimeout(() => setExportStatus('idle'), 3000);
     } catch (error) {
       setExportStatus('error');
@@ -389,15 +376,12 @@ export function SettingsTab() {
           const jsonContent = e.target?.result as string;
           const importedData = JSON.parse(jsonContent) as ExportedData;
 
-          // Validate the imported data structure
           if (!importedData.version || !importedData.playlistStore || !importedData.characterStore ||
               !importedData.sensorStore || !importedData.appStore) {
             throw new Error('Invalid file structure: missing required fields');
           }
 
           // Load data into each store
-
-          // 1. Restore playlist store data
           if (importedData.playlistStore.currentPlaylist) {
             playlistStore.setPlaylist(
               importedData.playlistStore.currentPlaylist,
@@ -414,7 +398,6 @@ export function SettingsTab() {
             }
           }
 
-          // 2. Restore character store data
           if (importedData.characterStore.characters.length > 0) {
             importedData.characterStore.characters.forEach(character => {
               const existing = characterStore.characters.find(c => c.seed === character.seed);
@@ -427,7 +410,6 @@ export function SettingsTab() {
             }
           }
 
-          // 3. Restore sensor store data
           if (importedData.sensorStore.permissions) {
             Object.entries(importedData.sensorStore.permissions).forEach(([sensor, status]) => {
               sensorStore.setPermission(sensor as 'geolocation' | 'motion' | 'light', status as PermissionState);
@@ -440,7 +422,6 @@ export function SettingsTab() {
             sensorStore.updateGamingContext(importedData.sensorStore.gamingContext);
           }
 
-          // 4. Restore app store settings
           if (importedData.appStore.settings) {
             updateSettings(importedData.appStore.settings);
           }
@@ -454,11 +435,15 @@ export function SettingsTab() {
             playlist: importedData.playlistStore.currentPlaylist?.name
           });
 
-          // Reset status after 5 seconds
           void setTimeout(() => {
             setImportStatus('idle');
             setImportMessage('');
           }, 5000);
+
+          // Reset file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
         } catch (parseError) {
           setImportStatus('error');
           setImportMessage(parseError instanceof Error ? parseError.message : 'Failed to parse JSON file');
@@ -485,18 +470,15 @@ export function SettingsTab() {
 
   const handleResetToDefaults = () => {
     if (resetStatus === 'confirming') {
-      // User confirmed - proceed with reset
       try {
         setResetStatus('resetting');
         logger.warn('Settings', 'Resetting all data to defaults');
 
-        // Reset all stores to initial state
-        resetSettings(); // Reset appStore settings
-        playlistStore.clearPlaylist(); // Clear playlist data
-        characterStore.resetCharacters(); // Clear all characters
-        sensorStore.resetAll(); // Clear sensor data and permissions
+        resetSettings();
+        playlistStore.clearPlaylist();
+        characterStore.resetCharacters();
+        sensorStore.resetAll();
 
-        // Clear LocalForage storage
         storage.clear().then(() => {
           logger.info('Settings', 'LocalForage cleared successfully');
         }).catch((err: unknown) => {
@@ -507,7 +489,6 @@ export function SettingsTab() {
         setResetMessage('All data has been reset to defaults. The page will reload in 3 seconds...');
         logger.warn('Settings', 'Reset completed successfully');
 
-        // Reload page after 3 seconds to ensure clean state
         void setTimeout(() => {
           window.location.reload();
         }, 3000);
@@ -521,16 +502,13 @@ export function SettingsTab() {
         }, 5000);
       }
     } else {
-      // First click - show confirmation
       setResetStatus('confirming');
       setResetMessage('Are you sure? This will delete all your data. Click again to confirm.');
 
-      // Clear any existing timeout
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
       }
 
-      // Reset to idle after 5 seconds if not confirmed
       resetTimeoutRef.current = setTimeout(() => {
         setResetStatus('idle');
         setResetMessage('');
@@ -539,394 +517,373 @@ export function SettingsTab() {
     }
   };
 
+  // Get validation status styles
+  const getValidationStatusClass = (status: ApiKeyValidationStatus) => {
+    switch (status) {
+      case 'valid':
+        return 'settings-validation-valid';
+      case 'invalid':
+        return 'settings-validation-invalid';
+      case 'validating':
+        return 'settings-validation-validating';
+      default:
+        return '';
+    }
+  };
+
+  const getValidationIcon = (status: ApiKeyValidationStatus) => {
+    switch (status) {
+      case 'valid':
+        return <Check className="settings-validation-icon settings-validation-icon-valid" />;
+      case 'invalid':
+        return <X className="settings-validation-icon settings-validation-icon-invalid" />;
+      case 'validating':
+        return <div className="settings-spinner" aria-hidden="true" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Settings</h2>
+    <div className="settings-container">
+      {/* Header */}
+      <div className="settings-header">
+        <div className="settings-header-content">
+          <Settings className="settings-header-icon" />
+          <div>
+            <h1 className="settings-title">Settings</h1>
+            <div className="settings-subtitle">Configure API keys, audio settings, and manage your data</div>
+          </div>
+        </div>
         {saveIndicator === 'saved' && (
-          <span className="text-sm text-green-600">✓ Saved</span>
+          <div className="settings-save-indicator">
+            <Check className="settings-save-icon" />
+            <span>Saved</span>
+          </div>
         )}
       </div>
-
-      <p className="text-muted-foreground">Configure API keys and application settings...</p>
 
       {/* API Keys Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">API Keys</h3>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            OpenWeather API Key
-            {openWeatherValidation.status === 'valid' && (
-              <span className="ml-2 text-green-600 text-xs">✓ Valid</span>
-            )}
-            {openWeatherValidation.status === 'validating' && (
-              <span className="ml-2 text-yellow-600 text-xs">Validating...</span>
-            )}
-            {openWeatherValidation.status === 'invalid' && (
-              <span className="ml-2 text-red-600 text-xs">✗ Invalid</span>
-            )}
-          </label>
-          <input
-            type="text"
-            value={openWeatherKey}
-            onChange={(e) => handleOpenWeatherKeyChange(e.target.value)}
-            className={`w-full px-3 py-2 bg-background border rounded-md ${
-              openWeatherValidation.status === 'invalid'
-                ? 'border-red-500 focus:border-red-500'
-                : openWeatherValidation.status === 'valid'
-                ? 'border-green-500 focus:border-green-500'
-                : 'border-input'
-            }`}
-            placeholder="Enter OpenWeather API key..."
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Required for weather data in Environmental Sensors tab. Get your key at{' '}
-            <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-              openweathermap.org
-            </a>
-          </p>
-          {openWeatherValidation.message && (
-            <p className={`text-xs mt-1 ${
-              openWeatherValidation.status === 'invalid'
-                ? 'text-red-600'
-                : openWeatherValidation.status === 'valid'
-                ? 'text-green-600'
-                : 'text-muted-foreground'
-            }`}>
-              {openWeatherValidation.message}
-            </p>
-          )}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Key className="settings-section-icon" />
+          <h2 className="settings-section-title">API Keys</h2>
         </div>
+        <div className="settings-cards-grid">
+          {/* OpenWeather API Key */}
+          <Card variant="elevated" padding="md" className="settings-card">
+            <div className="settings-api-key-header">
+              <Cloud className="settings-api-key-icon" />
+              <div className="settings-api-key-title">OpenWeather API</div>
+            </div>
+            <Input
+              label="API Key"
+              value={openWeatherKey}
+              onChange={(e) => handleOpenWeatherKeyChange(e.target.value)}
+              placeholder="Enter your OpenWeather API key..."
+              helperText="Required for weather data in Environmental Sensors tab. Get your key at openweathermap.org"
+              containerClassName="settings-input-wrapper"
+            />
+            <div className={`settings-validation-status ${getValidationStatusClass(openWeatherValidation.status)}`}>
+              {getValidationIcon(openWeatherValidation.status)}
+              {openWeatherValidation.message && (
+                <span className="settings-validation-message">{openWeatherValidation.message}</span>
+              )}
+            </div>
+          </Card>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Steam API Key
-            {steamValidation.status === 'valid' && (
-              <span className="ml-2 text-green-600 text-xs">✓ Valid</span>
-            )}
-            {steamValidation.status === 'validating' && (
-              <span className="ml-2 text-yellow-600 text-xs">Validating...</span>
-            )}
-            {steamValidation.status === 'invalid' && (
-              <span className="ml-2 text-red-600 text-xs">✗ Invalid</span>
-            )}
-          </label>
-          <input
-            type="text"
-            value={steamKey}
-            onChange={(e) => handleSteamKeyChange(e.target.value)}
-            className={`w-full px-3 py-2 bg-background border rounded-md ${
-              steamValidation.status === 'invalid'
-                ? 'border-red-500 focus:border-red-500'
-                : steamValidation.status === 'valid'
-                ? 'border-green-500 focus:border-green-500'
-                : 'border-input'
-            }`}
-            placeholder="Enter Steam API key..."
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Required for Steam integration in Gaming Platforms tab. Get your key at{' '}
-            <a href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-              steamcommunity.com
-            </a>
-          </p>
-          {steamValidation.message && (
-            <p className={`text-xs mt-1 ${
-              steamValidation.status === 'invalid'
-                ? 'text-red-600'
-                : steamValidation.status === 'valid'
-                ? 'text-green-600'
-                : 'text-muted-foreground'
-            }`}>
-              {steamValidation.message}
-            </p>
-          )}
-        </div>
+          {/* Steam API Key */}
+          <Card variant="elevated" padding="md" className="settings-card">
+            <div className="settings-api-key-header">
+              <Gamepad2 className="settings-api-key-icon" />
+              <div className="settings-api-key-title">Steam API</div>
+            </div>
+            <Input
+              label="API Key"
+              value={steamKey}
+              onChange={(e) => handleSteamKeyChange(e.target.value)}
+              placeholder="Enter your Steam API key..."
+              helperText="Required for Steam integration in Gaming Platforms tab. Get your key at steamcommunity.com/dev/apikey"
+              containerClassName="settings-input-wrapper"
+            />
+            <div className={`settings-validation-status ${getValidationStatusClass(steamValidation.status)}`}>
+              {getValidationIcon(steamValidation.status)}
+              {steamValidation.message && (
+                <span className="settings-validation-message">{steamValidation.message}</span>
+              )}
+            </div>
+          </Card>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Discord Client ID</label>
-          <input
-            type="text"
-            value={discordClientId}
-            onChange={(e) => handleDiscordClientIdChange(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
-            placeholder="Enter Discord Client ID..."
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            For Discord music status integration. Create an app at{' '}
-            <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-              discord.com/developers
-            </a>
-          </p>
+          {/* Discord Client ID */}
+          <Card variant="elevated" padding="md" className="settings-card">
+            <div className="settings-api-key-header">
+              <Gamepad2 className="settings-api-key-icon settings-api-key-icon-discord" />
+              <div className="settings-api-key-title">Discord Integration</div>
+            </div>
+            <Input
+              label="Client ID"
+              value={discordClientId}
+              onChange={(e) => handleDiscordClientIdChange(e.target.value)}
+              placeholder="Enter your Discord Client ID..."
+              helperText="For Discord music status integration. Create an app at discord.com/developers/applications"
+              containerClassName="settings-input-wrapper"
+            />
+          </Card>
         </div>
-      </div>
+      </section>
 
       {/* Audio Settings Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Audio Settings</h3>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Audio FFT Size: <span className="text-primary">{audioFftSize}</span>
-          </label>
-          <select
-            value={audioFftSize}
-            onChange={(e) => handleAudioFftSizeChange(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
-          >
-            {FFT_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-muted-foreground mt-1">
-            FFT size for audio analysis. Larger values provide better frequency resolution but slower performance.
-            <br />
-            <span className="text-muted-foreground">
-              • <strong>1024</strong>: Fast, less detailed (recommended for real-time)
-            </span>
-            <br />
-            <span className="text-muted-foreground">
-              • <strong>2048</strong>: Balanced (default)
-            </span>
-            <br />
-            <span className="text-muted-foreground">
-              • <strong>4096+</strong>: Detailed, slower (better for offline analysis)
-            </span>
-          </p>
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Volume2 className="settings-section-icon" />
+          <h2 className="settings-section-title">Audio Settings</h2>
         </div>
-      </div>
+        <Card variant="elevated" padding="md" className="settings-audio-card">
+          <div className="settings-audio-content">
+            <div className="settings-audio-info">
+              <label className="settings-label" htmlFor="fft-size-select">
+                Audio FFT Size: <span className="settings-value-highlight">{audioFftSize}</span>
+              </label>
+              <div className="settings-description">
+                FFT size for audio analysis. Larger values provide better frequency resolution but slower performance.
+              </div>
+            </div>
+            <select
+              id="fft-size-select"
+              value={audioFftSize}
+              onChange={(e) => handleAudioFftSizeChange(e.target.value)}
+              className="settings-select"
+            >
+              {FFT_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="settings-fft-options">
+            <div className="settings-fft-option">
+              <span className="settings-fft-value">1024</span>
+              <span className="settings-fft-desc">Fast, less detailed (real-time)</span>
+            </div>
+            <div className="settings-fft-option">
+              <span className="settings-fft-value">2048</span>
+              <span className="settings-fft-desc">Balanced (default)</span>
+            </div>
+            <div className="settings-fft-option">
+              <span className="settings-fft-value">4096+</span>
+              <span className="settings-fft-desc">Detailed, slower (offline)</span>
+            </div>
+          </div>
+        </Card>
+      </section>
 
       {/* XP Settings Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">XP Settings</h3>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Base XP Rate: <span className="text-primary">{baseXpRate.toFixed(1)}x</span>
-          </label>
-          <input
-            type="range"
-            min={0.1}
-            max={5.0}
-            step={0.1}
-            value={baseXpRate}
-            onChange={(e) => handleBaseXpRateChange(parseFloat(e.target.value))}
-            className="w-full h-2 bg-background border border-input rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>0.1x (slow)</span>
-            <span>1.0x (normal)</span>
-            <span>5.0x (fast)</span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Base XP earned per second of listening. Default is 1.0 (1 XP per second).
-            <br />
-            This rate is modified by environmental and gaming bonuses (capped at 3.0x total multiplier).
-          </p>
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Star className="settings-section-icon" />
+          <h2 className="settings-section-title">XP Settings</h2>
         </div>
-      </div>
+        <Card variant="elevated" padding="md" className="settings-xp-card">
+          <div className="settings-xp-header">
+            <label className="settings-label" htmlFor="xp-rate-slider">
+              Base XP Rate: <span className="settings-value-highlight">{baseXpRate.toFixed(1)}x</span>
+            </label>
+          </div>
+          <div className="settings-slider-container">
+            <input
+              id="xp-rate-slider"
+              type="range"
+              min={0.1}
+              max={5.0}
+              step={0.1}
+              value={baseXpRate}
+              onChange={(e) => handleBaseXpRateChange(parseFloat(e.target.value))}
+              className="settings-slider"
+            />
+            <div className="settings-slider-marks">
+              <span>0.1x</span>
+              <span>1.0x</span>
+              <span>5.0x</span>
+            </div>
+          </div>
+          <div className="settings-description">
+            Base XP earned per second of listening. This rate is modified by environmental and gaming bonuses (capped at 3.0x total multiplier).
+          </div>
+        </Card>
+      </section>
 
       {/* Debug Settings Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Debug Settings</h3>
-
-        <div className="flex items-center justify-between border border-border rounded-lg p-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Verbose Logging</label>
-            <p className="text-xs text-muted-foreground">
-              Enable detailed debug logs in the browser console. This includes additional information for troubleshooting.
-            </p>
-          </div>
-          <button
-            onClick={() => handleVerboseLoggingChange(!verboseLogging)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              verboseLogging ? 'bg-primary' : 'bg-input'
-            }`}
-            role="switch"
-            aria-checked={verboseLogging}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                verboseLogging ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Bug className="settings-section-icon" />
+          <h2 className="settings-section-title">Debug Settings</h2>
         </div>
-        {verboseLogging && (
-          <p className="text-xs text-green-600 bg-green-100 border border-green-300 rounded px-2 py-1">
-            ✓ Verbose logging is enabled. Check the browser console for detailed debug output.
-          </p>
-        )}
-      </div>
-
-      {/* Data Management Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Data Management</h3>
-
-        <div className="border border-border rounded-lg p-4 space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Export all your data from the showcase app, including playlists, characters, sensor data, and settings.
-          </p>
-
-          <button
-            onClick={handleExportAllData}
-            disabled={exportStatus === 'exporting'}
-            className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {exportStatus === 'exporting' && (
-              <span className="animate-spin">⏳</span>
-            )}
-            {exportStatus === 'success' && (
-              <span>✓</span>
-            )}
-            {exportStatus === 'error' && (
-              <span>✗</span>
-            )}
-            {exportStatus === 'idle' && (
-              <span>📥</span>
-            )}
-            <span>
-              {exportStatus === 'exporting' && 'Exporting...'}
-              {exportStatus === 'success' && 'Export Complete!'}
-              {exportStatus === 'error' && 'Export Failed'}
-              {exportStatus === 'idle' && 'Export All Data to JSON'}
-            </span>
-          </button>
-
-          <div className="relative">
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportFromFile}
-              disabled={importStatus === 'importing'}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-              id="import-file-input"
-            />
+        <Card variant="elevated" padding="md" className="settings-debug-card">
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <div className="settings-toggle-label">Verbose Logging</div>
+              <div className="settings-description">
+                Enable detailed debug logs in the browser console for troubleshooting.
+              </div>
+            </div>
             <button
-              disabled={importStatus === 'importing'}
-              className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={() => handleVerboseLoggingChange(!verboseLogging)}
+              className={`settings-toggle ${verboseLogging ? 'settings-toggle-active' : ''}`}
+              role="switch"
+              aria-checked={verboseLogging}
+              type="button"
             >
-              {importStatus === 'importing' && (
-                <span className="animate-spin">⏳</span>
-              )}
-              {importStatus === 'success' && (
-                <span>✓</span>
-              )}
-              {importStatus === 'error' && (
-                <span>✗</span>
-              )}
-              {importStatus === 'idle' && (
-                <span>📤</span>
-              )}
-              <span>
-                {importStatus === 'importing' && 'Importing...'}
-                {importStatus === 'success' && 'Import Complete!'}
-                {importStatus === 'error' && 'Import Failed'}
-                {importStatus === 'idle' && 'Import from JSON File'}
-              </span>
+              <span className="settings-toggle-slider" />
             </button>
           </div>
+          {verboseLogging && (
+            <div className="settings-verbose-notice">
+              <Check className="settings-verbose-icon" />
+              <span>Verbose logging is enabled. Check the browser console for detailed debug output.</span>
+            </div>
+          )}
+        </Card>
+      </section>
 
+      {/* Data Management Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Database className="settings-section-icon" />
+          <h2 className="settings-section-title">Data Management</h2>
+        </div>
+        <Card variant="elevated" padding="lg" className="settings-data-card">
+          <div className="settings-data-description">
+            Export all your data from the showcase app, including playlists, characters, sensor data, and settings.
+          </div>
+
+          <div className="settings-data-actions">
+            <Button
+              onClick={handleExportAllData}
+              disabled={exportStatus === 'exporting'}
+              variant="primary"
+              leftIcon={exportStatus === 'success' ? Check : exportStatus === 'error' ? X : Download}
+              className="settings-export-btn"
+            >
+              {exportStatus === 'exporting' ? 'Exporting...' :
+               exportStatus === 'success' ? 'Export Complete!' :
+               exportStatus === 'error' ? 'Export Failed' :
+               'Export All Data to JSON'}
+            </Button>
+
+            <div className="settings-import-wrapper">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportFromFile}
+                disabled={importStatus === 'importing'}
+                className="settings-file-input"
+                id="import-file-input"
+              />
+              <Button
+                onClick={() => document.getElementById('import-file-input')?.click()}
+                disabled={importStatus === 'importing'}
+                variant="secondary"
+                leftIcon={importStatus === 'success' ? Check : importStatus === 'error' ? X : Upload}
+                className="settings-import-btn"
+              >
+                {importStatus === 'importing' ? 'Importing...' :
+                 importStatus === 'success' ? 'Import Complete!' :
+                 importStatus === 'error' ? 'Import Failed' :
+                 'Import from JSON File'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Status messages */}
           {exportStatus === 'success' && (
-            <p className="text-xs text-green-600 text-center">
-              Data exported successfully! Check your downloads folder.
-            </p>
+            <div className="settings-status-message settings-status-success">
+              <Check className="settings-status-icon" />
+              <span>Data exported successfully! Check your downloads folder.</span>
+            </div>
           )}
-
           {exportStatus === 'error' && (
-            <p className="text-xs text-red-600 text-center">
-              Failed to export data. Please try again.
-            </p>
+            <div className="settings-status-message settings-status-error">
+              <X className="settings-status-icon" />
+              <span>Failed to export data. Please try again.</span>
+            </div>
           )}
-
           {importStatus === 'success' && importMessage && (
-            <p className="text-xs text-green-600 text-center">
-              ✓ {importMessage}
-            </p>
+            <div className="settings-status-message settings-status-success">
+              <Check className="settings-status-icon" />
+              <span>{importMessage}</span>
+            </div>
           )}
-
           {importStatus === 'error' && importMessage && (
-            <p className="text-xs text-red-600 text-center">
-              ✗ {importMessage}
-            </p>
+            <div className="settings-status-message settings-status-error">
+              <X className="settings-status-icon" />
+              <span>{importMessage}</span>
+            </div>
           )}
 
-          <div className="text-xs text-muted-foreground border-t border-border pt-3 mt-3">
-            <p className="font-medium mb-1">Export includes:</p>
-            <ul className="list-disc list-inside space-y-0.5">
+          {/* Export details */}
+          <div className="settings-export-details">
+            <div className="settings-export-details-title">Export includes:</div>
+            <ul className="settings-export-list">
               <li>Playlist: Current playlist, selected track, audio profile</li>
               <li>Characters: All generated characters with stats and XP</li>
               <li>Sensors: Environmental context, gaming context, permissions</li>
               <li>Settings: API keys, audio config, XP rate</li>
             </ul>
           </div>
-        </div>
-      </div>
+        </Card>
+      </section>
 
       {/* Danger Zone Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
+      <section className="settings-section settings-section-danger">
+        <div className="settings-section-header settings-section-header-danger">
+          <AlertTriangle className="settings-section-icon settings-section-icon-danger" />
+          <h2 className="settings-section-title">Danger Zone</h2>
+        </div>
+        <Card variant="outlined" padding="lg" className="settings-danger-card">
+          <div className="settings-danger-content">
+            <AlertTriangle className="settings-danger-icon" />
+            <div className="settings-danger-text">
+              <div className="settings-danger-title">Reset to Defaults</div>
+              <div className="settings-description">
+                This will delete all your playlists, characters, sensor data, and settings. This action cannot be undone.
+              </div>
+            </div>
+          </div>
 
-        <div className="border border-destructive/50 rounded-lg p-4 space-y-3 bg-destructive/5">
-          <p className="text-sm text-muted-foreground">
-            Reset all application data to default values. This will delete all your playlists, characters, sensor data, and settings.
-          </p>
-
-          <button
+          <Button
             onClick={handleResetToDefaults}
             disabled={resetStatus === 'resetting' || resetStatus === 'success'}
-            className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
-              resetStatus === 'confirming'
-                ? 'bg-amber-600 text-white hover:bg-amber-700'
-                : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-            } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            variant={resetStatus === 'confirming' ? 'secondary' : 'destructive'}
+            className="settings-reset-btn"
           >
-            {resetStatus === 'resetting' && (
-              <span className="animate-spin">⏳</span>
-            )}
-            {resetStatus === 'success' && (
-              <span>✓</span>
-            )}
-            {resetStatus === 'error' && (
-              <span>✗</span>
-            )}
-            {resetStatus === 'idle' && (
-              <span>⚠️</span>
-            )}
-            {resetStatus === 'confirming' && (
-              <span>🔴</span>
-            )}
-            <span>
-              {resetStatus === 'resetting' && 'Resetting...'}
-              {resetStatus === 'success' && 'Reset Complete!'}
-              {resetStatus === 'error' && 'Reset Failed'}
-              {resetStatus === 'idle' && 'Reset to Defaults'}
-              {resetStatus === 'confirming' && 'Confirm Reset'}
-            </span>
-          </button>
+            {resetStatus === 'resetting' ? 'Resetting...' :
+             resetStatus === 'success' ? 'Reset Complete!' :
+             resetStatus === 'confirming' ? 'Confirm Reset' :
+             'Reset to Defaults'}
+          </Button>
 
           {resetStatus === 'confirming' && resetMessage && (
-            <p className="text-xs text-amber-700 bg-amber-100 border border-amber-300 rounded px-2 py-1 text-center">
-              ⚠️ {resetMessage}
-            </p>
+            <div className="settings-status-message settings-status-warning">
+              <AlertTriangle className="settings-status-icon" />
+              <span>{resetMessage}</span>
+            </div>
           )}
-
           {resetStatus === 'success' && resetMessage && (
-            <p className="text-xs text-green-700 bg-green-100 border border-green-300 rounded px-2 py-1 text-center">
-              ✓ {resetMessage}
-            </p>
+            <div className="settings-status-message settings-status-success">
+              <Check className="settings-status-icon" />
+              <span>{resetMessage}</span>
+            </div>
           )}
-
           {resetStatus === 'error' && resetMessage && (
-            <p className="text-xs text-red-700 bg-red-100 border border-red-300 rounded px-2 py-1 text-center">
-              ✗ {resetMessage}
-            </p>
+            <div className="settings-status-message settings-status-error">
+              <X className="settings-status-icon" />
+              <span>{resetMessage}</span>
+            </div>
           )}
-        </div>
-      </div>
+        </Card>
+      </section>
     </div>
   );
 }
