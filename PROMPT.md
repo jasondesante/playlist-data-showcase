@@ -8,7 +8,7 @@ Do the earlier tasks first, they're ordered that way for a reason and I think yo
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
-When you're done, say "done".
+When you're done, say "done". When there's nothing left for you to do in the COMPLETION_PLAN.md then say "ITS TIME TO EAT"
 
 
 IMPORTANT:
@@ -17,3 +17,4 @@ IMPORTANT:
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 
 - Always remember to say "done" when you're done.
+- When you are completely finished with all the tasks you can do, finalize the loop by saying "ITS TIME TO EAT"
