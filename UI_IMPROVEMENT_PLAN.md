@@ -495,7 +495,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 5. ✅ Create `Skeleton.tsx` component
 
 ### Sprint 2: Track Card Component
-6. Create `TrackCard.tsx` with all features:
+6. ✅ Create `TrackCard.tsx` with all features:
    - Large album art with fallback
    - Track number display
    - Selection states
