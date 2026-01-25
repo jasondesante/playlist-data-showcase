@@ -51,31 +51,31 @@ function formatDuration(seconds: number): string {
 
 const sizeStyles = {
   compact: {
+    container: 'p-1.5 gap-1.5',
+    image: 'w-10 h-10',
+    trackNumber: 'text-xs w-5',
+    title: 'text-xs',
+    meta: 'text-[10px]',
+    playButton: 'w-5 h-5',
+    playIcon: 'w-2.5 h-2.5',
+  },
+  default: {
     container: 'p-2 gap-2',
     image: 'w-12 h-12',
     trackNumber: 'text-sm w-6',
     title: 'text-sm',
-    meta: 'text-xs',
+    meta: 'text-[11px]',
     playButton: 'w-6 h-6',
     playIcon: 'w-3 h-3',
   },
-  default: {
-    container: 'p-3 gap-3',
+  large: {
+    container: 'p-2.5 gap-2.5',
     image: 'w-14 h-14',
-    trackNumber: 'text-base w-8',
+    trackNumber: 'text-base w-7',
     title: 'text-base',
     meta: 'text-xs',
-    playButton: 'w-8 h-8',
+    playButton: 'w-7 h-7',
     playIcon: 'w-3.5 h-3.5',
-  },
-  large: {
-    container: 'p-4 gap-4',
-    image: 'w-16 h-16',
-    trackNumber: 'text-lg w-10',
-    title: 'text-lg',
-    meta: 'text-sm',
-    playButton: 'w-10 h-10',
-    playIcon: 'w-4 h-4',
   },
 };
 
@@ -208,8 +208,8 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
             </>
           ) : (
             /* Fallback: gradient background with music icon */
-            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
-              <Music className="w-1/2 h-1/2 text-primary/50" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/25 to-accent flex items-center justify-center">
+              <Music className="w-2/5 h-2/5 text-primary/40" />
             </div>
           )}
 

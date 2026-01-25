@@ -16,6 +16,7 @@ When you're done, say "done". When there's nothing left for you to do in the UI_
 IMPORTANT:
 - DO NOT DELETE node_modules. 
 - DO NOT DELETE package-lock.json. 
+- DO NOT USE TAILWIND OR ANYTHING LIKE THAT. USE PURE CSS LIKE A REAL MAN.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
 - update the implementation plan when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)

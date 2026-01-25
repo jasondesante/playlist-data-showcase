@@ -487,6 +487,10 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ## Implementation Order
 
+
+### SPRINT 0: GET RID OF STUPID TAILWIND
+1. No one ever wanted tailwind to exist and I have no reason why the website looks so fucking shit despite me spending so many hours guiding you to make the site look better and I guess its because you're out here changing tailwind classes when tailwind isn't even installed in the project or something I have literally no clue and I don't care your job for this task is to write a whole list of new tasks that involve completely removing tailwind and all those fake stupid classes that are stupid and actually write it yourself with real css like a real man.
+
 ### Sprint 1: Foundation
 1. ✅ Add color tokens and animation utilities to `src/index.css`
 2. ✅ Create `Button.tsx` component
