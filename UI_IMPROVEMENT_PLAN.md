@@ -530,6 +530,10 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 -The playlist tracks in the playlist tab, they aren't showing the name of the song, they only are showing the artist name, but the other info for each song isn't showing. 
 -You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
 
+-In the character gen tab, the weapons and armor are showing on the screen as: 
+Weapons [object Object], [object Object], [object Object]
+Armor [object Object], [object Object]
+Need to fix that.
      
 ### Sprint 4-13: Remaining Tabs
 ~~8. Audio Analysis Tab~~
