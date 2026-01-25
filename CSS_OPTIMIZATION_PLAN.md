@@ -1265,11 +1265,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Leveling tab looks identical
 
 **Task 19: Sensors Tab**
-- [ ] Create `EnvironmentalSensorsTab.css`
-- [ ] Copy all sensors styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: Sensors tab looks identical
+- [x] Create `EnvironmentalSensorsTab.css`
+- [x] Copy all sensors styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: Sensors tab looks identical
 
 **Task 20: Gaming Tab**
 - [ ] Create `GamingPlatformsTab.css`

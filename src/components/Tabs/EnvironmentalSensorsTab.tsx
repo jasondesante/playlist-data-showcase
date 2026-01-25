@@ -3,6 +3,7 @@ import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind } from 'lucide-react';
+import './EnvironmentalSensorsTab.css';
 
 /**
  * EnvironmentalSensorsTab Component
