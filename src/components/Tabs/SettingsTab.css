@@ -398,7 +398,49 @@
   color: hsl(var(--foreground));
 }
 
-/* Settings toggle styles - uses Toggle.css from src/styles/components/Toggle.css */
+/* Settings toggle styles - button-based toggle switch */
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  background-color: hsl(var(--input));
+  border-radius: 9999px;
+  transition: background-color var(--duration-normal) var(--ease-out-cubic);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.settings-toggle:hover {
+  background-color: hsl(var(--muted));
+}
+
+.settings-toggle-active {
+  background-color: hsl(var(--primary));
+}
+
+.settings-toggle-active:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+.settings-toggle-slider {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-out-cubic);
+}
+
+.settings-toggle-active .settings-toggle-slider {
+  transform: translateX(1.25rem);
+}
+
 .settings-verbose-notice {
   display: flex;
   align-items: center;
