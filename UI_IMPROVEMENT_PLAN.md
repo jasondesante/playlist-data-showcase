@@ -485,6 +485,8 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ---
 
+Note that you were building this with retarded tailwind which I fucking hate so I unchecked everything so you might have built a bunch of stuff that I unchecked.  But now you have proper instructions to not use tailwind classes which I think are stupid and also weren't even showing up on the screen which is why I was so frustrated and why this has caused so many hours of wasted time. You couldn't even notice that whatever thing extra was needed to get those stupid classes to actually make the site look better, but whatever. Just use CSS. Fuck tailwind.
+
 ## Implementation Order
 
 
