@@ -169,11 +169,11 @@ export function PlaylistLoaderTab() {
       {currentPlaylist && (
         <div className="space-y-6">
           {/* Spotify-style Playlist Header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-surface-2 to-accent/10 border border-border/50 p-6 md:p-8 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-surface-2 to-accent/10 border border-border/50 p-4 md:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               {/* Large Album Art */}
-              <div className="flex-shrink-0 group">
-                <div className="relative w-48 h-48 md:w-56 md:h-56 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:scale-[1.02]">
+              <div className="flex-shrink-0 group mx-auto sm:mx-0">
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:scale-[1.02]">
                   {currentPlaylist.image ? (
                     <img
                       src={currentPlaylist.image}
@@ -187,7 +187,7 @@ export function PlaylistLoaderTab() {
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
-                              <svg class="w-20 h-20 text-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg class="w-12 h-12 text-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                               </svg>
                             </div>
@@ -197,7 +197,7 @@ export function PlaylistLoaderTab() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
-                      <Music className="w-20 h-20 text-primary/60" />
+                      <Music className="w-12 h-12 text-primary/60" />
                     </div>
                   )}
                 </div>

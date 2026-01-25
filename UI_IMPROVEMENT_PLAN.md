@@ -516,7 +516,11 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    ### Sprint 0 : make sure the css looks good
    - ✅ make sure the site doesn't look like shit
    - ✅ actual good looking css for the page
-  - FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better. 
+  - ✅ FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
+     - Reduced playlist header image from 192px-224px to 128px-160px (w-32 h-32 sm:w-40 sm:h-40)
+     - Reduced TrackCard image sizes: compact 64px→48px, default 80px→56px, large 96px→64px
+     - Adjusted padding, fonts, and icons proportionally to match smaller images
+     - Made layout more balanced with responsive spacing (gap-4 instead of gap-6)
    - Added comprehensive CSS improvements:
      - Enhanced form element styling (inputs, selects, sliders)
      - Custom scrollbar styling for all browsers

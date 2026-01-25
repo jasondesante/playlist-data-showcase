@@ -51,28 +51,31 @@ function formatDuration(seconds: number): string {
 
 const sizeStyles = {
   compact: {
+    container: 'p-2 gap-2',
+    image: 'w-12 h-12',
+    trackNumber: 'text-sm w-6',
+    title: 'text-sm',
+    meta: 'text-xs',
+    playButton: 'w-6 h-6',
+    playIcon: 'w-3 h-3',
+  },
+  default: {
     container: 'p-3 gap-3',
-    image: 'w-16 h-16',
-    trackNumber: 'text-sm',
+    image: 'w-14 h-14',
+    trackNumber: 'text-base w-8',
     title: 'text-base',
     meta: 'text-xs',
     playButton: 'w-8 h-8',
+    playIcon: 'w-3.5 h-3.5',
   },
-  default: {
+  large: {
     container: 'p-4 gap-4',
-    image: 'w-20 h-20',
-    trackNumber: 'text-base',
+    image: 'w-16 h-16',
+    trackNumber: 'text-lg w-10',
     title: 'text-lg',
     meta: 'text-sm',
     playButton: 'w-10 h-10',
-  },
-  large: {
-    container: 'p-5 gap-5',
-    image: 'w-24 h-24',
-    trackNumber: 'text-lg',
-    title: 'text-xl',
-    meta: 'text-base',
-    playButton: 'w-12 h-12',
+    playIcon: 'w-4 h-4',
   },
 };
 
@@ -145,7 +148,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         {/* Track number (left side) */}
         {index !== undefined && (
           <div className={cn(
-            'flex-shrink-0 w-8 text-center font-medium text-muted-foreground tabular-nums',
+            'flex-shrink-0 text-center font-medium text-muted-foreground tabular-nums',
             styles.trackNumber
           )}>
             {isHovered && onPlay ? (
@@ -157,7 +160,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
                 )}
                 aria-label={`Play ${track.title}`}
               >
-                <Play className="w-4 h-4" fill="currentColor" />
+                <Play className={styles.playIcon} fill="currentColor" />
               </button>
             ) : (
               index
@@ -206,7 +209,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
                 )}
                 aria-label={`Play ${track.title}`}
               >
-                <Play className="w-4 h-4" fill="currentColor" />
+                <Play className={styles.playIcon} fill="currentColor" />
               </button>
             </div>
           )}
