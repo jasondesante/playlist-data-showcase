@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import './GamingPlatformsTab.css';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
