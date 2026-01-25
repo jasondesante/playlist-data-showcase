@@ -7,3 +7,4 @@ export * from './useCharacterUpdater';
 export * from './useEnvironmentalSensors';
 export * from './useGamingPlatforms';
 export * from './useCombatEngine';
+export * from './useDebounce';

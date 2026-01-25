@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Music, Download, Sparkles, Search } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
+import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -25,6 +26,8 @@ import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists
 export function PlaylistLoaderTab() {
   const [txId, setTxId] = useState(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
   const [searchQuery, setSearchQuery] = useState('');
+  // Debounce search query to avoid excessive filtering on every keystroke
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { parsePlaylist } = usePlaylistParser();
   const {
     currentPlaylist,
@@ -69,10 +72,10 @@ export function PlaylistLoaderTab() {
     }
   };
 
-  // Filter tracks based on search query
+  // Filter tracks based on debounced search query
   const filteredTracks = currentPlaylist?.tracks.filter((track) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
+    if (!debouncedSearchQuery.trim()) return true;
+    const query = debouncedSearchQuery.toLowerCase();
     return (
       track.title?.toLowerCase().includes(query) ||
       track.artist?.toLowerCase().includes(query) ||
@@ -302,9 +305,11 @@ export function PlaylistLoaderTab() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter by title, artist, or album..."
                 leftIcon={Search}
-                helperText={searchQuery.trim()
-                  ? `Found ${filteredTracks.length} of ${currentPlaylist.tracks.length} tracks`
-                  : `${currentPlaylist.tracks.length} tracks total`
+                helperText={searchQuery !== debouncedSearchQuery
+                  ? 'Filtering...'
+                  : searchQuery.trim()
+                    ? `Found ${filteredTracks.length} of ${currentPlaylist.tracks.length} tracks`
+                    : `${currentPlaylist.tracks.length} tracks total`
                 }
               />
             </div>
