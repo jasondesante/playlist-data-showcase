@@ -539,6 +539,8 @@ Consider that there might not be enough space to show things in the way you're t
 -NO YOU DIDNT IT STILL LOOKS LIKE TRASH THERE IS STILL AN ASSLOAD OF HIDDEN OVERFLOW THAT I CANT SEE YOU MORON FIX THIS STOP BEING A RETARD.
 -ITS SIMPLE IF YOU CANT SEE IT ON SCREEN THEN ITS WRONG AND RETARD TIER AND MUST BE FIXED.
 
+its really as simple as you gave the title an asslod of vertical margin/padding space when the title is in a relatively thin piece of ui for one song in a list, so to have so much vertical padding for the title, forcing all the other info into invisible overflow space, its just straight retarded. You're supposed to be focusing on the css and here you are completely failing at it and then claiming stuff got better shame on you. Write better plans. Be more careful. FFS.
+
 
 -You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
 
