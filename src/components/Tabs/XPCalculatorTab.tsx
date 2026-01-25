@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { Input } from '../ui/Input';
+import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 
 /**
@@ -37,6 +39,8 @@ interface ManualOverrides {
  * - Gaming context integration
  * - Detailed bonus breakdown table (Task 4.5.3)
  * - Manual override mode for testing (Task 4.5.5)
+ * - Animated donut chart for XP breakdown
+ * - Celebration animation when leveling up
  */
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
@@ -44,6 +48,7 @@ export function XPCalculatorTab() {
   const [duration, setDuration] = useState(180);
   const [result, setResult] = useState<XPBreakdown | null>(null);
   const [isMastered, setIsMastered] = useState(false);
+  const [isCelebrating, setIsCelebrating] = useState(false);
 
   // Manual mode state (Task 4.5.5)
   const [isManualMode, setIsManualMode] = useState(false);
@@ -58,6 +63,12 @@ export function XPCalculatorTab() {
       isManualMode ? manualOverrides : undefined
     );
     setResult(xpResult);
+
+    // Trigger celebration if this is a new result
+    if (xpResult && xpResult.totalXP > 0) {
+      setIsCelebrating(true);
+      setTimeout(() => setIsCelebrating(false), 3000);
+    }
   };
 
   const handleManualOverrideChange = (field: keyof ManualOverrides, value: string) => {
@@ -88,7 +99,7 @@ export function XPCalculatorTab() {
       slices.push({
         label: 'Environmental',
         value: result.environmentalBonusXP,
-        color: '#22c55e', // green-500
+        color: 'hsl(174 65% 55%)', // cute-teal
         percentage: (result.environmentalBonusXP / total) * 100
       });
     }
@@ -98,7 +109,7 @@ export function XPCalculatorTab() {
       slices.push({
         label: 'Gaming',
         value: result.gamingBonusXP,
-        color: '#3b82f6', // blue-500
+        color: 'hsl(217.2 91.2% 59.8%)', // primary
         percentage: (result.gamingBonusXP / total) * 100
       });
     }
@@ -108,7 +119,7 @@ export function XPCalculatorTab() {
       slices.push({
         label: 'Mastery',
         value: result.masteryBonusXP,
-        color: '#a855f7', // purple-500
+        color: 'hsl(268 75% 60%)', // cute-purple
         percentage: (result.masteryBonusXP / total) * 100
       });
     }
@@ -140,402 +151,408 @@ export function XPCalculatorTab() {
   }, [pieData]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <h2 className="text-lg md:text-xl font-bold">XP Calculator</h2>
-
-      <div className="space-y-3 md:space-y-4">
-        {/* Duration Input */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
-          <input
-            type="number"
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-            className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
-            min="0"
-            max="3600"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {Math.floor(duration / 60)} minutes {duration % 60} seconds
-          </p>
+    <>
+      {/* Confetti celebration */}
+      {isCelebrating && (
+        <div className="xp-confetti-container">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="xp-confetti" />
+          ))}
         </div>
+      )}
 
-        {/* Environmental Context Section */}
-        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-2 md:mb-3">
-            <h3 className="font-semibold text-xs md:text-sm">Environmental Context</h3>
-            <StatusIndicator
-              status={environmentalContext ? 'healthy' : 'degraded'}
-              label={environmentalContext ? 'Active' : 'Not set'}
-            />
-          </div>
-
-          {environmentalContext ? (
-            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-              {/* Show timestamp */}
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">Last Updated:</span>
-                <span className="font-medium text-right">
-                  {new Date(environmentalContext.timestamp || Date.now()).toLocaleTimeString()}
-                </span>
-              </div>
-
-              {/* Show motion data status */}
-              {environmentalContext.motion && (
-                <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">Motion Data:</span>
-                  <span className="font-medium text-green-600">Active</span>
-                </div>
-              )}
-
-              {/* Show any available geolocation data */}
-              {(environmentalContext as any).geolocation && (
-                <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">GPS:</span>
-                  <span className="font-medium text-right">
-                    {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
-                    {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
-                  </span>
-                </div>
-              )}
-
-              {/* Show weather data */}
-              {(environmentalContext as any).weather && (
-                <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">Weather:</span>
-                  <span className="font-medium capitalize text-right">
-                    {(environmentalContext as any).weather.weather_type || 'Unknown'}
-                    {(environmentalContext as any).weather.temperature && (
-                      <span className="ml-2">
-                        {Math.round((environmentalContext as any).weather.temperature)}°C
-                      </span>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              <p className="text-xs text-muted-foreground mt-2">
-                From Environmental Sensors tab
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs md:text-sm text-muted-foreground">
-              No environmental data available. Visit the Environmental Sensors tab to set up sensors.
+      <div className="xp-calculator-container">
+        {/* Header */}
+        <div className="xp-calculator-header">
+          <div className="xp-calculator-header-icon">⭐</div>
+          <div className="xp-calculator-header-content">
+            <h2>XP Calculator</h2>
+            <p className="xp-calculator-header-subtitle">
+              Calculate experience points from listening sessions
             </p>
-          )}
+          </div>
         </div>
 
-        {/* Gaming Context Section */}
-        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-2 md:mb-3">
-            <h3 className="font-semibold text-xs md:text-sm">Gaming Context</h3>
-            <StatusIndicator
-              status={gamingContext?.isActivelyGaming ? 'healthy' : 'degraded'}
-              label={gamingContext?.isActivelyGaming ? 'Gaming' : 'Not gaming'}
+        <div className="xp-calculator-context-grid">
+          {/* Duration Input Card */}
+          <Card variant="default" padding="md" className="xp-calculator-context-grid">
+            <Input
+              label="Duration (seconds)"
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              min="0"
+              max="3600"
+              helperText={`${Math.floor(duration / 60)} minutes ${duration % 60} seconds`}
             />
-          </div>
+          </Card>
 
-          {gamingContext ? (
-            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-              {/* Show active gaming status */}
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">Status:</span>
-                <span className={`font-medium text-right ${gamingContext.isActivelyGaming ? 'text-green-600' : ''}`}>
-                  {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
-                </span>
-              </div>
+          {/* Environmental Context Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-context-card-header">
+              <h3 className="xp-context-card-title">Environmental Context</h3>
+              <StatusIndicator
+                status={environmentalContext ? 'healthy' : 'degraded'}
+                label={environmentalContext ? 'Active' : 'Not set'}
+              />
+            </div>
 
-              {/* Show current game if available */}
-              {(gamingContext as any).currentGame && (
-                <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">Game:</span>
-                  <span className="font-medium text-right">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
-                </div>
-              )}
-
-              {/* Show Steam ID if available */}
-              {(gamingContext as any).steamId && (
-                <div className="flex justify-between gap-2">
-                  <span className="text-muted-foreground">Steam ID:</span>
-                  <span className="font-medium font-mono text-[10px] md:text-xs text-right break-all">
-                    {(gamingContext as any).steamId}
+            {environmentalContext ? (
+              <div className="xp-context-card-body">
+                <div className="xp-context-row">
+                  <span className="xp-context-label">Last Updated:</span>
+                  <span className="xp-context-value">
+                    {new Date(environmentalContext.timestamp || Date.now()).toLocaleTimeString()}
                   </span>
                 </div>
-              )}
 
-              <p className="text-xs text-muted-foreground mt-2">
-                From Gaming Platforms tab
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs md:text-sm text-muted-foreground">
-              No gaming data available. Visit the Gaming Platforms tab to connect platforms.
-            </p>
-          )}
-        </div>
+                {environmentalContext.motion && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Motion Data:</span>
+                    <span className="xp-context-value active">Active</span>
+                  </div>
+                )}
 
-        {/* Mastery Toggle - Task 4.5.5 (For Testing) */}
-        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1">
-              <h3 className="font-semibold text-xs md:text-sm">Track Mastery Bonus</h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                Simulate a mastered track (+50 bonus XP)
+                {(environmentalContext as any).geolocation && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">GPS:</span>
+                    <span className="xp-context-value">
+                      {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
+                      {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
+                    </span>
+                  </div>
+                )}
+
+                {(environmentalContext as any).weather && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Weather:</span>
+                    <span className="xp-context-value">
+                      {(environmentalContext as any).weather.weather_type || 'Unknown'}
+                      {(environmentalContext as any).weather.temperature && (
+                        <span className="ml-2">
+                          {Math.round((environmentalContext as any).weather.temperature)}°C
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
+                <p className="xp-context-hint">From Environmental Sensors tab</p>
+              </div>
+            ) : (
+              <p className="xp-context-empty">
+                No environmental data available. Visit the Environmental Sensors tab to set up sensors.
               </p>
-            </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isMastered}
-                onChange={(e) => setIsMastered(e.target.checked)}
-                className="w-5 h-5 md:w-4 md:h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            )}
+          </Card>
+
+          {/* Gaming Context Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-context-card-header">
+              <h3 className="xp-context-card-title">Gaming Context</h3>
+              <StatusIndicator
+                status={gamingContext?.isActivelyGaming ? 'healthy' : 'degraded'}
+                label={gamingContext?.isActivelyGaming ? 'Gaming' : 'Not gaming'}
               />
-              <span className="text-xs md:text-sm font-medium">Mastered</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Manual Mode - Task 4.5.5 (For Testing) */}
-        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <div className="flex-1">
-              <h3 className="font-semibold text-xs md:text-sm">Manual Mode</h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                Override automatic calculation with custom values
-              </p>
             </div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isManualMode}
-                onChange={(e) => setIsManualMode(e.target.checked)}
-                className="w-5 h-5 md:w-4 md:h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span className="text-xs md:text-sm font-medium">Enable</span>
-            </label>
-          </div>
 
-          {isManualMode && (
-            <div className="space-y-3 md:space-y-4 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border">
-              {/* Base XP Override */}
-              <div>
-                <label className="block text-xs md:text-sm font-medium mb-2">
-                  Base XP Override
-                </label>
-                <input
-                  type="number"
-                  value={manualOverrides.baseXP ?? ''}
-                  onChange={(e) => handleManualOverrideChange('baseXP', e.target.value)}
-                  placeholder="Leave empty to use duration × rate"
-                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
-                  min="0"
-                />
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                  {manualOverrides.baseXP
-                    ? `${manualOverrides.baseXP} XP (manual)`
-                    : `${Math.floor(duration * 1)} XP (auto: ${duration}s × 1.0)`}
-                </p>
+            {gamingContext ? (
+              <div className="xp-context-card-body">
+                <div className="xp-context-row">
+                  <span className="xp-context-label">Status:</span>
+                  <span className={`xp-context-value ${gamingContext.isActivelyGaming ? 'active' : 'inactive'}`}>
+                    {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
+                  </span>
+                </div>
+
+                {(gamingContext as any).currentGame && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Game:</span>
+                    <span className="xp-context-value">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
+                  </div>
+                )}
+
+                {(gamingContext as any).steamId && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Steam ID:</span>
+                    <span className="xp-context-value font-mono">
+                      {(gamingContext as any).steamId}
+                    </span>
+                  </div>
+                )}
+
+                <p className="xp-context-hint">From Gaming Platforms tab</p>
               </div>
-
-              {/* Environmental Multiplier Override */}
-              <div>
-                <label className="block text-xs md:text-sm font-medium mb-2">
-                  Environmental Multiplier (0.5 - 3.0)
-                </label>
-                <input
-                  type="number"
-                  value={manualOverrides.environmentalMultiplier ?? ''}
-                  onChange={(e) => handleManualOverrideChange('environmentalMultiplier', e.target.value)}
-                  placeholder="Leave empty to use sensor data"
-                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
-                  min="0.5"
-                  max="3.0"
-                  step="0.1"
-                />
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                  {manualOverrides.environmentalMultiplier
-                    ? `${manualOverrides.environmentalMultiplier}x (manual)`
-                    : environmentalContext
-                      ? 'Using sensor data'
-                      : '1.0x (no data)'}
-                </p>
-              </div>
-
-              {/* Gaming Multiplier Override */}
-              <div>
-                <label className="block text-xs md:text-sm font-medium mb-2">
-                  Gaming Multiplier (1.0 - 1.75)
-                </label>
-                <input
-                  type="number"
-                  value={manualOverrides.gamingMultiplier ?? ''}
-                  onChange={(e) => handleManualOverrideChange('gamingMultiplier', e.target.value)}
-                  placeholder="Leave empty to use gaming data"
-                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
-                  min="1.0"
-                  max="1.75"
-                  step="0.05"
-                />
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                  {manualOverrides.gamingMultiplier
-                    ? `${manualOverrides.gamingMultiplier}x (manual)`
-                    : gamingContext?.isActivelyGaming
-                      ? 'Using gaming data'
-                      : '1.0x (not gaming)'}
-                </p>
-              </div>
-
-              <p className="text-[10px] md:text-xs text-muted-foreground italic">
-                Leave fields empty to use automatic values from sensors/stores
+            ) : (
+              <p className="xp-context-empty">
+                No gaming data available. Visit the Gaming Platforms tab to connect platforms.
               </p>
+            )}
+          </Card>
+
+          {/* Mastery Toggle Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-toggle-header">
+              <div className="xp-toggle-content">
+                <h3 className="xp-toggle-title">Track Mastery Bonus</h3>
+                <p className="xp-toggle-description">
+                  Simulate a mastered track (+50 bonus XP)
+                </p>
+              </div>
+              <label className="xp-toggle-switch">
+                <input
+                  type="checkbox"
+                  className="xp-toggle-checkbox"
+                  checked={isMastered}
+                  onChange={(e) => setIsMastered(e.target.checked)}
+                />
+                <span className="xp-toggle-label">Mastered</span>
+              </label>
             </div>
-          )}
+          </Card>
+
+          {/* Manual Mode Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-toggle-header">
+              <div className="xp-toggle-content">
+                <h3 className="xp-toggle-title">Manual Mode</h3>
+                <p className="xp-toggle-description">
+                  Override automatic calculation with custom values
+                </p>
+              </div>
+              <label className="xp-toggle-switch">
+                <input
+                  type="checkbox"
+                  className="xp-toggle-checkbox"
+                  checked={isManualMode}
+                  onChange={(e) => setIsManualMode(e.target.checked)}
+                />
+                <span className="xp-toggle-label">Enable</span>
+              </label>
+            </div>
+
+            {isManualMode && (
+              <div className="xp-manual-overrides">
+                <div className="xp-override-field">
+                  <label className="xp-override-label">Base XP Override</label>
+                  <input
+                    type="number"
+                    className="xp-override-input"
+                    value={manualOverrides.baseXP ?? ''}
+                    onChange={(e) => handleManualOverrideChange('baseXP', e.target.value)}
+                    placeholder="Leave empty to use duration × rate"
+                    min="0"
+                  />
+                  <p className="xp-override-hint">
+                    {manualOverrides.baseXP
+                      ? `${manualOverrides.baseXP} XP (manual)`
+                      : `${Math.floor(duration * 1)} XP (auto: ${duration}s × 1.0)`}
+                  </p>
+                </div>
+
+                <div className="xp-override-field">
+                  <label className="xp-override-label">Environmental Multiplier (0.5 - 3.0)</label>
+                  <input
+                    type="number"
+                    className="xp-override-input"
+                    value={manualOverrides.environmentalMultiplier ?? ''}
+                    onChange={(e) => handleManualOverrideChange('environmentalMultiplier', e.target.value)}
+                    placeholder="Leave empty to use sensor data"
+                    min="0.5"
+                    max="3.0"
+                    step="0.1"
+                  />
+                  <p className="xp-override-hint">
+                    {manualOverrides.environmentalMultiplier
+                      ? `${manualOverrides.environmentalMultiplier}x (manual)`
+                      : environmentalContext
+                        ? 'Using sensor data'
+                        : '1.0x (no data)'}
+                  </p>
+                </div>
+
+                <div className="xp-override-field">
+                  <label className="xp-override-label">Gaming Multiplier (1.0 - 1.75)</label>
+                  <input
+                    type="number"
+                    className="xp-override-input"
+                    value={manualOverrides.gamingMultiplier ?? ''}
+                    onChange={(e) => handleManualOverrideChange('gamingMultiplier', e.target.value)}
+                    placeholder="Leave empty to use gaming data"
+                    min="1.0"
+                    max="1.75"
+                    step="0.05"
+                  />
+                  <p className="xp-override-hint">
+                    {manualOverrides.gamingMultiplier
+                      ? `${manualOverrides.gamingMultiplier}x (manual)`
+                      : gamingContext?.isActivelyGaming
+                        ? 'Using gaming data'
+                        : '1.0x (not gaming)'}
+                  </p>
+                </div>
+
+                <p className="xp-manual-hint">
+                  Leave fields empty to use automatic values from sensors/stores
+                </p>
+              </div>
+            )}
+          </Card>
         </div>
 
         {/* Calculate Button */}
-        <button
-          onClick={handleCalculate}
-          className="w-full px-4 py-3 md:py-2 text-base md:text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 font-medium"
-        >
-          Calculate XP
-        </button>
+        <div className="xp-calculate-section">
+          <button
+            onClick={handleCalculate}
+            className="xp-calculate-button"
+          >
+            Calculate XP
+          </button>
+        </div>
 
         {/* Results */}
         {result && (
-          <div className="space-y-3 md:space-y-4">
+          <div className={`xp-results-section ${isCelebrating ? 'xp-level-up-celebration' : ''}`}>
             {/* Total XP Display */}
-            <div className="p-3 md:p-4 bg-card border border-border rounded-md">
-              <p className="text-xs md:text-sm text-muted-foreground">Total XP</p>
-              <p className="text-2xl md:text-3xl font-bold">{result.totalXP}</p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                Total Multiplier: <span className="font-bold">{result.totalMultiplier.toFixed(2)}x</span>
+            <div className={`xp-total-card ${isCelebrating ? 'xp-level-up-pulse' : ''}`}>
+              <p className="xp-total-label">Total XP</p>
+              <p className="xp-total-value">{result.totalXP}</p>
+              <p className="xp-total-multiplier">
+                Total Multiplier: <strong>{result.totalMultiplier.toFixed(2)}x</strong>
                 {result.totalMultiplier >= 3.0 && ' (capped)'}
               </p>
             </div>
 
-            {/* Bonus Breakdown Table - Task 4.5.3 */}
-            <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-              <h3 className="font-semibold text-xs md:text-sm mb-2 md:mb-3">XP Bonus Breakdown</h3>
-              <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
+            {/* Bonus Breakdown */}
+            <Card variant="default" padding="md">
+              <h3 className="xp-breakdown-title">XP Bonus Breakdown</h3>
+              <div>
                 {/* Base XP */}
-                <div className="flex justify-between items-center py-2 border-b border-border gap-2">
-                  <div className="min-w-0 flex-1">
-                    <span className="font-medium block">Base XP</span>
-                    <span className="text-muted-foreground text-[10px] md:text-xs block mt-0.5">
+                <div className="xp-breakdown-row">
+                  <div className="xp-breakdown-info">
+                    <span className="xp-breakdown-name">Base XP</span>
+                    <span className="xp-breakdown-detail">
                       ({duration}s × {(result.baseXP / duration).toFixed(2)}/s)
                     </span>
                   </div>
-                  <span className="font-bold flex-shrink-0">{result.baseXP} XP</span>
+                  <span className="xp-breakdown-amount">{result.baseXP} XP</span>
                 </div>
 
                 {/* Environmental Bonus */}
                 {result.environmentalBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-medium text-green-600 block">Environmental Bonus</span>
-                      <span className="text-muted-foreground text-[10px] md:text-xs ml-0">
+                  <div className="xp-breakdown-row">
+                    <div className="xp-breakdown-info">
+                      <span className="xp-breakdown-name bonus-environmental">Environmental Bonus</span>
+                      <span className="xp-breakdown-detail">
                         ({result.environmentalMultiplier.toFixed(2)}x)
                       </span>
                       {result.environmentalDetails && (
-                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                        <div className="xp-breakdown-detail-list">
                           {result.environmentalDetails.activity && (
-                            <span className="block">Activity: {result.environmentalDetails.activity}</span>
+                            <span className="xp-breakdown-detail-item">
+                              Activity: {result.environmentalDetails.activity}
+                            </span>
                           )}
                           {result.environmentalDetails.isNightTime && (
-                            <span className="ml-0 md:ml-2">🌙 Night Time</span>
+                            <span className="xp-breakdown-detail-item">🌙 Night Time</span>
                           )}
                           {result.environmentalDetails.weather && (
-                            <span className="block md:ml-2">Weather: {result.environmentalDetails.weather}</span>
+                            <span className="xp-breakdown-detail-item">
+                              Weather: {result.environmentalDetails.weather}
+                            </span>
                           )}
                           {result.environmentalDetails.altitude && (
-                            <span className="block md:ml-2">Altitude: {result.environmentalDetails.altitude}m</span>
+                            <span className="xp-breakdown-detail-item">
+                              Altitude: {result.environmentalDetails.altitude}m
+                            </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="font-bold text-green-600 flex-shrink-0">+{result.environmentalBonusXP} XP</span>
+                    <span className="xp-breakdown-amount bonus-environmental">+{result.environmentalBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* Gaming Bonus */}
                 {result.gamingBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-medium text-blue-600 block">Gaming Bonus</span>
-                      <span className="text-muted-foreground text-[10px] md:text-xs block">
+                  <div className="xp-breakdown-row">
+                    <div className="xp-breakdown-info">
+                      <span className="xp-breakdown-name bonus-gaming">Gaming Bonus</span>
+                      <span className="xp-breakdown-detail">
                         ({result.gamingMultiplier.toFixed(2)}x)
                       </span>
                       {result.gamingDetails && (
-                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                        <div className="xp-breakdown-detail-list">
                           {result.gamingDetails.gameName && (
-                            <span className="block">Game: {result.gamingDetails.gameName}</span>
+                            <span className="xp-breakdown-detail-item">
+                              Game: {result.gamingDetails.gameName}
+                            </span>
                           )}
                           {result.gamingDetails.gameGenre && (
-                            <span className="block">({result.gamingDetails.gameGenre})</span>
+                            <span className="xp-breakdown-detail-item">
+                              ({result.gamingDetails.gameGenre})
+                            </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="font-bold text-blue-600 flex-shrink-0">+{result.gamingBonusXP} XP</span>
+                    <span className="xp-breakdown-amount bonus-gaming">+{result.gamingBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* Mastery Bonus */}
                 {result.masteryBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-medium text-purple-600 block">Mastery Bonus</span>
-                      <span className="text-muted-foreground text-[10px] md:text-xs block">
-                        (Track mastered)
-                      </span>
+                  <div className="xp-breakdown-row">
+                    <div className="xp-breakdown-info">
+                      <span className="xp-breakdown-name bonus-mastery">Mastery Bonus</span>
+                      <span className="xp-breakdown-detail">(Track mastered)</span>
                     </div>
-                    <span className="font-bold text-purple-600 flex-shrink-0">+{result.masteryBonusXP} XP</span>
+                    <span className="xp-breakdown-amount bonus-mastery">+{result.masteryBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* No bonuses message */}
                 {result.environmentalBonusXP === 0 && result.gamingBonusXP === 0 && result.masteryBonusXP === 0 && (
-                  <p className="text-[10px] md:text-xs text-muted-foreground py-2 italic">
+                  <p className="xp-no-bonuses">
                     No active bonuses. Enable environmental sensors or start gaming to earn bonus XP!
                   </p>
                 )}
               </div>
-            </div>
+            </Card>
 
-            {/* XP Source Visualization - Task 4.5.4 */}
+            {/* XP Source Visualization - Donut Chart */}
             {pieData && pieData.length > 0 && (
-              <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
-                <h3 className="font-semibold text-xs md:text-sm mb-2 md:mb-3">XP Source Distribution</h3>
-                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                  {/* Pie Chart */}
-                  <div className="relative flex-shrink-0">
+              <Card variant="default" padding="md">
+                <h3 className="xp-donut-title">XP Source Distribution</h3>
+                <div className="xp-donut-content">
+                  {/* Donut Chart */}
+                  <div className="xp-donut-chart">
                     <div
-                      className="w-24 h-24 md:w-32 md:h-32 rounded-full"
+                      className="xp-donut-ring"
                       style={{
                         background: pieChartGradient,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                       }}
                     />
-                    {/* Center hole for donut chart effect */}
-                    <div className="absolute inset-0 m-auto w-12 h-12 md:w-16 md:h-16 bg-muted/50 rounded-full flex items-center justify-center">
-                      <span className="text-[10px] md:text-xs font-bold">{result.totalXP}</span>
+                    <div className="xp-donut-center">
+                      <span className="xp-donut-center-value">{result.totalXP}</span>
                     </div>
                   </div>
 
                   {/* Legend */}
-                  <div className="flex-1 w-full space-y-1.5 md:space-y-2 text-xs md:text-sm">
+                  <div className="xp-donut-legend">
                     {pieData.map((slice) => (
-                      <div key={slice.label} className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
+                      <div key={slice.label} className="xp-donut-legend-item">
+                        <div className="xp-donut-legend-left">
                           <div
-                            className="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0"
+                            className="xp-donut-legend-color"
                             style={{ backgroundColor: slice.color }}
                           />
-                          <span className="text-muted-foreground truncate">{slice.label}</span>
+                          <span className="xp-donut-legend-label">{slice.label}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
-                          <span className="font-medium">{slice.value} XP</span>
-                          <span className="text-[10px] md:text-xs text-muted-foreground w-10 md:w-12 text-right">
+                        <div className="xp-donut-legend-right">
+                          <span className="xp-donut-legend-value">{slice.value} XP</span>
+                          <span className="xp-donut-legend-percent">
                             {slice.percentage.toFixed(1)}%
                           </span>
                         </div>
@@ -543,22 +560,23 @@ export function XPCalculatorTab() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
+                <p className="xp-donut-hint">
                   Visual breakdown of XP sources for this session
                 </p>
-              </div>
+              </Card>
             )}
 
-            {/* Multiplier Cap Info */}
+            {/* Multiplier Cap Warning */}
             {result.totalMultiplier >= 3.0 && (
-              <div className="p-2 md:p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md">
-                <p className="text-[10px] md:text-xs text-yellow-800 dark:text-yellow-200">
-                  ⚠️ Total multiplier capped at 3.0x (engine limit)
-                </p>
+              <div className="xp-cap-warning">
+                <span className="xp-cap-warning-icon">⚠️</span>
+                <span className="xp-cap-warning-text">
+                  Total multiplier capped at 3.0x (engine limit)
+                </span>
               </div>
             )}
 
-            {/* Raw JSON Dump Section - Task 4.5.6 */}
+            {/* Raw JSON Dump Section */}
             <RawJsonDump
               data={result}
               title="Raw XP Calculation Result"
@@ -568,7 +586,7 @@ export function XPCalculatorTab() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
 

@@ -587,7 +587,25 @@ Need to fix that.
    - Environmental context shown with geolocation, biome, weather, light data
    - Gaming context shown with platform, game, and session info
    - Added clean, responsive CSS classes for all elements
-11. XP Calculator Tab
+~~11. XP Calculator Tab~~
+   - Completed: Redesigned XPCalculatorTab with Card, Input components
+   - Added proper header with icon badge (Star) and subtitle
+   - Replaced all plain divs with Card components for all sections
+   - Used Input component for duration input with helper text
+   - Added custom toggle switches with smooth animations for Mastery and Manual Mode
+   - Context cards (Environmental, Gaming) in responsive grid layout
+   - Manual override fields with styled inputs and hints
+   - Calculate button with gradient background and hover effects
+   - Total XP display in elevated card with gradient background
+   - XP Bonus Breakdown with color-coded amounts (teal for environmental, primary for gaming, purple for mastery)
+   - Animated donut chart for XP Source Distribution
+   - Donut chart with hover scale effect and smooth transitions
+   - Legend with color dots, values, and percentages
+   - Multiplier cap warning with yellow styling
+   - Confetti celebration animation when XP is calculated (15 particles in cute colors)
+   - Level up pulse animation on total XP card
+   - All CSS uses CSS custom properties and responsive media queries
+   - Clean, professional styling with proper spacing and typography
 12. Leveling Tab
 13. Sensors Tab
 14. Gaming Tab
