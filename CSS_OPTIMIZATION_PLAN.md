@@ -1129,11 +1129,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Run `npm run lint:css` - should work
 
 **Task 2: Setup Pre-commit Hooks**
-- [ ] Install: `npm install --save-dev husky lint-staged`
-- [ ] Run: `npx husky init`
-- [ ] Update `.husky/pre-commit` to run `npm run lint:css`
-- [ ] Add lint-staged config to `package.json`
-- [ ] Test: Try to commit a CSS file - hook should run
+- [x] Install: `npm install --save-dev husky lint-staged`
+- [x] Run: `npx husky init`
+- [x] Update `.husky/pre-commit` to run `npm run lint:css`
+- [x] Add lint-staged config to `package.json`
+- [x] Test: Try to commit a CSS file - hook should run
 
 **Task 3: Create Brace Check Script**
 - [ ] Create `scripts/check-css-braces.js` (see Part 1 for full script)
