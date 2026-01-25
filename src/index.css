@@ -6345,7 +6345,6 @@
   .character-count-up {
     animation: countUp var(--duration-normal) var(--ease-out-cubic);
   }
-}
 
 /* ========================================
    XP CALCULATOR TAB

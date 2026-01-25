@@ -737,4 +737,45 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 - All interactive elements keyboard accessible
 - ARIA labels for icon-only buttons
-- Focus indicators visible on all interac
+- Focus indicators visible on all interactive elements
+
+---
+
+## CSS Syntax Errors Found and Fixed
+
+### Issue: Extra Closing Brace in index.css (2025-01-25)
+
+**Problem:**
+The CSS file (`src/index.css`) had a critical syntax error - one extra closing brace (`}`) that was breaking the entire stylesheet.
+
+**Root Cause Analysis:**
+1. **Location**: Line 6348 (originally) - an extra closing brace after `.character-count-up`
+2. **Cause**: When the character gen tab styles were added to the `@layer utilities` block (starting at line 527), an extra closing brace was inadvertently included
+3. **Impact**: The unbalanced braces (2062 opening, 2063 closing) caused CSS parsing issues
+
+**How This Happened:**
+The `@layer utilities` block started at line 527 and contained many utility classes plus the character gen components. At line 6348, there was an extra closing brace that closed this `@layer utilities` block prematurely, leaving all the subsequent CSS (thousands of lines) effectively orphaned or improperly nested.
+
+**Fix Applied:**
+Removed the extra closing brace at line 6348. The corrected structure:
+- `@layer utilities {` (line 527)
+- ... utility classes ...
+- Character gen components
+- `@keyframes countUp { ... }` (lines 6334-6343)
+- `.character-count-up { ... }` (lines 6345-6347)
+- ~~`}~~ REMOVED - this was closing the @layer utilities prematurely
+- XP Calculator tab continues...
+
+**Verification:**
+After fix: 2062 opening braces, 2062 closing braces - perfectly balanced.
+
+**Why This Was Hard to Catch:**
+1. CSS files don't always show clear error messages in browsers when there's an extra closing brace
+2. The error was in the middle of a 10,450 line file
+3. The build error shown was a rollup/vite issue, not directly pointing to the CSS syntax problem
+4. The extra brace didn't cause an immediate visual break - it just silently caused all subsequent CSS to potentially not apply correctly
+
+**Prevention for Future:**
+1. Use a CSS linter (stylelint) in the build process
+2. Check brace balance programmatically after major CSS changes
+3. Consider splitting the massive 10k line CSS file into smaller, focused modules
