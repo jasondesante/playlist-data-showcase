@@ -1,38 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
-import { StatusIndicator } from '../ui/StatusIndicator';
-import { MotionGraph } from '../ui/MotionGraph';
-import { RawJsonDump } from '../ui/RawJsonDump';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind } from 'lucide-react';
 
 /**
  * EnvironmentalSensorsTab Component
  *
- * Demonstrates the EnvironmentalSensors engine module by:
- * 1. Requesting permissions for geolocation, motion, and light sensors
- * 2. Starting/stopping sensor monitoring
- * 3. Displaying GPS location with coordinates, altitude, speed, and heading
- * 4. Showing live motion data with real-time graphs (X, Y, Z acceleration)
- * 5. Displaying weather data from OpenWeather API (if API key is provided)
- * 6. Visualizing moon phase and day/night status
- * 7. Providing raw JSON dump for debugging
+ * Demonstrates the EnvironmentalSensors engine module with:
+ * - Permission requests for geolocation, motion, and light sensors
+ * - Sensor monitoring with real-time data visualization
+ * - GPS location with coordinates, altitude, speed, and heading
+ * - Live motion data with real-time graphs
+ * - Weather data from OpenWeather API
+ * - Moon phase and day/night status visualization
  *
  * Features:
- * - Permission status indicators for each sensor type
- * - Mini-map placeholder with coordinates
- * - Link to open location in Google Maps
- * - Real-time motion graphs showing acceleration over time
- * - Activity type detection (stationary, walking, running, in-vehicle)
- * - Weather icon mapping based on conditions
- * - iOS-specific handling for motion permission (requires user gesture)
- *
- * @example
- * ```tsx
- * // Users can test each sensor independently
- * <EnvironmentalSensorsTab />
- * ```
+ * - Card-based layout with status indicators
+ * - Permission request with friendly UI
+ * - Real-time data visualization with smooth charts
+ * - GPS mini-map with Google Maps link
+ * - Weather with icon mapping and details
  */
 
-// Helper function to map PermissionState to StatusType
+// Helper function to map PermissionState to status type
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
   switch (permission) {
     case 'granted':
@@ -46,15 +37,102 @@ function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded'
   }
 }
 
+// Status indicator component
+function StatusIndicator({ status }: { status: 'healthy' | 'degraded' | 'error' }) {
+  const statusConfig = {
+    healthy: { color: 'hsl(var(--cute-teal))', label: 'Granted' },
+    degraded: { color: 'hsl(var(--cute-yellow))', label: 'Prompt' },
+    error: { color: 'hsl(var(--destructive))', label: 'Denied' },
+  };
+
+  const config = statusConfig[status];
+
+  return (
+    <div className="sensor-status-indicator">
+      <div
+        className="sensor-status-dot"
+        style={{ backgroundColor: config.color }}
+      />
+      <span className="sensor-status-label">{config.label}</span>
+    </div>
+  );
+}
+
+// Motion graph component
+function MotionGraph({ data, color, label }: { data: number[]; color: string; label: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const width = rect.width;
+    const height = rect.height;
+    const padding = 8;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw background
+    ctx.fillStyle = 'hsl(var(--surface-3))';
+    ctx.fillRect(0, 0, width, height);
+
+    if (data.length < 2) return;
+
+    // Find min/max for scaling
+    const minVal = Math.min(...data);
+    const maxVal = Math.max(...data);
+    const range = maxVal - minVal || 1;
+
+    // Draw line
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+
+    data.forEach((value, index) => {
+      const x = padding + (index / (data.length - 1)) * (width - 2 * padding);
+      const normalizedY = (value - minVal) / range;
+      const y = height - padding - normalizedY * (height - 2 * padding);
+
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
+    ctx.stroke();
+
+    // Draw label
+    ctx.fillStyle = 'hsl(var(--foreground))';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(label, padding, padding + 10);
+  }, [data, color, label]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="sensor-motion-graph"
+      height={60}
+    />
+  );
+}
+
 export function EnvironmentalSensorsTab() {
   const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors } = useEnvironmentalSensors();
 
-  // Store motion data history for graphs (max 100 points each)
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
   const [zData, setZData] = useState<number[]>([]);
 
-  // Update motion data when environmental context changes
   useEffect(() => {
     if (environmentalContext?.motion?.accelerationIncludingGravity) {
       const acc = environmentalContext.motion.accelerationIncludingGravity;
@@ -75,393 +153,365 @@ export function EnvironmentalSensorsTab() {
   }, [environmentalContext?.motion?.accelerationIncludingGravity]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <h2 className="text-lg md:text-xl font-bold">Environmental Sensors</h2>
+    <div className="sensor-tab-container">
+      {/* Header */}
+      <div className="sensor-tab-header">
+        <div className="sensor-tab-icon-badge">
+          <Activity className="sensor-tab-icon" size={20} />
+        </div>
+        <div className="sensor-tab-header-content">
+          <h2>Environmental Sensors</h2>
+          <div className="sensor-tab-subtitle">Monitor GPS, motion, and environmental data</div>
+        </div>
+      </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Geolocation</p>
+      <div className="sensor-tab-content">
+        {/* Permission cards grid */}
+        <div className="sensor-permissions-grid">
+          {/* Geolocation card */}
+          <Card variant="elevated" padding="md" className="sensor-permission-card">
+            <div className="sensor-permission-header">
+              <span className="sensor-permission-title">Geolocation</span>
               <StatusIndicator status={permissionToStatus(permissions.geolocation)} />
             </div>
-            <p className="text-xs text-muted-foreground">{permissions.geolocation}</p>
-            <button
+            <span className="sensor-permission-state">{permissions.geolocation}</span>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => requestPermission('geolocation')}
-              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
+              leftIcon={Navigation}
+              className="sensor-permission-button"
             >
               Request
-            </button>
-          </div>
-          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Motion</p>
+            </Button>
+          </Card>
+
+          {/* Motion card */}
+          <Card variant="elevated" padding="md" className="sensor-permission-card">
+            <div className="sensor-permission-header">
+              <span className="sensor-permission-title">Motion</span>
               <StatusIndicator status={permissionToStatus(permissions.motion)} />
             </div>
-            <p className="text-xs text-muted-foreground">{permissions.motion}</p>
-            <button
+            <span className="sensor-permission-state">{permissions.motion}</span>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => requestPermission('motion')}
-              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
+              leftIcon={Activity}
+              className="sensor-permission-button"
             >
               Request
-            </button>
-          </div>
-          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Light</p>
+            </Button>
+          </Card>
+
+          {/* Light card */}
+          <Card variant="elevated" padding="md" className="sensor-permission-card">
+            <div className="sensor-permission-header">
+              <span className="sensor-permission-title">Light</span>
               <StatusIndicator status={permissionToStatus(permissions.light)} />
             </div>
-            <p className="text-xs text-muted-foreground">{permissions.light}</p>
-            <button
+            <span className="sensor-permission-state">{permissions.light}</span>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => requestPermission('light')}
-              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
+              leftIcon={Sun}
+              className="sensor-permission-button"
             >
               Request
-            </button>
-          </div>
+            </Button>
+          </Card>
         </div>
 
-        <button
+        {/* Start monitoring button */}
+        <Button
+          variant="primary"
+          size="lg"
           onClick={() => startMonitoring()}
           disabled={isMonitoring}
-          className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-2 text-sm md:text-base bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 min-h-[44px]"
+          isLoading={isMonitoring}
+          leftIcon={Activity}
+          className="sensor-monitor-button"
         >
           {isMonitoring ? 'Monitoring...' : 'Start Monitoring'}
-        </button>
+        </Button>
 
-        {environmentalContext && (
-          <div className="p-4 bg-card border border-border rounded-md">
-            <p className="text-sm font-medium">Environmental Data</p>
-            <pre className="text-xs mt-2 overflow-auto">{JSON.stringify(environmentalContext, null, 2)}</pre>
-          </div>
-        )}
-
+        {/* Environmental data display */}
         {environmentalContext ? (
-          <div className="space-y-3 md:space-y-4">
-            {/* GPS Location Display */}
+          <div className="sensor-data-section">
+            {/* GPS Location */}
             {(environmentalContext as any).location ? (
-              <div className="p-3 md:p-5 bg-blue-900/20 border border-blue-700 rounded-lg">
-                <h3 className="font-bold text-blue-300 flex items-center gap-2 text-base md:text-lg">
-                  📍 GPS Location
-                </h3>
+              <Card variant="elevated" padding="lg" className="sensor-gps-card">
+                <div className="sensor-card-title">
+                  <Navigation size={18} />
+                  <span>GPS Location</span>
+                </div>
 
-                {/* Mini Map Placeholder with Coordinates */}
-                <div className="mt-3 grid grid-cols-2 gap-2 md:gap-4">
-                  <div className="p-2 md:p-3 bg-black/30 rounded border border-blue-600">
-                    <p className="text-xs text-blue-400">Latitude</p>
-                    <p className="text-base md:text-lg font-mono font-bold">
+                {/* Coordinates */}
+                <div className="sensor-coordinates-grid">
+                  <div className="sensor-coordinate-item">
+                    <span className="sensor-coordinate-label">Latitude</span>
+                    <span className="sensor-coordinate-value">
                       {(environmentalContext as any).location?.coords?.latitude?.toFixed(6) ?? 'N/A'}
-                    </p>
+                    </span>
                   </div>
-                  <div className="p-2 md:p-3 bg-black/30 rounded border border-blue-600">
-                    <p className="text-xs text-blue-400">Longitude</p>
-                    <p className="text-base md:text-lg font-mono font-bold">
+                  <div className="sensor-coordinate-item">
+                    <span className="sensor-coordinate-label">Longitude</span>
+                    <span className="sensor-coordinate-value">
                       {(environmentalContext as any).location?.coords?.longitude?.toFixed(6) ?? 'N/A'}
-                    </p>
+                    </span>
                   </div>
                 </div>
 
-                {/* Mini Map Placeholder */}
-                <div className="mt-3 p-4 bg-gradient-to-br from-green-900/40 to-blue-900/40 rounded border border-blue-600/50 flex items-center justify-center min-h-[120px] relative overflow-hidden">
-                  {/* Simple grid pattern to represent a map */}
-                  <div className="absolute inset-0 opacity-20" style={{
-                    backgroundImage: 'linear-gradient(rgba(59,130,246,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.3) 1px, transparent 1px)',
-                    backgroundSize: '20px 20px'
-                  }}></div>
-
-                  {/* Location pin icon */}
-                  <div className="relative z-10 text-center">
-                    <div className="text-4xl">📍</div>
-                    <p className="text-xs text-blue-300 mt-1">
+                {/* Mini map placeholder */}
+                <div className="sensor-minimap">
+                  <div className="sensor-minimap-grid" />
+                  <div className="sensor-minimap-pin">
+                    <Navigation size={32} />
+                    <span className="sensor-minimap-coords">
                       {(environmentalContext as any).location?.coords?.latitude?.toFixed(4) ?? '0.0000'}, {(environmentalContext as any).location?.coords?.longitude?.toFixed(4) ?? '0.0000'}
-                    </p>
+                    </span>
                   </div>
-
-                  {/* Google Maps Link */}
                   <a
                     href={`https://www.google.com/maps?q=${(environmentalContext as any).location?.coords?.latitude ?? 0},${(environmentalContext as any).location?.coords?.longitude ?? 0}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-2 right-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded flex items-center gap-1 transition-colors"
+                    className="sensor-maps-link"
                   >
-                    <span>Open in Google Maps</span>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    Open in Google Maps
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M7 17L17 7M17 7H7M17 7V17" />
                     </svg>
                   </a>
                 </div>
 
-                {/* Additional GPS Data */}
-                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2 text-xs">
+                {/* GPS details */}
+                <div className="sensor-gps-details">
                   {(environmentalContext as any).location?.coords?.altitude != null && (
-                    <div className="p-1 md:p-2 bg-black/20 rounded">
-                      <span className="text-blue-400 text-[10px] md:text-xs">Alt:</span>{' '}
-                      <span className="font-mono text-[10px] md:text-xs">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
+                    <div className="sensor-gps-detail">
+                      <span className="sensor-gps-detail-label">Alt</span>
+                      <span className="sensor-gps-detail-value">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
                     </div>
                   )}
                   {(environmentalContext as any).location?.coords?.speed != null && (
-                    <div className="p-1 md:p-2 bg-black/20 rounded">
-                      <span className="text-blue-400 text-[10px] md:text-xs">Speed:</span>{' '}
-                      <span className="font-mono text-[10px] md:text-xs">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
+                    <div className="sensor-gps-detail">
+                      <span className="sensor-gps-detail-label">Speed</span>
+                      <span className="sensor-gps-detail-value">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
                     </div>
                   )}
                   {(environmentalContext as any).location?.coords?.heading != null && (
-                    <div className="p-1 md:p-2 bg-black/20 rounded">
-                      <span className="text-blue-400 text-[10px] md:text-xs">Heading:</span>{' '}
-                      <span className="font-mono text-[10px] md:text-xs">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
+                    <div className="sensor-gps-detail">
+                      <span className="sensor-gps-detail-label">Heading</span>
+                      <span className="sensor-gps-detail-value">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
                     </div>
                   )}
-                  <div className="p-1 md:p-2 bg-black/20 rounded">
-                    <span className="text-blue-400 text-[10px] md:text-xs">Accuracy:</span>{' '}
-                    <span className="font-mono text-[10px] md:text-xs">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
+                  <div className="sensor-gps-detail">
+                    <span className="sensor-gps-detail-label">Accuracy</span>
+                    <span className="sensor-gps-detail-value">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-muted-foreground mt-2">
+                <span className="sensor-updated-time">
                   Updated: {new Date((environmentalContext as any).location?.timestamp ?? environmentalContext.timestamp).toLocaleTimeString()}
-                </p>
-              </div>
+                </span>
+              </Card>
             ) : (
-              <div className={`p-3 md:p-5 rounded-lg ${permissions.geolocation === 'denied' ? 'bg-red-900/30 border border-red-700 text-red-300' : 'bg-orange-900/30 border border-orange-700 text-orange-300'}`}>
-                <h3 className="font-bold text-sm md:text-base">
-                  {permissions.geolocation === 'denied' ? '🔒 Geolocation Permission Denied' : 'No GPS Data Yet'}
+              <Card variant="outlined" padding="lg" className={`sensor-empty-card ${permissions.geolocation === 'denied' ? 'sensor-error-card' : 'sensor-warning-card'}`}>
+                <div className="sensor-empty-icon">
+                  {permissions.geolocation === 'denied' ? '' : ''}
+                </div>
+                <h3 className="sensor-empty-title">
+                  {permissions.geolocation === 'denied' ? 'Geolocation Permission Denied' : 'No GPS Data Yet'}
                 </h3>
-                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
+                <ul className="sensor-empty-list">
                   {permissions.geolocation === 'denied' ? (
                     <>
-                      <li>• Location access was denied in browser settings</li>
-                      <li>• To enable: Click the lock/info icon in your address bar</li>
-                      <li>• Find "Location" permission and set to "Allow"</li>
-                      <li>• Then refresh the page and try again</li>
+                      <li>Location access was denied in browser settings</li>
+                      <li>To enable: Click the lock/info icon in your address bar</li>
+                      <li>Find Location permission and set to Allow</li>
+                      <li>Then refresh the page and try again</li>
                     </>
                   ) : (
                     <>
-                      <li>• Did you grant geolocation permission?</li>
-                      <li>• GPS requires clear view of sky</li>
-                      <li>• Indoor locations may have poor accuracy</li>
+                      <li>Did you grant geolocation permission?</li>
+                      <li>GPS requires clear view of sky</li>
+                      <li>Indoor locations may have poor accuracy</li>
                     </>
                   )}
                 </ul>
-              </div>
+              </Card>
             )}
 
             {/* Live Motion Data */}
             {environmentalContext.motion ? (
-              <div className="p-3 md:p-5 bg-green-900/20 border border-green-700 rounded-lg">
-                <h3 className="font-bold text-green-300 flex items-center gap-2 text-sm md:text-base">
-                  Live Motion Active
-                </h3>
+              <Card variant="elevated" padding="lg" className="sensor-motion-card">
+                <div className="sensor-card-title">
+                  <Activity size={18} />
+                  <span>Live Motion</span>
+                </div>
 
-                {/* Activity Type Display */}
-                <div className="mt-2 md:mt-3 text-sm">
-                  <span className="text-muted-foreground text-xs md:text-sm">Activity:</span>{' '}
-                  <strong className="text-base md:text-lg">
+                <div className="sensor-activity-display">
+                  <span className="sensor-activity-label">Activity</span>
+                  <strong className="sensor-activity-value">
                     {(() => {
-                      // This is safe now because we added getCurrentActivity()
                       if (!sensors || !environmentalContext.motion) return 'unknown';
                       return sensors.getCurrentActivity();
                     })()}
                   </strong>
                 </div>
 
-                {/* Motion Graphs */}
-                <div className="mt-3 md:mt-4 space-y-2 md:space-y-3">
+                <div className="sensor-motion-graphs">
                   <MotionGraph data={xData} color="#22c55e" label="X Acceleration" />
                   <MotionGraph data={yData} color="#3b82f6" label="Y Acceleration" />
                   <MotionGraph data={zData} color="#f59e0b" label="Z Acceleration" />
                 </div>
 
-                <p className="text-xs text-muted-foreground mt-2">
+                <span className="sensor-updated-time">
                   Updated: {new Date(environmentalContext.timestamp).toLocaleTimeString()}
-                </p>
-              </div>
+                </span>
+              </Card>
             ) : (
-              <div className={`p-3 md:p-5 rounded-lg ${permissions.motion === 'denied' ? 'bg-red-900/30 border border-red-700 text-red-300' : 'bg-orange-900/30 border border-orange-700 text-orange-300'}`}>
-                <h3 className="font-bold text-sm md:text-base">
-                  {permissions.motion === 'denied' ? '🔒 Motion Permission Denied' : 'No Motion Data Yet'}
+              <Card variant="outlined" padding="lg" className={`sensor-empty-card ${permissions.motion === 'denied' ? 'sensor-error-card' : 'sensor-warning-card'}`}>
+                <div className="sensor-empty-icon" />
+                <h3 className="sensor-empty-title">
+                  {permissions.motion === 'denied' ? 'Motion Permission Denied' : 'No Motion Data Yet'}
                 </h3>
-                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
+                <ul className="sensor-empty-list">
                   {permissions.motion === 'denied' ? (
                     <>
-                      <li>• Motion sensor access was denied in browser settings</li>
-                      <li>• To enable: Click the lock/info icon in your address bar</li>
-                      <li>• Find "Motion" or "Device Motion" permission and set to "Allow"</li>
-                      <li>• Then refresh the page and try again</li>
+                      <li>Motion sensor access was denied in browser settings</li>
+                      <li>To enable: Click the lock/info icon in your address bar</li>
+                      <li>Find Motion or Device Motion permission and set to Allow</li>
+                      <li>Then refresh the page and try again</li>
                     </>
                   ) : (
                     <>
-                      <li>• Did you grant motion permission? (iOS: must tap "Request")</li>
-                      <li>• Is your phone flat on a table? Try tilting it!</li>
-                      <li>• Motion updates only when device moves</li>
-                      <li className="hidden md:list-item">• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
+                      <li>Did you grant motion permission? (iOS: must tap Request)</li>
+                      <li>Is your phone flat on a table? Try tilting it!</li>
+                      <li>Motion updates only when device moves</li>
                     </>
                   )}
                 </ul>
-              </div>
+              </Card>
             )}
 
-            {/* Weather Status Display */}
+            {/* Weather Status */}
             {environmentalContext.weather ? (
-              <div className="p-3 md:p-5 bg-sky-900/20 border border-sky-700 rounded-lg">
-                <h3 className="font-bold text-sky-300 flex items-center gap-2 text-sm md:text-base">
+              <Card variant="elevated" padding="lg" className="sensor-weather-card">
+                <div className="sensor-card-title">
                   {(() => {
                     const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
-                    if (wt.includes('clear') || wt.includes('sun')) return '☀️ Weather';
-                    if (wt.includes('cloud')) return '☁️ Weather';
-                    if (wt.includes('rain') || wt.includes('drizzle')) return '🌧️ Weather';
-                    if (wt.includes('snow')) return '❄️ Weather';
-                    if (wt.includes('thunder') || wt.includes('storm')) return '⛈️ Weather';
-                    if (wt.includes('mist') || wt.includes('fog')) return '🌫️ Weather';
-                    return '🌤️ Weather';
+                    if (wt.includes('clear') || wt.includes('sun')) return <Sun size={18} />;
+                    if (wt.includes('cloud')) return <Cloud size={18} />;
+                    if (wt.includes('rain') || wt.includes('drizzle')) return <CloudDrizzle size={18} />;
+                    if (wt.includes('snow')) return <CloudSnow size={18} />;
+                    if (wt.includes('thunder') || wt.includes('storm')) return <CloudLightning size={18} />;
+                    return <Sun size={18} />;
                   })()}
-                </h3>
+                  <span>Weather</span>
+                </div>
 
-                {/* Weather Icon and Main Info */}
-                <div className="mt-3 flex items-center gap-3 md:gap-4">
-                  {/* Large Weather Icon */}
-                  <div className="text-4xl md:text-5xl">
+                <div className="sensor-weather-main">
+                  <div className="sensor-weather-icon">
                     {(() => {
                       const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
-                      if (wt.includes('clear')) return '☀️';
-                      if (wt.includes('cloud')) return '☁️';
-                      if (wt.includes('rain')) return '🌧️';
-                      if (wt.includes('drizzle')) return '🌦️';
-                      if (wt.includes('snow')) return '❄️';
-                      if (wt.includes('thunder') || wt.includes('storm')) return '⛈️';
-                      if (wt.includes('mist') || wt.includes('fog')) return '🌫️';
-                      return '🌤️';
+                      if (wt.includes('clear')) return '';
+                      if (wt.includes('cloud')) return '';
+                      if (wt.includes('rain')) return '';
+                      if (wt.includes('drizzle')) return '';
+                      if (wt.includes('snow')) return '';
+                      if (wt.includes('thunder') || wt.includes('storm')) return '';
+                      if (wt.includes('mist') || wt.includes('fog')) return '';
+                      return '';
                     })()}
                   </div>
-
-                  {/* Temperature and Conditions */}
-                  <div className="flex-1">
-                    <p className="text-2xl md:text-3xl font-bold">
-                      {((environmentalContext.weather as any).temperature).toFixed(1)}°C
-                    </p>
-                    <p className="text-xs md:text-sm text-muted-foreground capitalize">
-                      {(environmentalContext.weather as any).weatherType || 'Unknown'}
-                    </p>
-                    <p className="text-xs text-sky-400 mt-1">
-                      Feels like {((environmentalContext.weather as any).temperature - 2).toFixed(1)}°C
-                    </p>
+                  <div className="sensor-weather-temp">
+                    <span className="sensor-temperature-value">{((environmentalContext.weather as any).temperature).toFixed(1)}°C</span>
+                    <span className="sensor-weather-condition">{(environmentalContext.weather as any).weatherType || 'Unknown'}</span>
+                    <span className="sensor-weather-feels">Feels like {((environmentalContext.weather as any).temperature - 2).toFixed(1)}°C</span>
                   </div>
-
-                  {/* Day/Night Indicator */}
-                  <div className="text-center">
-                    <div className="text-xl md:text-2xl">
-                      {(environmentalContext.weather as any).isNight ? '🌙' : '☀️'}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {(environmentalContext.weather as any).isNight ? 'Night' : 'Day'}
-                    </p>
+                  <div className="sensor-day-night">
+                    <span className="sensor-day-night-icon">{(environmentalContext.weather as any).isNight ? '' : ''}</span>
+                    <span className="sensor-day-night-label">{(environmentalContext.weather as any).isNight ? 'Night' : 'Day'}</span>
                   </div>
                 </div>
 
-                {/* Weather Details Grid */}
-                <div className="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                  {/* Humidity */}
-                  <div className="p-2 md:p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <span className="text-base md:text-lg">💧</span>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-sky-400">Humidity</p>
-                        <p className="font-mono font-bold text-xs md:text-sm">
-                          {((environmentalContext.weather as any).humidity).toFixed(0)}%
-                        </p>
-                      </div>
+                <div className="sensor-weather-details">
+                  <div className="sensor-weather-detail">
+                    <Droplets size={16} />
+                    <div>
+                      <span className="sensor-weather-detail-label">Humidity</span>
+                      <span className="sensor-weather-detail-value">{((environmentalContext.weather as any).humidity).toFixed(0)}%</span>
                     </div>
                   </div>
-
-                  {/* Wind Speed */}
-                  <div className="p-2 md:p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <span className="text-base md:text-lg">💨</span>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-sky-400">Wind Speed</p>
-                        <p className="font-mono font-bold text-xs md:text-sm">
-                          {((environmentalContext.weather as any).windSpeed).toFixed(1)} m/s
-                        </p>
-                      </div>
+                  <div className="sensor-weather-detail">
+                    <Wind size={16} />
+                    <div>
+                      <span className="sensor-weather-detail-label">Wind Speed</span>
+                      <span className="sensor-weather-detail-value">{((environmentalContext.weather as any).windSpeed).toFixed(1)} m/s</span>
                     </div>
                   </div>
-
-                  {/* Wind Direction */}
-                  <div className="p-2 md:p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <span className="text-base md:text-lg">🧭</span>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-sky-400">Wind Dir</p>
-                        <p className="font-mono font-bold text-xs md:text-sm">
-                          {((environmentalContext.weather as any).windDirection).toFixed(0)}°
-                        </p>
-                      </div>
+                  <div className="sensor-weather-detail">
+                    <Navigation size={16} />
+                    <div>
+                      <span className="sensor-weather-detail-label">Wind Dir</span>
+                      <span className="sensor-weather-detail-value">{((environmentalContext.weather as any).windDirection).toFixed(0)}°</span>
                     </div>
                   </div>
-
-                  {/* Pressure */}
-                  <div className="p-2 md:p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <span className="text-base md:text-lg">🔵</span>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-sky-400">Pressure</p>
-                        <p className="font-mono font-bold text-xs md:text-sm">
-                          {((environmentalContext.weather as any).pressure).toFixed(0)} hPa
-                        </p>
-                      </div>
+                  <div className="sensor-weather-detail">
+                    <span className="sensor-weather-detail-icon">🔵</span>
+                    <div>
+                      <span className="sensor-weather-detail-label">Pressure</span>
+                      <span className="sensor-weather-detail-value">{((environmentalContext.weather as any).pressure).toFixed(0)} hPa</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Moon Phase */}
-                <div className="mt-2 md:mt-3 p-2 md:p-3 bg-black/20 rounded">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <span className="text-base md:text-lg">
-                      {(() => {
-                        const phase = (environmentalContext.weather as any).moonPhase || 0;
-                        if (phase < 0.125) return '🌑'; // New moon
-                        if (phase < 0.25) return '🌒'; // Waxing crescent
-                        if (phase < 0.375) return '🌓'; // First quarter
-                        if (phase < 0.5) return '🌔'; // Waxing gibbous
-                        if (phase < 0.625) return '🌕'; // Full moon
-                        if (phase < 0.75) return '🌖'; // Waning gibbous
-                        if (phase < 0.875) return '🌗'; // Last quarter
-                        return '🌘'; // Waning crescent
-                      })()}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-[10px] md:text-xs text-sky-400">Moon Phase</p>
-                      <p className="text-xs md:text-sm font-mono">
-                        {(((environmentalContext.weather as any).moonPhase || 0) * 100).toFixed(0)}%
-                      </p>
-                    </div>
+                <div className="sensor-moon-phase">
+                  <span className="sensor-moon-icon">
+                    {(() => {
+                      const phase = (environmentalContext.weather as any).moonPhase || 0;
+                      if (phase < 0.125) return '🌑';
+                      if (phase < 0.25) return '🌒';
+                      if (phase < 0.375) return '🌓';
+                      if (phase < 0.5) return '🌔';
+                      if (phase < 0.625) return '🌕';
+                      if (phase < 0.75) return '🌖';
+                      if (phase < 0.875) return '🌗';
+                      return '🌘';
+                    })()}
+                  </span>
+                  <div className="sensor-moon-info">
+                    <span className="sensor-weather-detail-label">Moon Phase</span>
+                    <span className="sensor-moon-percent">{(((environmentalContext.weather as any).moonPhase || 0) * 100).toFixed(0)}%</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-muted-foreground mt-2">
+                <span className="sensor-updated-time">
                   Updated: {new Date((environmentalContext.weather as any).timestamp || environmentalContext.timestamp).toLocaleTimeString()}
-                </p>
-              </div>
+                </span>
+              </Card>
             ) : (
-              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold text-sm md:text-base">No Weather Data Yet</h3>
-                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
-                  <li>• Add OpenWeather API key in Settings tab</li>
-                  <li>• Weather requires API key from openweathermap.org</li>
-                  <li>• Data updates every 30 seconds during monitoring</li>
+              <Card variant="outlined" padding="lg" className="sensor-warning-card">
+                <div className="sensor-empty-icon" />
+                <h3 className="sensor-empty-title">No Weather Data Yet</h3>
+                <ul className="sensor-empty-list">
+                  <li>Add OpenWeather API key in Settings tab</li>
+                  <li>Weather requires API key from openweathermap.org</li>
+                  <li>Data updates every 30 seconds during monitoring</li>
                 </ul>
-              </div>
+              </Card>
             )}
 
-            {/* Raw JSON Dump Section */}
-            <RawJsonDump
-              data={environmentalContext}
-              title="Raw Environmental Sensor Data"
-              timestamp={new Date(environmentalContext.timestamp)}
-              status="healthy"
-            />
+            {/* Raw JSON dump */}
+            <Card variant="flat" padding="md" className="sensor-raw-card">
+              <div className="sensor-card-title">
+                <span>Raw Sensor Data</span>
+              </div>
+              <pre className="sensor-raw-json">{JSON.stringify(environmentalContext, null, 2)}</pre>
+            </Card>
           </div>
         ) : null}
-
       </div>
     </div>
   );

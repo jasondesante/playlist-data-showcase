@@ -7787,3 +7787,760 @@
   .leveling-confetti:nth-child(14) { left: 55%; animation-delay: 0.55s; background-color: hsl(var(--cute-yellow)); }
   .leveling-confetti:nth-child(15) { left: 65%; animation-delay: 0.65s; background-color: hsl(var(--cute-orange)); }
 }
+
+/* ========================================
+   ENVIRONMENTAL SENSORS TAB
+   ======================================== */
+
+.sensor-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-tab-container {
+    gap: 1.5rem;
+  }
+}
+
+.sensor-tab-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sensor-tab-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--cute-teal) / 0.2));
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 0.5rem;
+  color: hsl(var(--primary));
+}
+
+@media (min-width: 768px) {
+  .sensor-tab-icon-badge {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.sensor-tab-icon {
+  color: hsl(var(--primary));
+}
+
+.sensor-tab-header-content h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .sensor-tab-header-content h2 {
+    font-size: 1.25rem;
+  }
+}
+
+.sensor-tab-subtitle {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.125rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-tab-subtitle {
+    font-size: 0.8125rem;
+  }
+}
+
+.sensor-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-tab-content {
+    gap: 1.5rem;
+  }
+}
+
+/* Permission cards grid */
+.sensor-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .sensor-permissions-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.sensor-permission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sensor-permission-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.sensor-permission-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.sensor-permission-state {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-permission-state {
+    font-size: 0.75rem;
+  }
+}
+
+.sensor-permission-button {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Status indicator */
+.sensor-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.sensor-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px hsl(var(--background));
+  animation: sensorPulse 2s var(--ease-out-cubic) infinite;
+}
+
+@keyframes sensorPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.sensor-status-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-status-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Monitor button */
+.sensor-monitor-button {
+  width: 100%;
+}
+
+/* Data section */
+.sensor-data-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-data-section {
+    gap: 1.25rem;
+  }
+}
+
+/* Card title */
+.sensor-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-card-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.sensor-card-title svg {
+  color: hsl(var(--primary));
+}
+
+/* GPS card */
+.sensor-gps-card {
+  border-color: hsl(217 91% 60% / 0.3);
+  background: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(var(--surface-2)));
+}
+
+.sensor-coordinates-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-coordinates-grid {
+    gap: 1rem;
+  }
+}
+
+.sensor-coordinate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  border: 1px solid hsl(217 91% 60% / 0.2);
+}
+
+.sensor-coordinate-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(217 91% 60% / 0.8);
+}
+
+@media (min-width: 768px) {
+  .sensor-coordinate-label {
+    font-size: 0.75rem;
+  }
+}
+
+.sensor-coordinate-value {
+  font-size: 0.875rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-coordinate-value {
+    font-size: 1rem;
+  }
+}
+
+/* Mini map */
+.sensor-minimap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.2), hsl(217 91% 60% / 0.2));
+  border: 1px solid hsl(217 91% 60% / 0.3);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.sensor-minimap-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background-image:
+    linear-gradient(hsl(217 91% 60% / 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(217 91% 60% / 0.3) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.sensor-minimap-pin {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: hsl(var(--primary));
+}
+
+.sensor-minimap-pin svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.sensor-minimap-coords {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  color: hsl(217 91% 60%);
+}
+
+@media (min-width: 768px) {
+  .sensor-minimap-coords {
+    font-size: 0.75rem;
+  }
+}
+
+.sensor-maps-link {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--background));
+  background-color: hsl(217 91% 60%);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .sensor-maps-link {
+    font-size: 0.75rem;
+  }
+}
+
+.sensor-maps-link:hover {
+  background-color: hsl(217 91% 60% / 0.8);
+}
+
+/* GPS details */
+.sensor-gps-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-gps-details {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+.sensor-gps-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 0.375rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-gps-detail-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(217 91% 60% / 0.7);
+}
+
+@media (min-width: 768px) {
+  .sensor-gps-detail-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.sensor-gps-detail-value {
+  font-size: 0.6875rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-gps-detail-value {
+    font-size: 0.75rem;
+  }
+}
+
+/* Motion card */
+.sensor-motion-card {
+  border-color: hsl(142 76% 36% / 0.3);
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.1), hsl(var(--surface-2)));
+}
+
+.sensor-activity-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sensor-activity-label {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-activity-label {
+    font-size: 0.875rem;
+  }
+}
+
+.sensor-activity-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-activity-value {
+    font-size: 1.125rem;
+  }
+}
+
+/* Motion graphs */
+.sensor-motion-graphs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-motion-graphs {
+    gap: 0.75rem;
+  }
+}
+
+.sensor-motion-graph {
+  width: 100%;
+  height: 60px;
+  border-radius: var(--radius);
+}
+
+/* Weather card */
+.sensor-weather-card {
+  border-color: hsl(199 89% 48% / 0.3);
+  background: linear-gradient(135deg, hsl(199 89% 48% / 0.1), hsl(var(--surface-2)));
+}
+
+.sensor-weather-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-main {
+    gap: 1rem;
+  }
+}
+
+.sensor-weather-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-icon {
+    font-size: 3rem;
+  }
+}
+
+.sensor-weather-temp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sensor-temperature-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .sensor-temperature-value {
+    font-size: 2rem;
+  }
+}
+
+.sensor-weather-condition {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: capitalize;
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-condition {
+    font-size: 0.875rem;
+  }
+}
+
+.sensor-weather-feels {
+  font-size: 0.75rem;
+  color: hsl(199 89% 48% / 0.8);
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-feels {
+    font-size: 0.8125rem;
+  }
+}
+
+.sensor-day-night {
+  text-align: center;
+}
+
+.sensor-day-night-icon {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .sensor-day-night-icon {
+    font-size: 1.75rem;
+  }
+}
+
+.sensor-day-night-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-day-night-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Weather details */
+.sensor-weather-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-details {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+.sensor-weather-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-weather-detail svg,
+.sensor-weather-detail-icon {
+  flex-shrink: 0;
+  color: hsl(199 89% 48% / 0.8);
+}
+
+.sensor-weather-detail > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.sensor-weather-detail-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(199 89% 48% / 0.7);
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-detail-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.sensor-weather-detail-value {
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-weather-detail-value {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Moon phase */
+.sensor-moon-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-moon-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .sensor-moon-icon {
+    font-size: 1.5rem;
+  }
+}
+
+.sensor-moon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* Updated time */
+.sensor-updated-time {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-updated-time {
+    font-size: 0.75rem;
+  }
+}
+
+/* Empty/error cards */
+.sensor-empty-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-empty-card {
+    gap: 1rem;
+  }
+}
+
+.sensor-empty-icon {
+  font-size: 2rem;
+  text-align: center;
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .sensor-empty-icon {
+    font-size: 2.5rem;
+  }
+}
+
+.sensor-empty-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .sensor-empty-title {
+    font-size: 1rem;
+  }
+}
+
+.sensor-empty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sensor-empty-list li {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  padding-left: 1rem;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .sensor-empty-list li {
+    font-size: 0.8125rem;
+  }
+}
+
+.sensor-empty-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.sensor-warning-card {
+  border-color: hsl(var(--cute-orange) / 0.5);
+  background-color: hsl(var(--cute-orange) / 0.1);
+}
+
+.sensor-warning-card .sensor-empty-title {
+  color: hsl(var(--cute-orange));
+}
+
+.sensor-error-card {
+  border-color: hsl(var(--destructive) / 0.5);
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+.sensor-error-card .sensor-empty-title {
+  color: hsl(var(--destructive));
+}
+
+/* Raw JSON card */
+.sensor-raw-card {
+  margin-top: 0.5rem;
+}
+
+.sensor-raw-json {
+  display: block;
+  margin: 0.5rem 0 0 0;
+  padding: 0.75rem;
+  font-size: 0.6875rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .sensor-raw-json {
+    font-size: 0.75rem;
+    padding: 1rem;
+  }
+}

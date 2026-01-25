@@ -621,7 +621,18 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Level up pulse animation on character card (scale effect)
    - All CSS uses CSS custom properties and responsive media queries
    - Clean, professional styling with proper spacing and typography
-13. Sensors Tab
+~~13. Sensors Tab~~
+   - Completed: Redesigned EnvironmentalSensorsTab with Card, Button components
+   - Added proper header with icon badge (Activity) and subtitle
+   - Removed all Tailwind classes, replaced with pure CSS
+   - Sensor permission cards with status indicators (pulsing dot animation)
+   - GPS location card with coordinates grid, mini-map placeholder, Google Maps link
+   - Motion data card with activity display and canvas-based motion graphs
+   - Weather card with icons, temperature, humidity, wind, pressure, moon phase
+   - Empty/error states for each sensor type with helpful hints
+   - Raw JSON dump in flat card
+   - All CSS uses CSS custom properties and responsive media queries
+   - Clean, professional styling with proper spacing and typography
 14. Gaming Tab
 15. Combat Tab
 16. Settings Tab
