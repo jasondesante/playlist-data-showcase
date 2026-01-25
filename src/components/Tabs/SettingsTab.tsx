@@ -80,14 +80,18 @@ export function SettingsTab() {
   // Ref to track if confirmation timeout is active
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize local state from store
+  // Initialize local state from store (only on mount to avoid bidirectional sync loops)
+  const isInitialized = useRef(false);
   useEffect(() => {
-    setOpenWeatherKey(settings.openWeatherApiKey);
-    setSteamKey(settings.steamApiKey);
-    setDiscordClientId(settings.discordClientId);
-    setAudioFftSize(settings.audioFftSize);
-    setBaseXpRate(settings.baseXpRate);
-    setVerboseLogging(settings.verboseLogging);
+    if (!isInitialized.current) {
+      setOpenWeatherKey(settings.openWeatherApiKey);
+      setSteamKey(settings.steamApiKey);
+      setDiscordClientId(settings.discordClientId);
+      setAudioFftSize(settings.audioFftSize);
+      setBaseXpRate(settings.baseXpRate);
+      setVerboseLogging(settings.verboseLogging);
+      isInitialized.current = true;
+    }
   }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.baseXpRate, settings.verboseLogging]);
 
   // Sync verbose logging with logger utility
