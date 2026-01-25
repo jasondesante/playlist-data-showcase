@@ -195,38 +195,50 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
           )}
         </div>
 
-        {/* Track info */}
+        {/* Track info - Compact layout with combined metadata line */}
         <div className="track-info">
           {/* Title - with fallback for missing title */}
           <p className={cn('track-title', styles.title, isSelected && 'track-title-selected')} title={track.title || 'Unknown Title'}>
             {track.title || 'Unknown Title'}
           </p>
 
-          {/* Artist - with fallback for missing artist */}
-          <p className={cn('track-meta', styles.meta)} title={track.artist || 'Unknown Artist'}>
-            {track.artist || 'Unknown Artist'}
-          </p>
+          {/* Combined metadata line - Artist • Album • Duration */}
+          <div className={cn('track-metadata-line', size === 'compact' && 'track-metadata-line-compact')}>
+            {/* Artist - always show, with fallback */}
+            <span className={cn('track-meta', styles.meta, 'track-meta-artist')} title={track.artist || 'Unknown Artist'}>
+              {track.artist || 'Unknown Artist'}
+            </span>
 
-          {/* Album (if available) */}
-          {track.album && size !== 'compact' && (
-            <p className={cn('track-meta track-meta-album', styles.meta)} title={track.album}>
-              {track.album}
-            </p>
-          )}
+            {/* Album - with separator if available */}
+            {track.album && (
+              <>
+                <span className="track-meta-separator" aria-hidden="true">•</span>
+                <span className={cn('track-meta', styles.meta, 'track-meta-album')} title={track.album}>
+                  {track.album}
+                </span>
+              </>
+            )}
 
-          {/* Duration - format and display */}
-          {track.duration > 0 && (
-            <p className={cn('track-meta track-meta-duration', styles.meta)} title={`${track.duration} seconds`}>
-              {formatDuration(track.duration)}
-            </p>
-          )}
+            {/* Duration - always show if available */}
+            {track.duration > 0 && (
+              <>
+                <span className="track-meta-separator" aria-hidden="true">•</span>
+                <span className={cn('track-meta', styles.meta, 'track-meta-duration')} title={`${track.duration} seconds`}>
+                  {formatDuration(track.duration)}
+                </span>
+              </>
+            )}
 
-          {/* Genre (if available and no album) - additional metadata for context */}
-          {!track.album && track.genre && size !== 'compact' && (
-            <p className={cn('track-meta track-meta-genre', styles.meta)} title={track.genre}>
-              {track.genre}
-            </p>
-          )}
+            {/* Genre - show only if no album and genre available */}
+            {!track.album && track.genre && (
+              <>
+                <span className="track-meta-separator" aria-hidden="true">•</span>
+                <span className={cn('track-meta', styles.meta, 'track-meta-genre')} title={track.genre}>
+                  {track.genre}
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
