@@ -122,6 +122,32 @@ export function PlaylistLoaderTab() {
         </div>
       </Card>
 
+      {/* Empty State - No Playlist Loaded */}
+      {!currentPlaylist && !isLoading && !error && (
+        <Card variant="flat" padding="lg">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6">
+              <span className="text-5xl" role="img" aria-label="Music">🎵</span>
+            </div>
+            <h4 className="font-semibold text-xl mb-2">No Playlist Loaded</h4>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+              Enter an Arweave transaction ID above to load a playlist, or try the example playlist to get started.
+            </p>
+            <Button
+              onClick={() => {
+                setTxId(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
+                handleParse();
+              }}
+              variant="secondary"
+              size="md"
+              leftIcon={Music}
+            >
+              Load Example Playlist
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {currentPlaylist && (
         <div className="space-y-6">
           {/* Spotify-style Playlist Header */}

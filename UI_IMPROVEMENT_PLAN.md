@@ -509,8 +509,13 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - ✅ Playlist header with large artwork
    - ✅ Search functionality
    - ✅ Track list with TrackCard components
-   - Empty states
+   - ✅ Empty states
    - Loading skeletons
+
+
+   ### Sprint 0 : make sure the css looks good
+    - make sure the site doesn't look like shit
+    - actual good looking css for the page
 
 <!-- ### Sprint 4-13: Remaining Tabs
 8. Audio Analysis Tab
@@ -577,7 +582,4 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 - All interactive elements keyboard accessible
 - ARIA labels for icon-only buttons
-- Focus indicators visible on all interactive elements
-- Color contrast ratio ≥ 4.5:1 for text
-- Respect prefers-reduced-motion for animations
-- Screen reader announcements for state changes
+- Focus indicators visible on all interactive element
