@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Waves, Music, Sparkles } from 'lucide-react';
+import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
