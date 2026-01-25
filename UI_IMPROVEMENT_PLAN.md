@@ -569,15 +569,15 @@ Note that you were building this with retarded tailwind which I fucking hate so 
 ### Manual Testing Checklist
 
 **Playlist Tab**:
-- [x] Album art displays correctly (with and without image_url)
-- [x] Fallback gradient + icon shows when no artwork
-- [x] Track numbers display in sequence
-- [x] Hover effect scales card slightly (1.02)
-- [x] Selection state shows 2px primary border with left accent bar
-- [x] Selection ring animates on select
-- [x] Play button overlay appears on hover
-- [x] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED.
-- [x] ATTEMPT 2: Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED. I can literally see that the playlist image doesn't even have a class assigned to it yet....
+- [ ] Album art displays correctly (with and without image_url)
+- [ ] Fallback gradient + icon shows when no artwork
+- [ ] Track numbers display in sequence
+- [ ] Hover effect scales card slightly (1.02)
+- [ ] Selection state shows 2p  primary border with left accent bar
+- [ ] Selection ring animates on select
+- [ ] Play button overlay appears on hover
+- [ ] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED.
+- [ ] ATTEMPT 2: Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED. I can literally see that the playlist image doesn't even have a class assigned to it yet....
 - [ ] Make Playlist track images a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages
