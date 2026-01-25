@@ -651,7 +651,12 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Status badges with color-coded states (connected, connecting, error, etc.)
    - All CSS uses CSS custom properties and responsive media queries
    - Clean, professional styling with proper spacing and hover effects
-15. Combat Tab
+~~15. Combat Tab~~
+   - Completed: Removed all remaining Tailwind classes from CombatSimulatorTab
+   - Added missing CSS classes (combat-controls-hint, combat-slots-empty, etc.)
+   - Added performance badge styles (pass/fail)
+   - All styling uses CSS custom properties and responsive media queries
+   - Clean, professional styling consistent with other tabs
 16. Settings Tab
 
 ### Sprint 14: Polish
@@ -733,4 +738,4 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 - All interactive elements keyboard accessible
 - ARIA labels for icon-only buttons
-- Focus indicators visible on all interactive elem
+- Focus indicators visible on all interac
