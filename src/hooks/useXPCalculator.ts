@@ -27,6 +27,26 @@ export interface XPBreakdown {
     };
 }
 
+/**
+ * React hook for calculating XP breakdowns for listening sessions.
+ *
+ * Provides detailed XP calculations with environmental and gaming modifier
+ * breakdowns for UI display. The calculator applies bonuses for:
+ * - Activity type (running, walking, stationary)
+ * - Night time, weather, altitude
+ * - Gaming session length and genre
+ * - Track mastery (+50 XP flat)
+ *
+ * @example
+ * ```tsx
+ * const { calculateXP } = useXPCalculator();
+ * const breakdown = await calculateXP(300, envContext, gamingContext, true);
+ * console.log(`Total XP: ${breakdown.totalXP} (Base: ${breakdown.baseXP}, Multiplier: ${breakdown.totalMultiplier}x)`);
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} calculateXP - Calculates detailed XP breakdown for a session
+ */
 export const useXPCalculator = () => {
     const { settings } = useAppStore();
     const [calculator] = useState(() => new XPCalculator({

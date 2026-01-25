@@ -4,6 +4,24 @@ import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
+/**
+ * React hook for generating D&D 5e characters from audio profiles.
+ *
+ * This hook uses the CharacterGenerator engine module to create deterministic
+ * character sheets based on audio characteristics. The same seed and audio profile
+ * always produces the same character.
+ *
+ * @example
+ * ```tsx
+ * const { generateCharacter, isGenerating } = useCharacterGenerator();
+ * const character = await generateCharacter(audioProfile, 'unique-seed-123');
+ * console.log(character.name, character.race, character.class);
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} generateCharacter - Generates a character from audio profile and optional seed
+ * @returns {boolean} isGenerating - Whether character generation is in progress
+ */
 export const useCharacterGenerator = () => {
     const { addCharacter } = useCharacterStore();
     const [isGenerating, setIsGenerating] = useState(false);

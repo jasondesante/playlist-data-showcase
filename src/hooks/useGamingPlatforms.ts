@@ -10,6 +10,32 @@ import { handleError } from '@/utils/errorHandling';
  */
 type DiscordConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'unavailable' | 'error';
 
+/**
+ * React hook for gaming platform integration via the GamingPlatformSensors engine module.
+ *
+ * Integrates with Steam (for game activity tracking) and Discord (for music status only).
+ * Note: Discord RPC cannot read game activity - only set music status.
+ *
+ * @example
+ * ```tsx
+ * const { connectSteam, checkActivity, setMusicStatus, calculateGamingBonus } = useGamingPlatforms();
+ * await connectSteam('steam-id-123');
+ * const context = await checkActivity();
+ * const bonus = calculateGamingBonus();
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} connectSteam - Connects to Steam with user ID
+ * @returns {Function} connectDiscord - Initiates Discord connection (for music status)
+ * @returns {Function} disconnectDiscord - Disconnects Discord RPC
+ * @returns {Function} checkActivity - Gets current gaming context from Steam
+ * @returns {Function} setMusicStatus - Sets Discord music activity ("Listening to {song}")
+ * @returns {Function} clearMusicStatus - Clears Discord music activity
+ * @returns {Function} calculateGamingBonus - Calculates gaming XP multiplier (1.0-1.75x)
+ * @returns {Object} gamingContext - Current gaming context data
+ * @returns {string} discordConnectionStatus - Discord connection state
+ * @returns {string} discordConnectionError - Discord connection error message (if any)
+ */
 export const useGamingPlatforms = () => {
     const { settings } = useAppStore();
     const { updateGamingContext, gamingContext } = useSensorStore();

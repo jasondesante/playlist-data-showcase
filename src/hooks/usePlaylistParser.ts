@@ -4,6 +4,22 @@ import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
+/**
+ * React hook for parsing playlists from the Playlist Data Engine.
+ *
+ * This hook integrates the PlaylistParser engine module to parse playlists from:
+ * - JSON strings (direct input)
+ * - Arweave transaction IDs (fetched from arweave.net gateway)
+ *
+ * @example
+ * ```tsx
+ * const { parsePlaylist } = usePlaylistParser();
+ * await parsePlaylist('arweave-tx-id');
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} parsePlaylist - Function to parse playlist from JSON string or Arweave TX ID
+ */
 export const usePlaylistParser = () => {
     const { setPlaylist, setLoading, setError } = usePlaylistStore();
     const [parser] = useState(() => new PlaylistParser());

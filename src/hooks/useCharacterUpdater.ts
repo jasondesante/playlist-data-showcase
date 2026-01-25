@@ -4,6 +4,23 @@ import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
+/**
+ * React hook for updating characters with session data and manual XP.
+ *
+ * This hook wraps the CharacterUpdater engine module to process listening
+ * sessions and apply XP, level-ups, and mastery bonuses to characters.
+ *
+ * @example
+ * ```tsx
+ * const { processSession, addManualXP } = useCharacterUpdater();
+ * const result = await processSession(character, session);
+ * if (result.leveledUp) console.log('Level up!', result.newLevel);
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} processSession - Processes a listening session and updates character (handles level-ups, mastery)
+ * @returns {Function} addManualXP - Adds manual XP to a character (creates dummy session)
+ */
 export const useCharacterUpdater = () => {
     const { updateCharacter } = useCharacterStore();
     const [updater] = useState(() => new CharacterUpdater());

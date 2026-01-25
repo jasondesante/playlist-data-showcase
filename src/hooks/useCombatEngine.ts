@@ -42,6 +42,32 @@ export interface CombatAction {
   result?: any;
 }
 
+/**
+ * React hook for D&D 5e turn-based combat via the CombatEngine engine module.
+ *
+ * Manages combat instances with initiative tracking, attack resolution, spell casting,
+ * and turn management. Supports manual turn-by-turn play or auto-play mode.
+ *
+ * @example
+ * ```tsx
+ * const { startCombat, executeAttack, nextTurn, getCombatResult } = useCombatEngine();
+ * const combat = startCombat(party, enemies);
+ * const action = executeAttack(attacker, target);
+ * const updated = nextTurn();
+ * const result = getCombatResult();
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} startCombat - Starts a new combat with party and enemies
+ * @returns {Function} getCurrentCombatant - Gets the combatant whose turn it is
+ * @returns {Function} executeAttack - Executes an attack action
+ * @returns {Function} executeCastSpell - Executes a spell cast (deducts spell slot)
+ * @returns {Function} nextTurn - Advances to the next combatant's turn
+ * @returns {Function} getCombatResult - Gets combat result if combat has ended
+ * @returns {Function} resetCombat - Resets combat state to null
+ * @returns {Function} getLivingCombatants - Gets all non-defeated combatants
+ * @returns {Object} combat - Current combat instance (null if no combat)
+ */
 export const useCombatEngine = () => {
     const [engine] = useState(() => new CombatEngine());
 

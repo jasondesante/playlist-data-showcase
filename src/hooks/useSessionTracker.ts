@@ -9,6 +9,26 @@ interface SessionStartOptions {
     gaming_context?: GamingContext;
 }
 
+/**
+ * React hook for tracking listening sessions with the SessionTracker engine module.
+ *
+ * Manages active listening sessions with elapsed time tracking and supports
+ * optional environmental and gaming context for XP modifier calculations.
+ *
+ * @example
+ * ```tsx
+ * const { startSession, endSession, isActive, elapsedTime } = useSessionTracker();
+ * const sessionId = startSession(trackId, track, { environmental_context, gaming_context });
+ * // ... user listens ...
+ * const session = endSession();
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} startSession - Starts a new session (returns sessionId)
+ * @returns {Function} endSession - Ends the current session (returns ListeningSession or null)
+ * @returns {boolean} isActive - Whether a session is currently active
+ * @returns {number} elapsedTime - Elapsed time in seconds for the current session
+ */
 export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession } = useSessionStore();
     const [tracker] = useState(() => new SessionTracker());

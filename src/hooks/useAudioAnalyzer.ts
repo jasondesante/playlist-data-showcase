@@ -4,6 +4,25 @@ import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { useAppStore } from '@/store/appStore';
 
+/**
+ * React hook for analyzing audio tracks using the AudioAnalyzer engine module.
+ *
+ * Analyzes audio files to extract sonic fingerprints including frequency bands,
+ * spectral characteristics, and advanced metrics. The FFT size is configurable
+ * via app settings.
+ *
+ * @example
+ * ```tsx
+ * const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
+ * const profile = await analyzeTrack('https://example.com/audio.mp3');
+ * console.log(profile.bass_dominance, profile.mid_dominance, profile.treble_dominance);
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} analyzeTrack - Analyzes audio from a URL and returns an AudioProfile
+ * @returns {boolean} isAnalyzing - Whether analysis is currently in progress
+ * @returns {number} progress - Analysis progress percentage (0-100)
+ */
 export const useAudioAnalyzer = () => {
     const { settings } = useAppStore();
     const [analyzer, setAnalyzer] = useState<AudioAnalyzer | null>(null);

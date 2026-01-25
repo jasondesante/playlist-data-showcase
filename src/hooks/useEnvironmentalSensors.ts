@@ -5,6 +5,28 @@ import { useAppStore } from '@/store/appStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
+/**
+ * React hook for environmental sensor integration via the EnvironmentalSensors engine module.
+ *
+ * Manages permissions and real-time monitoring of GPS, motion, and weather sensors.
+ * Provides environmental context data for XP modifier calculations.
+ *
+ * @example
+ * ```tsx
+ * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions } = useEnvironmentalSensors();
+ * await requestPermission('geolocation');
+ * await startMonitoring();
+ * console.log('Activity:', environmentalContext.motion.activity_type);
+ * ```
+ *
+ * @returns {Object} Hook return object
+ * @returns {Function} requestPermission - Requests permission for a sensor type ('geolocation' | 'motion' | 'light')
+ * @returns {Function} startMonitoring - Starts monitoring all sensors (returns cleanup function)
+ * @returns {boolean} isMonitoring - Whether monitoring is currently active
+ * @returns {Object} environmentalContext - Current environmental context data
+ * @returns {Object} permissions - Permission state for each sensor type
+ * @returns {Object} sensors - Raw sensors instance for direct access to engine methods
+ */
 export const useEnvironmentalSensors = () => {
     const { settings } = useAppStore();
     const {
