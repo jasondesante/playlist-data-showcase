@@ -213,13 +213,18 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
             </div>
           )}
 
-          {/* Play button overlay on hover */}
-          {hasImage && isHovered && onPlay && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-[var(--duration-fast)]">
+          {/* Play button overlay on hover - with smooth fade in/out animation */}
+          {hasImage && onPlay && (
+            <div
+              className={cn(
+                'absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-[var(--duration-fast)] ease-out',
+                isHovered ? 'opacity-100' : 'opacity-0'
+              )}
+            >
               <button
                 onClick={handlePlayClick}
                 className={cn(
-                  'flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-all shadow-lg',
+                  'flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-all duration-[var(--duration-fast)] shadow-lg',
                   styles.playButton
                 )}
                 aria-label={`Play ${track.title}`}

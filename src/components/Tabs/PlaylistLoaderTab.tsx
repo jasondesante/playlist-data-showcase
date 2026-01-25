@@ -300,6 +300,7 @@ export function PlaylistLoaderTab() {
                         index={originalIndex > 0 ? originalIndex : undefined}
                         isSelected={selectedTrack?.title === track.title}
                         onClick={() => selectTrack(track)}
+                        onPlay={() => selectTrack(track)}
                         size="default"
                       />
                     );

@@ -566,9 +566,9 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 - [x] Hover effect scales card slightly (1.02)
 - [x] Selection state shows 2px primary border with left accent bar
 - [x] Selection ring animates on select
-- [ ] Play button overlay appears on hover
-- [ ] Playlist image is a normal size. Right now the playlist image is stretched so huge it breaks the whole page.
-- [ ] Playlist track images are a normal small size.
+- [x] Play button overlay appears on hover
+- [ ] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page.
+- [ ] Make Playlist track images a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages
 - [ ] Loading skeletons show during fetch
@@ -603,4 +603,4 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 - All interactive elements keyboard accessible
 - ARIA labels for icon-only buttons
-- Focus indicators visible on all interactive element
+- Focus indicators visible on all interactive elem
