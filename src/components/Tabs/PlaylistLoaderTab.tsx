@@ -290,16 +290,20 @@ export function PlaylistLoaderTab() {
                 </div>
               ) : (
                 <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto space-y-2 pr-2">
-                  {filteredTracks.map((track: PlaylistTrack, idx: number) => (
-                    <TrackCard
-                      key={idx}
-                      track={track}
-                      index={idx + 1}
-                      isSelected={selectedTrack?.title === track.title}
-                      onClick={() => selectTrack(track)}
-                      size="default"
-                    />
-                  ))}
+                  {filteredTracks.map((track: PlaylistTrack) => {
+                    // Find the original track number in the full playlist
+                    const originalIndex = currentPlaylist.tracks.findIndex(t => t.title === track.title && t.artist === track.artist) + 1;
+                    return (
+                      <TrackCard
+                        key={`${track.title}-${track.artist}-${originalIndex}`}
+                        track={track}
+                        index={originalIndex > 0 ? originalIndex : undefined}
+                        isSelected={selectedTrack?.title === track.title}
+                        onClick={() => selectTrack(track)}
+                        size="default"
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
