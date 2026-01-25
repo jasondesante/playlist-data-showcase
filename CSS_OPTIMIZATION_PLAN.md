@@ -1209,15 +1209,15 @@ import './PlaylistLoaderTab.css';
 - [x] Test: App loads correctly, no visual changes
 
 **Task 12: Extract Layout Component CSS**
-- [ ] Create `src/styles/layout.css`
-- [ ] Copy sidebar styles from index.css
-- [ ] Copy header styles from index.css
-- [ ] Copy main layout styles from index.css
-- [ ] Copy tab navigation styles from index.css
-- [ ] Add `import '../../styles/layout.css'` to Sidebar.tsx
-- [ ] Add `import '../../styles/layout.css'` to AppHeader.tsx
-- [ ] Add `import '../../styles/layout.css'` to MainLayout.tsx
-- [ ] Test: Layout looks identical
+- [x] Create `src/styles/layout.css`
+- [x] Copy sidebar styles from index.css
+- [x] Copy header styles from index.css
+- [x] Copy main layout styles from index.css
+- [x] Copy tab navigation styles from index.css
+- [x] Add `import '../../styles/layout.css'` to Sidebar.tsx
+- [x] Add `import '../../styles/layout.css'` to AppHeader.tsx
+- [x] Add `import '../../styles/layout.css'` to MainLayout.tsx
+- [x] Test: Layout looks identical
 
 ### Phase 4: Tab-Specific CSS (Do All Tabs)
 

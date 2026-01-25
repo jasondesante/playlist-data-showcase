@@ -18,3 +18,6 @@
 @import url('./components/Skeleton.css');
 @import url('./components/StatusBadge.css');
 @import url('./components/Toggle.css');
+
+/* Layout: Application layout styles */
+@import url('./layout.css');
