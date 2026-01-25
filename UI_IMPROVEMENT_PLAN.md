@@ -518,9 +518,9 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 
    ### Sprint 0 : make sure the css looks good
-   - ✅ make sure the site doesn't look like shit
-   - ✅ actual good looking css for the page
-  -  FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
+   -  make sure the site doesn't look like shit
+   -  actual good looking css for the page
+   - FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
      - Reduced playlist header image from 192px-224px to 128px-160px (w-32 h-32 sm:w-40 sm:h-40)
      - Further reduced playlist header to 96px-112px (w-24 h-24 sm:w-28 sm:h-28) for better proportions
      - Reduced header padding from p-4 md:p-6 to p-3 md:p-4
