@@ -1183,12 +1183,12 @@ import './PlaylistLoaderTab.css';
 - [x] Test: All cards still work, no visual changes
 
 **Task 9: Extract Input Component**
-- [ ] Create `src/styles/components/Input.css`
-- [ ] Copy all input-related styles from index.css
-- [ ] Consolidate input states (default, hover, focus, error, disabled)
-- [ ] Consolidate input wrapper, labels, helper text
-- [ ] Remove duplicate input styles
-- [ ] Test: All inputs still work, no visual changes
+- [x] Create `src/styles/components/Input.css`
+- [x] Copy all input-related styles from index.css
+- [x] Consolidate input states (default, hover, focus, error, disabled)
+- [x] Consolidate input wrapper, labels, helper text
+- [x] Remove duplicate input styles
+- [x] Test: All inputs still work, no visual changes
 
 **Task 10: Extract Remaining Shared Components**
 - [ ] Create `src/styles/components/Skeleton.css` - copy skeleton styles
