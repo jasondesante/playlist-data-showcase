@@ -4114,6 +4114,53 @@
     }
   }
 
+  /* Combat controls hint */
+  .combat-controls-hint {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+  }
+
+  @media (min-width: 768px) {
+    .combat-controls-hint {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Spell slots empty */
+  .combat-slots-empty {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  @media (min-width: 768px) {
+    .combat-slots-empty {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Log detail margin */
+  .combat-log-detail-margin {
+    margin-left: 0.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .combat-log-detail-margin {
+      margin-left: 0.5rem;
+    }
+  }
+
+  /* Performance badges */
+  .combat-victory-performance-pass {
+    background-color: hsl(142 76% 96%); /* green-100 */
+    color: hsl(160 84% 39%); /* green-800 */
+  }
+
+  .combat-victory-performance-fail {
+    background-color: hsl(0 84% 97%); /* red-100 */
+    color: hsl(0 72% 51%); /* red-800 */
+  }
+
   /* ========================================
      AUDIO ANALYSIS TAB COMPONENTS
      ======================================== */

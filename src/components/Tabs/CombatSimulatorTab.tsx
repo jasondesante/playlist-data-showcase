@@ -412,7 +412,7 @@ export function CombatSimulatorTab() {
                         onClick={() => handleManualAttack(target)}
                         className={`combat-target-button ${selectedTargetId === target.id ? 'combat-target-button-selected' : ''}`}
                       >
-                        <div className="combat-target-name truncate">{target.character.name}</div>
+                        <div className="combat-target-name">{target.character.name}</div>
                         <div className="combat-target-hp">
                           {target.character.race} {target.character.class} • HP: {target.currentHP}/{target.character.hp.max}
                         </div>
@@ -421,7 +421,7 @@ export function CombatSimulatorTab() {
                 </div>
               </div>
 
-              <p className="text-[10px] md:text-xs text-muted-foreground italic">
+              <p className="combat-controls-hint">
                 Click a target to perform an attack with your current combatant's available weapon(s).
               </p>
             </div>
@@ -452,7 +452,7 @@ export function CombatSimulatorTab() {
                     .sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                   if (slots.length === 0) {
-                    return <p className="text-[10px] md:text-xs text-muted-foreground">No spell slots remaining</p>;
+                    return <p className="combat-slots-empty">No spell slots remaining</p>;
                   }
 
                   return (
@@ -498,7 +498,7 @@ export function CombatSimulatorTab() {
                           disabled={!hasSlot}
                           className={`combat-spell-button ${!hasSlot ? 'combat-spell-button-disabled' : ''} ${isSelected ? 'combat-spell-button-selected' : ''}`}
                         >
-                          <div className="combat-spell-name truncate">{spell.name}</div>
+                          <div className="combat-spell-name">{spell.name}</div>
                           <div className="combat-spell-details">
                             {getSpellLevelText(spell.level)} • {spellData.school}
                             {!hasSlot && !isCantrip && ' • No slots'}
@@ -526,7 +526,7 @@ export function CombatSimulatorTab() {
                           onClick={() => handleTargetToggle(target.id)}
                           className={`combat-target-button ${selectedTargetIds.includes(target.id) ? 'combat-target-button-selected' : ''}`}
                         >
-                          <div className="combat-target-name truncate">{target.character.name}</div>
+                          <div className="combat-target-name">{target.character.name}</div>
                           <div className="combat-target-hp">
                             HP: {target.currentHP}/{target.character.hp.max}
                           </div>
@@ -585,7 +585,7 @@ export function CombatSimulatorTab() {
                         >
                           <div className="combat-initiative-row">
                             <span className="combat-initiative-number">{index + 1}.</span>
-                            <span className="combat-initiative-name truncate">{combatant.character.name}</span>
+                            <span className="combat-initiative-name">{combatant.character.name}</span>
                             <span className="combat-initiative-value">{combatant.initiative}</span>
                           </div>
                         </div>
@@ -627,7 +627,7 @@ export function CombatSimulatorTab() {
                         </div>
                       </div>
 
-                      <div className="combat-combatant-stats space-y-0\.5">
+                      <div className="combat-combatant-stats">
                         <div>Initiative: <span className="combat-stat-bold">{combatant.initiative}</span></div>
                         {combatant.isDefeated && <span className="combat-combatant-defeated">Defeated</span>}
                       </div>
@@ -659,7 +659,7 @@ export function CombatSimulatorTab() {
                       className={`combat-log-entry ${borderColor}`}
                     >
                       {/* Round number and action type */}
-                      <div className="combat-log-meta flex-wrap items-center gap-1 md:gap-2 mb-0\.5 md:mb-1">
+                      <div className="combat-log-meta">
                         <span className="combat-log-round">
                           Round {actionRound}
                         </span>
@@ -678,7 +678,7 @@ export function CombatSimulatorTab() {
 
                       {/* Action details */}
                       {action.attack && (
-                        <div className="combat-log-detail mb-0\.5 md:mb-1">
+                        <div className="combat-log-detail">
                           Weapon: <span className="combat-log-detail-value">{action.attack.name}</span>
                         </div>
                       )}
@@ -731,7 +731,7 @@ export function CombatSimulatorTab() {
                         <div className="combat-log-detail combat-log-spell">
                           <span className="combat-log-detail-value">{action.spell.name}</span>
                           {action.result?.description && (
-                            <span className="combat-log-detail-label ml-1 md:ml-2">({action.result.description})</span>
+                            <span className="combat-log-detail-label combat-log-detail-margin">({action.result.description})</span>
                           )}
                         </div>
                       )}
@@ -796,8 +796,8 @@ export function CombatSimulatorTab() {
                         <span className="combat-victory-stat-label">Performance</span>
                         <span className={`combat-victory-performance-badge ${
                           combatPerformance.performanceTarget === 'PASS'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'combat-victory-performance-pass'
+                            : 'combat-victory-performance-fail'
                         }`}>
                           {combatPerformance.performanceTarget}
                         </span>
