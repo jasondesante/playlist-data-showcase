@@ -1305,7 +1305,7 @@ import './PlaylistLoaderTab.css';
 - [x] [Task 23f] Verify CharacterLevelingTab classes are moved from index.css
 - [x] [Task 23g] Verify EnvironmentalSensorsTab classes are moved from index.css
 - [x] [Task 23h] Verify GamingPlatformsTab classes are moved from index.css
-- [ ] [Task 23i] Verify CombatSimulatorTab classes are moved from index.css
+- [x] [Task 23i] Verify CombatSimulatorTab classes are moved from index.css
 - [ ] [Task 23j] Verify SettingsTab classes are moved from index.css
 - [ ] [Task 23k] Verify shared layout classes are moved from index.css
 - [ ] Delete old `src/index.css` file
