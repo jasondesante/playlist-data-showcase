@@ -53,9 +53,20 @@ export function PlaylistLoaderTab() {
     return playbackState === 'playing' && currentUrl === track.audio_url;
   };
 
-  // Handle card click - just select the track
+  // Check if a track is the currently selected track (regardless of playing state)
+  const isTrackSelected = (track: PlaylistTrack): boolean => {
+    return selectedTrack?.title === track.title && selectedTrack?.artist === track.artist;
+  };
+
+  // Handle card click - if clicking on the selected/playing track, toggle play/pause
   const handleCardClick = (track: PlaylistTrack) => {
-    selectTrack(track);
+    // If this is the currently selected track, toggle play/pause
+    if (isTrackSelected(track)) {
+      togglePlay(track.audio_url);
+    } else {
+      // Otherwise, just select the track (doesn't auto-play)
+      selectTrack(track);
+    }
   };
 
   // Filter tracks based on search query
