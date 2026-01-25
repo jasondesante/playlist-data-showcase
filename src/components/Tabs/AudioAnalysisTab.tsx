@@ -73,42 +73,42 @@ export function AudioAnalysisTab() {
               {/* Frequency Band Bar Chart Visualization */}
               <div className="p-4 bg-card border border-border rounded-md">
                 <h3 className="text-sm font-medium text-muted-foreground mb-4">Frequency Band Visualization</h3>
-                <div className="flex items-end justify-center gap-8 h-48">
+                <div className="flex items-end justify-center gap-4 md:gap-8 h-32 md:h-48">
                   {/* Bass Bar */}
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center gap-1 md:gap-2">
                     <div
-                      className="w-16 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.bass_dominance * 100) * 1.5}px` }}
+                      className="w-10 md:w-16 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.bass_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
                       title={`Bass: ${(audioProfile.bass_dominance * 100).toFixed(1)}%`}
                     />
-                    <p className="text-sm font-medium text-blue-500">Bass</p>
-                    <p className="text-lg font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+                    <p className="text-xs md:text-sm font-medium text-blue-500">Bass</p>
+                    <p className="text-sm md:text-lg font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
                   </div>
 
                   {/* Mid Bar */}
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center gap-1 md:gap-2">
                     <div
-                      className="w-16 bg-gradient-to-t from-green-600 to-green-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.mid_dominance * 100) * 1.5}px` }}
+                      className="w-10 md:w-16 bg-gradient-to-t from-green-600 to-green-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.mid_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
                       title={`Mid: ${(audioProfile.mid_dominance * 100).toFixed(1)}%`}
                     />
-                    <p className="text-sm font-medium text-green-500">Mid</p>
-                    <p className="text-lg font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
+                    <p className="text-xs md:text-sm font-medium text-green-500">Mid</p>
+                    <p className="text-sm md:text-lg font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
                   </div>
 
                   {/* Treble Bar */}
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center gap-1 md:gap-2">
                     <div
-                      className="w-16 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.treble_dominance * 100) * 1.5}px` }}
+                      className="w-10 md:w-16 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-md transition-all duration-500 ease-out"
+                      style={{ height: `${Math.max(4, audioProfile.treble_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
                       title={`Treble: ${(audioProfile.treble_dominance * 100).toFixed(1)}%`}
                     />
-                    <p className="text-sm font-medium text-orange-500">Treble</p>
-                    <p className="text-lg font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                    <p className="text-xs md:text-sm font-medium text-orange-500">Treble</p>
+                    <p className="text-sm md:text-lg font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
                   </div>
                 </div>
                 <div className="flex justify-center mt-3">
-                  <div className="w-64 h-0.5 bg-border rounded" />
+                  <div className="w-48 md:w-64 h-0.5 bg-border rounded" />
                 </div>
               </div>
 
@@ -156,38 +156,38 @@ export function AudioAnalysisTab() {
                   <h3 className="text-sm font-medium text-muted-foreground mb-3">Color Palette (from artwork)</h3>
 
                   {/* Color Swatches */}
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex gap-2 md:gap-3 mb-3 justify-start md:justify-center">
                     <div className="flex flex-col items-center">
                       <div
-                        className="w-16 h-16 rounded-md border border-border"
+                        className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
                         style={{ backgroundColor: audioProfile.color_palette.primary_color }}
                         title="Primary Color"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Primary</p>
-                      <p className="text-xs font-mono">{audioProfile.color_palette.primary_color}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Primary</p>
+                      <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.primary_color}</p>
                     </div>
 
                     {audioProfile.color_palette.secondary_color && (
                       <div className="flex flex-col items-center">
                         <div
-                          className="w-16 h-16 rounded-md border border-border"
+                          className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
                           style={{ backgroundColor: audioProfile.color_palette.secondary_color }}
                           title="Secondary Color"
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Secondary</p>
-                        <p className="text-xs font-mono">{audioProfile.color_palette.secondary_color}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Secondary</p>
+                        <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.secondary_color}</p>
                       </div>
                     )}
 
                     {audioProfile.color_palette.accent_color && (
                       <div className="flex flex-col items-center">
                         <div
-                          className="w-16 h-16 rounded-md border border-border"
+                          className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
                           style={{ backgroundColor: audioProfile.color_palette.accent_color }}
                           title="Accent Color"
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Accent</p>
-                        <p className="text-xs font-mono">{audioProfile.color_palette.accent_color}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Accent</p>
+                        <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.accent_color}</p>
                       </div>
                     )}
                   </div>
@@ -200,7 +200,7 @@ export function AudioAnalysisTab() {
                         {audioProfile.color_palette.colors.map((color, idx) => (
                           <div
                             key={idx}
-                            className="w-6 h-6 rounded border border-border"
+                            className="w-5 h-5 md:w-6 md:h-6 rounded border border-border"
                             style={{ backgroundColor: color }}
                             title={color}
                           />
@@ -210,7 +210,7 @@ export function AudioAnalysisTab() {
                   )}
 
                   {/* Color Properties */}
-                  <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs md:text-sm">
                     <div>
                       <span className="text-muted-foreground">Brightness:</span>{' '}
                       <span className="font-medium">{(audioProfile.color_palette.brightness * 100).toFixed(0)}%</span>
@@ -232,19 +232,19 @@ export function AudioAnalysisTab() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-4">Sampling Timeline</h3>
 
                 {/* Timeline bar */}
-                <div className="relative h-12 bg-muted rounded-md overflow-hidden mb-2">
+                <div className="relative h-8 md:h-12 bg-muted rounded-md overflow-hidden mb-2">
                   {/* Timeline background track */}
-                  <div className="absolute inset-0 flex items-center px-2">
+                  <div className="absolute inset-0 flex items-center px-1 md:px-2">
                     <div className="w-full h-1 bg-border rounded" />
                   </div>
 
                   {/* Start marker */}
                   <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary/50" />
-                  <div className="absolute left-1 bottom-0 text-xs text-muted-foreground">0%</div>
+                  <div className="absolute left-1 bottom-0 text-[10px] md:text-xs text-muted-foreground">0%</div>
 
                   {/* End marker */}
                   <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-primary/50" />
-                  <div className="absolute right-1 bottom-0 text-xs text-muted-foreground">100%</div>
+                  <div className="absolute right-1 bottom-0 text-[10px] md:text-xs text-muted-foreground">100%</div>
 
                   {/* Sample position markers */}
                   {audioProfile.analysis_metadata.sample_positions.map((position, idx) => (
@@ -252,13 +252,13 @@ export function AudioAnalysisTab() {
                       {/* Marker line */}
                       <div className="w-0.5 h-full bg-primary" />
                       {/* Percentage label above */}
-                      <div className="absolute -top-5 text-xs font-medium text-primary whitespace-nowrap">
+                      <div className="absolute -top-3.5 md:-top-5 text-[10px] md:text-xs font-medium text-primary whitespace-nowrap">
                         {(position * 100).toFixed(0)}%
                       </div>
                       {/* Sample dot */}
-                      <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full border-2 border-background shadow-sm" />
+                      <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 md:w-3 md:h-3 bg-primary rounded-full border-2 border-background shadow-sm" />
                       {/* Sample number label */}
-                      <div className="absolute -bottom-5 text-xs text-muted-foreground">
+                      <div className="absolute -bottom-3.5 md:-bottom-5 text-[10px] md:text-xs text-muted-foreground">
                         #{idx + 1}
                       </div>
                     </div>
@@ -266,7 +266,7 @@ export function AudioAnalysisTab() {
                 </div>
 
                 {/* Timeline legend/info */}
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1 md:gap-0 text-[10px] md:text-xs text-muted-foreground">
                   <span>Track Duration</span>
                   <span className="font-medium">
                     {audioProfile.analysis_metadata.full_buffer_analyzed

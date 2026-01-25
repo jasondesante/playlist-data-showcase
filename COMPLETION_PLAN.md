@@ -1925,7 +1925,7 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
     - Updated track count label to show "Tracks (N):" for clarity
   - **Result:** Track list now scrolls within its container on mobile (300px max) and desktop (400px max)
   - **File Modified:** `/workspace/src/components/Tabs/PlaylistLoaderTab.tsx`
-- [ ] Audio: Verify visualizations scale
+- [x] Audio: Verify visualizations scale - COMPLETED 2026-01-25
 - [ ] Character: Verify character sheet fits
 - [ ] Session: Verify timer displays
 - [ ] XP: Verify calculator inputs work
