@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
+    "check:css": "node scripts/check-css-braces.js"
   },
   "dependencies": {
     "@types/howler": "^2.2.12",
@@ -15,7 +18,7 @@
     "howler": "^2.2.4",
     "localforage": "^1.10.0",
     "lucide-react": "^0.468.0",
-    "playlist-data-engine": "file:/Users/jasondesante/playlist-data-engine",
+    "playlist-data-engine": "file:../playlist-data-engine",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.28.0",
@@ -33,6 +36,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "postcss": "^8.4.49",
+    "stylelint": "^17.0.0",
+    "stylelint-config-standard": "^40.0.0",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.3.0",
     "vite": "^5.0.0"
@@ -40,6 +45,7 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "bash -c 'tsc --noEmit'"
-    ]
+    ],
+    "*.css": ["stylelint --fix"]
   }
 }

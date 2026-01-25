@@ -1120,13 +1120,13 @@ import './PlaylistLoaderTab.css';
 ### Phase 1: Tooling & Foundation
 
 **Task 1: Setup Stylelint**
-- [ ] Install: `npm install --save-dev stylelint stylelint-config-standard stylelint-config-standard-css`
-- [ ] Create `.stylelintrc.json` with config (see Part 1 for full config)
-- [ ] Add scripts to `package.json`:
-  - [ ] `"lint:css": "stylelint \"src/**/*.css\""`
-  - [ ] `"lint:css:fix": "stylelint \"src/**/*.css\" --fix"`
-  - [ ] `"check:css": "node scripts/check-css-braces.js"`
-- [ ] Test: Run `npm run lint:css` - should work
+- [x] Install: `npm install --save-dev stylelint stylelint-config-standard stylelint-config-standard-css`
+- [x] Create `.stylelintrc.json` with config (see Part 1 for full config)
+- [x] Add scripts to `package.json`:
+  - [x] `"lint:css": "stylelint \"src/**/*.css\""`
+  - [x] `"lint:css:fix": "stylelint \"src/**/*.css\" --fix"`
+  - [x] `"check:css": "node scripts/check-css-braces.js"`
+- [x] Test: Run `npm run lint:css` - should work
 
 **Task 2: Setup Pre-commit Hooks**
 - [ ] Install: `npm install --save-dev husky lint-staged`
