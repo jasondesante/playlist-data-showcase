@@ -11,10 +11,6 @@ Do that one task only. Don't assume the feature is built. If the feature is miss
 When you're done, say "done". When there's no tasks left for you to do then say "ITS TIME TO EAT"
 
 
-HEY LISTEN IM REALLY SICK OF SEEING THE CONSTANT CSS ERRORS CAN YOU PLEASE DO SOMETHING ABOUT THIS OR EVEN BETTER EXPLAIN TO ME IN THE UI IMPROVEMENT PLAN FILE EXACTLY WHY YOU ARE UNABLE TO FIND THE MOST SIMPLE OF MISSING BRACKETS IN THE CSS. YOU HAVE CONSISTENTLY INTRODUCED NEW CSS MISSING BRACKETS AND SHIT LIKE ALMOST EVERY PROMPT!!!!! 
-
-Write me an explanation in the UI_IMPROVEMENT_PLAN file as to why you are unable to see the build errors and stuff because I'm getting really confused/frustrated by how you are so unable to catch these errors.
-
 IMPORTANT:
 - DO NOT DELETE node_modules. 
 - DO NOT DELETE package-lock.json. 
@@ -22,8 +18,7 @@ IMPORTANT:
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
 - NEVER push an update with syntax errors. 
-- ALWAYS verify that there aren't any random errors in the build. YOU MUST VERIFY YOU DON'T MISS ANYTHING LIKE MISSING BRACKETS!
-- IMPORTANT. YOU MUST RUN LINT AND BUILD CHECKS EVERY TIME BECAUSE YOU KEEP MISSING BRACKETS
+- ALWAYS verify that there aren't any random errors in the build.
 - update the implementation plan when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 
