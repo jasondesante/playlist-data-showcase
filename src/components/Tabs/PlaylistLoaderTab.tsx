@@ -87,8 +87,9 @@ export function PlaylistLoaderTab() {
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium">Tracks:</h4>
-            {currentPlaylist.tracks.map((track: PlaylistTrack, idx: number) => (
+            <h4 className="font-medium">Tracks ({currentPlaylist.tracks.length}):</h4>
+            <div className="max-h-[300px] md:max-h-[400px] overflow-y-auto space-y-2 pr-2">
+              {currentPlaylist.tracks.map((track: PlaylistTrack, idx: number) => (
               <div
                 key={idx}
                 onClick={() => selectTrack(track)}
@@ -106,6 +107,7 @@ export function PlaylistLoaderTab() {
                 )}
               </div>
             ))}
+            </div>
           </div>
 
           {/* Raw JSON Dump Section - for debugging and engine verification */}

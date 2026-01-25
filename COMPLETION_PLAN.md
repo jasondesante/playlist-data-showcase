@@ -1916,7 +1916,15 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
 **Build Verification:** TypeScript compilation passes (588.34 kB output)
 
 #### 5.4.2 Test Each Tab on Mobile
-- [ ] Playlist: Verify track list scrolls
+- [x] Playlist: Verify track list scrolls - COMPLETED 2026-01-25
+  - **Issue Found:** Track list had no max-height constraint, causing entire page to scroll on mobile
+  - **Fix Implemented:**
+    - Added `max-h-[300px] md:max-h-[400px]` to track list container
+    - Added `overflow-y-auto` for scrolling within container
+    - Added `pr-2` for scrollbar spacing
+    - Updated track count label to show "Tracks (N):" for clarity
+  - **Result:** Track list now scrolls within its container on mobile (300px max) and desktop (400px max)
+  - **File Modified:** `/workspace/src/components/Tabs/PlaylistLoaderTab.tsx`
 - [ ] Audio: Verify visualizations scale
 - [ ] Character: Verify character sheet fits
 - [ ] Session: Verify timer displays
