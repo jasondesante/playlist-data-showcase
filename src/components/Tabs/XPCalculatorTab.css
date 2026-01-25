@@ -218,12 +218,120 @@
 }
 
 /* ========================================
-   TOGGLE STYLES (uses shared Toggle.css)
+   TOGGLE STYLES
    ======================================== */
 
-/* Note: Toggle styles are in src/styles/components/Toggle.css
-   Classes used: .toggle-header, .toggle-content, .toggle-title,
-   .toggle-description, .toggle-switch, .toggle-checkbox, .toggle-label */
+/* These are XP-specific toggle classes to avoid conflicts with shared toggle styles */
+
+.xp-toggle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.xp-toggle-content {
+  flex: 1;
+}
+
+.xp-toggle-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-title {
+    font-size: 0.875rem;
+  }
+}
+
+.xp-toggle-description {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-description {
+    font-size: 0.75rem;
+  }
+}
+
+.xp-toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.xp-toggle-checkbox {
+  appearance: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  background-color: hsl(var(--muted));
+  border-radius: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-checkbox {
+    width: 2rem;
+    height: 1.125rem;
+  }
+}
+
+.xp-toggle-checkbox:checked {
+  background-color: hsl(var(--primary));
+}
+
+.xp-toggle-checkbox::before {
+  content: '';
+  position: absolute;
+  width: 0.875rem;
+  height: 0.875rem;
+  background-color: white;
+  border-radius: 50%;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  transition: transform var(--duration-fast) var(--ease-out-cubic);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-checkbox::before {
+    width: 0.75rem;
+    height: 0.75rem;
+    top: 0.1875rem;
+    left: 0.1875rem;
+  }
+}
+
+.xp-toggle-checkbox:checked::before {
+  transform: translateX(1rem);
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-checkbox:checked::before {
+    transform: translateX(0.875rem);
+  }
+}
+
+.xp-toggle-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-label {
+    font-size: 0.875rem;
+  }
+}
 
 /* ========================================
    MANUAL OVERRIDES SECTION
