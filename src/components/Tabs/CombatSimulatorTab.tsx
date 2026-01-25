@@ -5,6 +5,39 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { SPELL_DATABASE } from 'playlist-data-engine';
 
+/**
+ * CombatSimulatorTab Component
+ *
+ * Demonstrates the CombatEngine engine module by:
+ * 1. Starting combat between player character(s) and enemies
+ * 2. Rolling initiative for turn order
+ * 3. Executing attacks with damage calculations
+ * 4. Casting spells with slot management
+ * 5. Advancing turns manually or via auto-play
+ * 6. Displaying combat log with detailed action history
+ * 7. Showing victory screen with XP awarded, rounds elapsed, total turns
+ * 8. Providing manual attack controls for choosing specific targets
+ * 9. Providing spell casting UI for spellcaster classes
+ *
+ * Features:
+ * - D&D 5e combat rules implementation
+ * - Initiative order sidebar with current turn highlighting
+ * - Combatant cards with HP bars and status
+ * - Color-coded combat log (green=hit, red=miss, blue=spell)
+ * - Auto-play mode for hands-off combat simulation (1.5s per turn)
+ * - Manual attack targeting
+ * - Spell selection with slot availability checking
+ * - Multi-target spell casting
+ * - Victory overlay with combat statistics
+ * - Raw JSON dump for debugging
+ *
+ * @example
+ * ```tsx
+ * // Requires at least one generated character
+ * <CombatSimulatorTab />
+ * ```
+ */
+
 // Helper function to determine log entry color based on action type and result
 function getLogEntryColor(action: any): string {
   if (action.type === 'spell') return 'border-blue-500';

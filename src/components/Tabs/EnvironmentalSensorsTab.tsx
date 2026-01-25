@@ -4,6 +4,34 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { MotionGraph } from '../ui/MotionGraph';
 import { RawJsonDump } from '../ui/RawJsonDump';
 
+/**
+ * EnvironmentalSensorsTab Component
+ *
+ * Demonstrates the EnvironmentalSensors engine module by:
+ * 1. Requesting permissions for geolocation, motion, and light sensors
+ * 2. Starting/stopping sensor monitoring
+ * 3. Displaying GPS location with coordinates, altitude, speed, and heading
+ * 4. Showing live motion data with real-time graphs (X, Y, Z acceleration)
+ * 5. Displaying weather data from OpenWeather API (if API key is provided)
+ * 6. Visualizing moon phase and day/night status
+ * 7. Providing raw JSON dump for debugging
+ *
+ * Features:
+ * - Permission status indicators for each sensor type
+ * - Mini-map placeholder with coordinates
+ * - Link to open location in Google Maps
+ * - Real-time motion graphs showing acceleration over time
+ * - Activity type detection (stationary, walking, running, in-vehicle)
+ * - Weather icon mapping based on conditions
+ * - iOS-specific handling for motion permission (requires user gesture)
+ *
+ * @example
+ * ```tsx
+ * // Users can test each sensor independently
+ * <EnvironmentalSensorsTab />
+ * ```
+ */
+
 // Helper function to map PermissionState to StatusType
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
   switch (permission) {

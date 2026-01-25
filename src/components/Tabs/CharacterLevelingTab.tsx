@@ -2,6 +2,29 @@ import { useState, useEffect } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
 
+/**
+ * CharacterLevelingTab Component
+ *
+ * Demonstrates the CharacterUpdater engine module by:
+ * 1. Displaying the active character's XP progress
+ * 2. Providing quick-add XP buttons for testing
+ * 3. Showing manual XP input for custom amounts
+ * 4. Automatically handling level-ups based on XP thresholds
+ * 5. Displaying current stats (HP, AC, proficiency bonus)
+ * 6. Raw JSON dump for debugging
+ *
+ * The XP thresholds follow D&D 5e rules:
+ * - Level 1→2: 300 XP
+ * - Level 2→3: 900 XP
+ * - Level 3→4: 2,700 XP
+ * - And so on...
+ *
+ * @example
+ * ```tsx
+ * // In the app, this tab is accessed after generating a character
+ * <CharacterLevelingTab />
+ * ```
+ */
 export function CharacterLevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
   const [xpAmount, setXpAmount] = useState(100);

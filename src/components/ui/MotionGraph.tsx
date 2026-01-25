@@ -1,11 +1,38 @@
 import { useEffect, useRef } from 'react';
 
+/**
+ * Props for the MotionGraph component
+ */
 interface MotionGraphProps {
+  /** Array of numerical data points to visualize (typically acceleration values) */
   data: number[];
+  /** Color of the graph line (CSS color value) */
   color: string;
+  /** Label displayed above the graph */
   label: string;
 }
 
+/**
+ * MotionGraph Component
+ *
+ * Renders a real-time line graph for motion sensor data (acceleration).
+ * Uses HTML5 Canvas for efficient rendering of up to 100 data points.
+ *
+ * Features:
+ * - Grid line at horizontal midline
+ * - Auto-scales to display last 100 data points
+ * - Y-axis scaled for typical acceleration range (-10 to 10 m/s²)
+ * - Responsive canvas with fixed coordinate system
+ *
+ * @example
+ * ```tsx
+ * <MotionGraph
+ *   data={[0.5, 1.2, -0.8, 2.1]}
+ *   color="#3b82f6"
+ *   label="X-Axis Acceleration"
+ * />
+ * ```
+ */
 export function MotionGraph({ data, color, label }: MotionGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

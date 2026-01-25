@@ -6,6 +6,31 @@ import { logger } from '@/utils/logger';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 
+/**
+ * GamingPlatformsTab Component
+ *
+ * Demonstrates the GamingPlatformSensors engine module by:
+ * 1. Connecting to Steam for game activity tracking
+ * 2. Connecting to Discord for music status (Discord RPC can only SET music status, not read game activity)
+ * 3. Displaying current game information when actively gaming
+ * 4. Showing gaming XP bonus calculation with breakdown
+ * 5. Setting Discord music status with track information
+ * 6. Polling for gaming activity every 30 seconds when connected
+ *
+ * Features:
+ * - Steam authentication with Steam User ID
+ * - Discord connection with Client ID
+ * - Music status: "Listening to {song} by {artist}"
+ * - Gaming bonus formula: base (1.0x) + session duration bonus + genre bonus + multiplayer bonus (capped at 1.75x)
+ * - Real-time gaming context display with current game, genre, session duration, party size
+ * - Gaming summary: total gaming minutes, games played while listening
+ *
+ * @example
+ * ```tsx
+ * // In the app, users can connect Steam and Discord independently
+ * <GamingPlatformsTab />
+ * ```
+ */
 export function GamingPlatformsTab() {
   const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
