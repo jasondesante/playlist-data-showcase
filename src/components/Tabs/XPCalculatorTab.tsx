@@ -5,6 +5,7 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
+import './XPCalculatorTab.css';
 
 /**
  * Pie chart data for XP source visualization

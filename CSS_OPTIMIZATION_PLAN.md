@@ -1251,11 +1251,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Session tab looks identical
 
 **Task 17: XP Calculator Tab**
-- [ ] Create `XPCalculatorTab.css`
-- [ ] Copy all XP calculator styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: XP calculator tab looks identical
+- [x] Create `XPCalculatorTab.css`
+- [x] Copy all XP calculator styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: XP calculator tab looks identical
 
 **Task 18: Leveling Tab**
 - [ ] Create `CharacterLevelingTab.css`
