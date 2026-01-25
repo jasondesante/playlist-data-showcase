@@ -1926,7 +1926,24 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
   - **Result:** Track list now scrolls within its container on mobile (300px max) and desktop (400px max)
   - **File Modified:** `/workspace/src/components/Tabs/PlaylistLoaderTab.tsx`
 - [x] Audio: Verify visualizations scale - COMPLETED 2026-01-25
-- [ ] Character: Verify character sheet fits
+- [x] Character: Verify character sheet fits - COMPLETED 2026-01-25
+  - **Issue Found:** Character sheet had several mobile responsiveness issues
+  - **Fixes Implemented:**
+    - Header: Reduced padding from `p-6` to `p-4 md:p-6` for mobile
+    - Header: Made title text responsive `text-xl md:text-2xl` and `text-base md:text-lg`
+    - Core Stats: Changed from 4 columns to 2 columns on mobile (`grid-cols-2 md:grid-cols-4`)
+    - Core Stats: Reduced padding and font sizes (`p-3 md:p-4`, `text-xl md:text-2xl`)
+    - Ability Scores: Changed from 6 columns to 3 columns on mobile (`grid-cols-3 md:grid-cols-6`)
+    - Ability Scores: Reduced padding and font sizes (`p-2 md:p-3`, `text-lg md:text-xl`)
+    - Audio Trait Mapping table: Made table text smaller on mobile (`text-xs md:text-sm`)
+    - Audio Trait Mapping table: Reduced cell padding (`p-1 md:p-2`)
+    - Audio Trait Mapping table: Made indicator dots smaller (`w-2 md:w-3 h-2 md:h-3`)
+    - Audio Trait Mapping table: Hid "(Bass ÷ Treble)" and "(Combined)" labels on mobile (`hidden md:inline`)
+    - Skills: Reduced text size (`text-xs md:text-sm`) and padding (`p-1 md:p-2`)
+    - Skills: Added `truncate` class to skill names to prevent overflow
+  - **Result:** Character sheet now displays properly on mobile with appropriate column counts, padding, and font sizes
+  - **File Modified:** `/workspace/src/components/Tabs/CharacterGenTab.tsx`
+  - **Build Verification:** TypeScript compilation passes (590.06 kB output)
 - [ ] Session: Verify timer displays
 - [ ] XP: Verify calculator inputs work
 - [ ] Leveling: Verify buttons are touch-friendly

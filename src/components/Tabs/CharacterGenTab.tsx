@@ -372,9 +372,9 @@ export function CharacterGenTab() {
       {character && (
         <div className="space-y-6">
           {/* Header */}
-          <div className="p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
-            <h3 className="text-2xl font-bold">{character.name}</h3>
-            <p className="text-lg text-muted-foreground">
+          <div className="p-4 md:p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
+            <h3 className="text-xl md:text-2xl font-bold">{character.name}</h3>
+            <p className="text-base md:text-lg text-muted-foreground">
               Level {character.level} {character.race} {character.class}
             </p>
             <div className="mt-2 text-sm text-muted-foreground">
@@ -383,22 +383,22 @@ export function CharacterGenTab() {
           </div>
 
           {/* Core Stats */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-sm text-muted-foreground">HP</p>
-              <p className="text-2xl font-bold">{character.hp.max}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-xs md:text-sm text-muted-foreground">HP</p>
+              <p className="text-xl md:text-2xl font-bold">{character.hp.max}</p>
             </div>
-            <div className="p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-sm text-muted-foreground">AC</p>
-              <p className="text-2xl font-bold">{character.armor_class}</p>
+            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-xs md:text-sm text-muted-foreground">AC</p>
+              <p className="text-xl md:text-2xl font-bold">{character.armor_class}</p>
             </div>
-            <div className="p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-sm text-muted-foreground">Initiative</p>
-              <p className="text-2xl font-bold">+{character.initiative}</p>
+            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-xs md:text-sm text-muted-foreground">Initiative</p>
+              <p className="text-xl md:text-2xl font-bold">+{character.initiative}</p>
             </div>
-            <div className="p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-sm text-muted-foreground">Speed</p>
-              <p className="text-2xl font-bold">{character.speed} ft</p>
+            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
+              <p className="text-xs md:text-sm text-muted-foreground">Speed</p>
+              <p className="text-xl md:text-2xl font-bold">{character.speed} ft</p>
             </div>
           </div>
 
@@ -410,113 +410,113 @@ export function CharacterGenTab() {
                 How the audio characteristics influenced this character's ability scores
               </p>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-xs md:text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left p-2 font-medium">Audio Trait</th>
-                      <th className="text-left p-2 font-medium">Value</th>
-                      <th className="text-left p-2 font-medium">Maps To</th>
-                      <th className="text-center p-2 font-medium">Score</th>
+                      <th className="text-left p-1 md:p-2 font-medium">Audio Trait</th>
+                      <th className="text-left p-1 md:p-2 font-medium">Value</th>
+                      <th className="text-left p-1 md:p-2 font-medium">Maps To</th>
+                      <th className="text-center p-1 md:p-2 font-medium">Score</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-blue-500" />
-                          <span>Bass Dominance</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-blue-500" />
+                          <span className="text-xs md:text-sm">Bass Dominance</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">{(audioProfile.bass_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.bass_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
                           STR (Strength)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.STR}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.STR}</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-orange-500" />
-                          <span>Treble Dominance</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-orange-500" />
+                          <span className="text-xs md:text-sm">Treble Dominance</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">{(audioProfile.treble_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.treble_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
                           DEX (Dexterity)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.DEX}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.DEX}</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-purple-500" />
-                          <span>Average Amplitude</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-purple-500" />
+                          <span className="text-xs md:text-sm">Average Amplitude</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">{(audioProfile.average_amplitude * 100).toFixed(1)}%</td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.average_amplitude * 100).toFixed(1)}%</td>
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
                           CON (Constitution)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.CON}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.CON}</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-green-500" />
-                          <span>Mid Dominance</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-green-500" />
+                          <span className="text-xs md:text-sm">Mid Dominance</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">{(audioProfile.mid_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.mid_dominance * 100).toFixed(1)}%</td>
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
                           INT (Intelligence)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.INT}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.INT}</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-gray-500" />
-                          <span>Balance</span>
-                          <span className="text-xs text-muted-foreground">(Bass ÷ Treble)</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-gray-500" />
+                          <span className="text-xs md:text-sm">Balance</span>
+                          <span className="text-xs text-muted-foreground hidden md:inline">(Bass ÷ Treble)</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">
+                      <td className="p-1 md:p-2 font-mono text-xs">
                         {audioProfile.treble_dominance > 0
                           ? (audioProfile.bass_dominance / audioProfile.treble_dominance).toFixed(2)
                           : 'N/A'}
                       </td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
                           WIS (Wisdom)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.WIS}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.WIS}</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="p-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-pink-500" />
-                          <span>Mid + Amplitude</span>
-                          <span className="text-xs text-muted-foreground">(Combined)</span>
+                      <td className="p-1 md:p-2">
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-pink-500" />
+                          <span className="text-xs md:text-sm">Mid + Amp</span>
+                          <span className="text-xs text-muted-foreground hidden md:inline">(Combined)</span>
                         </div>
                       </td>
-                      <td className="p-2 font-mono text-xs">
+                      <td className="p-1 md:p-2 font-mono text-xs">
                         {((audioProfile.mid_dominance + audioProfile.average_amplitude) / 2 * 100).toFixed(1)}%
                       </td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs font-medium">
+                      <td className="p-1 md:p-2">
+                        <span className="px-1 md:px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs font-medium">
                           CHA (Charisma)
                         </span>
                       </td>
-                      <td className="p-2 text-center font-bold">{character.ability_scores.CHA}</td>
+                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.CHA}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -530,12 +530,12 @@ export function CharacterGenTab() {
           {/* Ability Scores */}
           <div>
             <h4 className="font-bold mb-3">Ability Scores</h4>
-            <div className="grid grid-cols-6 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
-                <div key={ability} className="p-3 bg-card border border-border rounded-md text-center">
+                <div key={ability} className="p-2 md:p-3 bg-card border border-border rounded-md text-center">
                   <p className="text-xs text-muted-foreground font-medium">{ability}</p>
-                  <p className="text-xl font-bold">{character.ability_scores[ability]}</p>
-                  <p className="text-sm text-primary">
+                  <p className="text-lg md:text-xl font-bold">{character.ability_scores[ability]}</p>
+                  <p className="text-xs md:text-sm text-primary">
                     {character.ability_modifiers[ability] >= 0 ? '+' : ''}
                     {character.ability_modifiers[ability]}
                   </p>
@@ -547,10 +547,10 @@ export function CharacterGenTab() {
           {/* Skills */}
           <div>
             <h4 className="font-bold mb-3">Skills</h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1 md:gap-2">
               {Object.entries(character.skills).map(([skill, prof]) => (
-                <div key={skill} className="flex items-center justify-between p-2 bg-card border border-border rounded text-sm">
-                  <span className="capitalize">{skill.replace(/_/g, ' ')}</span>
+                <div key={skill} className="flex items-center justify-between p-1 md:p-2 bg-card border border-border rounded text-xs md:text-sm">
+                  <span className="capitalize truncate">{skill.replace(/_/g, ' ')}</span>
                   <span className={prof !== 'none' ? 'text-primary font-medium' : 'text-muted-foreground'}>
                     {prof === 'expertise' ? '★★' : prof === 'proficient' ? '★' : '○'}
                   </span>
