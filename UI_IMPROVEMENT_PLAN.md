@@ -2,6 +2,8 @@
 
 > **Design Vision**: Clean, minimal, yet cute and inviting aesthetic with Spotify-inspired large album art and full animation suite.
 
+> **CSS Architecture Update**: The CSS has been refactored from a single `src/index.css` file into a modular structure. See [CSS_OPTIMIZATION_PLAN.md](./CSS_OPTIMIZATION_PLAN.md) for details. CSS variables are now in `src/styles/base.css`, shared components in `src/styles/components/`, and tab-specific styles are co-located with their components.
+
 ---
 
 ## Overview
@@ -21,9 +23,9 @@ This plan transforms the current functional but utilitarian interface into an in
 ## Phase 0: Design System Foundation
 
 ### 0.1 Extended Color Palette
-**File**: `src/index.css`
+**File**: `src/styles/base.css`
 
-Add cute accent colors and surface variants:
+The extended color palette has been implemented with cute accent colors and surface variants:
 
 ```css
 @layer base {
@@ -63,7 +65,7 @@ Add cute accent colors and surface variants:
 ```
 
 ### 0.2 Animation Utilities
-**File**: `src/index.css` (add after line 49)
+**File**: `src/styles/animations.css` (implemented)
 
 ```css
 /* ========================================

@@ -1501,3 +1501,111 @@ Remember: The key to success is **identifying duplicate patterns and consolidati
 - NEVER use utility class names that describe what something LOOKS LIKE (no `.p-4`, `.flex-center`, etc.)
 - Use CSS custom properties for values that vary
 - Keep classes focused and reusable
+
+---
+
+## Part 10: CSS Contribution Guidelines
+
+### File Organization
+
+**Shared CSS Files** (`src/styles/`):
+- `base.css` - CSS variables, reset, base element styles
+- `layout.css` - App-wide layout (sidebar, header, main)
+- `effects.css` - Visual effects (shimmer, glow, ripple)
+- `animations.css` - All @keyframes animations
+- `components/` - Shared UI components (Button.css, Card.css, Input.css, etc.)
+
+**Tab-Specific CSS** (co-located with components):
+- `PlaylistLoaderTab.css` - Playlist loader tab styles
+- `AudioAnalysisTab.css` - Audio analysis tab styles
+- etc.
+
+### CSS Variable Usage
+
+Always use CSS custom properties instead of hardcoded values:
+
+**Do:**
+```css
+.my-component {
+  padding: var(--spacing-4);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  color: hsl(var(--foreground));
+  transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+```
+
+**Don't:**
+```css
+.my-component {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  color: #f8fafc;
+  transition: all 150ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+```
+
+### Available CSS Variables
+
+**Shadows:**
+- `--shadow-sm` - Small elevation
+- `--shadow-md` - Medium elevation
+- `--shadow-lg` - Large elevation
+- `--shadow-xl` - Extra large elevation
+- `--shadow-glow` - Primary color glow
+- `--shadow-focus` - Focus ring (primary)
+- `--shadow-focus-destructive` - Focus ring (destructive)
+
+**Border Radius:**
+- `--radius` - Standard border radius (0.5rem)
+- `--radius-full` - Full circle (9999px)
+
+**Spacing:**
+- `--spacing-1` through `--spacing-8` (0.25rem to 2rem)
+
+**Durations:**
+- `--duration-fast` - 150ms
+- `--duration-normal` - 250ms
+- `--duration-slow` - 400ms
+- `--duration-slower` - 600ms
+
+**Easing:**
+- `--ease-out-cubic` - Standard ease-out
+- `--ease-out-quart` - Slower ease-out
+- `--ease-spring` - Bouncy spring
+
+### Naming Conventions
+
+1. **Component-specific classes** should be prefixed with the component name:
+   - `.xp-calculator-container`
+   - `.audio-waveform-display`
+   - `.character-level-badge`
+
+2. **Semantic classes** describe WHAT something is, not WHAT it looks like:
+   - `.tab-header` ✅ (describes purpose)
+   - `.flex-space-between` ❌ (describes appearance)
+
+3. **State modifiers** use BEM-like syntax:
+   - `.button` (base)
+   - `.button-primary` (variant)
+   - `.button:hover` (state)
+   - `.button:disabled` (state)
+
+### Linting
+
+Before committing CSS changes:
+1. Run `npm run lint:css` to check for errors
+2. Run `npm run lint:css:fix` to auto-fix issues
+3. Run `npm run build` to ensure no build errors
+
+### When to Add New CSS Variables
+
+Add new CSS variables to `base.css` when:
+1. A value is used in 3+ places
+2. The value represents a semantic concept (not just a random number)
+3. The value might need to be themeable in the future
+
+Examples:
+- ✅ `--focus-ring-width: 3px` - Semantic, reusable
+- ❌ `--magic-number-47: 47px` - Arbitrary, not semantic
