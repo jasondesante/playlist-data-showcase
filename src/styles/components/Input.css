@@ -61,7 +61,7 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  box-shadow: var(--shadow-focus);
 }
 
 /* Select dropdown styling */
@@ -227,7 +227,7 @@ input[type="range"]::-moz-range-thumb:hover {
 .input-field:focus {
   outline: none;
   border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  box-shadow: var(--shadow-focus);
 }
 
 .input-field:disabled {
@@ -243,7 +243,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .input-field-error:focus {
   border-color: hsl(var(--destructive));
-  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.1);
+  box-shadow: var(--shadow-focus-destructive);
 }
 
 /* Input sizes */
@@ -322,5 +322,5 @@ input[type="range"]::-moz-range-thumb:hover {
 .settings-select:focus {
   outline: none;
   border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  box-shadow: var(--shadow-focus);
 }

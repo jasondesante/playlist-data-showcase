@@ -48,6 +48,8 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6);
   --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+  --shadow-focus: 0 0 0 3px hsl(var(--primary) / 0.1);
+  --shadow-focus-destructive: 0 0 0 3px hsl(var(--destructive) / 0.1);
 
   /* Animation easing curves */
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
