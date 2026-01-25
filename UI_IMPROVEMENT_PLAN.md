@@ -527,6 +527,9 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 ~~- currently the tracks in the playlist tab all have 2 play buttons that show up when you hover the track yet clicking on them doesn't make the song start playing. There should only be 1 play button, not 2, and clicking should actually trigger playback.~~
 ~~-the audio playback in the session tab also doesn't play the audio. the audio needs to be able to be played.~~
 
+-The playlist tracks in the playlist tab, they aren't showing the name of the song, they only are showing the artist name, but the other info for each song isn't showing. 
+-You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
+
      
 ### Sprint 4-13: Remaining Tabs
 ~~8. Audio Analysis Tab~~
@@ -553,7 +556,19 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Skills grid with proficiency indicators and color coding (★ proficient, ★★ expertise, ○ none)
    - Equipment and spells in nested Card components
    - Added clean, responsive CSS classes for all elements
-10. Session Tab
+~~10. Session Tab~~
+   - Completed: Redesigned SessionTrackingTab with Card, Button components
+   - Added proper header with icon badge (Clock) and subtitle
+   - Added empty state with emoji (🎵) when no track is selected
+   - Selected track displayed in elevated Card with TrackCard component
+   - Added animated ring progress timer with SVG visualization
+   - Pulse effect on active session timer (timerPulse animation)
+   - Session details displayed in elevated Card with status indicators
+   - Start/End actions use Button component with Play/Pause icons
+   - Last session data displayed in elevated Card with detailed info
+   - Environmental context shown with geolocation, biome, weather, light data
+   - Gaming context shown with platform, game, and session info
+   - Added clean, responsive CSS classes for all elements
 11. XP Calculator Tab
 12. Leveling Tab
 13. Sensors Tab
