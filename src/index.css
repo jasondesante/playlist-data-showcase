@@ -5896,6 +5896,23 @@
     color: hsl(var(--foreground));
   }
 
+  .character-equipment-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .character-equipment-quantity {
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .character-equipment-equipped {
+    color: hsl(var(--cute-teal));
+    font-weight: 600;
+  }
+
   /* Audio mapping table */
   .character-audio-mapping-table {
     width: 100%;

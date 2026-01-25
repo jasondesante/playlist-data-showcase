@@ -615,25 +615,46 @@ export function CharacterGenTab() {
           </Card>
 
           {/* Equipment */}
-          {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (
-            <Card variant="default" padding="md">
-              <h4 className="card-title">Equipment</h4>
-              <div className="character-equipment-section">
-                {character.equipment.weapons.length > 0 && (
-                  <Card variant="flat" padding="sm" className="character-equipment-card">
-                    <p className="character-equipment-label">Weapons</p>
-                    <p className="character-equipment-items">{character.equipment.weapons.join(', ')}</p>
-                  </Card>
-                )}
-                {character.equipment.armor.length > 0 && (
-                  <Card variant="flat" padding="sm" className="character-equipment-card">
-                    <p className="character-equipment-label">Armor</p>
-                    <p className="character-equipment-items">{character.equipment.armor.join(', ')}</p>
-                  </Card>
-                )}
-              </div>
-            </Card>
-          )}
+          {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (() => {
+            const equipment = character.equipment;
+            return (
+              <Card variant="default" padding="md">
+                <h4 className="card-title">Equipment</h4>
+                <div className="character-equipment-section">
+                  {equipment.weapons.length > 0 && (
+                    <Card variant="flat" padding="sm" className="character-equipment-card">
+                      <div className="character-equipment-label">Weapons</div>
+                      <div className="character-equipment-items">
+                        {equipment.weapons.map((weapon, idx) => (
+                          <span key={idx} className="character-equipment-item">
+                            {weapon.name}
+                            {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
+                            {weapon.equipped && <span className="character-equipment-equipped" title="Equipped"> ✓</span>}
+                            {idx < equipment.weapons.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+                  {equipment.armor.length > 0 && (
+                    <Card variant="flat" padding="sm" className="character-equipment-card">
+                      <div className="character-equipment-label">Armor</div>
+                      <div className="character-equipment-items">
+                        {equipment.armor.map((armor, idx) => (
+                          <span key={idx} className="character-equipment-item">
+                            {armor.name}
+                            {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
+                            {armor.equipped && <span className="character-equipment-equipped" title="Equipped"> ✓</span>}
+                            {idx < equipment.armor.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+                </div>
+              </Card>
+            );
+          })()}
 
           {/* Spells */}
           {character.spells && (character.spells.cantrips.length > 0 || character.spells.known_spells.length > 0) && (
