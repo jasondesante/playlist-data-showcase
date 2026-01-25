@@ -51,6 +51,10 @@
     --duration-normal: 250ms;
     --duration-slow: 400ms;
     --duration-slower: 600ms;
+
+    /* NEW: Performance optimization tokens */
+    --gpu-accel: translateZ(0);
+    --gpu-accel-3d: translate3d(0, 0, 0);
   }
 }
 
@@ -109,6 +113,99 @@
 
   p:last-child {
     margin-bottom: 0;
+  }
+}
+
+/* ========================================
+   PERFORMANCE OPTIMIZATIONS (60fps)
+   ======================================== */
+
+@layer base {
+  /* GPU acceleration hints for smooth animations */
+  .gpu-accel {
+    transform: var(--gpu-accel);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* Isolate compositing layer for animated elements */
+  .composite-layer {
+    will-change: transform;
+    contain: layout style paint;
+  }
+
+  /* Optimize animated elements - only animate transform and opacity */
+  .animate-optimal {
+    will-change: transform, opacity;
+    transform: var(--gpu-accel);
+  }
+
+  /* Fix for box-shadow animation - use pseudo-element */
+  .shadow-animate {
+    position: relative;
+  }
+
+  .shadow-animate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inherit;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out-cubic);
+    pointer-events: none;
+  }
+
+  .shadow-animate:hover::before {
+    opacity: 1;
+  }
+
+  /* Reduce paint areas with containment */
+  .contain-paint {
+    contain: paint;
+  }
+
+  .contain-layout {
+    contain: layout;
+  }
+
+  .contain-style {
+    contain: style;
+  }
+
+  /* Full containment for independent components */
+  .contain-all {
+    contain: strict;
+  }
+
+  /* Smooth scrolling container */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent layout thrashing on frequently updated elements */
+  .layout-stable {
+    contain: layout;
+  }
+
+  /* Optimize images for animation */
+  img,
+  .album-art-image,
+  .track-artwork {
+    contain: strict;
+    will-change: transform;
+  }
+
+  /* Optimize for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .gpu-accel,
+    .composite-layer,
+    .animate-optimal,
+    img {
+      will-change: auto;
+      transform: none;
+    }
   }
 }
 
@@ -270,14 +367,18 @@
    ======================================== */
 
 @layer components {
-  /* Smooth button transitions */
+  /* Smooth button transitions - optimized for 60fps */
   button {
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: transform var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic),
+                border-color var(--duration-fast) var(--ease-out-cubic),
+                box-shadow var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
   }
 
   /* Button press effect */
   button:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: scale(0.98) var(--gpu-accel);
   }
 }
 
@@ -290,11 +391,14 @@
     box-shadow: var(--shadow-md);
     transition: box-shadow var(--duration-normal) var(--ease-out-cubic),
                 transform var(--duration-normal) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
+    will-change: transform, box-shadow;
+    contain: layout style paint;
   }
 
   .card-elevated:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+    transform: translateY(-2px) var(--gpu-accel);
   }
 }
 
@@ -518,7 +622,11 @@
     border-radius: 6px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: box-shadow var(--duration-normal) var(--ease-out-cubic),
+                transform var(--duration-normal) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
+    will-change: transform, box-shadow;
+    contain: layout style paint;
   }
 
   @media (min-width: 640px) {
@@ -530,13 +638,15 @@
 
   .playlist-header-art:hover .album-art-wrapper {
     box-shadow: var(--shadow-lg), 0 10px 15px -3px hsl(var(--primary) / 0.1);
-    transform: scale(1.02);
+    transform: scale(1.02) var(--gpu-accel);
   }
 
   .album-art-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform: var(--gpu-accel);
+    contain: strict;
   }
 
   .album-art-fallback {
@@ -702,7 +812,8 @@
     background: linear-gradient(to bottom right, hsl(var(--primary) / 0.08), hsl(var(--surface-2)), hsl(var(--accent) / 0.08));
     border: 1px solid hsl(var(--border) / 0.4);
     padding: 0.625rem;
-    transition: all 300ms var(--ease-out-cubic);
+    transition: box-shadow 300ms var(--ease-out-cubic);
+    contain: layout style paint;
   }
 
   @media (min-width: 768px) {
@@ -1025,14 +1136,17 @@
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     box-shadow: var(--shadow-lg);
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: transform var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic);
     border: none;
     cursor: pointer;
+    transform: var(--gpu-accel);
+    will-change: transform;
   }
 
   .track-art-overlay-button:hover {
     background-color: hsl(var(--primary) / 0.9);
-    transform: scale(1.1);
+    transform: scale(1.1) var(--gpu-accel);
   }
 }
 
@@ -1051,9 +1165,15 @@
     border: 1px solid hsl(var(--border));
     background-color: hsl(var(--card));
     cursor: pointer;
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: border-color var(--duration-normal) var(--ease-out-cubic),
+                background-color var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic),
+                transform var(--duration-normal) var(--ease-out-cubic);
     position: relative;
     overflow: hidden;
+    transform: var(--gpu-accel);
+    will-change: border-color, background-color;
+    contain: layout style paint;
   }
 
   /* Left accent bar for selected state */
@@ -1135,17 +1255,21 @@
     border: none;
     cursor: pointer;
     box-shadow: var(--shadow-md);
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: transform var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic),
+                box-shadow var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
+    will-change: transform;
   }
 
   .track-play-button:hover {
     background-color: hsl(var(--primary) / 0.9);
-    transform: scale(1.1);
+    transform: scale(1.1) var(--gpu-accel);
     box-shadow: var(--shadow-lg);
   }
 
   .track-play-button:active {
-    transform: scale(0.95);
+    transform: scale(0.95) var(--gpu-accel);
   }
 
   /* Play button sizes */
@@ -1627,7 +1751,9 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     border: 1px solid hsl(var(--input));
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: border-color var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic),
+                background-color var(--duration-normal) var(--ease-out-cubic);
   }
 
   .input-field::placeholder {
@@ -1722,16 +1848,22 @@
     border-radius: 0.375rem;
     border: none;
     cursor: pointer;
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: transform var(--duration-normal) var(--ease-out-cubic),
+                background-color var(--duration-normal) var(--ease-out-cubic),
+                border-color var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic),
+                opacity var(--duration-normal) var(--ease-out-cubic);
     gap: 0.5rem;
+    transform: var(--gpu-accel);
+    will-change: transform;
   }
 
   .button:hover:not(:disabled) {
-    transform: scale(1.02);
+    transform: scale(1.02) var(--gpu-accel);
   }
 
   .button:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: scale(0.98) var(--gpu-accel);
   }
 
   .button:focus-visible {
@@ -1862,7 +1994,9 @@
   /* Base card */
   .card {
     border-radius: 0.5rem;
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: border-color var(--duration-normal) var(--ease-out-cubic),
+                background-color var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic);
   }
 
   /* Card variants */
@@ -2105,7 +2239,9 @@
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     border-radius: 0.5rem;
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: background-color var(--duration-fast) var(--ease-out-cubic),
+                transform var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
     flex-shrink: 0;
     white-space: nowrap;
     border: none;
@@ -2972,7 +3108,11 @@
     border: 1px solid hsl(var(--border));
     font-size: 0.75rem;
     text-align: left;
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic),
+                transform var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
+  }
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     cursor: pointer;
@@ -3977,7 +4117,8 @@
     border: 1px solid hsl(var(--border));
     font-size: 0.75rem;
     text-align: left;
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic);
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     cursor: pointer;
@@ -5783,13 +5924,18 @@
     background: hsl(var(--surface-2));
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
-    transition: all var(--duration-normal) var(--ease-out-cubic);
+    transition: border-color var(--duration-normal) var(--ease-out-cubic),
+                background-color var(--duration-normal) var(--ease-out-cubic),
+                transform var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
+    will-change: transform;
   }
 
   .character-ability-card:hover {
     background: hsl(var(--surface-3));
     border-color: hsl(var(--primary) / 0.3);
-    transform: translateY(-2px);
+    transform: translateY(-2px) var(--gpu-accel);
     box-shadow: var(--shadow-md);
   }
 
@@ -5858,7 +6004,8 @@
     background: hsl(var(--surface-2));
     border: 1px solid hsl(var(--border));
     border-radius: calc(var(--radius) - 2px);
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic),
+                background-color var(--duration-fast) var(--ease-out-cubic);
     cursor: default;
   }
 
@@ -7570,12 +7717,14 @@
     background: hsl(var(--background));
     border: 1px solid hsl(var(--border));
     border-radius: 0.5rem;
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic),
+                transform var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
   }
 
   .leveling-milestone:hover {
     border-color: hsl(var(--muted-foreground));
-    transform: translateY(-1px);
+    transform: translateY(-1px) var(--gpu-accel);
   }
 
   .leveling-milestone-dot {
@@ -7725,12 +7874,14 @@
     background: hsl(var(--background));
     border: 1px solid hsl(var(--border));
     border-radius: 0.5rem;
-    transition: all var(--duration-fast) var(--ease-out-cubic);
+    transition: border-color var(--duration-fast) var(--ease-out-cubic),
+                transform var(--duration-fast) var(--ease-out-cubic);
+    transform: var(--gpu-accel);
   }
 
   .leveling-stat-item:hover {
     border-color: hsl(var(--muted-foreground));
-    transform: translateY(-1px);
+    transform: translateY(-1px) var(--gpu-accel);
   }
 
   .leveling-stat-icon {
@@ -8758,7 +8909,8 @@
   border-radius: var(--radius);
   font-size: 0.875rem;
   color: hsl(var(--foreground));
-  transition: all var(--duration-normal) var(--ease-out-cubic);
+  transition: border-color var(--duration-normal) var(--ease-out-cubic),
+                box-shadow var(--duration-normal) var(--ease-out-cubic);
 }
 
 @media (min-width: 768px) {
@@ -8830,7 +8982,9 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-out-cubic);
+  transition: background-color var(--duration-normal) var(--ease-out-cubic),
+                transform var(--duration-normal) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
 }
 
 @media (min-width: 768px) {
