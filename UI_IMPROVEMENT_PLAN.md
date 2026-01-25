@@ -518,6 +518,9 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - ✅ actual good looking css for the page
   - ✅ FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
      - Reduced playlist header image from 192px-224px to 128px-160px (w-32 h-32 sm:w-40 sm:h-40)
+     - Further reduced playlist header to 96px-112px (w-24 h-24 sm:w-28 sm:h-28) for better proportions
+     - Reduced header padding from p-4 md:p-6 to p-3 md:p-4
+     - Reduced header title from text-2xl md:text-3xl to text-xl md:text-2xl
      - Reduced TrackCard image sizes: compact 64px→48px, default 80px→56px, large 96px→64px
      - Adjusted padding, fonts, and icons proportionally to match smaller images
      - Made layout more balanced with responsive spacing (gap-4 instead of gap-6)
@@ -567,7 +570,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 - [x] Selection state shows 2px primary border with left accent bar
 - [x] Selection ring animates on select
 - [x] Play button overlay appears on hover
-- [ ] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page.
+- [x] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page.
 - [ ] Make Playlist track images a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages
