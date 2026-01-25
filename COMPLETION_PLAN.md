@@ -1938,9 +1938,16 @@ For each tab:
   - Build verification: File created successfully
 
 #### 6.1.3 Create DEBUGGING.md
-- [ ] Add console log guide
-- [ ] Add common issues
-- [ ] Add troubleshooting steps
+- [x] Add console log guide - COMPLETED 2025-01-25
+- [x] Add common issues - COMPLETED 2025-01-25
+- [x] Add troubleshooting steps - COMPLETED 2025-01-25
+  - Created `/workspace/DEBUGGING.md` with comprehensive debugging documentation
+  - Includes console log format and log levels by module
+  - Documents 8 common issues with symptoms, causes, and solutions
+  - Includes 5-step troubleshooting process
+  - Engine-specific issue resolution steps
+  - Issue reporting guidelines
+  - Build verification: File created successfully
 
 #### 6.1.4 Add JSDoc Comments
 - [ ] Add JSDoc to all hook exports
