@@ -1295,8 +1295,8 @@ import './PlaylistLoaderTab.css';
 ### Phase 5: Finalization
 
 **Task 23: Cleanup & Verification**
-- [ ] Verify all styles have been moved from src/index.css
-- [ ] ~~* New task * Look at every call of every class in the code to seriously verify that every class is moved from the old index.css file. (Split this into multiple tasks one per page or whatever.)~~
+- [x] Verify all styles have been moved from src/index.css
+- [x] ~~* New task * Look at every call of every class in the code to seriously verify that every class is moved from the old index.css file. (Split this into multiple tasks one per page or whatever.)~~
 - [x] [Task 23a] Verify PlaylistLoaderTab classes are moved from index.css
 - [x] [Task 23b] Verify AudioAnalysisTab classes are moved from index.css
 - [x] [Task 23c] Verify CharacterGenTab classes are moved from index.css
@@ -1310,8 +1310,8 @@ import './PlaylistLoaderTab.css';
 - [x] [Task 23k] Verify shared layout classes are moved from index.css
 - [x] Delete old `src/index.css` file
 - [x] Run `npm run build` - should succeed
-- [ ] Run `npm run lint:css` - should pass with 0 errors
-- [ ] Run `npm run check:css` - braces should be balanced
+- [x] Run `npm run lint:css` - should pass with 0 errors
+- [x] Run `npm run check:css` - braces should be balanced
 - [ ] Open app and verify all pages load correctly
 - [ ] Full visual regression check: open every tab, test all interactions
 

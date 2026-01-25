@@ -1,6 +1,38 @@
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const css = fs.readFileSync('src/index.css', 'utf8');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Recursively find all CSS files in src directory
+function findCssFiles(dir, fileList = []) {
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory()) {
+      findCssFiles(filePath, fileList);
+    } else if (file.endsWith('.css')) {
+      fileList.push(filePath);
+    }
+  }
+
+  return fileList;
+}
+
+// Get all CSS files in src directory
+const cssFiles = findCssFiles(path.join(__dirname, '..', 'src'));
+
+// Combine all CSS content for checking
+let combinedCss = '';
+for (const file of cssFiles) {
+  combinedCss += fs.readFileSync(file, 'utf8') + '\n';
+}
+
+const css = combinedCss;
 
 const open = (css.match(/\{/g) || []).length;
 const close = (css.match(/\}/g) || []).length;
