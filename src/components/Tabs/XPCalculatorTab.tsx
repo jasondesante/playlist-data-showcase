@@ -140,10 +140,10 @@ export function XPCalculatorTab() {
   }, [pieData]);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">XP Calculator</h2>
+    <div className="space-y-4 md:space-y-6">
+      <h2 className="text-lg md:text-xl font-bold">XP Calculator</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {/* Duration Input */}
         <div>
           <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
@@ -151,7 +151,7 @@ export function XPCalculatorTab() {
             type="number"
             value={duration}
             onChange={(e) => setDuration(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
             min="0"
             max="3600"
           />
@@ -161,9 +161,9 @@ export function XPCalculatorTab() {
         </div>
 
         {/* Environmental Context Section */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-sm">Environmental Context</h3>
+        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <h3 className="font-semibold text-xs md:text-sm">Environmental Context</h3>
             <StatusIndicator
               status={environmentalContext ? 'healthy' : 'degraded'}
               label={environmentalContext ? 'Active' : 'Not set'}
@@ -171,18 +171,18 @@ export function XPCalculatorTab() {
           </div>
 
           {environmentalContext ? (
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
               {/* Show timestamp */}
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <span className="text-muted-foreground">Last Updated:</span>
-                <span className="font-medium">
+                <span className="font-medium text-right">
                   {new Date(environmentalContext.timestamp || Date.now()).toLocaleTimeString()}
                 </span>
               </div>
 
               {/* Show motion data status */}
               {environmentalContext.motion && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Motion Data:</span>
                   <span className="font-medium text-green-600">Active</span>
                 </div>
@@ -190,9 +190,9 @@ export function XPCalculatorTab() {
 
               {/* Show any available geolocation data */}
               {(environmentalContext as any).geolocation && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">GPS:</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-right">
                     {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
                     {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
                   </span>
@@ -201,9 +201,9 @@ export function XPCalculatorTab() {
 
               {/* Show weather data */}
               {(environmentalContext as any).weather && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Weather:</span>
-                  <span className="font-medium capitalize">
+                  <span className="font-medium capitalize text-right">
                     {(environmentalContext as any).weather.weather_type || 'Unknown'}
                     {(environmentalContext as any).weather.temperature && (
                       <span className="ml-2">
@@ -219,16 +219,16 @@ export function XPCalculatorTab() {
               </p>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               No environmental data available. Visit the Environmental Sensors tab to set up sensors.
             </p>
           )}
         </div>
 
         {/* Gaming Context Section */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-sm">Gaming Context</h3>
+        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <h3 className="font-semibold text-xs md:text-sm">Gaming Context</h3>
             <StatusIndicator
               status={gamingContext?.isActivelyGaming ? 'healthy' : 'degraded'}
               label={gamingContext?.isActivelyGaming ? 'Gaming' : 'Not gaming'}
@@ -236,28 +236,30 @@ export function XPCalculatorTab() {
           </div>
 
           {gamingContext ? (
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
               {/* Show active gaming status */}
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <span className="text-muted-foreground">Status:</span>
-                <span className={`font-medium ${gamingContext.isActivelyGaming ? 'text-green-600' : ''}`}>
+                <span className={`font-medium text-right ${gamingContext.isActivelyGaming ? 'text-green-600' : ''}`}>
                   {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
                 </span>
               </div>
 
               {/* Show current game if available */}
               {(gamingContext as any).currentGame && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Game:</span>
-                  <span className="font-medium">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
+                  <span className="font-medium text-right">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
                 </div>
               )}
 
               {/* Show Steam ID if available */}
               {(gamingContext as any).steamId && (
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Steam ID:</span>
-                  <span className="font-medium font-mono text-xs">{(gamingContext as any).steamId}</span>
+                  <span className="font-medium font-mono text-[10px] md:text-xs text-right break-all">
+                    {(gamingContext as any).steamId}
+                  </span>
                 </div>
               )}
 
@@ -266,18 +268,18 @@ export function XPCalculatorTab() {
               </p>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               No gaming data available. Visit the Gaming Platforms tab to connect platforms.
             </p>
           )}
         </div>
 
         {/* Mastery Toggle - Task 4.5.5 (For Testing) */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-sm">Track Mastery Bonus</h3>
-              <p className="text-xs text-muted-foreground mt-1">
+        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1">
+              <h3 className="font-semibold text-xs md:text-sm">Track Mastery Bonus</h3>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                 Simulate a mastered track (+50 bonus XP)
               </p>
             </div>
@@ -286,19 +288,19 @@ export function XPCalculatorTab() {
                 type="checkbox"
                 checked={isMastered}
                 onChange={(e) => setIsMastered(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="w-5 h-5 md:w-4 md:h-4 rounded border-gray-300 text-primary focus:ring-primary"
               />
-              <span className="text-sm font-medium">Mastered</span>
+              <span className="text-xs md:text-sm font-medium">Mastered</span>
             </label>
           </div>
         </div>
 
         {/* Manual Mode - Task 4.5.5 (For Testing) */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-semibold text-sm">Manual Mode</h3>
-              <p className="text-xs text-muted-foreground mt-1">
+        <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="flex-1">
+              <h3 className="font-semibold text-xs md:text-sm">Manual Mode</h3>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                 Override automatic calculation with custom values
               </p>
             </div>
@@ -307,17 +309,17 @@ export function XPCalculatorTab() {
                 type="checkbox"
                 checked={isManualMode}
                 onChange={(e) => setIsManualMode(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="w-5 h-5 md:w-4 md:h-4 rounded border-gray-300 text-primary focus:ring-primary"
               />
-              <span className="text-sm font-medium">Enable</span>
+              <span className="text-xs md:text-sm font-medium">Enable</span>
             </label>
           </div>
 
           {isManualMode && (
-            <div className="space-y-4 mt-4 pt-4 border-t border-border">
+            <div className="space-y-3 md:space-y-4 mt-3 md:mt-4 pt-3 md:pt-4 border-t border-border">
               {/* Base XP Override */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs md:text-sm font-medium mb-2">
                   Base XP Override
                 </label>
                 <input
@@ -325,10 +327,10 @@ export function XPCalculatorTab() {
                   value={manualOverrides.baseXP ?? ''}
                   onChange={(e) => handleManualOverrideChange('baseXP', e.target.value)}
                   placeholder="Leave empty to use duration × rate"
-                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
                   min="0"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                   {manualOverrides.baseXP
                     ? `${manualOverrides.baseXP} XP (manual)`
                     : `${Math.floor(duration * 1)} XP (auto: ${duration}s × 1.0)`}
@@ -337,20 +339,20 @@ export function XPCalculatorTab() {
 
               {/* Environmental Multiplier Override */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Environmental Multiplier Override (0.5 - 3.0)
+                <label className="block text-xs md:text-sm font-medium mb-2">
+                  Environmental Multiplier (0.5 - 3.0)
                 </label>
                 <input
                   type="number"
                   value={manualOverrides.environmentalMultiplier ?? ''}
                   onChange={(e) => handleManualOverrideChange('environmentalMultiplier', e.target.value)}
                   placeholder="Leave empty to use sensor data"
-                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
                   min="0.5"
                   max="3.0"
                   step="0.1"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                   {manualOverrides.environmentalMultiplier
                     ? `${manualOverrides.environmentalMultiplier}x (manual)`
                     : environmentalContext
@@ -361,20 +363,20 @@ export function XPCalculatorTab() {
 
               {/* Gaming Multiplier Override */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Gaming Multiplier Override (1.0 - 1.75)
+                <label className="block text-xs md:text-sm font-medium mb-2">
+                  Gaming Multiplier (1.0 - 1.75)
                 </label>
                 <input
                   type="number"
                   value={manualOverrides.gamingMultiplier ?? ''}
                   onChange={(e) => handleManualOverrideChange('gamingMultiplier', e.target.value)}
                   placeholder="Leave empty to use gaming data"
-                  className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                  className="w-full px-4 py-3 text-base md:px-3 md:py-2 md:text-sm bg-background border border-input rounded-md"
                   min="1.0"
                   max="1.75"
                   step="0.05"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                   {manualOverrides.gamingMultiplier
                     ? `${manualOverrides.gamingMultiplier}x (manual)`
                     : gamingContext?.isActivelyGaming
@@ -383,7 +385,7 @@ export function XPCalculatorTab() {
                 </p>
               </div>
 
-              <p className="text-xs text-muted-foreground italic">
+              <p className="text-[10px] md:text-xs text-muted-foreground italic">
                 Leave fields empty to use automatic values from sensors/stores
               </p>
             </div>
@@ -393,107 +395,107 @@ export function XPCalculatorTab() {
         {/* Calculate Button */}
         <button
           onClick={handleCalculate}
-          className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+          className="w-full px-4 py-3 md:py-2 text-base md:text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 font-medium"
         >
           Calculate XP
         </button>
 
         {/* Results */}
         {result && (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Total XP Display */}
-            <div className="p-4 bg-card border border-border rounded-md">
-              <p className="text-sm text-muted-foreground">Total XP</p>
-              <p className="text-3xl font-bold">{result.totalXP}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="p-3 md:p-4 bg-card border border-border rounded-md">
+              <p className="text-xs md:text-sm text-muted-foreground">Total XP</p>
+              <p className="text-2xl md:text-3xl font-bold">{result.totalXP}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                 Total Multiplier: <span className="font-bold">{result.totalMultiplier.toFixed(2)}x</span>
                 {result.totalMultiplier >= 3.0 && ' (capped)'}
               </p>
             </div>
 
             {/* Bonus Breakdown Table - Task 4.5.3 */}
-            <div className="p-4 bg-muted/50 rounded-lg border border-border">
-              <h3 className="font-semibold text-sm mb-3">XP Bonus Breakdown</h3>
-              <div className="space-y-2 text-sm">
+            <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+              <h3 className="font-semibold text-xs md:text-sm mb-2 md:mb-3">XP Bonus Breakdown</h3>
+              <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
                 {/* Base XP */}
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <div>
-                    <span className="font-medium">Base XP</span>
-                    <span className="text-muted-foreground ml-2">
+                <div className="flex justify-between items-center py-2 border-b border-border gap-2">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium block">Base XP</span>
+                    <span className="text-muted-foreground text-[10px] md:text-xs block mt-0.5">
                       ({duration}s × {(result.baseXP / duration).toFixed(2)}/s)
                     </span>
                   </div>
-                  <span className="font-bold">{result.baseXP} XP</span>
+                  <span className="font-bold flex-shrink-0">{result.baseXP} XP</span>
                 </div>
 
                 {/* Environmental Bonus */}
                 {result.environmentalBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border">
-                    <div>
-                      <span className="font-medium text-green-600">Environmental Bonus</span>
-                      <span className="text-muted-foreground ml-2">
+                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-green-600 block">Environmental Bonus</span>
+                      <span className="text-muted-foreground text-[10px] md:text-xs ml-0">
                         ({result.environmentalMultiplier.toFixed(2)}x)
                       </span>
                       {result.environmentalDetails && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1">
                           {result.environmentalDetails.activity && (
-                            <span>Activity: {result.environmentalDetails.activity}</span>
+                            <span className="block">Activity: {result.environmentalDetails.activity}</span>
                           )}
                           {result.environmentalDetails.isNightTime && (
-                            <span className="ml-2">🌙 Night Time</span>
+                            <span className="ml-0 md:ml-2">🌙 Night Time</span>
                           )}
                           {result.environmentalDetails.weather && (
-                            <span className="ml-2">Weather: {result.environmentalDetails.weather}</span>
+                            <span className="block md:ml-2">Weather: {result.environmentalDetails.weather}</span>
                           )}
                           {result.environmentalDetails.altitude && (
-                            <span className="ml-2">Altitude: {result.environmentalDetails.altitude}m</span>
+                            <span className="block md:ml-2">Altitude: {result.environmentalDetails.altitude}m</span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="font-bold text-green-600">+{result.environmentalBonusXP} XP</span>
+                    <span className="font-bold text-green-600 flex-shrink-0">+{result.environmentalBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* Gaming Bonus */}
                 {result.gamingBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border">
-                    <div>
-                      <span className="font-medium text-blue-600">Gaming Bonus</span>
-                      <span className="text-muted-foreground ml-2">
+                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-blue-600 block">Gaming Bonus</span>
+                      <span className="text-muted-foreground text-[10px] md:text-xs block">
                         ({result.gamingMultiplier.toFixed(2)}x)
                       </span>
                       {result.gamingDetails && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-[10px] md:text-xs text-muted-foreground mt-1">
                           {result.gamingDetails.gameName && (
-                            <span>Game: {result.gamingDetails.gameName}</span>
+                            <span className="block">Game: {result.gamingDetails.gameName}</span>
                           )}
                           {result.gamingDetails.gameGenre && (
-                            <span className="ml-2">({result.gamingDetails.gameGenre})</span>
+                            <span className="block">({result.gamingDetails.gameGenre})</span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="font-bold text-blue-600">+{result.gamingBonusXP} XP</span>
+                    <span className="font-bold text-blue-600 flex-shrink-0">+{result.gamingBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* Mastery Bonus */}
                 {result.masteryBonusXP > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-border">
-                    <div>
-                      <span className="font-medium text-purple-600">Mastery Bonus</span>
-                      <span className="text-muted-foreground ml-2">
+                  <div className="flex justify-between items-center py-2 border-b border-border gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-purple-600 block">Mastery Bonus</span>
+                      <span className="text-muted-foreground text-[10px] md:text-xs block">
                         (Track mastered)
                       </span>
                     </div>
-                    <span className="font-bold text-purple-600">+{result.masteryBonusXP} XP</span>
+                    <span className="font-bold text-purple-600 flex-shrink-0">+{result.masteryBonusXP} XP</span>
                   </div>
                 )}
 
                 {/* No bonuses message */}
                 {result.environmentalBonusXP === 0 && result.gamingBonusXP === 0 && result.masteryBonusXP === 0 && (
-                  <p className="text-xs text-muted-foreground py-2 italic">
+                  <p className="text-[10px] md:text-xs text-muted-foreground py-2 italic">
                     No active bonuses. Enable environmental sensors or start gaming to earn bonus XP!
                   </p>
                 )}
@@ -502,38 +504,38 @@ export function XPCalculatorTab() {
 
             {/* XP Source Visualization - Task 4.5.4 */}
             {pieData && pieData.length > 0 && (
-              <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                <h3 className="font-semibold text-sm mb-3">XP Source Distribution</h3>
-                <div className="flex items-center gap-6">
+              <div className="p-3 md:p-4 bg-muted/50 rounded-lg border border-border">
+                <h3 className="font-semibold text-xs md:text-sm mb-2 md:mb-3">XP Source Distribution</h3>
+                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                   {/* Pie Chart */}
                   <div className="relative flex-shrink-0">
                     <div
-                      className="w-32 h-32 rounded-full"
+                      className="w-24 h-24 md:w-32 md:h-32 rounded-full"
                       style={{
                         background: pieChartGradient,
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                       }}
                     />
                     {/* Center hole for donut chart effect */}
-                    <div className="absolute inset-0 m-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold">{result.totalXP}</span>
+                    <div className="absolute inset-0 m-auto w-12 h-12 md:w-16 md:h-16 bg-muted/50 rounded-full flex items-center justify-center">
+                      <span className="text-[10px] md:text-xs font-bold">{result.totalXP}</span>
                     </div>
                   </div>
 
                   {/* Legend */}
-                  <div className="flex-1 space-y-2 text-sm">
+                  <div className="flex-1 w-full space-y-1.5 md:space-y-2 text-xs md:text-sm">
                     {pieData.map((slice) => (
-                      <div key={slice.label} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                      <div key={slice.label} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
                           <div
-                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            className="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0"
                             style={{ backgroundColor: slice.color }}
                           />
-                          <span className="text-muted-foreground">{slice.label}</span>
+                          <span className="text-muted-foreground truncate">{slice.label}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
                           <span className="font-medium">{slice.value} XP</span>
-                          <span className="text-xs text-muted-foreground w-12 text-right">
+                          <span className="text-[10px] md:text-xs text-muted-foreground w-10 md:w-12 text-right">
                             {slice.percentage.toFixed(1)}%
                           </span>
                         </div>
@@ -541,7 +543,7 @@ export function XPCalculatorTab() {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-2 md:mt-3">
                   Visual breakdown of XP sources for this session
                 </p>
               </div>
@@ -549,8 +551,8 @@ export function XPCalculatorTab() {
 
             {/* Multiplier Cap Info */}
             {result.totalMultiplier >= 3.0 && (
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md">
-                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+              <div className="p-2 md:p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md">
+                <p className="text-[10px] md:text-xs text-yellow-800 dark:text-yellow-200">
                   ⚠️ Total multiplier capped at 3.0x (engine limit)
                 </p>
               </div>
