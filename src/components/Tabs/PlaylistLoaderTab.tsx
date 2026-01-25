@@ -208,6 +208,8 @@ export function PlaylistLoaderTab() {
                       src={currentPlaylist.image}
                       alt={currentPlaylist.name}
                       className="album-art-image"
+                      width={64}
+                      height={64}
                       loading="lazy"
                       onError={(e) => {
                         // Fallback to gradient on error

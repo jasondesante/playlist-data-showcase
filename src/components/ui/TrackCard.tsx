@@ -174,6 +174,8 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
                 src={track.image_url}
                 alt={`${track.title} album art`}
                 className="track-art-image"
+                width={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
+                height={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
                 loading="lazy"
