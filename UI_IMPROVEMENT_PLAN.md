@@ -510,7 +510,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - ✅ Search functionality
    - ✅ Track list with TrackCard components
    - ✅ Empty states
-   - Loading skeletons
+   - ✅ Loading skeletons
 
 
    ### Sprint 0 : make sure the css looks good

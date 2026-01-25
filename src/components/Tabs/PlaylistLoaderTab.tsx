@@ -8,6 +8,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { TrackCard } from '../ui/TrackCard';
+import { TrackCardSkeleton, PlaylistHeaderSkeleton } from '../ui/Skeleton';
 import type { PlaylistTrack } from '../../types';
 import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists';
 
@@ -121,6 +122,23 @@ export function PlaylistLoaderTab() {
           )}
         </div>
       </Card>
+
+      {/* Loading Skeletons - Show during fetch */}
+      {isLoading && (
+        <div className="space-y-6 fade-in">
+          {/* Playlist Header Skeleton */}
+          <PlaylistHeaderSkeleton />
+
+          {/* Track List Skeletons */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <TrackCardSkeleton key={idx} size="default" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Empty State - No Playlist Loaded */}
       {!currentPlaylist && !isLoading && !error && (
