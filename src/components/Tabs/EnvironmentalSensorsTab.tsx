@@ -318,7 +318,7 @@ export function EnvironmentalSensorsTab() {
             ) : (
               <Card variant="outlined" padding="lg" className={`sensor-empty-card ${permissions.geolocation === 'denied' ? 'sensor-error-card' : 'sensor-warning-card'}`}>
                 <div className="sensor-empty-icon">
-                  {permissions.geolocation === 'denied' ? '' : ''}
+                  {permissions.geolocation === 'denied' ? '🚫' : '📍'}
                 </div>
                 <h3 className="sensor-empty-title">
                   {permissions.geolocation === 'denied' ? 'Geolocation Permission Denied' : 'No GPS Data Yet'}
@@ -372,7 +372,7 @@ export function EnvironmentalSensorsTab() {
               </Card>
             ) : (
               <Card variant="outlined" padding="lg" className={`sensor-empty-card ${permissions.motion === 'denied' ? 'sensor-error-card' : 'sensor-warning-card'}`}>
-                <div className="sensor-empty-icon" />
+                <div className="sensor-empty-icon">🏃</div>
                 <h3 className="sensor-empty-title">
                   {permissions.motion === 'denied' ? 'Motion Permission Denied' : 'No Motion Data Yet'}
                 </h3>
@@ -415,14 +415,14 @@ export function EnvironmentalSensorsTab() {
                   <div className="sensor-weather-icon">
                     {(() => {
                       const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
-                      if (wt.includes('clear')) return '';
-                      if (wt.includes('cloud')) return '';
-                      if (wt.includes('rain')) return '';
-                      if (wt.includes('drizzle')) return '';
-                      if (wt.includes('snow')) return '';
-                      if (wt.includes('thunder') || wt.includes('storm')) return '';
-                      if (wt.includes('mist') || wt.includes('fog')) return '';
-                      return '';
+                      if (wt.includes('clear') || wt.includes('sun')) return '☀️';
+                      if (wt.includes('cloud')) return '☁️';
+                      if (wt.includes('rain')) return '🌧️';
+                      if (wt.includes('drizzle')) return '🌦️';
+                      if (wt.includes('snow')) return '❄️';
+                      if (wt.includes('thunder') || wt.includes('storm')) return '⛈️';
+                      if (wt.includes('mist') || wt.includes('fog')) return '🌫️';
+                      return '☀️';
                     })()}
                   </div>
                   <div className="sensor-weather-temp">
@@ -431,7 +431,7 @@ export function EnvironmentalSensorsTab() {
                     <span className="sensor-weather-feels">Feels like {((environmentalContext.weather as any).temperature - 2).toFixed(1)}°C</span>
                   </div>
                   <div className="sensor-day-night">
-                    <span className="sensor-day-night-icon">{(environmentalContext.weather as any).isNight ? '' : ''}</span>
+                    <span className="sensor-day-night-icon">{(environmentalContext.weather as any).isNight ? '🌙' : '☀️'}</span>
                     <span className="sensor-day-night-label">{(environmentalContext.weather as any).isNight ? 'Night' : 'Day'}</span>
                   </div>
                 </div>
@@ -493,7 +493,7 @@ export function EnvironmentalSensorsTab() {
               </Card>
             ) : (
               <Card variant="outlined" padding="lg" className="sensor-warning-card">
-                <div className="sensor-empty-icon" />
+                <div className="sensor-empty-icon">🌡️</div>
                 <h3 className="sensor-empty-title">No Weather Data Yet</h3>
                 <ul className="sensor-empty-list">
                   <li>Add OpenWeather API key in Settings tab</li>
