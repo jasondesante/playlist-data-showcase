@@ -16,6 +16,8 @@ IMPORTANT:
 - DO NOT DELETE package-lock.json. 
 - DO NOT USE TAILWIND OR ANYTHING LIKE THAT. USE PURE CSS LIKE A REAL MAN.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
+- ALWAYS run a build/lint and make sure you didn't add any new bugs. 
+- Never push an update with syntax errors.
 - update the implementation plan when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 
