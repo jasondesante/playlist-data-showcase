@@ -506,7 +506,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 7. Redesign `PlaylistLoaderTab.tsx`:
    - ✅ Header section (icon badge with music note, subtitle, larger text)
    - ✅ Input section
-   - Playlist header with large artwork
+   - ✅ Playlist header with large artwork
    - Search functionality
    - Track list with TrackCard components
    - Empty states

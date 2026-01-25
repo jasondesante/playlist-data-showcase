@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Music, Download } from 'lucide-react';
+import { Music, Download, Sparkles } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -110,10 +110,96 @@ export function PlaylistLoaderTab() {
       </Card>
 
       {currentPlaylist && (
-        <div className="space-y-4">
-          <div className="p-4 bg-accent rounded-md">
-            <h3 className="font-bold text-lg">{currentPlaylist.name}</h3>
-            <p className="text-sm text-muted-foreground">{currentPlaylist.tracks.length} tracks</p>
+        <div className="space-y-6">
+          {/* Spotify-style Playlist Header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-surface-2 to-accent/10 border border-border/50 p-6 md:p-8 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+              {/* Large Album Art */}
+              <div className="flex-shrink-0 group">
+                <div className="relative w-48 h-48 md:w-56 md:h-56 rounded-xl overflow-hidden shadow-xl transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:scale-[1.02]">
+                  {currentPlaylist.image ? (
+                    <img
+                      src={currentPlaylist.image}
+                      alt={currentPlaylist.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to gradient on error
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
+                              <svg class="w-20 h-20 text-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                              </svg>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
+                      <Music className="w-20 h-20 text-primary/60" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Playlist Info */}
+              <div className="flex-1 space-y-3 min-w-0">
+                {/* Playlist Type Badge */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-xs font-medium text-primary">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Playlist</span>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                  {currentPlaylist.name}
+                </h3>
+
+                {/* Description */}
+                {currentPlaylist.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {currentPlaylist.description}
+                  </p>
+                )}
+
+                {/* Quick Stats Row */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    {currentPlaylist.creator}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                  <span>
+                    {currentPlaylist.tracks.length} {currentPlaylist.tracks.length === 1 ? 'track' : 'tracks'}
+                  </span>
+                  {currentPlaylist.genre && (
+                    <>
+                      <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                      <span className="px-2 py-0.5 rounded-md bg-muted text-xs">
+                        {currentPlaylist.genre}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Tags */}
+                {currentPlaylist.tags && currentPlaylist.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {currentPlaylist.tags.slice(0, 5).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-full bg-surface-3 border border-border text-xs text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
