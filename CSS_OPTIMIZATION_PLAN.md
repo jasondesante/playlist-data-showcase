@@ -1191,11 +1191,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: All inputs still work, no visual changes
 
 **Task 10: Extract Remaining Shared Components**
-- [ ] Create `src/styles/components/Skeleton.css` - copy skeleton styles
-- [ ] Create `src/styles/components/StatusBadge.css` - copy status badge styles
-- [ ] Create `src/styles/components/Toggle.css` - copy toggle switch styles
-- [ ] Remove copied styles from index.css
-- [ ] Test: No visual changes, stylelint passes
+- [x] Create `src/styles/components/Skeleton.css` - copy skeleton styles
+- [x] Create `src/styles/components/StatusBadge.css` - copy status badge styles
+- [x] Create `src/styles/components/Toggle.css` - copy toggle switch styles
+- [x] Remove copied styles from index.css
+- [x] Test: No visual changes, stylelint passes
 
 ### Phase 3: Main Entry Point
 

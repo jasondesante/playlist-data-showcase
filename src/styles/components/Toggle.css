@@ -1,0 +1,171 @@
+/* ========================================
+   TOGGLE COMPONENT
+   ======================================== */
+
+/* Toggle card wrapper */
+.toggle-card {
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .toggle-card {
+    padding: 1rem;
+  }
+}
+
+.toggle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.toggle-content {
+  flex: 1;
+}
+
+.toggle-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+@media (min-width: 768px) {
+  .toggle-title {
+    font-size: 0.875rem;
+  }
+}
+
+.toggle-description {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .toggle-description {
+    font-size: 0.75rem;
+  }
+}
+
+/* Toggle switch wrapper */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Checkbox-based toggle */
+.toggle-checkbox {
+  appearance: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  background-color: hsl(var(--muted));
+  border-radius: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .toggle-checkbox {
+    width: 2rem;
+    height: 1.125rem;
+  }
+}
+
+.toggle-checkbox:checked {
+  background-color: hsl(var(--primary));
+}
+
+.toggle-checkbox::before {
+  content: '';
+  position: absolute;
+  width: 0.875rem;
+  height: 0.875rem;
+  background-color: white;
+  border-radius: 50%;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  transition: transform var(--duration-fast) var(--ease-out-cubic);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .toggle-checkbox::before {
+    width: 0.75rem;
+    height: 0.75rem;
+    top: 0.1875rem;
+    left: 0.1875rem;
+  }
+}
+
+.toggle-checkbox:checked::before {
+  transform: translateX(1rem);
+}
+
+@media (min-width: 768px) {
+  .toggle-checkbox:checked::before {
+    transform: translateX(0.875rem);
+  }
+}
+
+.toggle-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .toggle-label {
+    font-size: 0.875rem;
+  }
+}
+
+/* Button-based toggle (alternative implementation) */
+.toggle-button {
+  position: relative;
+  display: inline-flex;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  background-color: hsl(var(--input));
+  border-radius: 9999px;
+  transition: background-color var(--duration-normal) var(--ease-out-cubic);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.toggle-button:hover {
+  background-color: hsl(var(--muted));
+}
+
+.toggle-button-active {
+  background-color: hsl(var(--primary));
+}
+
+.toggle-button-active:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+.toggle-button-slider {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform var(--duration-normal) var(--ease-out-cubic);
+}
+
+.toggle-button-active .toggle-button-slider {
+  transform: translateX(1.25rem);
+}
