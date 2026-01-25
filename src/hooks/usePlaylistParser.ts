@@ -37,24 +37,60 @@ export const usePlaylistParser = () => {
             let rawData: unknown;
 
             if (isJson) {
-                const json = JSON.parse(input);
-                rawData = json; // Store raw JSON input
-                playlist = await parser.parse(json);
+                try {
+                    const json = JSON.parse(input);
+                    rawData = json; // Store raw JSON input
+                    playlist = await parser.parse(json);
+                } catch (jsonError) {
+                    if (jsonError instanceof SyntaxError) {
+                        throw new Error('Invalid JSON format. Please check your playlist data and try again.');
+                    }
+                    throw jsonError;
+                }
             } else {
-                // Assume Arweave ID
-                // Note: Engine might need a fetcher for ID, but let's assume parse handles it or we fetch first
-                // If engine only takes JSON, we need to fetch.
-                // Checking engine docs/source would be ideal, but assuming parse takes RawArweavePlaylist
-                // For now, let's assume the input IS the JSON string or we fetch it.
-                // If it's an ID, we'd need to fetch from Arweave gateway.
-                // Let's implement a basic fetch if it looks like an ID.
+                // Validate Arweave ID format before fetching
+                const trimmedInput = input.trim();
+                if (trimmedInput.length === 0) {
+                    throw new Error('Please enter an Arweave transaction ID or playlist JSON.');
+                }
+                if (trimmedInput.length < 10) {
+                    throw new Error('Invalid Arweave ID format. Arweave IDs are typically 43 characters long.');
+                }
 
-                logger.info('PlaylistParser', 'Fetching from Arweave', input);
-                const response = await fetch(`https://arweave.net/${input}`);
-                if (!response.ok) throw new Error(`Failed to fetch playlist: ${response.statusText}`);
-                const json = await response.json();
+                logger.info('PlaylistParser', 'Fetching from Arweave', trimmedInput);
+                let response: Response;
+                try {
+                    response = await fetch(`https://arweave.net/${trimmedInput}`);
+                } catch (fetchError) {
+                    // Handle network errors (CORS, offline, etc.)
+                    if (fetchError instanceof TypeError) {
+                        throw new Error('Network error: Unable to connect to Arweave. This could be due to CORS restrictions or network connectivity issues. Please try again or check your connection.');
+                    }
+                    throw fetchError;
+                }
+
+                if (!response.ok) {
+                    // Provide specific error messages based on HTTP status
+                    if (response.status === 404) {
+                        throw new Error(`Playlist not found on Arweave (404). The transaction ID "${trimmedInput}" may not exist or the data hasn\'t been confirmed yet.`);
+                    } else if (response.status === 403) {
+                        throw new Error(`Access denied (403). You may not have permission to access this playlist.`);
+                    } else if (response.status >= 500) {
+                        throw new Error(`Arweave server error (${response.status}). Please try again later.`);
+                    } else {
+                        throw new Error(`Failed to fetch playlist: ${response.statusText} (${response.status})`);
+                    }
+                }
+
+                let json: unknown;
+                try {
+                    json = await response.json();
+                } catch (jsonError) {
+                    throw new Error('The response from Arweave is not valid JSON. This transaction may not contain playlist data.');
+                }
+
                 rawData = json; // Store raw Arweave response
-                playlist = await parser.parse(json);
+                playlist = await parser.parse(json as Parameters<typeof parser.parse>[0]);
             }
 
             logger.info('PlaylistParser', 'Playlist parsed successfully', {
@@ -66,7 +102,9 @@ export const usePlaylistParser = () => {
             return playlist;
         } catch (error) {
             handleError(error, 'PlaylistParser');
-            setError(error instanceof Error ? error.message : 'Failed to parse playlist');
+            // Already have user-friendly messages from above, just use them
+            const errorMessage = error instanceof Error ? error.message : 'Failed to parse playlist. Please check your input and try again.';
+            setError(errorMessage);
             return null;
         } finally {
             setLoading(false);
