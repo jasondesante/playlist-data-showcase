@@ -16,7 +16,7 @@
  * - Responsive size variants
  */
 
-import { forwardRef, type HTMLAttributes, type MouseEvent, useState, useCallback } from 'react';
+import { forwardRef, type HTMLAttributes, type MouseEvent, useState, useCallback, useEffect } from 'react';
 import { cn } from '../../utils/cn';
 import type { PlaylistTrack } from 'playlist-data-engine';
 import { Music, Play } from 'lucide-react';
@@ -97,8 +97,21 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [shouldAnimateSelection, setShouldAnimateSelection] = useState(false);
 
     const styles = sizeStyles[size];
+
+    // Trigger selection animation when isSelected changes to true
+    useEffect(() => {
+      if (isSelected) {
+        setShouldAnimateSelection(true);
+        // Reset animation flag after animation completes
+        const timer = setTimeout(() => {
+          setShouldAnimateSelection(false);
+        }, 600); // Match --duration-slower
+        return () => clearTimeout(timer);
+      }
+    }, [isSelected]);
 
     const handleImageLoad = useCallback(() => {
       setImageLoaded(true);
@@ -131,9 +144,11 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
           // Selection states
           isSelected
             ? [
-                'bg-primary/20 border-2 border-primary shadow-lg shadow-primary/20 selection-ring',
+                'bg-primary/20 border-2 border-primary shadow-lg shadow-primary/20',
                 // Left accent bar for selected state
                 'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:bottom-4 before:w-1 before:bg-primary before:rounded-r-full',
+                // Selection ring animation (only when actively animating)
+                shouldAnimateSelection && 'selection-ring',
               ]
             : 'bg-card border-border hover:bg-surface-3 hover:shadow-md hover:border-primary/50',
           // Hover scale effect (1.02 per UI improvement plan spec)
