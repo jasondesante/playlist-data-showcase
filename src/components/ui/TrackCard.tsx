@@ -136,8 +136,8 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
                 'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:bottom-4 before:w-1 before:bg-primary before:rounded-r-full',
               ]
             : 'bg-card border-border hover:bg-surface-3 hover:shadow-md hover:border-primary/50',
-          // Hover scale effect
-          'hover:scale-[1.01] active:scale-[0.99]',
+          // Hover scale effect (1.02 per UI improvement plan spec)
+          'hover:scale-[1.02] active:scale-[0.99]',
           // Spring animation on mount
           'spring-in',
           styles.container,

@@ -563,7 +563,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 - [x] Album art displays correctly (with and without image_url)
 - [x] Fallback gradient + icon shows when no artwork
 - [x] Track numbers display in sequence
-- [ ] Hover effect scales card slightly (1.02)
+- [x] Hover effect scales card slightly (1.02)
 - [ ] Selection state shows 2px primary border with left accent bar
 - [ ] Selection ring animates on select
 - [ ] Play button overlay appears on hover

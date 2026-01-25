@@ -9,7 +9,7 @@ Make sure the css looks nice. YOUR JOB IS TO MAKE THE CSS LOOK BETTER.
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
-When you're done, say "done". When there's nothing left for you to do in the COMPLETION_PLAN.md then say "ITS TIME TO EAT"
+When you're done, say "done". When there's nothing left for you to do in the UI_IMPROVEMENT_PLAN.md then say "ITS TIME TO EAT"
 
 
 IMPORTANT:
