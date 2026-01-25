@@ -532,11 +532,15 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Added track-card-playing CSS class with teal accent and pulsing indicator
    - Playing state shows pulsing dot next to track number and teal title color
 
-- [] - Bug - In the character gen tab, the weapons and armor are showing on the screen as:
-Weapons [object Object], [object Object], [object Object]
-Armor [object Object], [object Object]
-Need to fix that.
-     
+- [x] - Bug - In the character gen tab, the weapons and armor are showing on the screen as:
+   - ~~Weapons [object Object], [object Object], [object Object]~~
+   - ~~Armor [object Object], [object Object]~~
+   - Completed: Fixed CharacterGenTab to map equipment items to their names
+   - Added quantity display (×N) for items with quantity > 1
+   - Added equipped indicator (✓) for equipped items
+   - Added CSS for character-equipment-item, -quantity, -equipped classes
+   - Used IIFE to avoid TypeScript narrowing issues with optional equipment
+
 ### Sprint 4-13: Remaining Tabs
 ~~8. Audio Analysis Tab~~
    - Completed: Redesigned AudioAnalysisTab with Card, Button components
