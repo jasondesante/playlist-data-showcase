@@ -577,7 +577,7 @@ Note that you were building this with retarded tailwind which I fucking hate so 
 - [x] Selection ring animates on select
 - [x] Play button overlay appears on hover
 - [x] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED.
-- [ ] ATTEMPT 2: Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED. I can literally see that the playlist image doesn't even have a class assigned to it yet....
+- [x] ATTEMPT 2: Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED. I can literally see that the playlist image doesn't even have a class assigned to it yet....
 - [ ] Make Playlist track images a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages

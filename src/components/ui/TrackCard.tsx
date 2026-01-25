@@ -186,8 +186,10 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         {/* Album art */}
         <div
           className={cn(
-            'relative flex-shrink-0 rounded-md overflow-hidden bg-muted',
-            styles.image
+            'track-card-art',
+            size === 'compact' && 'size-compact',
+            size === 'default' && 'size-default',
+            size === 'large' && 'size-large'
           )}
         >
           {isLoading && !imageLoaded ? (
@@ -198,18 +200,15 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
               <img
                 src={track.image_url}
                 alt={`${track.title} album art`}
-                className={cn(
-                  'w-full h-full object-cover transition-transform duration-[var(--duration-slow)]',
-                  isHovered && 'scale-105'
-                )}
+                className="album-art-image"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
               />
             </>
           ) : (
             /* Fallback: gradient background with music icon */
-            <div className="w-full h-full bg-gradient-to-br from-primary/25 to-accent flex items-center justify-center">
-              <Music className="w-2/5 h-2/5 text-primary/40" />
+            <div className="album-art-fallback">
+              <Music className="music-icon" />
             </div>
           )}
 

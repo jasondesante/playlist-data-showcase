@@ -171,14 +171,14 @@ export function PlaylistLoaderTab() {
           {/* Spotify-style Playlist Header - Refined with smaller, balanced image */}
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-primary/8 via-surface-2 to-accent/8 border border-border/40 p-2.5 md:p-3 transition-all duration-300 hover:shadow-md hover:shadow-primary/5">
             <div className="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center">
-              {/* Refined Album Art - Smaller for better proportions */}
-              <div className="flex-shrink-0 group mx-auto sm:mx-0">
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/10 group-hover:scale-[1.02]">
+              {/* Refined Album Art - Using pure CSS classes instead of tailwind */}
+              <div className="playlist-header-art group">
+                <div className="album-art-wrapper">
                   {currentPlaylist.image ? (
                     <img
                       src={currentPlaylist.image}
                       alt={currentPlaylist.name}
-                      className="w-full h-full object-cover"
+                      className="album-art-image"
                       onError={(e) => {
                         // Fallback to gradient on error
                         const target = e.target as HTMLImageElement;
@@ -186,8 +186,8 @@ export function PlaylistLoaderTab() {
                         const parent = target.parentElement;
                         if (parent) {
                           parent.innerHTML = `
-                            <div class="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
-                              <svg class="w-5 h-5 text-primary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="album-art-fallback">
+                              <svg style="width: 20px; height: 20px; color: hsl(var(--primary) / 0.6);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                               </svg>
                             </div>
@@ -196,8 +196,8 @@ export function PlaylistLoaderTab() {
                       }}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center">
-                      <Music className="w-5 h-5 text-primary/60" />
+                    <div className="album-art-fallback">
+                      <Music style={{ width: '20px', height: '20px', color: 'hsl(var(--primary) / 0.6)' }} />
                     </div>
                   )}
                 </div>
