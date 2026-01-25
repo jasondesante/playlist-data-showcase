@@ -1,10 +1,13 @@
 import { useState, useRef } from 'react';
+import { User, Sparkles, Download, Upload, RefreshCw, Wand2 } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
 import type { CharacterSheet } from 'playlist-data-engine';
 import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
+import { Button } from '../ui/Button';
+import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 
 /**
  * CharacterGenTab Component
@@ -229,43 +232,81 @@ export function CharacterGenTab() {
     return null;
   };
 
+  // Get character avatar emoji based on class
+  const getCharacterAvatar = (charClass: string) => {
+    const classEmojis: Record<string, string> = {
+      'Fighter': '⚔️',
+      'Wizard': '🧙',
+      'Rogue': '🗡️',
+      'Cleric': '✨',
+      'Ranger': '🏹',
+      'Barbarian': '🪓',
+      'Bard': '🎸',
+      'Druid': '🌿',
+      'Monk': '👊',
+      'Paladin': '🛡️',
+      'Sorcerer': '🔥',
+      'Warlock': '👁️',
+    };
+    return classEmojis[charClass] || '👤';
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Character Generator</h2>
-        <div className="flex gap-2">
+    <div className="character-gen-container">
+      {/* Header with Status Indicator */}
+      <div className="character-gen-header">
+        <div className="character-gen-header-content">
+          <div className="character-gen-header-title-row">
+            <div className="character-gen-header-icon-wrapper">
+              <User className="character-gen-header-icon" />
+            </div>
+            <h2 className="character-gen-header-title">Character Generator</h2>
+          </div>
+          <p className="character-gen-header-subtitle">Generate D&D characters from audio profiles</p>
+        </div>
+        <div className="character-gen-actions">
           {character && (
-            <button
+            <Button
               onClick={handleVerifyDeterminism}
               disabled={isGenerating || !audioProfile}
-              className="px-4 py-2 bg-accent text-accent-foreground border border-border rounded-md hover:opacity-90 disabled:opacity-50"
+              isLoading={isGenerating}
+              leftIcon={RefreshCw}
+              variant="secondary"
+              size="sm"
             >
-              {isGenerating ? 'Regenerating...' : 'Regenerate with Same Seed'}
-            </button>
+              Regenerate
+            </Button>
           )}
-          <button
+          <Button
             onClick={handleGenerate}
             disabled={isGenerating || !audioProfile}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+            isLoading={isGenerating}
+            leftIcon={Wand2}
+            variant="primary"
+            size="sm"
           >
-            {isGenerating ? 'Generating...' : character ? 'Generate New Character' : 'Generate Character'}
-          </button>
+            {character ? 'Generate New' : 'Generate'}
+          </Button>
           {character && (
             <>
-              <button
+              <Button
                 onClick={handleExportCharacter}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                leftIcon={Download}
+                variant="outline"
+                size="sm"
                 title="Download character as JSON file"
               >
-                Export Character
-              </button>
-              <button
+                Export
+              </Button>
+              <Button
                 onClick={triggerFileInput}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                leftIcon={Upload}
+                variant="outline"
+                size="sm"
                 title="Import character from JSON file"
               >
-                Import Character
-              </button>
+                Import
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -280,49 +321,70 @@ export function CharacterGenTab() {
 
       {/* Import Status Messages */}
       {importError && (
-        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-md">
-          <p className="text-sm font-medium text-red-400">Import Error</p>
-          <p className="text-sm text-red-300 mt-1">{importError}</p>
+        <div className="character-status-message error fade-in">
+          <p className="character-status-title error">Import Error</p>
+          <p className="character-status-text">{importError}</p>
         </div>
       )}
       {importSuccess && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-md">
-          <p className="text-sm font-medium text-green-400">Success!</p>
-          <p className="text-sm text-green-300 mt-1">Character imported successfully. Check the Character Leveling tab to view all stored characters.</p>
+        <div className="character-status-message success fade-in">
+          <p className="character-status-title success">Success!</p>
+          <p className="character-status-text">Character imported successfully. Check the Character Leveling tab to view all stored characters.</p>
         </div>
       )}
 
-      {/* Show helpful messages when prerequisites aren't met */}
-      {!selectedTrack && (
-        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
+      {/* Empty State - No prerequisites met */}
+      {!selectedTrack && !audioProfile && !character && (
+        <Card variant="flat" padding="md">
+          <div className="character-gen-empty-state">
+            <div className="character-gen-empty-icon-wrapper">
+              <span className="character-gen-empty-icon" role="img" aria-label="Character">👤</span>
+            </div>
+            <h4 className="character-gen-empty-title">No Track Selected</h4>
+            <p className="character-gen-empty-description">
+              Select a track from the Playlist tab and analyze its audio to generate a unique character based on the audio profile.
+            </p>
+          </div>
+        </Card>
       )}
-      {selectedTrack && !audioProfile && (
-        <p className="text-muted-foreground">Analyze the audio in the Audio Analysis tab first</p>
-      )}
-      {selectedTrack && audioProfile && (
-        <div className="p-3 bg-accent/50 rounded-md border border-border">
-          <p className="text-sm">
-            <span className="font-medium">Ready to generate:</span> Using audio profile from{' '}
-            <span className="font-medium">{selectedTrack.title}</span> by {selectedTrack.artist}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Seed: {selectedTrack.id} (deterministic - same track always generates same character)
-          </p>
-        </div>
+
+      {/* Ready State - Ready to generate */}
+      {selectedTrack && audioProfile && !character && (
+        <Card variant="flat" padding="sm" className="character-ready-card fade-in">
+          <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Ready to generate</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Using audio profile from <span className="font-medium text-foreground">{selectedTrack.title}</span> by {selectedTrack.artist}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Seed: {selectedTrack.id} (deterministic - same track always generates same character)
+              </p>
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Determinism Verification Result */}
       {determinismResult.isMatch !== null && (
-        <div className={`p-4 rounded-md border ${
-          determinismResult.isMatch
-            ? 'bg-green-500/10 border-green-500/30'
-            : 'bg-red-500/10 border-red-500/30'
-        }`}>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">
+        <Card
+          variant={determinismResult.isMatch ? 'flat' : 'outlined'}
+          padding="sm"
+          className={determinismResult.isMatch ? 'border-cute-teal/30' : 'border-destructive/30'}
+          style={{
+            backgroundColor: determinismResult.isMatch
+              ? 'hsl(var(--cute-teal) / 0.1)'
+              : 'hsl(var(--destructive) / 0.1)'
+          }}
+        >
+          <div className="character-determinism-result">
+            <span className={`character-determinism-icon ${determinismResult.isMatch ? 'match' : 'mismatch'}`}>
               {determinismResult.isMatch ? '✓' : '✗'}
             </span>
-            <div>
+            <div className="flex-1">
               <p className="font-bold">
                 {determinismResult.isMatch ? 'Deterministic match!' : 'Mismatch!'}
               </p>
@@ -331,289 +393,285 @@ export function CharacterGenTab() {
                   ? `The character was regenerated identically with the same seed (${selectedTrack?.id}).`
                   : 'The regenerated character differs from the original (this should not happen).'}
               </p>
+              {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
+                <div className="mt-3 p-3 bg-background/50 rounded">
+                  <p className="text-sm font-medium mb-2">Difference detected:</p>
+                  {(() => {
+                    const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
+                    return diffPath ? (
+                      <code className="text-xs bg-background px-2 py-1 rounded">
+                        {diffPath.join(' → ')}
+                      </code>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Deep comparison shows differences</p>
+                    );
+                  })()}
+                  <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <p className="font-medium text-muted-foreground mb-1">Original:</p>
+                      <p className="font-mono">{determinismResult.original.name}</p>
+                      <p className="text-muted-foreground">
+                        {determinismResult.original.race} {determinismResult.original.class}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-muted-foreground mb-1">Regenerated:</p>
+                      <p className="font-mono">{determinismResult.regenerated.name}</p>
+                      <p className="text-muted-foreground">
+                        {determinismResult.regenerated.race} {determinismResult.regenerated.class}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
-            <div className="mt-4 p-3 bg-background/50 rounded">
-              <p className="text-sm font-medium mb-2">Difference detected:</p>
-              {(() => {
-                const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
-                return diffPath ? (
-                  <code className="text-xs bg-background px-2 py-1 rounded">
-                    {diffPath.join(' → ')}
-                  </code>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Deep comparison shows differences</p>
-                );
-              })()}
-
-              <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <p className="font-medium text-muted-foreground mb-1">Original:</p>
-                  <p className="font-mono">{determinismResult.original.name}</p>
-                  <p className="text-muted-foreground">
-                    {determinismResult.original.race} {determinismResult.original.class}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium text-muted-foreground mb-1">Regenerated:</p>
-                  <p className="font-mono">{determinismResult.regenerated.name}</p>
-                  <p className="text-muted-foreground">
-                    {determinismResult.regenerated.race} {determinismResult.regenerated.class}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        </Card>
       )}
 
       {character && (
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="p-4 md:p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
-            <h3 className="text-xl md:text-2xl font-bold">{character.name}</h3>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Level {character.level} {character.race} {character.class}
-            </p>
-            <div className="mt-2 text-sm text-muted-foreground">
-              XP: {character.xp.current} / {character.xp.next_level}
-            </div>
-          </div>
+        <div className="character-sheet fade-in-up">
+          {/* Character Header with Avatar and Level Badge */}
+          <Card variant="default" padding="md" className="character-header-card">
+            <div className="character-header-content">
+              {/* Character Avatar */}
+              <div className="character-avatar">
+                <span role="img" aria-label="Character class">
+                  {getCharacterAvatar(character.class)}
+                </span>
+                {/* Level Badge */}
+                <div className="character-level-badge">
+                  {character.level}
+                </div>
+              </div>
 
-          {/* Core Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-xs md:text-sm text-muted-foreground">HP</p>
-              <p className="text-xl md:text-2xl font-bold">{character.hp.max}</p>
+              {/* Character Info */}
+              <div className="character-info">
+                <h3 className="character-name">{character.name}</h3>
+                <p className="character-class">
+                  Level {character.level} {character.race} {character.class}
+                </p>
+                <p className="character-xp">
+                  XP: {character.xp.current} / {character.xp.next_level}
+                </p>
+              </div>
             </div>
-            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-xs md:text-sm text-muted-foreground">AC</p>
-              <p className="text-xl md:text-2xl font-bold">{character.armor_class}</p>
-            </div>
-            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-xs md:text-sm text-muted-foreground">Initiative</p>
-              <p className="text-xl md:text-2xl font-bold">+{character.initiative}</p>
-            </div>
-            <div className="p-3 md:p-4 bg-card border border-border rounded-md text-center">
-              <p className="text-xs md:text-sm text-muted-foreground">Speed</p>
-              <p className="text-xl md:text-2xl font-bold">{character.speed} ft</p>
-            </div>
+          </Card>
+
+          {/* Core Stats Grid */}
+          <div className="character-stats-grid">
+            <Card variant="elevated" padding="sm" className="character-stat-card">
+              <p className="character-stat-label">HP</p>
+              <p className="character-stat-value character-count-up">{character.hp.max}</p>
+            </Card>
+            <Card variant="elevated" padding="sm" className="character-stat-card">
+              <p className="character-stat-label">AC</p>
+              <p className="character-stat-value character-count-up">{character.armor_class}</p>
+            </Card>
+            <Card variant="elevated" padding="sm" className="character-stat-card">
+              <p className="character-stat-label">Initiative</p>
+              <p className="character-stat-value character-count-up">+{character.initiative}</p>
+            </Card>
+            <Card variant="elevated" padding="sm" className="character-stat-card">
+              <p className="character-stat-label">Speed</p>
+              <p className="character-stat-value character-count-up">{character.speed} ft</p>
+            </Card>
           </div>
 
           {/* Audio Trait Mapping */}
           {audioProfile && (
-            <div>
-              <h4 className="font-bold mb-3">Audio Trait Mapping</h4>
-              <p className="text-sm text-muted-foreground mb-3">
-                How the audio characteristics influenced this character's ability scores
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs md:text-sm">
+            <Card variant="default" padding="md">
+              <CardHeader>
+                <CardTitle>Audio Trait Mapping</CardTitle>
+                <CardDescription>
+                  How the audio characteristics influenced this character's ability scores
+                </CardDescription>
+              </CardHeader>
+              <div className="overflow-x-auto -mx-2 px-2">
+                <table className="character-audio-mapping-table">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left p-1 md:p-2 font-medium">Audio Trait</th>
-                      <th className="text-left p-1 md:p-2 font-medium">Value</th>
-                      <th className="text-left p-1 md:p-2 font-medium">Maps To</th>
-                      <th className="text-center p-1 md:p-2 font-medium">Score</th>
+                    <tr>
+                      <th>Audio Trait</th>
+                      <th>Value</th>
+                      <th>Maps To</th>
+                      <th className="character-audio-score">Score</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-blue-500" />
-                          <span className="text-xs md:text-sm">Bass Dominance</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--cute-pink))' }} />
+                          <span className="character-audio-trait-name">Bass Dominance</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.bass_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
-                          STR (Strength)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.STR}</td>
+                      <td className="character-audio-value">{(audioProfile.bass_dominance * 100).toFixed(1)}%</td>
+                      <td><span className="character-audio-badge str">STR</span></td>
+                      <td className="character-audio-score">{character.ability_scores.STR}</td>
                     </tr>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-orange-500" />
-                          <span className="text-xs md:text-sm">Treble Dominance</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--cute-teal))' }} />
+                          <span className="character-audio-trait-name">Treble Dominance</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.treble_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
-                          DEX (Dexterity)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.DEX}</td>
+                      <td className="character-audio-value">{(audioProfile.treble_dominance * 100).toFixed(1)}%</td>
+                      <td><span className="character-audio-badge dex">DEX</span></td>
+                      <td className="character-audio-score">{character.ability_scores.DEX}</td>
                     </tr>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-purple-500" />
-                          <span className="text-xs md:text-sm">Average Amplitude</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--cute-yellow))' }} />
+                          <span className="character-audio-trait-name">Average Amplitude</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.average_amplitude * 100).toFixed(1)}%</td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-medium">
-                          CON (Constitution)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.CON}</td>
+                      <td className="character-audio-value">{(audioProfile.average_amplitude * 100).toFixed(1)}%</td>
+                      <td><span className="character-audio-badge con">CON</span></td>
+                      <td className="character-audio-score">{character.ability_scores.CON}</td>
                     </tr>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-green-500" />
-                          <span className="text-xs md:text-sm">Mid Dominance</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--primary))' }} />
+                          <span className="character-audio-trait-name">Mid Dominance</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">{(audioProfile.mid_dominance * 100).toFixed(1)}%</td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
-                          INT (Intelligence)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.INT}</td>
+                      <td className="character-audio-value">{(audioProfile.mid_dominance * 100).toFixed(1)}%</td>
+                      <td><span className="character-audio-badge int">INT</span></td>
+                      <td className="character-audio-score">{character.ability_scores.INT}</td>
                     </tr>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-gray-500" />
-                          <span className="text-xs md:text-sm">Balance</span>
-                          <span className="text-xs text-muted-foreground hidden md:inline">(Bass ÷ Treble)</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--cute-purple))' }} />
+                          <span className="character-audio-trait-name">Balance</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">
+                      <td className="character-audio-value">
                         {audioProfile.treble_dominance > 0
                           ? (audioProfile.bass_dominance / audioProfile.treble_dominance).toFixed(2)
                           : 'N/A'}
                       </td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
-                          WIS (Wisdom)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.WIS}</td>
+                      <td><span className="character-audio-badge wis">WIS</span></td>
+                      <td className="character-audio-score">{character.ability_scores.WIS}</td>
                     </tr>
-                    <tr className="border-b border-border/50">
-                      <td className="p-1 md:p-2">
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <span className="w-2 md:w-3 h-2 md:h-3 rounded-full bg-pink-500" />
-                          <span className="text-xs md:text-sm">Mid + Amp</span>
-                          <span className="text-xs text-muted-foreground hidden md:inline">(Combined)</span>
+                    <tr className="character-audio-trait-row">
+                      <td>
+                        <div className="character-audio-trait-cell">
+                          <span className="character-audio-trait-dot" style={{ backgroundColor: 'hsl(var(--cute-orange))' }} />
+                          <span className="character-audio-trait-name">Mid + Amp</span>
                         </div>
                       </td>
-                      <td className="p-1 md:p-2 font-mono text-xs">
+                      <td className="character-audio-value">
                         {((audioProfile.mid_dominance + audioProfile.average_amplitude) / 2 * 100).toFixed(1)}%
                       </td>
-                      <td className="p-1 md:p-2">
-                        <span className="px-1 md:px-2 py-1 bg-pink-500/20 text-pink-400 rounded text-xs font-medium">
-                          CHA (Charisma)
-                        </span>
-                      </td>
-                      <td className="p-1 md:p-2 text-center font-bold">{character.ability_scores.CHA}</td>
+                      <td><span className="character-audio-badge cha">CHA</span></td>
+                      <td className="character-audio-score">{character.ability_scores.CHA}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-3">
                 Higher values in each audio trait contribute to higher ability scores. The combination of traits creates unique character builds based on the audio profile.
               </p>
-            </div>
+            </Card>
           )}
 
           {/* Ability Scores */}
-          <div>
-            <h4 className="font-bold mb-3">Ability Scores</h4>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
+          <Card variant="default" padding="md">
+            <h4 className="card-title">Ability Scores</h4>
+            <div className="character-abilities-grid">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
-                <div key={ability} className="p-2 md:p-3 bg-card border border-border rounded-md text-center">
-                  <p className="text-xs text-muted-foreground font-medium">{ability}</p>
-                  <p className="text-lg md:text-xl font-bold">{character.ability_scores[ability]}</p>
-                  <p className="text-xs md:text-sm text-primary">
+                <div key={ability} className="character-ability-card">
+                  <p className="character-ability-label">{ability}</p>
+                  <p className="character-ability-score character-count-up">{character.ability_scores[ability]}</p>
+                  <p className="character-ability-modifier">
                     {character.ability_modifiers[ability] >= 0 ? '+' : ''}
                     {character.ability_modifiers[ability]}
                   </p>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* Skills */}
-          <div>
-            <h4 className="font-bold mb-3">Skills</h4>
-            <div className="grid grid-cols-2 gap-1 md:gap-2">
+          {/* Skills Grid */}
+          <Card variant="default" padding="md">
+            <h4 className="card-title">Skills</h4>
+            <div className="character-skills-grid">
               {Object.entries(character.skills).map(([skill, prof]) => (
-                <div key={skill} className="flex items-center justify-between p-1 md:p-2 bg-card border border-border rounded text-xs md:text-sm">
-                  <span className="capitalize truncate">{skill.replace(/_/g, ' ')}</span>
-                  <span className={prof !== 'none' ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                <div key={skill} className="character-skill-item" title={
+                  prof === 'expertise' ? 'Expertise (double proficiency)' :
+                  prof === 'proficient' ? 'Proficient' : 'Not proficient'
+                }>
+                  <span className="character-skill-name">{skill.replace(/_/g, ' ')}</span>
+                  <span className={`character-skill-proficiency ${prof}`}>
                     {prof === 'expertise' ? '★★' : prof === 'proficient' ? '★' : '○'}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
           {/* Equipment */}
-          {character.equipment && (
-            <div>
-              <h4 className="font-bold mb-3">Equipment</h4>
-              <div className="space-y-2">
+          {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (
+            <Card variant="default" padding="md">
+              <h4 className="card-title">Equipment</h4>
+              <div className="character-equipment-section">
                 {character.equipment.weapons.length > 0 && (
-                  <div className="p-3 bg-card border border-border rounded">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Weapons</p>
-                    <p className="text-sm">{character.equipment.weapons.join(', ')}</p>
-                  </div>
+                  <Card variant="flat" padding="sm" className="character-equipment-card">
+                    <p className="character-equipment-label">Weapons</p>
+                    <p className="character-equipment-items">{character.equipment.weapons.join(', ')}</p>
+                  </Card>
                 )}
                 {character.equipment.armor.length > 0 && (
-                  <div className="p-3 bg-card border border-border rounded">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Armor</p>
-                    <p className="text-sm">{character.equipment.armor.join(', ')}</p>
-                  </div>
+                  <Card variant="flat" padding="sm" className="character-equipment-card">
+                    <p className="character-equipment-label">Armor</p>
+                    <p className="character-equipment-items">{character.equipment.armor.join(', ')}</p>
+                  </Card>
                 )}
               </div>
-            </div>
+            </Card>
           )}
 
           {/* Spells */}
-          {character.spells && (
-            <div>
-              <h4 className="font-bold mb-3">Spells</h4>
-              <div className="space-y-2">
+          {character.spells && (character.spells.cantrips.length > 0 || character.spells.known_spells.length > 0) && (
+            <Card variant="default" padding="md">
+              <h4 className="card-title">Spells</h4>
+              <div className="character-equipment-section">
                 {character.spells.cantrips.length > 0 && (
-                  <div className="p-3 bg-card border border-border rounded">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Cantrips</p>
-                    <p className="text-sm">{character.spells.cantrips.join(', ')}</p>
-                  </div>
+                  <Card variant="flat" padding="sm" className="character-equipment-card">
+                    <p className="character-equipment-label">Cantrips</p>
+                    <p className="character-equipment-items">{character.spells.cantrips.join(', ')}</p>
+                  </Card>
                 )}
                 {character.spells.known_spells.length > 0 && (
-                  <div className="p-3 bg-card border border-border rounded">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Known Spells</p>
-                    <p className="text-sm">{character.spells.known_spells.join(', ')}</p>
-                  </div>
+                  <Card variant="flat" padding="sm" className="character-equipment-card">
+                    <p className="character-equipment-label">Known Spells</p>
+                    <p className="character-equipment-items">{character.spells.known_spells.join(', ')}</p>
+                  </Card>
                 )}
               </div>
-            </div>
+            </Card>
           )}
 
           {/* Raw JSON Dump - Character Sheet */}
-          <div>
-            <h4 className="font-bold mb-3">Raw Character Data</h4>
-            <p className="text-sm text-muted-foreground mb-3">
-              Complete character sheet data from the playlist-data-engine CharacterGenerator module
-            </p>
+          <Card variant="default" padding="md">
+            <CardHeader>
+              <CardTitle>Raw Character Data</CardTitle>
+              <CardDescription>
+                Complete character sheet data from the playlist-data-engine CharacterGenerator module
+              </CardDescription>
+            </CardHeader>
             <RawJsonDump
               data={character}
               title={`Character Sheet: ${character.name}`}
               timestamp={new Date()}
               status="healthy"
+              defaultOpen={false}
             />
-          </div>
+          </Card>
         </div>
       )}
     </div>
