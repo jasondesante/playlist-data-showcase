@@ -526,11 +526,15 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ~~- currently the tracks in the playlist tab all have 2 play buttons that show up when you hover the track yet clicking on them doesn't make the song start playing. There should only be 1 play button, not 2, and clicking should actually trigger playback.~~
 ~~-the audio playback in the session tab also doesn't play the audio. the audio needs to be able to be played.~~
+~~-The playlist tracks in the playlist tab, they aren't showing the name of the song, they only are showing the artist name, but the other info for each song isn't showing.~~
+   - Completed: Added fallback text for missing title/artist in TrackCard component
+   - Added title attributes for tooltips on hover
+   - Added genre display when album is not available
+   - Enhanced CSS for genre metadata with italic styling
 
--The playlist tracks in the playlist tab, they aren't showing the name of the song, they only are showing the artist name, but the other info for each song isn't showing. 
 -You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
 
--In the character gen tab, the weapons and armor are showing on the screen as: 
+-In the character gen tab, the weapons and armor are showing on the screen as:
 Weapons [object Object], [object Object], [object Object]
 Armor [object Object], [object Object]
 Need to fix that.

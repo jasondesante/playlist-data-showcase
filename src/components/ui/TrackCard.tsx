@@ -197,27 +197,34 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
 
         {/* Track info */}
         <div className="track-info">
-          {/* Title */}
-          <p className={cn('track-title', styles.title, isSelected && 'track-title-selected')}>
-            {track.title}
+          {/* Title - with fallback for missing title */}
+          <p className={cn('track-title', styles.title, isSelected && 'track-title-selected')} title={track.title || 'Unknown Title'}>
+            {track.title || 'Unknown Title'}
           </p>
 
-          {/* Artist */}
-          <p className={cn('track-meta', styles.meta)}>
-            {track.artist}
+          {/* Artist - with fallback for missing artist */}
+          <p className={cn('track-meta', styles.meta)} title={track.artist || 'Unknown Artist'}>
+            {track.artist || 'Unknown Artist'}
           </p>
 
           {/* Album (if available) */}
           {track.album && size !== 'compact' && (
-            <p className={cn('track-meta track-meta-album', styles.meta)}>
+            <p className={cn('track-meta track-meta-album', styles.meta)} title={track.album}>
               {track.album}
             </p>
           )}
 
-          {/* Duration */}
+          {/* Duration - format and display */}
           {track.duration > 0 && (
-            <p className={cn('track-meta track-meta-duration', styles.meta)}>
+            <p className={cn('track-meta track-meta-duration', styles.meta)} title={`${track.duration} seconds`}>
               {formatDuration(track.duration)}
+            </p>
+          )}
+
+          {/* Genre (if available and no album) - additional metadata for context */}
+          {!track.album && track.genre && size !== 'compact' && (
+            <p className={cn('track-meta track-meta-genre', styles.meta)} title={track.genre}>
+              {track.genre}
             </p>
           )}
         </div>

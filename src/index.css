@@ -1234,6 +1234,11 @@
     color: hsl(var(--muted-foreground) / 0.8);
   }
 
+  .track-meta-genre {
+    color: hsl(var(--cute-purple) / 0.8);
+    font-style: italic;
+  }
+
   .track-meta-duration {
     font-variant-numeric: tabular-nums;
     color: hsl(var(--muted-foreground) / 0.7);
