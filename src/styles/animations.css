@@ -1,0 +1,377 @@
+/* ============================================
+   ANIMATIONS CSS
+   Keyframe animations and animation utility classes
+   ============================================ */
+
+/* ========================================
+   FADE ANIMATIONS
+   ======================================== */
+
+/* Smooth appear animation */
+.appear {
+  animation: appear var(--duration-slow) var(--ease-out-quart);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in */
+.fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out-cubic);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fade in up */
+.fade-in-up {
+  animation: fadeInUp var(--duration-slow) var(--ease-out-quart);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   SPRING/BOUNCE ANIMATIONS
+   ======================================== */
+
+/* Spring animations for selection */
+.spring-in {
+  animation: springIn var(--duration-slow) var(--ease-spring);
+}
+
+@keyframes springIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Level up pulse (spring-based) */
+.level-up-pulse {
+  animation: levelUpPulse 0.6s var(--ease-spring);
+}
+
+@keyframes levelUpPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Leveling pulse (slight scale) */
+.leveling-pulse {
+  animation: levelingPulse 0.6s var(--ease-spring);
+}
+
+@keyframes levelingPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* ========================================
+   PULSE ANIMATIONS
+   ======================================== */
+
+/* Pulse animation for attention */
+.pulse-subtle {
+  animation: pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Pulse animation (standard) */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Pulse with scale */
+.pulse-scale {
+  animation: pulseScale 2s infinite;
+}
+
+@keyframes pulseScale {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+/* Playing pulse (with translateY) */
+.playing-pulse {
+  animation: playingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes playingPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+/* Timer pulse */
+.timer-pulse {
+  animation: timerPulse 2s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px hsl(var(--primary) / 0.6));
+  }
+}
+
+/* Session card pulse */
+.session-card-pulse {
+  animation: sessionCardPulse 2s ease-in-out infinite;
+}
+
+@keyframes sessionCardPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1),
+                0 10px 25px -5px hsl(var(--primary) / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15),
+                0 10px 30px -5px hsl(var(--primary) / 0.25);
+  }
+}
+
+/* Sensor pulse */
+.sensor-pulse {
+  animation: sensorPulse 2s var(--ease-out-cubic) infinite;
+}
+
+@keyframes sensorPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* ========================================
+   SPIN/ROTATION ANIMATIONS
+   ======================================== */
+
+/* Spin animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Settings spin (faster) */
+.settings-spin {
+  animation: settingsSpin 0.75s linear infinite;
+}
+
+@keyframes settingsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   SHIMMER ANIMATIONS
+   ======================================== */
+
+/* Shimmer effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--surface-3)) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Progress shimmer */
+.progress-shimmer {
+  animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ========================================
+   RING/GLOW ANIMATIONS
+   ======================================== */
+
+/* Selection ring animation */
+.selection-ring {
+  animation: selectionRing var(--duration-slow) var(--ease-out-quart);
+}
+
+@keyframes selectionRing {
+  0% {
+    box-shadow: 0 0 0 0px hsl(var(--primary) / 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0);
+  }
+}
+
+/* ========================================
+   COUNT/SCALE ANIMATIONS
+   ======================================== */
+
+/* Count up animation */
+.count-up {
+  animation: countUp var(--duration-normal) var(--ease-out-cubic);
+}
+
+@keyframes countUp {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   CONFETTI ANIMATIONS
+   ======================================== */
+
+/* Confetti fall */
+.confetti-fall {
+  animation: confettiFall 3s var(--ease-out-cubic) forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Leveling confetti fall */
+.leveling-confetti-fall {
+  animation: levelingConfettiFall 3s var(--ease-out-cubic) forwards;
+}
+
+@keyframes levelingConfettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ========================================
+   HARDWARE ACCELERATED ANIMATIONS
+   ======================================== */
+
+/* Hardware accelerated animation */
+.hw-animate {
+  animation: hwAccelerated var(--duration-normal) var(--ease-out-cubic);
+  will-change: transform;
+}
+
+@keyframes hwAccelerated {
+  0% { transform: translateZ(0) scale(1); }
+  100% { transform: translateZ(0) scale(1.05); }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Staggered children animations */
+.stagger-children > * {
+  animation-delay: calc(var(--stagger-delay, 0ms) + var(--child-index, 0) * 50ms);
+}
+
+/* GPU acceleration for smooth animations */
+.gpu-accel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Hardware acceleration for 3D transforms */
+.hw-accel-3d {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

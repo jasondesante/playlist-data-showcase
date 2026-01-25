@@ -1150,20 +1150,20 @@ import './PlaylistLoaderTab.css';
 ### Phase 2: Shared CSS Files
 
 **Task 5: Create Effects CSS**
-- [ ] Create `src/styles/effects.css`
-- [ ] Copy all shimmer effects from index.css
-- [ ] Copy all ripple effects from index.css
-- [ ] Copy all glow effects from index.css
-- [ ] Copy all glass effects from index.css
-- [ ] Copy all gradient text effects from index.css
-- [ ] Test: No visual changes, stylelint passes
+- [x] Create `src/styles/effects.css`
+- [x] Copy all shimmer effects from index.css
+- [x] Copy all ripple effects from index.css
+- [x] Copy all glow effects from index.css
+- [x] Copy all glass effects from index.css
+- [x] Copy all gradient text effects from index.css
+- [x] Test: No visual changes, stylelint passes
 
 **Task 6: Create Animations CSS**
-- [ ] Create `src/styles/animations.css`
-- [ ] Copy all @keyframes animations from index.css
-- [ ] Copy all animation utility classes from index.css
-- [ ] Remove duplicate @keyframes if any
-- [ ] Test: No visual changes, stylelint passes
+- [x] Create `src/styles/animations.css`
+- [x] Copy all @keyframes animations from index.css
+- [x] Copy all animation utility classes from index.css
+- [x] Remove duplicate @keyframes if any
+- [x] Test: No visual changes, stylelint passes
 
 **Task 7: Extract Button Component**
 - [ ] Create `src/styles/components/` directory if needed
