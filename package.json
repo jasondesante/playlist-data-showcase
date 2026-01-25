@@ -15,7 +15,7 @@
     "howler": "^2.2.4",
     "localforage": "^1.10.0",
     "lucide-react": "^0.468.0",
-    "playlist-data-engine": "file:/playlist-data-engine",
+    "playlist-data-engine": "file:/Users/jasondesante/playlist-data-engine",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.28.0",

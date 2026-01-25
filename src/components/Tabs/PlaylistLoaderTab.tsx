@@ -4,6 +4,7 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import type { PlaylistTrack } from '../../types';
+import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists';
 
 /**
  * PlaylistLoaderTab Component
@@ -15,7 +16,7 @@ import type { PlaylistTrack } from '../../types';
  * 4. Showing raw response data (for debugging/engine verification)
  */
 export function PlaylistLoaderTab() {
-  const [txId, setTxId] = useState('');
+  const [txId, setTxId] = useState(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
   const { parsePlaylist } = usePlaylistParser();
   const {
     currentPlaylist,
