@@ -20,6 +20,7 @@ import { forwardRef, type HTMLAttributes, type MouseEvent, useState, useCallback
 import { cn } from '../../utils/cn';
 import type { PlaylistTrack } from 'playlist-data-engine';
 import { Music, Play, Pause } from 'lucide-react';
+import './TrackCard.css';
 
 export type TrackCardSize = 'compact' | 'default' | 'large';
 

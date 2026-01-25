@@ -1297,7 +1297,7 @@ import './PlaylistLoaderTab.css';
 **Task 23: Cleanup & Verification**
 - [ ] Verify all styles have been moved from src/index.css
 - [ ] ~~* New task * Look at every call of every class in the code to seriously verify that every class is moved from the old index.css file. (Split this into multiple tasks one per page or whatever.)~~
-- [ ] [Task 23a] Verify PlaylistLoaderTab classes are moved from index.css
+- [x] [Task 23a] Verify PlaylistLoaderTab classes are moved from index.css
 - [ ] [Task 23b] Verify AudioAnalysisTab classes are moved from index.css
 - [ ] [Task 23c] Verify CharacterGenTab classes are moved from index.css
 - [ ] [Task 23d] Verify SessionTrackingTab classes are moved from index.css
