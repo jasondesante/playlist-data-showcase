@@ -222,12 +222,25 @@ export function EnvironmentalSensorsTab() {
                 </p>
               </div>
             ) : (
-              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold text-sm md:text-base">No GPS Data Yet</h3>
+              <div className={`p-3 md:p-5 rounded-lg ${permissions.geolocation === 'denied' ? 'bg-red-900/30 border border-red-700 text-red-300' : 'bg-orange-900/30 border border-orange-700 text-orange-300'}`}>
+                <h3 className="font-bold text-sm md:text-base">
+                  {permissions.geolocation === 'denied' ? '🔒 Geolocation Permission Denied' : 'No GPS Data Yet'}
+                </h3>
                 <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
-                  <li>• Did you grant geolocation permission?</li>
-                  <li>• GPS requires clear view of sky</li>
-                  <li>• Indoor locations may have poor accuracy</li>
+                  {permissions.geolocation === 'denied' ? (
+                    <>
+                      <li>• Location access was denied in browser settings</li>
+                      <li>• To enable: Click the lock/info icon in your address bar</li>
+                      <li>• Find "Location" permission and set to "Allow"</li>
+                      <li>• Then refresh the page and try again</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Did you grant geolocation permission?</li>
+                      <li>• GPS requires clear view of sky</li>
+                      <li>• Indoor locations may have poor accuracy</li>
+                    </>
+                  )}
                 </ul>
               </div>
             )}
@@ -263,13 +276,26 @@ export function EnvironmentalSensorsTab() {
                 </p>
               </div>
             ) : (
-              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold text-sm md:text-base">No Motion Data Yet</h3>
+              <div className={`p-3 md:p-5 rounded-lg ${permissions.motion === 'denied' ? 'bg-red-900/30 border border-red-700 text-red-300' : 'bg-orange-900/30 border border-orange-700 text-orange-300'}`}>
+                <h3 className="font-bold text-sm md:text-base">
+                  {permissions.motion === 'denied' ? '🔒 Motion Permission Denied' : 'No Motion Data Yet'}
+                </h3>
                 <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
-                  <li>• Did you grant motion permission? (iOS: must tap "Request")</li>
-                  <li>• Is your phone flat on a table? Try tilting it!</li>
-                  <li>• Motion updates only when device moves</li>
-                  <li className="hidden md:list-item">• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
+                  {permissions.motion === 'denied' ? (
+                    <>
+                      <li>• Motion sensor access was denied in browser settings</li>
+                      <li>• To enable: Click the lock/info icon in your address bar</li>
+                      <li>• Find "Motion" or "Device Motion" permission and set to "Allow"</li>
+                      <li>• Then refresh the page and try again</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Did you grant motion permission? (iOS: must tap "Request")</li>
+                      <li>• Is your phone flat on a table? Try tilting it!</li>
+                      <li>• Motion updates only when device moves</li>
+                      <li className="hidden md:list-item">• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
+                    </>
+                  )}
                 </ul>
               </div>
             )}

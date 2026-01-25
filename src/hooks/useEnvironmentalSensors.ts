@@ -64,8 +64,22 @@ export const useEnvironmentalSensors = () => {
                 }
             } else if (sensorType === 'geolocation') {
                 // Trigger actual geolocation prompt
-                await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject);
+                await new Promise<void>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        () => resolve(),
+                        (error) => {
+                            // PositionError.code: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+                            if (error.code === 1) {
+                                reject(new Error('Geolocation permission denied. Please enable location access in your browser settings to use GPS features.'));
+                            } else if (error.code === 2) {
+                                reject(new Error('Location information unavailable. Please check your device location settings.'));
+                            } else if (error.code === 3) {
+                                reject(new Error('Location request timed out. Please try again.'));
+                            } else {
+                                reject(new Error(`Geolocation error: ${error.message}`));
+                            }
+                        }
+                    );
                 });
                 granted = true;
             } else if (sensorType === 'light') {
