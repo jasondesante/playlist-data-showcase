@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import './CharacterGenTab.css';
 import { User, Sparkles, Download, Upload, RefreshCw, Wand2 } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';

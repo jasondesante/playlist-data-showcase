@@ -1237,11 +1237,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Audio analysis tab looks identical
 
 **Task 15: Character Gen Tab**
-- [ ] Create `CharacterGenTab.css`
-- [ ] Copy all character gen styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: Character gen tab looks identical
+- [x] Create `CharacterGenTab.css`
+- [x] Copy all character gen styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: Character gen tab looks identical
 
 **Task 16: Session Tab**
 - [ ] Create `SessionTrackingTab.css`
