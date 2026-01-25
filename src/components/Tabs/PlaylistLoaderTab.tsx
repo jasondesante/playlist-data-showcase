@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Music, Download, Sparkles, Search } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
@@ -34,10 +35,22 @@ export function PlaylistLoaderTab() {
     rawResponseData,
     parsedTimestamp
   } = usePlaylistStore();
+  const { play } = useAudioPlayerStore();
 
   const handleParse = async () => {
     if (!txId.trim()) return;
     await parsePlaylist(txId.trim());
+  };
+
+  // Handle play button click - select the track and play audio
+  const handlePlayTrack = (track: PlaylistTrack) => {
+    selectTrack(track);
+    play(track.audio_url);
+  };
+
+  // Handle card click - just select the track
+  const handleCardClick = (track: PlaylistTrack) => {
+    selectTrack(track);
   };
 
   // Filter tracks based on search query
@@ -300,8 +313,8 @@ export function PlaylistLoaderTab() {
                         track={track}
                         index={originalIndex > 0 ? originalIndex : undefined}
                         isSelected={selectedTrack?.title === track.title}
-                        onClick={() => selectTrack(track)}
-                        onPlay={() => selectTrack(track)}
+                        onClick={() => handleCardClick(track)}
+                        onPlay={() => handlePlayTrack(track)}
                         size="default"
                       />
                     );

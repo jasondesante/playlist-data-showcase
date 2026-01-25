@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -16,13 +17,16 @@ import type { ListeningSession } from 'playlist-data-engine';
  */
 export function SessionTrackingTab() {
   const { selectedTrack } = usePlaylistStore();
+  const { play, stop } = useAudioPlayerStore();
   const { startSession, endSession: hookEndSession, isActive, elapsedTime } = useSessionTracker();
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleStart = () => {
     if (!selectedTrack) return;
+
+    // Start the audio playback
+    play(selectedTrack.audio_url);
 
     // Start session tracker and store the session ID
     // Per engine API: startSession(trackId: string, track: PlaylistTrack, options?: { environmental_context, gaming_context })
@@ -38,11 +42,7 @@ export function SessionTrackingTab() {
       setLastSession(session);
     }
     // Stop audio
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-      setAudio(null);
-    }
+    stop();
   };
 
   return (

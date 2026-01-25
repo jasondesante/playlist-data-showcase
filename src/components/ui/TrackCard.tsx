@@ -154,17 +154,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         {/* Track number (left side) */}
         {index !== undefined && (
           <div className={cn('track-number', styles.trackNumber)}>
-            {isHovered && onPlay ? (
-              <button
-                onClick={handlePlayClick}
-                className={cn('track-play-button', styles.playButton)}
-                aria-label={`Play ${track.title}`}
-              >
-                <Play className={cn('track-play-icon', styles.playIcon)} fill="currentColor" />
-              </button>
-            ) : (
-              index
-            )}
+            {index}
           </div>
         )}
 

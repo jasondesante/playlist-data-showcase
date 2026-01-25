@@ -1,0 +1,180 @@
+/**
+ * Audio Player Store
+ *
+ * Manages audio playback state using HTML5 Audio API.
+ * Provides a global audio player instance that can be controlled from any component.
+ */
+
+import { create } from 'zustand';
+
+export type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
+
+interface AudioPlayerState {
+    /** The URL of the currently loaded audio */
+    currentUrl: string | null;
+    /** Current playback state */
+    playbackState: PlaybackState;
+    /** Current playback position in seconds */
+    currentTime: number;
+    /** Total duration in seconds */
+    duration: number;
+    /** Volume level (0-1) */
+    volume: number;
+    /** Whether audio is muted */
+    isMuted: boolean;
+    /** Error message if playback failed */
+    error: string | null;
+
+    /** Actions */
+    play: (url: string) => void;
+    pause: () => void;
+    resume: () => void;
+    stop: () => void;
+    seek: (time: number) => void;
+    setVolume: (volume: number) => void;
+    toggleMute: () => void;
+    updateTime: (time: number) => void;
+    updateDuration: (duration: number) => void;
+    setPlaybackState: (state: PlaybackState) => void;
+    setError: (error: string | null) => void;
+}
+
+// Global HTML5 Audio instance
+let audioElement: HTMLAudioElement | null = null;
+
+const getAudioElement = (): HTMLAudioElement => {
+    if (!audioElement) {
+        audioElement = new Audio();
+        audioElement.preload = 'metadata';
+
+        // Set up event listeners
+        audioElement.addEventListener('loadstart', () => {
+            useAudioPlayerStore.getState().setPlaybackState('loading');
+        });
+
+        audioElement.addEventListener('canplay', () => {
+            const store = useAudioPlayerStore.getState();
+            if (store.playbackState === 'loading') {
+                // Don't auto-play, just transition to ready state
+                useAudioPlayerStore.getState().setPlaybackState('paused');
+            }
+        });
+
+        audioElement.addEventListener('play', () => {
+            useAudioPlayerStore.getState().setPlaybackState('playing');
+        });
+
+        audioElement.addEventListener('pause', () => {
+            const store = useAudioPlayerStore.getState();
+            if (store.playbackState === 'playing') {
+                useAudioPlayerStore.getState().setPlaybackState('paused');
+            }
+        });
+
+        audioElement.addEventListener('ended', () => {
+            useAudioPlayerStore.getState().setPlaybackState('ended');
+        });
+
+        audioElement.addEventListener('error', () => {
+            useAudioPlayerStore.getState().setError('Failed to load audio');
+            useAudioPlayerStore.getState().setPlaybackState('error');
+        });
+
+        audioElement.addEventListener('timeupdate', () => {
+            if (audioElement) {
+                useAudioPlayerStore.getState().updateTime(audioElement.currentTime);
+            }
+        });
+
+        audioElement.addEventListener('loadedmetadata', () => {
+            if (audioElement) {
+                useAudioPlayerStore.getState().updateDuration(audioElement.duration);
+            }
+        });
+    }
+    return audioElement;
+};
+
+export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
+    currentUrl: null,
+    playbackState: 'idle',
+    currentTime: 0,
+    duration: 0,
+    volume: 0.8,
+    isMuted: false,
+    error: null,
+
+    play: (url: string) => {
+        const audio = getAudioElement();
+        const currentUrl = get().currentUrl;
+
+        if (currentUrl !== url) {
+            // New track - load and play
+            audio.src = url;
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+            audio.play().catch((err) => {
+                console.error('Playback failed:', err);
+                set({ error: err.message, playbackState: 'error' });
+            });
+        } else {
+            // Same track - resume if paused
+            if (get().playbackState === 'paused') {
+                audio.play().catch((err) => {
+                    console.error('Playback failed:', err);
+                    set({ error: err.message, playbackState: 'error' });
+                });
+            }
+        }
+    },
+
+    pause: () => {
+        const audio = getAudioElement();
+        if (get().playbackState === 'playing') {
+            audio.pause();
+        }
+    },
+
+    resume: () => {
+        const audio = getAudioElement();
+        if (get().playbackState === 'paused' && get().currentUrl) {
+            audio.play().catch((err) => {
+                console.error('Playback failed:', err);
+                set({ error: err.message, playbackState: 'error' });
+            });
+        }
+    },
+
+    stop: () => {
+        const audio = getAudioElement();
+        audio.pause();
+        audio.currentTime = 0;
+        set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null });
+    },
+
+    seek: (time: number) => {
+        const audio = getAudioElement();
+        if (get().currentUrl) {
+            audio.currentTime = Math.max(0, Math.min(time, get().duration));
+            set({ currentTime: audio.currentTime });
+        }
+    },
+
+    setVolume: (volume: number) => {
+        const audio = getAudioElement();
+        const clampedVolume = Math.max(0, Math.min(1, volume));
+        audio.volume = clampedVolume;
+        set({ volume: clampedVolume, isMuted: clampedVolume === 0 });
+    },
+
+    toggleMute: () => {
+        const audio = getAudioElement();
+        const newMutedState = !get().isMuted;
+        audio.muted = newMutedState;
+        set({ isMuted: newMutedState });
+    },
+
+    updateTime: (time: number) => set({ currentTime: time }),
+    updateDuration: (duration: number) => set({ duration }),
+    setPlaybackState: (state: PlaybackState) => set({ playbackState: state }),
+    setError: (error: string | null) => set({ error }),
+}));
