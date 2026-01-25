@@ -1,10 +1,10 @@
-study UI_IMPROVEMENT_PLAN.md and pick the most important thing to do. 
+study CSS_OPTIMIZATION_PLAN.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
 
-Make sure the css looks nice. YOUR JOB IS TO MAKE THE CSS LOOK CLEAN AND PROFESSIONAL AND HIGH QUALITY.
+Your job is to clean up the code, keep all the functionality, but identify patterns. Optimize and refactor like a boss is your job.
 
-I might add new stuff to the UI_IMPROVEMENT_PLAN.md file. If you see that, add new tasks based on those requests, add them to the list and cross out what I wrote to signify you added them as tasks.
+I might add new stuff to the CSS_OPTIMIZATION_PLAN.md file. If you see that, add new tasks based on those requests, add them to the list and cross out what I wrote to signify you added them as tasks.
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
@@ -14,7 +14,7 @@ When you're done, say "done". When there's no tasks left for you to do then say 
 IMPORTANT:
 - DO NOT DELETE node_modules. 
 - DO NOT DELETE package-lock.json. 
-- DO NOT USE TAILWIND OR ANYTHING LIKE THAT. USE PURE CSS LIKE A REAL MAN. Also Don't use <p> that shit is fucking cursed.
+- DO NOT USE TAILWIND OR CURSED CODE LIKE <p>. USE PURE CSS LIKE A REAL MAN.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
 - NEVER push an update with syntax errors. 
