@@ -1312,7 +1312,7 @@ import './PlaylistLoaderTab.css';
 - [x] Run `npm run build` - should succeed
 - [x] Run `npm run lint:css` - should pass with 0 errors
 - [x] Run `npm run check:css` - braces should be balanced
-- [ ] Open app and verify all pages load correctly
+- [x] Open app and verify all pages load correctly
 - [ ] Full visual regression check: open every tab, test all interactions
 
 **Task 24: Final Optimization Pass**
