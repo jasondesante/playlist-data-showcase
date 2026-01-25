@@ -150,10 +150,17 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         const currentUrl = get().currentUrl;
         const playbackState = get().playbackState;
 
-        if (currentUrl === url) {
-            // Same track - toggle play/pause
-            if (playbackState === 'playing') {
+        // Check if it's the same track by comparing URLs
+        const isSameTrack = currentUrl === url;
+        // Also check the actual audio element state in case store state is out of sync
+        const isActuallyPlaying = !audio.paused && audio.readyState >= 2; // HAVE_CURRENT_DATA
+
+        if (isSameTrack) {
+            // Same track - toggle play/pause based on actual audio state
+            if (playbackState === 'playing' || isActuallyPlaying) {
                 audio.pause();
+                // Immediately update state to ensure sync
+                set({ playbackState: 'paused' });
             } else if (playbackState === 'paused') {
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
