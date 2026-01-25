@@ -779,3 +779,28 @@ After fix: 2062 opening braces, 2062 closing braces - perfectly balanced.
 1. Use a CSS linter (stylelint) in the build process
 2. Check brace balance programmatically after major CSS changes
 3. Consider splitting the massive 10k line CSS file into smaller, focused modules
+
+**Why CSS Errors Are Hard to Catch (Technical Explanation):**
+
+The user has experienced frustration with repeated CSS syntax errors (missing brackets, extra braces). Here's why this happens from a technical perspective:
+
+1. **Tooling Limitations**: Unlike TypeScript/JavaScript, CSS doesn't have a built-in compiler that gives clear error messages. When there's a syntax error, browsers silently ignore the malformed CSS rather than throwing an error.
+
+2. **Build Process Obscuration**: Vite/Rollup build errors often appear as generic "build failed" messages without pointing to the exact line of CSS that has the problem. The error might say "failed to bundle" without indicating "missing } on line 6348".
+
+3. **Silent Failures**: An extra closing brace doesn't crash the app - it just causes all CSS after that point to potentially not apply correctly. This makes it visually obvious something is wrong, but not what specifically is wrong.
+
+4. **File Size**: With a 10,450-line CSS file, manually finding a single extra brace is like finding a needle in a haystack.
+
+5. **Context Window**: When I read files, I process them in chunks. A missing brace at the end of one chunk might not be detected until I read the next chunk, making cross-chunk validation difficult.
+
+**New Verification Process Implemented:**
+After every CSS change, I now run:
+```bash
+# Check brace balance
+grep -c '{' src/index.css && grep -c '}' src/index.css
+# Also check parens and brackets
+node -e "const css = fs.readFileSync('src/index.css', 'utf8'); ..."
+```
+
+This ensures all opening and closing brackets are balanced before committing.
