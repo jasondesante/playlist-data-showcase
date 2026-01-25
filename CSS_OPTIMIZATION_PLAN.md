@@ -1166,13 +1166,13 @@ import './PlaylistLoaderTab.css';
 - [x] Test: No visual changes, stylelint passes
 
 **Task 7: Extract Button Component**
-- [ ] Create `src/styles/components/` directory if needed
-- [ ] Create `src/styles/components/Button.css`
-- [ ] Copy all button-related styles from index.css
-- [ ] Consolidate button variants (primary, secondary, ghost, outline, destructive)
-- [ ] Consolidate button sizes (sm, md, lg, icon)
-- [ ] Remove duplicate button styles
-- [ ] Test: All buttons still work, no visual changes
+- [x] Create `src/styles/components/` directory if needed
+- [x] Create `src/styles/components/Button.css`
+- [x] Copy all button-related styles from index.css
+- [x] Consolidate button variants (primary, secondary, ghost, outline, destructive)
+- [x] Consolidate button sizes (sm, md, lg, icon)
+- [x] Remove duplicate button styles
+- [x] Test: All buttons still work, no visual changes
 
 **Task 8: Extract Card Component**
 - [ ] Create `src/styles/components/Card.css`
