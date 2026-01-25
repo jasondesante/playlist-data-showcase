@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Music } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -44,8 +45,16 @@ export function PlaylistLoaderTab() {
   return (
     <div className="space-y-6">
       {/* Header with Status Indicator */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Playlist Parser</h2>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20">
+              <Music className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold">Playlist Parser</h2>
+          </div>
+          <p className="text-sm text-muted-foreground pl-13">Load playlists from Arweave</p>
+        </div>
         <StatusIndicator
           status={getFetchStatus()}
           label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
