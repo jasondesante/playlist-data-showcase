@@ -116,16 +116,91 @@ logger.info('AudioAnalyzer', 'Analysis complete', {
 
 ## Phase 5.5.2: Combat Performance
 
-### Implementation Status
+### Implementation Changes
 
-**Current State:** Combat system is fully implemented with auto-play functionality.
+**Files Modified:**
+- `src/hooks/useCombatEngine.ts`
+- `src/components/Tabs/CombatSimulatorTab.tsx`
 
-**File:** `src/components/Tabs/CombatSimulatorTab.tsx`
+**Changes Made (useCombatEngine.ts):**
+- Added performance timing using `performance.now()` API to `startCombat` function
+- Timing starts when combat initialization begins
+- Timing ends when combat is initialized (before first turn)
+- Results logged to console with:
+  - Combat ID
+  - Turn order (combatant names)
+  - Initialization time (seconds)
 
-**Features to Test:**
-- Auto-play button runs entire combat automatically
-- Combat log updates in real-time
-- UI remains responsive during auto-play
+**Code Added (useCombatEngine.ts):**
+```typescript
+// Performance timing: Start timer
+const startTime = performance.now();
+
+const combatInstance = engine.startCombat(party, enemies);
+
+// Performance timing: Calculate elapsed time
+const endTime = performance.now();
+const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(3);
+
+logger.info('CombatEngine', 'Combat initialized', {
+    combatId: combatInstance.id,
+    turnOrder: combatInstance.combatants.map(c => c.character.name),
+    initializationTimeSeconds: elapsedSeconds
+});
+```
+
+**Changes Made (CombatSimulatorTab.tsx):**
+- Added performance timing state to track auto-play combat duration
+- Added `combatStartTimeRef` to record start time when auto-play begins
+- Added `combatPerformance` state to store performance metrics
+- Timing starts when auto-play executes first turn
+- Timing ends when combat completes (isActive becomes false)
+- Results logged to console with:
+  - Total combat time (seconds)
+  - Total turns executed
+  - Rounds elapsed
+  - Performance target (PASS/FAIL)
+  - Expected target time (scaled for actual rounds)
+
+**Code Added (CombatSimulatorTab.tsx):**
+```typescript
+// Performance timing state
+const combatStartTimeRef = useRef<number | null>(null);
+const [combatPerformance, setCombatPerformance] = useState<{
+    totalTimeSeconds: string | null;
+    totalTurns: number;
+    roundsElapsed: number;
+    performanceTarget: string;
+} | null>(null);
+
+// In executeAutoPlayTurn:
+if (combatStartTimeRef.current === null) {
+    combatStartTimeRef.current = performance.now();
+    logger.info('CombatEngine', 'Auto-play started', {
+        combatId: combat.id,
+        combatants: combat.combatants.length,
+        autoPlayInterval: `${AUTO_PLAY_INTERVAL_MS / 1000}s`
+    });
+}
+
+// When combat ends:
+const endTime = performance.now();
+const elapsedSeconds = ((endTime - combatStartTimeRef.current) / 1000).toFixed(2);
+const expectedSeconds = (roundsElapsed / 50) * 5;
+const performanceTarget = parseFloat(elapsedSeconds) < expectedSeconds ? 'PASS' : 'FAIL';
+
+logger.info('CombatEngine', 'Combat ended - Performance metrics', {
+    combatId: combat.id,
+    winner: result?.winner.character.name,
+    roundsElapsed,
+    totalTurns,
+    combatTimeSeconds: elapsedSeconds,
+    performanceTarget,
+    expectedTarget: `${expectedSeconds.toFixed(2)}s for ${roundsElapsed} rounds`
+});
+```
+
+---
 
 ### Manual Testing Procedure
 
@@ -141,40 +216,60 @@ logger.info('AudioAnalyzer', 'Analysis complete', {
    - Navigate to "Combat Simulator" tab
    - Click "Start Combat" button
    - Wait for combat to initialize
+   - Check console for initialization time log
 
 2. **Run Auto-Play**
    - Click "Auto-Play" button (green with play icon)
+   - Check console for "Auto-play started" log
    - Observe combat log scrolling automatically
-   - Note start time (or use browser Performance monitor)
    - Wait for combat to complete
 
 3. **Check Performance**
-   - Count total rounds elapsed (shown in victory overlay)
-   - If rounds <50, test again with more combatants
-   - Verify UI remained responsive
-   - Check console for any errors
+   - In DevTools console, find the log entry: `Combat ended - Performance metrics`
+   - Look for `combatTimeSeconds` value
+   - Look for `performanceTarget` status (PASS/FAIL)
+   - Note `roundsElapsed` and `totalTurns`
+   - Compare `expectedTarget` with actual time
 
 #### Expected Results
 
 ✅ **PASS Criteria:**
-- 50-round combat completes in <5 seconds (auto-play at 1.5s intervals)
-- UI remains responsive
+- Combat initialization completes in <0.1 seconds
+- Combat auto-play scales proportionally with rounds
+  - 10 rounds: <1 second
+  - 25 rounds: <2.5 seconds
+  - 50 rounds: <5 seconds
+- Console log shows `performanceTarget: "PASS"`
+- UI remains responsive during auto-play
 - Combat log scrolls smoothly
-- No browser warnings/errors
 
 ❌ **FAIL Criteria:**
-- Combat takes >5 seconds per round average
+- Combat initialization takes >0.1 seconds
+- Combat auto-play exceeds scaled target time
+- Console log shows `performanceTarget: "FAIL"`
 - UI freezes during auto-play
-- Combat log lags behind
-- Browser shows "Page Unresponsive" warning
+- Combat log lags behind or fails to scroll
 
 #### Test Data Points to Record
 
-| Test # | Rounds | Combatants | Time Taken | Pass/Fail | Notes |
-|--------|--------|------------|------------|-----------|-------|
-| 1 | | | __.__ s | | |
-| 2 | | | __.__ s | | |
-| 3 | | | __.__ s | | |
+| Test # | Rounds | Combatants | Init Time | Combat Time | Expected | Pass/Fail | Notes |
+|--------|--------|------------|-----------|-------------|----------|-----------|-------|
+| 1 | | | __.__ s | __.__ s | __.__ s | | |
+| 2 | | | __.__ s | __.__ s | __.__ s | | |
+| 3 | | | __.__ s | __.__ s | __.__ s | | |
+
+**Performance Target Formula:**
+```
+Expected Time = (Rounds / 50) × 5 seconds
+```
+- 10 rounds: (10/50) × 5 = 1.0 second
+- 25 rounds: (25/50) × 5 = 2.5 seconds
+- 50 rounds: (50/50) × 5 = 5.0 seconds
+
+**Note:** Auto-play interval is 1.5 seconds per turn, so actual combat time will be:
+- Minimum: `rounds × combatants × 1.5s` (if all turns execute exactly on interval)
+- Plus: JavaScript execution time for each turn
+- The target accounts for both interval and execution time
 
 ---
 

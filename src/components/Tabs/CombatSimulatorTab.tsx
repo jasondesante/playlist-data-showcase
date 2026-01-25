@@ -4,6 +4,7 @@ import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { SPELL_DATABASE } from 'playlist-data-engine';
+import { logger } from '../../utils/logger';
 
 /**
  * CombatSimulatorTab Component
@@ -93,6 +94,15 @@ export function CombatSimulatorTab() {
   const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const combatLogRef = useRef<HTMLDivElement>(null);
 
+  // Performance timing state (Phase 5.5.2)
+  const combatStartTimeRef = useRef<number | null>(null);
+  const [combatPerformance, setCombatPerformance] = useState<{
+    totalTimeSeconds: string | null;
+    totalTurns: number;
+    roundsElapsed: number;
+    performanceTarget: string;
+  } | null>(null);
+
   // Combat state from task 4.9.1 (moved before useEffect hooks to fix TS error)
   const currentTurnIndex = combat?.currentTurnIndex ?? null;
   const roundNumber = combat?.roundNumber ?? null;
@@ -167,6 +177,16 @@ export function CombatSimulatorTab() {
   const executeAutoPlayTurn = () => {
     if (!combat) return;
 
+    // Start performance timer on first turn of auto-play
+    if (combatStartTimeRef.current === null) {
+      combatStartTimeRef.current = performance.now();
+      logger.info('CombatEngine', 'Auto-play started', {
+        combatId: combat.id,
+        combatants: combat.combatants.length,
+        autoPlayInterval: `${AUTO_PLAY_INTERVAL_MS / 1000}s`
+      });
+    }
+
     const current = getCurrentCombatant();
     if (!current) return;
 
@@ -182,10 +202,43 @@ export function CombatSimulatorTab() {
 
     const updated = nextTurn();
     if (updated && !updated.isActive) {
+      // Calculate and log performance metrics
+      const endTime = performance.now();
+      const elapsedSeconds = combatStartTimeRef.current !== null
+        ? ((endTime - combatStartTimeRef.current) / 1000).toFixed(2)
+        : null;
+
       const result = getCombatResult();
+      const totalTurns = combat?.history?.length || 0;
+      const roundsElapsed = result?.roundsElapsed || 0;
+
+      // Performance target: <5 seconds for 50-round combat
+      // For shorter combats, we scale the target proportionally
+      const expectedSeconds = (roundsElapsed / 50) * 5;
+      const performanceTarget = elapsedSeconds !== null && parseFloat(elapsedSeconds) < expectedSeconds ? 'PASS' : 'FAIL';
+
+      setCombatPerformance({
+        totalTimeSeconds: elapsedSeconds,
+        totalTurns,
+        roundsElapsed,
+        performanceTarget
+      });
+
+      logger.info('CombatEngine', 'Combat ended - Performance metrics', {
+        combatId: combat.id,
+        winner: result?.winner.character.name,
+        roundsElapsed,
+        totalTurns,
+        combatTimeSeconds: elapsedSeconds,
+        performanceTarget,
+        expectedTarget: `${expectedSeconds.toFixed(2)}s for ${roundsElapsed} rounds`
+      });
+
       console.log('[Combat Auto-Play]', `Combat ended! Winner: ${result?.winner.character.name}`);
       // Stop auto-play when combat ends
       setIsAutoPlaying(false);
+      // Reset start time ref
+      combatStartTimeRef.current = null;
     }
   };
 
@@ -741,6 +794,28 @@ export function CombatSimulatorTab() {
                     <span className="text-xs md:text-sm text-muted-foreground">Total Turns</span>
                     <span className="text-sm md:text-lg font-semibold">{combatResult.totalTurns}</span>
                   </div>
+
+                  {/* Performance metrics (Phase 5.5.2) */}
+                  {combatPerformance && (
+                    <>
+                      <div className="flex justify-between items-center border-b pb-2">
+                        <span className="text-xs md:text-sm text-muted-foreground">Combat Time</span>
+                        <span className={`text-sm md:text-lg font-semibold ${combatPerformance.performanceTarget === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>
+                          {combatPerformance.totalTimeSeconds}s
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-b pb-2">
+                        <span className="text-xs md:text-sm text-muted-foreground">Performance</span>
+                        <span className={`text-xs md:text-sm font-bold px-2 py-1 rounded ${
+                          combatPerformance.performanceTarget === 'PASS'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {combatPerformance.performanceTarget}
+                        </span>
+                      </div>
+                    </>
+                  )}
 
                   {combatResult.description && (
                     <div className="pt-2">

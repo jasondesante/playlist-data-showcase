@@ -81,11 +81,19 @@ export const useCombatEngine = () => {
         });
 
         try {
+            // Performance timing: Start timer
+            const startTime = performance.now();
+
             const combatInstance = engine.startCombat(party, enemies);
+
+            // Performance timing: Calculate elapsed time
+            const endTime = performance.now();
+            const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(3);
 
             logger.info('CombatEngine', 'Combat initialized', {
                 combatId: combatInstance.id,
-                turnOrder: combatInstance.combatants.map(c => c.character.name)
+                turnOrder: combatInstance.combatants.map(c => c.character.name),
+                initializationTimeSeconds: elapsedSeconds
             });
 
             setCombat(combatInstance);

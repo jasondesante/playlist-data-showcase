@@ -2151,10 +2151,23 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
 - [ ] Target: <10 seconds - MANUAL TEST REQUIRED (user must run app)
 
 #### 5.5.2 Test Combat Performance
-- [ ] Run 50-round combat
-- [ ] Measure time to complete
-- [ ] Verify UI updates smoothly
-- [ ] Target: <5 seconds for auto-play
+- [x] Add performance timing instrumentation to useCombatEngine - COMPLETED 2026-01-25
+  - Added performance.now() timing to startCombat function
+  - Logs initializationTimeSeconds to console
+- [x] Add performance timing to CombatSimulatorTab auto-play - COMPLETED 2026-01-25
+  - Added combatStartTimeRef to track auto-play start time
+  - Added combatPerformance state to store metrics
+  - Logs combatTimeSeconds, performanceTarget (PASS/FAIL)
+  - Displays performance metrics in victory overlay
+- [x] Update PERFORMANCE_TESTING.md documentation - COMPLETED 2026-01-25
+  - Added Implementation Changes section with code examples
+  - Updated test procedure with console log expectations
+  - Added performance target formula for scaled timing
+- [x] Build verification - COMPLETED 2026-01-25 (TypeScript compilation passes, 599.59 kB output)
+- [ ] Run 50-round combat - MANUAL TEST REQUIRED (user must run app)
+- [ ] Measure time to complete - MANUAL TEST REQUIRED (user must run app)
+- [ ] Verify UI updates smoothly - MANUAL TEST REQUIRED (user must run app)
+- [ ] Target: <5 seconds for auto-play - MANUAL TEST REQUIRED (user must run app)
 
 #### 5.5.3 Test Export Performance
 - [ ] Export 100 characters
