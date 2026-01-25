@@ -516,6 +516,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    ### Sprint 0 : make sure the css looks good
    - ✅ make sure the site doesn't look like shit
    - ✅ actual good looking css for the page
+  - FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better. 
    - Added comprehensive CSS improvements:
      - Enhanced form element styling (inputs, selects, sliders)
      - Custom scrollbar styling for all browsers
@@ -529,7 +530,8 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
      - Button press animations
      - Link hover states
      - Reduced motion support for accessibility
-
+     
+<!-- DO NOT DO ANYTHING ELSE DO NOT DO ANY OF THESE EXTRA SPRINTS -->
 <!-- ### Sprint 4-13: Remaining Tabs
 8. Audio Analysis Tab
 9. Character Gen Tab
