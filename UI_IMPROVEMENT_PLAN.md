@@ -539,9 +539,9 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
  - ~~Its a simple request. let me pause the music after I start it. This should be the most straightforward thing that it should have been built when you made the thing play the music to begin with to be honest.~~
 
 
- Hey i just wanted to say a honest from the bottom of my heart fuck you. Fuck you for crossing out my request to fix a legitimate bug and fuck you for saying the bug is fixed when it isn't you fucking liar and fuck you for not being able to fix the bug. I can't believe this shit. Instead of trying to help me fix the bug you're like arguing with me that the bug doesn't exist.
+ Hey what the fuck this isn't fixed yet.
 
- FIX THIS BUG DO NOT DO A SINGLE THING BEFORE YOU FIX THIS BUG AND LET ME STOP THE PLAYBACK OF THE FUCKING MUSIC YOU FUCK
+ FIX THIS BUG DO NOT DO A SINGLE THING BEFORE YOU FIX THIS BUG AND LET ME STOP THE PLAYBACK OF THE FUCKING MUSIC PLEASE AND THANKS
 
  REMEMBER THIS BUG IS IN THE PLAYLIST TAB!!
 
