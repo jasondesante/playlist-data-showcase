@@ -1200,13 +1200,13 @@ import './PlaylistLoaderTab.css';
 ### Phase 3: Main Entry Point
 
 **Task 11: Create Main CSS Entry Point**
-- [ ] Create `src/styles/index.css`
-- [ ] Add @import for './base.css'
-- [ ] Add @import for './effects.css'
-- [ ] Add @import for './animations.css'
-- [ ] Add @import for all component CSS files
-- [ ] Update `src/main.tsx`: Change `import './index.css'` to `import './styles/index.css'`
-- [ ] Test: App loads correctly, no visual changes
+- [x] Create `src/styles/index.css`
+- [x] Add @import for './base.css'
+- [x] Add @import for './effects.css'
+- [x] Add @import for './animations.css'
+- [x] Add @import for all component CSS files
+- [x] Update `src/main.tsx`: Change `import './index.css'` to `import './styles/index.css'`
+- [x] Test: App loads correctly, no visual changes
 
 **Task 12: Extract Layout Component CSS**
 - [ ] Create `src/styles/layout.css`
