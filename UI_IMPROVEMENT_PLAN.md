@@ -534,9 +534,17 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
    - ~~UPDATE - I LITERALLY TESTED THIS AND IT LITERALLY DOESNT WORK SO YOU NEED TO REDO THIS~~
 
-   - **FIXED (2025-01-25)**: Modified `handleCardClick` in PlaylistLoaderTab to check if clicked track is the selected track using new `isTrackSelected()` helper. If selected, it toggles play/pause via `togglePlay()`. If different track, it just selects. TypeScript compilation passes.
+   - **FIXED (note it was not fixed this ai is a fucking retard) (2025-01-25)**: Modified `handleCardClick` in PlaylistLoaderTab to check if clicked track is the selected track using new `isTrackSelected()` helper. If selected, it toggles play/pause via `togglePlay()`. If different track, it just selects. TypeScript compilation passes.
 
  - ~~Its a simple request. let me pause the music after I start it. This should be the most straightforward thing that it should have been built when you made the thing play the music to begin with to be honest.~~
+
+
+ Hey i just wanted to say a honest from the bottom of my heart fuck you. Fuck you for crossing out my request to fix a legitimate bug and fuck you for saying the bug is fixed when it isn't you fucking liar and fuck you for not being able to fix the bug. I can't believe this shit.
+
+ FIX THIS BUG DO NOT DO A SINGLE THING BEFORE YOU FIX THIS BUG AND LET ME STOP THE PLAYBACK OF THE FUCKING MUSIC YOU FUCK
+
+ REMEMBER THIS BUG IS IN THE PLAYLIST TAB YOU FUCKING RETARD.
+
 
 ### Sprint 4-13: Remaining Tabs
 ~~8. Audio Analysis Tab~~
