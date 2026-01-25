@@ -198,9 +198,9 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         {/* Track info - Compact layout with combined metadata line */}
         <div className="track-info">
           {/* Title - with fallback for missing title */}
-          <p className={cn('track-title', styles.title, isSelected && 'track-title-selected')} title={track.title || 'Unknown Title'}>
+          <span className={cn('track-title', styles.title, isSelected && 'track-title-selected')} title={track.title || 'Unknown Title'}>
             {track.title || 'Unknown Title'}
-          </p>
+          </span>
 
           {/* Combined metadata line - Artist • Album • Duration */}
           <div className={cn('track-metadata-line', size === 'compact' && 'track-metadata-line-compact')}>
