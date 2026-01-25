@@ -7072,7 +7072,7 @@
 .xp-confetti:nth-child(7) { left: 70%; animation-delay: 0.6s; background-color: hsl(var(--cute-purple)); }
 .xp-confetti:nth-child(8) { left: 80%; animation-delay: 0.7s; background-color: hsl(var(--cute-teal)); }
 .xp-confetti:nth-child(9) { left: 90%; animation-delay: 0.8s; background-color: hsl(var(--cute-yellow)); }
-.xp-confetti:nth-child(10) { left: 15%; animation-delay: 0.15s; background-color: hsl(var(--cute-orange); }
+.xp-confetti:nth-child(10) { left: 15%; animation-delay: 0.15s; background-color: hsl(var(--cute-orange)); }
 .xp-confetti:nth-child(11) { left: 25%; animation-delay: 0.25s; background-color: hsl(var(--cute-pink)); }
 .xp-confetti:nth-child(12) { left: 35%; animation-delay: 0.35s; background-color: hsl(var(--cute-purple)); }
 .xp-confetti:nth-child(13) { left: 45%; animation-delay: 0.45s; background-color: hsl(var(--cute-teal)); }
