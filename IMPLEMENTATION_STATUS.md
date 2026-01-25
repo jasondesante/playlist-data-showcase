@@ -114,6 +114,25 @@ This showcase is both:
 |-------|----------|----------|-------------|
 | *None - All known bugs have been fixed* | - | - | Previously reported useSessionTracker bug was fixed in Phase 2.1.4 |
 
+### Engine Bug Fix Verification Status
+
+**Last Updated:** 2026-01-25
+
+**Status:** ✅ All engine bug fixes verified - not blocking showcase development
+
+The following engine files were documented in `DESIGN_DOCS/BUGS_TO_FIX.md` with TypeScript build errors. All have been verified as fixed:
+
+| Engine File | Bug Type | Verification Status |
+|-------------|----------|---------------------|
+| `AttackResolver.ts` | Type safety issues (`undefined` not assignable) | ✅ FIXED - Uses `??` null coalescing operator |
+| `InitiativeRoller.ts` | Type safety issues (dexModifier possibly undefined) | ✅ FIXED - Uses `??` null coalescing operator |
+| `SpellCaster.ts` | Type safety issues (spell.level/description possibly undefined) | ✅ FIXED - Uses `?.` optional chaining and `??` null coalescing |
+| `GamingPlatformSensors.ts` | Missing properties, NodeJS.Timeout type | ✅ FIXED or NON-BLOCKING - Works with tsconfig.json; proper type-checking for partySize |
+
+**Conclusion:** The engine version installed (`file:/playlist-data-engine`) has all documented fixes applied. No action required for showcase development.
+
+**Reference:** See `DESIGN_DOCS/BUGS_TO_FIX.md` lines 5-14 for detailed verification status.
+
 ### Feature Limitations
 
 | Feature | Limitation | Workaround |

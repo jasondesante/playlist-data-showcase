@@ -2351,7 +2351,7 @@ The project is complete when:
   - specs/01-engine-showcase/contracts/playlist-parser.md ✅
   - specs/01-engine-showcase/quickstart.md ✅
   - specs/01-engine-showcase/tasks.md ✅
-- [ ] Engine bug fixes verified or documented
+- [x] Engine bug fixes verified or documented - COMPLETED 2026-01-25
 - [x] ARCHITECTURE.md, CONTRIBUTING.md, DEBUGGING.md exist - COMPLETED 2026-01-25
 
 ### Architecture
