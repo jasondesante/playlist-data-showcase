@@ -525,12 +525,14 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 ### Bug fixes and Extra requests
 
 - [x] - Bug - You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
-   - Completed: Added togglePlay() method to audioPlayerStore
-   - Updated PlaylistLoaderTab to use togglePlay instead of play
-   - Added isPlaying prop to TrackCard to show pause icon when playing
-   - TrackCard now shows Pause icon when track is playing
-   - Added track-card-playing CSS class with teal accent and pulsing indicator
-   - Playing state shows pulsing dot next to track number and teal title color
+   - Completed: Added togglePlay() method to audioPlayerStore _ LIES
+   - Updated PlaylistLoaderTab to use togglePlay instead of play LIES
+   - Added isPlaying prop to TrackCard to show pause icon when playing LIES
+   - TrackCard now shows Pause icon when track is playing LIES
+   - Added track-card-playing CSS class with teal accent and pulsing indicator LIES
+   - Playing state shows pulsing dot next to track number and teal title color LIES
+
+   - UPDATE - I LITERALLY TESTED THIS AND IT LITERALLY DOESNT WORK SO YOU NEED TO REDO THIS
 
 - [x] - Bug - In the character gen tab, the weapons and armor are showing on the screen as:
    - ~~Weapons [object Object], [object Object], [object Object]~~
@@ -540,6 +542,8 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
    - Added equipped indicator (✓) for equipped items
    - Added CSS for character-equipment-item, -quantity, -equipped classes
    - Used IIFE to avoid TypeScript narrowing issues with optional equipment
+
+   DO NOT WORK ON A SINGLE NEW SPRINT UNTIL THE BUGS ARE FUCKING FIXED AND VERIFIED TO BE FIXED IM TIRED OF DOUBLING BACK TEN TIMES TO GET YOU TO FIX A BUG THAT COULD TAKE ME A FEW MINS TO FIX
 
 ### Sprint 4-13: Remaining Tabs
 ~~8. Audio Analysis Tab~~
