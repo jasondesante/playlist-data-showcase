@@ -17,7 +17,8 @@ IMPORTANT:
 - DO NOT USE TAILWIND OR ANYTHING LIKE THAT. USE PURE CSS LIKE A REAL MAN. Also Don't use <p> that shit is fucking cursed.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
-- Never push an update with syntax errors. Always verify that you didn't miss a bracket here or there. 
+- NEVER push an update with syntax errors. 
+- ALWAYS verify that you didn't miss a bracket here or there.  You have pushed too many updates with random missing brackets. YOU MUST VERIFY YOU DON'T MISS ANYTHING STUPID LIKE THIS!
 - update the implementation plan when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 

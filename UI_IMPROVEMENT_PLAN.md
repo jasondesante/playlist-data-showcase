@@ -524,7 +524,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ### Bug fixes and Extra requests
 
-- [x] - Bug - You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
+- [ ] IMPORTANT - FIX NOW - Bug - You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
    - ~~Completed: Added togglePlay() method to audioPlayerStore _ LIES~~
    - ~~Updated PlaylistLoaderTab to use togglePlay instead of play LIES~~
    - ~~Added isPlaying prop to TrackCard to show pause icon when playing LIES~~
@@ -534,16 +534,16 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
    - ~~UPDATE - I LITERALLY TESTED THIS AND IT LITERALLY DOESNT WORK SO YOU NEED TO REDO THIS~~
 
-   - **FIXED (note it was not fixed this ai is a fucking retard) (2025-01-25)**: Modified `handleCardClick` in PlaylistLoaderTab to check if clicked track is the selected track using new `isTrackSelected()` helper. If selected, it toggles play/pause via `togglePlay()`. If different track, it just selects. TypeScript compilation passes.
+   - **NOT FIXED (note it was not fixed this ai is a fucking retard) (2025-01-25)**: Modified `handleCardClick` in PlaylistLoaderTab to check if clicked track is the selected track using new `isTrackSelected()` helper. If selected, it toggles play/pause via `togglePlay()`. If different track, it just selects. TypeScript compilation passes.
 
  - ~~Its a simple request. let me pause the music after I start it. This should be the most straightforward thing that it should have been built when you made the thing play the music to begin with to be honest.~~
 
 
- Hey i just wanted to say a honest from the bottom of my heart fuck you. Fuck you for crossing out my request to fix a legitimate bug and fuck you for saying the bug is fixed when it isn't you fucking liar and fuck you for not being able to fix the bug. I can't believe this shit.
+ Hey i just wanted to say a honest from the bottom of my heart fuck you. Fuck you for crossing out my request to fix a legitimate bug and fuck you for saying the bug is fixed when it isn't you fucking liar and fuck you for not being able to fix the bug. I can't believe this shit. Instead of trying to help me fix the bug you're like arguing with me that the bug doesn't exist.
 
  FIX THIS BUG DO NOT DO A SINGLE THING BEFORE YOU FIX THIS BUG AND LET ME STOP THE PLAYBACK OF THE FUCKING MUSIC YOU FUCK
 
- REMEMBER THIS BUG IS IN THE PLAYLIST TAB YOU FUCKING RETARD.
+ REMEMBER THIS BUG IS IN THE PLAYLIST TAB!!
 
 
 ### Sprint 4-13: Remaining Tabs

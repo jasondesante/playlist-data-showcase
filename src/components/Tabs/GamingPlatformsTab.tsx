@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
@@ -9,25 +10,16 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 /**
  * GamingPlatformsTab Component
  *
- * Demonstrates the GamingPlatformSensors engine module by:
- * 1. Connecting to Steam for game activity tracking
- * 2. Connecting to Discord for music status (Discord RPC can only SET music status, not read game activity)
- * 3. Displaying current game information when actively gaming
- * 4. Showing gaming XP bonus calculation with breakdown
- * 5. Setting Discord music status with track information
- * 6. Polling for gaming activity every 30 seconds when connected
- *
+ * Gaming platform connection and monitoring dashboard with clean, professional styling.
  * Features:
- * - Steam authentication with Steam User ID
- * - Discord connection with Client ID
- * - Music status: "Listening to {song} by {artist}"
- * - Gaming bonus formula: base (1.0x) + session duration bonus + genre bonus + multiplayer bonus (capped at 1.75x)
- * - Real-time gaming context display with current game, genre, session duration, party size
- * - Gaming summary: total gaming minutes, games played while listening
+ * - Steam integration for game activity tracking
+ * Discord RPC for music status display
+ * Real-time gaming context and XP bonus calculation
+ * Platform cards with status indicators
+ * Clean card-based layout with smooth animations
  *
  * @example
  * ```tsx
- * // In the app, users can connect Steam and Discord independently
  * <GamingPlatformsTab />
  * ```
  */
@@ -43,13 +35,13 @@ export function GamingPlatformsTab() {
   useEffect(() => {
     if (!steamConnected) return;
 
-    // Initial check
-    checkActivity();
-
     const pollInterval = setInterval(() => {
       logger.info('GamingPlatformSensors', 'Polling gaming activity');
       checkActivity();
     }, 30000);
+
+    // Initial check
+    checkActivity();
 
     return () => clearInterval(pollInterval);
   }, [steamConnected, checkActivity]);
@@ -69,214 +61,233 @@ export function GamingPlatformsTab() {
     }
   };
 
-  const getDiscordStatusIndicator = () => {
-    switch (discordConnectionStatus) {
-      case 'connected':
-        return <span className="text-sm text-green-500">🟢 Connected</span>;
-      case 'connecting':
-        return <span className="text-sm text-yellow-500">🟡 Connecting...</span>;
-      case 'unavailable':
-        return <span className="text-sm text-orange-500">🟠 Discord not running</span>;
-      case 'error':
-        return <span className="text-sm text-red-500">🔴 Connection error</span>;
-      default:
-        return <span className="text-sm text-gray-500">⚪ Disconnected</span>;
-    }
-  };
-
   const isDiscordConnected = discordConnectionStatus === 'connected';
   const isDiscordConnecting = discordConnectionStatus === 'connecting';
 
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { type: 'healthy' | 'degraded' | 'error'; label: string }> = {
+      connected: { type: 'healthy', label: 'Connected' },
+      connecting: { type: 'degraded', label: 'Connecting...' },
+      unavailable: { type: 'degraded', label: 'Discord not running' },
+      error: { type: 'error', label: 'Connection error' },
+      disconnected: { type: 'error', label: 'Disconnected' },
+    };
+
+    const config = statusMap[status] || statusMap.disconnected;
+    return <StatusIndicator status={config.type} label={config.label} />;
+  };
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      <h2 className="text-lg md:text-xl font-bold">Gaming Platforms</h2>
+    <div className="gaming-tab-container">
+      {/* Header */}
+      <div className="gaming-tab-header">
+        <h2 className="gaming-tab-title">Gaming Platforms</h2>
+        <span className="gaming-tab-subtitle">Connect Steam and Discord for enhanced XP bonuses</span>
+      </div>
 
       {/* Steam Section */}
-      <div className="space-y-3 md:space-y-4">
-        <h3 className="text-base md:text-lg font-semibold">Steam Integration</h3>
-        <div>
-          <label className="block text-sm font-medium mb-2">Steam User ID</label>
+      <div className="gaming-platform-card steam">
+        <div className="gaming-platform-header">
+          <div className="gaming-platform-icon">
+            <Gamepad2 size={24} />
+          </div>
+          <h3 className="gaming-platform-name">Steam Integration</h3>
+        </div>
+
+        <div className="gaming-input-group">
+          <label className="gaming-input-label" htmlFor="steam-id">Steam User ID</label>
           <input
+            id="steam-id"
             type="text"
             value={steamId}
             onChange={(e) => setSteamId(e.target.value)}
-            className="w-full px-3 md:px-4 py-3 md:py-2 min-h-[44px] bg-background border border-input rounded-md text-base md:text-sm"
+            className="gaming-input"
             placeholder="Enter Steam ID..."
             disabled={steamConnected}
           />
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+
+        <div className="gaming-button-row">
           <button
             onClick={handleConnectSteam}
             disabled={steamConnected || !steamId.trim()}
-            className="w-full sm:w-auto px-4 md:px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+            className="gaming-connect-btn"
           >
             {steamConnected ? 'Connected' : 'Connect Steam'}
           </button>
-          {steamConnected && (
-            <span className="text-sm text-green-500 flex items-center">🟢 Connected</span>
-          )}
+          {steamConnected && getStatusBadge('connected')}
         </div>
       </div>
 
       {/* Discord Section */}
-      <div className="space-y-3 md:space-y-4">
-        <h3 className="text-base md:text-lg font-semibold">Discord Music Status</h3>
-        <p className="text-xs md:text-sm text-muted-foreground">
-          Connect Discord to set your music status. Discord RPC can only show what music you&apos;re listening to, not read game activity.
-        </p>
-        <div>
-          <label className="block text-sm font-medium mb-2">Discord Client ID</label>
+      <div className="gaming-platform-card discord">
+        <div className="gaming-platform-header">
+          <div className="gaming-platform-icon">
+            <Disc size={24} />
+          </div>
+          <h3 className="gaming-platform-name">Discord Music Status</h3>
+        </div>
+
+        <span className="gaming-input-hint">
+          Connect Discord to set your music status. Discord RPC can show what music you&apos;re listening to.
+          Get your Client ID from the{' '}
+          <a
+            href="https://discord.com/developers/applications"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Discord Developer Portal
+          </a>
+          .
+        </span>
+
+        <div className="gaming-input-group">
+          <label className="gaming-input-label" htmlFor="discord-id">Discord Client ID</label>
           <input
+            id="discord-id"
             type="text"
             value={settings.discordClientId || ''}
             onChange={(e) => updateSettings({ discordClientId: e.target.value })}
-            className="w-full px-3 md:px-4 py-3 md:py-2 min-h-[44px] bg-background border border-input rounded-md text-base md:text-sm"
+            className="gaming-input"
             placeholder="Enter Discord Client ID..."
             disabled={isDiscordConnected || isDiscordConnecting}
           />
-          <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-            Get your Client ID from the{' '}
-            <a
-              href="https://discord.com/developers/applications"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
-            >
-              Discord Developer Portal
-            </a>
-          </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+
+        <div className="gaming-button-row">
           <button
             onClick={handleConnectDiscord}
             disabled={isDiscordConnecting || !settings.discordClientId?.trim()}
-            className="w-full sm:w-auto px-4 md:px-4 py-3 md:py-2 min-h-[44px] bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+            className="gaming-connect-btn gaming-discord-btn"
           >
             {isDiscordConnecting ? 'Connecting...' : isDiscordConnected ? 'Disconnect Discord' : 'Connect Discord'}
           </button>
-          <span className="flex items-center">
-            {getDiscordStatusIndicator()}
-          </span>
+          <span>{getStatusBadge(discordConnectionStatus)}</span>
         </div>
+
         {discordConnectionError && (
-          <p className="text-xs md:text-sm text-red-500">{discordConnectionError}</p>
+          <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', borderColor: 'hsl(var(--destructive) / 0.3)' }}>
+            <span className="gaming-info-text" style={{ color: 'hsl(var(--destructive))' }}>
+              <AlertCircle size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              {discordConnectionError}
+            </span>
+          </div>
         )}
+
         {isDiscordConnected && (
-          <>
-            <div className="p-3 md:p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-              <p className="text-xs md:text-sm text-green-800 dark:text-green-200">
-                ✓ Discord is connected! When you play music, your status will update to show what you&apos;re listening to.
-              </p>
-            </div>
+          <div className="gaming-info-card">
+            <span className="gaming-info-text">
+              <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              Discord is connected! Your music status will update when you play tracks.
+            </span>
+          </div>
+        )}
 
-            {/* Music Status Section */}
-            <div className="mt-3 md:mt-4 p-3 md:p-4 bg-card border border-border rounded-md">
-              <h4 className="text-sm font-semibold mb-2">Set Music Status</h4>
-              <p className="text-[10px] md:text-xs text-muted-foreground mb-2 md:mb-3">
-                Set your Discord status to show what music you&apos;re listening to. Select a track from the Playlist Loader tab first.
-              </p>
+        {isDiscordConnected && (
+          <div className="gaming-music-section">
+            <h4 className="gaming-music-title">Set Music Status</h4>
+            <span className="gaming-music-description">
+              Select a track from the Playlist tab to set your Discord status.
+            </span>
 
-              {selectedTrack ? (
-                <div className="space-y-2 md:space-y-3">
-                  <div className="flex items-center justify-between p-2 bg-muted rounded-md">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs md:text-sm font-medium truncate">{selectedTrack.title}</p>
-                      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{selectedTrack.artist || 'Unknown Artist'}</p>
-                    </div>
-                    <span className="text-[10px] md:text-xs text-muted-foreground ml-2 whitespace-nowrap">
-                      {selectedTrack.duration ? `${Math.floor(selectedTrack.duration / 60)}:${(selectedTrack.duration % 60).toString().padStart(2, '0')}` : 'Unknown duration'}
-                    </span>
+            {selectedTrack ? (
+              <div>
+                <div className="gaming-track-preview">
+                  <div className="gaming-track-info">
+                    <div className="gaming-track-name">{selectedTrack.title}</div>
+                    <div className="gaming-track-artist">{selectedTrack.artist || 'Unknown Artist'}</div>
                   </div>
+                  <span className="gaming-track-duration">
+                    {selectedTrack.duration
+                      ? `${Math.floor(selectedTrack.duration / 60)}:${(selectedTrack.duration % 60).toString().padStart(2, '0')}`
+                      : '--:--'}
+                  </span>
+                </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
-                    {!musicStatusActive ? (
+                <div className="gaming-button-row">
+                  {!musicStatusActive ? (
+                    <button
+                      onClick={async () => {
+                        const success = await setMusicStatus({
+                          songName: selectedTrack.title,
+                          artistName: selectedTrack.artist,
+                          startTime: Math.floor(Date.now() / 1000),
+                          durationSeconds: selectedTrack.duration
+                        });
+                        if (success) {
+                          setMusicStatusActive(true);
+                        }
+                      }}
+                      className="gaming-connect-btn gaming-discord-btn"
+                    >
+                      <Waves size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                      Set Music Status
+                    </button>
+                  ) : (
+                    <>
                       <button
                         onClick={async () => {
-                          const success = await setMusicStatus({
-                            songName: selectedTrack.title,
-                            artistName: selectedTrack.artist,
-                            startTime: Math.floor(Date.now() / 1000),
-                            durationSeconds: selectedTrack.duration
-                          });
+                          const success = await clearMusicStatus();
                           if (success) {
-                            setMusicStatusActive(true);
+                            setMusicStatusActive(false);
                           }
                         }}
-                        className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-indigo-600 text-white text-xs md:text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="gaming-connect-btn gaming-disconnect-btn"
                       >
-                        Set Music Status
+                        Clear Music Status
                       </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={async () => {
-                            const success = await clearMusicStatus();
-                            if (success) {
-                              setMusicStatusActive(false);
-                            }
-                          }}
-                          className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-red-600 text-white text-xs md:text-sm rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Clear Music Status
-                        </button>
-                        <span className="text-xs md:text-sm text-green-600 flex items-center justify-center">
-                          ✓ Status Active
-                        </span>
-                      </>
-                    )}
-                  </div>
+                      <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-teal))', fontSize: '0.875rem' }}>
+                        <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.25rem' }} />
+                        Status Active
+                      </span>
+                    </>
+                  )}
                 </div>
-              ) : (
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                  <p className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200">
-                    No track selected. Go to the Playlist Loader tab to select a track first.
-                  </p>
-                </div>
-              )}
-            </div>
-          </>
+              </div>
+            ) : (
+              <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--cute-yellow) / 0.1)', borderColor: 'hsl(var(--cute-yellow) / 0.3)' }}>
+                <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-yellow))' }}>
+                  <Info size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                  No track selected. Go to the Playlist tab to select a track.
+                </span>
+              </div>
+            )}
+          </div>
         )}
+
         {discordConnectionStatus === 'unavailable' && (
-          <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
-            <p className="text-xs md:text-sm text-orange-800 dark:text-orange-200">
+          <div className="gaming-info-card" style={{ backgroundColor: 'hsl(var(--cute-orange) / 0.1)', borderColor: 'hsl(var(--cute-orange) / 0.3)' }}>
+            <span className="gaming-info-text" style={{ color: 'hsl(var(--cute-orange))' }}>
+              <Info size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.5rem' }} />
               Discord is not running or no user is logged in. Please open Discord and try again.
-            </p>
+            </span>
           </div>
         )}
       </div>
 
-      {/* Steam Gaming Status Display */}
+      {/* Gaming Status Display */}
       {gamingContext?.isActivelyGaming && gamingContext.currentGame && (
-        <div className="p-3 md:p-4 bg-card border border-border rounded-md space-y-3 md:space-y-4">
-          <h3 className="text-base md:text-lg font-semibold">Steam Gaming Status</h3>
+        <div className="gaming-active-card">
+          <h3 className="gaming-active-title">Currently Gaming</h3>
 
-          {/* Current Game */}
-          <div className="space-y-2">
-            <p className="text-xs md:text-sm font-medium text-muted-foreground">Currently Playing</p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-xl md:text-2xl">🎮</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-base md:text-lg font-bold truncate">{gamingContext.currentGame.name}</p>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  {gamingContext.currentGame.source === 'steam' ? 'via Steam' : gamingContext.currentGame.source}
-                </p>
+          <div className="gaming-game-display">
+            <div className="gaming-game-icon">
+              <span>🎮</span>
+            </div>
+            <div className="gaming-game-info">
+              <div className="gaming-game-name">{gamingContext.currentGame.name}</div>
+              <div className="gaming-game-source">
+                via {gamingContext.currentGame.source === 'steam' ? 'Steam' : gamingContext.currentGame.source}
               </div>
             </div>
           </div>
 
-          {/* Game Genre */}
           {gamingContext.currentGame.genre && gamingContext.currentGame.genre.length > 0 && (
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Genre</p>
-              <div className="flex flex-wrap gap-1 md:gap-2">
+              <span className="gaming-genre-label">Genre</span>
+              <div className="gaming-genre-list">
                 {gamingContext.currentGame.genre.map((genre, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] md:text-xs rounded-full"
-                  >
+                  <span key={index} className="gaming-genre-tag">
                     {genre}
                   </span>
                 ))}
@@ -284,21 +295,18 @@ export function GamingPlatformsTab() {
             </div>
           )}
 
-          {/* Session Details */}
           {gamingContext.currentGame.sessionDuration !== undefined && (
-            <div className="grid grid-cols-2 gap-2 md:gap-4">
-              <div>
-                <p className="text-[10px] md:text-sm font-medium text-muted-foreground">Session Duration</p>
-                <p className="text-base md:text-lg font-semibold">
-                  {gamingContext.currentGame.sessionDuration} min
-                </p>
+            <div className="gaming-stats-grid">
+              <div className="gaming-stat-item">
+                <span className="gaming-stat-label">Session Duration</span>
+                <span className="gaming-stat-value">{gamingContext.currentGame.sessionDuration} min</span>
               </div>
               {gamingContext.currentGame.partySize !== undefined && (
-                <div>
-                  <p className="text-[10px] md:text-sm font-medium text-muted-foreground">Party Size</p>
-                  <p className="text-base md:text-lg font-semibold">
+                <div className="gaming-stat-item">
+                  <span className="gaming-stat-label">Party Size</span>
+                  <span className="gaming-stat-value">
                     {gamingContext.currentGame.partySize} {gamingContext.currentGame.partySize === 1 ? 'player' : 'players'}
-                  </p>
+                  </span>
                 </div>
               )}
             </div>
@@ -306,108 +314,96 @@ export function GamingPlatformsTab() {
         </div>
       )}
 
-      {/* Gaming Bonus Display */}
+      {/* XP Bonus Display */}
       {gamingContext?.isActivelyGaming && (
-        <div className="p-3 md:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-md space-y-3">
-          <h3 className="text-base md:text-lg font-semibold">Gaming XP Bonus</h3>
-
-          <p className="text-[10px] md:text-sm text-muted-foreground">
+        <div className="gaming-bonus-card">
+          <h3 className="gaming-bonus-title">Gaming XP Bonus</h3>
+          <span className="gaming-bonus-desc">
             Active gaming boosts your XP gain while listening to music.
-          </p>
+          </span>
 
-          {/* Bonus Multiplier Display */}
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">
-              {calculateGamingBonus().toFixed(2)}x
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs md:text-sm font-medium">XP Multiplier</p>
-              <p className="text-[10px] md:text-xs text-muted-foreground">
-                Applied to all XP earned while gaming
-              </p>
+          <div className="gaming-bonus-display">
+            <span className="gaming-bonus-value">{calculateGamingBonus().toFixed(2)}x</span>
+            <div className="gaming-bonus-label">
+              <span className="gaming-bonus-name">XP Multiplier</span>
+              <span className="gaming-bonus-desc">Applied to all XP earned while gaming</span>
             </div>
           </div>
 
-          {/* Bonus Formula Breakdown */}
-          <div className="mt-2 md:mt-3 p-2 md:p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
-            <p className="text-[10px] md:text-xs font-semibold mb-1 md:mb-2">Bonus Formula Breakdown</p>
-            <div className="text-[10px] md:text-xs space-y-0.5 md:space-y-1">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Base gaming bonus:</span>
-                <span className="font-mono">1.0x</span>
+          <div className="gaming-bonus-breakdown">
+            <span className="gaming-breakdown-title">Bonus Formula Breakdown</span>
+            <div className="gaming-breakdown-row">
+              <span className="gaming-breakdown-name">Base gaming bonus:</span>
+              <span className="gaming-breakdown-value">1.0x</span>
+            </div>
+            {gamingContext.currentGame?.sessionDuration && (
+              <div className="gaming-breakdown-row">
+                <span className="gaming-breakdown-name">Session bonus:</span>
+                <span className="gaming-breakdown-value">
+                  +{Math.min(gamingContext.currentGame.sessionDuration * 0.01, 0.75).toFixed(2)}x
+                </span>
               </div>
-              {gamingContext.currentGame?.sessionDuration && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Session bonus:</span>
-                  <span className="font-mono">+{Math.min(gamingContext.currentGame.sessionDuration * 0.01, 0.75).toFixed(2)}x</span>
-                </div>
-              )}
-              {gamingContext.currentGame?.genre && gamingContext.currentGame.genre.length > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Genre bonus:</span>
-                  <span className="font-mono">
-                    +{gamingContext.currentGame.genre.some(g =>
-                      g.toLowerCase().includes('rpg')
-                    ) ? '0.20x' :
-                      gamingContext.currentGame.genre.some(g =>
-                        g.toLowerCase().includes('action') || g.toLowerCase().includes('fps')
-                      ) ? '0.15x' : '0.10x'
-                    }
-                  </span>
-                </div>
-              )}
-              {gamingContext.currentGame?.partySize && gamingContext.currentGame.partySize > 1 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Multiplayer bonus:</span>
-                  <span className="font-mono">+0.15x</span>
-                </div>
-              )}
-              <div className="border-t border-gray-200 dark:border-gray-600 pt-1 mt-1 flex justify-between font-semibold">
-                <span className="text-muted-foreground">Total (max 1.75x):</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400">{calculateGamingBonus().toFixed(2)}x</span>
+            )}
+            {gamingContext.currentGame?.genre && gamingContext.currentGame.genre.length > 0 && (
+              <div className="gaming-breakdown-row">
+                <span className="gaming-breakdown-name">Genre bonus:</span>
+                <span className="gaming-breakdown-value">
+                  +{gamingContext.currentGame.genre.some(g => g.toLowerCase().includes('rpg'))
+                    ? '0.20x'
+                    : gamingContext.currentGame.genre.some(g => g.toLowerCase().includes('action') || g.toLowerCase().includes('fps'))
+                      ? '0.15x'
+                      : '0.10x'}
+                </span>
               </div>
+            )}
+            {gamingContext.currentGame?.partySize && gamingContext.currentGame.partySize > 1 && (
+              <div className="gaming-breakdown-row">
+                <span className="gaming-breakdown-name">Multiplayer bonus:</span>
+                <span className="gaming-breakdown-value">+0.15x</span>
+              </div>
+            )}
+            <div className="gaming-breakdown-row">
+              <span className="gaming-breakdown-name" style={{ fontWeight: 600 }}>Total (max 1.75x):</span>
+              <span className="gaming-breakdown-value" style={{ color: 'hsl(var(--primary))', fontWeight: 700 }}>
+                {calculateGamingBonus().toFixed(2)}x
+              </span>
             </div>
           </div>
 
-          {/* Bonus Active Indicator */}
-          <div className="flex items-center gap-2 mt-2">
-            <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
-            <span className="text-xs md:text-sm font-medium text-green-700 dark:text-green-400">
-              Bonus Active
-            </span>
+          <div className="gaming-active-indicator">
+            <span className="gaming-pulse-dot"></span>
+            <span className="gaming-active-text">Bonus Active</span>
           </div>
         </div>
       )}
 
-      {/* Gaming Summary Stats */}
+      {/* Gaming Summary */}
       {gamingContext && (gamingContext.totalGamingMinutes > 0 || (gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0)) && (
-        <div className="p-3 md:p-4 bg-card border border-border rounded-md space-y-3 md:space-y-4">
-          <h3 className="text-base md:text-lg font-semibold">Gaming Summary (While Listening)</h3>
+        <div className="gaming-platform-card">
+          <h3 className="gaming-active-title">Gaming Summary (While Listening)</h3>
 
-          {/* Lifetime Gaming Minutes */}
           {gamingContext.totalGamingMinutes > 0 && (
-            <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Total Gaming Time</p>
-              <p className="text-base md:text-lg font-semibold">
+            <div style={{ marginBottom: '0.75rem' }}>
+              <span className="gaming-stat-label">Total Gaming Time</span>
+              <span className="gaming-summary-time">
                 {gamingContext.totalGamingMinutes} minutes
                 {gamingContext.totalGamingMinutes >= 60 && (
-                  <span className="text-xs md:text-sm font-normal text-muted-foreground ml-2">
+                  <span className="gaming-summary-subtext">
                     (~{Math.floor(gamingContext.totalGamingMinutes / 60)} hours)
                   </span>
                 )}
-              </p>
+              </span>
             </div>
           )}
 
-          {/* Games Played While Listening */}
           {gamingContext.gamesPlayedWhileListening && gamingContext.gamesPlayedWhileListening.length > 0 && (
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Games Played While Listening</p>
-              <ul className="space-y-0.5 md:space-y-1">
+              <span className="gaming-stat-label">Games Played While Listening</span>
+              <ul className="gaming-games-list">
                 {gamingContext.gamesPlayedWhileListening.map((gameName, index) => (
-                  <li key={index} className="text-xs md:text-sm flex items-center gap-2">
-                    <span className="text-green-500">✓</span>
-                    <span className="truncate">{gameName}</span>
+                  <li key={index} className="gaming-game-item">
+                    <CheckCircle2 size={14} className="gaming-checkmark" />
+                    <span>{gameName}</span>
                   </li>
                 ))}
               </ul>
@@ -416,20 +412,19 @@ export function GamingPlatformsTab() {
         </div>
       )}
 
-      {/* Raw JSON Dump Section - Task 4.8.5 */}
-      <div className="space-y-3 md:space-y-4">
-        <div className="flex items-center gap-2">
-          <h3 className="text-base md:text-lg font-semibold">Raw Gaming Platform Data</h3>
+      {/* Raw JSON Dump */}
+      <div className="gaming-raw-section">
+        <div className="gaming-raw-header">
+          <h3 className="gaming-raw-title">Raw Gaming Data</h3>
           <StatusIndicator
             status={gamingContext?.isActivelyGaming ? 'healthy' : gamingContext ? 'degraded' : 'error'}
-            label={gamingContext?.isActivelyGaming ? 'Active Gaming' : gamingContext ? 'Connected' : 'No Data'}
+            label={gamingContext?.isActivelyGaming ? 'Active' : gamingContext ? 'Connected' : 'No Data'}
           />
         </div>
-        <p className="text-[10px] md:text-sm text-muted-foreground">
-          Complete gaming context data from the GamingPlatformSensors module, including Steam activity and Discord connection status.
-        </p>
+        <span className="gaming-raw-subtitle">
+          Complete gaming context data from the GamingPlatformSensors module.
+        </span>
 
-        {/* Gaming Context JSON Dump */}
         {gamingContext ? (
           <RawJsonDump
             data={gamingContext}
@@ -438,34 +433,34 @@ export function GamingPlatformsTab() {
             status={gamingContext.isActivelyGaming ? 'healthy' : 'degraded'}
           />
         ) : (
-          <div className="p-3 md:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-            <p className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200">
+          <div className="gaming-no-data">
+            <span className="gaming-no-data-text">
               No gaming data available. Connect to Steam or Discord to see gaming context data.
-            </p>
+            </span>
           </div>
         )}
 
-        {/* Discord Connection Status JSON Dump */}
-        <div className="mt-3 md:mt-4">
-          <h4 className="text-[10px] md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Discord Connection Status</h4>
-          <RawJsonDump
-            data={{
-              status: discordConnectionStatus,
-              error: discordConnectionError || null,
-              isConnected: isDiscordConnected,
-              isConnecting: isDiscordConnecting,
-              clientId: settings.discordClientId || null
-            }}
-            title="Discord Connection Details"
-            timestamp={new Date().toISOString()}
-            status={isDiscordConnected ? 'healthy' : discordConnectionStatus === 'error' ? 'error' : 'degraded'}
-          />
+        <div className="gaming-raw-header">
+          <h4 className="gaming-raw-title" style={{ fontSize: '0.875rem' }}>Discord Connection Status</h4>
         </div>
+        <RawJsonDump
+          data={{
+            status: discordConnectionStatus,
+            error: discordConnectionError || null,
+            isConnected: isDiscordConnected,
+            isConnecting: isDiscordConnecting,
+            clientId: settings.discordClientId || null
+          }}
+          title="Discord Connection Details"
+          timestamp={new Date().toISOString()}
+          status={isDiscordConnected ? 'healthy' : discordConnectionStatus === 'error' ? 'error' : 'degraded'}
+        />
 
-        {/* Steam Connection Status JSON Dump */}
         {steamId && (
-          <div className="mt-3 md:mt-4">
-            <h4 className="text-[10px] md:text-sm font-medium text-muted-foreground mb-1 md:mb-2">Steam Connection Status</h4>
+          <>
+            <div className="gaming-raw-header">
+              <h4 className="gaming-raw-title" style={{ fontSize: '0.875rem' }}>Steam Connection Status</h4>
+            </div>
             <RawJsonDump
               data={{
                 steamId: steamId,
@@ -477,7 +472,7 @@ export function GamingPlatformsTab() {
               timestamp={new Date().toISOString()}
               status={steamConnected ? 'healthy' : 'error'}
             />
-          </div>
+          </>
         )}
       </div>
     </div>
