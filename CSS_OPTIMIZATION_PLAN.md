@@ -1300,7 +1300,7 @@ import './PlaylistLoaderTab.css';
 - [x] [Task 23a] Verify PlaylistLoaderTab classes are moved from index.css
 - [x] [Task 23b] Verify AudioAnalysisTab classes are moved from index.css
 - [x] [Task 23c] Verify CharacterGenTab classes are moved from index.css
-- [ ] [Task 23d] Verify SessionTrackingTab classes are moved from index.css
+- [x] [Task 23d] Verify SessionTrackingTab classes are moved from index.css
 - [ ] [Task 23e] Verify XPCalculatorTab classes are moved from index.css
 - [ ] [Task 23f] Verify CharacterLevelingTab classes are moved from index.css
 - [ ] [Task 23g] Verify EnvironmentalSensorsTab classes are moved from index.css
