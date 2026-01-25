@@ -92,18 +92,18 @@ export function CharacterLevelingTab() {
   const progress = (currentXP / nextLevel) * 100;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Character Leveling</h2>
+    <div className="space-y-4 md:space-y-6">
+      <h2 className="text-lg md:text-xl font-bold">Character Leveling</h2>
 
-      <div className="p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
-        <h3 className="text-xl font-bold">{activeChar.name}</h3>
-        <p className="text-lg text-muted-foreground">Level {activeChar.level} {activeChar.race} {activeChar.class}</p>
-        <div className="mt-4">
+      <div className="p-4 md:p-6 bg-gradient-to-r from-primary/20 to-accent rounded-lg border border-border">
+        <h3 className="text-lg md:text-xl font-bold">{activeChar.name}</h3>
+        <p className="text-base md:text-lg text-muted-foreground">Level {activeChar.level} {activeChar.race} {activeChar.class}</p>
+        <div className="mt-3 md:mt-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-muted-foreground">XP Progress</p>
-            <p className="font-mono text-sm">{currentXP} / {nextLevel}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">XP Progress</p>
+            <p className="font-mono text-xs md:text-sm">{currentXP} / {nextLevel}</p>
           </div>
-          <div className="h-3 bg-background rounded-full overflow-hidden">
+          <div className="h-2 md:h-3 bg-background rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -112,31 +112,31 @@ export function CharacterLevelingTab() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-3">Quick Add XP</label>
-          <div className="grid grid-cols-4 gap-2">
+          <label className="block text-sm font-medium mb-2 md:mb-3">Quick Add XP</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <button
               onClick={() => addXP(50)}
-              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+              className="min-h-[44px] px-3 md:px-4 py-3 md:py-2 bg-card border border-border rounded-md hover:bg-accent text-sm md:text-base"
             >
               +50 XP
             </button>
             <button
               onClick={() => addXP(100)}
-              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+              className="min-h-[44px] px-3 md:px-4 py-3 md:py-2 bg-card border border-border rounded-md hover:bg-accent text-sm md:text-base"
             >
               +100 XP
             </button>
             <button
               onClick={() => addXP(300)}
-              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+              className="min-h-[44px] px-3 md:px-4 py-3 md:py-2 bg-card border border-border rounded-md hover:bg-accent text-sm md:text-base"
             >
               +300 XP
             </button>
             <button
               onClick={() => addXP(1000)}
-              className="px-4 py-2 bg-card border border-border rounded-md hover:bg-accent"
+              className="min-h-[44px] px-3 md:px-4 py-3 md:py-2 bg-card border border-border rounded-md hover:bg-accent text-sm md:text-base"
             >
               +1000 XP
             </button>
@@ -145,17 +145,17 @@ export function CharacterLevelingTab() {
 
         <div>
           <label className="block text-sm font-medium mb-2">Custom XP Amount</label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="number"
               value={xpAmount}
               onChange={(e) => setXpAmount(Number(e.target.value))}
-              className="flex-1 px-3 py-2 bg-background border border-input rounded-md"
+              className="flex-1 px-3 py-3 md:py-2 bg-background border border-input rounded-md min-h-[44px] text-sm md:text-base"
               min="1"
             />
             <button
               onClick={() => addXP(xpAmount)}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+              className="w-full sm:w-auto px-6 py-3 md:py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 min-h-[44px] text-sm md:text-base font-medium"
             >
               Add XP
             </button>
@@ -163,20 +163,20 @@ export function CharacterLevelingTab() {
         </div>
       </div>
 
-      <div className="p-4 bg-card border border-border rounded-md">
-        <h4 className="font-medium mb-3">Current Stats</h4>
-        <div className="grid grid-cols-3 gap-4 text-sm">
+      <div className="p-3 md:p-4 bg-card border border-border rounded-md">
+        <h4 className="font-medium mb-2 md:mb-3 text-sm md:text-base">Current Stats</h4>
+        <div className="grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm">
           <div>
             <p className="text-muted-foreground">HP</p>
-            <p className="font-bold">{activeChar.hp.max}</p>
+            <p className="font-bold text-sm md:text-base">{activeChar.hp.max}</p>
           </div>
           <div>
             <p className="text-muted-foreground">AC</p>
-            <p className="font-bold">{activeChar.armor_class}</p>
+            <p className="font-bold text-sm md:text-base">{activeChar.armor_class}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Prof Bonus</p>
-            <p className="font-bold">+{activeChar.proficiency_bonus}</p>
+            <p className="font-bold text-sm md:text-base">+{activeChar.proficiency_bonus}</p>
           </div>
         </div>
       </div>
