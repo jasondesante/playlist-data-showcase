@@ -6,6 +6,7 @@ Do the earlier tasks first, they're ordered that way for a reason and I think yo
 
 Make sure the css looks nice. YOUR JOB IS TO MAKE THE CSS LOOK BETTER.
 
+Use the front end design skill
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
