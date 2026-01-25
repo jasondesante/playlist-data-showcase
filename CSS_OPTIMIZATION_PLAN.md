@@ -1140,12 +1140,12 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Run `npm run check:css` - should show balanced braces
 
 **Task 4: Extract Base CSS**
-- [ ] Create `src/styles/base.css`
-- [ ] Copy `:root` CSS variables from index.css
-- [ ] Copy base HTML element styles (html, body, headings, links)
-- [ ] Copy form element base styles
-- [ ] Remove all `@layer` directives from the copied CSS
-- [ ] Test: No visual changes, stylelint passes
+- [x] Create `src/styles/base.css`
+- [x] Copy `:root` CSS variables from index.css
+- [x] Copy base HTML element styles (html, body, headings, links)
+- [x] Copy form element base styles
+- [x] Remove all `@layer` directives from the copied CSS
+- [x] Test: No visual changes, stylelint passes
 
 ### Phase 2: Shared CSS Files
 
