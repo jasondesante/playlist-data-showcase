@@ -492,14 +492,14 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 1. No one ever wanted tailwind to exist and I have no reason why the website looks so fucking shit despite me spending so many hours guiding you to make the site look better and I guess its because you're out here changing tailwind classes when tailwind isn't even installed in the project or something I have literally no clue and I don't care your job for this task is to write a whole list of new tasks that involve completely removing tailwind and all those fake stupid classes that are stupid and actually write it yourself with real css like a real man.
 
 ### Sprint 1: Foundation
-1. ✅ Add color tokens and animation utilities to `src/index.css`
-2. ✅ Create `Button.tsx` component
-3. ✅ Create `Input.tsx` component
-4. ✅ Create `Card.tsx` component
-5. ✅ Create `Skeleton.tsx` component
+1.  Add color tokens and animation utilities to `src/index.css`
+2.  Create `Button.tsx` component
+3.  Create `Input.tsx` component
+4.  Create `Card.tsx` component
+5.  Create `Skeleton.tsx` component
 
 ### Sprint 2: Track Card Component
-6. ✅ Create `TrackCard.tsx` with all features:
+6.  Create `TrackCard.tsx` with all features:
    - small album art with fallback
    - Track number display
    - Selection states
@@ -508,19 +508,19 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ### Sprint 3: Playlist Tab (Primary Focus)
 7. Redesign `PlaylistLoaderTab.tsx`:
-   - ✅ Header section (icon badge with music note, subtitle, larger text)
-   - ✅ Input section
-   - ✅ Playlist header with large artwork
-   - ✅ Search functionality
-   - ✅ Track list with TrackCard components
-   - ✅ Empty states
-   - ✅ Loading skeletons
+   -  Header section (icon badge with music note, subtitle, larger text)
+   -  Input section
+   -  Playlist header with large artwork
+   -  Search functionality
+   -  Track list with TrackCard components
+   -  Empty states
+   -  Loading skeletons
 
 
    ### Sprint 0 : make sure the css looks good
    - ✅ make sure the site doesn't look like shit
    - ✅ actual good looking css for the page
-  - ✅ FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
+  -  FIX OVERSIZED IMAGES: the images are huge bro the site looks worse still. You have to actually change things so it looks better.
      - Reduced playlist header image from 192px-224px to 128px-160px (w-32 h-32 sm:w-40 sm:h-40)
      - Further reduced playlist header to 96px-112px (w-24 h-24 sm:w-28 sm:h-28) for better proportions
      - Reduced header padding from p-4 md:p-6 to p-3 md:p-4
