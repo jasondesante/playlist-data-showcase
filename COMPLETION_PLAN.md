@@ -1991,7 +1991,31 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
   - **Result:** Character Leveling tab now displays properly on mobile with appropriate text sizes, padding, and touch targets
   - **File Modified:** `/workspace/src/components/Tabs/CharacterLevelingTab.tsx`
   - **Build Verification:** TypeScript compilation passes (592.56 kB output)
-- [ ] Sensors: Verify permission buttons work
+- [x] Sensors: Verify permission buttons work - COMPLETED 2026-01-25
+  - **Issues Found:** Environmental Sensors tab had several mobile responsiveness issues
+  - **Fixes Implemented:**
+    - Changed permission cards from `grid-cols-3` to `grid-cols-1 sm:grid-cols-3` for proper mobile stacking
+    - Made permission card padding responsive: `p-3 md:p-4`
+    - Made permission buttons full width on mobile with `w-full`
+    - Increased permission button padding: `px-3 md:px-4 py-2 md:py-3`
+    - Added `min-h-[44px]` to all permission buttons for adequate touch targets
+    - Made "Start Monitoring" button full width on mobile: `w-full sm:w-auto`
+    - Increased "Start Monitoring" button padding: `px-4 md:px-6 py-3 md:py-2`
+    - Made all section headers responsive: `text-sm md:text-base` or `text-base md:text-lg`
+    - Made GPS coordinate boxes padding responsive: `p-2 md:p-3`
+    - Made GPS coordinate text responsive: `text-base md:text-lg`
+    - Made GPS data grid gaps responsive: `gap-1 md:gap-2`
+    - Made GPS data text smaller on mobile: `text-[10px] md:text-xs`
+    - Made motion graphs spacing responsive: `space-y-2 md:space-y-3`
+    - Made weather icons responsive: `text-4xl md:text-5xl`
+    - Made temperature text responsive: `text-2xl md:text-3xl`
+    - Made weather details grid gaps responsive: `gap-2 md:gap-3`
+    - Made weather detail padding responsive: `p-2 md:p-3`
+    - Made weather detail text responsive: `text-[10px] md:text-xs` and `text-xs md:text-sm`
+    - Hid verbose "DeviceMotionEvent supported?" text on mobile
+  - **Result:** Environmental Sensors tab now displays properly on mobile with appropriate text sizes, padding, and touch targets
+  - **File Modified:** `/workspace/src/components/Tabs/EnvironmentalSensorsTab.tsx`
+  - **Build Verification:** TypeScript compilation passes (593.93 kB output)
 - [ ] Gaming: Verify inputs work
 - [ ] Combat: Verify cards stack
 - [ ] Settings: Verify inputs work

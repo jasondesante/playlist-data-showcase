@@ -75,12 +75,12 @@ export function EnvironmentalSensorsTab() {
   }, [environmentalContext?.motion?.accelerationIncludingGravity]);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Environmental Sensors</h2>
+    <div className="space-y-4 md:space-y-6">
+      <h2 className="text-lg md:text-xl font-bold">Environmental Sensors</h2>
 
       <div className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 bg-card border border-border rounded-md">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Geolocation</p>
               <StatusIndicator status={permissionToStatus(permissions.geolocation)} />
@@ -88,12 +88,12 @@ export function EnvironmentalSensorsTab() {
             <p className="text-xs text-muted-foreground">{permissions.geolocation}</p>
             <button
               onClick={() => requestPermission('geolocation')}
-              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
             >
               Request
             </button>
           </div>
-          <div className="p-4 bg-card border border-border rounded-md">
+          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Motion</p>
               <StatusIndicator status={permissionToStatus(permissions.motion)} />
@@ -101,12 +101,12 @@ export function EnvironmentalSensorsTab() {
             <p className="text-xs text-muted-foreground">{permissions.motion}</p>
             <button
               onClick={() => requestPermission('motion')}
-              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
             >
               Request
             </button>
           </div>
-          <div className="p-4 bg-card border border-border rounded-md">
+          <div className="p-3 md:p-4 bg-card border border-border rounded-md">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Light</p>
               <StatusIndicator status={permissionToStatus(permissions.light)} />
@@ -114,7 +114,7 @@ export function EnvironmentalSensorsTab() {
             <p className="text-xs text-muted-foreground">{permissions.light}</p>
             <button
               onClick={() => requestPermission('light')}
-              className="mt-2 px-3 py-1 text-sm bg-primary text-primary-foreground rounded"
+              className="mt-2 w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-primary text-primary-foreground rounded min-h-[44px] hover:opacity-90 transition-opacity"
             >
               Request
             </button>
@@ -124,7 +124,7 @@ export function EnvironmentalSensorsTab() {
         <button
           onClick={() => startMonitoring()}
           disabled={isMonitoring}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+          className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-2 text-sm md:text-base bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 min-h-[44px]"
         >
           {isMonitoring ? 'Monitoring...' : 'Start Monitoring'}
         </button>
@@ -137,25 +137,25 @@ export function EnvironmentalSensorsTab() {
         )}
 
         {environmentalContext ? (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* GPS Location Display */}
             {(environmentalContext as any).location ? (
-              <div className="p-5 bg-blue-900/20 border border-blue-700 rounded-lg">
-                <h3 className="font-bold text-blue-300 flex items-center gap-2">
+              <div className="p-3 md:p-5 bg-blue-900/20 border border-blue-700 rounded-lg">
+                <h3 className="font-bold text-blue-300 flex items-center gap-2 text-base md:text-lg">
                   📍 GPS Location
                 </h3>
 
                 {/* Mini Map Placeholder with Coordinates */}
-                <div className="mt-3 grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-black/30 rounded border border-blue-600">
+                <div className="mt-3 grid grid-cols-2 gap-2 md:gap-4">
+                  <div className="p-2 md:p-3 bg-black/30 rounded border border-blue-600">
                     <p className="text-xs text-blue-400">Latitude</p>
-                    <p className="text-lg font-mono font-bold">
+                    <p className="text-base md:text-lg font-mono font-bold">
                       {(environmentalContext as any).location?.coords?.latitude?.toFixed(6) ?? 'N/A'}
                     </p>
                   </div>
-                  <div className="p-3 bg-black/30 rounded border border-blue-600">
+                  <div className="p-2 md:p-3 bg-black/30 rounded border border-blue-600">
                     <p className="text-xs text-blue-400">Longitude</p>
-                    <p className="text-lg font-mono font-bold">
+                    <p className="text-base md:text-lg font-mono font-bold">
                       {(environmentalContext as any).location?.coords?.longitude?.toFixed(6) ?? 'N/A'}
                     </p>
                   </div>
@@ -192,28 +192,28 @@ export function EnvironmentalSensorsTab() {
                 </div>
 
                 {/* Additional GPS Data */}
-                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-2 text-xs">
                   {(environmentalContext as any).location?.coords?.altitude != null && (
-                    <div className="p-2 bg-black/20 rounded">
-                      <span className="text-blue-400">Altitude:</span>{' '}
-                      <span className="font-mono">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
+                    <div className="p-1 md:p-2 bg-black/20 rounded">
+                      <span className="text-blue-400 text-[10px] md:text-xs">Alt:</span>{' '}
+                      <span className="font-mono text-[10px] md:text-xs">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
                     </div>
                   )}
                   {(environmentalContext as any).location?.coords?.speed != null && (
-                    <div className="p-2 bg-black/20 rounded">
-                      <span className="text-blue-400">Speed:</span>{' '}
-                      <span className="font-mono">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
+                    <div className="p-1 md:p-2 bg-black/20 rounded">
+                      <span className="text-blue-400 text-[10px] md:text-xs">Speed:</span>{' '}
+                      <span className="font-mono text-[10px] md:text-xs">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
                     </div>
                   )}
                   {(environmentalContext as any).location?.coords?.heading != null && (
-                    <div className="p-2 bg-black/20 rounded">
-                      <span className="text-blue-400">Heading:</span>{' '}
-                      <span className="font-mono">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
+                    <div className="p-1 md:p-2 bg-black/20 rounded">
+                      <span className="text-blue-400 text-[10px] md:text-xs">Heading:</span>{' '}
+                      <span className="font-mono text-[10px] md:text-xs">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
                     </div>
                   )}
-                  <div className="p-2 bg-black/20 rounded">
-                    <span className="text-blue-400">Accuracy:</span>{' '}
-                    <span className="font-mono">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
+                  <div className="p-1 md:p-2 bg-black/20 rounded">
+                    <span className="text-blue-400 text-[10px] md:text-xs">Accuracy:</span>{' '}
+                    <span className="font-mono text-[10px] md:text-xs">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
                   </div>
                 </div>
 
@@ -222,9 +222,9 @@ export function EnvironmentalSensorsTab() {
                 </p>
               </div>
             ) : (
-              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold">No GPS Data Yet</h3>
-                <ul className="mt-3 text-sm space-y-1">
+              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold text-sm md:text-base">No GPS Data Yet</h3>
+                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
                   <li>• Did you grant geolocation permission?</li>
                   <li>• GPS requires clear view of sky</li>
                   <li>• Indoor locations may have poor accuracy</li>
@@ -234,15 +234,15 @@ export function EnvironmentalSensorsTab() {
 
             {/* Live Motion Data */}
             {environmentalContext.motion ? (
-              <div className="p-5 bg-green-900/20 border border-green-700 rounded-lg">
-                <h3 className="font-bold text-green-300 flex items-center gap-2">
+              <div className="p-3 md:p-5 bg-green-900/20 border border-green-700 rounded-lg">
+                <h3 className="font-bold text-green-300 flex items-center gap-2 text-sm md:text-base">
                   Live Motion Active
                 </h3>
 
                 {/* Activity Type Display */}
-                <div className="mt-3 text-sm">
-                  <span className="text-muted-foreground">Activity:</span>{' '}
-                  <strong className="text-lg">
+                <div className="mt-2 md:mt-3 text-sm">
+                  <span className="text-muted-foreground text-xs md:text-sm">Activity:</span>{' '}
+                  <strong className="text-base md:text-lg">
                     {(() => {
                       // This is safe now because we added getCurrentActivity()
                       if (!sensors || !environmentalContext.motion) return 'unknown';
@@ -252,7 +252,7 @@ export function EnvironmentalSensorsTab() {
                 </div>
 
                 {/* Motion Graphs */}
-                <div className="mt-4 space-y-3">
+                <div className="mt-3 md:mt-4 space-y-2 md:space-y-3">
                   <MotionGraph data={xData} color="#22c55e" label="X Acceleration" />
                   <MotionGraph data={yData} color="#3b82f6" label="Y Acceleration" />
                   <MotionGraph data={zData} color="#f59e0b" label="Z Acceleration" />
@@ -263,21 +263,21 @@ export function EnvironmentalSensorsTab() {
                 </p>
               </div>
             ) : (
-              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold">No Motion Data Yet</h3>
-                <ul className="mt-3 text-sm space-y-1">
+              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold text-sm md:text-base">No Motion Data Yet</h3>
+                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
                   <li>• Did you grant motion permission? (iOS: must tap "Request")</li>
                   <li>• Is your phone flat on a table? Try tilting it!</li>
                   <li>• Motion updates only when device moves</li>
-                  <li>• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
+                  <li className="hidden md:list-item">• Check: DeviceMotionEvent supported? {typeof window !== 'undefined' && 'DeviceMotionEvent' in window ? 'Yes' : 'No'}</li>
                 </ul>
               </div>
             )}
 
             {/* Weather Status Display */}
             {environmentalContext.weather ? (
-              <div className="p-5 bg-sky-900/20 border border-sky-700 rounded-lg">
-                <h3 className="font-bold text-sky-300 flex items-center gap-2">
+              <div className="p-3 md:p-5 bg-sky-900/20 border border-sky-700 rounded-lg">
+                <h3 className="font-bold text-sky-300 flex items-center gap-2 text-sm md:text-base">
                   {(() => {
                     const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
                     if (wt.includes('clear') || wt.includes('sun')) return '☀️ Weather';
@@ -291,9 +291,9 @@ export function EnvironmentalSensorsTab() {
                 </h3>
 
                 {/* Weather Icon and Main Info */}
-                <div className="mt-3 flex items-center gap-4">
+                <div className="mt-3 flex items-center gap-3 md:gap-4">
                   {/* Large Weather Icon */}
-                  <div className="text-5xl">
+                  <div className="text-4xl md:text-5xl">
                     {(() => {
                       const wt = (environmentalContext.weather as any).weatherType?.toLowerCase() || '';
                       if (wt.includes('clear')) return '☀️';
@@ -309,10 +309,10 @@ export function EnvironmentalSensorsTab() {
 
                   {/* Temperature and Conditions */}
                   <div className="flex-1">
-                    <p className="text-3xl font-bold">
+                    <p className="text-2xl md:text-3xl font-bold">
                       {((environmentalContext.weather as any).temperature).toFixed(1)}°C
                     </p>
-                    <p className="text-sm text-muted-foreground capitalize">
+                    <p className="text-xs md:text-sm text-muted-foreground capitalize">
                       {(environmentalContext.weather as any).weatherType || 'Unknown'}
                     </p>
                     <p className="text-xs text-sky-400 mt-1">
@@ -322,7 +322,7 @@ export function EnvironmentalSensorsTab() {
 
                   {/* Day/Night Indicator */}
                   <div className="text-center">
-                    <div className="text-2xl">
+                    <div className="text-xl md:text-2xl">
                       {(environmentalContext.weather as any).isNight ? '🌙' : '☀️'}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -332,14 +332,14 @@ export function EnvironmentalSensorsTab() {
                 </div>
 
                 {/* Weather Details Grid */}
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
                   {/* Humidity */}
-                  <div className="p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">💧</span>
+                  <div className="p-2 md:p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <span className="text-base md:text-lg">💧</span>
                       <div>
-                        <p className="text-xs text-sky-400">Humidity</p>
-                        <p className="font-mono font-bold">
+                        <p className="text-[10px] md:text-xs text-sky-400">Humidity</p>
+                        <p className="font-mono font-bold text-xs md:text-sm">
                           {((environmentalContext.weather as any).humidity).toFixed(0)}%
                         </p>
                       </div>
@@ -347,12 +347,12 @@ export function EnvironmentalSensorsTab() {
                   </div>
 
                   {/* Wind Speed */}
-                  <div className="p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">💨</span>
+                  <div className="p-2 md:p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <span className="text-base md:text-lg">💨</span>
                       <div>
-                        <p className="text-xs text-sky-400">Wind Speed</p>
-                        <p className="font-mono font-bold">
+                        <p className="text-[10px] md:text-xs text-sky-400">Wind Speed</p>
+                        <p className="font-mono font-bold text-xs md:text-sm">
                           {((environmentalContext.weather as any).windSpeed).toFixed(1)} m/s
                         </p>
                       </div>
@@ -360,12 +360,12 @@ export function EnvironmentalSensorsTab() {
                   </div>
 
                   {/* Wind Direction */}
-                  <div className="p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🧭</span>
+                  <div className="p-2 md:p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <span className="text-base md:text-lg">🧭</span>
                       <div>
-                        <p className="text-xs text-sky-400">Wind Direction</p>
-                        <p className="font-mono font-bold">
+                        <p className="text-[10px] md:text-xs text-sky-400">Wind Dir</p>
+                        <p className="font-mono font-bold text-xs md:text-sm">
                           {((environmentalContext.weather as any).windDirection).toFixed(0)}°
                         </p>
                       </div>
@@ -373,12 +373,12 @@ export function EnvironmentalSensorsTab() {
                   </div>
 
                   {/* Pressure */}
-                  <div className="p-3 bg-black/20 rounded">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🔵</span>
+                  <div className="p-2 md:p-3 bg-black/20 rounded">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <span className="text-base md:text-lg">🔵</span>
                       <div>
-                        <p className="text-xs text-sky-400">Pressure</p>
-                        <p className="font-mono font-bold">
+                        <p className="text-[10px] md:text-xs text-sky-400">Pressure</p>
+                        <p className="font-mono font-bold text-xs md:text-sm">
                           {((environmentalContext.weather as any).pressure).toFixed(0)} hPa
                         </p>
                       </div>
@@ -387,9 +387,9 @@ export function EnvironmentalSensorsTab() {
                 </div>
 
                 {/* Moon Phase */}
-                <div className="mt-3 p-3 bg-black/20 rounded">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">
+                <div className="mt-2 md:mt-3 p-2 md:p-3 bg-black/20 rounded">
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <span className="text-base md:text-lg">
                       {(() => {
                         const phase = (environmentalContext.weather as any).moonPhase || 0;
                         if (phase < 0.125) return '🌑'; // New moon
@@ -403,8 +403,8 @@ export function EnvironmentalSensorsTab() {
                       })()}
                     </span>
                     <div className="flex-1">
-                      <p className="text-xs text-sky-400">Moon Phase</p>
-                      <p className="text-sm font-mono">
+                      <p className="text-[10px] md:text-xs text-sky-400">Moon Phase</p>
+                      <p className="text-xs md:text-sm font-mono">
                         {(((environmentalContext.weather as any).moonPhase || 0) * 100).toFixed(0)}%
                       </p>
                     </div>
@@ -416,9 +416,9 @@ export function EnvironmentalSensorsTab() {
                 </p>
               </div>
             ) : (
-              <div className="p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
-                <h3 className="font-bold">No Weather Data Yet</h3>
-                <ul className="mt-3 text-sm space-y-1">
+              <div className="p-3 md:p-5 bg-orange-900/30 border border-orange-700 rounded-lg text-orange-300">
+                <h3 className="font-bold text-sm md:text-base">No Weather Data Yet</h3>
+                <ul className="mt-2 md:mt-3 text-xs md:text-sm space-y-1">
                   <li>• Add OpenWeather API key in Settings tab</li>
                   <li>• Weather requires API key from openweathermap.org</li>
                   <li>• Data updates every 30 seconds during monitoring</li>
