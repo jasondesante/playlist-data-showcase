@@ -1,3 +1,14 @@
+<!--
+  HISTORICAL DOCUMENT - Last updated December 2025
+
+  For current implementation status, see /IMPLEMENTATION_STATUS.md
+  For current task breakdown, see /COMPLETION_PLAN.md
+
+  This document contains the original feature specification for the
+  Playlist Data Engine Showcase App. It is kept here for historical
+  context. The actual implementation may differ from this original spec.
+-->
+
 # Feature Specification: Playlist Data Engine Showcase App
 
 **Feature Branch**: `01-engine-showcase`

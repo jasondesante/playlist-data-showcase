@@ -1,3 +1,14 @@
+<!--
+  HISTORICAL DOCUMENT - Last updated December 2025
+
+  For current implementation status, see /IMPLEMENTATION_STATUS.md
+  For current task breakdown, see /COMPLETION_PLAN.md
+
+  This document contains the original requirements checklist for the
+  Playlist Data Engine Showcase App. It is kept here for historical
+  context. The actual implementation may differ from these requirements.
+-->
+
 # Specification Quality Checklist: Playlist Data Engine Showcase App
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning

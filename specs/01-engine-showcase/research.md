@@ -1,3 +1,14 @@
+<!--
+  HISTORICAL DOCUMENT - Last updated December 2025
+
+  For current implementation status, see /IMPLEMENTATION_STATUS.md
+  For current task breakdown, see /COMPLETION_PLAN.md
+
+  This document contains the original research findings for the
+  Playlist Data Engine Showcase App. It is kept here for historical
+  context. The actual implementation may differ from these findings.
+-->
+
 # Phase 0 Research: Playlist Data Engine Showcase App
 
 **Date**: 2025-12-01

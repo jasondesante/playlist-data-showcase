@@ -2341,9 +2341,18 @@ The project is complete when:
 
 ### Documentation
 - [x] IMPLEMENTATION_STATUS.md exists and is accurate - COMPLETED 2026-01-25
-- [ ] All original docs marked as historical
+- [x] All original docs marked as historical - COMPLETED 2026-01-25
+  - DESIGN_DOCS/PLAYLIST_DATA_ENGINE_SHOWCASE.md ✅
+  - specs/01-engine-showcase/spec.md ✅
+  - specs/01-engine-showcase/plan.md ✅
+  - specs/01-engine-showcase/research.md ✅
+  - specs/01-engine-showcase/data-model.md ✅
+  - specs/01-engine-showcase/checklists/requirements.md ✅
+  - specs/01-engine-showcase/contracts/playlist-parser.md ✅
+  - specs/01-engine-showcase/quickstart.md ✅
+  - specs/01-engine-showcase/tasks.md ✅
 - [ ] Engine bug fixes verified or documented
-- [ ] ARCHITECTURE.md, CONTRIBUTING.md, DEBUGGING.md exist
+- [x] ARCHITECTURE.md, CONTRIBUTING.md, DEBUGGING.md exist - COMPLETED 2026-01-25
 
 ### Architecture
 - [ ] All tabs are modular components

@@ -1,3 +1,14 @@
+<!--
+  HISTORICAL DOCUMENT - Last updated December 2025
+
+  For current implementation status, see /IMPLEMENTATION_STATUS.md
+  For current task breakdown, see /COMPLETION_PLAN.md
+
+  This document contains the original implementation plan for the
+  Playlist Data Engine Showcase App. It is kept here for historical
+  context. The actual implementation may differ from this original plan.
+-->
+
 # Implementation Plan: Playlist Data Engine Showcase App
 
 **Branch**: `01-engine-showcase` | **Date**: 2025-12-01 | **Spec**: [spec.md](spec.md)
