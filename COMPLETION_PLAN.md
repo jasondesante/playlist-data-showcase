@@ -2050,7 +2050,51 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
   - **Result:** Gaming Platforms tab now displays properly on mobile with appropriate text sizes, padding, and touch targets
   - **File Modified:** `/workspace/src/components/Tabs/GamingPlatformsTab.tsx`
   - **Build Verification:** TypeScript compilation passes (595.38 kB output)
-- [ ] Combat: Verify cards stack
+- [x] Combat: Verify cards stack - COMPLETED 2026-01-25
+  - **Issues Found:** Combat Simulator tab had several mobile responsiveness issues
+  - **Fixes Implemented:**
+    - Reduced spacing between sections: `space-y-4 md:space-y-6`
+    - Made section headers responsive: `text-lg md:text-xl`
+    - Made "Start Combat" button full width on mobile: `w-full sm:w-auto`
+    - Increased button padding on mobile: `py-3 md:py-2`
+    - Added `min-h-[44px]` to all buttons for minimum touch target size
+    - Made button text responsive: `text-sm md:text-base`
+    - Made combat info grid gap responsive: `gap-2 md:gap-4`
+    - Made combat info text responsive: `text-xs md:text-sm`
+    - Made manual attack controls section padding responsive: `p-3 md:p-4`
+    - Made manual attack controls text responsive: `text-xs md:text-sm` and `text-[10px] md:text-xs`
+    - Made weapon and target buttons responsive:
+      - Increased padding on mobile: `px-2 md:px-3 py-2`
+      - Added `min-h-[44px]` for adequate touch targets
+      - Made text responsive: `text-xs md:text-sm` and `text-[10px] md:text-xs`
+      - Added `truncate` class to names to prevent overflow
+    - Made spell casting UI section padding responsive: `p-3 md:p-4`
+    - Made spell casting headers responsive: `text-sm md:text-base` and `text-[10px] md:text-xs`
+    - Made spell slots gap responsive: `gap-1 md:gap-2`
+    - Made spell slot text responsive: `text-[10px] md:text-xs`
+    - Made spell buttons full height for touch targets: `min-h-[44px]`
+    - Made spell casting buttons full width on mobile: `w-full sm:w-auto`
+    - Made initiative order section padding responsive: `p-3 md:p-4`
+    - Made initiative order items gap responsive: `space-y-1 md:space-y-2`
+    - Made initiative order text responsive: `text-[10px] md:text-xs`
+    - Made combatant cards gap responsive: `gap-2 md:gap-4`
+    - Made combatant card padding responsive: `p-3 md:p-4`
+    - Made combatant card text responsive: `text-sm md:text-base` and `text-xs md:text-sm`
+    - Made HP bar height responsive: `h-1.5 md:h-2`
+    - Made combat log max height responsive: `max-h-80 md:max-h-96`
+    - Made combat log padding responsive: `p-3 md:p-4`
+    - Made combat log entries padding responsive: `p-2 md:p-3`
+    - Made combat log text responsive: `text-[10px] md:text-sm`
+    - Made victory overlay padding responsive: `p-4 md:p-8`
+    - Made victory overlay text responsive: `text-xl md:text-3xl`, `text-base md:text-2xl`, `text-sm md:text-lg`
+    - Made victory overlay labels responsive: `text-xs md:text-sm`
+    - Made action buttons full width on mobile: `w-full sm:w-auto`
+    - Made action button text responsive: `text-sm md:text-base`
+    - Made JSON dump section spacing responsive: `space-y-2 md:space-y-4`
+    - Made JSON dump header responsive: `text-sm md:text-base`
+  - **Result:** Combat Simulator tab now displays properly on mobile with appropriate text sizes, padding, and touch targets
+  - **File Modified:** `/workspace/src/components/Tabs/CombatSimulatorTab.tsx`
+  - **Build Verification:** TypeScript compilation passes (597.62 kB output)
 - [ ] Settings: Verify inputs work
 
 #### 5.4.3 Fix Responsive Issues

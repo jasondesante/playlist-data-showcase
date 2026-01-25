@@ -281,40 +281,40 @@ export function CombatSimulatorTab() {
   const combatResult = combat && !combat.isActive ? getCombatResult() : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Combat Engine</h2>
+        <h2 className="text-lg md:text-xl font-bold">Combat Engine</h2>
         {combat && <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />}
       </div>
 
       {characters.length === 0 ? (
-        <p className="text-muted-foreground">Generate a character first</p>
+        <p className="text-sm md:text-base text-muted-foreground">Generate a character first</p>
       ) : !combat ? (
         <button
           onClick={handleStartCombat}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
+          className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 text-sm md:text-base"
         >
           Start Combat
         </button>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Combat Info */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>Round: <span className="font-bold">{roundNumber}</span></div>
-            <div>Turn: <span className="font-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
+          <div className="grid grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm">
+            <div className="p-2 md:p-0">Round: <span className="font-bold">{roundNumber}</span></div>
+            <div className="p-2 md:p-0">Turn: <span className="font-bold">{currentTurnIndex !== null ? currentTurnIndex + 1 : '-'}</span></div>
           </div>
 
           {/* Manual Attack Controls - Task 4.9.6 */}
           {isActive && combat && (
-            <div className="bg-muted rounded-lg p-4">
-              <h3 className="font-bold mb-3">Manual Attack Controls</h3>
-              <p className="text-sm text-muted-foreground mb-3">
+            <div className="bg-muted rounded-lg p-3 md:p-4">
+              <h3 className="font-bold mb-2 md:mb-3 text-sm md:text-base">Manual Attack Controls</h3>
+              <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3">
                 Choose a target to attack instead of auto-attacking the first available target.
               </p>
 
               {/* Available attacks for current combatant */}
-              <div className="mb-3">
-                <div className="text-sm font-semibold mb-2">Available Attacks:</div>
+              <div className="mb-2 md:mb-3">
+                <div className="text-xs md:text-sm font-semibold mb-2">Available Attacks:</div>
                 {(() => {
                   const current = getCurrentCombatant();
                   if (!current) return <p className="text-sm text-muted-foreground">No current combatant</p>;
@@ -322,19 +322,19 @@ export function CombatSimulatorTab() {
                   const weapons = current.character.equipment?.weapons ?? [];
                   if (weapons.length === 0) {
                     return (
-                      <div className="text-sm">
-                        <span className="bg-background px-2 py-1 rounded border">Unarmed Strike</span>
+                      <div className="text-xs md:text-sm">
+                        <span className="bg-background px-2 py-1 rounded border text-xs md:text-sm">Unarmed Strike</span>
                         <span className="text-muted-foreground ml-2">1 damage, bludgeoning</span>
                       </div>
                     );
                   }
 
                   return (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1 md:gap-2">
                       {weapons.map((weapon: any, index: number) => (
-                        <div key={index} className="bg-background px-3 py-2 rounded border text-sm">
-                          <div className="font-semibold">{weapon.name}</div>
-                          <div className="text-xs text-muted-foreground">
+                        <div key={index} className="bg-background px-2 md:px-3 py-2 rounded border text-xs md:text-sm">
+                          <div className="font-semibold text-xs md:text-sm">{weapon.name}</div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground">
                             {weapon.damage_dice} {weapon.damage_type} {weapon.type === 'melee' ? '⚔️' : '🏹'}
                           </div>
                         </div>
@@ -345,9 +345,9 @@ export function CombatSimulatorTab() {
               </div>
 
               {/* Available targets */}
-              <div className="mb-3">
-                <div className="text-sm font-semibold mb-2">Available Targets:</div>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-2 md:mb-3">
+                <div className="text-xs md:text-sm font-semibold mb-2">Available Targets:</div>
+                <div className="flex flex-wrap gap-1 md:gap-2">
                   {getLivingCombatants()
                     .filter((c: Combatant) => {
                       const current = getCurrentCombatant();
@@ -357,14 +357,14 @@ export function CombatSimulatorTab() {
                       <button
                         key={target.id}
                         onClick={() => handleManualAttack(target)}
-                        className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                        className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
                           selectedTargetId === target.id
                             ? 'bg-primary text-primary-foreground border-primary'
                             : 'bg-background hover:bg-muted border-muted'
                         }`}
                       >
-                        <div className="font-semibold">{target.character.name}</div>
-                        <div className="text-xs opacity-80">
+                        <div className="font-semibold text-xs md:text-sm truncate">{target.character.name}</div>
+                        <div className="text-[10px] md:text-xs opacity-80">
                           {target.character.race} {target.character.class} • HP: {target.currentHP}/{target.character.hp.max}
                         </div>
                       </button>
@@ -372,7 +372,7 @@ export function CombatSimulatorTab() {
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground italic">
+              <p className="text-[10px] md:text-xs text-muted-foreground italic">
                 Click a target to perform an attack with your current combatant's available weapon(s).
               </p>
             </div>
@@ -383,17 +383,17 @@ export function CombatSimulatorTab() {
             const current = getCurrentCombatant();
             return current && isSpellcaster(current.character);
           })() && (
-            <div className="bg-blue-950/30 dark:bg-blue-950/50 rounded-lg p-4 border border-blue-800/50">
-              <h3 className="font-bold mb-3 flex items-center gap-2">
+            <div className="bg-blue-950/30 dark:bg-blue-950/50 rounded-lg p-3 md:p-4 border border-blue-800/50">
+              <h3 className="font-bold mb-2 md:mb-3 flex items-center gap-2 text-sm md:text-base">
                 <span>✨ Spell Casting</span>
-                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
+                <span className="text-[10px] md:text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
                   {getCurrentCombatant()?.character.class}
                 </span>
               </h3>
 
               {/* Spell slots remaining */}
-              <div className="mb-3 p-2 bg-background/50 rounded">
-                <div className="text-sm font-semibold mb-1">Spell Slots Remaining:</div>
+              <div className="mb-2 md:mb-3 p-2 bg-background/50 rounded">
+                <div className="text-xs md:text-sm font-semibold mb-1">Spell Slots Remaining:</div>
                 {(() => {
                   const current = getCurrentCombatant();
                   if (!current?.spellSlots) return null;
@@ -403,13 +403,13 @@ export function CombatSimulatorTab() {
                     .sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                   if (slots.length === 0) {
-                    return <p className="text-xs text-muted-foreground">No spell slots remaining</p>;
+                    return <p className="text-[10px] md:text-xs text-muted-foreground">No spell slots remaining</p>;
                   }
 
                   return (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1 md:gap-2">
                       {slots.map(([level, count]) => (
-                        <div key={level} className="text-xs bg-blue-900/30 px-2 py-1 rounded border border-blue-700/50">
+                        <div key={level} className="text-[10px] md:text-xs bg-blue-900/30 px-2 py-1 rounded border border-blue-700/50">
                           Level {level}: <span className={`font-bold ${count === 0 ? 'text-red-400' : 'text-green-400'}`}>{count}</span>
                         </div>
                       ))}
@@ -419,12 +419,12 @@ export function CombatSimulatorTab() {
               </div>
 
               {/* Known spells */}
-              <div className="mb-3">
-                <div className="text-sm font-semibold mb-2">Known Spells:</div>
-                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+              <div className="mb-2 md:mb-3">
+                <div className="text-xs md:text-sm font-semibold mb-2">Known Spells:</div>
+                <div className="flex flex-wrap gap-1 md:gap-2 max-h-32 md:max-h-40 overflow-y-auto">
                   {(() => {
                     const current = getCurrentCombatant();
-                    if (!current?.character.spells) return <p className="text-sm text-muted-foreground">No spells available</p>;
+                    if (!current?.character.spells) return <p className="text-xs md:text-sm text-muted-foreground">No spells available</p>;
 
                     const allSpells = [
                       ...(current.character.spells.cantrips || []).map(name => ({ name, level: 0 })),
@@ -447,7 +447,7 @@ export function CombatSimulatorTab() {
                           key={spell.name}
                           onClick={() => setSelectedSpellName(spell.name)}
                           disabled={!hasSlot}
-                          className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                          className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
                             !hasSlot
                               ? 'bg-muted opacity-50 cursor-not-allowed'
                               : isSelected
@@ -455,8 +455,8 @@ export function CombatSimulatorTab() {
                               : 'bg-background hover:bg-blue-100 dark:hover:bg-blue-900/30 border-muted'
                           }`}
                         >
-                          <div className="font-semibold">{spell.name}</div>
-                          <div className="text-xs opacity-80">
+                          <div className="font-semibold text-xs md:text-sm truncate">{spell.name}</div>
+                          <div className="text-[10px] md:text-xs opacity-80">
                             {getSpellLevelText(spell.level)} • {spellData.school}
                             {!hasSlot && !isCantrip && ' • No slots'}
                           </div>
@@ -469,9 +469,9 @@ export function CombatSimulatorTab() {
 
               {/* Target selection for spells */}
               {selectedSpellName && (
-                <div className="mb-3 p-3 bg-background/50 rounded">
-                  <div className="text-sm font-semibold mb-2">Select Target(s):</div>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mb-2 md:mb-3 p-2 md:p-3 bg-background/50 rounded">
+                  <div className="text-xs md:text-sm font-semibold mb-2">Select Target(s):</div>
+                  <div className="flex flex-wrap gap-1 md:gap-2">
                     {getLivingCombatants()
                       .filter((c: Combatant) => {
                         const current = getCurrentCombatant();
@@ -481,14 +481,14 @@ export function CombatSimulatorTab() {
                         <button
                           key={target.id}
                           onClick={() => handleTargetToggle(target.id)}
-                          className={`px-3 py-2 rounded border text-sm text-left transition-colors ${
+                          className={`px-2 md:px-3 py-2 md:py-2 min-h-[44px] rounded border text-xs md:text-sm text-left transition-colors ${
                             selectedTargetIds.includes(target.id)
                               ? 'bg-purple-600 text-white border-purple-500'
                               : 'bg-background hover:bg-purple-100 dark:hover:bg-purple-900/30 border-muted'
                           }`}
                         >
-                          <div className="font-semibold">{target.character.name}</div>
-                          <div className="text-xs opacity-80">
+                          <div className="font-semibold text-xs md:text-sm truncate">{target.character.name}</div>
+                          <div className="text-[10px] md:text-xs opacity-80">
                             HP: {target.currentHP}/{target.character.hp.max}
                           </div>
                         </button>
@@ -499,21 +499,21 @@ export function CombatSimulatorTab() {
 
               {/* Cast button */}
               {selectedSpellName && selectedTargetIds.length > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2">
                   <button
                     onClick={handleCastSpell}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center gap-2"
+                    className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     <span>✨</span> Cast {selectedSpellName}
                   </button>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] md:text-xs text-muted-foreground">
                     on {selectedTargetIds.length} target{selectedTargetIds.length > 1 ? 's' : ''}
                   </span>
                 </div>
               )}
 
               {selectedSpellName && selectedTargetIds.length === 0 && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
+                <p className="text-[10px] md:text-xs text-amber-600 dark:text-amber-400">
                   ⚠️ Select at least one target to cast this spell
                 </p>
               )}
@@ -521,12 +521,12 @@ export function CombatSimulatorTab() {
           )}
 
           {/* Combat Area: Initiative Order + Combatant Cards */}
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
             {/* Initiative Order Sidebar - Task 4.9.2 */}
             <div className="lg:w-1/4">
-              <div className="bg-muted rounded-lg p-4 sticky top-4">
-                <h3 className="font-bold mb-3 text-sm">Initiative Order</h3>
-                <div className="space-y-2">
+              <div className="bg-muted rounded-lg p-3 md:p-4 sticky top-4">
+                <h3 className="font-bold mb-2 md:mb-3 text-xs md:text-sm">Initiative Order</h3>
+                <div className="space-y-1 md:space-y-2">
                   {combat.combatants
                     .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative)
                     .map((combatant: Combatant, index: number) => {
@@ -536,7 +536,7 @@ export function CombatSimulatorTab() {
                       return (
                         <div
                           key={combatant.id}
-                          className={`text-xs p-2 rounded border ${
+                          className={`text-[10px] md:text-xs p-1 md:p-2 rounded border ${
                             isCurrentTurn
                               ? 'bg-primary text-primary-foreground border-primary'
                               : combatant.isDefeated
@@ -544,10 +544,10 @@ export function CombatSimulatorTab() {
                               : 'bg-background border-muted'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold w-5">{index + 1}.</span>
-                            <span className="flex-1 truncate">{combatant.character.name}</span>
-                            <span className="font-mono">{combatant.initiative}</span>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <span className="font-bold w-4 md:w-5 text-[10px] md:text-xs">{index + 1}.</span>
+                            <span className="flex-1 truncate text-[10px] md:text-xs">{combatant.character.name}</span>
+                            <span className="font-mono text-[10px] md:text-xs">{combatant.initiative}</span>
                           </div>
                         </div>
                       );
@@ -557,7 +557,7 @@ export function CombatSimulatorTab() {
             </div>
 
             {/* Combatant Cards */}
-            <div className="lg:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="lg:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
               {combat.combatants.map((combatant: Combatant) => {
                 const current = getCurrentCombatant();
                 const isCurrentTurn = current?.id === combatant.id;
@@ -567,27 +567,27 @@ export function CombatSimulatorTab() {
                 return (
                   <div
                     key={combatant.id}
-                    className={`border rounded-lg p-4 ${isCurrentTurn ? 'ring-2 ring-primary' : ''} ${combatant.isDefeated ? 'opacity-50' : ''}`}
+                    className={`border rounded-lg p-3 md:p-4 ${isCurrentTurn ? 'ring-2 ring-primary' : ''} ${combatant.isDefeated ? 'opacity-50' : ''}`}
                   >
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-1 md:mb-2">
                       <div>
-                        <h3 className="font-bold">{combatant.character.name}</h3>
-                        <p className="text-sm text-muted-foreground">{combatant.character.race} {combatant.character.class}</p>
+                        <h3 className="font-bold text-sm md:text-base">{combatant.character.name}</h3>
+                        <p className="text-xs md:text-sm text-muted-foreground">{combatant.character.race} {combatant.character.class}</p>
                       </div>
-                      {isCurrentTurn && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Current</span>}
+                      {isCurrentTurn && <span className="text-[10px] md:text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Current</span>}
                     </div>
 
-                    <div className="mb-2">
-                      <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-1 md:mb-2">
+                      <div className="flex justify-between text-xs md:text-sm mb-1">
                         <span>HP</span>
                         <span>{combatant.currentHP} / {combatant.character.hp.max}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className={`h-2 rounded-full ${hpColor}`} style={{ width: `${hpPercent}%` }} />
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2">
+                        <div className={`h-1.5 md:h-2 rounded-full ${hpColor}`} style={{ width: `${hpPercent}%` }} />
                       </div>
                     </div>
 
-                    <div className="text-sm space-y-1">
+                    <div className="text-xs md:text-sm space-y-0.5 md:space-y-1">
                       <div>Initiative: <span className="font-bold">{combatant.initiative}</span></div>
                       {combatant.isDefeated && <span className="text-red-500">Defeated</span>}
                     </div>
@@ -601,10 +601,10 @@ export function CombatSimulatorTab() {
           {combatLog.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold">Combat Log</h3>
-                {isAutoPlaying && <span className="text-xs text-green-600 animate-pulse">● Auto-scrolling</span>}
+                <h3 className="font-bold text-sm md:text-base">Combat Log</h3>
+                {isAutoPlaying && <span className="text-[10px] md:text-xs text-green-600 animate-pulse">● Auto-scrolling</span>}
               </div>
-              <div ref={combatLogRef} className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto space-y-2 scroll-smooth">
+              <div ref={combatLogRef} className="bg-muted rounded-lg p-3 md:p-4 max-h-80 md:max-h-96 overflow-y-auto space-y-1 md:space-y-2 scroll-smooth">
                 {combatLog.map((action: any, index: number) => {
                   const borderColor = getLogEntryColor(action);
                   const actionRound = getActionRound(index, combat.combatants.length);
@@ -615,21 +615,21 @@ export function CombatSimulatorTab() {
                   return (
                     <div
                       key={index}
-                      className={`text-sm border-l-4 ${borderColor} bg-background rounded-r-lg p-3`}
+                      className={`text-[10px] md:text-sm border-l-4 ${borderColor} bg-background rounded-r-lg p-2 md:p-3`}
                     >
                       {/* Round number and action type */}
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold bg-muted px-2 py-0.5 rounded">
+                      <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1 flex-wrap">
+                        <span className="text-[10px] md:text-xs font-bold bg-muted px-1 md:px-2 py-0.5 rounded">
                           Round {actionRound}
                         </span>
-                        <span className="font-bold text-foreground">
+                        <span className="font-bold text-foreground text-[10px] md:text-xs">
                           {action.actor.character.name}
                         </span>
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground text-[10px] md:text-xs">
                           used {action.type === 'attack' ? 'an attack' : action.type}
                         </span>
                         {action.target && (
-                          <span className="text-muted-foreground">
+                          <span className="text-muted-foreground text-[10px] md:text-xs">
                             on <span className="font-semibold">{action.target.character.name}</span>
                           </span>
                         )}
@@ -637,27 +637,27 @@ export function CombatSimulatorTab() {
 
                       {/* Action details */}
                       {action.attack && (
-                        <div className="text-xs text-muted-foreground mb-1">
+                        <div className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">
                           Weapon: <span className="font-semibold">{action.attack.name}</span>
                         </div>
                       )}
 
                       {/* Roll values */}
                       {action.result?.roll !== undefined && (
-                        <div className="text-xs">
+                        <div className="text-[10px] md:text-xs">
                           <span className="text-muted-foreground">Roll:</span>{' '}
                           <span className={`font-bold ${isSuccessHit ? 'text-green-600' : isMiss ? 'text-red-600' : ''}`}>
                             d20 {action.result.roll >= 0 ? '+' : ''}{action.result.roll}
                           </span>
                           {action.result.isCritical && (
-                            <span className="ml-2 text-yellow-600 font-bold">🎯 CRITICAL!</span>
+                            <span className="ml-1 md:ml-2 text-yellow-600 font-bold text-[10px] md:text-xs">🎯 CRITICAL!</span>
                           )}
                         </div>
                       )}
 
                       {/* Hit/Miss result */}
                       {action.result?.success !== undefined && (
-                        <div className="text-xs">
+                        <div className="text-[10px] md:text-xs">
                           <span className="text-muted-foreground">Result:</span>{' '}
                           <span className={`font-bold ${isSuccessHit ? 'text-green-600' : 'text-red-600'}`}>
                             {isSuccessHit ? '✓ HIT' : '✗ MISS'}
@@ -667,7 +667,7 @@ export function CombatSimulatorTab() {
 
                       {/* Damage dealt */}
                       {action.result?.damage !== undefined && action.result?.success && (
-                        <div className="text-xs">
+                        <div className="text-[10px] md:text-xs">
                           <span className="text-muted-foreground">Damage:</span>{' '}
                           <span className="font-bold text-orange-600">
                             {action.result.damage} {action.result.damageType || ''}
@@ -677,7 +677,7 @@ export function CombatSimulatorTab() {
 
                       {/* HP change */}
                       {action.result?.targetHP !== undefined && (
-                        <div className="text-xs">
+                        <div className="text-[10px] md:text-xs">
                           <span className="text-muted-foreground">Target HP:</span>{' '}
                           <span className={`font-bold ${action.result.targetHP < 10 ? 'text-red-600' : ''}`}>
                             {action.result.targetHP} / {action.target?.character.hp.max || '?'}
@@ -687,24 +687,24 @@ export function CombatSimulatorTab() {
 
                       {/* Spell details */}
                       {isSpell && action.spell && (
-                        <div className="text-xs text-blue-600">
+                        <div className="text-[10px] md:text-xs text-blue-600">
                           <span className="font-bold">{action.spell.name}</span>
                           {action.result?.description && (
-                            <span className="text-muted-foreground ml-2">({action.result.description})</span>
+                            <span className="text-muted-foreground ml-1 md:ml-2">({action.result.description})</span>
                           )}
                         </div>
                       )}
 
                       {/* Status effects */}
                       {action.result?.statusEffects && action.result.statusEffects.length > 0 && (
-                        <div className="text-xs text-yellow-600">
+                        <div className="text-[10px] md:text-xs text-yellow-600">
                           Status: {action.result.statusEffects.map((e: any) => e.name).join(', ')}
                         </div>
                       )}
 
                       {/* Description as fallback */}
                       {!action.result?.roll && !action.result?.damage && action.result?.description && (
-                        <div className="text-xs text-muted-foreground italic">
+                        <div className="text-[10px] md:text-xs text-muted-foreground italic">
                           {action.result.description}
                         </div>
                       )}
@@ -717,34 +717,34 @@ export function CombatSimulatorTab() {
 
           {/* Victory Overlay - Task 4.9.5 */}
           {combatResult && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-              <div className="bg-background border-2 border-primary rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
-                <h2 className="text-3xl font-bold text-center mb-6 text-primary">⚔️ Victory! ⚔️</h2>
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-background border-2 border-primary rounded-lg p-4 md:p-8 max-w-md w-full mx-0 md:mx-4 shadow-2xl">
+                <h2 className="text-xl md:text-3xl font-bold text-center mb-4 md:mb-6 text-primary">⚔️ Victory! ⚔️</h2>
 
-                <div className="space-y-4 mb-6">
+                <div className="space-y-2 md:space-y-4 mb-4 md:mb-6">
                   <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-muted-foreground">Winner</span>
-                    <span className="text-2xl font-bold">{combatResult.winner.character.name}</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Winner</span>
+                    <span className="text-base md:text-2xl font-bold">{combatResult.winner.character.name}</span>
                   </div>
 
                   <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-muted-foreground">XP Awarded</span>
-                    <span className="text-xl font-bold text-green-600">+{combatResult.xpAwarded} XP</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">XP Awarded</span>
+                    <span className="text-base md:text-xl font-bold text-green-600">+{combatResult.xpAwarded} XP</span>
                   </div>
 
                   <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-muted-foreground">Rounds Elapsed</span>
-                    <span className="text-lg font-semibold">{combatResult.roundsElapsed}</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Rounds Elapsed</span>
+                    <span className="text-sm md:text-lg font-semibold">{combatResult.roundsElapsed}</span>
                   </div>
 
                   <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-muted-foreground">Total Turns</span>
-                    <span className="text-lg font-semibold">{combatResult.totalTurns}</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Total Turns</span>
+                    <span className="text-sm md:text-lg font-semibold">{combatResult.totalTurns}</span>
                   </div>
 
                   {combatResult.description && (
                     <div className="pt-2">
-                      <p className="text-sm text-center text-muted-foreground italic">
+                      <p className="text-xs md:text-sm text-center text-muted-foreground italic">
                         {combatResult.description}
                       </p>
                     </div>
@@ -753,7 +753,7 @@ export function CombatSimulatorTab() {
 
                 <button
                   onClick={resetCombat}
-                  className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 transition-opacity"
+                  className="w-full px-4 md:px-6 py-3 md:py-3 min-h-[44px] bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 transition-opacity text-sm md:text-base"
                 >
                   Restart Combat
                 </button>
@@ -763,12 +763,12 @@ export function CombatSimulatorTab() {
 
           {/* Action Buttons - Hide when combat ended */}
           {isActive && (
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4">
               {/* Manual control buttons */}
               <button
                 onClick={handleNextTurn}
                 disabled={isAutoPlaying}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
               >
                 Next Turn
               </button>
@@ -777,14 +777,14 @@ export function CombatSimulatorTab() {
               {!isAutoPlaying ? (
                 <button
                   onClick={handleStartAutoPlay}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center gap-2 text-sm md:text-base"
                 >
                   <span>▶</span> Auto-Play
                 </button>
               ) : (
                 <button
                   onClick={handlePauseAutoPlay}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-amber-600 text-white rounded-md hover:bg-amber-700 flex items-center justify-center gap-2 text-sm md:text-base"
                 >
                   <span>⏸</span> Pause
                 </button>
@@ -792,14 +792,14 @@ export function CombatSimulatorTab() {
 
               <button
                 onClick={resetCombat}
-                className="px-4 py-2 bg-muted text-muted-foreground rounded-md hover:opacity-90"
+                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-muted text-muted-foreground rounded-md hover:opacity-90 text-sm md:text-base"
               >
                 Reset Combat
               </button>
 
               {/* Auto-play status indicator (task 4.9.7) */}
               {isAutoPlaying && (
-                <div className="flex items-center gap-2 text-sm text-green-600 animate-pulse">
+                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-green-600 animate-pulse w-full sm:w-auto">
                   <span className="font-semibold">Auto-playing...</span>
                   <span className="text-muted-foreground">({AUTO_PLAY_INTERVAL_MS / 1000}s per turn)</span>
                 </div>
@@ -808,9 +808,9 @@ export function CombatSimulatorTab() {
           )}
 
           {/* Raw JSON Dump - Task 4.9.10 */}
-          <div className="space-y-4">
+          <div className="space-y-2 md:space-y-4">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold">Combat Engine Data</h3>
+              <h3 className="font-bold text-sm md:text-base">Combat Engine Data</h3>
               <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />
             </div>
             <RawJsonDump data={combat} title="Combat Instance JSON" defaultOpen={false} />
