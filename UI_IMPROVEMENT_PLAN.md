@@ -581,9 +581,6 @@ Note that you were building this with retarded tailwind which I fucking hate so 
 - [ ] Selection state shows 2p  primary border with left accent bar
 - [ ] Selection ring animates on select
 - [ ] Play button overlay appears on hover
-- [ ] Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED.
-- [ ] ATTEMPT 2: Make Playlist image a normal size. Right now the playlist image is stretched so huge it breaks the whole page. ERROR THIS IS STILL NOT COMPLETED. I can literally see that the playlist image doesn't even have a class assigned to it yet....
-- [ ] Make Playlist track images a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages
 - [ ] Loading skeletons show during fetch
