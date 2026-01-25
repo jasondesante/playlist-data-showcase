@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '../ui/Button';
 import { TrackCard } from '../ui/TrackCard';
 import type { ListeningSession } from 'playlist-data-engine';
+import './SessionTrackingTab.css';
 
 /**
  * SessionTrackingTab Component

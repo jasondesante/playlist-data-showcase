@@ -1244,11 +1244,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Character gen tab looks identical
 
 **Task 16: Session Tab**
-- [ ] Create `SessionTrackingTab.css`
-- [ ] Copy all session tracking styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: Session tab looks identical
+- [x] Create `SessionTrackingTab.css`
+- [x] Copy all session tracking styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: Session tab looks identical
 
 **Task 17: XP Calculator Tab**
 - [ ] Create `XPCalculatorTab.css`
