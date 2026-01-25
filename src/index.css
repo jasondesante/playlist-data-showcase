@@ -1003,6 +1003,239 @@
 }
 
 /* ========================================
+   TRACK CARD COMPONENT STYLES
+   ======================================== */
+
+@layer components {
+  /* Base track card */
+  .track-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out-cubic);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left accent bar for selected state */
+  .track-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary) / 0.7));
+    transition: width var(--duration-normal) var(--ease-out-cubic);
+    border-radius: 0.5rem 0 0 0.5rem;
+  }
+
+  .track-card-selected::before {
+    width: 4px;
+  }
+
+  /* Hover state */
+  .track-card:hover {
+    background-color: hsl(var(--surface-3));
+    border-color: hsl(var(--primary) / 0.3);
+    transform: scale(1.01);
+  }
+
+  /* Selected state */
+  .track-card-selected {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    border-width: 2px;
+    box-shadow: var(--shadow-lg), 0 0 20px hsl(var(--primary) / 0.15);
+  }
+
+  /* Track number display */
+  .track-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+    flex-shrink: 0;
+    transition: color var(--duration-fast) var(--ease-out-cubic);
+  }
+
+  .track-card:hover .track-number {
+    color: hsl(var(--foreground));
+  }
+
+  .track-card-selected .track-number {
+    color: hsl(var(--primary));
+  }
+
+  /* Track number sizes */
+  .track-number-compact {
+    width: 2rem;
+    font-size: 0.875rem;
+  }
+
+  .track-number-default {
+    width: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .track-number-large {
+    width: 3rem;
+    font-size: 1.125rem;
+  }
+
+  /* Track play button (in number position on hover) */
+  .track-play-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+  }
+
+  .track-play-button:hover {
+    background-color: hsl(var(--primary) / 0.9);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .track-play-button:active {
+    transform: scale(0.95);
+  }
+
+  /* Play button sizes */
+  .play-button-compact {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .play-button-default {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .play-button-large {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Play icon sizes */
+  .play-icon-compact {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .play-icon-default {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .play-icon-large {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Track info container */
+  .track-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  /* Track title */
+  .track-title {
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color var(--duration-fast) var(--ease-out-cubic);
+  }
+
+  .track-card:hover .track-title {
+    color: hsl(var(--primary));
+  }
+
+  .track-title-selected {
+    color: hsl(var(--primary));
+    font-weight: 600;
+  }
+
+  /* Track title sizes */
+  .track-title-compact {
+    font-size: 0.875rem;
+  }
+
+  .track-title-default {
+    font-size: 0.9375rem;
+  }
+
+  .track-title-large {
+    font-size: 1rem;
+  }
+
+  /* Track meta (artist, album, duration) */
+  .track-meta {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .track-meta-album {
+    color: hsl(var(--muted-foreground) / 0.8);
+  }
+
+  .track-meta-duration {
+    font-variant-numeric: tabular-nums;
+    color: hsl(var(--muted-foreground) / 0.7);
+  }
+
+  /* Track meta sizes */
+  .track-meta-compact {
+    font-size: 0.6875rem;
+  }
+
+  .track-meta-default {
+    font-size: 0.75rem;
+  }
+
+  .track-meta-large {
+    font-size: 0.8125rem;
+  }
+
+  /* Track card size variants - container padding adjustments */
+  .track-card-compact {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .track-card-default {
+    gap: 0.75rem;
+    padding: 0.625rem;
+  }
+
+  .track-card-large {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+}
+
+/* ========================================
    SKELETON COMPONENT STYLES
    ======================================== */
 
