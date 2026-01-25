@@ -34,7 +34,7 @@
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.20",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^15.5.2",
     "postcss": "^8.4.49",
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
@@ -46,6 +46,9 @@
     "*.{ts,tsx}": [
       "bash -c 'tsc --noEmit'"
     ],
-    "*.css": ["stylelint --fix"]
+    "*.css": [
+      "stylelint --fix",
+      "git add"
+    ]
   }
 }
