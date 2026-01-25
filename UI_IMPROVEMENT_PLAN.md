@@ -564,9 +564,11 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 - [x] Fallback gradient + icon shows when no artwork
 - [x] Track numbers display in sequence
 - [x] Hover effect scales card slightly (1.02)
-- [ ] Selection state shows 2px primary border with left accent bar
-- [ ] Selection ring animates on select
+- [x] Selection state shows 2px primary border with left accent bar
+- [x] Selection ring animates on select
 - [ ] Play button overlay appears on hover
+- [ ] Playlist image is a normal size. Right now the playlist image is stretched so huge it breaks the whole page.
+- [ ] Playlist track images are a normal small size.
 - [ ] Search filters tracks by title, artist, album
 - [ ] Empty states show friendly emoji messages
 - [ ] Loading skeletons show during fetch
