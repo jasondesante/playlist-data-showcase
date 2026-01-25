@@ -1,7 +1,11 @@
+import { useState, useEffect } from 'react';
+import { Waves, Music, Sparkles } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 
 /**
  * AudioAnalysisTab Component
@@ -18,19 +22,29 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
   const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
+  const [animateBars, setAnimateBars] = useState(false);
 
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
     const profile = await analyzeTrack(selectedTrack.audio_url);
-    if (profile) setAudioProfile(profile);
+    if (profile) {
+      setAudioProfile(profile);
+      // Trigger bar animation after profile is set
+      setTimeout(() => setAnimateBars(true), 100);
+    }
   };
+
+  // Reset animation when track changes
+  useEffect(() => {
+    setAnimateBars(false);
+  }, [selectedTrack]);
 
   // Determine status indicator based on current state
   const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
-    if (audioProfile) return 'healthy';      // Analysis completed
-    if (isAnalyzing) return 'degraded';       // Analysis in progress
-    if (selectedTrack) return 'degraded';     // Has track but not analyzed yet
-    return 'error';                           // No track selected
+    if (audioProfile) return 'healthy';
+    if (isAnalyzing) return 'degraded';
+    if (selectedTrack) return 'degraded';
+    return 'error';
   };
 
   const getStatusLabel = (): string => {
@@ -41,166 +55,220 @@ export function AudioAnalysisTab() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header with Status Indicator */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Audio Analysis</h2>
+    <div className="audio-analysis-container">
+      {/* Header with Icon Badge and Status Indicator */}
+      <div className="audio-analysis-header">
+        <div className="audio-analysis-header-content">
+          <div className="audio-analysis-header-title-row">
+            <div className="audio-analysis-header-icon-wrapper">
+              <Waves className="audio-analysis-header-icon" />
+            </div>
+            <h2 className="audio-analysis-header-title">Audio Analysis</h2>
+          </div>
+          <p className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</p>
+        </div>
         <StatusIndicator
           status={getAnalysisStatus()}
           label={getStatusLabel()}
         />
       </div>
 
-      {!selectedTrack ? (
-        <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
-      ) : (
-        <>
-          <div className="p-4 bg-accent rounded-md">
-            <p className="font-medium">{selectedTrack.title}</p>
-            <p className="text-sm text-muted-foreground">{selectedTrack.artist}</p>
+      {/* Empty State - No Track Selected */}
+      {!selectedTrack && (
+        <Card variant="flat" padding="lg">
+          <div className="audio-analysis-empty-state">
+            <div className="audio-analysis-empty-icon-wrapper">
+              <span className="audio-analysis-empty-icon" role="img" aria-label="Music">
+                🎵
+              </span>
+            </div>
+            <h4 className="audio-analysis-empty-title">No Track Selected</h4>
+            <p className="audio-analysis-empty-description">
+              Select a track from the Playlist tab to analyze its audio frequencies and extract color palettes.
+            </p>
           </div>
+        </Card>
+      )}
 
-          <button
+      {selectedTrack && (
+        <>
+          {/* Selected Track Card */}
+          <Card variant="elevated" padding="md" className="audio-analysis-track-card">
+            <div className="audio-analysis-track-info">
+              <div className="audio-analysis-track-icon">
+                <Music className="audio-analysis-track-music-icon" />
+              </div>
+              <div className="audio-analysis-track-details">
+                <p className="audio-analysis-track-title">{selectedTrack.title}</p>
+                <p className="audio-analysis-track-artist">{selectedTrack.artist}</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Analyze Button */}
+          <Button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+            isLoading={isAnalyzing}
+            variant="primary"
+            size="lg"
+            className="audio-analysis-analyze-button"
           >
             {isAnalyzing ? `Analyzing... ${progress}%` : 'Analyze Audio'}
-          </button>
+          </Button>
 
           {audioProfile && (
-            <div className="space-y-4">
+            <div className="audio-analysis-results fade-in">
               {/* Frequency Band Bar Chart Visualization */}
-              <div className="p-4 bg-card border border-border rounded-md">
-                <h3 className="text-sm font-medium text-muted-foreground mb-4">Frequency Band Visualization</h3>
-                <div className="flex items-end justify-center gap-4 md:gap-8 h-32 md:h-48">
+              <Card variant="elevated" padding="md" className="audio-analysis-card">
+                <h3 className="audio-analysis-card-title">
+                  <Waves className="audio-analysis-card-title-icon" />
+                  Frequency Band Visualization
+                </h3>
+                <div className="audio-analysis-frequency-container">
                   {/* Bass Bar */}
-                  <div className="flex flex-col items-center gap-1 md:gap-2">
-                    <div
-                      className="w-10 md:w-16 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.bass_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
-                      title={`Bass: ${(audioProfile.bass_dominance * 100).toFixed(1)}%`}
-                    />
-                    <p className="text-xs md:text-sm font-medium text-blue-500">Bass</p>
-                    <p className="text-sm md:text-lg font-bold">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+                  <div className="audio-analysis-frequency-bar">
+                    <div className="audio-analysis-bar-container">
+                      <div
+                        className="audio-analysis-bar audio-analysis-bar-bass"
+                        style={{
+                          height: animateBars ? `${Math.max(16, audioProfile.bass_dominance * 160)}px` : '16px',
+                        }}
+                        title={`Bass: ${(audioProfile.bass_dominance * 100).toFixed(1)}%`}
+                      />
+                    </div>
+                    <p className="audio-analysis-bar-label audio-analysis-bar-label-bass">Bass</p>
+                    <p className="audio-analysis-bar-value">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
                   </div>
 
                   {/* Mid Bar */}
-                  <div className="flex flex-col items-center gap-1 md:gap-2">
-                    <div
-                      className="w-10 md:w-16 bg-gradient-to-t from-green-600 to-green-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.mid_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
-                      title={`Mid: ${(audioProfile.mid_dominance * 100).toFixed(1)}%`}
-                    />
-                    <p className="text-xs md:text-sm font-medium text-green-500">Mid</p>
-                    <p className="text-sm md:text-lg font-bold">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
+                  <div className="audio-analysis-frequency-bar">
+                    <div className="audio-analysis-bar-container">
+                      <div
+                        className="audio-analysis-bar audio-analysis-bar-mid"
+                        style={{
+                          height: animateBars ? `${Math.max(16, audioProfile.mid_dominance * 160)}px` : '16px',
+                          transitionDelay: '100ms',
+                        }}
+                        title={`Mid: ${(audioProfile.mid_dominance * 100).toFixed(1)}%`}
+                      />
+                    </div>
+                    <p className="audio-analysis-bar-label audio-analysis-bar-label-mid">Mid</p>
+                    <p className="audio-analysis-bar-value">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
                   </div>
 
                   {/* Treble Bar */}
-                  <div className="flex flex-col items-center gap-1 md:gap-2">
-                    <div
-                      className="w-10 md:w-16 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-md transition-all duration-500 ease-out"
-                      style={{ height: `${Math.max(4, audioProfile.treble_dominance * 100) * (window.innerWidth < 768 ? 1 : 1.5)}px` }}
-                      title={`Treble: ${(audioProfile.treble_dominance * 100).toFixed(1)}%`}
-                    />
-                    <p className="text-xs md:text-sm font-medium text-orange-500">Treble</p>
-                    <p className="text-sm md:text-lg font-bold">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                  <div className="audio-analysis-frequency-bar">
+                    <div className="audio-analysis-bar-container">
+                      <div
+                        className="audio-analysis-bar audio-analysis-bar-treble"
+                        style={{
+                          height: animateBars ? `${Math.max(16, audioProfile.treble_dominance * 160)}px` : '16px',
+                          transitionDelay: '200ms',
+                        }}
+                        title={`Treble: ${(audioProfile.treble_dominance * 100).toFixed(1)}%`}
+                      />
+                    </div>
+                    <p className="audio-analysis-bar-label audio-analysis-bar-label-treble">Treble</p>
+                    <p className="audio-analysis-bar-value">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
                   </div>
                 </div>
-                <div className="flex justify-center mt-3">
-                  <div className="w-48 md:w-64 h-0.5 bg-border rounded" />
-                </div>
-              </div>
+                <div className="audio-analysis-frequency-divider" />
+              </Card>
 
               {/* Average Amplitude */}
-              <div className="p-4 bg-card border border-border rounded-md">
-                <p className="text-sm text-muted-foreground">Average Amplitude</p>
-                <p className="text-lg font-bold">{audioProfile.average_amplitude.toFixed(3)}</p>
-              </div>
+              <Card variant="elevated" padding="md" className="audio-analysis-card">
+                <h3 className="audio-analysis-card-title">Average Amplitude</h3>
+                <p className="audio-analysis-amplitude-value">{audioProfile.average_amplitude.toFixed(3)}</p>
+              </Card>
 
               {/* Advanced Metrics (Optional) */}
               {(audioProfile.spectral_centroid !== undefined ||
                 audioProfile.spectral_rolloff !== undefined ||
                 audioProfile.zero_crossing_rate !== undefined) && (
-                <div className="p-4 bg-card border border-border rounded-md">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                <Card variant="elevated" padding="md" className="audio-analysis-card">
+                  <h3 className="audio-analysis-card-title">
                     Advanced Metrics
-                    <span className="ml-2 text-xs font-normal">(Only shown when includeAdvancedMetrics=true)</span>
+                    <span className="audio-analysis-card-subtitle">(Only shown when includeAdvancedMetrics=true)</span>
                   </h3>
-                  <div className="space-y-2">
+                  <div className="audio-analysis-metrics-list">
                     {audioProfile.spectral_centroid !== undefined && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground">Spectral Centroid:</span>{' '}
-                        <span className="font-medium">{audioProfile.spectral_centroid.toFixed(2)} Hz</span>
-                      </p>
+                      <div className="audio-analysis-metric-item">
+                        <span className="audio-analysis-metric-label">Spectral Centroid:</span>
+                        <span className="audio-analysis-metric-value">{audioProfile.spectral_centroid.toFixed(2)} Hz</span>
+                      </div>
                     )}
                     {audioProfile.spectral_rolloff !== undefined && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground">Spectral Rolloff:</span>{' '}
-                        <span className="font-medium">{audioProfile.spectral_rolloff.toFixed(2)} Hz</span>
-                      </p>
+                      <div className="audio-analysis-metric-item">
+                        <span className="audio-analysis-metric-label">Spectral Rolloff:</span>
+                        <span className="audio-analysis-metric-value">{audioProfile.spectral_rolloff.toFixed(2)} Hz</span>
+                      </div>
                     )}
                     {audioProfile.zero_crossing_rate !== undefined && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground">Zero Crossing Rate:</span>{' '}
-                        <span className="font-medium">{audioProfile.zero_crossing_rate.toFixed(4)}</span>
-                      </p>
+                      <div className="audio-analysis-metric-item">
+                        <span className="audio-analysis-metric-label">Zero Crossing Rate:</span>
+                        <span className="audio-analysis-metric-value">{audioProfile.zero_crossing_rate.toFixed(4)}</span>
+                      </div>
                     )}
                   </div>
-                </div>
+                </Card>
               )}
 
               {/* Color Palette Display */}
               {audioProfile.color_palette && (
-                <div className="p-4 bg-card border border-border rounded-md">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Color Palette (from artwork)</h3>
+                <Card variant="elevated" padding="md" className="audio-analysis-card">
+                  <h3 className="audio-analysis-card-title">
+                    <Sparkles className="audio-analysis-card-title-icon" />
+                    Color Palette
+                    <span className="audio-analysis-card-subtitle">(from artwork)</span>
+                  </h3>
 
                   {/* Color Swatches */}
-                  <div className="flex gap-2 md:gap-3 mb-3 justify-start md:justify-center">
-                    <div className="flex flex-col items-center">
+                  <div className="audio-analysis-color-swatches">
+                    <div className="audio-analysis-color-swatch">
                       <div
-                        className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
+                        className="audio-analysis-color-box"
                         style={{ backgroundColor: audioProfile.color_palette.primary_color }}
-                        title="Primary Color"
+                        title={audioProfile.color_palette.primary_color}
                       />
-                      <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Primary</p>
-                      <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.primary_color}</p>
+                      <p className="audio-analysis-color-name">Primary</p>
+                      <p className="audio-analysis-color-hex">{audioProfile.color_palette.primary_color}</p>
                     </div>
 
                     {audioProfile.color_palette.secondary_color && (
-                      <div className="flex flex-col items-center">
+                      <div className="audio-analysis-color-swatch">
                         <div
-                          className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
+                          className="audio-analysis-color-box"
                           style={{ backgroundColor: audioProfile.color_palette.secondary_color }}
-                          title="Secondary Color"
+                          title={audioProfile.color_palette.secondary_color}
                         />
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Secondary</p>
-                        <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.secondary_color}</p>
+                        <p className="audio-analysis-color-name">Secondary</p>
+                        <p className="audio-analysis-color-hex">{audioProfile.color_palette.secondary_color}</p>
                       </div>
                     )}
 
                     {audioProfile.color_palette.accent_color && (
-                      <div className="flex flex-col items-center">
+                      <div className="audio-analysis-color-swatch">
                         <div
-                          className="w-12 h-12 md:w-16 md:h-16 rounded-md border border-border"
+                          className="audio-analysis-color-box"
                           style={{ backgroundColor: audioProfile.color_palette.accent_color }}
-                          title="Accent Color"
+                          title={audioProfile.color_palette.accent_color}
                         />
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Accent</p>
-                        <p className="text-[10px] md:text-xs font-mono truncate max-w-[60px] md:max-w-none">{audioProfile.color_palette.accent_color}</p>
+                        <p className="audio-analysis-color-name">Accent</p>
+                        <p className="audio-analysis-color-hex">{audioProfile.color_palette.accent_color}</p>
                       </div>
                     )}
                   </div>
 
                   {/* All Colors */}
                   {audioProfile.color_palette.colors.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-xs text-muted-foreground mb-1">All detected colors:</p>
-                      <div className="flex gap-1 flex-wrap">
+                    <div className="audio-analysis-all-colors">
+                      <p className="audio-analysis-all-colors-label">All detected colors:</p>
+                      <div className="audio-analysis-all-colors-grid">
                         {audioProfile.color_palette.colors.map((color, idx) => (
                           <div
                             key={idx}
-                            className="w-5 h-5 md:w-6 md:h-6 rounded border border-border"
+                            className="audio-analysis-color-dot"
                             style={{ backgroundColor: color }}
                             title={color}
                           />
@@ -210,94 +278,98 @@ export function AudioAnalysisTab() {
                   )}
 
                   {/* Color Properties */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs md:text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Brightness:</span>{' '}
-                      <span className="font-medium">{(audioProfile.color_palette.brightness * 100).toFixed(0)}%</span>
+                  <div className="audio-analysis-color-properties">
+                    <div className="audio-analysis-color-property">
+                      <span className="audio-analysis-property-label">Brightness:</span>
+                      <span className="audio-analysis-property-value">{(audioProfile.color_palette.brightness * 100).toFixed(0)}%</span>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Saturation:</span>{' '}
-                      <span className="font-medium">{(audioProfile.color_palette.saturation * 100).toFixed(0)}%</span>
+                    <div className="audio-analysis-color-property">
+                      <span className="audio-analysis-property-label">Saturation:</span>
+                      <span className="audio-analysis-property-value">{(audioProfile.color_palette.saturation * 100).toFixed(0)}%</span>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Monochrome:</span>{' '}
-                      <span className="font-medium">{audioProfile.color_palette.is_monochrome ? 'Yes' : 'No'}</span>
+                    <div className="audio-analysis-color-property">
+                      <span className="audio-analysis-property-label">Monochrome:</span>
+                      <span className="audio-analysis-property-value">{audioProfile.color_palette.is_monochrome ? 'Yes' : 'No'}</span>
                     </div>
                   </div>
-                </div>
+                </Card>
               )}
 
               {/* Sampling Timeline Visualization */}
-              <div className="p-4 bg-card border border-border rounded-md">
-                <h3 className="text-sm font-medium text-muted-foreground mb-4">Sampling Timeline</h3>
+              <Card variant="elevated" padding="md" className="audio-analysis-card">
+                <h3 className="audio-analysis-card-title">Sampling Timeline</h3>
 
                 {/* Timeline bar */}
-                <div className="relative h-8 md:h-12 bg-muted rounded-md overflow-hidden mb-2">
+                <div className="audio-analysis-timeline">
                   {/* Timeline background track */}
-                  <div className="absolute inset-0 flex items-center px-1 md:px-2">
-                    <div className="w-full h-1 bg-border rounded" />
+                  <div className="audio-analysis-timeline-track">
+                    <div className="audio-analysis-timeline-line" />
                   </div>
 
                   {/* Start marker */}
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary/50" />
-                  <div className="absolute left-1 bottom-0 text-[10px] md:text-xs text-muted-foreground">0%</div>
+                  <div className="audio-analysis-timeline-marker audio-analysis-timeline-marker-start">
+                    <div className="audio-analysis-timeline-marker-line" />
+                    <div className="audio-analysis-timeline-marker-label">0%</div>
+                  </div>
 
                   {/* End marker */}
-                  <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-primary/50" />
-                  <div className="absolute right-1 bottom-0 text-[10px] md:text-xs text-muted-foreground">100%</div>
+                  <div className="audio-analysis-timeline-marker audio-analysis-timeline-marker-end">
+                    <div className="audio-analysis-timeline-marker-line" />
+                    <div className="audio-analysis-timeline-marker-label">100%</div>
+                  </div>
 
                   {/* Sample position markers */}
                   {audioProfile.analysis_metadata.sample_positions.map((position, idx) => (
-                    <div key={idx} className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: `${position * 100}%` }}>
-                      {/* Marker line */}
-                      <div className="w-0.5 h-full bg-primary" />
-                      {/* Percentage label above */}
-                      <div className="absolute -top-3.5 md:-top-5 text-[10px] md:text-xs font-medium text-primary whitespace-nowrap">
-                        {(position * 100).toFixed(0)}%
-                      </div>
-                      {/* Sample dot */}
-                      <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 md:w-3 md:h-3 bg-primary rounded-full border-2 border-background shadow-sm" />
-                      {/* Sample number label */}
-                      <div className="absolute -bottom-3.5 md:-bottom-5 text-[10px] md:text-xs text-muted-foreground">
-                        #{idx + 1}
-                      </div>
+                    <div
+                      key={idx}
+                      className="audio-analysis-sample-marker"
+                      style={{ left: `${position * 100}%` }}
+                    >
+                      <div className="audio-analysis-sample-marker-line" />
+                      <div className="audio-analysis-sample-marker-percent">{(position * 100).toFixed(0)}%</div>
+                      <div className="audio-analysis-sample-marker-dot" />
+                      <div className="audio-analysis-sample-marker-number">#{idx + 1}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* Timeline legend/info */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-1 md:gap-0 text-[10px] md:text-xs text-muted-foreground">
+                <div className="audio-analysis-timeline-legend">
                   <span>Track Duration</span>
-                  <span className="font-medium">
+                  <span className="audio-analysis-timeline-duration">
                     {audioProfile.analysis_metadata.full_buffer_analyzed
                       ? 'Full buffer analyzed'
                       : `Duration: ${audioProfile.analysis_metadata.duration_analyzed.toFixed(2)}s`}
                   </span>
                 </div>
-              </div>
+              </Card>
 
               {/* Analysis Metadata */}
-              <div className="p-4 bg-card border border-border rounded-md">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Analysis Metadata</h3>
-                <div className="space-y-1 text-sm">
-                  <p>
-                    <span className="text-muted-foreground">Duration analyzed:</span>{' '}
-                    <span className="font-medium">{audioProfile.analysis_metadata.duration_analyzed.toFixed(2)}s</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">Full buffer analyzed:</span>{' '}
-                    <span className="font-medium">{audioProfile.analysis_metadata.full_buffer_analyzed ? 'Yes' : 'No'}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">Sample positions:</span>{' '}
-                    <span className="font-medium">{audioProfile.analysis_metadata.sample_positions.map(p => `${(p * 100).toFixed(0)}%`).join(', ')}</span>
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">Analyzed at:</span>{' '}
-                    <span className="font-medium">{new Date(audioProfile.analysis_metadata.analyzed_at).toLocaleString()}</span>
-                  </p>
+              <Card variant="elevated" padding="md" className="audio-analysis-card">
+                <h3 className="audio-analysis-card-title">Analysis Metadata</h3>
+                <div className="audio-analysis-metadata-list">
+                  <div className="audio-analysis-metadata-item">
+                    <span className="audio-analysis-metadata-label">Duration analyzed:</span>
+                    <span className="audio-analysis-metadata-value">{audioProfile.analysis_metadata.duration_analyzed.toFixed(2)}s</span>
+                  </div>
+                  <div className="audio-analysis-metadata-item">
+                    <span className="audio-analysis-metadata-label">Full buffer analyzed:</span>
+                    <span className="audio-analysis-metadata-value">{audioProfile.analysis_metadata.full_buffer_analyzed ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="audio-analysis-metadata-item">
+                    <span className="audio-analysis-metadata-label">Sample positions:</span>
+                    <span className="audio-analysis-metadata-value">
+                      {audioProfile.analysis_metadata.sample_positions.map(p => `${(p * 100).toFixed(0)}%`).join(', ')}
+                    </span>
+                  </div>
+                  <div className="audio-analysis-metadata-item">
+                    <span className="audio-analysis-metadata-label">Analyzed at:</span>
+                    <span className="audio-analysis-metadata-value">
+                      {new Date(audioProfile.analysis_metadata.analyzed_at).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Raw JSON Dump Section */}
               <RawJsonDump
