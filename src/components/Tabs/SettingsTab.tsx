@@ -20,6 +20,117 @@ import type { EnvironmentalContext, GamingContext } from '@/types';
 const FFT_SIZE_OPTIONS = [1024, 2048, 4096, 8192] as const;
 type FFTSizeOption = (typeof FFT_SIZE_OPTIONS)[number];
 
+// API key validation status type
+type ApiKeyValidationStatus = 'idle' | 'validating' | 'valid' | 'invalid';
+
+// API key validation result interface
+interface ApiKeyValidationResult {
+  status: ApiKeyValidationStatus;
+  message?: string;
+}
+
+/**
+ * Validates OpenWeather API key by making a test API call
+ * @param apiKey - The OpenWeather API key to validate
+ * @returns Promise resolving to validation result
+ */
+async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
+  if (!apiKey || apiKey.trim().length === 0) {
+    return { status: 'idle' };
+  }
+
+  try {
+    // Use a simple weather query for London (lat=51.5074, lon=-0.1278) as a test
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=51.5074&lon=-0.1278&appid=${apiKey.trim()}&units=metric`;
+    const response = await fetch(url);
+
+    if (response.status === 401) {
+      return {
+        status: 'invalid',
+        message: 'Invalid API key. Please check your OpenWeather API key and try again.'
+      };
+    }
+
+    if (response.status === 404) {
+      return {
+        status: 'invalid',
+        message: 'API key not found. Please make sure you have a valid OpenWeather API key.'
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        status: 'invalid',
+        message: `OpenWeather API error (${response.status}): ${response.statusText}`
+      };
+    }
+
+    // If we get here, the key is valid
+    return {
+      status: 'valid',
+      message: 'API key validated successfully!'
+    };
+  } catch (error) {
+    return {
+      status: 'invalid',
+      message: 'Network error. Please check your internet connection and try again.'
+    };
+  }
+}
+
+/**
+ * Validates Steam API key by making a test API call
+ * @param apiKey - The Steam API key to validate
+ * @returns Promise resolving to validation result
+ */
+async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
+  if (!apiKey || apiKey.trim().length === 0) {
+    return { status: 'idle' };
+  }
+
+  try {
+    // Use the GetPlayerSummaries endpoint with a known test Steam ID (Valve's account: 76561197960287930)
+    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey.trim()}&steamids=76561197960287930`;
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    // Steam API returns 403 with {"error": "Forbidden"} for invalid keys
+    if (response.status === 403 || (data.error && data.error === 'Forbidden')) {
+      return {
+        status: 'invalid',
+        message: 'Invalid API key. Please check your Steam API key and try again.'
+      };
+    }
+
+    // Check for specific Steam API error responses
+    if (data.error) {
+      return {
+        status: 'invalid',
+        message: `Steam API error: ${data.error}`
+      };
+    }
+
+    // If we get valid response structure, the key is working
+    if (data.response && data.response.players) {
+      return {
+        status: 'valid',
+        message: 'API key validated successfully!'
+      };
+    }
+
+    return {
+      status: 'invalid',
+      message: 'Unexpected response from Steam API. Please check your API key.'
+    };
+  } catch (error) {
+    return {
+      status: 'invalid',
+      message: 'Network error. Please check your internet connection and try again.'
+    };
+  }
+}
+
 // Combined export data structure
 interface ExportedData {
   version: string;
@@ -76,6 +187,10 @@ export function SettingsTab() {
   const [importMessage, setImportMessage] = useState<string>('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirming' | 'resetting' | 'success' | 'error'>('idle');
   const [resetMessage, setResetMessage] = useState<string>('');
+
+  // API key validation states
+  const [openWeatherValidation, setOpenWeatherValidation] = useState<ApiKeyValidationResult>({ status: 'idle' });
+  const [steamValidation, setSteamValidation] = useState<ApiKeyValidationResult>({ status: 'idle' });
 
   // Ref to track if confirmation timeout is active
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,6 +269,38 @@ export function SettingsTab() {
       logger.info('Settings', 'Verbose logging enabled');
     }
   };
+
+  // Debounced OpenWeather API key validation
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (openWeatherKey && openWeatherKey.length > 0) {
+        setOpenWeatherValidation({ status: 'validating' });
+        const result = await validateOpenWeatherApiKey(openWeatherKey);
+        setOpenWeatherValidation(result);
+        logger.info('Settings', `OpenWeather API key validation: ${result.status}`, { message: result.message });
+      } else {
+        setOpenWeatherValidation({ status: 'idle' });
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [openWeatherKey]);
+
+  // Debounced Steam API key validation
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (steamKey && steamKey.length > 0) {
+        setSteamValidation({ status: 'validating' });
+        const result = await validateSteamApiKey(steamKey);
+        setSteamValidation(result);
+        logger.info('Settings', `Steam API key validation: ${result.status}`, { message: result.message });
+      } else {
+        setSteamValidation({ status: 'idle' });
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [steamKey]);
 
   const handleExportAllData = () => {
     try {
@@ -408,12 +555,29 @@ export function SettingsTab() {
         <h3 className="text-lg font-semibold">API Keys</h3>
 
         <div>
-          <label className="block text-sm font-medium mb-2">OpenWeather API Key</label>
+          <label className="block text-sm font-medium mb-2">
+            OpenWeather API Key
+            {openWeatherValidation.status === 'valid' && (
+              <span className="ml-2 text-green-600 text-xs">✓ Valid</span>
+            )}
+            {openWeatherValidation.status === 'validating' && (
+              <span className="ml-2 text-yellow-600 text-xs">Validating...</span>
+            )}
+            {openWeatherValidation.status === 'invalid' && (
+              <span className="ml-2 text-red-600 text-xs">✗ Invalid</span>
+            )}
+          </label>
           <input
             type="text"
             value={openWeatherKey}
             onChange={(e) => handleOpenWeatherKeyChange(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            className={`w-full px-3 py-2 bg-background border rounded-md ${
+              openWeatherValidation.status === 'invalid'
+                ? 'border-red-500 focus:border-red-500'
+                : openWeatherValidation.status === 'valid'
+                ? 'border-green-500 focus:border-green-500'
+                : 'border-input'
+            }`}
             placeholder="Enter OpenWeather API key..."
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -422,15 +586,43 @@ export function SettingsTab() {
               openweathermap.org
             </a>
           </p>
+          {openWeatherValidation.message && (
+            <p className={`text-xs mt-1 ${
+              openWeatherValidation.status === 'invalid'
+                ? 'text-red-600'
+                : openWeatherValidation.status === 'valid'
+                ? 'text-green-600'
+                : 'text-muted-foreground'
+            }`}>
+              {openWeatherValidation.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Steam API Key</label>
+          <label className="block text-sm font-medium mb-2">
+            Steam API Key
+            {steamValidation.status === 'valid' && (
+              <span className="ml-2 text-green-600 text-xs">✓ Valid</span>
+            )}
+            {steamValidation.status === 'validating' && (
+              <span className="ml-2 text-yellow-600 text-xs">Validating...</span>
+            )}
+            {steamValidation.status === 'invalid' && (
+              <span className="ml-2 text-red-600 text-xs">✗ Invalid</span>
+            )}
+          </label>
           <input
             type="text"
             value={steamKey}
             onChange={(e) => handleSteamKeyChange(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
+            className={`w-full px-3 py-2 bg-background border rounded-md ${
+              steamValidation.status === 'invalid'
+                ? 'border-red-500 focus:border-red-500'
+                : steamValidation.status === 'valid'
+                ? 'border-green-500 focus:border-green-500'
+                : 'border-input'
+            }`}
             placeholder="Enter Steam API key..."
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -439,6 +631,17 @@ export function SettingsTab() {
               steamcommunity.com
             </a>
           </p>
+          {steamValidation.message && (
+            <p className={`text-xs mt-1 ${
+              steamValidation.status === 'invalid'
+                ? 'text-red-600'
+                : steamValidation.status === 'valid'
+                ? 'text-green-600'
+                : 'text-muted-foreground'
+            }`}>
+              {steamValidation.message}
+            </p>
+          )}
         </div>
 
         <div>

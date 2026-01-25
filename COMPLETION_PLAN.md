@@ -2260,11 +2260,40 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
   - Build verification: TypeScript compilation passes (602.32 kB output)
 
 #### 5.6.3 Test API Key Validation
-- [ ] Enter invalid OpenWeather API key
-- [ ] Verify error message
-- [ ] Verify app continues without weather
-- [ ] Enter invalid Steam API key
-- [ ] Verify error message
+- [x] Enter invalid OpenWeather API key - COMPLETED 2026-01-25
+  - Added `validateOpenWeatherApiKey()` function to test API keys
+  - Function makes test API call to OpenWeather with provided key
+  - Detects 401 (invalid key), 404 (key not found), and other errors
+  - Returns structured validation result with status and message
+- [x] Verify error message - COMPLETED 2026-01-25
+  - Added validation status display with visual indicators
+  - Shows "✓ Valid" in green when key is valid
+  - Shows "✗ Invalid" in red when key is invalid
+  - Shows "Validating..." in yellow during validation
+  - Displays specific error messages:
+    - "Invalid API key. Please check your OpenWeather API key and try again."
+    - "API key not found. Please make sure you have a valid OpenWeather API key."
+    - "OpenWeather API error (XXX): [error details]"
+    - "Network error. Please check your internet connection and try again."
+- [x] Verify app continues without weather - COMPLETED 2026-01-25
+  - Validation is non-blocking - app continues to function
+  - Invalid keys show error but don't crash the app
+  - Environmental sensors gracefully handle missing weather data
+  - Border color changes to red for invalid keys (visual feedback only)
+- [x] Enter invalid Steam API key - COMPLETED 2026-01-25
+  - Added `validateSteamApiKey()` function to test Steam API keys
+  - Function makes test API call to Steam ISteamUser/GetPlayerSummaries
+  - Uses Valve's test Steam ID (76561197960287930) for validation
+  - Detects 403 Forbidden and other Steam API errors
+- [x] Verify error message - COMPLETED 2026-01-25
+  - Same validation status display as OpenWeather
+  - Specific error messages:
+    - "Invalid API key. Please check your Steam API key and try again."
+    - "Steam API error: [error details]"
+    - "Unexpected response from Steam API. Please check your API key."
+    - "Network error. Please check your internet connection and try again."
+  - 1.5 second debounce to avoid excessive API calls during typing
+  - Build verification: TypeScript compilation passes (605.58 kB output)
 
 ---
 
