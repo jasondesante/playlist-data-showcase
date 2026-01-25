@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './PlaylistLoaderTab.css';
 import { Music, Download, Sparkles, Search } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { useDebounce } from '../../hooks/useDebounce';
