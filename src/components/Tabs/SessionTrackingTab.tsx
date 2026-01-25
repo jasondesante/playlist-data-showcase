@@ -46,9 +46,9 @@ export function SessionTrackingTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Session Tracker</h2>
+        <h2 className="text-lg md:text-xl font-bold">Session Tracker</h2>
         <StatusIndicator
           status={isActive ? 'healthy' : lastSession ? 'healthy' : 'degraded'}
           label={isActive ? 'Active' : lastSession ? 'Session Complete' : 'No Session'}
@@ -59,27 +59,27 @@ export function SessionTrackingTab() {
         <p className="text-muted-foreground">Select a track from the Playlist tab first</p>
       ) : (
         <>
-          <div className="p-4 bg-accent rounded-md">
-            <p className="font-medium">{selectedTrack.title}</p>
-            <p className="text-sm text-muted-foreground">{selectedTrack.artist}</p>
+          <div className="p-3 md:p-4 bg-accent rounded-md">
+            <p className="font-medium text-sm md:text-base">{selectedTrack.title}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">{selectedTrack.artist}</p>
           </div>
 
           {!isActive ? (
             <button
               onClick={handleStart}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 flex items-center gap-2"
+              className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-primary text-primary-foreground rounded-md hover:opacity-90 flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4" />
-              Start Session & Play Audio
+              <span className="text-sm md:text-base">Start Session & Play Audio</span>
             </button>
           ) : (
             <>
-              <div className="p-6 bg-card border border-border rounded-md text-center">
-                <p className="text-sm text-muted-foreground mb-2">Elapsed Time</p>
-                <p className="text-4xl font-bold font-mono">
+              <div className="p-4 md:p-6 bg-card border border-border rounded-md text-center">
+                <p className="text-xs md:text-sm text-muted-foreground mb-2">Elapsed Time</p>
+                <p className="text-3xl md:text-4xl font-bold font-mono tabular-nums">
                   {Math.floor(elapsedTime / 60)}:{String(elapsedTime % 60).padStart(2, '0')}
                 </p>
-                <div className="mt-4">
+                <div className="mt-3 md:mt-4">
                   <div className="h-2 bg-background rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary transition-all duration-1000"
@@ -88,17 +88,17 @@ export function SessionTrackingTab() {
                   </div>
                 </div>
                 {sessionId && (
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-xs text-muted-foreground mt-2 break-all">
                     Session ID: {sessionId}
                   </p>
                 )}
               </div>
               <button
                 onClick={handleEnd}
-                className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:opacity-90 flex items-center gap-2"
+                className="w-full sm:w-auto px-4 py-3 md:py-2 min-h-[44px] bg-destructive text-destructive-foreground rounded-md hover:opacity-90 flex items-center justify-center gap-2"
               >
                 <Pause className="w-4 h-4" />
-                End Session & Stop Audio
+                <span className="text-sm md:text-base">End Session & Stop Audio</span>
               </button>
             </>
           )}
