@@ -524,9 +524,15 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ### Bug fixes and Extra requests
 
--You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
+- [x] - Bug - You need to be able to click on a song that is playing to pause the song, when in the playlist tab.
+   - Completed: Added togglePlay() method to audioPlayerStore
+   - Updated PlaylistLoaderTab to use togglePlay instead of play
+   - Added isPlaying prop to TrackCard to show pause icon when playing
+   - TrackCard now shows Pause icon when track is playing
+   - Added track-card-playing CSS class with teal accent and pulsing indicator
+   - Playing state shows pulsing dot next to track number and teal title color
 
--In the character gen tab, the weapons and armor are showing on the screen as:
+- [] - Bug - In the character gen tab, the weapons and armor are showing on the screen as:
 Weapons [object Object], [object Object], [object Object]
 Armor [object Object], [object Object]
 Need to fix that.
