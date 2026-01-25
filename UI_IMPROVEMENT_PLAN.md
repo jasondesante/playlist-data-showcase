@@ -491,7 +491,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 1. ✅ Add color tokens and animation utilities to `src/index.css`
 2. ✅ Create `Button.tsx` component
 3. ✅ Create `Input.tsx` component
-4. Create `Card.tsx` component
+4. ✅ Create `Card.tsx` component
 5. Create `Skeleton.tsx` component
 
 ### Sprint 2: Track Card Component
