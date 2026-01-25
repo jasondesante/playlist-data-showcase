@@ -2174,9 +2174,25 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
 - [ ] Target: <5 seconds for auto-play - MANUAL TEST REQUIRED (user must run app)
 
 #### 5.5.3 Test Export Performance
-- [ ] Export 100 characters
-- [ ] Measure time to complete
-- [ ] Verify browser doesn't hang
+- [x] Add performance timing instrumentation - COMPLETED 2026-01-25
+  - Added performance.now() timing to handleExportAllData function
+  - Logs exportTimeSeconds, fileSizeKB, characters count, performanceTarget (PASS/FAIL)
+  - File modified: `src/components/Tabs/SettingsTab.tsx`
+  - Build verification: TypeScript compilation passes (599.83 kB output)
+  - Updated PERFORMANCE_TESTING.md with implementation details
+- [x] Update PERFORMANCE_TESTING.md documentation - COMPLETED 2026-01-25
+  - Added Implementation Changes section with code examples
+  - Updated test procedure with console log expectations
+  - Added character count logging to verify test data
+- [x] Verify feature is ready for manual testing - COMPLETED 2026-01-25
+  - Build passes (599.83 kB output)
+  - Performance instrumentation confirmed in SettingsTab.tsx lines 164, 208-217
+  - Console logging verified: logs characters, fileSizeKB, exportTimeSeconds, performanceTarget
+  - Feature is ready - requires user to generate 100+ characters and test export
+- [ ] Export 100 characters - MANUAL TEST REQUIRED (user must run app) - VERIFIED READY 2026-01-25
+- [ ] Measure time to complete - MANUAL TEST REQUIRED (user must run app)
+- [ ] Verify browser doesn't hang - MANUAL TEST REQUIRED (user must run app)
+- [ ] Target: <5 seconds - MANUAL TEST REQUIRED (user must run app)
 
 ---
 

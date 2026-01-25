@@ -275,9 +275,48 @@ Expected Time = (Rounds / 50) × 5 seconds
 
 ## Phase 5.5.3: Export Performance
 
+### Implementation Changes
+
+**File Modified:** `src/components/Tabs/SettingsTab.tsx`
+
+**Changes Made:**
+- Added performance timing using `performance.now()` API to `handleExportAllData` function
+- Timing starts when export begins (before data gathering)
+- Timing ends when export completes (after download triggered)
+- Results logged to console with:
+  - Number of characters exported
+  - File size in KB
+  - Export time (seconds)
+  - Pass/Fail status against 5-second target
+
+**Code Added:**
+```typescript
+// Performance timing: Start timer
+const startTime = performance.now();
+
+// ... data gathering and export code ...
+
+// Performance timing: Calculate elapsed time
+const endTime = performance.now();
+const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+const fileSizeKB = (jsonString.length / 1024).toFixed(2);
+const performanceTarget = parseFloat(elapsedSeconds) < 5.0 ? 'PASS' : 'FAIL';
+
+logger.info('Settings', 'Export completed successfully', {
+    characters: exportedData.characterStore.characters.length,
+    fileSizeKB,
+    exportTimeSeconds: elapsedSeconds,
+    performanceTarget,
+});
+```
+
+**Build Verification:** TypeScript compilation passes (599.83 kB output)
+
+---
+
 ### Implementation Status
 
-**Current State:** Export all data feature is fully implemented.
+**Current State:** Export performance instrumentation is fully implemented.
 
 **File:** `src/components/Tabs/SettingsTab.tsx`
 
@@ -285,13 +324,14 @@ Expected Time = (Rounds / 50) × 5 seconds
 - Export All Data to JSON button
 - Exports data from all 4 stores
 - Downloads as timestamped JSON file
+- Performance timing logged to console
 
 ### Manual Testing Procedure
 
 #### Prerequisites
-1. App running in development mode
+1. App running in development mode (`npm run dev`)
 2. Generate 100+ characters (use Character Gen tab repeatedly)
-3. Browser DevTools Performance monitor open
+3. Browser DevTools console open (F12)
 
 #### Test Steps
 
@@ -299,21 +339,22 @@ Expected Time = (Rounds / 50) × 5 seconds
    - Navigate to "Character Gen" tab
    - Generate multiple characters (use different tracks)
    - Or import a pre-generated dataset
-   - Verify character count in store (check console)
+   - Verify character count in store (check console or character list)
 
 2. **Run Export**
    - Navigate to "Settings" tab
-   - Open browser DevTools Performance monitor
+   - Open browser DevTools console (F12)
    - Click "Export All Data to JSON" button
-   - Note start time
    - Wait for download to start
-   - Note end time
+   - Watch for success message in UI
 
 3. **Check Performance**
-   - Verify download started
-   - Check file size
-   - Verify no browser freeze
-   - Check console for export logs
+   - In DevTools console, find the log entry: `Export completed successfully`
+   - Look for `characters` value (should be 100+)
+   - Look for `fileSizeKB` value
+   - Look for `exportTimeSeconds` value
+   - Verify `performanceTarget` shows `PASS`
+   - If `FAIL`, note the time taken
 
 #### Expected Results
 
@@ -481,18 +522,33 @@ Expected Time = (Rounds / 50) × 5 seconds
 
 ## Testing Checklist
 
-- [ ] 5.5.1: Analyze 3-minute track
-- [ ] 5.5.1: Measure time to complete
-- [ ] 5.5.1: Verify UI doesn't freeze
-- [ ] 5.5.1: Verify <10 second target met
-- [ ] 5.5.2: Run 50-round combat
-- [ ] 5.5.2: Measure time to complete
-- [ ] 5.5.2: Verify UI updates smoothly
-- [ ] 5.5.2: Verify <5 second target met
-- [ ] 5.5.3: Export 100 characters
-- [ ] 5.5.3: Measure time to complete
-- [ ] 5.5.3: Verify browser doesn't hang
-- [ ] 5.5.3: Verify <5 second target met
+### Phase 5.5.1: Audio Analysis Performance
+- [x] Add performance timing instrumentation - COMPLETED 2026-01-25
+- [x] Create performance testing documentation - COMPLETED 2026-01-25
+- [x] Verify feature is ready for manual testing - COMPLETED 2026-01-25
+- [ ] 5.5.1: Analyze 3-minute track - MANUAL TEST REQUIRED
+- [ ] 5.5.1: Measure time to complete - MANUAL TEST REQUIRED
+- [ ] 5.5.1: Verify UI doesn't freeze - MANUAL TEST REQUIRED
+- [ ] 5.5.1: Verify <10 second target met - MANUAL TEST REQUIRED
+
+### Phase 5.5.2: Combat Performance
+- [x] Add performance timing instrumentation - COMPLETED 2026-01-25
+- [x] Update PERFORMANCE_TESTING.md documentation - COMPLETED 2026-01-25
+- [x] Build verification - COMPLETED 2026-01-25
+- [ ] 5.5.2: Run 50-round combat - MANUAL TEST REQUIRED
+- [ ] 5.5.2: Measure time to complete - MANUAL TEST REQUIRED
+- [ ] 5.5.2: Verify UI updates smoothly - MANUAL TEST REQUIRED
+- [ ] 5.5.2: Verify <5 second target met - MANUAL TEST REQUIRED
+
+### Phase 5.5.3: Export Performance
+- [x] Add performance timing instrumentation - COMPLETED 2026-01-25
+- [x] Update PERFORMANCE_TESTING.md documentation - COMPLETED 2026-01-25
+- [x] Build verification - COMPLETED 2026-01-25 (599.83 kB output)
+- [x] Verify feature is ready for manual testing - COMPLETED 2026-01-25
+- [ ] 5.5.3: Export 100 characters - MANUAL TEST REQUIRED
+- [ ] 5.5.3: Measure time to complete - MANUAL TEST REQUIRED
+- [ ] 5.5.3: Verify browser doesn't hang - MANUAL TEST REQUIRED
+- [ ] 5.5.3: Verify <5 second target met - MANUAL TEST REQUIRED
 
 ---
 

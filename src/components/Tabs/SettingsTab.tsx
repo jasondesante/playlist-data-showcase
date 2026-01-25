@@ -160,6 +160,9 @@ export function SettingsTab() {
       setExportStatus('exporting');
       logger.info('Settings', 'Exporting all data');
 
+      // Performance timing: Start timer
+      const startTime = performance.now();
+
       // Gather data from all stores - extract state directly from hook returns
       const exportedData: ExportedData = {
         version: '1.0.0',
@@ -201,8 +204,19 @@ export function SettingsTab() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
+      // Performance timing: Calculate elapsed time
+      const endTime = performance.now();
+      const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+      const fileSizeKB = (jsonString.length / 1024).toFixed(2);
+      const performanceTarget = parseFloat(elapsedSeconds) < 5.0 ? 'PASS' : 'FAIL';
+
       setExportStatus('success');
-      logger.info('Settings', 'Export completed successfully');
+      logger.info('Settings', 'Export completed successfully', {
+        characters: exportedData.characterStore.characters.length,
+        fileSizeKB,
+        exportTimeSeconds: elapsedSeconds,
+        performanceTarget,
+      });
 
       // Reset status after 3 seconds
       void setTimeout(() => setExportStatus('idle'), 3000);
