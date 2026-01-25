@@ -1286,11 +1286,11 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Combat tab looks identical
 
 **Task 22: Settings Tab**
-- [ ] Create `SettingsTab.css`
-- [ ] Copy all settings styles from index.css
-- [ ] Consolidate duplicates, replace hardcoded values
-- [ ] Add import to component
-- [ ] Test: Settings tab looks identical
+- [x] Create `SettingsTab.css`
+- [x] Copy all settings styles from index.css
+- [x] Consolidate duplicates, replace hardcoded values
+- [x] Add import to component
+- [x] Test: Settings tab looks identical
 
 ### Phase 5: Finalization
 

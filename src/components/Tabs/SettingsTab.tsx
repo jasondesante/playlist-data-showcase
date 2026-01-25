@@ -13,6 +13,8 @@ import type { ServerlessPlaylist, PlaylistTrack, AudioProfile } from '@/types';
 import type { CharacterSheet } from '@/types';
 import type { EnvironmentalContext, GamingContext } from '@/types';
 
+import './SettingsTab.css';
+
 /**
  * SettingsTab Component
  *
