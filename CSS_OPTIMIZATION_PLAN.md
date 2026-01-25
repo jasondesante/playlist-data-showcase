@@ -1316,13 +1316,13 @@ import './PlaylistLoaderTab.css';
 - [x] Full visual regression check: open every tab, test all interactions
 
 **Task 24: Final Optimization Pass**
-- [ ] Run stylelint and fix all warnings
-- [ ] Search for any remaining duplicate patterns
-- [ ] Verify all hardcoded shadows use `var(--shadow-*)` variables
-- [ ] Verify all hardcoded border-radius uses `var(--radius)` or `var(--radius-full)`
-- [ ] Verify all hardcoded colors use semantic CSS variables
-- [ ] Check for unused CSS (manual review)
-- [ ] Commit changes with git
+- [x] Run stylelint and fix all warnings
+- [x] Search for any remaining duplicate patterns
+- [x] Verify all hardcoded shadows use `var(--shadow-*)` variables
+- [x] Verify all hardcoded border-radius uses `var(--radius)` or `var(--radius-full)`
+- [x] Verify all hardcoded colors use semantic CSS variables
+- [x] Check for unused CSS (manual review)
+- [x] Commit changes with git
 
 **Task 25: Update Documentation**
 - [ ] Update UI_IMPROVEMENT_PLAN.md with new CSS structure
