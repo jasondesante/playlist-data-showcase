@@ -1136,8 +1136,8 @@ import './PlaylistLoaderTab.css';
 - [x] Test: Try to commit a CSS file - hook should run
 
 **Task 3: Create Brace Check Script**
-- [ ] Create `scripts/check-css-braces.js` (see Part 1 for full script)
-- [ ] Test: Run `npm run check:css` - should show balanced braces
+- [x] Create `scripts/check-css-braces.js` (see Part 1 for full script)
+- [x] Test: Run `npm run check:css` - should show balanced braces
 
 **Task 4: Extract Base CSS**
 - [ ] Create `src/styles/base.css`
