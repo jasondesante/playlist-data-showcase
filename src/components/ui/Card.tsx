@@ -30,17 +30,17 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  default: 'bg-card border border-border shadow-[var(--shadow-sm)]',
-  elevated: 'bg-surface-2 border border-border shadow-[var(--shadow-md)]',
-  outlined: 'bg-card border-2 border-border shadow-none',
-  flat: 'bg-surface-1 border-0 shadow-none',
+  default: 'card-default',
+  elevated: 'card-elevated',
+  outlined: 'card-outlined',
+  flat: 'card-flat',
 };
 
 const paddingStyles: Record<CardPadding, string> = {
-  none: '',
-  sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
+  none: 'card-padding-none',
+  sm: 'card-padding-sm',
+  md: 'card-padding-md',
+  lg: 'card-padding-lg',
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -59,18 +59,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          // Base styles
-          'rounded-lg',
-          // Variant and padding
+          'card',
           variantStyles[variant],
           paddingStyles[padding],
-          // Transitions
-          'transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-cubic)]',
-          // Hoverable state
-          hoverable && [
-            'cursor-pointer hover:shadow-[var(--shadow-md)] hover:bg-surface-hover hover:border-primary/50',
-            'hover:scale-[1.01] active:scale-[0.99]',
-          ],
+          hoverable && 'card-hoverable',
           className
         )}
         {...props}
@@ -95,7 +87,7 @@ export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
     return (
       <div
         ref={ref}
-        className={cn('flex flex-col gap-1.5 mb-4', className)}
+        className={cn('card-header', className)}
         {...props}
       >
         {children}
@@ -118,10 +110,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
     return (
       <h3
         ref={ref}
-        className={cn(
-          'text-xl font-semibold text-foreground leading-tight',
-          className
-        )}
+        className={cn('card-title', className)}
         {...props}
       >
         {children}
@@ -144,7 +133,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionP
     return (
       <p
         ref={ref}
-        className={cn('text-sm text-muted-foreground', className)}
+        className={cn('card-description', className)}
         {...props}
       >
         {children}
@@ -186,7 +175,7 @@ export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
     return (
       <div
         ref={ref}
-        className={cn('flex items-center gap-3 mt-4 pt-4 border-t border-border', className)}
+        className={cn('card-footer', className)}
         {...props}
       >
         {children}

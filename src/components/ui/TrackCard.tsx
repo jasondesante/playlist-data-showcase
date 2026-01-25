@@ -51,31 +51,31 @@ function formatDuration(seconds: number): string {
 
 const sizeStyles = {
   compact: {
-    container: 'p-1.5 gap-1.5',
-    image: 'w-10 h-10',
-    trackNumber: 'text-xs w-5',
-    title: 'text-xs',
-    meta: 'text-[10px]',
-    playButton: 'w-5 h-5',
-    playIcon: 'w-2.5 h-2.5',
+    container: 'track-card-compact',
+    image: 'track-card-art-compact',
+    trackNumber: 'track-number-compact',
+    title: 'track-title-compact',
+    meta: 'track-meta-compact',
+    playButton: 'play-button-compact',
+    playIcon: 'play-icon-compact',
   },
   default: {
-    container: 'p-2 gap-2',
-    image: 'w-12 h-12',
-    trackNumber: 'text-sm w-6',
-    title: 'text-sm',
-    meta: 'text-[11px]',
-    playButton: 'w-6 h-6',
-    playIcon: 'w-3 h-3',
+    container: 'track-card-default',
+    image: 'track-card-art-default',
+    trackNumber: 'track-number-default',
+    title: 'track-title-default',
+    meta: 'track-meta-default',
+    playButton: 'play-button-default',
+    playIcon: 'play-icon-default',
   },
   large: {
-    container: 'p-2.5 gap-2.5',
-    image: 'w-14 h-14',
-    trackNumber: 'text-base w-7',
-    title: 'text-base',
-    meta: 'text-xs',
-    playButton: 'w-7 h-7',
-    playIcon: 'w-3.5 h-3.5',
+    container: 'track-card-large',
+    image: 'track-card-art-large',
+    trackNumber: 'track-number-large',
+    title: 'track-title-large',
+    meta: 'track-meta-large',
+    playButton: 'play-button-large',
+    playIcon: 'play-icon-large',
   },
 };
 
@@ -140,42 +140,27 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
           // Base layout
-          'relative flex items-center rounded-lg border transition-all duration-[var(--duration-normal)] ease-[var(--ease-out-cubic)] cursor-pointer',
-          // Selection states
-          isSelected
-            ? [
-                'bg-primary/20 border-2 border-primary shadow-lg shadow-primary/20',
-                // Left accent bar for selected state
-                'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:bottom-4 before:w-1 before:bg-primary before:rounded-r-full',
-                // Selection ring animation (only when actively animating)
-                shouldAnimateSelection && 'selection-ring',
-              ]
-            : 'bg-card border-border hover:bg-surface-3 hover:shadow-md hover:border-primary/50',
-          // Hover scale effect (1.02 per UI improvement plan spec)
-          'hover:scale-[1.02] active:scale-[0.99]',
-          // Spring animation on mount
-          'spring-in',
+          'track-card',
           styles.container,
+          // Selection state
+          isSelected && 'track-card-selected',
+          // Selection ring animation (only when actively animating)
+          shouldAnimateSelection && 'selection-ring',
+          // Additional className
           className
         )}
         {...props}
       >
         {/* Track number (left side) */}
         {index !== undefined && (
-          <div className={cn(
-            'flex-shrink-0 text-center font-medium text-muted-foreground tabular-nums',
-            styles.trackNumber
-          )}>
+          <div className={cn('track-number', styles.trackNumber)}>
             {isHovered && onPlay ? (
               <button
                 onClick={handlePlayClick}
-                className={cn(
-                  'flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
-                  styles.playButton
-                )}
+                className={cn('track-play-button', styles.playButton)}
                 aria-label={`Play ${track.title}`}
               >
-                <Play className={styles.playIcon} fill="currentColor" />
+                <Play className={cn('track-play-icon', styles.playIcon)} fill="currentColor" />
               </button>
             ) : (
               index
@@ -184,84 +169,63 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
         )}
 
         {/* Album art */}
-        <div
-          className={cn(
-            'track-card-art',
-            size === 'compact' && 'size-compact',
-            size === 'default' && 'size-default',
-            size === 'large' && 'size-large'
-          )}
-        >
+        <div className={cn('track-card-art', styles.image)}>
           {isLoading && !imageLoaded ? (
-            <div className="absolute inset-0 shimmer" />
+            <div className="track-art-shimmer" />
           ) : hasImage ? (
             <>
-              {!imageLoaded && <div className="absolute inset-0 shimmer" />}
+              {!imageLoaded && <div className="track-art-shimmer" />}
               <img
                 src={track.image_url}
                 alt={`${track.title} album art`}
-                className="album-art-image"
+                className="track-art-image"
                 onLoad={handleImageLoad}
                 onError={handleImageError}
               />
             </>
           ) : (
             /* Fallback: gradient background with music icon */
-            <div className="album-art-fallback">
-              <Music className="music-icon" />
+            <div className="track-art-fallback">
+              <Music className="track-art-icon" />
             </div>
           )}
 
           {/* Play button overlay on hover - with smooth fade in/out animation */}
           {hasImage && onPlay && (
-            <div
-              className={cn(
-                'absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-[var(--duration-fast)] ease-out',
-                isHovered ? 'opacity-100' : 'opacity-0'
-              )}
-            >
+            <div className={cn('track-art-overlay', isHovered && 'track-art-overlay-visible')}>
               <button
                 onClick={handlePlayClick}
-                className={cn(
-                  'flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-all duration-[var(--duration-fast)] shadow-lg',
-                  styles.playButton
-                )}
+                className={cn('track-art-overlay-button', styles.playButton)}
                 aria-label={`Play ${track.title}`}
               >
-                <Play className={styles.playIcon} fill="currentColor" />
+                <Play className={cn('track-play-icon', styles.playIcon)} fill="currentColor" />
               </button>
             </div>
           )}
         </div>
 
         {/* Track info */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
+        <div className="track-info">
           {/* Title */}
-          <p
-            className={cn(
-              'font-semibold text-foreground truncate',
-              isSelected && 'text-primary',
-              styles.title
-            )}
-          >
+          <p className={cn('track-title', styles.title, isSelected && 'track-title-selected')}>
             {track.title}
           </p>
 
           {/* Artist */}
-          <p className={cn('text-muted-foreground truncate', styles.meta)}>
+          <p className={cn('track-meta', styles.meta)}>
             {track.artist}
           </p>
 
           {/* Album (if available) */}
           {track.album && size !== 'compact' && (
-            <p className={cn('text-muted-foreground/70 truncate', styles.meta)}>
+            <p className={cn('track-meta track-meta-album', styles.meta)}>
               {track.album}
             </p>
           )}
 
           {/* Duration */}
           {track.duration > 0 && (
-            <p className={cn('text-muted-foreground/50 tabular-nums', styles.meta)}>
+            <p className={cn('track-meta track-meta-duration', styles.meta)}>
               {formatDuration(track.duration)}
             </p>
           )}

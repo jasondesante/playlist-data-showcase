@@ -31,10 +31,10 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<SkeletonVariant, string> = {
-  text: 'rounded-sm h-4',
-  circular: 'rounded-full',
-  rectangular: 'rounded-none',
-  rounded: 'rounded-md',
+  text: 'skeleton-text',
+  circular: 'skeleton-circular',
+  rectangular: 'skeleton-rectangular',
+  rounded: 'skeleton-rounded',
 };
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
@@ -50,9 +50,8 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
     ref
   ) => {
     const baseClasses = cn(
+      'skeleton',
       'shimmer',
-      'bg-muted',
-      'animate-pulse',
       variantStyles[variant],
       width,
       height,
@@ -61,7 +60,7 @@ export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
 
     if (count > 1) {
       return (
-        <div ref={ref} className="space-y-2" {...props}>
+        <div ref={ref} className="skeleton-group" {...props}>
           {Array.from({ length: count }).map((_, i) => (
             <div key={i} className={baseClasses} />
           ))}
@@ -88,25 +87,22 @@ export interface TrackCardSkeletonProps extends HTMLAttributes<HTMLDivElement> {
 
 export const TrackCardSkeleton = forwardRef<HTMLDivElement, TrackCardSkeletonProps>(
   ({ size = 'default', className, ...props }, ref) => {
-    const imageSize = size === 'compact' ? 'w-16 h-16' : size === 'large' ? 'w-24 h-24' : 'w-20 h-20';
+    const imageSize = size === 'compact' ? 'skeleton-art-compact' : size === 'large' ? 'skeleton-art-large' : 'skeleton-art-default';
 
     return (
       <div
         ref={ref}
-        className={cn(
-          'flex gap-4 p-4 border border-border rounded-lg bg-card',
-          className
-        )}
+        className={cn('track-card-skeleton', className)}
         {...props}
       >
         {/* Album art placeholder */}
-        <Skeleton variant="rounded" width={imageSize} height={imageSize} />
+        <Skeleton variant="rounded" className={imageSize} />
 
         {/* Track info placeholder */}
-        <div className="flex-1 space-y-2 py-1">
-          <Skeleton variant="text" width="w-3/4" />
-          <Skeleton variant="text" width="w-1/2" />
-          <Skeleton variant="text" width="w-1/4" />
+        <div className="track-card-skeleton-info">
+          <Skeleton variant="text" className="skeleton-title" />
+          <Skeleton variant="text" className="skeleton-meta" />
+          <Skeleton variant="text" className="skeleton-meta-small" />
         </div>
       </div>
     );
@@ -128,19 +124,19 @@ export const PlaylistHeaderSkeleton = forwardRef<HTMLDivElement, PlaylistHeaderS
     return (
       <div
         ref={ref}
-        className="p-6 rounded-lg bg-gradient-to-br from-primary/10 via-surface-2 to-accent/10 border border-border"
+        className="playlist-header-skeleton"
         {...props}
       >
-        <div className="flex gap-6 items-center">
+        <div className="playlist-header-skeleton-inner">
           {/* Large album art placeholder */}
-          <Skeleton variant="rounded" width="w-48 h-48" />
+          <Skeleton variant="rounded" className="playlist-header-skeleton-art" />
 
           {/* Playlist info placeholder */}
-          <div className="flex-1 space-y-4">
-            <Skeleton variant="text" width="w-32 h-6" /> {/* Badge */}
-            <Skeleton variant="text" width="w-2/3 h-10" /> {/* Title */}
-            <Skeleton variant="text" width="w-1/2" /> {/* Description */}
-            <Skeleton variant="text" width="w-1/3" /> {/* Stats */}
+          <div className="playlist-header-skeleton-info">
+            <Skeleton variant="text" className="playlist-header-skeleton-badge" />
+            <Skeleton variant="text" className="playlist-header-skeleton-title" />
+            <Skeleton variant="text" className="playlist-header-skeleton-description" />
+            <Skeleton variant="text" className="playlist-header-skeleton-stats" />
           </div>
         </div>
       </div>
@@ -169,24 +165,24 @@ export const CardSkeleton = forwardRef<HTMLDivElement, CardSkeletonProps>(
     return (
       <div
         ref={ref}
-        className={cn('p-6 border border-border rounded-lg bg-card', className)}
+        className={cn('card-skeleton', className)}
         {...props}
       >
         {showHeader && (
-          <div className="space-y-2 mb-4">
-            <Skeleton variant="text" width="w-1/3" />
-            <Skeleton variant="text" width="w-2/3" />
+          <div className="card-skeleton-header">
+            <Skeleton variant="text" className="card-skeleton-header-title" />
+            <Skeleton variant="text" className="card-skeleton-header-subtitle" />
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="card-skeleton-content">
           <Skeleton count={contentLines} />
         </div>
 
         {showFooter && (
-          <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-            <Skeleton variant="rectangular" width="w-20 h-8" />
-            <Skeleton variant="rectangular" width="w-20 h-8" />
+          <div className="card-skeleton-footer">
+            <Skeleton variant="rectangular" className="card-skeleton-footer-button" />
+            <Skeleton variant="rectangular" className="card-skeleton-footer-button" />
           </div>
         )}
       </div>

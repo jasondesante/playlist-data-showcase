@@ -37,21 +37,21 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 }
 
 const sizeStyles: Record<InputSize, string> = {
-  sm: 'h-9 px-3 text-sm min-h-[36px]',
-  md: 'h-11 px-4 text-base min-h-[44px]',
-  lg: 'h-13 px-5 text-lg min-h-[52px]',
+  sm: 'input-sm',
+  md: 'input-md',
+  lg: 'input-lg',
 };
 
 const iconSizeStyles: Record<InputSize, string> = {
-  sm: 'w-4 h-4',
-  md: 'w-5 h-5',
-  lg: 'w-6 h-6',
+  sm: 'input-icon-sm',
+  md: 'input-icon-md',
+  lg: 'input-icon-lg',
 };
 
 const labelSizeStyles: Record<InputSize, string> = {
-  sm: 'text-sm',
-  md: 'text-base',
-  lg: 'text-lg',
+  sm: 'input-label-sm',
+  md: 'input-label-md',
+  lg: 'input-label-lg',
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -79,33 +79,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const showMessage = hasError || hasHelperText;
 
     return (
-      <div className={cn('flex flex-col gap-1.5', containerClassName)}>
+      <div className={cn('input-container', containerClassName)}>
         {label && (
           <label
             htmlFor={inputId}
             className={cn(
-              'font-medium text-foreground',
-              'transition-colors duration-[var(--duration-fast)]',
+              'input-label',
               labelSizeStyles[size],
-              disabled && 'opacity-50 cursor-not-allowed'
+              disabled && 'input-label-disabled'
             )}
           >
             {label}
           </label>
         )}
 
-        <div className="relative">
+        <div className="input-wrapper">
           {/* Left Icon */}
           {LeftIcon && (
-            <div
-              className={cn(
-                'absolute left-3 top-1/2 -translate-y-1/2',
-                'text-muted-foreground',
-                'transition-colors duration-[var(--duration-fast)]',
-                'pointer-events-none',
-                disabled && 'opacity-50'
-              )}
-            >
+            <div className={cn('input-icon', 'input-icon-left', disabled && 'input-icon-disabled')}>
               <LeftIcon className={iconSizeStyles[size]} />
             </div>
           )}
@@ -116,25 +107,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             disabled={disabled}
             className={cn(
-              // Base styles
-              'flex w-full rounded-md font-medium',
-              'bg-background text-foreground',
-              'border transition-all duration-[var(--duration-normal)]',
-              // Focus ring
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
-              // Placeholder
-              'placeholder:text-muted-foreground/60',
-              // Disabled state
-              'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted',
-              // Size
+              'input-field',
               sizeStyles[size],
-              // Icon padding adjustments
-              LeftIcon && 'pl-11',
-              RightIcon && 'pr-11',
-              // Error state
-              hasError
-                ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                : 'border-input hover:border-primary/50 focus:border-primary',
+              LeftIcon && 'input-field-with-left-icon',
+              RightIcon && 'input-field-with-right-icon',
+              hasError && 'input-field-error',
               className
             )}
             {...props}
@@ -142,15 +119,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
           {/* Right Icon */}
           {RightIcon && (
-            <div
-              className={cn(
-                'absolute right-3 top-1/2 -translate-y-1/2',
-                'text-muted-foreground',
-                'transition-colors duration-[var(--duration-fast)]',
-                'pointer-events-none',
-                disabled && 'opacity-50'
-              )}
-            >
+            <div className={cn('input-icon', 'input-icon-right', disabled && 'input-icon-disabled')}>
               <RightIcon className={iconSizeStyles[size]} />
             </div>
           )}
@@ -158,14 +127,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {/* Helper Text / Error Message */}
         {showMessage && (
-          <p
-            className={cn(
-              'text-sm font-medium',
-              'transition-colors duration-[var(--duration-fast)]',
-              hasError ? 'text-destructive' : 'text-muted-foreground',
-              disabled && 'opacity-50'
-            )}
-          >
+          <p className={cn('input-helper-text', hasError && 'input-helper-text-error', disabled && 'input-helper-text-disabled')}>
             {hasError ? error : helperText}
           </p>
         )}
