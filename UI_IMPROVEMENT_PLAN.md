@@ -520,8 +520,8 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ### Bug fixes and Extra requests
 
-- currently the tracks in the playlist tab all have 2 play buttons that show up when you hover the track yet clicking on them doesn't make the song start playing. There should only be 1 play button, not 2, and clicking should actually trigger playback.
--the audio playback in the session tab also doesn't play the audio. the audio needs to be able to be played.
+~~- currently the tracks in the playlist tab all have 2 play buttons that show up when you hover the track yet clicking on them doesn't make the song start playing. There should only be 1 play button, not 2, and clicking should actually trigger playback.~~
+~~-the audio playback in the session tab also doesn't play the audio. the audio needs to be able to be played.~~
 
      
 <!-- DO NOT DO ANYTHING ELSE DO NOT DO ANY OF THESE EXTRA SPRINTS -->
