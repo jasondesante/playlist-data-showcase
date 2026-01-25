@@ -30,13 +30,13 @@ export function StatusIndicator({ status, label, className }: StatusIndicatorPro
   const getStatusEmoji = (): string => {
     switch (status) {
       case 'healthy':
-        return '';
+        return '🟢';
       case 'degraded':
-        return '';
+        return '🟡';
       case 'error':
-        return '';
+        return '🔴';
       default:
-        return '';
+        return '⚪';
     }
   };
 

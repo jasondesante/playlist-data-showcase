@@ -35,6 +35,7 @@ export function Sidebar({ tabs, activeTab, onTabChange }: SidebarProps) {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              aria-current={activeTab === tab.id ? 'page' : undefined}
               className={`sidebar-button ${activeTab === tab.id ? 'sidebar-button-active' : ''}`}
             >
               <Icon className="sidebar-icon" />

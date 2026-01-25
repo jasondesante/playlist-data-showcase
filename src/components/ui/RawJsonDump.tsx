@@ -77,7 +77,7 @@ export function RawJsonDump({ data, title, defaultOpen = false, timestamp, statu
             handleCopy();
           }}
           className="raw-json-copy-button"
-          title="Copy to clipboard"
+          aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
         >
           {copied ? (
             <Check className="copied" />
