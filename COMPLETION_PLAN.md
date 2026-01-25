@@ -2133,10 +2133,18 @@ The current implementation uses a SUPERIOR format to the suggested `[TabName] In
 **Tasks:**
 
 #### 5.5.1 Test Audio Analysis Performance
-- [ ] Analyze 3-minute track
-- [ ] Measure time to complete
-- [ ] Verify UI doesn't freeze
-- [ ] Target: <10 seconds
+- [x] Add performance timing instrumentation to useAudioAnalyzer - COMPLETED 2026-01-25
+  - Added performance.now() timing to measure analysis duration
+  - Logs analysisTimeSeconds and performanceTarget (PASS/FAIL) to console
+  - File modified: `src/hooks/useAudioAnalyzer.ts`
+- [x] Create performance testing documentation - COMPLETED 2026-01-25
+  - Created `DESIGN_DOCS/PERFORMANCE_TESTING.md` with comprehensive test procedures
+  - Documented manual testing steps for all 3 performance targets
+  - Included test data tables for recording results
+- [ ] Analyze 3-minute track - MANUAL TEST REQUIRED
+- [ ] Measure time to complete - MANUAL TEST REQUIRED
+- [ ] Verify UI doesn't freeze - MANUAL TEST REQUIRED
+- [ ] Target: <10 seconds - MANUAL TEST REQUIRED
 
 #### 5.5.2 Test Combat Performance
 - [ ] Run 50-round combat

@@ -45,6 +45,8 @@ export const useAudioAnalyzer = () => {
     const analyzeTrack = useCallback(async (audioUrl: string): Promise<AudioProfile | null> => {
         if (!analyzer) return null;
 
+        // Performance timing: Start timer
+        const startTime = performance.now();
         logger.info('AudioAnalyzer', 'Starting analysis', { url: audioUrl });
         setIsAnalyzing(true);
         setProgress(0);
@@ -63,9 +65,15 @@ export const useAudioAnalyzer = () => {
             clearInterval(progressInterval);
             setProgress(100);
 
+            // Performance timing: Calculate elapsed time
+            const endTime = performance.now();
+            const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
             logger.info('AudioAnalyzer', 'Analysis complete', {
                 duration: profile.analysis_metadata.duration_analyzed,
-                // Features not directly available in profile root
+                analysisTimeSeconds: elapsedSeconds,
+                // Performance target: <10 seconds for 3-minute track
+                performanceTarget: elapsedSeconds < '10.00' ? 'PASS' : 'FAIL',
             });
 
             return profile;
