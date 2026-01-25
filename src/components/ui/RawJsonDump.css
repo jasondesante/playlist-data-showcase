@@ -1,0 +1,98 @@
+/* ============================================
+   RAW JSON DUMP COMPONENT
+   Displays raw JSON data in a collapsible section
+   ============================================ */
+
+.raw-json-dump {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.raw-json-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background-color: hsl(var(--muted) / 0.5);
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+  user-select: none;
+}
+
+.raw-json-summary:hover {
+  background-color: hsl(var(--muted));
+}
+
+.raw-json-summary-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.raw-json-summary-title {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.raw-json-summary-timestamp {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.raw-json-copy-button {
+  margin-right: 0.75rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.raw-json-copy-button:hover {
+  background-color: hsl(var(--background));
+}
+
+.raw-json-copy-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.raw-json-copy-button svg.copied {
+  color: hsl(142 76% 36%); /* green-500 */
+}
+
+.raw-json-copy-button svg.uncopied {
+  color: hsl(var(--muted-foreground));
+}
+
+.raw-json-content {
+  border-left: 4px solid;
+  padding: 0;
+}
+
+.raw-json-content.healthy {
+  border-left-color: hsl(142 76% 36%); /* green-500 */
+}
+
+.raw-json-content.degraded {
+  border-left-color: hsl(50 93% 58%); /* yellow-500 */
+}
+
+.raw-json-content.error {
+  border-left-color: hsl(0 84% 60%); /* red-500 */
+}
+
+.raw-json-pre {
+  padding: 1rem;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  background-color: hsl(var(--background));
+  margin: 0;
+}
+
+.raw-json-code {
+  font-family: monospace;
+  color: hsl(var(--foreground));
+}

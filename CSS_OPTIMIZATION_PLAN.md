@@ -1308,8 +1308,8 @@ import './PlaylistLoaderTab.css';
 - [x] [Task 23i] Verify CombatSimulatorTab classes are moved from index.css
 - [x] [Task 23j] Verify SettingsTab classes are moved from index.css
 - [x] [Task 23k] Verify shared layout classes are moved from index.css
-- [ ] Delete old `src/index.css` file
-- [ ] Run `npm run build` - should succeed
+- [x] Delete old `src/index.css` file
+- [x] Run `npm run build` - should succeed
 - [ ] Run `npm run lint:css` - should pass with 0 errors
 - [ ] Run `npm run check:css` - braces should be balanced
 - [ ] Open app and verify all pages load correctly

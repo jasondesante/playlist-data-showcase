@@ -14,6 +14,7 @@
 
 import { useState, useCallback } from 'react';
 import { Copy, Check } from 'lucide-react';
+import './RawJsonDump.css';
 
 interface RawJsonDumpProps {
   /** The data to display as JSON */

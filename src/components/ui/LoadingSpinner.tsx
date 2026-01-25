@@ -12,6 +12,7 @@
  */
 
 import { cn } from '../../utils/cn';
+import './LoadingSpinner.css';
 
 export type SpinnerSize = 'sm' | 'md' | 'lg';
 
@@ -32,41 +33,14 @@ export function LoadingSpinner({
   className,
   ariaLabel = 'Loading'
 }: LoadingSpinnerProps) {
-  const getSizeClasses = (): string => {
-    switch (size) {
-      case 'sm':
-        return 'w-4 h-4 border-2';
-      case 'lg':
-        return 'w-12 h-12 border-4';
-      case 'md':
-      default:
-        return 'w-8 h-8 border-3';
-    }
-  };
-
-  const getLabelSize = (): string => {
-    switch (size) {
-      case 'sm':
-        return 'text-xs';
-      case 'lg':
-        return 'text-base';
-      case 'md':
-      default:
-        return 'text-sm';
-    }
-  };
-
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
+    <div className={cn('loading-spinner', className)}>
       <div
-        className={cn(
-          'rounded-full border-primary border-t-transparent animate-spin',
-          getSizeClasses()
-        )}
+        className={cn('loading-spinner-spinner', size)}
         aria-hidden="true"
       />
       {label && (
-        <span className={cn('text-muted-foreground font-medium', getLabelSize())}>
+        <span className={cn('loading-spinner-label', size)}>
           {label}
         </span>
       )}
