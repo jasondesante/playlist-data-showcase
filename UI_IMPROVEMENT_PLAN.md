@@ -496,7 +496,7 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 
 ### Sprint 2: Track Card Component
 6. ✅ Create `TrackCard.tsx` with all features:
-   - Large album art with fallback
+   - small album art with fallback
    - Track number display
    - Selection states
    - Hover effects
@@ -560,8 +560,8 @@ className={`p-3 border rounded-md cursor-pointer transition-colors ${
 ### Manual Testing Checklist
 
 **Playlist Tab**:
-- [ ] Album art displays correctly (with and without artwork_url)
-- [ ] Fallback gradient + icon shows when no artwork
+- [x] Album art displays correctly (with and without image_url)
+- [x] Fallback gradient + icon shows when no artwork
 - [ ] Track numbers display in sequence
 - [ ] Hover effect scales card slightly (1.02)
 - [ ] Selection state shows 2px primary border with left accent bar
