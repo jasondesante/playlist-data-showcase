@@ -1175,12 +1175,12 @@ import './PlaylistLoaderTab.css';
 - [x] Test: All buttons still work, no visual changes
 
 **Task 8: Extract Card Component**
-- [ ] Create `src/styles/components/Card.css`
-- [ ] Copy all card-related styles from index.css
-- [ ] Consolidate card variants (default, elevated, flat, outlined)
-- [ ] Consolidate card sub-components (header, title, description, content, footer)
-- [ ] Remove duplicate card styles
-- [ ] Test: All cards still work, no visual changes
+- [x] Create `src/styles/components/Card.css`
+- [x] Copy all card-related styles from index.css
+- [x] Consolidate card variants (default, elevated, flat, outlined)
+- [x] Consolidate card sub-components (header, title, description, content, footer)
+- [x] Remove duplicate card styles
+- [x] Test: All cards still work, no visual changes
 
 **Task 9: Extract Input Component**
 - [ ] Create `src/styles/components/Input.css`
