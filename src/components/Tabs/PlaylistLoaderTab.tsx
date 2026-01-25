@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Music } from 'lucide-react';
+import { Music, Download } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import type { PlaylistTrack } from '../../types';
 import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists';
 
@@ -61,33 +64,50 @@ export function PlaylistLoaderTab() {
         />
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Arweave Transaction ID</label>
-          <input
-            type="text"
+      {/* Input Section - Redesigned with Card, Input, and Button components */}
+      <Card variant="default" padding="md">
+        <CardHeader>
+          <CardTitle>Load a Playlist</CardTitle>
+          <CardDescription>
+            Enter an Arweave transaction ID to fetch and parse a playlist
+          </CardDescription>
+        </CardHeader>
+
+        <div className="space-y-4">
+          <Input
+            id="arweave-tx-id"
+            label="Arweave Transaction ID"
             value={txId}
             onChange={(e) => setTxId(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md"
             placeholder="Enter Arweave TX ID..."
             disabled={isLoading}
+            leftIcon={Music}
+            helperText="The transaction should contain a valid ServerlessPlaylist JSON"
           />
-        </div>
-        <button
-          onClick={handleParse}
-          disabled={isLoading || !txId.trim()}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
-        >
-          {isLoading ? 'Loading...' : 'Fetch & Parse Playlist'}
-        </button>
 
-        {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive rounded-md">
-            <p className="text-destructive font-medium">Error:</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-      </div>
+          <Button
+            onClick={handleParse}
+            disabled={isLoading || !txId.trim()}
+            isLoading={isLoading}
+            leftIcon={Download}
+            variant="primary"
+            size="md"
+            className="w-full sm:w-auto"
+          >
+            {isLoading ? 'Fetching...' : 'Fetch & Parse Playlist'}
+          </Button>
+
+          {error && (
+            <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-md">
+              <span className="text-xl" role="img" aria-label="Warning">⚠️</span>
+              <div className="flex-1">
+                <p className="text-destructive font-semibold">Error Loading Playlist</p>
+                <p className="text-sm text-destructive/80 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {currentPlaylist && (
         <div className="space-y-4">
