@@ -29,6 +29,7 @@ interface AudioPlayerState {
     play: (url: string) => void;
     pause: () => void;
     resume: () => void;
+    togglePlay: (url: string) => void;  // Toggle play/pause for given URL
     stop: () => void;
     seek: (time: number) => void;
     setVolume: (volume: number) => void;
@@ -137,6 +138,32 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     resume: () => {
         const audio = getAudioElement();
         if (get().playbackState === 'paused' && get().currentUrl) {
+            audio.play().catch((err) => {
+                console.error('Playback failed:', err);
+                set({ error: err.message, playbackState: 'error' });
+            });
+        }
+    },
+
+    togglePlay: (url: string) => {
+        const audio = getAudioElement();
+        const currentUrl = get().currentUrl;
+        const playbackState = get().playbackState;
+
+        if (currentUrl === url) {
+            // Same track - toggle play/pause
+            if (playbackState === 'playing') {
+                audio.pause();
+            } else if (playbackState === 'paused') {
+                audio.play().catch((err) => {
+                    console.error('Playback failed:', err);
+                    set({ error: err.message, playbackState: 'error' });
+                });
+            }
+        } else {
+            // Different track - load and play
+            audio.src = url;
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
                 set({ error: err.message, playbackState: 'error' });

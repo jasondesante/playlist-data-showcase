@@ -19,7 +19,7 @@
 import { forwardRef, type HTMLAttributes, type MouseEvent, useState, useCallback, useEffect } from 'react';
 import { cn } from '../../utils/cn';
 import type { PlaylistTrack } from 'playlist-data-engine';
-import { Music, Play } from 'lucide-react';
+import { Music, Play, Pause } from 'lucide-react';
 
 export type TrackCardSize = 'compact' | 'default' | 'large';
 
@@ -38,6 +38,8 @@ export interface TrackCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
   size?: TrackCardSize;
   /** Whether the image is currently loading */
   isLoading?: boolean;
+  /** Whether this track is currently playing */
+  isPlaying?: boolean;
 }
 
 /**
@@ -89,6 +91,7 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
       index,
       size = 'default',
       isLoading = false,
+      isPlaying = false,
       className,
       ...props
     },
@@ -144,6 +147,8 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
           styles.container,
           // Selection state
           isSelected && 'track-card-selected',
+          // Playing state
+          isPlaying && 'track-card-playing',
           // Selection ring animation (only when actively animating)
           shouldAnimateSelection && 'selection-ring',
           // Additional className
@@ -183,13 +188,17 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
 
           {/* Play button overlay on hover - with smooth fade in/out animation */}
           {hasImage && onPlay && (
-            <div className={cn('track-art-overlay', isHovered && 'track-art-overlay-visible')}>
+            <div className={cn('track-art-overlay', (isHovered || isPlaying) && 'track-art-overlay-visible')}>
               <button
                 onClick={handlePlayClick}
                 className={cn('track-art-overlay-button', styles.playButton)}
-                aria-label={`Play ${track.title}`}
+                aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
               >
-                <Play className={cn('track-play-icon', styles.playIcon)} fill="currentColor" />
+                {isPlaying ? (
+                  <Pause className={cn('track-play-icon', styles.playIcon)} />
+                ) : (
+                  <Play className={cn('track-play-icon', styles.playIcon)} fill="currentColor" />
+                )}
               </button>
             </div>
           )}

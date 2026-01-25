@@ -35,17 +35,22 @@ export function PlaylistLoaderTab() {
     rawResponseData,
     parsedTimestamp
   } = usePlaylistStore();
-  const { play } = useAudioPlayerStore();
+  const { playbackState, currentUrl, togglePlay } = useAudioPlayerStore();
 
   const handleParse = async () => {
     if (!txId.trim()) return;
     await parsePlaylist(txId.trim());
   };
 
-  // Handle play button click - select the track and play audio
+  // Handle play button click - select the track and toggle play/pause
   const handlePlayTrack = (track: PlaylistTrack) => {
     selectTrack(track);
-    play(track.audio_url);
+    togglePlay(track.audio_url);
+  };
+
+  // Check if a track is currently playing
+  const isTrackPlaying = (track: PlaylistTrack): boolean => {
+    return playbackState === 'playing' && currentUrl === track.audio_url;
   };
 
   // Handle card click - just select the track
@@ -313,6 +318,7 @@ export function PlaylistLoaderTab() {
                         track={track}
                         index={originalIndex > 0 ? originalIndex : undefined}
                         isSelected={selectedTrack?.title === track.title}
+                        isPlaying={isTrackPlaying(track)}
                         onClick={() => handleCardClick(track)}
                         onPlay={() => handlePlayTrack(track)}
                         size="default"

@@ -1325,6 +1325,51 @@
     gap: 1rem;
     padding: 0.75rem;
   }
+
+  /* Playing state - subtle pulse animation on the card */
+  .track-card-playing {
+    background-color: hsl(var(--cute-teal) / 0.08);
+  }
+
+  .track-card-playing .track-title {
+    color: hsl(var(--cute-teal));
+  }
+
+  /* Playing indicator - small pulsing dot next to track number */
+  .track-card-playing::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: hsl(var(--cute-teal));
+    border-radius: 9999px;
+    animation: playingPulse 1.5s ease-in-out infinite;
+  }
+
+  /* Offset the playing indicator when track number is present */
+  .track-card-playing .track-number {
+    padding-left: 12px;
+  }
+
+  /* Offset playing indicator position when no track number */
+  .track-card-playing:not(:has(.track-number))::after {
+    left: 6px;
+  }
+}
+
+/* Playing pulse animation */
+@keyframes playingPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-50%) scale(1.2);
+  }
 }
 
 /* ========================================
