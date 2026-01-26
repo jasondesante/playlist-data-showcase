@@ -29,15 +29,14 @@ Welcome to the Playlist Character Generator documentation. This demo showcases a
 
 ## Design
 
-- [CSS Optimization](./design/css-optimization.md) - CSS architecture plan
 - [Bug Tracker](./design/bugs-to-fix.md) - Known issues
 
 ---
 
 ## Data Engine
 
-- [API Reference](../../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
-- [Usage Examples](../../DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- [API Reference](../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+- [Usage Examples](../DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 

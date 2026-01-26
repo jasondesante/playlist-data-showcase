@@ -114,7 +114,7 @@ Now that you've tried the basics, explore more features:
 
 - [Architecture Overview](./architecture/overview.md) - Learn how the system works
 - [Contributing Guide](./development/contributing.md) - Contribute to the project
-- [Data Engine Reference](./engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md) - Full API documentation
+- [Data Engine Reference](../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md) - Full API documentation
 - [Bug Tracker](./design/bugs-to-fix.md) - Known issues and improvements
 
 ---

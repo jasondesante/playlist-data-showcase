@@ -547,8 +547,8 @@ const { generateCharacter } = useCharacterGenerator();
 ### Engine API Reference
 
 For detailed engine API documentation, see:
-- [Data Engine Reference](../../../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
-- [Usage Examples](../../../DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- [Data Engine Reference](../../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+- [Usage Examples](../../DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 

@@ -376,4 +376,4 @@ When reporting an issue, include:
 
 ---
 
-**Back to [Documentation Index](../../index.md)**
+**Back to [Documentation Index](../index.md)**

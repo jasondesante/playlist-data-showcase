@@ -66,4 +66,4 @@ MIT
 
 ---
 
-Built with [playlist-data-engine](./playlist-data-engine)
+Built with [playlist-data-engine](./DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
