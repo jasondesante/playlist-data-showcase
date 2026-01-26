@@ -693,10 +693,10 @@ The playlist data engine has been significantly updated with new features around
   - [x] Generate character in standard mode
   - [x] Refresh page
   - [x] Verify character still has `gameMode: 'standard'`
-- [ ] 6.5.2 - Test: Pending stats persist
-  - [ ] Level up and gain pending stat increases
-  - [ ] Refresh page
-  - [ ] Verify `pendingStatIncreases` count is preserved
+- [x] 6.5.2 - Test: Pending stats persist
+  - [x] Level up and gain pending stat increases
+  - [x] Refresh page
+  - [x] Verify `pendingStatIncreases` count is preserved
 - [ ] 6.5.3 - Test: XP persists
   - [ ] Add XP from various sources
   - [ ] Refresh page
