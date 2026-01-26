@@ -255,11 +255,17 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - Smooth slide-in animation when session starts
     - Mobile-responsive layout (wraps controls on smaller screens)
 
-- [ ] **Task 4.3: Update Session Tracker for Background Operation**
+- [x] **Task 4.3: Update Session Tracker for Background Operation** ✅
   - File: [src/hooks/useSessionTracker.ts](src/hooks/useSessionTracker.ts)
-  - Don't clear timer on unmount - use store-based state
-  - Add pause/resume functionality
-  - Session continues even when tab is not active
+  - Created `SessionTimerManager` global singleton class that manages timer independently of component lifecycle
+  - Timer persists across tab changes because it's not tied to any component's useEffect cleanup
+  - Timer reads state directly from `useSessionStore.getState()` and updates via `updateElapsedTime()`
+  - Timer automatically starts/stops based on `activeSession.isPaused` state
+  - Hook syncs local `isActive` and `elapsedTime` states with store for component consumption
+  - Pause/resume functionality works via store's `pauseSession()` and `resumeSession()` actions (already implemented in Task 4.1)
+  - Session continues tracking even when SessionTrackingTab is unmounted
+  - Files modified:
+    - `src/hooks/useSessionTracker.ts` - Replaced component-local timer with global singleton manager
 
 ---
 

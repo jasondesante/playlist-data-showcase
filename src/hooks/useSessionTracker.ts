@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { logger } from '@/utils/logger';
@@ -9,11 +9,42 @@ interface SessionStartOptions {
     gaming_context?: GamingContext;
 }
 
+// Global singleton timer manager - persists across component unmounts
+class SessionTimerManager {
+    private timerId: number | null = null;
+
+    start() {
+        if (this.timerId !== null) return; // Already running
+
+        this.timerId = window.setInterval(() => {
+            const state = useSessionStore.getState();
+            if (state.activeSession && !state.activeSession.isPaused) {
+                const newTime = state.activeSession.elapsedSeconds + 1;
+                state.updateElapsedTime(newTime);
+            } else {
+                this.stop();
+            }
+        }, 1000);
+    }
+
+    stop() {
+        if (this.timerId !== null) {
+            window.clearInterval(this.timerId);
+            this.timerId = null;
+        }
+    }
+}
+
+const timerManager = new SessionTimerManager();
+
 /**
  * React hook for tracking listening sessions with the SessionTracker engine module.
  *
  * Manages active listening sessions with elapsed time tracking and supports
  * optional environmental and gaming context for XP modifier calculations.
+ *
+ * The timer persists across tab changes because it's managed by a global singleton,
+ * not component lifecycle.
  *
  * @example
  * ```tsx
@@ -30,51 +61,44 @@ interface SessionStartOptions {
  * @returns {number} elapsedTime - Elapsed time in seconds for the current session
  */
 export const useSessionTracker = () => {
-    const { startSession: storeStartSession, endSession: storeEndSession, activeSession, updateElapsedTime } = useSessionStore();
+    const { startSession: storeStartSession, endSession: storeEndSession, activeSession } = useSessionStore();
     const [tracker] = useState(() => new SessionTracker());
     const [isActive, setIsActive] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
-    const timerRef = useRef<number | null>(null);
-    const sessionIdRef = useRef<string | null>(null);
 
-    // Sync with persisted session state
+    // Sync local state with persisted session state
     useEffect(() => {
         if (activeSession && !isActive) {
             setIsActive(true);
             setElapsedTime(activeSession.elapsedSeconds);
-            sessionIdRef.current = activeSession.sessionId;
+            // Start the global timer if not paused
+            if (!activeSession.isPaused) {
+                timerManager.start();
+            }
         } else if (!activeSession && isActive) {
             setIsActive(false);
             setElapsedTime(0);
-            sessionIdRef.current = null;
-            if (timerRef.current !== null) {
-                window.clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
+            timerManager.stop();
         }
     }, [activeSession, isActive]);
 
-    // Start timer when active
+    // Handle pause/resume changes
     useEffect(() => {
-        if (isActive && !activeSession?.isPaused) {
-            timerRef.current = window.setInterval(() => {
-                setElapsedTime(t => {
-                    const newTime = t + 1;
-                    updateElapsedTime(newTime);
-                    return newTime;
-                });
-            }, 1000);
-        } else if (timerRef.current !== null) {
-            window.clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
-
-        return () => {
-            if (timerRef.current !== null) {
-                window.clearInterval(timerRef.current);
+        if (activeSession) {
+            if (activeSession.isPaused) {
+                timerManager.stop();
+            } else {
+                timerManager.start();
             }
-        };
-    }, [isActive, activeSession?.isPaused, updateElapsedTime]);
+        }
+    }, [activeSession?.isPaused]);
+
+    // Keep local elapsedTime in sync with store (for components that read it)
+    useEffect(() => {
+        if (activeSession) {
+            setElapsedTime(activeSession.elapsedSeconds);
+        }
+    }, [activeSession?.elapsedSeconds]);
 
     const startSession = useCallback((trackId: string, track: PlaylistTrack, options?: SessionStartOptions) => {
         logger.info('SessionTracker', 'Starting session', { trackId, hasContext: !!options });
@@ -83,7 +107,6 @@ export const useSessionTracker = () => {
             // SessionTracker.startSession API: startSession(trackId: string, track: PlaylistTrack, options?: { environmental_context, gaming_context })
             // Reference: USAGE_IN_OTHER_PROJECTS.md lines 146, 414-417
             const sessionId = tracker.startSession(trackId, track, options);
-            sessionIdRef.current = sessionId;
             storeStartSession(sessionId, trackId, track);
             setIsActive(true);
             setElapsedTime(0);
@@ -101,7 +124,7 @@ export const useSessionTracker = () => {
         logger.info('SessionTracker', 'Ending session');
 
         try {
-            const currentSessionId = sessionIdRef.current;
+            const currentSessionId = activeSession?.sessionId;
             if (!currentSessionId) {
                 logger.warn('SessionTracker', 'Attempted to end session but no active sessionId found.');
                 return null;
@@ -114,19 +137,14 @@ export const useSessionTracker = () => {
                 storeEndSession(session);
             }
             setIsActive(false);
-            sessionIdRef.current = null;
-
-            if (timerRef.current !== null) {
-                window.clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
+            timerManager.stop();
 
             return session;
         } catch (error) {
             handleError(error, 'SessionTracker');
             return null;
         }
-    }, [tracker, isActive, storeEndSession]);
+    }, [tracker, isActive, storeEndSession, activeSession]);
 
     return { startSession, endSession, isActive, elapsedTime };
 };
