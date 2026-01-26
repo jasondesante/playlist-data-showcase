@@ -199,13 +199,23 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
 
 ---
 
-## notes: BUG for Phase 1 was NOT fixed. New bugs were introduced though.
+### ~~Phase 1 extra tasks!~~
+### ~~IMPORTANT ###
+~~## notes: BUG for Phase 1 was NOT fixed. New bugs were introduced though.~~
 
-- Now when I click stop audio in the ui that shows up on the top of the page, now clicking stop there doesn't work and it says "no active session to end"
+~~- Now when I click stop audio in the ui that shows up on the top of the page, now clicking stop there doesn't work and it says "no active session to end"~~
 
-- When I start playback on the "playlist" tab, it doesn't affect the session xp gathering, and it doesn't make the ui up top show up either. 
+~~- When I start playback on the "playlist" tab, it doesn't affect the session xp gathering, and it doesn't make the ui up top show up either.~~
 
-- When I start playback and then change tabs and go back to the session tab, it says the session isn't ongoing, but the audio is still playing. So now it's all broken in the opposite way where the audio is playing so it should say the session is ongoing, but it says "start session" or something, it so frustrating. I need this to work.
+~~- When I start playback and then change tabs and go back to the session tab, it says the session isn't ongoing, but the audio is still playing. So now it's all broken in the opposite way where the audio is playing so it should say the session is ongoing, but it says "start session" or something, it so frustrating. I need this to work.~~
+
+**✅ FIXED - Phase 1 Extra Tasks Implementation Summary:**
+- Modified `useSessionTracker` to auto-start sessions when audio plays from any tab
+- Added zombie session cleanup that preserves sessions if audio is actually playing
+- Updated `AppHeader` to show mini player when audio is playing OR session is active
+- Build passes with no errors
+- CSS lint passes with no errors
+- **Changes committed locally**
 
 ### **PHASE 2: Add XP Processing on Session End** (Critical)
 

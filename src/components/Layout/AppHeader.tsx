@@ -14,9 +14,11 @@ import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { useCharacterUpdater } from '@/hooks/useCharacterUpdater';
 import { useCharacterStore } from '@/store/characterStore';
+import { usePlaylistStore } from '@/store/playlistStore';
 import { formatTime } from '@/utils/formatters';
 import { showToast } from '@/components/ui/Toast';
 import { LevelUpDetailModal } from '@/components/LevelUpDetailModal';
+import { logger } from '@/utils/logger';
 import type { LevelUpDetail } from 'playlist-data-engine';
 
 interface AppHeaderProps {
@@ -29,14 +31,19 @@ interface AppHeaderProps {
 export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 'Technical validation • Console logging enabled' }: AppHeaderProps) {
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
   const { playbackState, currentTime, duration, pause, resume, stop } = useAudioPlayerStore();
-  const { endSession: hookEndSession } = useSessionTracker();
+  const { endSession: hookEndSession, isActive: isSessionActive } = useSessionTracker();
   const { processSession } = useCharacterUpdater();
   const { getActiveCharacter } = useCharacterStore();
+  const { selectedTrack } = usePlaylistStore();
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
-  // Only show mini player when there's an active session
-  const showMiniPlayer = activeSession !== null;
+  // Show mini player when audio is playing OR when there's an active session
+  // This ensures the player is visible even when session is being auto-started
+  const showMiniPlayer = playbackState === 'playing' || activeSession !== null;
+
+  // Use activeSession track if available, otherwise fall back to selectedTrack
+  const track = activeSession?.track || selectedTrack;
 
   const handlePlayPause = () => {
     if (playbackState === 'playing') {
@@ -100,10 +107,10 @@ export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 
         showToast(`Session ended: ${session.duration_seconds}s tracked`, 'info');
       }
     } else {
-      // No active session to end - just stop audio
-      stop();
-      return;
+      // No active session to end - just stop audio and notify
+      logger.info('SessionTracker', 'Stop clicked but no active session - stopping audio only');
     }
+    // Always stop audio
     stop();
   };
 
@@ -114,7 +121,6 @@ export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 
   };
 
   const isPlaying = playbackState === 'playing';
-  const track = activeSession?.track;
 
   return (
     <>
@@ -126,7 +132,7 @@ export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 
               <p className="app-header-subtitle">{subtitle}</p>
             </div>
 
-            {/* Mini Audio Player - shown when session is active */}
+            {/* Mini Audio Player - shown when audio is playing or session is active */}
             {showMiniPlayer && track && (
               <div className="app-header-mini-player">
                 <div className="mini-player-track-info">
@@ -158,7 +164,7 @@ export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 
                     className="mini-player-btn mini-player-stop-btn"
                     onClick={handleStop}
                     aria-label="Stop"
-                    title="End Session"
+                    title={isSessionActive ? "End Session" : "Stop Audio"}
                   >
                     <Square size={16} />
                   </button>
