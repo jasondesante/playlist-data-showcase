@@ -184,7 +184,7 @@ To enable detailed debug logging:
 
 **Solutions:**
 1. Clear site permissions in browser settings and try again
-2. Check browser compatibility (see PLATFORM_LIMITATIONS.md)
+2. Check browser compatibility (most modern browsers support sensor APIs)
 3. Ensure app is served over HTTPS
 4. On iOS, trigger permission via button click (not automatic)
 
