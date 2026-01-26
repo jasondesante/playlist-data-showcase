@@ -648,6 +648,82 @@
   cursor: not-allowed;
 }
 
+/* Pending Stat Increases Badge Card */
+.leveling-pending-badge-card {
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.15), hsl(var(--cute-orange) / 0.1));
+  border: 2px solid hsl(var(--cute-yellow) / 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pulse animation for pending badge */
+@keyframes pendingBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--cute-yellow) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px hsl(var(--cute-yellow) / 0);
+  }
+}
+
+.leveling-pending-badge-card {
+  animation: pendingBadgePulse 2s ease-in-out infinite;
+}
+
+.leveling-pending-badge-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.leveling-pending-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.3), hsl(var(--cute-orange) / 0.3));
+  border-radius: 0.75rem;
+  color: hsl(var(--cute-yellow));
+  flex-shrink: 0;
+}
+
+.leveling-pending-badge-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.leveling-pending-badge-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leveling-pending-badge-description {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.leveling-apply-stats-button {
+  width: 100%;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow)), hsl(var(--cute-orange)));
+  border: none;
+  color: hsl(var(--background));
+  font-weight: 600;
+}
+
+.leveling-apply-stats-button:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-orange)), hsl(var(--cute-yellow)));
+  transform: translateY(-1px);
+}
+
 /* Stats Card */
 .leveling-stats-card {
   background: hsl(var(--surface-2));

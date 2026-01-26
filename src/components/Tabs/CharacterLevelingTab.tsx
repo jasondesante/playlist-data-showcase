@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import type { LevelUpDetail } from 'playlist-data-engine';
-import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass } from 'lucide-react';
+import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
 /**
@@ -45,6 +45,16 @@ export function CharacterLevelingTab() {
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
   const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
+
+  // Helper function to get pending stat increase count
+  const getPendingStatIncreaseCount = (character: typeof activeChar): number => {
+    return character?.pendingStatIncreases ?? 0;
+  };
+
+  // Helper function to check if character has pending stat increases
+  const hasPendingStatIncreases = (character: typeof activeChar): boolean => {
+    return getPendingStatIncreaseCount(character) > 0;
+  };
 
   // Sync currentXP with character when it changes
   useEffect(() => {
@@ -385,6 +395,36 @@ export function CharacterLevelingTab() {
           </div>
         </div>
       </Card>
+
+      {/* Pending Stat Increases Badge (Standard Mode Only) */}
+      {activeChar.gameMode === 'standard' && hasPendingStatIncreases(activeChar) && (
+        <Card variant="elevated" padding="md" className="leveling-pending-badge-card">
+          <div className="leveling-pending-badge-content">
+            <div className="leveling-pending-badge-icon">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="leveling-pending-badge-text">
+              <h4 className="leveling-pending-badge-title">
+                Pending Stat Increases: {getPendingStatIncreaseCount(activeChar)}
+              </h4>
+              <p className="leveling-pending-badge-description">
+                You have stat increases waiting to be applied. In standard mode, stat increases are awarded at levels 4, 8, 12, 16, and 19.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              // Placeholder - will be implemented in Task 4.3
+              console.log('Apply Stat Increases clicked - will open StatSelectionModal');
+            }}
+            className="leveling-apply-stats-button"
+          >
+            Apply Stat Increases
+          </Button>
+        </Card>
+      )}
 
       {/* Character Stats */}
       <Card variant="default" padding="md" className="leveling-stats-card">

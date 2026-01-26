@@ -277,20 +277,20 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/components/Tabs/CharacterLevelingTab.tsx`
 **Location:** In character stats header section
 
-- [ ] 4.1.1 - Import helper functions from characterStore or create local:
+- [x] 4.1.1 - Import helper functions from characterStore or create local:
   - `getPendingStatIncreaseCount(character)`
   - `hasPendingStatIncreases(character)`
-- [ ] 4.1.2 - Add conditional rendering: only show if `pendingStatIncreases > 0`
-- [ ] 4.1.3 - Create warning badge with yellow/orange background and pulse animation
-- [ ] 4.1.4 - Display text: "⚠️ Pending Stat Increases: {count}"
-- [ ] 4.1.5 - Add "Apply Stat Increases" button below badge
-- [ ] 4.1.6 - Style button to stand out (primary color, pulse animation)
-- [ ] 4.1.7 - Only show badge/button for `gameMode === 'standard'`
-- [ ] 4.1.8 - Add tooltip explaining pending stat increases
-- [ ] 4.1.9 - **Badge is always visible when pending (not dismissible)**
-- [ ] 4.1.10 - Test: Level up standard mode character to level 4 and verify badge appears
-- [ ] 4.1.11 - Test: Verify badge count is correct
-- [ ] 4.1.12 - Test: Verify uncapped mode doesn't show badge
+- [x] 4.1.2 - Add conditional rendering: only show if `pendingStatIncreases > 0`
+- [x] 4.1.3 - Create warning badge with yellow/orange background and pulse animation
+- [x] 4.1.4 - Display text: "⚠️ Pending Stat Increases: {count}"
+- [x] 4.1.5 - Add "Apply Stat Increases" button below badge
+- [x] 4.1.6 - Style button to stand out (primary color, pulse animation)
+- [x] 4.1.7 - Only show badge/button for `gameMode === 'standard'`
+- [x] 4.1.8 - Add tooltip explaining pending stat increases
+- [x] 4.1.9 - **Badge is always visible when pending (not dismissible)**
+- [x] 4.1.10 - Test: Level up standard mode character to level 4 and verify badge appears
+- [x] 4.1.11 - Test: Verify badge count is correct
+- [x] 4.1.12 - Test: Verify uncapped mode doesn't show badge
 
 ---
 
