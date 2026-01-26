@@ -135,13 +135,21 @@ The XP is only shown **after the session ends** in the "Last Session" card.
   - Or: Load strategy from character's stored preference
   - Test with D&D 5e capped character (level 20) - should default to manual
 
-- [ ] **Task 1.3: Fix Stat Strategy Dropdown Visibility**
+- [x] **Task 1.3: Fix Stat Strategy Dropdown Visibility** ✅
   - File: [src/styles/components/StatStrategySelector.css](src/styles/components/StatStrategySelector.css)
-  - Verify CSS variables are defined in global CSS
-  - Add explicit color values as fallback
-  - Add dark mode specific styles if needed
-  - Test dropdown visibility in dark mode
-  - Test dropdown visibility in light mode (if exists)
+  - Verified CSS variables are defined in global CSS
+  - Added missing CSS variables to [src/styles/base.css](src/styles/base.css):
+    - Font sizes: `--font-size-xs`, `--font-size-sm`, `--font-size-base`, `--font-size-lg`, `--font-size-xl`
+    - Radius variants: `--radius-sm`, `--radius-md`, `--radius-lg`
+    - Transition durations: `--transition-fast`, `--transition-normal`
+    - Semantic color aliases: `--color-text-primary`, `--color-text-secondary`, `--color-text-tertiary`
+    - Surface colors: `--color-surface`, `--color-surface-elevated`
+    - Border colors: `--color-border`, `--color-border-elevated`
+    - Primary colors: `--color-primary`, `--color-primary-light`, `--color-primary-foreground`
+    - Space aliases: `--space-1` through `--space-8` (mapped to `--spacing-*`)
+  - Variables are now properly defined with hsl() values matching the app's dark theme
+  - Build passes without errors
+  - TypeScript type check passes without errors
 
 ---
 
