@@ -1034,19 +1034,19 @@ The playlist data engine has been significantly updated with new features around
 
 **Note:** This addresses the user's feedback about having documentation split between two folders (`docs/` and `DESIGN_DOCS/`). The goal is ONE unified documentation folder.
 
-- [ ] 7.8.1 - Verify DESIGN_DOCS/FROM_DATA_ENGINE exists and contains:
-  - [ ] DATA_ENGINE_REFERENCE.md
-  - [ ] USAGE_IN_OTHER_PROJECTS.md
-- [ ] 7.8.2 - Create `/docs/engine/` directory
-- [ ] 7.8.3 - Move `DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md` to `docs/engine/data-engine-reference.md`
-  - [ ] Copy content
-  - [ ] Update internal links to point to new locations
-  - [ ] Add navigation footer: "Back to [Documentation Index](../index.md)"
-- [ ] 7.8.4 - Move `DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md` to `docs/engine/usage-in-other-projects.md`
-  - [ ] Copy content
-  - [ ] Update internal links to point to new locations
-  - [ ] Add navigation footer: "Back to [Documentation Index](../index.md)"
-- [ ] 7.8.5 - Test: Verify both files render correctly in new location
+- [x] 7.8.1 - Verify DESIGN_DOCS/FROM_DATA_ENGINE exists and contains:
+  - [x] DATA_ENGINE_REFERENCE.md
+  - [x] USAGE_IN_OTHER_PROJECTS.md
+- [x] 7.8.2 - Create `/docs/engine/` directory
+- [x] 7.8.3 - Move `DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md` to `docs/engine/data-engine-reference.md`
+  - [x] Copy content
+  - [x] Update internal links to point to new locations
+  - [x] Add navigation footer: "Back to [Documentation Index](../index.md)"
+- [x] 7.8.4 - Move `DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md` to `docs/engine/usage-in-other-projects.md`
+  - [x] Copy content
+  - [x] Update internal links to point to new locations
+  - [x] Add navigation footer: "Back to [Documentation Index](../index.md)"
+- [x] 7.8.5 - Test: Verify both files render correctly in new location
 
 ---
 
@@ -1182,4 +1182,4 @@ More feedback - You don't understand what I've been saying. TOO MANY FILES means
 ## Implementation Notes
 
 ### 2026-01-26: Engine Build Required
-The playlist-data-engine had to be rebuilt to expose new types (`GameMode`, updated `CharacterGeneratorOptions`). The engine's `index.ts` was updated to export `PlaylistParser` which was missing. After rebuilding the 
+The playlist-d
