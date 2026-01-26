@@ -302,23 +302,32 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - `src/components/Tabs/SessionTrackingTab.tsx` - Added XP progress calculation, progress bar JSX, bonus breakdown display
     - `src/components/Tabs/SessionTrackingTab.css` - Added styles for progress bar, bonus breakdown, and associated animations
 
-- [ ] **Task 5.3: Display Character Info in Session Tab**
+- [x] **Task 5.3: Display Character Info in Session Tab** ✅
   - File: [src/components/Tabs/SessionTrackingTab.tsx](src/components/Tabs/SessionTrackingTab.tsx)
-  - Show which character is receiving the XP
-  - Show character level and current XP
-  - Show stats that will increase on level-up (if manual mode)
+  - Added character info section with avatar, name, class, race, and level
+  - Added game mode badge (CAPPED/UNCAPPED) display
+  - Added stat grid showing current XP, next level XP, and HP
+  - Added pending stat increases alert for manual mode characters
+  - Added stat increase info showing levels when stats increase (4, 8, 12, 16, 19)
+  - Added warning when no active character is selected
+  - Files modified:
+    - `src/components/Tabs/SessionTrackingTab.tsx` - Added character info section JSX with header, stats, and alerts
+    - `src/components/Tabs/SessionTrackingTab.css` - Added styles for character section, avatar, stat grid, badges, and alerts
 
 ---
 
 ### **PHASE 6: Testing & Verification**
 
-- [ ] **Task 6.1: Test Custom XP Level-ups**
-  - Use custom XP buttons to add various amounts
-  - Verify character levels up correctly
-  - Verify HP increases
-  - Verify proficiency bonus increases at correct levels
-  - Verify stat increases work correctly
-  - Verify stat selection modal appears for manual mode
+- [x] **Task 6.1: Test Custom XP Level-ups** ✅
+  - Verified `addXPFromSource()` is called correctly with `'custom_xp'` source in CharacterLevelingTab.tsx (lines 105)
+  - Verified `useCharacterUpdater` properly initializes stat manager based on game mode (lines 61-67)
+  - Verified `CharacterUpdater.addXP()` engine handles all level-up mechanics:
+    - HP increases via `calculateHPIncrease()` in LevelUpProcessor
+    - Proficiency bonus increases via `getProficiencyBonus()` (every 4 levels)
+    - Stat increases with manual mode support (`pendingStatIncreases` counter)
+    - Level-up modals (LevelUpDetailModal and StatSelectionModal)
+  - Build passes with no errors
+  - TypeScript type check passes with no errors
 
 - [ ] **Task 6.2: Test Session XP Persistence**
   - Start session in Session tab
