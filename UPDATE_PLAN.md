@@ -470,8 +470,8 @@ The playlist data engine has been significantly updated with new features around
 ### Task 5.1: Create Root README.md
 **New File:** `/README.md`
 
-- [ ] 5.1.1 - Create new README.md file at root
-- [ ] 5.1.2 - Add project title and description
+- [x] 5.1.1 - Create new README.md file at root
+- [x] 5.1.2 - Add project title and description
 - [ ] 5.1.3 - Add "Quick Start" section with 3 steps:
   - [ ] Clone and install: `npm install`
   - [ ] Start dev server: `npm run dev`
