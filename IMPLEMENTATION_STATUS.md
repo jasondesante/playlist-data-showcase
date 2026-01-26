@@ -160,10 +160,11 @@ workspace/
 ## Related Documentation
 
 - **Current Work:** [UPDATE_PLAN.md](./UPDATE_PLAN.md)
-- **Documentation Index:** [docs/index.md](./docs/index.md)
-- **Engine Reference:** [docs/engine/data-engine-reference.md](./docs/engine/data-engine-reference.md)
-- **Engine Usage:** [docs/engine/usage-in-other-projects.md](./docs/engine/usage-in-other-projects.md)
+- **Architecture:** [docs/architecture/overview.md](./docs/architecture/overview.md)
+- **Bug Tracker:** [docs/design/bugs-to-fix.md](./docs/design/bugs-to-fix.md)
+- **Engine Reference:** [docs/engine/DATA_ENGINE_REFERENCE.md](./docs/engine/DATA_ENGINE_REFERENCE.md)
+- **Engine Usage:** [docs/engine/USAGE_IN_OTHER_PROJECTS.md](./docs/engine/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 
-**Note:** This file provides high-level status tracking. For detailed task breakdowns, see [UPDATE_PLAN.md](./UPDATE_PLAN.md). For testing procedures, see the documentation in `/docs/development/testing/`.
+**Note:** This file provides high-level status tracking. For detailed task breakdowns, see [UPDATE_PLAN.md](./UPDATE_PLAN.md). For testing procedures, see [docs/architecture/overview.md](./docs/architecture/overview.md).

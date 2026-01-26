@@ -37,8 +37,7 @@ This application demonstrates all features of the `playlist-data-engine` library
 ## Documentation
 
 - [Architecture Overview](./docs/architecture/overview.md) - System design and patterns
-- [Debugging Guide](./docs/development/debugging.md) - Troubleshooting
-- [Documentation Index](./docs/index.md) - Full documentation hub
+- [Bug Tracker](./docs/design/bugs-to-fix.md) - Known issues
 
 ## Data Engine Docs
 
