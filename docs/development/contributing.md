@@ -487,7 +487,7 @@ try {
 
 - **[Architecture Overview](../architecture/overview.md)** - Project architecture and patterns
 - **[Debugging Guide](./debugging.md)** - Troubleshooting common issues
-- **[Data Engine Reference](../../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)** - Complete engine API docs
+- **[Data Engine Reference](../engine/data-engine-reference.md)** - Complete engine API docs
 
 ### Asking Questions
 

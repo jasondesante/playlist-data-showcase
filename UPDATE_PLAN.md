@@ -1053,13 +1053,24 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.9: Update All Cross-References After Consolidation
 **Goal:** Update all links that point to DESIGN_DOCS to point to the new docs/ locations.
 
-- [ ] 7.9.1 - Search for all references to `DESIGN_DOCS/FROM_DATA_ENGINE/` and update to `docs/engine/`
-- [ ] 7.9.2 - Update docs/index.md engine doc links:
-  - [ ] Change `./engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md` to `./engine/data-engine-reference.md`
-  - [ ] Change `./engine/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md` to `./engine/usage-in-other-projects.md`
-- [ ] 7.9.3 - Update README.md engine doc links to use new paths
-- [ ] 7.9.4 - Search for any remaining references to `DESIGN_DOCS/` in codebase
-- [ ] 7.9.5 - Test: Verify all updated links work correctly
+- [x] 7.9.1 - Search for all references to `DESIGN_DOCS/FROM_DATA_ENGINE/` and update to `docs/engine/`
+  - **Summary:** Updated 7 files:
+    - docs/index.md: Changed `../DESIGN_DOCS/FROM_DATA_ENGINE/` to `./engine/`
+    - README.md: Changed `./DESIGN_DOCS/FROM_DATA_ENGINE/` to `./docs/engine/` (2 places)
+    - docs/getting-started.md: Changed `../DESIGN_DOCS/FROM_DATA_ENGINE/` to `./engine/`
+    - docs/architecture/overview.md: Changed `../../DESIGN_DOCS/FROM_DATA_ENGINE/` to `../engine/`
+    - docs/development/contributing.md: Changed `../../DESIGN_DOCS/FROM_DATA_ENGINE/` to `../engine/`
+    - ARCHITECTURE.md: Updated inline references from `DESIGN_DOCS/FROM_DATA_ENGINE/` to `docs/engine/`
+    - IMPLEMENTATION_STATUS.md: Updated project structure and related docs links
+- [x] 7.9.2 - Update docs/index.md engine doc links:
+  - [x] Change `./engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md` to `./engine/data-engine-reference.md`
+  - [x] Change `./engine/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md` to `./engine/usage-in-other-projects.md`
+- [x] 7.9.3 - Update README.md engine doc links to use new paths
+  - **Summary:** Updated README.md Data Engine Docs section to point to `./docs/engine/`
+- [x] 7.9.4 - Search for any remaining references to `DESIGN_DOCS/` in codebase
+  - **Summary:** All references updated. Only remaining references are in UPDATE_PLAN.md (task definitions and self-referencing notes).
+- [x] 7.9.5 - Test: Verify all updated links work correctly
+  - **Build Status:** Passes with no errors
 
 ---
 

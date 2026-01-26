@@ -42,8 +42,8 @@ This application demonstrates all features of the `playlist-data-engine` library
 
 ## Data Engine Docs
 
-- [Data Engine Reference](./DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md) - Complete API documentation
-- [Usage Examples](./DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md) - Integration examples
+- [Data Engine Reference](./docs/engine/data-engine-reference.md) - Complete API documentation
+- [Usage Examples](./docs/engine/usage-in-other-projects.md) - Integration examples
 
 ## Quick Tour
 
@@ -66,4 +66,4 @@ MIT
 
 ---
 
-Built with [playlist-data-engine](./DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+Built with [playlist-data-engine](./docs/engine/data-engine-reference.md)

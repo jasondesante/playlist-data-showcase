@@ -140,8 +140,7 @@ workspace/
 │   ├── hooks/                     # 9 React hooks
 │   ├── store/                     # 5 Zustand stores
 │   └── utils/                     # Utilities (storage, logger, etc.)
-├── docs/                          # Documentation
-├── DESIGN_DOCS/                   # Engine docs
+├── docs/                          # All documentation
 ├── UPDATE_PLAN.md                 # Current implementation plan
 └── IMPLEMENTATION_STATUS.md       # This file
 ```
@@ -161,10 +160,9 @@ workspace/
 ## Related Documentation
 
 - **Current Work:** [UPDATE_PLAN.md](./UPDATE_PLAN.md)
-- **Architecture:** [ARCHITECTURE.md](./ARCHITECTURE.md) (moved to docs/architecture/overview.md)
-- **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md) (moved to docs/development/contributing.md)
-- **Engine Reference:** [DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md](./DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
-- **Engine Usage:** [DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md](./DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- **Documentation Index:** [docs/index.md](./docs/index.md)
+- **Engine Reference:** [docs/engine/data-engine-reference.md](./docs/engine/data-engine-reference.md)
+- **Engine Usage:** [docs/engine/usage-in-other-projects.md](./docs/engine/usage-in-other-projects.md)
 
 ---
 
