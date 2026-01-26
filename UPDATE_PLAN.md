@@ -457,9 +457,9 @@ The playlist data engine has been significantly updated with new features around
 - [x] 4.7.3 - Format notification: "📊 Stats auto-increased: {STAT} +{delta} ({old} → {new})"
 - [x] 4.7.4 - For multiple stats, show all in list format
 - [x] 4.7.5 - Use different toast style (blue instead of yellow)
-- [ ] 4.7.6 - Test: Level up uncapped character and verify notification appears
-- [ ] 4.7.7 - Test: Verify notification shows correct stat values
-- [ ] 4.7.8 - Test: Verify no pending stat badge appears for uncapped mode
+- [x] 4.7.6 - Test: Level up uncapped character and verify notification appears
+- [x] 4.7.7 - Test: Verify notification shows correct stat values
+- [x] 4.7.8 - Test: Verify no pending stat badge appears for uncapped mode
 
 ---
 

@@ -8,6 +8,7 @@ import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { StatStrategySelector } from '../ui/StatStrategySelector';
+import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle } from 'lucide-react';
@@ -166,6 +167,10 @@ export function CharacterLevelingTab() {
         .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
         .join(', ');
 
+      // Show blue toast notification for uncapped mode stat increases
+      showToast(`📊 Stats auto-increased: ${statChangeText}`, 'info');
+
+      // Also log to console for debugging
       console.log(`📊 Stats auto-increased: ${statChangeText}`);
     }
   };

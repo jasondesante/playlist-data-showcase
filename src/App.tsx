@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
+import { ToastContainer } from './components/ui/Toast';
 import type { TabItem } from './components/Layout/Sidebar';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
@@ -58,6 +59,8 @@ function App() {
       <MainLayout tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)}>
         {renderActiveTab()}
       </MainLayout>
+
+      <ToastContainer position="top-right" />
     </div>
   );
 }
