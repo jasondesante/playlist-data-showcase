@@ -575,8 +575,8 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify `gameMode` property is `'uncapped'`
   - [x] Verify stats can exceed 20
   - [x] Verify character sheet displays correctly
-- [ ] 6.1.3 - Test: Toggle between modes and regenerate
-  - [ ] Verify different modes produce different characters
+- [x] 6.1.3 - Test: Toggle between modes and regenerate
+  - [x] Verify different modes produce different characters
 - [ ] 6.1.4 - Test: Verify game mode badges display correctly
   - [ ] Standard badge shows on standard characters
   - [ ] Uncapped badge shows on uncapped characters

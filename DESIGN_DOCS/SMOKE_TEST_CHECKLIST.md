@@ -41,6 +41,10 @@ For each tab below:
 - [ ] "Generate Character" button is visible
 - [ ] Character display area is visible
 - [ ] Ability scores section is present
+- [ ] **Game Mode Toggle is visible (Task 6.1.3)**
+- [ ] **Can toggle between Standard and Uncapped modes (Task 6.1.3)**
+- [ ] **Game mode badge displays on generated character (Task 6.1.3)**
+- [ ] **Different modes produce different characters with same seed (Task 6.1.3)**
 
 ### 4. Session Tracking Tab
 - [ ] Tab loads without errors
