@@ -168,7 +168,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
   - Call `storeEndSession()` to clear persisted state
   - Ensures clean slate every time the page loads
 
-- [ ] **Task 1.3: Update SessionTrackingTab for new hook interface**
+- [x] **Task 1.3: Update SessionTrackingTab for new hook interface**
   - File: [`src/components/Tabs/SessionTrackingTab.tsx`](src/components/Tabs/SessionTrackingTab.tsx)
   - Update destructuring - values now come directly from store via hook
   - Remove any local state sync assumptions

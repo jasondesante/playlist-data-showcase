@@ -134,5 +134,5 @@ export const useSessionTracker = () => {
         }
     }, [tracker, storeEndSession, activeSession]);
 
-    return { startSession, endSession, isActive, elapsedTime };
+    return { startSession, endSession, isActive, elapsedTime, sessionId: activeSession?.sessionId ?? null };
 };

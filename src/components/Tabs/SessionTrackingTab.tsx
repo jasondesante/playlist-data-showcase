@@ -80,11 +80,10 @@ function TimerRing({ progress, size, strokeWidth, isActive }: TimerRingProps) {
 export function SessionTrackingTab() {
   const { selectedTrack } = usePlaylistStore();
   const { play, stop } = useAudioPlayerStore();
-  const { startSession, endSession: hookEndSession, isActive, elapsedTime } = useSessionTracker();
+  const { startSession, endSession: hookEndSession, isActive, elapsedTime, sessionId } = useSessionTracker();
   const { calculateXP } = useXPCalculator();
   const { getActiveCharacter } = useCharacterStore();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Get active character for XP progress display
   const activeCharacter = getActiveCharacter();
@@ -170,9 +169,8 @@ export function SessionTrackingTab() {
     // Start the audio playback
     play(selectedTrack.audio_url);
 
-    // Start session tracker and store the session ID
-    const newSessionId = startSession(selectedTrack.id, selectedTrack);
-    setSessionId(newSessionId);
+    // Start session tracker - sessionId is now derived from store via hook
+    startSession(selectedTrack.id, selectedTrack);
   };
 
   const handleEnd = () => {
