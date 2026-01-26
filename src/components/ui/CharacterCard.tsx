@@ -51,6 +51,20 @@ export function CharacterCard({ character, onClick, variant = 'default' }: Chara
 
   return (
     <div className={cardClasses} onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}>
+      {/* Game Mode Badge (top-right corner) */}
+      {character.gameMode && (
+        <div
+          className={`party-card-game-mode-badge ${character.gameMode}`}
+          title={
+            character.gameMode === 'standard'
+              ? 'Standard Mode: Stats cap at 20, manual stat selection required at level-ups'
+              : 'Uncapped Mode: Unlimited stat progression, automatic stat increases on level-up'
+          }
+        >
+          {character.gameMode === 'standard' ? 'CAPPED' : 'UNCAPPED'}
+        </div>
+      )}
+
       {/* Header with avatar and name */}
       <div className="party-card-header">
         <div className="party-card-avatar">{avatar}</div>

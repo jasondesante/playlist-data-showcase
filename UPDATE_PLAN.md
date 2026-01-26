@@ -170,13 +170,13 @@ The playlist data engine has been significantly updated with new features around
 ### Task 2.4: Update Party Tab with Game Mode Badges
 **File:** `src/components/Tabs/PartyTab.tsx`
 
-- [ ] 2.4.1 - Find character card rendering logic
-- [ ] 2.4.2 - Add game mode badge to each character card
-- [ ] 2.4.3 - Position badge in corner of card (top-right)
-- [ ] 2.4.4 - Use same badge styles from CharacterGenTab
-- [ ] 2.4.5 - Add visual indicator for stat cap warning (standard mode near cap)
-- [ ] 2.4.6 - Test: Verify badges appear on all character cards
-- [ ] 2.4.7 - Test: Verify badges use correct colors for each mode
+- [x] 2.4.1 - Find character card rendering logic
+- [x] 2.4.2 - Add game mode badge to each character card
+- [x] 2.4.3 - Position badge in corner of card (top-right)
+- [x] 2.4.4 - Use same badge styles from CharacterGenTab
+- [x] 2.4.5 - Add visual indicator for stat cap warning (standard mode near cap)
+- [x] 2.4.6 - Test: Verify badges appear on all character cards
+- [x] 2.4.7 - Test: Verify badges use correct colors for each mode
 
 ---
 
