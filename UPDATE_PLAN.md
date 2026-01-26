@@ -723,10 +723,18 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify content is intact
   - [x] Verify internal links work
   - [x] Verify navigation footer works
-- [ ] 6.6.4 - Test: Cross-references
-  - [ ] Search for broken links
-  - [ ] Verify all relative paths are correct
-  - [ ] Verify anchor links work
+- [x] 6.6.4 - Test: Cross-references
+  - [x] Search for broken links
+  - [x] Verify all relative paths are correct
+  - [x] Verify anchor links work
+  - **Summary:**
+    - Moved docs (contributing.md, debugging.md) have correct relative paths
+    - Redirect stubs properly point to new locations
+    - Anchor links (TOC) work correctly within files
+    - docs/index.md has 6 expected broken links depending on incomplete Phase 7.3 tasks:
+      - performance.md, mobile-sensors.md (Task 7.3.3, 7.3.4)
+      - css-optimization.md, bugs-to-fix.md (Task 7.3.5)
+      - engine/ docs (won't move - stay in DESIGN_DOCS/FROM_DATA_ENGINE/)
 
 ---
 
