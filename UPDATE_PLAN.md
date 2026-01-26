@@ -1103,7 +1103,7 @@ The playlist data engine has been significantly updated with new features around
 
 ---
 
-### ~~Edits and additional requests~~
+### ~~Edits and additional requests~~ (HEY DONT CROSS THIS OUT ITS LITERALLY THE FUCKING TITLE OF A CATEGORY WHERE I WILL KEEP ADDING STUFF LIKE RIGHT NOW HOW YOU MADE A MISTAKE BY CROSSING THE TITLE OUT INSTEAD OF THE TEXT FOR THE REQUEST)
 
 ~~- I'm very disappointed in how you consolidated the docs and "simplified" things. You literally made more files than there were before. You were supposed to put all the docs into one docs folder and I literally see a DESIGN_DOCS folder and a docs folder now. So you failed on that. So now there's more files instead of less and they still aren't all in the same spot. So yeah massive failure. I don't know what you should do next but you definitely need to add a bunch more tasks, plan a bunch more. Realize you failed hardcore. And fucking fix it.~~
 
