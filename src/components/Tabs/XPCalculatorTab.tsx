@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
+import { useCharacterStore } from '../../store/characterStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
+import { User, ChevronDown } from 'lucide-react';
 import './XPCalculatorTab.css';
 
 /**
@@ -46,6 +48,7 @@ interface ManualOverrides {
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
   const { environmentalContext, gamingContext } = useSensorStore();
+  const { getActiveCharacter, characters, setActiveCharacter } = useCharacterStore();
   const [duration, setDuration] = useState(180);
   const [result, setResult] = useState<XPBreakdown | null>(null);
   const [isMastered, setIsMastered] = useState(false);
@@ -54,6 +57,42 @@ export function XPCalculatorTab() {
   // Manual mode state (Task 4.5.5)
   const [isManualMode, setIsManualMode] = useState(false);
   const [manualOverrides, setManualOverrides] = useState<ManualOverrides>({});
+
+  // Character selector state
+  const activeCharacter = getActiveCharacter();
+
+  // Handle character selection change
+  const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSeed = e.target.value;
+    setActiveCharacter(selectedSeed);
+  };
+
+  // Calculate XP to next level for the selected character
+  const getXPToNextLevel = (): number => {
+    if (!activeCharacter) return 0;
+    const nextLevel = activeCharacter.xp.next_level;
+    const currentXP = activeCharacter.xp.current;
+    return Math.max(0, nextLevel - currentXP);
+  };
+
+  // Get character avatar emoji based on class
+  const getCharacterAvatar = (charClass: string): string => {
+    const classEmojis: Record<string, string> = {
+      'Fighter': '⚔️',
+      'Wizard': '🧙',
+      'Rogue': '🗡️',
+      'Cleric': '✨',
+      'Ranger': '🏹',
+      'Barbarian': '🪓',
+      'Bard': '🎸',
+      'Druid': '🌿',
+      'Monk': '👊',
+      'Paladin': '🛡️',
+      'Sorcerer': '🔮',
+      'Warlock': '👁️',
+    };
+    return classEmojis[charClass] || '👤';
+  };
 
   const handleCalculate = () => {
     const xpResult = calculateXP(
@@ -173,6 +212,92 @@ export function XPCalculatorTab() {
             </p>
           </div>
         </div>
+
+        {/* Character Selector Card */}
+        {characters.length > 0 && (
+          <Card variant="default" padding="md" className="xp-calculator-character-card">
+            {activeCharacter ? (
+              <div className="xp-character-display">
+                <div className="xp-character-info">
+                  <div className="xp-character-avatar">
+                    <span className="xp-avatar-emoji">{getCharacterAvatar(activeCharacter.class)}</span>
+                    <div className="xp-avatar-badge">Lv {activeCharacter.level}</div>
+                  </div>
+                  <div className="xp-character-details">
+                    <h3 className="xp-character-name">{activeCharacter.name}</h3>
+                    <p className="xp-character-class">{activeCharacter.race} {activeCharacter.class}</p>
+                  </div>
+                </div>
+                <div className="xp-character-stats">
+                  <div className="xp-character-stat">
+                    <span className="xp-stat-label">Current XP</span>
+                    <span className="xp-stat-value">{activeCharacter.xp.current.toLocaleString()}</span>
+                  </div>
+                  <div className="xp-character-stat">
+                    <span className="xp-stat-label">XP to Next Level</span>
+                    <span className="xp-stat-value xp-stat-highlight">{getXPToNextLevel().toLocaleString()}</span>
+                  </div>
+                </div>
+                {characters.length > 1 && (
+                  <div className="xp-character-selector">
+                    <label htmlFor="xp-character-select" className="xp-selector-label">
+                      <User size={14} />
+                      Change Character
+                    </label>
+                    <div className="xp-select-wrapper">
+                      <select
+                        id="xp-character-select"
+                        className="xp-character-select"
+                        onChange={handleCharacterChange}
+                        value={activeCharacter.seed}
+                      >
+                        {characters.map((char) => (
+                          <option key={char.seed} value={char.seed}>
+                            {char.name} - Lv {char.level} {char.race} {char.class}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="xp-select-icon" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="xp-character-empty">
+                <User size={32} className="xp-empty-icon" />
+                <h3 className="xp-empty-title">No Character Selected</h3>
+                <p className="xp-empty-description">
+                  Select a character to apply calculated XP
+                </p>
+                {characters.length > 0 && (
+                  <div className="xp-character-selector">
+                    <label htmlFor="xp-character-select-empty" className="xp-selector-label">
+                      Choose a character:
+                    </label>
+                    <div className="xp-select-wrapper">
+                      <select
+                        id="xp-character-select-empty"
+                        className="xp-character-select"
+                        onChange={handleCharacterChange}
+                        value=""
+                      >
+                        <option value="" disabled>
+                          Select a character...
+                        </option>
+                        {characters.map((char) => (
+                          <option key={char.seed} value={char.seed}>
+                            {char.name} - Lv {char.level} {char.race} {char.class}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="xp-select-icon" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        )}
 
         <div className="xp-calculator-context-grid">
           {/* Duration Input Card */}
