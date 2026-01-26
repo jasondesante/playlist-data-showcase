@@ -689,10 +689,10 @@ The playlist data engine has been significantly updated with new features around
 ### Task 6.5: Test Persistence
 **Location:** All tabs with character data
 
-- [ ] 6.5.1 - Test: Character persists game mode
-  - [ ] Generate character in standard mode
-  - [ ] Refresh page
-  - [ ] Verify character still has `gameMode: 'standard'`
+- [x] 6.5.1 - Test: Character persists game mode
+  - [x] Generate character in standard mode
+  - [x] Refresh page
+  - [x] Verify character still has `gameMode: 'standard'`
 - [ ] 6.5.2 - Test: Pending stats persist
   - [ ] Level up and gain pending stat increases
   - [ ] Refresh page
