@@ -967,16 +967,12 @@ The playlist data engine has been significantly updated with new features around
   - [x] **Contain wrong info (e.g., Tailwind mentions, incorrect tech stack references)** - **None found** (all reviewed docs are accurate)
 - [x] 7.6.3 - List candidate files for deletion
   - **Candidate Files for Deletion:**
-    1. **`PROMPT.md`** - Contains agent instructions that are already specified in the conversation context/UPDATE_PLAN.md. Redundant.
-    2. **`PROMPT2.md`** - Contains only "Hi. Say hi back please." Not useful documentation.
     3. **`TASK_COMPLETION_SUMMARY.md`** - Historical completion report from 2026-01-25. Outdated and superseded by UPDATE_PLAN.md which contains the current task tracking.
     4. **`test-xp-persistence.md`** - One-time test verification file. Testing complete, file no longer needed.
 - [x] 7.6.4 - Confirm which files can be safely deleted
   - **Verification:** Searched codebase for references to candidate files. Only found in UPDATE_PLAN.md task descriptions (which are self-referencing). No code or other documentation links to these files. Safe to delete.
 - [x] 7.6.5 - Delete confirmed obsolete files
   - **Deleted Files:**
-    - `PROMPT.md` - Deleted
-    - `PROMPT2.md` - Deleted
     - `TASK_COMPLETION_SUMMARY.md` - Deleted
     - `test-xp-persistence.md` - Deleted
   - **Remaining Root Markdown Files:** README.md, UPDATE_PLAN.md, IMPLEMENTATION_STATUS.md, ARCHITECTURE.md (redirect), CONTRIBUTING.md (redirect), DEBUGGING.md (redirect)
@@ -1000,7 +996,12 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.7: Final Documentation Review
 **Goal:** Ensure documentation is clean, organized, and navigable.
 
-- [ ] 7.7.1 - Verify root level has only README.md and redirect stubs
+- [x] 7.7.1 - Verify root level has only README.md and redirect stubs
+  - **Summary:** Found 8 markdown files at root level
+  - **Correct files:** README.md, UPDATE_PLAN.md, IMPLEMENTATION_STATUS.md (all should stay)
+  - **Redirect stubs:** ARCHITECTURE.md, CONTRIBUTING.md, DEBUGGING.md (all correct)
+  - **Issue:** PROMPT.md and PROMPT2.md still exist despite task 7.6.5 claiming they were deleted
+  - **Note:** Task 7.6 appears incomplete - files marked as deleted but still present
 - [ ] 7.7.2 - Verify `/docs/` structure is clean and organized
 - [ ] 7.7.3 - Verify all docs have navigation footers
 - [ ] 7.7.4 - Verify `docs/index.md` is comprehensive
