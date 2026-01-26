@@ -2,11 +2,15 @@ import { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
+import { LevelUpDetailModal } from '../LevelUpDetailModal';
+import { showToast } from '../ui/Toast';
 import { User, ChevronDown } from 'lucide-react';
+import type { LevelUpDetail } from 'playlist-data-engine';
 import './XPCalculatorTab.css';
 
 /**
@@ -49,10 +53,14 @@ export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
   const { environmentalContext, gamingContext } = useSensorStore();
   const { getActiveCharacter, characters, setActiveCharacter } = useCharacterStore();
+  const { addXPFromSource } = useCharacterUpdater();
   const [duration, setDuration] = useState(180);
   const [result, setResult] = useState<XPBreakdown | null>(null);
   const [isMastered, setIsMastered] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
   // Manual mode state (Task 4.5.5)
   const [isManualMode, setIsManualMode] = useState(false);
@@ -109,6 +117,38 @@ export function XPCalculatorTab() {
       setIsCelebrating(true);
       setTimeout(() => setIsCelebrating(false), 3000);
     }
+  };
+
+  const handleApplyXP = async () => {
+    if (!result || !activeCharacter || isApplying) return;
+
+    setIsApplying(true);
+    try {
+      const addResult = addXPFromSource(activeCharacter, result.totalXP, 'xp_calculator');
+
+      if (addResult.leveledUp) {
+        // Show level-up modal with details
+        if (addResult.levelUpDetails && addResult.levelUpDetails.length > 0) {
+          setLevelUpDetails(addResult.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
+        // Trigger celebration
+        setIsCelebrating(true);
+        setTimeout(() => setIsCelebrating(false), 3000);
+      }
+
+      // Show success toast
+      showToast(`⭐ Applied ${result.totalXP.toLocaleString()} XP to ${activeCharacter.name}`, 'success');
+      console.log(`Applied ${result.totalXP} XP from calculator to ${activeCharacter.name}`);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  // Handler for closing level-up modal
+  const handleCloseLevelUpModal = () => {
+    setShowLevelUpModal(false);
+    setLevelUpDetails([]);
   };
 
   const handleManualOverrideChange = (field: keyof ManualOverrides, value: string) => {
@@ -549,6 +589,32 @@ export function XPCalculatorTab() {
               </p>
             </div>
 
+            {/* Apply XP Button */}
+            {activeCharacter ? (
+              <div className="xp-apply-section">
+                <button
+                  onClick={handleApplyXP}
+                  className="xp-apply-button"
+                  disabled={isApplying}
+                >
+                  {isApplying ? (
+                    <>Applying...</>
+                  ) : (
+                    <>Apply {result.totalXP.toLocaleString()} XP to {activeCharacter.name}</>
+                  )}
+                </button>
+                <p className="xp-apply-hint">
+                  This will add the calculated XP to {activeCharacter.name} (Level {activeCharacter.level})
+                </p>
+              </div>
+            ) : (
+              <div className="xp-apply-section xp-apply-disabled">
+                <p className="xp-apply-disabled-message">
+                  Select a character first to apply XP
+                </p>
+              </div>
+            )}
+
             {/* Bonus Breakdown */}
             <Card variant="default" padding="md">
               <h3 className="xp-breakdown-title">XP Bonus Breakdown</h3>
@@ -711,6 +777,13 @@ export function XPCalculatorTab() {
             />
           </div>
         )}
+
+        {/* Level-Up Detail Modal */}
+        <LevelUpDetailModal
+          levelUpDetails={levelUpDetails}
+          isOpen={showLevelUpModal}
+          onClose={handleCloseLevelUpModal}
+        />
       </div>
     </>
   );

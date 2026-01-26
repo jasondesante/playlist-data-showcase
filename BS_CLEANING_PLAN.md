@@ -202,12 +202,19 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - `src/components/Tabs/XPCalculatorTab.tsx` - Added character selector UI and handlers
     - `src/components/Tabs/XPCalculatorTab.css` - Added styles for selector components
 
-- [ ] **Task 3.2: Add "Apply XP" Button to Calculator**
+- [x] **Task 3.2: Add "Apply XP" Button to Calculator** ✅
   - File: [src/components/Tabs/XPCalculatorTab.tsx](src/components/Tabs/XPCalculatorTab.tsx)
-  - Add button: "Apply [amount] XP to [character name]"
-  - Use `addXPFromSource(calculatedAmount, 'xp_calculator')`
-  - Handle level-up modal if triggered
-  - Show success toast when XP is applied
+  - Added button: "Apply [amount] XP to [character name]"
+  - Uses `addXPFromSource(calculatedAmount, 'xp_calculator')`
+  - Handles level-up modal if triggered
+  - Shows success toast when XP is applied
+  - Added disabled state when no character is selected
+  - Added loading state during XP application
+  - Added hint text showing target character and level
+  - Files modified:
+    - `src/components/Tabs/XPCalculatorTab.tsx` - Added Apply XP button, state handlers, and LevelUpDetailModal integration
+    - `src/components/Tabs/XPCalculatorTab.css` - Added styles for apply button section
+    - `src/styles/base.css` - Added `--cute-green` color variable
 
 ---
 
