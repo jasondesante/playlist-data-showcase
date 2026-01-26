@@ -45,7 +45,7 @@ export const useSessionTracker = () => {
             // Reference: USAGE_IN_OTHER_PROJECTS.md lines 146, 414-417
             const sessionId = tracker.startSession(trackId, track, options);
             sessionIdRef.current = sessionId;
-            storeStartSession(sessionId);
+            storeStartSession(sessionId, trackId, track);
             setIsActive(true);
             setElapsedTime(0);
 

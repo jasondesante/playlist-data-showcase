@@ -220,11 +220,19 @@ The XP is only shown **after the session ends** in the "Last Session" card.
 
 ### **PHASE 4: Fix Session & Audio Persistence**
 
-- [ ] **Task 4.1: Create Persistent Session Store**
+- [x] **Task 4.1: Create Persistent Session Store** ✅
   - File: [src/store/sessionStore.ts](src/store/sessionStore.ts) (extend existing)
-  - Add session state that persists across tab changes
-  - Store: `isSessionActive`, `currentSessionData`, `elapsedTime`
-  - Add actions: `pauseSession()`, `resumeSession()`
+  - Added session state that persists across tab changes
+  - Added `ActiveSessionData` interface with fields:
+    - `sessionId`: Unique session identifier
+    - `trackId`: ID of the track being played
+    - `track`: Full PlaylistTrack object
+    - `startTime`: Unix timestamp in seconds
+    - `elapsedSeconds`: Current elapsed time
+    - `isPaused`: Whether session is paused
+  - Added new actions: `pauseSession()`, `resumeSession()`, `updateElapsedTime()`
+  - Updated `startSession()` to accept `trackId` and `track` parameters
+  - All session state is now persisted via zustand persist middleware
 
 - [ ] **Task 4.2: Move Audio Controls to Persistent Header**
   - File: [src/components/Layout/AppHeader.tsx](src/components/Layout/AppHeader.tsx)

@@ -1,15 +1,28 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ListeningSession } from '@/types';
+import { ListeningSession, PlaylistTrack } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
+
+interface ActiveSessionData {
+    sessionId: string;
+    trackId: string;
+    track: PlaylistTrack;
+    startTime: number; // Unix timestamp in seconds
+    elapsedSeconds: number;
+    isPaused: boolean;
+}
 
 interface SessionState {
     currentSessionId: string | null;
     sessionHistory: ListeningSession[];
+    activeSession: ActiveSessionData | null;
 
-    startSession: (sessionId: string) => void;
+    startSession: (sessionId: string, trackId: string, track: PlaylistTrack) => void;
     endSession: (session: ListeningSession) => void;
+    pauseSession: () => void;
+    resumeSession: () => void;
+    updateElapsedTime: (elapsedSeconds: number) => void;
     clearHistory: () => void;
 }
 
@@ -18,17 +31,49 @@ export const useSessionStore = create<SessionState>()(
         (set) => ({
             currentSessionId: null,
             sessionHistory: [],
+            activeSession: null,
 
-            startSession: (sessionId) => {
-                logger.info('Store', 'Starting session', sessionId);
-                set({ currentSessionId: sessionId });
+            startSession: (sessionId, trackId, track) => {
+                logger.info('Store', 'Starting session', { sessionId, trackId });
+                set({
+                    currentSessionId: sessionId,
+                    activeSession: {
+                        sessionId,
+                        trackId,
+                        track,
+                        startTime: Math.floor(Date.now() / 1000),
+                        elapsedSeconds: 0,
+                        isPaused: false
+                    }
+                });
             },
 
             endSession: (session) => {
                 logger.info('Store', 'Ending session', { track: session.track_uuid, xp: session.total_xp_earned });
                 set((state) => ({
                     currentSessionId: null,
+                    activeSession: null,
                     sessionHistory: [session, ...state.sessionHistory] // Newest first
+                }));
+            },
+
+            pauseSession: () => {
+                logger.info('Store', 'Pausing session');
+                set((state) => ({
+                    activeSession: state.activeSession ? { ...state.activeSession, isPaused: true } : null
+                }));
+            },
+
+            resumeSession: () => {
+                logger.info('Store', 'Resuming session');
+                set((state) => ({
+                    activeSession: state.activeSession ? { ...state.activeSession, isPaused: false } : null
+                }));
+            },
+
+            updateElapsedTime: (elapsedSeconds: number) => {
+                set((state) => ({
+                    activeSession: state.activeSession ? { ...state.activeSession, elapsedSeconds } : null
                 }));
             },
 
