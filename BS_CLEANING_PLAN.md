@@ -234,12 +234,26 @@ The XP is only shown **after the session ends** in the "Last Session" card.
   - Updated `startSession()` to accept `trackId` and `track` parameters
   - All session state is now persisted via zustand persist middleware
 
-- [ ] **Task 4.2: Move Audio Controls to Persistent Header**
+- [x] **Task 4.2: Move Audio Controls to Persistent Header** ✅
   - File: [src/components/Layout/AppHeader.tsx](src/components/Layout/AppHeader.tsx)
-  - Add mini player controls to header
-  - Show/hide based on session state
+  - Added mini player controls to header
+  - Shows/hides based on session state (activeSession from sessionStore)
   - Always visible regardless of active tab
   - Play/Pause/Stop buttons work from any tab
+  - Added responsive layout with flexbox
+  - Created formatters utility (`src/utils/formatters.ts`) with `formatTime()` function
+  - Files modified:
+    - `src/components/Layout/AppHeader.tsx` - Added mini player with track info, controls, and time display
+    - `src/utils/formatters.ts` - Created new utility file with time formatting functions
+    - `src/styles/layout.css` - Added extensive mini player styles with animations
+  - The mini player includes:
+    - Track artwork/image display with fallback placeholder
+    - Track title and artist display
+    - Play/Pause button that syncs both audio player and session state
+    - Stop button that ends the session
+    - Current time / total time display
+    - Smooth slide-in animation when session starts
+    - Mobile-responsive layout (wraps controls on smaller screens)
 
 - [ ] **Task 4.3: Update Session Tracker for Background Operation**
   - File: [src/hooks/useSessionTracker.ts](src/hooks/useSessionTracker.ts)

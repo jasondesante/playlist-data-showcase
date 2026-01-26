@@ -29,6 +29,24 @@
   }
 }
 
+.app-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .app-header-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.app-header-text {
+  flex: 1;
+}
+
 .app-header-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -38,6 +56,181 @@
 .app-header-subtitle {
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
+}
+
+/* ========================================
+   MINI AUDIO PLAYER (Task 4.2)
+   ======================================== */
+
+.app-header-mini-player {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 0.75rem;
+  animation: slideInDown 0.2s var(--ease-out-cubic);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-player-track-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-player-artwork {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: hsl(var(--muted));
+}
+
+.mini-player-artwork-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-player-artwork-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.mini-player-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-player-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-artist {
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.mini-player-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-out-cubic),
+              border-color var(--transition-fast) var(--ease-out-cubic),
+              transform var(--transition-fast) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
+}
+
+.mini-player-btn:hover {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--primary));
+}
+
+.mini-player-btn:active {
+  transform: scale(0.95) var(--gpu-accel);
+}
+
+.mini-player-play-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.mini-player-play-btn:hover {
+  background-color: hsl(var(--primary) / 0.8);
+  border-color: hsl(var(--primary) / 0.8);
+}
+
+.mini-player-stop-btn {
+  color: hsl(var(--destructive));
+}
+
+.mini-player-stop-btn:hover {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-color: hsl(var(--destructive));
+}
+
+.mini-player-time {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+  font-feature-settings: 'tnum' 1;
+  flex-shrink: 0;
+}
+
+.mini-player-current-time {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.mini-player-time-separator {
+  color: hsl(var(--muted-foreground) / 0.5);
+}
+
+.mini-player-total-time {
+  color: hsl(var(--muted-foreground));
+}
+
+@media (max-width: 767px) {
+  .app-header-mini-player {
+    flex-wrap: wrap;
+  }
+
+  .mini-player-controls {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .mini-player-time {
+    order: 2;
+  }
 }
 
 /* ========================================

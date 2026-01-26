@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { logger } from '@/utils/logger';
@@ -30,12 +30,51 @@ interface SessionStartOptions {
  * @returns {number} elapsedTime - Elapsed time in seconds for the current session
  */
 export const useSessionTracker = () => {
-    const { startSession: storeStartSession, endSession: storeEndSession } = useSessionStore();
+    const { startSession: storeStartSession, endSession: storeEndSession, activeSession, updateElapsedTime } = useSessionStore();
     const [tracker] = useState(() => new SessionTracker());
     const [isActive, setIsActive] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const timerRef = useRef<number | null>(null);
     const sessionIdRef = useRef<string | null>(null);
+
+    // Sync with persisted session state
+    useEffect(() => {
+        if (activeSession && !isActive) {
+            setIsActive(true);
+            setElapsedTime(activeSession.elapsedSeconds);
+            sessionIdRef.current = activeSession.sessionId;
+        } else if (!activeSession && isActive) {
+            setIsActive(false);
+            setElapsedTime(0);
+            sessionIdRef.current = null;
+            if (timerRef.current !== null) {
+                window.clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        }
+    }, [activeSession, isActive]);
+
+    // Start timer when active
+    useEffect(() => {
+        if (isActive && !activeSession?.isPaused) {
+            timerRef.current = window.setInterval(() => {
+                setElapsedTime(t => {
+                    const newTime = t + 1;
+                    updateElapsedTime(newTime);
+                    return newTime;
+                });
+            }, 1000);
+        } else if (timerRef.current !== null) {
+            window.clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+
+        return () => {
+            if (timerRef.current !== null) {
+                window.clearInterval(timerRef.current);
+            }
+        };
+    }, [isActive, activeSession?.isPaused, updateElapsedTime]);
 
     const startSession = useCallback((trackId: string, track: PlaylistTrack, options?: SessionStartOptions) => {
         logger.info('SessionTracker', 'Starting session', { trackId, hasContext: !!options });
@@ -48,11 +87,6 @@ export const useSessionTracker = () => {
             storeStartSession(sessionId, trackId, track);
             setIsActive(true);
             setElapsedTime(0);
-
-            // Start local timer for UI display
-            timerRef.current = window.setInterval(() => {
-                setElapsedTime(t => t + 1);
-            }, 1000);
 
             return sessionId;
         } catch (error) {
