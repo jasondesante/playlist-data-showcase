@@ -628,9 +628,9 @@ The playlist data engine has been significantly updated with new features around
   - [x] Add large XP amount (e.g., boss defeat)
   - [x] Verify modal shows all level-ups
   - [x] Verify each level-up has correct details
-- [ ] 6.3.3 - Test: HP increases every level
-  - [ ] Level up multiple times
-  - [ ] Verify HP increases each time (not just at stat increase levels)
+- [x] 6.3.3 - Test: HP increases every level
+  - [x] Level up multiple times
+  - [x] Verify HP increases each time (not just at stat increase levels)
 - [ ] 6.3.4 - Test: Stat increases only at correct levels (standard mode)
   - [ ] Level to 4, 8, 12, 16, 19
   - [ ] Verify pending stat increases appear
