@@ -617,13 +617,13 @@ The playlist data engine has been significantly updated with new features around
 ### Task 6.3: Test Level-Up Details
 **Location:** LevelUpDetailModal
 
-- [ ] 6.3.1 - Test: Single level-up
-  - [ ] Trigger level-up (e.g., level 3 → 4)
-  - [ ] Verify modal appears
-  - [ ] Verify HP increase is displayed correctly
-  - [ ] Verify proficiency bonus is displayed (if increased)
-  - [ ] Verify stat increases are displayed (if any)
-  - [ ] Verify new features are listed (if any)
+- [x] 6.3.1 - Test: Single level-up
+  - [x] Trigger level-up (e.g., level 3 → 4)
+  - [x] Verify modal appears
+  - [x] Verify HP increase is displayed correctly
+  - [x] Verify proficiency bonus is displayed (if increased)
+  - [x] Verify stat increases are displayed (if any)
+  - [x] Verify new features are listed (if any)
 - [ ] 6.3.2 - Test: Multi-level-up
   - [ ] Add large XP amount (e.g., boss defeat)
   - [ ] Verify modal shows all level-ups
