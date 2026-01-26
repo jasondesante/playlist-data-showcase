@@ -1,0 +1,514 @@
+/* ============================================
+   LEVEL UP DETAIL MODAL COMPONENT
+   ============================================ */
+
+/* Modal Overlay - Backdrop with blur */
+.levelup-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: hsl(0 0% 0% / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: levelupOverlayFadeIn 0.3s ease-out;
+}
+
+@keyframes levelupOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Confetti Container */
+.levelup-modal-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.levelup-confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(
+    135deg,
+    hsl(280 80% 60%),
+    hsl(45 100% 60%),
+    hsl(180 80% 60%),
+    hsl(340 80% 60%)
+  );
+  border-radius: 2px;
+  animation: levelupConfettiFall 3s ease-out forwards;
+}
+
+@keyframes levelupConfettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Modal Container */
+.levelup-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    hsl(270 30% 15%),
+    hsl(280 40% 12%)
+  );
+  border: 2px solid hsl(280 60% 50% / 0.5);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px hsl(280 80% 60% / 0.2),
+    0 25px 50px -12px hsl(0 0% 0% / 0.5),
+    0 0 100px -20px hsl(280 80% 60% / 0.3);
+  animation: levelupModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes levelupModalSlideIn {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .levelup-modal-container {
+    max-width: 40rem;
+  }
+}
+
+/* Modal Header */
+.levelup-modal-header {
+  padding: 1.5rem 1.25rem 1rem;
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 25% / 0.5),
+    hsl(270 60% 20% / 0.5)
+  );
+  border-bottom: 1px solid hsl(280 60% 40% / 0.3);
+}
+
+.levelup-modal-title-section {
+  text-align: center;
+}
+
+.levelup-modal-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(
+    135deg,
+    hsl(45 100% 60%),
+    hsl(45 100% 50%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px hsl(45 100% 60% / 0.5);
+  letter-spacing: 0.05em;
+  animation: levelupTitleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes levelupTitleGlow {
+  from {
+    filter: drop-shadow(0 0 10px hsl(45 100% 60% / 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 20px hsl(45 100% 60% / 0.8));
+  }
+}
+
+@media (min-width: 768px) {
+  .levelup-modal-title {
+    font-size: 2.5rem;
+  }
+}
+
+.levelup-modal-subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(280 20% 80%);
+}
+
+.levelup-emoji {
+  font-size: 1.25rem;
+  animation: levelupEmojiBounce 1s ease-in-out infinite;
+}
+
+.levelup-emoji:last-child {
+  animation-delay: 0.5s;
+}
+
+@keyframes levelupEmojiBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Modal Content - Scrollable area */
+.levelup-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Custom scrollbar for modal content */
+.levelup-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.levelup-modal-content::-webkit-scrollbar-track {
+  background: hsl(280 30% 15%);
+  border-radius: 3px;
+}
+
+.levelup-modal-content::-webkit-scrollbar-thumb {
+  background: hsl(280 60% 40%);
+  border-radius: 3px;
+}
+
+.levelup-modal-content::-webkit-scrollbar-thumb:hover {
+  background: hsl(280 60% 50%);
+}
+
+/* Level Up Detail Card */
+.levelup-detail-card {
+  background: hsl(280 20% 18%);
+  border: 1px solid hsl(280 50% 35% / 0.4);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  animation: levelupCardFadeIn 0.3s ease-out backwards;
+}
+
+/* Stagger animation for multiple cards */
+.levelup-detail-card:nth-child(1) { animation-delay: 0.1s; }
+.levelup-detail-card:nth-child(2) { animation-delay: 0.2s; }
+.levelup-detail-card:nth-child(3) { animation-delay: 0.3s; }
+.levelup-detail-card:nth-child(4) { animation-delay: 0.4s; }
+.levelup-detail-card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes levelupCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Detail Card Header */
+.levelup-detail-header {
+  margin-bottom: 0.75rem;
+}
+
+.levelup-detail-range {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(45 100% 70%);
+  background: hsl(45 100% 20% / 0.3);
+  border: 1px solid hsl(45 100% 40% / 0.4);
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+}
+
+/* Detail Changes Container */
+.levelup-detail-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* Detail Item */
+.levelup-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: hsl(0 0% 0% / 0.2);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(280 30% 30% / 0.3);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.levelup-detail-item:hover {
+  background: hsl(0 0% 0% / 0.3);
+  border-color: hsl(280 50% 40% / 0.4);
+}
+
+/* Detail Icon */
+.levelup-detail-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+}
+
+.levelup-icon-hp {
+  background: hsl(0 70% 40% / 0.2);
+  color: hsl(0 70% 60%);
+}
+
+.levelup-icon-proficiency {
+  background: hsl(200 70% 40% / 0.2);
+  color: hsl(200 70% 60%);
+}
+
+.levelup-icon-stats {
+  background: hsl(150 70% 40% / 0.2);
+  color: hsl(150 70% 60%);
+}
+
+.levelup-icon-features {
+  background: hsl(45 100% 40% / 0.2);
+  color: hsl(45 100% 60%);
+}
+
+.levelup-icon-spells {
+  background: hsl(280 70% 40% / 0.2);
+  color: hsl(280 70% 60%);
+}
+
+/* Detail Info */
+.levelup-detail-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.levelup-detail-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(280 20% 70%);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.levelup-detail-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(280 20% 95%);
+}
+
+.levelup-detail-new {
+  font-size: 0.75rem;
+  color: hsl(280 20% 70%);
+}
+
+/* Stat Increases */
+.levelup-stat-increases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.levelup-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(150 70% 80%);
+  background: hsl(150 70% 25% / 0.3);
+  border: 1px solid hsl(150 70% 40% / 0.4);
+  border-radius: 0.375rem;
+}
+
+.levelup-stat-old {
+  font-size: 0.6875rem;
+  color: hsl(280 20% 60%);
+  margin-left: 0.25rem;
+}
+
+/* Features List */
+.levelup-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+.levelup-feature-item {
+  font-size: 0.8125rem;
+  color: hsl(280 20% 90%);
+}
+
+.levelup-feature-item::marker {
+  color: hsl(45 100% 60%);
+}
+
+/* Spell Slots */
+.levelup-spell-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.levelup-spell-slot-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(280 70% 80%);
+  background: hsl(280 70% 25% / 0.3);
+  border: 1px solid hsl(280 70% 40% / 0.4);
+  border-radius: 0.375rem;
+}
+
+/* Modal Footer */
+.levelup-modal-footer {
+  padding: 1rem 1.25rem 1.25rem;
+  background: hsl(280 20% 15%);
+  border-top: 1px solid hsl(280 60% 40% / 0.3);
+}
+
+.levelup-modal-continue-btn {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(45 100% 95%);
+  background: linear-gradient(
+    135deg,
+    hsl(45 100% 50%),
+    hsl(45 100% 40%)
+  );
+  border: none;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+  box-shadow:
+    0 4px 12px hsl(45 100% 30% / 0.4),
+    0 0 0 1px hsl(45 100% 60% / 0.3) inset;
+}
+
+.levelup-modal-continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px hsl(45 100% 30% / 0.5),
+    0 0 0 1px hsl(45 100% 70% / 0.4) inset;
+  filter: brightness(1.1);
+}
+
+.levelup-modal-continue-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px hsl(45 100% 30% / 0.4),
+    0 0 0 1px hsl(45 100% 60% / 0.3) inset;
+}
+
+.levelup-modal-continue-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px hsl(45 100% 60% / 0.3),
+    0 4px 12px hsl(45 100% 30% / 0.4);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .levelup-modal-container {
+    max-height: 95vh;
+  }
+
+  .levelup-modal-header {
+    padding: 1.25rem 1rem 0.75rem;
+  }
+
+  .levelup-modal-title {
+    font-size: 1.75rem;
+  }
+
+  .levelup-modal-subtitle {
+    font-size: 0.8125rem;
+    flex-wrap: wrap;
+  }
+
+  .levelup-modal-content {
+    padding: 0.75rem;
+    gap: 0.625rem;
+  }
+
+  .levelup-detail-card {
+    padding: 0.875rem;
+  }
+
+  .levelup-detail-item {
+    padding: 0.625rem;
+    gap: 0.625rem;
+  }
+
+  .levelup-modal-footer {
+    padding: 0.875rem 1rem 1rem;
+  }
+
+  .levelup-modal-continue-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .levelup-modal-overlay,
+  .levelup-modal-container,
+  .levelup-detail-card,
+  .levelup-modal-title,
+  .levelup-emoji,
+  .levelup-confetti-piece {
+    animation: none;
+  }
+
+  .levelup-modal-continue-btn {
+    transition: none;
+  }
+}
