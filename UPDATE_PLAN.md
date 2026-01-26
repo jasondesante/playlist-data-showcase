@@ -567,10 +567,10 @@ The playlist data engine has been significantly updated with new features around
 ### Task 6.1: Test Game Mode Selection
 **Location:** CharacterGenTab and PartyTab
 
-- [ ] 6.1.1 - Test: Generate character in standard mode
-  - [ ] Verify `gameMode` property is `'standard'`
-  - [ ] Verify stats initialize with cap of 20
-  - [ ] Verify character sheet displays correctly
+- [x] 6.1.1 - Test: Generate character in standard mode
+  - [x] Verify `gameMode` property is `'standard'`
+  - [x] Verify stats initialize with cap of 20
+  - [x] Verify character sheet displays correctly
 - [ ] 6.1.2 - Test: Generate character in uncapped mode
   - [ ] Verify `gameMode` property is `'uncapped'`
   - [ ] Verify stats can exceed 20
