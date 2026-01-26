@@ -38,7 +38,7 @@ import './CharacterLevelingTab.css';
  * ```
  */
 export function CharacterLevelingTab() {
-  const { getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
+  const { getActiveCharacter, setActiveCharacter, characters, setCharacterStrategy } = useCharacterStore();
   const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
@@ -300,6 +300,10 @@ export function CharacterLevelingTab() {
   const handleStrategyChange = (strategy: StatIncreaseStrategyType) => {
     setStatStrategy(strategy);
     updateStatStrategy(strategy);
+    // Persist to local state map
+    if (activeChar) {
+      setCharacterStrategy(activeChar.seed, strategy);
+    }
     console.log(`📊 Stat strategy changed to: ${strategy}`);
     console.log(`This strategy will be used for future level-ups only.`);
   };

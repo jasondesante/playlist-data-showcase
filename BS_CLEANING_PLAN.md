@@ -214,9 +214,9 @@ const formatSessionTime = (timestamp: number) => {
 - - - Build passes
 
 **Task 3.4:** Persist strategy when user selects it
-- [ ] File: `src/components/Tabs/CharacterLevelingTab.tsx`
-- [ ] Import `setCharacterStrategy` from characterStore
-- [ ] Update `handleStrategyChange()`:
+- [x] File: `src/components/Tabs/CharacterLevelingTab.tsx`
+- [x] Import `setCharacterStrategy` from characterStore
+- [x] Update `handleStrategyChange()`:
   ```typescript
   const handleStrategyChange = (strategy: StatIncreaseStrategyType) => {
       setStatStrategy(strategy);
@@ -233,6 +233,12 @@ const formatSessionTime = (timestamp: number) => {
 - - - Updates both StatManager AND local state
 - - - Strategy now persists across XP additions
 - - - Build passes
+
+**Verification Summary:**
+- - - `setCharacterStrategy` called in `handleStrategyChange` (line 305)
+- - - `activeChar.seed` used as key for persistence
+- - - Strategy persists to localStorage via zustand middleware
+- - - Store state now contains persisted strategy per character
 
 **Task 3.5:** Remove auto-sync useEffect
 - [ ] File: `src/components/Tabs/CharacterLevelingTab.tsx` (lines 84-92)
