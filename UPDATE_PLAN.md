@@ -339,11 +339,11 @@ The playlist data engine has been significantly updated with new features around
 ### Task 4.3: Integrate Stat Selection Modal into Leveling Tab
 **File:** `src/components/Tabs/CharacterLevelingTab.tsx`
 
-- [ ] 4.3.1 - Import `StatSelectionModal` component
-- [ ] 4.3.2 - Import `Ability` type from `'playlist-data-engine'`
-- [ ] 4.3.3 - Add state for `showStatModal: boolean`
-- [ ] 4.3.4 - Add handler for opening stat modal (from "Apply Stat Increases" button)
-- [ ] 4.3.5 - Add handler for applying stat increases:
+- [x] 4.3.1 - Import `StatSelectionModal` component
+- [x] 4.3.2 - Import `Ability` type from `'playlist-data-engine'`
+- [x] 4.3.3 - Add state for `showStatModal: boolean`
+- [x] 4.3.4 - Add handler for opening stat modal (from "Apply Stat Increases" button)
+- [x] 4.3.5 - Add handler for applying stat increases:
   ```typescript
   const handleApplyStats = (primary: Ability, secondary?: Ability[]) => {
       const result = applyPendingStatIncrease(activeChar, primary, secondary);
@@ -351,13 +351,13 @@ The playlist data engine has been significantly updated with new features around
       // Update character in store
   }
   ```
-- [ ] 4.3.6 - Add handler for canceling stat modal
-- [ ] 4.3.7 - Render `StatSelectionModal` component with proper props
-- [ ] 4.3.8 - Pass `pendingCount` from `character.pendingStatIncreases`
-- [ ] 4.3.9 - Test: Click "Apply Stat Increases" and verify modal opens
-- [ ] 4.3.10 - Test: Apply stats and verify character is updated
-- [ ] 4.3.11 - Test: Verify pending count decreases after applying
-- [ ] 4.3.12 - Test: Verify success notification shows stat changes
+- [x] 4.3.6 - Add handler for canceling stat modal
+- [x] 4.3.7 - Render `StatSelectionModal` component with proper props
+- [x] 4.3.8 - Pass `pendingCount` from `character.pendingStatIncreases`
+- [x] 4.3.9 - Test: Click "Apply Stat Increases" and verify modal opens
+- [x] 4.3.10 - Test: Apply stats and verify character is updated
+- [x] 4.3.11 - Test: Verify pending count decreases after applying
+- [x] 4.3.12 - Test: Verify success notification shows stat changes
 
 ---
 

@@ -6,7 +6,8 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
-import type { LevelUpDetail } from 'playlist-data-engine';
+import { StatSelectionModal } from '../StatSelectionModal';
+import type { LevelUpDetail, Ability } from 'playlist-data-engine';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
@@ -35,7 +36,7 @@ import './CharacterLevelingTab.css';
  */
 export function CharacterLevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
-  const { addXPFromSource } = useCharacterUpdater();
+  const { addXPFromSource, applyPendingStatIncrease } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -43,6 +44,7 @@ export function CharacterLevelingTab() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
+  const [showStatModal, setShowStatModal] = useState(false);
 
   const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
 
@@ -199,6 +201,34 @@ export function CharacterLevelingTab() {
   const handleCloseLevelUpModal = () => {
     setShowLevelUpModal(false);
     setLevelUpDetails([]);
+  };
+
+  // Handler for opening stat modal
+  const handleOpenStatModal = () => {
+    setShowStatModal(true);
+  };
+
+  // Handler for canceling stat modal
+  const handleCloseStatModal = () => {
+    setShowStatModal(false);
+  };
+
+  // Handler for applying stat increases
+  const handleApplyStats = (primary: Ability, secondary?: Ability[]) => {
+    if (!activeChar) return;
+
+    const result = applyPendingStatIncrease(activeChar, primary, secondary);
+
+    // Show success notification with stat changes
+    const statChangeText = result.statIncreases
+      .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
+      .join(', ');
+
+    console.log(`✅ Stats applied: ${statChangeText}`);
+    console.log(`Remaining pending increases: ${result.remainingPending}`);
+
+    // Close the modal
+    setShowStatModal(false);
   };
 
   if (!activeChar) {
@@ -415,10 +445,7 @@ export function CharacterLevelingTab() {
           <Button
             variant="primary"
             size="lg"
-            onClick={() => {
-              // Placeholder - will be implemented in Task 4.3
-              console.log('Apply Stat Increases clicked - will open StatSelectionModal');
-            }}
+            onClick={handleOpenStatModal}
             className="leveling-apply-stats-button"
           >
             Apply Stat Increases
@@ -484,6 +511,15 @@ export function CharacterLevelingTab() {
         levelUpDetails={levelUpDetails}
         isOpen={showLevelUpModal}
         onClose={handleCloseLevelUpModal}
+      />
+
+      {/* Stat Selection Modal */}
+      <StatSelectionModal
+        isOpen={showStatModal}
+        pendingCount={activeChar.pendingStatIncreases ?? 0}
+        currentStats={activeChar.ability_scores}
+        onApply={handleApplyStats}
+        onCancel={handleCloseStatModal}
       />
     </div>
   );
