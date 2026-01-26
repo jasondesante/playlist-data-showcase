@@ -4,16 +4,14 @@ Welcome to the Playlist Character Generator documentation. This demo showcases a
 
 ---
 
-## Getting Started
+## Architecture
 
-- [Quick Start](./getting-started.md) - 5-minute walkthrough
 - [Architecture Overview](./architecture/overview.md) - System design
 
 ---
 
 ## Development
 
-- [Contributing Guide](./development/contributing.md) - PR workflow, coding standards
 - [Debugging Guide](./development/debugging.md) - Troubleshooting
 
 ---
@@ -21,9 +19,6 @@ Welcome to the Playlist Character Generator documentation. This demo showcases a
 ## Testing
 
 - [Smoke Tests](./development/testing/smoke-tests.md)
-- [Determinism Testing](./development/testing/determinism.md)
-- [Performance Testing](./development/testing/performance.md)
-- [Mobile Sensors](./development/testing/mobile-sensors.md)
 
 ---
 
@@ -35,8 +30,8 @@ Welcome to the Playlist Character Generator documentation. This demo showcases a
 
 ## Data Engine
 
-- [API Reference](./engine/data-engine-reference.md)
-- [Usage Examples](./engine/usage-in-other-projects.md)
+- [API Reference](./engine/DATA_ENGINE_REFERENCE.md)
+- [Usage Examples](./engine/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 

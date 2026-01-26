@@ -371,7 +371,6 @@ When reporting an issue, include:
 
 - [../../IMPLEMENTATION_STATUS.md](../../IMPLEMENTATION_STATUS.md) - Current implementation status
 - [../architecture/overview.md](../architecture/overview.md) - Project architecture documentation
-- [contributing.md](./contributing.md) - Contributing guidelines
 - [../design/bugs-to-fix.md](../design/bugs-to-fix.md) - Known bugs tracker
 
 ---
