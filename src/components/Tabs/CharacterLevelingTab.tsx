@@ -195,6 +195,8 @@ export function CharacterLevelingTab() {
           setShowLevelUpModal(true);
         }
       }
+      // Show success toast notification
+      showToast('✅ Quest completed! +500 XP awarded', 'success');
       console.log(`Quest completed! +500 XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);

@@ -588,11 +588,11 @@ The playlist data engine has been significantly updated with new features around
 ### Task 6.2: Test XP Sources
 **Location:** CharacterLevelingTab and CombatSimulatorTab
 
-- [ ] 6.2.1 - Test: Quest completion button
-  - [ ] Click "Complete Quest" (+500 XP)
-  - [ ] Verify XP is added to character
-  - [ ] Verify source is tracked as `'quest'`
-  - [ ] Verify success notification appears
+- [x] 6.2.1 - Test: Quest completion button
+  - [x] Click "Complete Quest" (+500 XP)
+  - [x] Verify XP is added to character
+  - [x] Verify source is tracked as `'quest'`
+  - [x] Verify success notification appears
 - [ ] 6.2.2 - Test: Boss defeat button
   - [ ] Click "Defeat Boss" (+5,000 XP)
   - [ ] Verify XP is added to character
