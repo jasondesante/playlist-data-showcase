@@ -3,12 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { CharacterSheet } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
+import type { StatIncreaseStrategyType } from '@/components/ui/StatStrategySelector';
 
 interface CharacterState {
     /** All generated characters */
     characters: CharacterSheet[];
     /** Seed of the currently active character (uses seed as unique ID) */
     activeCharacterId: string | null;
+    /** Map of character seed to stat strategy selection */
+    characterStrategies: Record<string, StatIncreaseStrategyType>;
 
     /** Add a new character to the store and set as active */
     addCharacter: (character: CharacterSheet) => void;
@@ -35,6 +38,7 @@ export const useCharacterStore = create<CharacterState>()(
         (set, get) => ({
             characters: [],
             activeCharacterId: null,
+            characterStrategies: {},
 
             /**
              * Add a new character to the store and set as active

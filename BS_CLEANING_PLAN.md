@@ -153,22 +153,28 @@ const formatSessionTime = (timestamp: number) => {
 ### PHASE 3: Persist Stat Strategy (CRITICAL)
 
 **Task 3.1:** Add strategy map to characterStore
-- [ ] File: `src/store/characterStore.ts`
-- [ ] Add to state interface:
+- [x] File: `src/store/characterStore.ts`
+- [x] Add to state interface:
   ```typescript
   interface CharacterStoreState {
       // ... existing fields
       characterStrategies: Record<string, StatIncreaseStrategyType>;
   }
   ```
-- [ ] Initialize in state: `characterStrategies: {}`
-- [ ] Add to persist middleware (if needed)
+- [x] Initialize in state: `characterStrategies: {}`
+- [x] Add to persist middleware (if needed)
 -
 - **Implementation Summary:**
 - - - New `characterStrategies` map stores strategy per character seed
 - - - Maps character seed → strategy
 - - - Persisted to localStorage via zustand persist middleware
 - - - Build passes
+
+**Verification Summary:**
+- - - Store now has `characterStrategies: Record<string, StatIncreaseStrategyType>` in state
+- - - Initialized as empty object `{}`
+- - - Automatically persisted via existing zustand persist middleware
+- - - Imported `StatIncreaseStrategyType` from `@/components/ui/StatStrategySelector`
 
 **Task 3.2:** Add helper functions to characterStore
 - [ ] File: `src/store/characterStore.ts`
