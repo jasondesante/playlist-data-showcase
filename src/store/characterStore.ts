@@ -14,6 +14,8 @@ interface CharacterState {
     addCharacter: (character: CharacterSheet) => void;
     /** Update an existing character's data (finds by seed) */
     updateCharacter: (character: CharacterSheet) => void;
+    /** Add a new character or update existing one (finds by seed) */
+    addOrUpdateCharacter: (character: CharacterSheet) => void;
     /** Set the active character by seed ID */
     setActiveCharacter: (id: string) => void;
     /** Delete a character by seed ID */
@@ -70,6 +72,35 @@ export const useCharacterStore = create<CharacterState>()(
                         c.seed === updatedCharacter.seed ? updatedCharacter : c
                     )
                 }));
+            },
+
+            /**
+             * Add a new character or update existing one (finds by seed)
+             * Replaces any existing character with the same seed, or adds as new if seed doesn't exist
+             * @param character - The CharacterSheet to add or update
+             * @example
+             * ```ts
+             * const character = CharacterGenerator.generate(seed, audioProfile, name);
+             * addOrUpdateCharacter(character); // Adds new or updates existing
+             * ```
+             */
+            addOrUpdateCharacter: (character) => {
+                const existing = get().characters.find((c) => c.seed === character.seed);
+                if (existing) {
+                    logger.info('Store', 'Updating existing character', { name: character.name, class: character.class, seed: character.seed });
+                    set((state) => ({
+                        characters: state.characters.map((c) =>
+                            c.seed === character.seed ? character : c
+                        ),
+                        activeCharacterId: character.seed
+                    }));
+                } else {
+                    logger.info('Store', 'Adding new character', { name: character.name, class: character.class, seed: character.seed });
+                    set((state) => ({
+                        characters: [...state.characters, character],
+                        activeCharacterId: character.seed
+                    }));
+                }
             },
 
             /**

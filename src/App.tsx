@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Music, User, Activity, Zap, Gamepad2, Swords, Settings } from 'lucide-react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import type { TabItem } from './components/Layout/Sidebar';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
 import { CharacterGenTab } from './components/Tabs/CharacterGenTab';
+import { PartyTab } from './components/Tabs/PartyTab';
 import { SessionTrackingTab } from './components/Tabs/SessionTrackingTab';
 import { XPCalculatorTab } from './components/Tabs/XPCalculatorTab';
 import { CharacterLevelingTab } from './components/Tabs/CharacterLevelingTab';
@@ -14,7 +15,7 @@ import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
 import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
 
-type Tab = 'playlist' | 'audio' | 'character' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
@@ -23,6 +24,7 @@ function App() {
     { id: 'playlist', label: 'Playlist', icon: Music },
     { id: 'audio', label: 'Audio Analysis', icon: Music },
     { id: 'character', label: 'Character Gen', icon: User },
+    { id: 'party', label: 'Party', icon: Users },
     { id: 'session', label: 'Session', icon: Activity },
     { id: 'xp', label: 'XP Calc', icon: Zap },
     { id: 'leveling', label: 'Leveling', icon: User },
@@ -37,6 +39,7 @@ function App() {
       case 'playlist': return <PlaylistLoaderTab />;
       case 'audio': return <AudioAnalysisTab />;
       case 'character': return <CharacterGenTab />;
+      case 'party': return <PartyTab />;
       case 'session': return <SessionTrackingTab />;
       case 'xp': return <XPCalculatorTab />;
       case 'leveling': return <CharacterLevelingTab />;

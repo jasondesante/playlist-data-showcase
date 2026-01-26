@@ -23,7 +23,7 @@ import { handleError } from '@/utils/errorHandling';
  * @returns {boolean} isGenerating - Whether character generation is in progress
  */
 export const useCharacterGenerator = () => {
-    const { addCharacter } = useCharacterStore();
+    const { addOrUpdateCharacter } = useCharacterStore();
     const [isGenerating, setIsGenerating] = useState(false);
 
     const generateCharacter = useCallback(async (audioProfile: AudioProfile, seed?: string): Promise<CharacterSheet | null> => {
@@ -44,7 +44,7 @@ export const useCharacterGenerator = () => {
                 class: character.class
             });
 
-            addCharacter(character);
+            addOrUpdateCharacter(character);
             return character;
         } catch (error) {
             handleError(error, 'CharacterGenerator');
@@ -52,7 +52,7 @@ export const useCharacterGenerator = () => {
         } finally {
             setIsGenerating(false);
         }
-    }, [addCharacter]);
+    }, [addOrUpdateCharacter]);
 
     return { generateCharacter, isGenerating };
 };
