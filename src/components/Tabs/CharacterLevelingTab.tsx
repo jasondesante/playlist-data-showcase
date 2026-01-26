@@ -7,7 +7,9 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { StatSelectionModal } from '../StatSelectionModal';
+import { StatStrategySelector } from '../ui/StatStrategySelector';
 import type { LevelUpDetail, Ability } from 'playlist-data-engine';
+import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
@@ -36,7 +38,7 @@ import './CharacterLevelingTab.css';
  */
 export function CharacterLevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
-  const { addXPFromSource, applyPendingStatIncrease } = useCharacterUpdater();
+  const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -45,6 +47,7 @@ export function CharacterLevelingTab() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
   const [showStatModal, setShowStatModal] = useState(false);
+  const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>('dnD5e_smart');
 
   const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
 
@@ -231,6 +234,14 @@ export function CharacterLevelingTab() {
     setShowStatModal(false);
   };
 
+  // Handler for strategy changes
+  const handleStrategyChange = (strategy: StatIncreaseStrategyType) => {
+    setStatStrategy(strategy);
+    updateStatStrategy(strategy);
+    console.log(`📊 Stat strategy changed to: ${strategy}`);
+    console.log(`This strategy will be used for future level-ups only.`);
+  };
+
   if (!activeChar) {
     return (
       <div className="leveling-tab">
@@ -340,6 +351,18 @@ export function CharacterLevelingTab() {
             );
           })}
         </div>
+      </Card>
+
+      {/* Stat Strategy Settings (Leveling Tab Only) */}
+      <Card variant="default" padding="md" className="leveling-strategy-card">
+        <StatStrategySelector
+          value={statStrategy}
+          onChange={handleStrategyChange}
+          disabled={!activeChar}
+        />
+        <p className="leveling-strategy-note">
+          Note: Changing strategy won't affect existing pending stat increases.
+        </p>
       </Card>
 
       {/* XP Addition Section */}

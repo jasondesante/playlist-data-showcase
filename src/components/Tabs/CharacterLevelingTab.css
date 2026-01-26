@@ -474,6 +474,20 @@
   background: hsl(var(--surface-2));
 }
 
+/* Stat Strategy Settings Card */
+.leveling-strategy-card {
+  background: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+.leveling-strategy-note {
+  margin: 0.75rem 0 0 0;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  line-height: 1.4;
+}
+
 .leveling-actions-title {
   font-size: 1rem;
   font-weight: 600;

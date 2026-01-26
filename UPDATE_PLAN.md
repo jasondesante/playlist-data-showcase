@@ -423,11 +423,11 @@ The playlist data engine has been significantly updated with new features around
 
 **Note:** Strategy is per-character and stored on the character sheet. The `useCharacterUpdater` hook from Task 4.5 exposes an `updateStatStrategy()` method for runtime changes.
 
-- [ ] 4.6.1 - Import `StatStrategySelector` component
-- [ ] 4.6.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
-- [ ] 4.6.3 - Add state for `statStrategy: StatIncreaseStrategyType` with default `'dnD5e_smart'`
-- [ ] 4.6.4 - Load strategy from active character (if set, otherwise use default) using `useEffect`
-- [ ] 4.6.5 - Add handler for strategy changes:
+- [x] 4.6.1 - Import `StatStrategySelector` component
+- [x] 4.6.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
+- [x] 4.6.3 - Add state for `statStrategy: StatIncreaseStrategyType` with default `'dnD5e_smart'`
+- [x] 4.6.4 - Load strategy from active character (if set, otherwise use default) using `useEffect`
+- [x] 4.6.5 - Add handler for strategy changes:
   ```typescript
   const handleStrategyChange = (strategy: StatIncreaseStrategyType) => {
       setStatStrategy(strategy);
@@ -438,14 +438,14 @@ The playlist data engine has been significantly updated with new features around
       }
   };
   ```
-- [ ] 4.6.6 - Render `StatStrategySelector` in settings area (Leveling Tab only)
-- [ ] 4.6.7 - Add info text: "Strategy is saved per-character and affects future level-ups"
-- [ ] 4.6.8 - Add note: "Changing strategy won't affect existing pending stat increases"
-- [ ] 4.6.9 - Test: Change strategy and verify it saves to character sheet
-- [ ] 4.6.10 - Test: Verify strategy persists after page refresh
-- [ ] 4.6.11 - Test: Verify `'dnD5e'` strategy creates pending stat increases
-- [ ] 4.6.12 - Test: Verify `'dnD5e_smart'` strategy applies stats automatically
-- [ ] 4.6.13 - Test: Verify other strategies apply correct stat patterns
+- [x] 4.6.6 - Render `StatStrategySelector` in settings area (Leveling Tab only)
+- [x] 4.6.7 - Add info text: "Strategy is saved per-character and affects future level-ups"
+- [x] 4.6.8 - Add note: "Changing strategy won't affect existing pending stat increases"
+- [x] 4.6.9 - Test: Change strategy and verify it saves to character sheet
+- [x] 4.6.10 - Test: Verify strategy persists after page refresh
+- [x] 4.6.11 - Test: Verify `'dnD5e'` strategy creates pending stat increases
+- [x] 4.6.12 - Test: Verify `'dnD5e_smart'` strategy applies stats automatically
+- [x] 4.6.13 - Test: Verify other strategies apply correct stat patterns
 
 ---
 
