@@ -188,9 +188,9 @@ const formatSessionTime = (timestamp: number) => {
 - - - Build passes
 
 **Task 3.3:** Update `getInitialStrategy()` in useCharacterUpdater
-- [ ] File: `src/hooks/useCharacterUpdater.ts`
-- [ ] Import `getCharacterStrategy` from characterStore
-- [ ] Update `getInitialStrategy()` to read from map first:
+- [x] File: `src/hooks/useCharacterUpdater.ts`
+- [x] Import `getCharacterStrategy` from characterStore
+- [x] Update `getInitialStrategy()` to read from map first:
   ```typescript
   const getInitialStrategy = (): StatIncreaseStrategyType => {
       const activeChar = getActiveCharacter();

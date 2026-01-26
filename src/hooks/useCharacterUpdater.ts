@@ -53,17 +53,23 @@ interface ApplyPendingStatIncreaseResult {
  * @returns {Function} updateStatStrategy - Updates the StatManager strategy for future level-ups
  */
 export const useCharacterUpdater = () => {
-    const { updateCharacter, getActiveCharacter } = useCharacterStore();
+    const { updateCharacter, getActiveCharacter, getCharacterStrategy } = useCharacterStore();
 
     // Determine initial stat strategy based on active character's game mode
     // Standard mode (stats capped at 20) uses manual stat selection ('dnD5e')
     // Uncapped mode uses smart auto-selection ('dnD5e_smart')
     const getInitialStrategy = (): StatIncreaseStrategyType => {
         const activeChar = getActiveCharacter();
-        if (activeChar?.gameMode === 'standard') {
-            return 'dnD5e'; // Manual mode for capped characters
+        if (!activeChar) return 'dnD5e_smart';
+
+        // Try persisted strategy from local state map first
+        const persistedStrategy = getCharacterStrategy(activeChar.seed);
+        if (persistedStrategy) {
+            return persistedStrategy;
         }
-        return 'dnD5e_smart'; // Auto mode for uncapped characters (default)
+
+        // Fallback to gameMode logic
+        return activeChar.gameMode === 'standard' ? 'dnD5e' : 'dnD5e_smart';
     };
 
     // Create a single StatManager instance outside of CharacterUpdater
