@@ -206,7 +206,7 @@ The app follows these structural rules:
 
 - **Engine**: `playlist-data-engine` is the single source of truth for game logic.
 - **UI Framework**: React 18 + TypeScript (strict mode).
-- **Styling**: TailwindCSS for utility styling; no custom CSS unless unavoidable.
+- **Styling**: CSS for utility styling; no tailwind CSS because we aren't pussies.
 - **State Management**: Zustand for cross-component state; no Redux or Context API.
 - **Storage**: LocalForage (IndexedDB wrapper); no raw IndexedDB or localStorage.
 

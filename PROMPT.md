@@ -1,12 +1,10 @@
-study CSS_OPTIMIZATION_PLAN.md and pick the most important thing to do. 
+study UPDATE_PLAN.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
 
-Your job is to clean up the code, keep all the functionality, but identify patterns. Optimize and refactor like a boss is your job.
-
-I might add new stuff to the CSS_OPTIMIZATION_PLAN.md file. If you see that, add new tasks based on those requests, add them to the list and cross out what I wrote to signify you added them as tasks.
-
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
+
+I might add new stuff to the UPDATE_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
 
 When you're done, say "done". When there's no tasks left for you to do then say "ITS TIME TO EAT"
 
@@ -14,10 +12,9 @@ When you're done, say "done". When there's no tasks left for you to do then say 
 IMPORTANT:
 - DO NOT DELETE node_modules. 
 - DO NOT DELETE package-lock.json. 
-- DO NOT USE TAILWIND OR CURSED CODE LIKE <p>. USE PURE CSS LIKE A REAL MAN.
+- DO NOT USE TAILWIND. USE PURE CSS LIKE A REAL MAN.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
-- NEVER push an update with syntax errors. 
 - ALWAYS verify that there aren't any random errors in the build.
 - update the implementation plan when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)

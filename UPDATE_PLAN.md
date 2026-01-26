@@ -1,0 +1,954 @@
+# Update Plan: Demo Project for New Playlist Data Engine Features
+
+**Created:** 2026-01-26
+**Status:** Ready for Implementation
+**Engine Version:** Latest (with game modes, stat management, addXP features)
+
+---
+
+## Executive Summary
+
+The playlist data engine has been significantly updated with new features around game modes, stat management, and XP handling. This demo project needs updates to showcase these new capabilities.
+
+**User Requirements:**
+- Add game mode selector UI (standard vs uncapped)
+- Add quest/boss completion simulation buttons for XP
+- Combat tab should reward XP to characters
+- Pending stat increases with "Apply" button (modal dialog for stat selection)
+- Add README.md and consolidate/optimize documentation
+- **NEW:** StatManager strategy selector (per-character, in Leveling Tab)
+- **NEW:** Pending badge always visible (not dismissible)
+
+---
+
+## Phase 1: Data Engine Integration Updates
+
+**Goal:** Update hooks and stores to use new data engine APIs properly.
+
+### Task 1.1: Update `useCharacterGenerator` Hook
+**File:** `src/hooks/useCharacterGenerator.ts`
+**Lines:** 35-39
+
+- [ ] 1.1.1 - Add `gameMode?: 'standard' | 'uncapped'` parameter to the `generateCharacter` function
+- [ ] 1.1.2 - Import `GameMode` and `CharacterGeneratorOptions` types from `'playlist-data-engine'`
+- [ ] 1.1.3 - Update the `CharacterGenerator.generate()` call to include options object:
+  ```typescript
+  const character = CharacterGenerator.generate(
+      seed || `seed-${Date.now()}`,
+      audioProfile,
+      `Hero-${Date.now().toString().slice(-4)}`,
+      { gameMode: gameMode || 'uncapped' }
+  );
+  ```
+- [ ] 1.1.4 - Update hook return type to include `GameMode` if needed
+- [ ] 1.1.5 - Add JSDoc comment explaining the `gameMode` parameter
+- [ ] 1.1.6 - Test: Generate a character with `gameMode: 'standard'` and verify stats cap at 20
+- [ ] 1.1.7 - Test: Generate a character with `gameMode: 'uncapped'` and verify stats can exceed 20
+
+---
+
+### Task 1.2: Add `addXP()` Method to `useCharacterUpdater` Hook
+**File:** `src/hooks/useCharacterUpdater.ts`
+
+- [ ] 1.2.1 - Import `Omit` and `CharacterUpdateResult` types from engine
+- [ ] 1.2.2 - Add new method `addXPFromSource` with signature:
+  ```typescript
+  addXPFromSource: (
+      character: CharacterSheet,
+      amount: number,
+      source?: string
+  ) => Omit<CharacterUpdateResult, 'masteredTrack' | 'masteryBonusXP'>
+  ```
+- [ ] 1.2.3 - Implement the method using `updater.addXP(character, amount, source)`
+- [ ] 1.2.4 - Update the returned character in the store
+- [ ] 1.2.5 - Return the full result including `levelUpDetails`
+- [ ] 1.2.6 - Add the method to the hook's return object
+- [ ] 1.2.7 - Add JSDoc comment explaining valid source strings: `'combat'`, `'quest'`, `'boss_defeat'`, `'exploration'`, `'crafting'`, `'social'`, etc.
+- [ ] 1.2.8 - Test: Call `addXPFromSource` with `'quest'` source and verify XP is added
+- [ ] 1.2.9 - Test: Verify `levelUpDetails` are returned when character levels up
+
+---
+
+### Task 1.3: Add `applyPendingStatIncrease` Method to Hook
+**File:** `src/hooks/useCharacterUpdater.ts`
+
+- [ ] 1.3.1 - Import `Ability` type from `'playlist-data-engine'`
+- [ ] 1.3.2 - Add new method `applyPendingStatIncrease` with signature:
+  ```typescript
+  applyPendingStatIncrease: (
+      character: CharacterSheet,
+      primaryStat: Ability,
+      secondaryStats?: Ability[]
+  ) => { character: CharacterSheet; statIncreases: Array<{...}>; remainingPending: number }
+  ```
+- [ ] 1.3.3 - Implement using `updater.applyPendingStatIncrease(character, primaryStat, secondaryStats)`
+- [ ] 1.3.4 - Update the returned character in the store
+- [ ] 1.3.5 - Return the full result with stat changes
+- [ ] 1.3.6 - Add the method to the hook's return object
+- [ ] 1.3.7 - Add JSDoc comment explaining D&D 5e stat increase rules (+2 to one OR +1 to two)
+- [ ] 1.3.8 - Test: Apply pending stat increase with single stat
+- [ ] 1.3.9 - Test: Apply pending stat increase with two stats
+
+---
+
+### Task 1.4: Update `characterStore` for New Properties
+**File:** `src/store/characterStore.ts`
+
+- [ ] 1.4.1 - Verify `CharacterSheet` type includes `pendingStatIncreases?: number`
+- [ ] 1.4.2 - Verify `CharacterSheet` type includes `gameMode?: GameMode`
+- [ ] 1.4.3 - Verify `CharacterSheet` type includes `statStrategy?: StatIncreaseStrategyType` (for per-character strategy)
+- [ ] 1.4.4 - Add `getPendingStatIncreaseCount(id: string): number` selector method
+- [ ] 1.4.5 - Add `hasPendingStatIncreases(id: string): boolean` selector method
+- [ ] 1.4.6 - Verify `persist` middleware configuration saves new properties
+- [ ] 1.4.7 - Test: Create a character and verify `gameMode` is persisted
+- [ ] 1.4.8 - Test: Level up a standard mode character and verify `pendingStatIncreases` is saved
+- [ ] 1.4.9 - Test: Change stat strategy and verify it's persisted to character sheet
+
+---
+
+## Phase 2: Game Mode Selection
+
+**Goal:** Add UI for users to choose between standard and uncapped game modes.
+
+### Task 2.1: Create Game Mode Toggle Component
+**New File:** `src/components/ui/GameModeToggle.tsx`
+
+- [ ] 2.1.1 - Create new component file with TypeScript
+- [ ] 2.1.2 - Define props interface:
+  ```typescript
+  interface GameModeToggleProps {
+      value: 'standard' | 'uncapped';
+      onChange: (mode: 'standard' | 'uncapped') => void;
+  }
+  ```
+- [ ] 2.1.3 - Import Lucide icons: `Shield`, `TrendingUp`, `Info`
+- [ ] 2.1.4 - Create radio button group with two options
+- [ ] 2.1.5 - Add labels:
+  - **Standard Mode**: "Stats cap at 20, manual selection"
+  - **Uncapped Mode**: "Unlimited stats, automatic increases"
+- [ ] 2.1.6 - Add info icon with tooltip explaining differences
+- [ ] 2.1.7 - Style with CSS (follow existing component patterns)
+- [ ] 2.1.8 - Add component to UI exports
+- [ ] 2.1.9 - Create `GameModeToggle.css` for component-specific styles
+- [ ] 2.1.10 - Test: Verify toggle switches between modes
+- [ ] 2.1.11 - Test: Verify `onChange` callback is called with correct value
+
+---
+
+### Task 2.2: Integrate Game Mode Toggle into Character Gen Tab
+**File:** `src/components/Tabs/CharacterGenTab.tsx`
+**Location:** Above the "Generate Character" button (around line 44)
+
+- [ ] 2.2.1 - Import `GameModeToggle` component
+- [ ] 2.2.2 - Add state for `gameMode` with default `'uncapped'`
+- [ ] 2.2.3 - Add handler for game mode changes
+- [ ] 2.2.4 - Pass `gameMode` to `useCharacterGenerator` hook
+- [ ] 2.2.5 - Render `GameModeToggle` component above generate button
+- [ ] 2.2.6 - Update `handleGenerate` to use current `gameMode` state
+- [ ] 2.2.7 - Test: Generate character with standard mode selected
+- [ ] 2.2.8 - Test: Generate character with uncapped mode selected
+- [ ] 2.2.9 - Test: Verify generated character has correct `gameMode` property
+
+---
+
+### Task 2.3: Add Game Mode Badge to Character Display
+**File:** `src/components/Tabs/CharacterGenTab.tsx`
+**Location:** In the character sheet header section
+
+- [ ] 2.3.1 - Find character display section (after line ~150)
+- [ ] 2.3.2 - Add conditional rendering for game mode badge
+- [ ] 2.3.3 - Create badge styles:
+  - **STANDARD**: Gray background, "STATS CAPPED @ 20"
+  - **UNCAPPED**: Purple background, "UNLIMITED PROGRESSION"
+- [ ] 2.3.4 - Add tooltip on hover with full description
+- [ ] 2.3.5 - Test: Verify badge shows correct mode for standard characters
+- [ ] 2.3.6 - Test: Verify badge shows correct mode for uncapped characters
+- [ ] 2.3.7 - Test: Verify tooltip displays on hover
+
+---
+
+### Task 2.4: Update Party Tab with Game Mode Badges
+**File:** `src/components/Tabs/PartyTab.tsx`
+
+- [ ] 2.4.1 - Find character card rendering logic
+- [ ] 2.4.2 - Add game mode badge to each character card
+- [ ] 2.4.3 - Position badge in corner of card (top-right)
+- [ ] 2.4.4 - Use same badge styles from CharacterGenTab
+- [ ] 2.4.5 - Add visual indicator for stat cap warning (standard mode near cap)
+- [ ] 2.4.6 - Test: Verify badges appear on all character cards
+- [ ] 2.4.7 - Test: Verify badges use correct colors for each mode
+
+---
+
+## Phase 3: XP Sources & Level-Up Improvements
+
+**Goal:** Showcase the new `addXP()` method with different XP sources and display detailed level-up information.
+
+### Task 3.1: Add XP Source Buttons to Leveling Tab
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+**Location:** Below existing manual XP buttons (around line 235)
+
+- [ ] 3.1.1 - Locate the manual XP input section
+- [ ] 3.1.2 - Create new section header: "XP Sources (Simulate Activities)"
+- [ ] 3.1.3 - Add "Complete Quest" button (+500 XP, source: `'quest'`)
+- [ ] 3.1.4 - Add "Defeat Boss" button (+5,000 XP, source: `'boss_defeat'`)
+- [ ] 3.1.5 - Add "Exploration" button (+250 XP, source: `'exploration'`)
+- [ ] 3.1.6 - Style buttons differently from manual XP buttons (maybe blue/green theme)
+- [ ] 3.1.7 - Add click handlers for each button using `addXPFromSource`
+- [ ] 3.1.8 - Add loading state while processing XP
+- [ ] 3.1.9 - Add success toast notification when XP is added
+- [ ] 3.1.10 - Test: Click each button and verify XP is added
+- [ ] 3.1.11 - Test: Verify correct source is used for each button
+- [ ] 3.1.12 - Test: Verify toast notifications appear
+
+---
+
+### Task 3.2: Create Level-Up Detail Modal Component
+**New File:** `src/components/LevelUpDetailModal.tsx`
+
+- [ ] 3.2.1 - Create new component file with TypeScript
+- [ ] 3.2.2 - Define props interface:
+  ```typescript
+  interface LevelUpDetailModalProps {
+      levelUpDetails: LevelUpDetail[];
+      isOpen: boolean;
+      onClose: () => void;
+  }
+  ```
+- [ ] 3.2.3 - Import types: `LevelUpDetail` from `'playlist-data-engine'`
+- [ ] 3.2.4 - Import icons: `Heart`, `Shield`, `TrendingUp`, `Zap`, `Star`
+- [ ] 3.2.5 - Create modal overlay with backdrop blur
+- [ ] 3.2.6 - Add celebration animation on open (confetti or similar, use existing patterns if available)
+- [ ] 3.2.7 - Display "LEVEL UP!" header with emoji
+- [ ] 3.2.8 - Loop through `levelUpDetails` array and display each:
+  - [ ] 3.2.8.1 - Level range: "Level 3 → Level 4"
+  - [ ] 3.2.8.2 - HP increase with Heart icon: "HP: +7 (new max: 32)"
+  - [ ] 3.2.8.3 - Proficiency bonus with Shield icon (if increased)
+  - [ ] 3.2.8.4 - Stat increases with TrendingUp icon (if any)
+  - [ ] 3.2.8.5 - New features with Star icon (if any)
+- [ ] 3.2.9 - Add "Continue" button to close modal
+- [ ] 3.2.10 - Style with CSS (purple/gold theme for celebration)
+- [ ] 3.2.11 - Test: Show modal for single level-up
+- [ ] 3.2.12 - Test: Show modal for multi-level-up (boss defeat)
+- [ ] 3.2.13 - Test: Verify all details display correctly
+
+---
+
+### Task 3.3: Integrate Level-Up Detail Modal into Leveling Tab
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+
+- [ ] 3.3.1 - Import `LevelUpDetailModal` component
+- [ ] 3.3.2 - Add state for `showLevelUpModal: boolean`
+- [ ] 3.3.3 - Add state for `levelUpDetails: LevelUpDetail[]`
+- [ ] 3.3.4 - Update `addXP` function to capture `levelUpDetails` from result
+- [ ] 3.3.5 - When `leveledUp` is true, set modal state and details
+- [ ] 3.3.6 - Render `LevelUpDetailModal` component
+- [ ] 3.3.7 - Pass `isOpen`, `levelUpDetails`, and `onClose` props
+- [ ] 3.3.8 - Test: Trigger level-up and verify modal appears
+- [ ] 3.3.9 - Test: Verify details are accurate (HP, stats, features)
+- [ ] 3.3.10 - Test: Close modal and verify state resets
+
+---
+
+### Task 3.4: Award XP in Combat Simulator
+**File:** `src/components/Tabs/CombatSimulatorTab.tsx`
+**Location:** After victory overlay (around line 774)
+
+- [ ] 3.4.1 - Import `useCharacterUpdater` hook
+- [ ] 3.4.2 - Import `useCharacterStore` to get active character
+- [ ] 3.4.3 - Add `useEffect` that triggers when `combatResult` changes
+- [ ] 3.4.4 - Check if `combatResult` exists and active character exists
+- [ ] 3.4.5 - Call `addXPFromSource(activeChar, combatResult.xpAwarded, 'combat')`
+- [ ] 3.4.6 - Add success toast: "Character received {XP} XP from combat!"
+- [ ] 3.4.7 - If `leveledUp`, show notification or trigger level-up modal
+- [ ] 3.4.8 - Add loading state during XP award
+- [ ] 3.4.9 - Update victory overlay to show "XP Awarded to: {Character Name}"
+- [ ] 3.4.10 - Test: Complete combat and verify XP is awarded
+- [ ] 3.4.11 - Test: Verify combat XP source is tracked correctly
+- [ ] 3.4.12 - Test: Verify level-up modal appears if threshold reached
+
+---
+
+## Phase 4: Stat Management UI
+
+**Goal:** Add UI for managing pending stat increases in standard mode.
+
+### Task 4.1: Add Pending Stat Increases Badge
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+**Location:** In character stats header section
+
+- [ ] 4.1.1 - Import helper functions from characterStore or create local:
+  - `getPendingStatIncreaseCount(character)`
+  - `hasPendingStatIncreases(character)`
+- [ ] 4.1.2 - Add conditional rendering: only show if `pendingStatIncreases > 0`
+- [ ] 4.1.3 - Create warning badge with yellow/orange background and pulse animation
+- [ ] 4.1.4 - Display text: "⚠️ Pending Stat Increases: {count}"
+- [ ] 4.1.5 - Add "Apply Stat Increases" button below badge
+- [ ] 4.1.6 - Style button to stand out (primary color, pulse animation)
+- [ ] 4.1.7 - Only show badge/button for `gameMode === 'standard'`
+- [ ] 4.1.8 - Add tooltip explaining pending stat increases
+- [ ] 4.1.9 - **Badge is always visible when pending (not dismissible)**
+- [ ] 4.1.10 - Test: Level up standard mode character to level 4 and verify badge appears
+- [ ] 4.1.11 - Test: Verify badge count is correct
+- [ ] 4.1.12 - Test: Verify uncapped mode doesn't show badge
+
+---
+
+### Task 4.2: Create Stat Selection Modal Component
+**New File:** `src/components/StatSelectionModal.tsx`
+
+**Note:** User chose modal dialog pattern for stat selection interface.
+
+- [ ] 4.2.1 - Create new component file with TypeScript
+- [ ] 4.2.2 - Define props interface:
+  ```typescript
+  interface StatSelectionModalProps {
+      isOpen: boolean;
+      pendingCount: number;
+      onApply: (primaryStat: Ability, secondaryStats?: Ability[]) => void;
+      onCancel: () => void;
+  }
+  ```
+- [ ] 4.2.3 - Import `Ability` type from `'playlist-data-engine'`
+- [ ] 4.2.4 - Create modal with backdrop
+- [ ] 4.2.5 - Display header: "Apply Stat Increases"
+- [ ] 4.2.6 - Display info text: "You have {pendingCount} pending stat increases"
+- [ ] 4.2.7 - Create two option sections:
+  - [ ] 4.2.7.1 - **Option 1**: "+2 to one ability"
+    - [ ] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
+    - [ ] Single selection mode
+  - [ ] 4.2.7.2 - **Option 2**: "+1 to two abilities"
+    - [ ] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
+    - [ ] Multi-selection mode (max 2)
+- [ ] 4.2.8 - Add state for selected stats
+- [ ] 4.2.9 - Add state for selection mode (single vs double)
+- [ ] 4.2.10 - Add validation: Show error if invalid selection
+- [ ] 4.2.11 - Add "Cancel" button (closes modal without applying)
+- [ ] 4.2.12 - Add "Apply Increases" button (disabled if invalid selection)
+- [ ] 4.2.13 - Style buttons with hover effects and selection states
+- [ ] 4.2.14 - Add current stat values next to each button for reference
+- [ ] 4.2.15 - Test: Open modal and verify UI displays correctly
+- [ ] 4.2.16 - Test: Select single stat and verify validation passes
+- [ ] 4.2.17 - Test: Select two stats and verify validation passes
+- [ ] 4.2.18 - Test: Select 3 stats and verify validation fails
+- [ ] 4.2.19 - Test: Cancel and verify no changes applied
+- [ ] 4.2.20 - Test: Apply and verify stats are increased
+
+---
+
+### Task 4.3: Integrate Stat Selection Modal into Leveling Tab
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+
+- [ ] 4.3.1 - Import `StatSelectionModal` component
+- [ ] 4.3.2 - Import `Ability` type from `'playlist-data-engine'`
+- [ ] 4.3.3 - Add state for `showStatModal: boolean`
+- [ ] 4.3.4 - Add handler for opening stat modal (from "Apply Stat Increases" button)
+- [ ] 4.3.5 - Add handler for applying stat increases:
+  ```typescript
+  const handleApplyStats = (primary: Ability, secondary?: Ability[]) => {
+      const result = applyPendingStatIncrease(activeChar, primary, secondary);
+      // Show success notification
+      // Update character in store
+  }
+  ```
+- [ ] 4.3.6 - Add handler for canceling stat modal
+- [ ] 4.3.7 - Render `StatSelectionModal` component with proper props
+- [ ] 4.3.8 - Pass `pendingCount` from `character.pendingStatIncreases`
+- [ ] 4.3.9 - Test: Click "Apply Stat Increases" and verify modal opens
+- [ ] 4.3.10 - Test: Apply stats and verify character is updated
+- [ ] 4.3.11 - Test: Verify pending count decreases after applying
+- [ ] 4.3.12 - Test: Verify success notification shows stat changes
+
+---
+
+### Task 4.4: Add StatManager Strategy Selector
+**New File:** `src/components/ui/StatStrategySelector.tsx`
+
+**Note:** StatManager strategy determines how stats are automatically increased on level-up. Different strategies suit different playstyles.
+
+- [ ] 4.4.1 - Create new component file with TypeScript
+- [ ] 4.4.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
+- [ ] 4.4.3 - Define props interface:
+  ```typescript
+  interface StatStrategySelectorProps {
+      value: StatIncreaseStrategyType;
+      onChange: (strategy: StatIncreaseStrategyType) => void;
+      disabled?: boolean;
+  }
+  ```
+- [ ] 4.4.4 - Import Lucide icons: `Settings`, `Zap`, `Shield`, `TrendingUp`
+- [ ] 4.4.5 - Create dropdown/select component with options:
+  - [ ] **Manual D&D 5e** (`'dnD5e'`) - 2-step level-up, you choose stats manually
+  - [ ] **Smart Auto** (`'dnD5e_smart'`) - Intelligently picks best stats based on class
+  - [ ] **Balanced** (`'balanced'`) - +1 to two lowest stats each time
+  - [ ] **Primary Only** (`'primary_only'`) - Always boosts class's primary stat
+  - [ ] **Random** (`'random'`) - Random stat selection each level-up
+- [ ] 4.4.6 - Add descriptions/tooltip for each strategy:
+  - [ ] Manual: "Standard D&D 5e - choose +2 to one stat or +1 to two"
+  - [ ] Smart: "AI picks optimal stats for your class automatically"
+  - [ ] Balanced: "Distributes evenly across your lowest stats"
+  - [ ] Primary: "Always maximizes your class's main ability"
+  - [ ] Random: "Rolls the dice for unpredictable builds"
+- [ ] 4.4.7 - Add visual indicator showing currently active strategy
+- [ ] 4.4.8 - Style with CSS
+- [ ] 4.4.9 - Add to UI exports
+- [ ] 4.4.10 - Test: Verify dropdown shows all 5 strategies
+- [ ] 4.4.11 - Test: Verify changing strategy updates `CharacterUpdater` configuration
+
+---
+
+### Task 4.5: Update `useCharacterUpdater` Hook for StatManager Strategy
+**File:** `src/hooks/useCharacterUpdater.ts`
+
+**Note:** The `StatManager` class supports runtime strategy changes via `updateConfig()`. The hook should expose a method to change strategy without recreating the `CharacterUpdater` instance.
+
+- [ ] 4.5.1 - Import `StatIncreaseStrategyType` and `StatManager` from `'playlist-data-engine'`
+- [ ] 4.5.2 - Create `StatManager` instance in hook (outside useMemo, single instance):
+  ```typescript
+  const statManager = new StatManager({ strategy: 'dnD5e_smart' });
+  ```
+- [ ] 4.5.3 - Pass `statManager` to `CharacterUpdater` constructor (existing code, verify it's there)
+- [ ] 4.5.4 - Add method to hook return: `updateStatStrategy: (strategy: StatIncreaseStrategyType) => void`
+- [ ] 4.5.5 - Implement method to call `statManager.updateConfig({ strategy })`
+- [ ] 4.5.6 - Add JSDoc explaining that strategy changes affect future level-ups only
+- [ ] 4.5.7 - Test: Verify hook works with default strategy
+- [ ] 4.5.8 - Test: Call `updateStatStrategy()` and verify subsequent level-ups use new strategy
+- [ ] 4.5.9 - Test: Verify strategy change doesn't break existing methods or pending stat increases
+
+---
+
+### Task 4.6: Integrate StatStrategySelector UI into Leveling Tab
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+**Location:** In settings section near top of tab
+
+**Note:** Strategy is per-character and stored on the character sheet. The `useCharacterUpdater` hook from Task 4.5 exposes an `updateStatStrategy()` method for runtime changes.
+
+- [ ] 4.6.1 - Import `StatStrategySelector` component
+- [ ] 4.6.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
+- [ ] 4.6.3 - Add state for `statStrategy: StatIncreaseStrategyType` with default `'dnD5e_smart'`
+- [ ] 4.6.4 - Load strategy from active character (if set, otherwise use default) using `useEffect`
+- [ ] 4.6.5 - Add handler for strategy changes:
+  ```typescript
+  const handleStrategyChange = (strategy: StatIncreaseStrategyType) => {
+      setStatStrategy(strategy);
+      updateStatStrategy(strategy); // Call hook method to update StatManager
+      // Update the active character's statStrategy property
+      if (activeChar) {
+          updateCharacter({ ...activeChar, statStrategy: strategy });
+      }
+  };
+  ```
+- [ ] 4.6.6 - Render `StatStrategySelector` in settings area (Leveling Tab only)
+- [ ] 4.6.7 - Add info text: "Strategy is saved per-character and affects future level-ups"
+- [ ] 4.6.8 - Add note: "Changing strategy won't affect existing pending stat increases"
+- [ ] 4.6.9 - Test: Change strategy and verify it saves to character sheet
+- [ ] 4.6.10 - Test: Verify strategy persists after page refresh
+- [ ] 4.6.11 - Test: Verify `'dnD5e'` strategy creates pending stat increases
+- [ ] 4.6.12 - Test: Verify `'dnD5e_smart'` strategy applies stats automatically
+- [ ] 4.6.13 - Test: Verify other strategies apply correct stat patterns
+
+---
+
+### Task 4.7: Add Auto-Apply Notification for Uncapped Mode
+**File:** `src/components/Tabs/CharacterLevelingTab.tsx`
+
+- [ ] 4.7.1 - Add check for `character.gameMode === 'uncapped'` in level-up handler
+- [ ] 4.7.2 - When uncapped mode levels up with stat increases, show notification
+- [ ] 4.7.3 - Format notification: "📊 Stats auto-increased: {STAT} +{delta} ({old} → {new})"
+- [ ] 4.7.4 - For multiple stats, show all in list format
+- [ ] 4.7.5 - Use different toast style (blue instead of yellow)
+- [ ] 4.7.6 - Test: Level up uncapped character and verify notification appears
+- [ ] 4.7.7 - Test: Verify notification shows correct stat values
+- [ ] 4.7.8 - Test: Verify no pending stat badge appears for uncapped mode
+
+---
+
+## Phase 5: Create New Documentation
+
+**Goal:** Create new documentation files and structure.
+
+### Task 5.1: Create Root README.md
+**New File:** `/README.md`
+
+- [ ] 5.1.1 - Create new README.md file at root
+- [ ] 5.1.2 - Add project title and description
+- [ ] 5.1.3 - Add "Quick Start" section with 3 steps:
+  - [ ] Clone and install: `npm install`
+  - [ ] Start dev server: `npm run dev`
+  - [ ] Open browser to localhost:5173
+- [ ] 5.1.4 - Add "What This Demo Showcases" section with feature list:
+  - [ ] Playlist parsing from Arweave
+  - [ ] Audio analysis and character generation
+  - [ ] D&D 5e combat simulation
+  - [ ] Environmental sensor integration
+  - [ ] XP system with multipliers
+  - [ ] **NEW:** Game mode selection (standard/uncapped)
+  - [ ] **NEW:** Multiple XP sources (combat, quests, exploration)
+  - [ ] **NEW:** Detailed level-up breakdowns
+  - [ ] **NEW:** Stat management system
+- [ ] 5.1.5 - Add "Documentation" section with links:
+  - [ ] [ARCHITECTURE.md](./ARCHITECTURE.md)
+  - [ ] [CONTRIBUTING.md](./CONTRIBUTING.md)
+  - [ ] [docs/](./docs/) (after consolidation)
+- [ ] 5.1.6 - Add "Data Engine Docs" section:
+  - [ ] [Data Engine Reference](./DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+  - [ ] [Usage Examples](./DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- [ ] 5.1.7 - Add "Quick Tour" section listing all tabs
+- [ ] 5.1.8 - Add "License" section (MIT)
+- [ ] 5.1.9 - Add badges: TypeScript, React, Vite
+- [ ] 5.1.10 - Test: Verify README renders correctly on GitHub
+- [ ] 5.1.11 - Test: Verify all links work
+- [ ] 5.1.12 - Test: Verify formatting is clean
+
+---
+
+### Task 5.2: Create Documentation Directory Structure
+**Directory:** `/docs/`
+
+- [ ] 5.2.1 - Create `/docs/` directory at root
+- [ ] 5.2.2 - Create `/docs/architecture/` directory
+- [ ] 5.2.3 - Create `/docs/development/` directory
+- [ ] 5.2.4 - Create `/docs/development/testing/` directory
+- [ ] 5.2.5 - Create `/docs/design/` directory
+- [ ] 5.2.6 - Create `/docs/engine/` directory
+- [ ] 5.2.7 - Verify all directories are created
+
+---
+
+### Task 5.3: Create Documentation Index
+**New File:** `/docs/index.md`
+
+- [ ] 5.3.1 - Create `/docs/index.md` file
+- [ ] 5.3.2 - Add "# Documentation" header
+- [ ] 5.3.3 - Add "## Getting Started" section:
+  - [ ] [Quick Start](./getting-started.md) - 5-minute walkthrough
+  - [ ] [Architecture Overview](./architecture/overview.md) - System design
+- [ ] 5.3.4 - Add "## Development" section:
+  - [ ] [Contributing Guide](./development/contributing.md) - PR workflow, coding standards
+  - [ ] [Debugging Guide](./development/debugging.md) - Troubleshooting
+- [ ] 5.3.5 - Add "## Testing" section:
+  - [ ] [Smoke Tests](./development/testing/smoke-tests.md)
+  - [ ] [Determinism Testing](./development/testing/determinism.md)
+  - [ ] [Performance Testing](./development/testing/performance.md)
+  - [ ] [Mobile Sensors](./development/testing/mobile-sensors.md)
+- [ ] 5.3.6 - Add "## Design" section:
+  - [ ] [CSS Optimization](./design/css-optimization.md) - CSS architecture plan
+  - [ ] [Bug Tracker](./design/bugs-to-fix.md) - Known issues
+- [ ] 5.3.7 - Add "## Data Engine" section:
+  - [ ] [API Reference](./engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+  - [ ] [Usage Examples](./engine/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- [ ] 5.3.8 - Test: Verify all links resolve correctly
+
+---
+
+### Task 5.4: Create Quick Start Guide
+**New File:** `/docs/getting-started.md`
+
+- [ ] 5.4.1 - Create `/docs/getting-started.md` file
+- [ ] 5.4.2 - Add "# Quick Start Guide" header
+- [ ] 5.4.3 - Add "## Prerequisites" section (Node.js 18+, npm)
+- [ ] 5.4.4 - Add "## Installation" section with commands
+- [ ] 5.4.5 - Add "## Running the Demo" section
+- [ ] 5.4.6 - Add "## 5-Minute Walkthrough" section:
+  - [ ] Step 1: Load a playlist
+  - [ ] Step 2: Analyze audio
+  - [ ] Step 3: Generate a character
+  - [ ] Step 4: Run a combat
+  - [ ] Step 5: Check level-up details
+- [ ] 5.4.7 - Add "## Next Steps" section linking to full docs
+- [ ] 5.4.8 - Test: Follow the guide from scratch
+
+---
+
+## Phase 6: Testing & Verification
+
+**Goal:** Ensure all new features work correctly.
+
+### Task 6.1: Test Game Mode Selection
+**Location:** CharacterGenTab and PartyTab
+
+- [ ] 6.1.1 - Test: Generate character in standard mode
+  - [ ] Verify `gameMode` property is `'standard'`
+  - [ ] Verify stats initialize with cap of 20
+  - [ ] Verify character sheet displays correctly
+- [ ] 6.1.2 - Test: Generate character in uncapped mode
+  - [ ] Verify `gameMode` property is `'uncapped'`
+  - [ ] Verify stats can exceed 20
+  - [ ] Verify character sheet displays correctly
+- [ ] 6.1.3 - Test: Toggle between modes and regenerate
+  - [ ] Verify different modes produce different characters
+- [ ] 6.1.4 - Test: Verify game mode badges display correctly
+  - [ ] Standard badge shows on standard characters
+  - [ ] Uncapped badge shows on uncapped characters
+- [ ] 6.1.5 - Test: Verify party tab shows badges on all cards
+- [ ] 6.1.6 - Test: Verify tooltips explain mode differences
+
+---
+
+### Task 6.2: Test XP Sources
+**Location:** CharacterLevelingTab and CombatSimulatorTab
+
+- [ ] 6.2.1 - Test: Quest completion button
+  - [ ] Click "Complete Quest" (+500 XP)
+  - [ ] Verify XP is added to character
+  - [ ] Verify source is tracked as `'quest'`
+  - [ ] Verify success notification appears
+- [ ] 6.2.2 - Test: Boss defeat button
+  - [ ] Click "Defeat Boss" (+5,000 XP)
+  - [ ] Verify XP is added to character
+  - [ ] Verify source is tracked as `'boss_defeat'`
+  - [ ] Verify multi-level-up is handled correctly
+  - [ ] Verify level-up detail modal shows all levels
+- [ ] 6.2.3 - Test: Exploration button
+  - [ ] Click "Exploration" (+250 XP)
+  - [ ] Verify XP is added to character
+  - [ ] Verify source is tracked as `'exploration'`
+- [ ] 6.2.4 - Test: Combat XP award
+  - [ ] Complete a combat in Combat Simulator
+  - [ ] Verify XP is awarded to active character
+  - [ ] Verify source is tracked as `'combat'`
+  - [ ] Verify notification shows XP amount
+- [ ] 6.2.5 - Test: XP threshold tracking
+  - [ ] Add XP incrementally and verify thresholds work
+  - [ ] Verify `xp.next_level` updates correctly
+
+---
+
+### Task 6.3: Test Level-Up Details
+**Location:** LevelUpDetailModal
+
+- [ ] 6.3.1 - Test: Single level-up
+  - [ ] Trigger level-up (e.g., level 3 → 4)
+  - [ ] Verify modal appears
+  - [ ] Verify HP increase is displayed correctly
+  - [ ] Verify proficiency bonus is displayed (if increased)
+  - [ ] Verify stat increases are displayed (if any)
+  - [ ] Verify new features are listed (if any)
+- [ ] 6.3.2 - Test: Multi-level-up
+  - [ ] Add large XP amount (e.g., boss defeat)
+  - [ ] Verify modal shows all level-ups
+  - [ ] Verify each level-up has correct details
+- [ ] 6.3.3 - Test: HP increases every level
+  - [ ] Level up multiple times
+  - [ ] Verify HP increases each time (not just at stat increase levels)
+- [ ] 6.3.4 - Test: Stat increases only at correct levels (standard mode)
+  - [ ] Level to 4, 8, 12, 16, 19
+  - [ ] Verify pending stat increases appear
+  - [ ] Level to other levels (5, 6, 7, etc.)
+  - [ ] Verify no stat increases at those levels
+
+---
+
+### Task 6.4: Test Stat Management
+**Location:** StatSelectionModal
+
+- [ ] 6.4.1 - Test: Pending stat badge appears
+  - [ ] Level standard mode character to 4
+  - [ ] Verify "Pending Stat Increases: 1" badge appears
+  - [ ] Verify "Apply Stat Increases" button is shown
+- [ ] 6.4.2 - Test: Stat selection modal opens
+  - [ ] Click "Apply Stat Increases" button
+  - [ ] Verify modal appears with correct pending count
+  - [ ] Verify all 6 stat buttons are shown
+  - [ ] Verify current stat values are displayed
+- [ ] 6.4.3 - Test: Single stat selection
+  - [ ] Click one stat button (e.g., STR)
+  - [ ] Verify "Apply Increases" button is enabled
+  - [ ] Click apply
+  - [ ] Verify stat increases by +2
+  - [ ] Verify pending count decreases
+  - [ ] Verify success notification appears
+- [ ] 6.4.4 - Test: Two stat selection
+  - [ ] Select "Option 2" mode
+  - [ ] Click two stat buttons (e.g., STR and DEX)
+  - [ ] Verify "Apply Increases" button is enabled
+  - [ ] Click apply
+  - [ ] Verify both stats increase by +1
+  - [ ] Verify pending count decreases
+- [ ] 6.4.5 - Test: Invalid selection handling
+  - [ ] Try to apply with 0 stats selected
+  - [ ] Verify error message appears
+  - [ ] Try to select 3 stats in double mode
+  - [ ] Verify third selection is rejected or shows error
+- [ ] 6.4.6 - Test: Cancel functionality
+  - [ ] Open modal
+  - [ ] Select stats
+  - [ ] Click cancel
+  - [ ] Verify modal closes
+  - [ ] Verify no changes applied
+  - [ ] Verify pending count is unchanged
+- [ ] 6.4.7 - Test: Uncapped mode auto-applies
+  - [ ] Level uncapped character
+  - [ ] Verify no pending stat badge appears
+  - [ ] Verify auto-apply notification appears
+  - [ ] Verify stats are increased automatically
+
+---
+
+### Task 6.5: Test Persistence
+**Location:** All tabs with character data
+
+- [ ] 6.5.1 - Test: Character persists game mode
+  - [ ] Generate character in standard mode
+  - [ ] Refresh page
+  - [ ] Verify character still has `gameMode: 'standard'`
+- [ ] 6.5.2 - Test: Pending stats persist
+  - [ ] Level up and gain pending stat increases
+  - [ ] Refresh page
+  - [ ] Verify `pendingStatIncreases` count is preserved
+- [ ] 6.5.3 - Test: XP persists
+  - [ ] Add XP from various sources
+  - [ ] Refresh page
+  - [ ] Verify XP total is preserved
+  - [ ] Verify XP source history (if tracked)
+
+---
+
+### Task 6.6: Test Documentation
+**Location:** All documentation files
+
+- [ ] 6.6.1 - Test: README.md
+  - [ ] Verify file exists at root
+  - [ ] Verify all links work
+  - [ ] Verify formatting is clean
+  - [ ] Verify badges display correctly
+- [ ] 6.6.2 - Test: Documentation index
+  - [ ] Open `/docs/index.md`
+  - [ ] Verify all sections are present
+  - [ ] Verify all links resolve correctly
+- [ ] 6.6.3 - Test: Moved documents
+  - [ ] Open each moved document
+  - [ ] Verify content is intact
+  - [ ] Verify internal links work
+  - [ ] Verify navigation footer works
+- [ ] 6.6.4 - Test: Cross-references
+  - [ ] Search for broken links
+  - [ ] Verify all relative paths are correct
+  - [ ] Verify anchor links work
+
+---
+
+### Task 6.7: Edge Cases and Error Handling
+
+- [ ] 6.7.1 - Test: Generate character without audio profile
+  - [ ] Verify appropriate error/warning
+- [ ] 6.7.2 - Test: Add XP with no active character
+  - [ ] Verify buttons are disabled or show error
+- [ ] 6.7.3 - Test: Level up beyond level 20 (uncapped)
+  - [ ] Verify no errors
+  - [ ] Verify XP thresholds continue
+- [ ] 6.7.4 - Test: Apply stat increases with no pending
+  - [ ] Verify button is disabled
+- [ ] 6.7.5 - Test: Rapid clicking of XP buttons
+  - [ ] Verify no race conditions
+  - [ ] Verify all XP is applied correctly
+
+---
+
+## Phase 7: Documentation Consolidation
+
+**Goal:** Consolidate and reorganize documentation for better structure and navigation.
+
+### Task 7.1: Move Architecture Documents
+**Move:** `ARCHITECTURE.md` → `/docs/architecture/overview.md`
+
+- [ ] 7.1.1 - Copy content of `ARCHITECTURE.md`
+- [ ] 7.1.2 - Create `/docs/architecture/overview.md` with copied content
+- [ ] 7.1.3 - Update internal links in new file to point to new paths
+- [ ] 7.1.4 - Add navigation footer: "Back to [Documentation Index](../index.md)"
+- [ ] 7.1.5 - Keep original `ARCHITECTURE.md` as redirect (add: "This has moved to...")
+- [ ] 7.1.6 - Test: Verify new file renders correctly
+- [ ] 7.1.7 - Test: Verify all internal links work
+
+---
+
+### Task 7.2: Move Development Documents
+**Move:** `CONTRIBUTING.md` and `DEBUGGING.md`
+
+- [ ] 7.2.1 - Move `CONTRIBUTING.md` to `/docs/development/contributing.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+  - [ ] Test: Verify file renders correctly
+- [ ] 7.2.2 - Move `DEBUGGING.md` to `/docs/development/debugging.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+  - [ ] Test: Verify file renders correctly
+- [ ] 7.2.3 - Keep original files as redirects
+
+---
+
+### Task 7.3: Move Test Documents
+**Move:** `DESIGN_DOCS/*.md` → `/docs/development/testing/`
+
+- [ ] 7.3.1 - Move `DESIGN_DOCS/SMOKE_TEST_CHECKLIST.md` → `/docs/development/testing/smoke-tests.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+- [ ] 7.3.2 - Move `DESIGN_DOCS/DETERMINISM_TESTING.md` → `/docs/development/testing/determinism.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+- [ ] 7.3.3 - Move `DESIGN_DOCS/PERFORMANCE_TESTING.md` → `/docs/development/testing/performance.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+- [ ] 7.3.4 - Move `DESIGN_DOCS/IOS_ANDROID_SENSOR_TESTING.md` → `/docs/development/testing/mobile-sensors.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+- [ ] 7.3.5 - Move `DESIGN_DOCS/BUGS_TO_FIX.md` → `/docs/design/bugs-to-fix.md`
+  - [ ] Copy content
+  - [ ] Update internal links
+  - [ ] Add navigation footer
+- [ ] 7.3.6 - Test: Verify all moved files render correctly
+
+---
+
+### Task 7.4: Update All Cross-References
+**Files:** All markdown files
+
+- [ ] 7.4.1 - Search for all references to `../ARCHITECTURE.md` and update to `../../docs/architecture/overview.md`
+- [ ] 7.4.2 - Search for all references to `../CONTRIBUTING.md` and update to `../../docs/development/contributing.md`
+- [ ] 7.4.3 - Search for all references to `../DEBUGGING.md` and update to `../../docs/development/debugging.md`
+- [ ] 7.4.4 - Update relative paths in all moved files
+- [ ] 7.4.5 - Add navigation footer to all docs:
+  ```markdown
+  ---
+  **Back to [Documentation Index](../index.md)**
+  ```
+- [ ] 7.4.6 - Test: Verify all cross-references work
+- [ ] 7.4.7 - Test: Verify navigation footers work
+
+---
+
+### Task 7.5: Consolidate IMPLEMENTATION_STATUS.md
+**File:** `IMPLEMENTATION_STATUS.md`
+
+**Goal:** Review and consolidate - keep valuable high-level tracking, remove redundant details.
+
+- [ ] 7.5.1 - Read current `IMPLEMENTATION_STATUS.md` to understand what information it contains
+- [ ] 7.5.2 - Identify **valuable information to keep**:
+  - [ ] High-level feature completion status (completed vs pending features)
+  - [ ] Major project milestones
+  - [ ] Known issues/bugs that need tracking
+  - [ ] Links to detailed plans (like this UPDATE_PLAN.md)
+- [ ] 7.5.3 - Identify **redundant information to remove**:
+  - [ ] Detailed checkbox lists that duplicate UPDATE_PLAN.md
+  - [ ] Over-detailed task breakdowns
+  - [ ] Information that exists in other documentation files
+- [ ] 7.5.4 - Add new section: "## Data Engine Update (2026-01)"
+  - [ ] Brief summary: "Adding game mode selection, XP sources, stat management UI, and documentation overhaul"
+  - [ ] Link to: [UPDATE_PLAN.md](./UPDATE_PLAN.md) for full task breakdown
+  - [ ] Status: "In Planning" (single status, not 200 checkboxes)
+- [ ] 7.5.5 - Clean up existing sections: Remove excessive detail, keep high-level status
+- [ ] 7.5.6 - Test: Verify file is concise but still useful for tracking project status
+- [ ] 7.5.7 - Alternative: If file is mostly redundant, move key info to README.md and delete file
+
+---
+
+### Task 7.6: Identify and Delete Other Obsolete Documentation
+**Goal:** Remove truly obsolete or redundant documentation files.
+
+- [ ] 7.6.1 - Review all markdown files at root level (excluding IMPLEMENTATION_STATUS.md - handled in 7.5)
+- [ ] 7.6.2 - Identify files that are:
+  - [ ] Outdated (content no longer relevant)
+  - [ ] Superseded (replaced by newer docs)
+  - [ ] Redundant (duplicate information)
+  - [ ] **Contain wrong info (e.g., Tailwind mentions, incorrect tech stack references)**
+- [ ] 7.6.3 - List candidate files for deletion
+- [ ] 7.6.4 - Confirm which files can be safely deleted
+- [ ] 7.6.5 - Delete confirmed obsolete files
+- [ ] 7.6.6 - Update any remaining references to deleted files
+- [ ] 7.6.7 - Test: Verify no broken links remain
+
+---
+
+### Task 7.7: Final Documentation Review
+**Goal:** Ensure documentation is clean, organized, and navigable.
+
+- [ ] 7.7.1 - Verify root level has only README.md and redirect stubs
+- [ ] 7.7.2 - Verify `/docs/` structure is clean and organized
+- [ ] 7.7.3 - Verify all docs have navigation footers
+- [ ] 7.7.4 - Verify `docs/index.md` is comprehensive
+- [ ] 7.7.5 - Test: Navigate through all docs from index
+- [ ] 7.7.6 - Test: Verify no broken links exist
+- [ ] 7.7.7 - Count final documentation files and report result
+
+---
+
+## Quick Reference Files
+
+### Files to Modify
+
+| File | Changes | Reference Lines |
+|------|---------|-----------------|
+| `src/hooks/useCharacterGenerator.ts` | Add gameMode parameter | 35-39 |
+| `src/hooks/useCharacterUpdater.ts` | Add addXP() and applyPendingStatIncrease() | Full file |
+| `src/components/Tabs/CharacterGenTab.tsx` | Add game mode toggle and badge | 44+, 150+ |
+| `src/components/Tabs/CharacterLevelingTab.tsx` | Add XP sources, level-up modal, pending badge | 235+ |
+| `src/components/Tabs/CombatSimulatorTab.tsx` | Award XP on victory | 774+ |
+| `src/components/Tabs/PartyTab.tsx` | Show game mode badges | Full file |
+| `src/store/characterStore.ts` | Persist new properties, add selectors | 100+ |
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `README.md` | Root documentation |
+| `src/components/ui/GameModeToggle.tsx` | Game mode selection UI |
+| `src/components/ui/StatStrategySelector.tsx` | StatManager strategy selector |
+| `src/components/LevelUpDetailModal.tsx` | Level-up breakdown modal |
+| `src/components/StatSelectionModal.tsx` | Stat selection UI |
+| `docs/index.md` | Documentation hub |
+| `docs/getting-started.md` | Quick start guide |
+
+### Files to Move
+
+| From | To |
+|------|-----|
+| `ARCHITECTURE.md` | `docs/architecture/overview.md` |
+| `CONTRIBUTING.md` | `docs/development/contributing.md` |
+| `DEBUGGING.md` | `docs/development/debugging.md` |
+| `DESIGN_DOCS/SMOKE_TEST_CHECKLIST.md` | `docs/development/testing/smoke-tests.md` |
+| `DESIGN_DOCS/DETERMINISM_TESTING.md` | `docs/development/testing/determinism.md` |
+| `DESIGN_DOCS/PERFORMANCE_TESTING.md` | `docs/development/testing/performance.md` |
+| `DESIGN_DOCS/IOS_ANDROID_SENSOR_TESTING.md` | `docs/development/testing/mobile-sensors.md` |
+| `DESIGN_DOCS/BUGS_TO_FIX.md` | `docs/design/bugs-to-fix.md` |
+
+---
+
+## Implementation Order
+
+**Recommended Sequence:**
+
+1. **Phase 1** (Days 1-2) - Update hooks and stores
+2. **Phase 2** (Days 2-3) - Game mode selection UI
+3. **Phase 3** (Days 3-4) - XP sources and level-up details
+4. **Phase 4** (Days 4-5) - Stat management UI
+5. **Phase 5** (Days 5-6) - Create new documentation
+6. **Phase 6** (Day 7) - Testing and verification
+7. **Phase 7** (Day 8) - Documentation consolidation and cleanup
+
+---
+
+## Notes for Implementation Agent
+
+1. **Type Safety:** Always import types from `'playlist-data-engine'` rather than defining them locally
+2. **Game Mode Defaults:** Engine defaults to `'uncapped'` - match this in the UI
+3. **Stat Cap:** Standard mode caps at 20, uncapped has no limit
+4. **Pending Stats:** Only standard mode gets pending stat increases at levels 4, 8, 12, 16, 19
+5. **XP Sources:** Use meaningful source strings for tracking: `'combat'`, `'quest'`, `'boss_defeat'`, `'exploration'`, `'crafting'`, `'social'`
+6. **Documentation:** Keep docs in sync with code changes - update as you go
+7. **Testing:** Test each phase before moving to the next
+8. **Git Commits:** Commit after each major task completion
+
+---
+
+## Related Documentation
+
+- **Data Engine Reference:** [DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md](DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+- **Usage Examples:** [DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md](DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- **Current Architecture:** [ARCHITECTURE.md](ARCHITECTURE.md)
+- **Implementation Status:** [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
