@@ -175,11 +175,16 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - `src/components/Tabs/CharacterGenTab.tsx` - Uses getActiveCharacter()
     - `src/components/Tabs/CombatSimulatorTab.tsx` - Uses getActiveCharacter()
 
-- [ ] **Task 2.3: Use Active Character in Leveling Tab**
+- [x] **Task 2.3: Use Active Character in Leveling Tab** ✅
   - File: [src/components/Tabs/CharacterLevelingTab.tsx](src/components/Tabs/CharacterLevelingTab.tsx)
-  - Change from `characters[characters.length - 1]` to `getActiveCharacter()`
-  - Add character selector dropdown if no active character is set
-  - Display which character is currently receiving XP
+  - Already using `getActiveCharacter()` from store (verified)
+  - Added character selector dropdown when no active character is set
+  - Added character selector card at top when multiple characters exist
+  - Added display showing which character is currently receiving XP
+  - Added ability to switch characters directly from Leveling tab
+  - Files modified:
+    - `src/components/Tabs/CharacterLevelingTab.tsx` - Added character selector UI and handlers
+    - `src/components/Tabs/CharacterLevelingTab.css` - Added styles for selector components
 
 ---
 
