@@ -496,9 +496,9 @@ The playlist data engine has been significantly updated with new features around
 - [x] 5.1.7 - Add "Quick Tour" section listing all tabs
 - [x] 5.1.8 - Add "License" section (MIT)
 - [x] 5.1.9 - Add badges: TypeScript, React, Vite
-- [ ] 5.1.10 - Test: Verify README renders correctly on GitHub
-- [ ] 5.1.11 - Test: Verify all links work
-- [ ] 5.1.12 - Test: Verify formatting is clean
+- [x] 5.1.10 - Test: Verify README renders correctly on GitHub
+- [x] 5.1.11 - Test: Verify all links work
+- [x] 5.1.12 - Test: Verify formatting is clean
 
 ---
 
