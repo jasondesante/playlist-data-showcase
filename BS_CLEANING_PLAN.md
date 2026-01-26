@@ -389,7 +389,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
   - - Build passes with no errors
   - - CSS lint passes with no errors
 
-- [ ] **Task 4.2: Alternative: Update comparison to ignore timestamps**
+- [x] **Task 4.2: Alternative: Update comparison to ignore timestamps**
   - File: [`src/components/Tabs/CharacterGenTab.tsx`](src/components/Tabs/CharacterGenTab.tsx)
   - If name should stay random, update comparison to exclude timestamps:
     ```typescript
@@ -400,6 +400,13 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
     };
     const isMatch = JSON.stringify(compareObj(original)) === JSON.stringify(compareObj(regenerated));
     ```
+  -
+  - **Implementation Summary:**
+  - - Added `compareObj()` helper function that creates comparison copies without `generated_at` timestamp
+  - - Comparison now ignores the `generated_at` field when checking if regenerated character matches original
+  - - This ensures the regenerate feature works correctly even if the CharacterGenerator adds timestamps
+  - - Build passes with no errors
+  - - CSS lint passes with no errors
 
 - [ ] **Task 4.3: Test regenerate feature**
   - Generate character → click Regenerate → verify no error

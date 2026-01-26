@@ -90,8 +90,12 @@ export function CharacterGenTab() {
       return;
     }
 
-    // Compare the two characters deeply
-    const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
+    // Create comparison copies without timestamps and other runtime-generated fields
+    const compareObj = (obj: any) => {
+      const { generated_at, ...rest } = obj;
+      return rest;
+    };
+    const isMatch = JSON.stringify(compareObj(original)) === JSON.stringify(compareObj(regenerated));
 
     console.log('[CharacterGenTab] Determinism check result:', isMatch ? 'MATCH' : 'MISMATCH');
 
