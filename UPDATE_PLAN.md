@@ -718,11 +718,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify all sections are present
   - [x] Verify all links resolve correctly
   - **Note:** Found broken links - these are expected as they depend on incomplete Phase 7 tasks (7.3.3, 7.3.4, 7.3.5, 7.4). Missing files: performance.md, mobile-sensors.md, css-optimization.md, bugs-to-fix.md, engine/ docs.
-- [ ] 6.6.3 - Test: Moved documents
-  - [ ] Open each moved document
-  - [ ] Verify content is intact
-  - [ ] Verify internal links work
-  - [ ] Verify navigation footer works
+- [x] 6.6.3 - Test: Moved documents
+  - [x] Open each moved document
+  - [x] Verify content is intact
+  - [x] Verify internal links work
+  - [x] Verify navigation footer works
 - [ ] 6.6.4 - Test: Cross-references
   - [ ] Search for broken links
   - [ ] Verify all relative paths are correct
