@@ -1,10 +1,5 @@
 # Architecture: Playlist Data Showcase
 
-> **This document has moved to [docs/architecture/overview.md](./docs/architecture/overview.md)**
-> Please update your bookmarks.
-
----
-
 **Last Updated:** 2026-01-24
 **Version:** 0.1.0
 
@@ -34,7 +29,7 @@ The Playlist Data Showcase is a **single-page React application** that demonstra
 - **Vite** - Build tool and dev server
 - **Zustand** - State management
 - **LocalForage** - Persistent storage
-- **Tailwind CSS** - Styling
+- **Pure CSS** - Styling
 - **Lucide React** - Icons
 
 The app follows a **modular architecture** with clear separation of concerns:
@@ -552,8 +547,8 @@ const { generateCharacter } = useCharacterGenerator();
 ### Engine API Reference
 
 For detailed engine API documentation, see:
-- `DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md`
-- `DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md`
+- [Data Engine Reference](../engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+- [Usage Examples](../engine/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 
@@ -594,7 +589,7 @@ storage.setItem('key', value);
 
 ### Class Name Merge (`utils/cn.ts`)
 
-Merge Tailwind classes:
+Merge CSS classes:
 
 ```typescript
 import { cn } from '@/utils/cn';
@@ -620,7 +615,7 @@ import type { EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 
 ## Styling
 
-- **Tailwind CSS** for styling
+- **Pure CSS** for styling (no Tailwind)
 - **CSS Variables** for theming (bg-background, text-foreground, etc.)
 - **Responsive Design** - Mobile-first approach
 - **Component Isolation** - Each component is self-contained
@@ -655,3 +650,7 @@ The Playlist Data Showcase architecture is designed for:
 - **Engine Demonstration** - Every engine feature is showcased
 
 The app is a **reference implementation** for using the `playlist-data-engine` library in React applications.
+
+---
+
+**Back to [Documentation Index](../index.md)**

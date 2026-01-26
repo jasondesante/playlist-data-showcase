@@ -753,13 +753,13 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.1: Move Architecture Documents
 **Move:** `ARCHITECTURE.md` → `/docs/architecture/overview.md`
 
-- [ ] 7.1.1 - Copy content of `ARCHITECTURE.md`
-- [ ] 7.1.2 - Create `/docs/architecture/overview.md` with copied content
-- [ ] 7.1.3 - Update internal links in new file to point to new paths
-- [ ] 7.1.4 - Add navigation footer: "Back to [Documentation Index](../index.md)"
-- [ ] 7.1.5 - Keep original `ARCHITECTURE.md` as redirect (add: "This has moved to...")
-- [ ] 7.1.6 - Test: Verify new file renders correctly
-- [ ] 7.1.7 - Test: Verify all internal links work
+- [x] 7.1.1 - Copy content of `ARCHITECTURE.md`
+- [x] 7.1.2 - Create `/docs/architecture/overview.md` with copied content
+- [x] 7.1.3 - Update internal links in new file to point to new paths
+- [x] 7.1.4 - Add navigation footer: "Back to [Documentation Index](../index.md)"
+- [x] 7.1.5 - Keep original `ARCHITECTURE.md` as redirect (add: "This has moved to...")
+- [x] 7.1.6 - Test: Verify new file renders correctly
+- [x] 7.1.7 - Test: Verify all internal links work
 
 ---
 
