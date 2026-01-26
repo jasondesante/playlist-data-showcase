@@ -631,11 +631,12 @@ The playlist data engine has been significantly updated with new features around
 - [x] 6.3.3 - Test: HP increases every level
   - [x] Level up multiple times
   - [x] Verify HP increases each time (not just at stat increase levels)
-- [ ] 6.3.4 - Test: Stat increases only at correct levels (standard mode)
-  - [ ] Level to 4, 8, 12, 16, 19
-  - [ ] Verify pending stat increases appear
-  - [ ] Level to other levels (5, 6, 7, etc.)
-  - [ ] Verify no stat increases at those levels
+- [x] 6.3.4 - Test: Stat increases only at correct levels (standard mode)
+  - [x] Level to 4, 8, 12, 16, 19
+  - [x] Verify pending stat increases appear
+  - [x] Level to other levels (5, 6, 7, etc.)
+  - [x] Verify no stat increases at those levels
+  - **Note:** Requires user to select "Manual D&D 5e" strategy in StatStrategySelector before testing
 
 ---
 
