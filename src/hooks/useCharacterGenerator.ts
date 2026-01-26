@@ -68,10 +68,12 @@ export const useCharacterGenerator = () => {
             };
 
             // Use static method directly with options
+            // Generate deterministic name from seed for consistent regeneration
+            const nameSuffix = (seed || `seed-${Date.now()}`).slice(-4);
             const character = CharacterGenerator.generate(
                 seed || `seed-${Date.now()}`,
                 audioProfile,
-                `Hero-${Date.now().toString().slice(-4)}`,
+                `Hero-${nameSuffix}`,
                 options
             );
 

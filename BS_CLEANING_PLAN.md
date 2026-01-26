@@ -341,7 +341,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
 
 **This fixes Bug #5.**
 
-- [ ] **Task 4.1: Make character generation deterministic**
+- [x] **Task 4.1: Make character generation deterministic**
   - File: [`src/hooks/useCharacterGenerator.ts`](src/hooks/useCharacterGenerator.ts)
   - Change character name generation to use seed instead of Date.now():
     ```typescript
@@ -355,6 +355,13 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
       options
     );
     ```
+  -
+  - **Implementation Summary:**
+  - - Changed character name generation to use last 4 characters of seed instead of `Date.now()`
+  - - This ensures the same seed always produces the same character name
+  - - The name is now deterministic: `Hero-${seed.slice(-4)}`
+  - - Build passes with no errors
+  - - CSS lint passes with no errors
 
 - [ ] **Task 4.2: Alternative: Update comparison to ignore timestamps**
   - File: [`src/components/Tabs/CharacterGenTab.tsx`](src/components/Tabs/CharacterGenTab.tsx)
