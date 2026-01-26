@@ -678,11 +678,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify modal closes
   - [x] Verify no changes applied
   - [x] Verify pending count is unchanged
-- [ ] 6.4.7 - Test: Uncapped mode auto-applies
-  - [ ] Level uncapped character
-  - [ ] Verify no pending stat badge appears
-  - [ ] Verify auto-apply notification appears
-  - [ ] Verify stats are increased automatically
+- [x] 6.4.7 - Test: Uncapped mode auto-applies
+  - [x] Level uncapped character
+  - [x] Verify no pending stat badge appears
+  - [x] Verify auto-apply notification appears
+  - [x] Verify stats are increased automatically
 
 ---
 
