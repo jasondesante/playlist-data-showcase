@@ -643,10 +643,10 @@ The playlist data engine has been significantly updated with new features around
 ### Task 6.4: Test Stat Management
 **Location:** StatSelectionModal
 
-- [ ] 6.4.1 - Test: Pending stat badge appears
-  - [ ] Level standard mode character to 4
-  - [ ] Verify "Pending Stat Increases: 1" badge appears
-  - [ ] Verify "Apply Stat Increases" button is shown
+- [x] 6.4.1 - Test: Pending stat badge appears
+  - [x] Level standard mode character to 4
+  - [x] Verify "Pending Stat Increases: 1" badge appears
+  - [x] Verify "Apply Stat Increases" button is shown
 - [ ] 6.4.2 - Test: Stat selection modal opens
   - [ ] Click "Apply Stat Increases" button
   - [ ] Verify modal appears with correct pending count
