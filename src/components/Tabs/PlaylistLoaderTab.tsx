@@ -102,12 +102,13 @@ export function PlaylistLoaderTab() {
         <div className="playlist-header-input-right">
           <Input
             id="arweave-tx-id"
-            label=""
+            label="Arweave TX ID"
             value={txId}
             onChange={(e) => setTxId(e.target.value)}
-            placeholder="Arweave TX ID..."
+            placeholder="Enter transaction ID..."
             disabled={isLoading}
             leftIcon={Music}
+            size="sm"
             containerClassName="playlist-input-compact"
           />
           <Button

@@ -78,15 +78,16 @@
   gap: 0.375rem;
   flex: 1 1 0;
   min-width: 0;
+  align-items: flex-end;
 }
 
 .playlist-input-compact {
-  flex: 1;
-  min-width: 0;
+  width: -webkit-fill-available;
+  flex: 0 1 auto;
 }
 
 .playlist-input-compact .input-field {
-  width: 100%;
+  width: -webkit-fill-available;
 }
 
 .playlist-load-button-compact {

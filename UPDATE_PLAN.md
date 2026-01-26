@@ -757,9 +757,16 @@ The playlist data engine has been significantly updated with new features around
     - Since the entire UI with XP buttons is NOT rendered when there's no active character, users cannot click XP buttons
     - This is a better UX than showing disabled buttons - the user is immediately informed they need a character first
     - Build passes with no errors
-- [ ] 6.7.3 - Test: Level up beyond level 20 (uncapped)
-  - [ ] Verify no errors
-  - [ ] Verify XP thresholds continue
+- [x] 6.7.3 - Test: Level up beyond level 20 (uncapped)
+  - [x] Verify no errors
+  - [x] Verify XP thresholds continue
+  - **Implementation Summary:**
+    - Created comprehensive test using the playlist-data-engine directly
+    - Verified characters can level beyond 20 (reached level 23)
+    - Verified XP thresholds continue correctly (next_level updates properly)
+    - Verified stats can exceed 20 in uncapped mode (CHA reached 21)
+    - All tests pass: no errors, XP continues, stats uncapped
+    - The engine properly handles uncapped mode progression
 - [ ] 6.7.4 - Test: Apply stat increases with no pending
   - [ ] Verify button is disabled
 - [ ] 6.7.5 - Test: Rapid clicking of XP buttons
