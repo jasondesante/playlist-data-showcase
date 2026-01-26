@@ -593,12 +593,12 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify XP is added to character
   - [x] Verify source is tracked as `'quest'`
   - [x] Verify success notification appears
-- [ ] 6.2.2 - Test: Boss defeat button
-  - [ ] Click "Defeat Boss" (+5,000 XP)
-  - [ ] Verify XP is added to character
-  - [ ] Verify source is tracked as `'boss_defeat'`
-  - [ ] Verify multi-level-up is handled correctly
-  - [ ] Verify level-up detail modal shows all levels
+- [x] 6.2.2 - Test: Boss defeat button
+  - [x] Click "Defeat Boss" (+5,000 XP)
+  - [x] Verify XP is added to character
+  - [x] Verify source is tracked as `'boss_defeat'`
+  - [x] Verify multi-level-up is handled correctly
+  - [x] Verify level-up detail modal shows all levels
 - [ ] 6.2.3 - Test: Exploration button
   - [ ] Click "Exploration" (+250 XP)
   - [ ] Verify XP is added to character

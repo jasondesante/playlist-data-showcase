@@ -222,6 +222,8 @@ export function CharacterLevelingTab() {
           setShowLevelUpModal(true);
         }
       }
+      // Show success toast notification
+      showToast('⚔️ Boss defeated! +5,000 XP awarded', 'success');
       console.log(`Boss defeated! +5,000 XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);
@@ -247,6 +249,8 @@ export function CharacterLevelingTab() {
           setShowLevelUpModal(true);
         }
       }
+      // Show success toast notification
+      showToast('🧭 Exploration completed! +250 XP awarded', 'success');
       console.log(`Exploration completed! +250 XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);
