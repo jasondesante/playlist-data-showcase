@@ -11,7 +11,7 @@ import { StatStrategySelector } from '../ui/StatStrategySelector';
 import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
-import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
 /**
@@ -38,7 +38,7 @@ import './CharacterLevelingTab.css';
  * ```
  */
 export function CharacterLevelingTab() {
-  const { getActiveCharacter } = useCharacterStore();
+  const { getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
   const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
@@ -51,6 +51,13 @@ export function CharacterLevelingTab() {
   const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>('dnD5e_smart');
 
   const activeChar = getActiveCharacter();
+
+  // Handle character selection change
+  const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSeed = e.target.value;
+    setActiveCharacter(selectedSeed);
+    showToast(`Switched to ${characters.find(c => c.seed === selectedSeed)?.name || 'character'}`, 'success');
+  };
 
   // Helper function to get pending stat increase count
   const getPendingStatIncreaseCount = (character: typeof activeChar): number => {
@@ -283,6 +290,57 @@ export function CharacterLevelingTab() {
   };
 
   if (!activeChar) {
+    // If there are characters but none active, show selector
+    if (characters.length > 0) {
+      return (
+        <div className="leveling-tab">
+          <header className="leveling-header">
+            <div className="leveling-header-icon">
+              <TrendingUp size={24} />
+            </div>
+            <div className="leveling-header-text">
+              <h1 className="leveling-header-title">Character Leveling</h1>
+              <h2 className="leveling-header-subtitle">Track your character&#39;s growth and adventure</h2>
+            </div>
+          </header>
+
+          <Card variant="elevated" className="leveling-empty-state">
+            <div className="leveling-empty-icon">
+              <UserCircle2 size={64} strokeWidth={1.5} />
+            </div>
+            <h3 className="leveling-empty-title">No Active Character Selected</h3>
+            <p className="leveling-empty-description">
+              Select a character to begin tracking their progress.
+            </p>
+            <div className="leveling-character-selector">
+              <label htmlFor="character-select" className="leveling-selector-label">
+                Choose a character:
+              </label>
+              <div className="leveling-select-wrapper">
+                <select
+                  id="character-select"
+                  className="leveling-character-select"
+                  onChange={handleCharacterChange}
+                  value=""
+                >
+                  <option value="" disabled>
+                    Select a character...
+                  </option>
+                  {characters.map((char) => (
+                    <option key={char.seed} value={char.seed}>
+                      {char.name} - Lv {char.level} {char.race} {char.class}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="leveling-select-icon" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    // No characters at all
     return (
       <div className="leveling-tab">
         <header className="leveling-header">
@@ -332,6 +390,32 @@ export function CharacterLevelingTab() {
           <h2 className="leveling-header-subtitle">Track your character&#39;s growth and adventure</h2>
         </div>
       </header>
+
+      {/* Character Selector - Shows when there are multiple characters */}
+      {characters.length > 1 && (
+        <Card variant="default" padding="md" className="leveling-character-selector-card">
+          <div className="leveling-selector-content">
+            <div className="leveling-selector-info">
+              <UserCircle2 size={18} className="leveling-selector-icon" />
+              <span className="leveling-selector-label">Active Character</span>
+            </div>
+            <div className="leveling-select-wrapper leveling-select-inline">
+              <select
+                className="leveling-character-select"
+                onChange={handleCharacterChange}
+                value={activeChar.seed}
+              >
+                {characters.map((char) => (
+                  <option key={char.seed} value={char.seed}>
+                    {char.name} - Lv {char.level} {char.race} {char.class}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="leveling-select-icon" />
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Character Card with Avatar and XP Progress */}
       <Card variant="elevated" padding="lg" className={`leveling-character-card ${levelUpPulse ? 'leveling-pulse' : ''}`}>

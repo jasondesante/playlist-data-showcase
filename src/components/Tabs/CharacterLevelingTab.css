@@ -83,6 +83,10 @@
   font-size: 4rem;
   margin-bottom: 1rem;
   opacity: 0.5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: hsl(var(--muted-foreground));
 }
 
 .leveling-empty-title {
@@ -95,8 +99,122 @@
 .leveling-empty-description {
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
-  margin: 0;
+  margin: 0 0 1.5rem 0;
   line-height: 1.5;
+}
+
+/* Character Selector */
+.leveling-character-selector {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.leveling-selector-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.5rem;
+}
+
+.leveling-select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 400px;
+}
+
+.leveling-select-inline {
+  max-width: 300px;
+}
+
+.leveling-character-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.leveling-character-select:hover {
+  border-color: hsl(var(--muted-foreground));
+}
+
+.leveling-character-select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+.leveling-select-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  transition: color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.leveling-character-select:focus + .leveling-select-icon {
+  color: hsl(var(--primary));
+}
+
+/* Character Selector Card */
+.leveling-character-selector-card {
+  background: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--primary) / 0.2);
+}
+
+.leveling-selector-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.leveling-selector-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leveling-selector-info .leveling-selector-icon {
+  color: hsl(var(--primary));
+}
+
+.leveling-selector-info .leveling-selector-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .leveling-selector-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .leveling-select-wrapper,
+  .leveling-select-inline {
+    max-width: 100%;
+  }
+
+  .leveling-selector-info {
+    justify-content: center;
+  }
 }
 
 /* Character Card */
