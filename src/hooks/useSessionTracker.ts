@@ -68,6 +68,19 @@ export const useSessionTracker = () => {
     const isActive = !!activeSession;
     const elapsedTime = activeSession?.elapsedSeconds ?? 0;
 
+    // Kill any zombie session on page load (prevents sessions from surviving page reload)
+    useEffect(() => {
+        const activeSessionOnMount = useSessionStore.getState().activeSession;
+        if (activeSessionOnMount) {
+            logger.info('SessionTracker', 'Cleaning up zombie session on page load', { sessionId: activeSessionOnMount.sessionId });
+            timerManager.stop();
+            // Clear the active session from store without adding to history
+            useSessionStore.setState({ activeSession: null, currentSessionId: null });
+        }
+        // Run once on mount - empty deps array
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Manage timer based on active session state from store
     useEffect(() => {
         if (activeSession && !activeSession.isPaused) {

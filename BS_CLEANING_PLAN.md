@@ -151,7 +151,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
 **This fixes Bugs #2, #3, and #4.**
 **Priority: Root cause first - fix this BEFORE adding XP processing.**
 
-- [ ] **Task 1.1: Refactor useSessionTracker to derive state from store**
+- [x] **Task 1.1: Refactor useSessionTracker to derive state from store**
   - File: [`src/hooks/useSessionTracker.ts`](src/hooks/useSessionTracker.ts)
   - **CRITICAL**: Remove local `isActive` state - derive from `activeSession` in store
   - **CRITICAL**: Remove local `elapsedTime` state - use `activeSession.elapsedSeconds` from store
@@ -160,7 +160,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
   - Simplify useEffect hooks - remove sync logic completely
   - Return values derived from store: `isActive = !!activeSession`, `elapsedTime = activeSession?.elapsedSeconds || 0`
 
-- [ ] **Task 1.2: Add session cleanup on page load**
+- [x] **Task 1.2: Add session cleanup on page load**
   - File: [`src/hooks/useSessionTracker.ts`](src/hooks/useSessionTracker.ts)
   - **NEW REQUIREMENT**: Kill any active session on page load
   - Add initialization check in hook: if `activeSession` exists on mount, end it immediately
