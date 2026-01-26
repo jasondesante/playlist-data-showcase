@@ -63,12 +63,14 @@ export function StatSelectionModal({
 }: StatSelectionModalProps) {
   const [selectionMode, setSelectionMode] = React.useState<SelectionMode>('single');
   const [selectedStats, setSelectedStats] = React.useState<Ability[]>([]);
+  const [maxSelectedError, setMaxSelectedError] = React.useState(false);
 
   // Reset state when modal opens
   React.useEffect(() => {
     if (isOpen) {
       setSelectionMode('single');
       setSelectedStats([]);
+      setMaxSelectedError(false);
     }
   }, [isOpen]);
 
@@ -88,6 +90,7 @@ export function StatSelectionModal({
 
   // Toggle stat selection
   const toggleStat = (ability: Ability) => {
+    setMaxSelectedError(false);
     if (selectionMode === 'single') {
       // Single mode: replace selection
       setSelectedStats([ability]);
@@ -97,6 +100,11 @@ export function StatSelectionModal({
         setSelectedStats(selectedStats.filter((s) => s !== ability));
       } else if (selectedStats.length < 2) {
         setSelectedStats([...selectedStats, ability]);
+      } else {
+        // Trying to select more than 2 in double mode - show error
+        setMaxSelectedError(true);
+        // Clear error after animation
+        setTimeout(() => setMaxSelectedError(false), 400);
       }
     }
   };
@@ -227,11 +235,15 @@ export function StatSelectionModal({
           </div>
 
           {/* Validation Message */}
-          {!isValidSelection() && selectedStats.length > 0 && (
+          {(!isValidSelection() || maxSelectedError) && (
             <div className="statmodal-validation">
-              {selectionMode === 'double' && selectedStats.length === 1
-                ? 'Select one more stat'
-                : 'Invalid selection'}
+              {maxSelectedError
+                ? 'Maximum 2 stats allowed in this mode'
+                : selectedStats.length === 0
+                  ? `Select ${selectionMode === 'single' ? 'one stat' : 'two stats'} to apply`
+                  : selectionMode === 'double' && selectedStats.length === 1
+                    ? 'Select one more stat'
+                    : 'Invalid selection'}
             </div>
           )}
         </div>
