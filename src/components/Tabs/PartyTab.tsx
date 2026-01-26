@@ -55,7 +55,7 @@ function getSkillProficiencyDisplay(prof: string): string {
 }
 
 export function PartyTab() {
-  const { characters, resetCharacters } = useCharacterStore();
+  const { characters, resetCharacters, activeCharacterId, setActiveCharacter } = useCharacterStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
   const [selectedCharacter, setSelectedCharacter] = useState<typeof characters[number] | null>(null);
@@ -109,6 +109,10 @@ export function PartyTab() {
     if (confirm(`Are you sure you want to delete all ${characters.length} character(s)? This cannot be undone.`)) {
       resetCharacters();
     }
+  };
+
+  const handleSetActiveCharacter = (characterSeed: string) => {
+    setActiveCharacter(characterSeed);
   };
 
   // Empty state - no characters
@@ -205,6 +209,8 @@ export function PartyTab() {
             character={character}
             onClick={() => handleCardClick(character)}
             variant="selectable"
+            isActive={character.seed === activeCharacterId}
+            onSetActive={() => handleSetActiveCharacter(character.seed)}
           />
         ))}
       </div>

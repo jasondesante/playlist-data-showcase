@@ -156,6 +156,13 @@
   position: relative;
 }
 
+/* Active character styling */
+.party-card-active {
+  border-color: var(--color-primary);
+  background: hsl(var(--color-primary-h) var(--color-primary-s) calc(var(--color-primary-l) + 45));
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.2);
+}
+
 .party-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -249,6 +256,35 @@
   color: var(--color-primary);
 }
 
+/* Set as Active Button */
+.party-card-set-active-btn {
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.party-card-set-active-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
+}
+
+.party-card-set-active-btn:active {
+  transform: translateY(0);
+}
+
 /* Game Mode Badge on Party Cards */
 .party-card-game-mode-badge {
   position: absolute;
@@ -266,6 +302,41 @@
   cursor: help;
   z-index: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Active Character Badge on Party Cards (top-left corner) */
+.party-card-active-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-sm);
+  color: var(--color-on-primary);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  z-index: 2;
+  box-shadow: 0 2px 6px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 6px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 10px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.5);
+  }
+}
+
+.party-card-active-badge svg {
+  flex-shrink: 0;
 }
 
 .party-card-game-mode-badge:hover {

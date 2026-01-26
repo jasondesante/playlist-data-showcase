@@ -7,6 +7,7 @@
 
 import { CharacterSheet } from '@/types';
 import { getCharacterAvatar } from '@/utils/characterIcons';
+import { Check } from 'lucide-react';
 
 interface CharacterCardProps {
   /** The character to display */
@@ -15,6 +16,10 @@ interface CharacterCardProps {
   onClick?: () => void;
   /** Visual variant of the card */
   variant?: 'default' | 'selectable' | 'selected';
+  /** Whether this character is the active character */
+  isActive?: boolean;
+  /** Optional handler for setting this character as active */
+  onSetActive?: () => void;
 }
 
 /**
@@ -36,7 +41,7 @@ function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
-export function CharacterCard({ character, onClick, variant = 'default' }: CharacterCardProps) {
+export function CharacterCard({ character, onClick, variant = 'default', isActive, onSetActive }: CharacterCardProps) {
   const progressPercent = calculateXPProgress(character);
   const avatar = getCharacterAvatar(character.class);
 
@@ -44,13 +49,27 @@ export function CharacterCard({ character, onClick, variant = 'default' }: Chara
     'party-card',
     variant === 'selectable' && 'party-card-selectable',
     variant === 'selected' && 'party-card-selected',
+    isActive && 'party-card-active',
     onClick && 'party-card-clickable',
   ]
     .filter(Boolean)
     .join(' ');
 
+  const handleSetActiveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSetActive?.();
+  };
+
   return (
     <div className={cardClasses} onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}>
+      {/* Active Character Badge (top-left corner) */}
+      {isActive && (
+        <div className="party-card-active-badge" title="Active Character">
+          <Check size={14} />
+          <span>Active</span>
+        </div>
+      )}
+
       {/* Game Mode Badge (top-right corner) */}
       {character.gameMode && (
         <div
@@ -87,6 +106,17 @@ export function CharacterCard({ character, onClick, variant = 'default' }: Chara
           <span>{Math.round(progressPercent)}%</span>
         </p>
       </div>
+
+      {/* Set as Active Button */}
+      {onSetActive && !isActive && (
+        <button
+          className="party-card-set-active-btn"
+          onClick={handleSetActiveClick}
+          type="button"
+        >
+          Set as Active
+        </button>
+      )}
     </div>
   );
 }

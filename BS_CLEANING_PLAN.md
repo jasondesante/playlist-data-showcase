@@ -155,12 +155,16 @@ The XP is only shown **after the session ends** in the "Last Session" card.
 
 ### **PHASE 2: Fix Party & Hero Selection**
 
-- [ ] **Task 2.1: Add Active Character Selection to Party Tab**
+- [x] **Task 2.1: Add Active Character Selection to Party Tab** ✅
   - File: [src/components/Tabs/PartyTab.tsx](src/components/Tabs/PartyTab.tsx)
-  - Add "Set as Active" button to each CharacterCard
-  - Highlight the currently active character visually
+  - Added "Set as Active" button to each CharacterCard (via `onSetActive` prop)
+  - Highlight the currently active character visually (`.party-card-active` CSS class with border highlight and subtle background tint)
   - Call `characterStore.setActiveCharacter(id)` when clicked
-  - Show badge/icon indicating which character is active
+  - Show badge/icon indicating which character is active (top-left "Active" badge with checkmark icon and pulsing glow animation)
+  - Files modified:
+    - `src/components/ui/CharacterCard.tsx` - Added `isActive` and `onSetActive` props, active badge JSX, set active button
+    - `src/components/Tabs/PartyTab.tsx` - Wire up `activeCharacterId` and `setActiveCharacter` from store, pass props to CharacterCard
+    - `src/components/Tabs/PartyTab.css` - Added `.party-card-active`, `.party-card-active-badge`, `.party-card-set-active-btn` styles
 
 - [ ] **Task 2.2: Update Character Store Integration**
   - File: [src/store/characterStore.ts](src/store/characterStore.ts)
