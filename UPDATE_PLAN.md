@@ -42,8 +42,8 @@ The playlist data engine has been significantly updated with new features around
   ```
 - [x] 1.1.4 - Update hook return type to include `GameMode` if needed
 - [x] 1.1.5 - Add JSDoc comment explaining the `gameMode` parameter
-- [ ] 1.1.6 - Test: Generate a character with `gameMode: 'standard'` and verify stats cap at 20
-- [ ] 1.1.7 - Test: Generate a character with `gameMode: 'uncapped'` and verify stats can exceed 20
+- [x] 1.1.6 - Test: Generate a character with `gameMode: 'standard'` and verify stats cap at 20
+- [x] 1.1.7 - Test: Generate a character with `gameMode: 'uncapped'` and verify stats can exceed 20
 
 ---
 
