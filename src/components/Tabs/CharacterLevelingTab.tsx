@@ -38,7 +38,7 @@ import './CharacterLevelingTab.css';
  * ```
  */
 export function CharacterLevelingTab() {
-  const { getActiveCharacter, setActiveCharacter, characters, setCharacterStrategy } = useCharacterStore();
+  const { getActiveCharacter, setActiveCharacter, characters, setCharacterStrategy, getCharacterStrategy } = useCharacterStore();
   const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
@@ -80,16 +80,22 @@ export function CharacterLevelingTab() {
     return getPendingStatIncreaseCount(character) > 0;
   };
 
-  // Sync currentXP and stat strategy with character when it changes
+  // Sync currentXP when character changes
   useEffect(() => {
     if (activeChar) {
       setCurrentXP(activeChar.xp.current);
-      // Update stat strategy to match character's game mode
-      const newStrategy = activeChar.gameMode === 'standard' ? 'dnD5e' : 'dnD5e_smart';
-      setStatStrategy(newStrategy);
-      updateStatStrategy(newStrategy);
     }
-  }, [activeChar, updateStatStrategy]);
+  }, [activeChar]);
+
+  // Initialize stat strategy on mount only (not on every character change)
+  useEffect(() => {
+    if (activeChar && !statStrategy) {
+      const persistedStrategy = getCharacterStrategy(activeChar.seed);
+      const initialStrategy = persistedStrategy || (activeChar.gameMode === 'standard' ? 'dnD5e' : 'dnD5e_smart');
+      setStatStrategy(initialStrategy);
+      updateStatStrategy(initialStrategy);
+    }
+  }, []); // Empty deps - run once on mount
 
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string): string => {

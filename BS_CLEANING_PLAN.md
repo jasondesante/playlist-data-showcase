@@ -241,9 +241,9 @@ const formatSessionTime = (timestamp: number) => {
 - - - Store state now contains persisted strategy per character
 
 **Task 3.5:** Remove auto-sync useEffect
-- [ ] File: `src/components/Tabs/CharacterLevelingTab.tsx` (lines 84-92)
-- [ ] **REMOVE the existing useEffect** that syncs on every character change
-- [ ] Replace with one-time initialization on mount only:
+- [x] File: `src/components/Tabs/CharacterLevelingTab.tsx` (lines 84-92)
+- [x] **REMOVE the existing useEffect** that syncs on every character change
+- [x] Replace with one-time initialization on mount only:
   ```typescript
   // Initialize stat strategy on mount only (not on every character change)
   useEffect(() => {
@@ -261,7 +261,7 @@ const formatSessionTime = (timestamp: number) => {
 - - - Only initializes on mount if not already set
 - - - Reads from persisted map, falls back to gameMode
 - - - Manual selections are now preserved
-- - - Build passes
+- - - Build passes ✓
 
 **Task 3.6:** Test manual strategy persistence
 - [ ] Create uncapped character → change strategy to manual → add XP → verify strategy stays
