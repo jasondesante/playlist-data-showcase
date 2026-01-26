@@ -871,7 +871,18 @@ The playlist data engine has been significantly updated with new features around
   - Only mentions found in documentation lists (TASK_COMPLETION_SUMMARY.md, IMPLEMENTATION_STATUS.md) and task definitions
   - Redirect stub exists at root pointing to new location
   - Build passes with no errors`
-- [ ] 7.4.4 - Update relative paths in all moved files
+- [x] 7.4.4 - Update relative paths in all moved files
+  - **Summary:** Fixed navigation footer links in moved documentation files:
+    - `/workspace/docs/development/contributing.md` - Changed `../index.md` to `../../index.md`
+    - `/workspace/docs/development/debugging.md` - Changed `../index.md` to `../../index.md`
+    - `/workspace/docs/development/testing/performance.md` - Changed `../index.md` to `../../index.md`
+    - `/workspace/docs/development/testing/mobile-sensors.md` - Added navigation footer with `../../index.md`
+  - **Verified:** All other files already had correct paths:
+    - `/workspace/docs/architecture/overview.md` - Correct at `../index.md`
+    - `/workspace/docs/design/bugs-to-fix.md` - Correct at `../index.md`
+    - `/workspace/docs/getting-started.md` - Correct at `./index.md`
+    - Testing files (smoke-tests.md, determinism.md) - Correct at `../../index.md`
+  - **Build Status:** Passes with no errors
 - [ ] 7.4.5 - Add navigation footer to all docs:
   ```markdown
   ---

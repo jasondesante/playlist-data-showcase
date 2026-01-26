@@ -192,10 +192,20 @@ export function PlaylistLoaderTab() {
               <div className="playlist-display-info-compact">
                 <div className="playlist-info-row-primary">
                   <h3 className="playlist-display-title-compact">{currentPlaylist.name}</h3>
-                  <span className="playlist-display-stats-compact">
-                    {currentPlaylist.creator} · {currentPlaylist.tracks.length} {currentPlaylist.tracks.length === 1 ? 'track' : 'tracks'}
-                    {currentPlaylist.genre && ` · ${currentPlaylist.genre}`}
-                  </span>
+                  <div className="playlist-display-meta-row">
+                    <span className="playlist-display-creator-badge">
+                      <span className="playlist-display-creator-label">Created by</span>
+                      <span className="playlist-display-creator-value">{currentPlaylist.creator.slice(0, 6)}...{currentPlaylist.creator.slice(-4)}</span>
+                    </span>
+                    <span className="playlist-display-separator" />
+                    <span className="playlist-display-tracks-badge">{currentPlaylist.tracks.length} tracks</span>
+                    {currentPlaylist.genre && (
+                      <>
+                        <span className="playlist-display-separator" />
+                        <span className="playlist-display-genre-badge">{currentPlaylist.genre}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 {currentPlaylist.description && (
                   <p className="playlist-display-description-compact">{currentPlaylist.description}</p>

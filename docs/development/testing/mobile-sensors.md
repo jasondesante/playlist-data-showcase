@@ -521,3 +521,7 @@ Use this checklist when testing on physical devices:
 ---
 
 **Status:** Documented for task 4.7.1 (iOS) and task 4.7.2 (Android Chrome) - Physical device testing requires access to iOS and Android devices. Code analysis and comprehensive documentation completed for both platforms.
+
+---
+
+**Back to [Documentation Index](../../index.md)**
