@@ -48,9 +48,20 @@ export function CharacterLevelingTab() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
   const [showStatModal, setShowStatModal] = useState(false);
-  const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>('dnD5e_smart');
 
   const activeChar = getActiveCharacter();
+
+  // Initialize stat strategy based on character's game mode
+  // Standard mode (stats capped at 20) uses manual stat selection ('dnD5e')
+  // Uncapped mode uses smart auto-selection ('dnD5e_smart')
+  const getInitialStrategy = (): StatIncreaseStrategyType => {
+    if (activeChar?.gameMode === 'standard') {
+      return 'dnD5e'; // Manual mode for capped characters
+    }
+    return 'dnD5e_smart'; // Auto mode for uncapped characters (default)
+  };
+
+  const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>(getInitialStrategy);
 
   // Handle character selection change
   const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -69,12 +80,16 @@ export function CharacterLevelingTab() {
     return getPendingStatIncreaseCount(character) > 0;
   };
 
-  // Sync currentXP with character when it changes
+  // Sync currentXP and stat strategy with character when it changes
   useEffect(() => {
     if (activeChar) {
       setCurrentXP(activeChar.xp.current);
+      // Update stat strategy to match character's game mode
+      const newStrategy = activeChar.gameMode === 'standard' ? 'dnD5e' : 'dnD5e_smart';
+      setStatStrategy(newStrategy);
+      updateStatStrategy(newStrategy);
     }
-  }, [activeChar]);
+  }, [activeChar, updateStatStrategy]);
 
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string): string => {
