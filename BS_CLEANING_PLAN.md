@@ -126,7 +126,7 @@ The XP is only shown **after the session ends** in the "Last Session" card.
   - Verify stats increase properly
   - Verify stat selection modal appears for manual mode
 
-- [ ] **Task 1.2: Fix Stat Manager Default Strategy**
+- [x] **Task 1.2: Fix Stat Manager Default Strategy**
   - File: [src/hooks/useCharacterUpdater.ts](src/hooks/useCharacterUpdater.ts)
   - Change stat manager initialization from hardcoded `'dnD5e_smart'`
   - Detect character's `gameMode` and set strategy accordingly:
