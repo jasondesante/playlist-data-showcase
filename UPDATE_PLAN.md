@@ -1140,7 +1140,7 @@ The playlist data engine has been significantly updated with new features around
 
 ---
 
-### ~~Edits and additional requests~~ (HEY DONT CROSS THIS OUT ITS LITERALLY THE FUCKING TITLE OF A CATEGORY WHERE I WILL KEEP ADDING STUFF LIKE RIGHT NOW HOW YOU MADE A MISTAKE BY CROSSING THE TITLE OUT INSTEAD OF THE TEXT FOR THE REQUEST)
+### Edits and additional requests (HEY DONT CROSS THIS OUT ITS LITERALLY THE FUCKING TITLE OF A CATEGORY WHERE I WILL KEEP ADDING STUFF LIKE RIGHT NOW HOW YOU MADE A MISTAKE BY CROSSING THE TITLE OUT INSTEAD OF THE TEXT FOR THE REQUEST)
 
 ~~- I'm very disappointed in how you consolidated the docs and "simplified" things. You literally made more files than there were before. You were supposed to put all the docs into one docs folder and I literally see a DESIGN_DOCS folder and a docs folder now. So you failed on that. So now there's more files instead of less and they still aren't all in the same spot. So yeah massive failure. I don't know what you should do next but you definitely need to add a bunch more tasks, plan a bunch more. Realize you failed hardcore. And fucking fix it.~~
 
@@ -1192,6 +1192,24 @@ can you please re orient things to actually what I've been repetitively asking t
   - `docs/engine/USAGE_IN_OTHER_PROJECTS.md` - Engine usage (original ALL_CAPS naming)
 
 **Build Status:** Passes with no errors
+
+---
+
+### Task 8.2: Delete specs/ Folder - Historical Planning Documents
+**Status:** Completed
+
+- [x] 8.2.1 - Verify `specs/` folder contains historical planning documents (superseded by UPDATE_PLAN.md)
+- [x] 8.2.2 - Delete `specs/01-engine-showcase/` folder entirely (8 files)
+- [x] 8.2.3 - Verify no code references to specs/ files
+- [x] 8.2.4 - Run build to verify no errors
+- [x] 8.2.5 - Test: Verify build passes with no errors
+
+**Summary:**
+- **Deleted Files:** 8 historical planning documents
+  - requirements.md, contracts/playlist-parser.md, quickstart.md
+  - tasks.md, research.md, data-model.md, plan.md, spec.md
+- **Rationale:** These are superseded by UPDATE_PLAN.md and IMPLEMENTATION_STATUS.md
+- **Build Status:** Passes with no errors
 
 ---
 
