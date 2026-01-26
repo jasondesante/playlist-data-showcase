@@ -740,8 +740,14 @@ The playlist data engine has been significantly updated with new features around
 
 ### Task 6.7: Edge Cases and Error Handling
 
-- [ ] 6.7.1 - Test: Generate character without audio profile
-  - [ ] Verify appropriate error/warning
+- [x] 6.7.1 - Test: Generate character without audio profile
+  - [x] Verify appropriate error/warning
+  - **Implementation Summary:**
+    - Updated `useCharacterGenerator` hook to validate audio profile before generation
+    - Added check for null/undefined audio profile with proper error logging via `AppError`
+    - Added validation for required audio profile properties (bass_dominance, treble_dominance, mid_dominance, average_amplitude)
+    - Added visible toast notification in `CharacterGenTab` component for missing audio profile
+    - Hook now returns `null` and logs error when audio profile is missing or invalid
 - [ ] 6.7.2 - Test: Add XP with no active character
   - [ ] Verify buttons are disabled or show error
 - [ ] 6.7.3 - Test: Level up beyond level 20 (uncapped)

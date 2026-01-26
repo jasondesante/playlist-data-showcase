@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
-import { handleError } from '@/utils/errorHandling';
+import { handleError, AppError } from '@/utils/errorHandling';
 
 /**
  * React hook for generating D&D 5e characters from audio profiles.
@@ -35,10 +35,29 @@ export const useCharacterGenerator = () => {
      * @returns The generated character sheet or null if generation failed
      */
     const generateCharacter = useCallback(async (
-        audioProfile: AudioProfile,
+        audioProfile: AudioProfile | null | undefined,
         seed?: string,
         gameMode?: GameMode
     ): Promise<CharacterSheet | null> => {
+        // Validate audio profile before proceeding
+        if (!audioProfile) {
+            const errorMsg = 'Cannot generate character: Audio profile is required. Please analyze audio first.';
+            logger.error('CharacterGenerator', errorMsg);
+            handleError(new AppError(errorMsg, 'CharacterGenerator'), 'CharacterGenerator');
+            return null;
+        }
+
+        // Validate audio profile has required properties
+        if (typeof audioProfile.bass_dominance !== 'number' ||
+            typeof audioProfile.treble_dominance !== 'number' ||
+            typeof audioProfile.mid_dominance !== 'number' ||
+            typeof audioProfile.average_amplitude !== 'number') {
+            const errorMsg = 'Cannot generate character: Invalid audio profile. Missing required audio analysis data.';
+            logger.error('CharacterGenerator', errorMsg, { audioProfile });
+            handleError(new AppError(errorMsg, 'CharacterGenerator'), 'CharacterGenerator');
+            return null;
+        }
+
         logger.info('CharacterGenerator', 'Generating character', { seed });
         setIsGenerating(true);
 

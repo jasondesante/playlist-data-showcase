@@ -116,7 +116,6 @@ export function PlaylistLoaderTab() {
             isLoading={isLoading}
             leftIcon={Download}
             variant="primary"
-            size="sm"
             className="playlist-load-button-compact"
           >
             {isLoading ? 'Fetching...' : 'Load'}

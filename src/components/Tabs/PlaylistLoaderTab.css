@@ -81,18 +81,18 @@
 }
 
 .playlist-input-compact {
-  flex: 1 1 0;
+  flex: 1;
   min-width: 0;
 }
 
 .playlist-input-compact .input-field {
-  width: auto;
+  width: 100%;
 }
 
 .playlist-load-button-compact {
   flex: 0 0 auto;
-  height: auto;
-  min-height: auto;
+  height: 2.75rem;
+  min-height: 2.75rem;
 }
 
 /* ========================================

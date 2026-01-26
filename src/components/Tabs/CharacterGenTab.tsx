@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
+import { showToast } from '../ui/Toast';
 
 /**
  * CharacterGenTab Component
@@ -49,10 +50,12 @@ export function CharacterGenTab() {
   const handleGenerate = async () => {
     if (!audioProfile) {
       console.warn('[CharacterGenTab] No audio profile available. Please analyze audio first.');
+      showToast('⚠️ No audio profile available. Please analyze audio first.', 'warning');
       return;
     }
     if (!selectedTrack) {
       console.warn('[CharacterGenTab] No track selected.');
+      showToast('⚠️ No track selected. Please select a track from the Playlist tab.', 'warning');
       return;
     }
 
