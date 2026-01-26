@@ -771,11 +771,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Update internal links
   - [x] Add navigation footer
   - [x] Test: Verify file renders correctly
-- [ ] 7.2.2 - Move `DEBUGGING.md` to `/docs/development/debugging.md`
-  - [ ] Copy content
-  - [ ] Update internal links
-  - [ ] Add navigation footer
-  - [ ] Test: Verify file renders correctly
+- [x] 7.2.2 - Move `DEBUGGING.md` to `/docs/development/debugging.md`
+  - [x] Copy content
+  - [x] Update internal links
+  - [x] Add navigation footer
+  - [x] Test: Verify file renders correctly
 - [ ] 7.2.3 - Keep original files as redirects
 
 ---
