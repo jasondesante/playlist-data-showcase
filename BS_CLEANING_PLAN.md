@@ -116,7 +116,7 @@ The XP is only shown **after the session ends** in the "Last Session" card.
 
 ### **PHASE 1: Fix XP System Core** (Most Critical - Blocks All Leveling)
 
-- [ ] **Task 1.1: Replace Custom XP Implementation**
+- [x] **Task 1.1: Replace Custom XP Implementation**
   - File: [src/components/Tabs/CharacterLevelingTab.tsx](src/components/Tabs/CharacterLevelingTab.tsx)
   - Remove manual `addXP()` function (lines 101-144)
   - Replace all calls to use `addXPFromSource()` with source `'custom_xp'`
