@@ -102,7 +102,7 @@ export function XPCalculatorTab() {
     return classEmojis[charClass] || '👤';
   };
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     const xpResult = calculateXP(
       duration,
       isManualMode ? undefined : environmentalContext || undefined,
@@ -117,31 +117,33 @@ export function XPCalculatorTab() {
       setIsCelebrating(true);
       setTimeout(() => setIsCelebrating(false), 3000);
     }
-  };
 
-  const handleApplyXP = async () => {
-    if (!result || !activeCharacter || isApplying) return;
+    // If a character is selected, immediately apply the XP
+    if (xpResult && activeCharacter && !isApplying) {
+      setIsApplying(true);
+      try {
+        const addResult = addXPFromSource(activeCharacter, xpResult.totalXP, 'xp_calculator');
 
-    setIsApplying(true);
-    try {
-      const addResult = addXPFromSource(activeCharacter, result.totalXP, 'xp_calculator');
-
-      if (addResult.leveledUp) {
-        // Show level-up modal with details
-        if (addResult.levelUpDetails && addResult.levelUpDetails.length > 0) {
-          setLevelUpDetails(addResult.levelUpDetails);
-          setShowLevelUpModal(true);
+        if (addResult.leveledUp) {
+          // Show level-up modal with details
+          if (addResult.levelUpDetails && addResult.levelUpDetails.length > 0) {
+            setLevelUpDetails(addResult.levelUpDetails);
+            setShowLevelUpModal(true);
+          }
+          // Trigger celebration
+          setIsCelebrating(true);
+          setTimeout(() => setIsCelebrating(false), 3000);
         }
-        // Trigger celebration
-        setIsCelebrating(true);
-        setTimeout(() => setIsCelebrating(false), 3000);
-      }
 
-      // Show success toast
-      showToast(`⭐ Applied ${result.totalXP.toLocaleString()} XP to ${activeCharacter.name}`, 'success');
-      console.log(`Applied ${result.totalXP} XP from calculator to ${activeCharacter.name}`);
-    } finally {
-      setIsApplying(false);
+        // Show success toast
+        showToast(`⭐ Applied ${xpResult.totalXP.toLocaleString()} XP to ${activeCharacter.name}`, 'success');
+        console.log(`Applied ${xpResult.totalXP} XP from calculator to ${activeCharacter.name}`);
+      } finally {
+        setIsApplying(false);
+      }
+    } else if (xpResult && !activeCharacter) {
+      // Show warning toast if no character selected
+      showToast(`⚠️ No character selected - XP calculated but not applied`, 'warning');
     }
   };
 
@@ -566,14 +568,34 @@ export function XPCalculatorTab() {
           </Card>
         </div>
 
-        {/* Calculate Button */}
+        {/* Calculate & Apply Button */}
         <div className="xp-calculate-section">
-          <button
-            onClick={handleCalculate}
-            className="xp-calculate-button"
-          >
-            Calculate XP
-          </button>
+          {activeCharacter ? (
+            <>
+              <button
+                onClick={handleCalculate}
+                className="xp-calculate-button"
+                disabled={isApplying}
+              >
+                {isApplying ? 'Calculating & Applying...' : 'Calculate & Apply XP'}
+              </button>
+              <p className="xp-calculate-hint">
+                XP will be immediately applied to <strong>{activeCharacter.name}</strong> (Level {activeCharacter.level})
+              </p>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleCalculate}
+                className="xp-calculate-button"
+              >
+                Calculate XP
+              </button>
+              <p className="xp-calculate-hint xp-calculate-hint-warning">
+                ⚠️ No character selected - XP will be calculated but not applied
+              </p>
+            </>
+          )}
         </div>
 
         {/* Results */}
@@ -587,33 +609,12 @@ export function XPCalculatorTab() {
                 Total Multiplier: <strong>{result.totalMultiplier.toFixed(2)}x</strong>
                 {result.totalMultiplier >= 3.0 && ' (capped)'}
               </p>
+              {activeCharacter && (
+                <p className="xp-total-applied">
+                  ✅ Applied to {activeCharacter.name}
+                </p>
+              )}
             </div>
-
-            {/* Apply XP Button */}
-            {activeCharacter ? (
-              <div className="xp-apply-section">
-                <button
-                  onClick={handleApplyXP}
-                  className="xp-apply-button"
-                  disabled={isApplying}
-                >
-                  {isApplying ? (
-                    <>Applying...</>
-                  ) : (
-                    <>Apply {result.totalXP.toLocaleString()} XP to {activeCharacter.name}</>
-                  )}
-                </button>
-                <p className="xp-apply-hint">
-                  This will add the calculated XP to {activeCharacter.name} (Level {activeCharacter.level})
-                </p>
-              </div>
-            ) : (
-              <div className="xp-apply-section xp-apply-disabled">
-                <p className="xp-apply-disabled-message">
-                  Select a character first to apply XP
-                </p>
-              </div>
-            )}
 
             {/* Bonus Breakdown */}
             <Card variant="default" padding="md">

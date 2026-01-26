@@ -756,6 +756,29 @@
   box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
 }
 
+.xp-calculate-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.xp-calculate-hint {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .xp-calculate-hint {
+    font-size: 0.75rem;
+  }
+}
+
+.xp-calculate-hint-warning {
+  color: hsl(var(--cute-yellow) / 0.9);
+}
+
 /* ========================================
    APPLY XP BUTTON SECTION
    ======================================== */
@@ -960,6 +983,19 @@
 .xp-total-multiplier strong {
   color: hsl(var(--foreground));
   font-weight: 700;
+}
+
+.xp-total-applied {
+  font-size: 0.75rem;
+  color: hsl(var(--cute-green));
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .xp-total-applied {
+    font-size: 0.875rem;
+  }
 }
 
 /* ========================================
