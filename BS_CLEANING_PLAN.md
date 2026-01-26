@@ -190,11 +190,17 @@ The XP is only shown **after the session ends** in the "Last Session" card.
 
 ### **PHASE 3: Fix XP Calculator**
 
-- [ ] **Task 3.1: Add Character Selector to XP Calculator**
+- [x] **Task 3.1: Add Character Selector to XP Calculator** ✅
   - File: [src/components/Tabs/XPCalculatorTab.tsx](src/components/Tabs/XPCalculatorTab.tsx)
-  - Add dropdown to select which character will receive XP
+  - Added dropdown to select which character will receive XP
   - Display selected character's current XP and level
   - Show "XP to next level" for selected character
+  - Added visual character display with avatar emoji and class info
+  - Added empty state when no character is selected
+  - Added styles for character selector card, avatar, stats, and dropdown
+  - Files modified:
+    - `src/components/Tabs/XPCalculatorTab.tsx` - Added character selector UI and handlers
+    - `src/components/Tabs/XPCalculatorTab.css` - Added styles for selector components
 
 - [ ] **Task 3.2: Add "Apply XP" Button to Calculator**
   - File: [src/components/Tabs/XPCalculatorTab.tsx](src/components/Tabs/XPCalculatorTab.tsx)
