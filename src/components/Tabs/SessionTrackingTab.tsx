@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star } from 'lucide-react';
+import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star, User, TrendingUp } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
@@ -283,6 +283,71 @@ export function SessionTrackingTab() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="session-info-content">
+                {/* Character Info Section */}
+                {activeCharacter && (
+                  <div className="session-character-section">
+                    <div className="session-character-header">
+                      <div className="session-character-avatar">
+                        <User className="session-character-icon" size={20} />
+                      </div>
+                      <div className="session-character-info">
+                        <div className="session-character-name-row">
+                          <span className="session-character-name">{activeCharacter.name}</span>
+                          {activeCharacter.gameMode && (
+                            <span className={`session-character-mode-badge ${activeCharacter.gameMode}`}>
+                              {activeCharacter.gameMode === 'standard' ? 'CAPPED' : 'UNCAPPED'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="session-character-details">
+                          Level {activeCharacter.level} {activeCharacter.race} {activeCharacter.class}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="session-character-stats">
+                      <div className="session-character-stat-item">
+                        <span className="session-character-stat-label">Current XP</span>
+                        <span className="session-character-stat-value">{activeCharacter.xp.current.toLocaleString()}</span>
+                      </div>
+                      <div className="session-character-stat-item">
+                        <span className="session-character-stat-label">Next Level</span>
+                        <span className="session-character-stat-value">{activeCharacter.xp.next_level.toLocaleString()}</span>
+                      </div>
+                      <div className="session-character-stat-item">
+                        <span className="session-character-stat-label">HP</span>
+                        <span className="session-character-stat-value">{activeCharacter.hp.current}/{activeCharacter.hp.max}</span>
+                      </div>
+                    </div>
+                    {/* Pending Stat Increases for Manual Mode */}
+                    {activeCharacter.gameMode === 'standard' && activeCharacter.pendingStatIncreases && activeCharacter.pendingStatIncreases > 0 && (
+                      <div className="session-pending-stats-alert">
+                        <TrendingUp className="session-pending-stats-icon" size={14} />
+                        <span className="session-pending-stats-text">
+                          {activeCharacter.pendingStatIncreases} stat increase{activeCharacter.pendingStatIncreases > 1 ? 's' : ''} pending
+                        </span>
+                      </div>
+                    )}
+                    {/* For manual mode, show info about future stat increases */}
+                    {activeCharacter.gameMode === 'standard' && (!activeCharacter.pendingStatIncreases || activeCharacter.pendingStatIncreases === 0) && (
+                      <div className="session-stat-info">
+                        <span className="session-stat-info-text">
+                          Stat increases at levels 4, 8, 12, 16, 19
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* No active character warning */}
+                {!activeCharacter && (
+                  <div className="session-no-character-warning">
+                    <User className="session-no-character-icon" size={18} />
+                    <span className="session-no-character-text">
+                      No active character. Select one from the Party tab.
+                    </span>
+                  </div>
+                )}
+
                 <div className="session-info-item">
                   <span className="session-info-label">Status</span>
                   <span className={`session-info-value ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
