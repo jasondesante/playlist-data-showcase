@@ -766,11 +766,11 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.2: Move Development Documents
 **Move:** `CONTRIBUTING.md` and `DEBUGGING.md`
 
-- [ ] 7.2.1 - Move `CONTRIBUTING.md` to `/docs/development/contributing.md`
-  - [ ] Copy content
-  - [ ] Update internal links
-  - [ ] Add navigation footer
-  - [ ] Test: Verify file renders correctly
+- [x] 7.2.1 - Move `CONTRIBUTING.md` to `/docs/development/contributing.md`
+  - [x] Copy content
+  - [x] Update internal links
+  - [x] Add navigation footer
+  - [x] Test: Verify file renders correctly
 - [ ] 7.2.2 - Move `DEBUGGING.md` to `/docs/development/debugging.md`
   - [ ] Copy content
   - [ ] Update internal links

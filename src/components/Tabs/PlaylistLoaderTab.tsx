@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './PlaylistLoaderTab.css';
-import { Music, Download, Sparkles, Search } from 'lucide-react';
+import { Music, Download, Search } from 'lucide-react';
 import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -9,7 +9,6 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { TrackCard } from '../ui/TrackCard';
 import { TrackCardSkeleton, PlaylistHeaderSkeleton } from '../ui/Skeleton';
 import type { PlaylistTrack } from '../../types';
@@ -27,7 +26,6 @@ import { EXAMPLE_PLAYLIST_ARWEAVE_TX_ID } from '../../constants/examplePlaylists
 export function PlaylistLoaderTab() {
   const [txId, setTxId] = useState(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
   const [searchQuery, setSearchQuery] = useState('');
-  // Debounce search query to avoid excessive filtering on every keystroke
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { parsePlaylist } = usePlaylistParser();
   const {
@@ -46,34 +44,27 @@ export function PlaylistLoaderTab() {
     await parsePlaylist(txId.trim());
   };
 
-  // Handle play button click - select the track and toggle play/pause
   const handlePlayTrack = (track: PlaylistTrack) => {
     selectTrack(track);
     togglePlay(track.audio_url);
   };
 
-  // Check if a track is currently playing
   const isTrackPlaying = (track: PlaylistTrack): boolean => {
     return playbackState === 'playing' && currentUrl === track.audio_url;
   };
 
-  // Check if a track is the currently selected track (regardless of playing state)
   const isTrackSelected = (track: PlaylistTrack): boolean => {
     return selectedTrack?.title === track.title && selectedTrack?.artist === track.artist;
   };
 
-  // Handle card click - if clicking on the selected/playing track, toggle play/pause
   const handleCardClick = (track: PlaylistTrack) => {
-    // If this is the currently selected track, toggle play/pause
     if (isTrackSelected(track)) {
       togglePlay(track.audio_url);
     } else {
-      // Otherwise, just select the track (doesn't auto-play)
       selectTrack(track);
     }
   };
 
-  // Filter tracks based on debounced search query
   const filteredTracks = currentPlaylist?.tracks.filter((track) => {
     if (!debouncedSearchQuery.trim()) return true;
     const query = debouncedSearchQuery.toLowerCase();
@@ -84,85 +75,66 @@ export function PlaylistLoaderTab() {
     );
   }) || [];
 
-  // Determine status indicator based on current state
   const getFetchStatus = (): 'healthy' | 'degraded' | 'error' => {
     if (error) return 'error';
     if (isLoading) return 'degraded';
     if (currentPlaylist) return 'healthy';
-    return 'degraded'; // Default state
+    return 'degraded';
   };
 
   return (
     <div className="playlist-tab-container">
-      {/* Header with Status Indicator - More compact */}
-      <div className="playlist-header">
-        <div className="playlist-header-content">
-          <div className="playlist-header-title-row">
-            <div className="playlist-header-icon-wrapper">
-              <Music className="playlist-header-icon" />
-            </div>
-            <h2 className="playlist-header-title">Playlist Parser</h2>
+      {/* Compact Header + Input Section */}
+      <div className="playlist-header-input">
+        <div className="playlist-header-input-left">
+          <div className="playlist-header-icon-wrapper">
+            <Music className="playlist-header-icon" />
           </div>
-          <p className="playlist-header-subtitle">Load playlists from Arweave</p>
+          <div className="playlist-header-text">
+            <h2 className="playlist-header-title">Playlist Parser</h2>
+            <StatusIndicator
+              status={getFetchStatus()}
+              label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
+            />
+          </div>
         </div>
-        <StatusIndicator
-          status={getFetchStatus()}
-          label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
-        />
-      </div>
 
-      {/* Input Section - Redesigned with Card, Input, and Button components */}
-      <Card variant="default" padding="sm">
-        <CardHeader>
-          <CardTitle>Load a Playlist</CardTitle>
-          <CardDescription>
-            Enter an Arweave transaction ID to fetch and parse a playlist
-          </CardDescription>
-        </CardHeader>
-
-        <div className="playlist-input-section">
+        <div className="playlist-header-input-right">
           <Input
             id="arweave-tx-id"
-            label="Arweave Transaction ID"
+            label=""
             value={txId}
             onChange={(e) => setTxId(e.target.value)}
-            placeholder="Enter Arweave TX ID..."
+            placeholder="Arweave TX ID..."
             disabled={isLoading}
             leftIcon={Music}
-            helperText="The transaction should contain a valid ServerlessPlaylist JSON"
+            containerClassName="playlist-input-compact"
           />
-
           <Button
             onClick={handleParse}
             disabled={isLoading || !txId.trim()}
             isLoading={isLoading}
             leftIcon={Download}
             variant="primary"
-            size="md"
-            className="playlist-load-button"
+            size="sm"
+            className="playlist-load-button-compact"
           >
-            {isLoading ? 'Fetching...' : 'Fetch & Parse Playlist'}
+            {isLoading ? 'Fetching...' : 'Load'}
           </Button>
-
-          {error && (
-            <div className="playlist-error">
-              <span className="playlist-error-icon" role="img" aria-label="Warning">⚠️</span>
-              <div className="playlist-error-content">
-                <p className="playlist-error-title">Error Loading Playlist</p>
-                <p className="playlist-error-message">{error}</p>
-              </div>
-            </div>
-          )}
         </div>
-      </Card>
+      </div>
 
-      {/* Loading Skeletons - Show during fetch */}
+      {error && (
+        <div className="playlist-error-compact">
+          <span className="playlist-error-icon" role="img" aria-label="Warning">⚠️</span>
+          <span className="playlist-error-message">{error}</span>
+        </div>
+      )}
+
+      {/* Loading Skeletons */}
       {isLoading && (
         <div className="playlist-loading fade-in">
-          {/* Playlist Header Skeleton */}
           <PlaylistHeaderSkeleton />
-
-          {/* Track List Skeletons */}
           <div className="playlist-track-skeletons">
             <div className="playlist-track-skeleton-list">
               {Array.from({ length: 5 }).map((_, idx) => (
@@ -173,121 +145,65 @@ export function PlaylistLoaderTab() {
         </div>
       )}
 
-      {/* Empty State - No Playlist Loaded - Refined with smaller, more elegant proportions */}
+      {/* Empty State - Compact */}
       {!currentPlaylist && !isLoading && !error && (
-        <Card variant="flat" padding="md">
-          <div className="playlist-empty-state">
-            <div className="playlist-empty-icon-wrapper">
-              <span className="playlist-empty-icon" role="img" aria-label="Music">🎵</span>
-            </div>
-            <h4 className="playlist-empty-title">No Playlist Loaded</h4>
-            <p className="playlist-empty-description">
-              Enter an Arweave transaction ID above to load a playlist, or try the example playlist to get started.
-            </p>
-            <Button
-              onClick={() => {
-                setTxId(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID);
-                handleParse();
-              }}
-              variant="secondary"
-              size="sm"
-              leftIcon={Music}
-            >
-              Load Example Playlist
-            </Button>
-          </div>
-        </Card>
+        <div className="playlist-empty-state-compact">
+          <span className="playlist-empty-icon" role="img" aria-label="Music">🎵</span>
+          <span className="playlist-empty-text">No playlist loaded. <button onClick={() => { setTxId(EXAMPLE_PLAYLIST_ARWEAVE_TX_ID); handleParse(); }} className="playlist-empty-link">Load example</button></span>
+        </div>
       )}
 
       {currentPlaylist && (
         <div className="playlist-content">
-          {/* Spotify-style Playlist Header - Refined with smaller, balanced image */}
-          <div className="playlist-display-header">
-            <div className="playlist-display-header-inner">
-              {/* Refined Album Art - Using pure CSS classes instead of tailwind */}
-              <div className="playlist-header-art">
-                <div className="album-art-wrapper">
-                  {currentPlaylist.image ? (
-                    <img
-                      src={currentPlaylist.image}
-                      alt={currentPlaylist.name}
-                      className="album-art-image"
-                      width={64}
-                      height={64}
-                      loading="lazy"
-                      onError={(e) => {
-                        // Fallback to gradient on error
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `
-                            <div class="album-art-fallback">
-                              <svg style="width: 20px; height: 20px; color: hsl(var(--primary-foreground) / 0.7);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
-                              </svg>
-                            </div>
-                          `;
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="album-art-fallback">
-                      <Music style={{ width: '20px', height: '20px', color: 'hsl(var(--primary-foreground) / 0.7)' }} />
-                    </div>
-                  )}
-                </div>
+          {/* Compact Playlist Header */}
+          <div className="playlist-display-header-compact">
+            <div className="playlist-display-header-left">
+              <div className="album-art-wrapper-compact">
+                {currentPlaylist.image ? (
+                  <img
+                    src={currentPlaylist.image}
+                    alt={currentPlaylist.name}
+                    className="album-art-image-compact"
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="album-art-fallback-compact">
+                            <svg style="width: 14px; height: 14px; color: hsl(var(--primary-foreground) / 0.7);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                            </svg>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="album-art-fallback-compact">
+                    <Music style={{ width: '14px', height: '14px', color: 'hsl(var(--primary-foreground) / 0.7)' }} />
+                  </div>
+                )}
               </div>
 
-              {/* Playlist Info */}
-              <div className="playlist-display-info">
-                {/* Playlist Type Badge - Smaller, more subtle */}
-                <div className="playlist-badge">
-                  <Sparkles className="playlist-badge-icon" />
-                  <span>Playlist</span>
+              <div className="playlist-display-info-compact">
+                <div className="playlist-info-row-primary">
+                  <h3 className="playlist-display-title-compact">{currentPlaylist.name}</h3>
+                  <span className="playlist-display-stats-compact">
+                    {currentPlaylist.creator} · {currentPlaylist.tracks.length} {currentPlaylist.tracks.length === 1 ? 'track' : 'tracks'}
+                    {currentPlaylist.genre && ` · ${currentPlaylist.genre}`}
+                  </span>
                 </div>
-
-                {/* Title - More refined sizing */}
-                <h3 className="playlist-display-title">
-                  {currentPlaylist.name}
-                </h3>
-
-                {/* Description - Smaller text */}
                 {currentPlaylist.description && (
-                  <p className="playlist-display-description">
-                    {currentPlaylist.description}
-                  </p>
+                  <p className="playlist-display-description-compact">{currentPlaylist.description}</p>
                 )}
-
-                {/* Quick Stats Row - More compact */}
-                <div className="playlist-display-stats">
-                  <span className="playlist-display-creator">
-                    {currentPlaylist.creator}
-                  </span>
-                  <span className="playlist-display-separator" />
-                  <span className="playlist-display-track-count">
-                    {currentPlaylist.tracks.length} {currentPlaylist.tracks.length === 1 ? 'track' : 'tracks'}
-                  </span>
-                  {currentPlaylist.genre && (
-                    <>
-                      <span className="playlist-display-separator" />
-                      <span className="playlist-display-genre">
-                        {currentPlaylist.genre}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {/* Tags - More compact styling */}
                 {currentPlaylist.tags && currentPlaylist.tags.length > 0 && (
-                  <div className="playlist-display-tags">
-                    {currentPlaylist.tags.slice(0, 5).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="playlist-display-tag"
-                      >
-                        {tag}
-                      </span>
+                  <div className="playlist-display-tags-compact">
+                    {currentPlaylist.tags.slice(0, 4).map((tag, idx) => (
+                      <span key={idx} className="playlist-display-tag-compact">{tag}</span>
                     ))}
                   </div>
                 )}
@@ -295,65 +211,53 @@ export function PlaylistLoaderTab() {
             </div>
           </div>
 
-          {/* Search Bar Section */}
-          <div className="playlist-search-section">
-            {/* Sticky Search Bar */}
-            <div className="playlist-search-sticky">
-              <Input
-                id="track-search"
-                label="Search Tracks"
+          {/* Compact Search + Track List */}
+          <div className="playlist-search-section-compact">
+            <div className="playlist-search-bar-compact">
+              <Search className="search-icon-compact" />
+              <input
+                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter by title, artist, or album..."
-                leftIcon={Search}
-                helperText={searchQuery !== debouncedSearchQuery
-                  ? 'Filtering...'
-                  : searchQuery.trim()
-                    ? `Found ${filteredTracks.length} of ${currentPlaylist.tracks.length} tracks`
-                    : `${currentPlaylist.tracks.length} tracks total`
-                }
+                placeholder={`Search ${currentPlaylist.tracks.length} tracks...`}
+                className="search-input-compact"
               />
+              {searchQuery && (
+                <span className="search-count-compact">
+                  {filteredTracks.length} found
+                </span>
+              )}
             </div>
 
-            {/* Track List - Refined spacing */}
-            <div className="playlist-track-list">
+            <div className="playlist-track-list-compact">
               {filteredTracks.length === 0 ? (
-                /* No Search Results State - More compact */
-                <div className="playlist-no-results">
+                <div className="playlist-no-results-compact">
                   <span className="playlist-no-results-icon" role="img" aria-label="Search">🔍</span>
-                  <h4 className="playlist-no-results-title">No tracks found</h4>
-                  <p className="playlist-no-results-description">
-                    Try adjusting your search query
-                  </p>
+                  <span className="playlist-no-results-text">No tracks found matching "{searchQuery}"</span>
                 </div>
               ) : (
-                <div className="playlist-track-scroll">
-                  {filteredTracks.map((track: PlaylistTrack) => {
-                    // Find the original track number in the full playlist
-                    const originalIndex = currentPlaylist.tracks.findIndex(t => t.title === track.title && t.artist === track.artist) + 1;
-                    return (
-                      <TrackCard
-                        key={`${track.title}-${track.artist}-${originalIndex}`}
-                        track={track}
-                        index={originalIndex > 0 ? originalIndex : undefined}
-                        isSelected={selectedTrack?.title === track.title}
-                        isPlaying={isTrackPlaying(track)}
-                        onClick={() => handleCardClick(track)}
-                        onPlay={() => handlePlayTrack(track)}
-                        size="default"
-                      />
-                    );
-                  })}
-                </div>
+                filteredTracks.map((track: PlaylistTrack) => {
+                  const originalIndex = currentPlaylist.tracks.findIndex(t => t.title === track.title && t.artist === track.artist) + 1;
+                  return (
+                    <TrackCard
+                      key={`${track.title}-${track.artist}-${originalIndex}`}
+                      track={track}
+                      index={originalIndex > 0 ? originalIndex : undefined}
+                      isSelected={selectedTrack?.title === track.title}
+                      isPlaying={isTrackPlaying(track)}
+                      onClick={() => handleCardClick(track)}
+                      onPlay={() => handlePlayTrack(track)}
+                      size="compact"
+                    />
+                  );
+                })
               )}
             </div>
           </div>
 
-          {/* Raw JSON Dump Section - for debugging and engine verification */}
+          {/* Raw JSON Dump Section */}
           <div className="playlist-debug-section">
             <h4 className="playlist-debug-title">Raw Data (Debug)</h4>
-
-            {/* Raw Arweave Response */}
             {rawResponseData != null && parsedTimestamp && (
               <RawJsonDump
                 data={rawResponseData}
@@ -363,8 +267,6 @@ export function PlaylistLoaderTab() {
                 defaultOpen={false}
               />
             )}
-
-            {/* Parsed ServerlessPlaylist Object */}
             {parsedTimestamp && (
               <RawJsonDump
                 data={currentPlaylist}
