@@ -608,9 +608,9 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify XP is awarded to active character
   - [x] Verify source is tracked as `'combat'`
   - [x] Verify notification shows XP amount
-- [ ] 6.2.5 - Test: XP threshold tracking
-  - [ ] Add XP incrementally and verify thresholds work
-  - [ ] Verify `xp.next_level` updates correctly
+- [x] 6.2.5 - Test: XP threshold tracking
+  - [x] Add XP incrementally and verify thresholds work
+  - [x] Verify `xp.next_level` updates correctly
 
 ---
 
