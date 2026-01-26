@@ -603,11 +603,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Click "Exploration" (+250 XP)
   - [x] Verify XP is added to character
   - [x] Verify source is tracked as `'exploration'`
-- [ ] 6.2.4 - Test: Combat XP award
-  - [ ] Complete a combat in Combat Simulator
-  - [ ] Verify XP is awarded to active character
-  - [ ] Verify source is tracked as `'combat'`
-  - [ ] Verify notification shows XP amount
+- [x] 6.2.4 - Test: Combat XP award
+  - [x] Complete a combat in Combat Simulator
+  - [x] Verify XP is awarded to active character
+  - [x] Verify source is tracked as `'combat'`
+  - [x] Verify notification shows XP amount
 - [ ] 6.2.5 - Test: XP threshold tracking
   - [ ] Add XP incrementally and verify thresholds work
   - [ ] Verify `xp.next_level` updates correctly
