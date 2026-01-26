@@ -11,6 +11,7 @@ import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { formatTime } from '@/utils/formatters';
+import { showToast } from '@/components/ui/Toast';
 
 interface AppHeaderProps {
   /** Main title displayed in the header */
@@ -43,7 +44,11 @@ export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 
     // End the session and stop audio
     const session = hookEndSession();
     if (session) {
-      // Session ended successfully, will be added to history
+      // Session ended successfully, show visual feedback
+      showToast(`Session ended: ${session.duration_seconds}s tracked`, 'success');
+    } else {
+      // No active session to end
+      showToast('No active session to end', 'warning');
     }
     stop();
   };
