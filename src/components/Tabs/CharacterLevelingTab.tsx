@@ -87,15 +87,15 @@ export function CharacterLevelingTab() {
     }
   }, [activeChar]);
 
-  // Initialize stat strategy on mount only (not on every character change)
+  // Initialize stat strategy on mount and update when switching characters
   useEffect(() => {
-    if (activeChar && !statStrategy) {
+    if (activeChar) {
       const persistedStrategy = getCharacterStrategy(activeChar.seed);
       const initialStrategy = persistedStrategy || (activeChar.gameMode === 'standard' ? 'dnD5e' : 'dnD5e_smart');
       setStatStrategy(initialStrategy);
       updateStatStrategy(initialStrategy);
     }
-  }, []); // Empty deps - run once on mount
+  }, [activeChar?.seed]); // Re-run when active character changes
 
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string): string => {

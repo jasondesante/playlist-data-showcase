@@ -264,16 +264,19 @@ const formatSessionTime = (timestamp: number) => {
 - - - Build passes ✓
 
 **Task 3.6:** Test manual strategy persistence
-- [ ] Create uncapped character → change strategy to manual → add XP → verify strategy stays
-- [ ] Level up → verify pending stats show → apply stats → verify stats increase
-- [ ] Refresh page → verify strategy still set to manual
-- [ ] Switch between characters → verify each keeps their own strategy
+- [x] Create uncapped character → change strategy to manual → add XP → verify strategy stays
+- [x] Level up → verify pending stats show → apply stats → verify stats increase
+- [x] Refresh page → verify strategy still set to manual
+- [x] Switch between characters → verify each keeps their own strategy
 -
 - **Verification Summary:**
-- - - Manual strategy persists across XP additions
-- - - Pending stat increases show for uncapped+manual characters
-- - - Each character has independent strategy
-- - - Strategy persists across page refresh
+- - - Manual strategy persists across XP additions ✓
+- - - Pending stat increases show for uncapped+manual characters ✓
+- - - Each character has independent strategy ✓
+- - - Strategy persists across page refresh ✓
+- - - **BUG FOUND**: statStrategy state not updating when switching characters
+- - - **FIXED**: Changed useEffect deps from [] to [activeChar?.seed]
+- - - Build passes ✓
 - **Phase 3 COMPLETE - Stat strategy persistence fixed**
 
 ---
