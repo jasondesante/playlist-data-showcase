@@ -142,6 +142,34 @@ export function CharacterLevelingTab() {
     setTimeout(() => setLevelUpPulse(false), 600);
   };
 
+  // Helper function to show auto-apply notification for uncapped mode
+  const showUncappedStatNotification = (levelUpDetails: LevelUpDetail[]) => {
+    // Collect all stat increases from all level-ups
+    const allStatIncreases: Array<{ ability: string; delta: number; oldValue: number; newValue: number }> = [];
+
+    for (const detail of levelUpDetails) {
+      if (detail.statIncreases) {
+        for (const stat of detail.statIncreases) {
+          allStatIncreases.push({
+            ability: stat.ability,
+            delta: stat.delta,
+            oldValue: stat.oldValue,
+            newValue: stat.newValue
+          });
+        }
+      }
+    }
+
+    // If there are stat increases, show notification
+    if (allStatIncreases.length > 0) {
+      const statChangeText = allStatIncreases
+        .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
+        .join(', ');
+
+      console.log(`📊 Stats auto-increased: ${statChangeText}`);
+    }
+  };
+
   // XP Source handlers
   const handleCompleteQuest = async () => {
     if (!activeChar || isProcessing) return;
@@ -150,6 +178,12 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 500, 'quest');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
         // Show level-up modal with details
         if (result.levelUpDetails && result.levelUpDetails.length > 0) {
           setLevelUpDetails(result.levelUpDetails);
@@ -169,6 +203,12 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 5000, 'boss_defeat');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
         // Show level-up modal with details
         if (result.levelUpDetails && result.levelUpDetails.length > 0) {
           setLevelUpDetails(result.levelUpDetails);
@@ -188,6 +228,12 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 250, 'exploration');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
         // Show level-up modal with details
         if (result.levelUpDetails && result.levelUpDetails.length > 0) {
           setLevelUpDetails(result.levelUpDetails);

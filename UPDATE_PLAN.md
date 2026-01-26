@@ -452,11 +452,11 @@ The playlist data engine has been significantly updated with new features around
 ### Task 4.7: Add Auto-Apply Notification for Uncapped Mode
 **File:** `src/components/Tabs/CharacterLevelingTab.tsx`
 
-- [ ] 4.7.1 - Add check for `character.gameMode === 'uncapped'` in level-up handler
-- [ ] 4.7.2 - When uncapped mode levels up with stat increases, show notification
-- [ ] 4.7.3 - Format notification: "📊 Stats auto-increased: {STAT} +{delta} ({old} → {new})"
-- [ ] 4.7.4 - For multiple stats, show all in list format
-- [ ] 4.7.5 - Use different toast style (blue instead of yellow)
+- [x] 4.7.1 - Add check for `character.gameMode === 'uncapped'` in level-up handler
+- [x] 4.7.2 - When uncapped mode levels up with stat increases, show notification
+- [x] 4.7.3 - Format notification: "📊 Stats auto-increased: {STAT} +{delta} ({old} → {new})"
+- [x] 4.7.4 - For multiple stats, show all in list format
+- [x] 4.7.5 - Use different toast style (blue instead of yellow)
 - [ ] 4.7.6 - Test: Level up uncapped character and verify notification appears
 - [ ] 4.7.7 - Test: Verify notification shows correct stat values
 - [ ] 4.7.8 - Test: Verify no pending stat badge appears for uncapped mode
