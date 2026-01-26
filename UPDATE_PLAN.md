@@ -624,10 +624,10 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify proficiency bonus is displayed (if increased)
   - [x] Verify stat increases are displayed (if any)
   - [x] Verify new features are listed (if any)
-- [ ] 6.3.2 - Test: Multi-level-up
-  - [ ] Add large XP amount (e.g., boss defeat)
-  - [ ] Verify modal shows all level-ups
-  - [ ] Verify each level-up has correct details
+- [x] 6.3.2 - Test: Multi-level-up
+  - [x] Add large XP amount (e.g., boss defeat)
+  - [x] Verify modal shows all level-ups
+  - [x] Verify each level-up has correct details
 - [ ] 6.3.3 - Test: HP increases every level
   - [ ] Level up multiple times
   - [ ] Verify HP increases each time (not just at stat increase levels)
