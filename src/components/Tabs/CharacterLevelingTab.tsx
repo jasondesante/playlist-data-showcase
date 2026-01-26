@@ -5,6 +5,8 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { LevelUpDetailModal } from '../LevelUpDetailModal';
+import type { LevelUpDetail } from 'playlist-data-engine';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
@@ -39,6 +41,8 @@ export function CharacterLevelingTab() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [levelUpPulse, setLevelUpPulse] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
   const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
 
@@ -131,6 +135,11 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 500, 'quest');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
       }
       console.log(`Quest completed! +500 XP. Total: ${result.character.xp.current}`);
     } finally {
@@ -145,6 +154,11 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 5000, 'boss_defeat');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
       }
       console.log(`Boss defeated! +5,000 XP. Total: ${result.character.xp.current}`);
     } finally {
@@ -159,11 +173,22 @@ export function CharacterLevelingTab() {
       const result = addXPFromSource(activeChar, 250, 'exploration');
       if (result.leveledUp) {
         triggerLevelUpCelebration();
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
       }
       console.log(`Exploration completed! +250 XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Handler for closing level-up modal
+  const handleCloseLevelUpModal = () => {
+    setShowLevelUpModal(false);
+    setLevelUpDetails([]);
   };
 
   if (!activeChar) {
@@ -412,6 +437,13 @@ export function CharacterLevelingTab() {
         title="Raw Character Leveling Data"
         timestamp={new Date()}
         status="healthy"
+      />
+
+      {/* Level-Up Detail Modal */}
+      <LevelUpDetailModal
+        levelUpDetails={levelUpDetails}
+        isOpen={showLevelUpModal}
+        onClose={handleCloseLevelUpModal}
       />
     </div>
   );
