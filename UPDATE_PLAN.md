@@ -748,8 +748,15 @@ The playlist data engine has been significantly updated with new features around
     - Added validation for required audio profile properties (bass_dominance, treble_dominance, mid_dominance, average_amplitude)
     - Added visible toast notification in `CharacterGenTab` component for missing audio profile
     - Hook now returns `null` and logs error when audio profile is missing or invalid
-- [ ] 6.7.2 - Test: Add XP with no active character
-  - [ ] Verify buttons are disabled or show error
+- [x] 6.7.2 - Test: Add XP with no active character
+  - [x] Verify buttons are disabled or show error
+  - **Implementation Summary:**
+    - The `CharacterLevelingTab` component already handles the "no active character" case correctly
+    - When `activeChar` is null, the component returns early (line 303-325) and shows an empty state UI
+    - The empty state displays: "No Character Generated" with instructions to go to Character Generation tab
+    - Since the entire UI with XP buttons is NOT rendered when there's no active character, users cannot click XP buttons
+    - This is a better UX than showing disabled buttons - the user is immediately informed they need a character first
+    - Build passes with no errors
 - [ ] 6.7.3 - Test: Level up beyond level 20 (uncapped)
   - [ ] Verify no errors
   - [ ] Verify XP thresholds continue
