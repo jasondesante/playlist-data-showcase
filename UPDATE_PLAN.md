@@ -647,11 +647,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Level standard mode character to 4
   - [x] Verify "Pending Stat Increases: 1" badge appears
   - [x] Verify "Apply Stat Increases" button is shown
-- [ ] 6.4.2 - Test: Stat selection modal opens
-  - [ ] Click "Apply Stat Increases" button
-  - [ ] Verify modal appears with correct pending count
-  - [ ] Verify all 6 stat buttons are shown
-  - [ ] Verify current stat values are displayed
+- [x] 6.4.2 - Test: Stat selection modal opens
+  - [x] Click "Apply Stat Increases" button
+  - [x] Verify modal appears with correct pending count
+  - [x] Verify all 6 stat buttons are shown
+  - [x] Verify current stat values are displayed
 - [ ] 6.4.3 - Test: Single stat selection
   - [ ] Click one stat button (e.g., STR)
   - [ ] Verify "Apply Increases" button is enabled
