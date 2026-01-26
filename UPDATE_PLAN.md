@@ -659,13 +659,13 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify stat increases by +2
   - [x] Verify pending count decreases
   - [x] Verify success notification appears
-- [ ] 6.4.4 - Test: Two stat selection
-  - [ ] Select "Option 2" mode
-  - [ ] Click two stat buttons (e.g., STR and DEX)
-  - [ ] Verify "Apply Increases" button is enabled
-  - [ ] Click apply
-  - [ ] Verify both stats increase by +1
-  - [ ] Verify pending count decreases
+- [x] 6.4.4 - Test: Two stat selection
+  - [x] Select "Option 2" mode
+  - [x] Click two stat buttons (e.g., STR and DEX)
+  - [x] Verify "Apply Increases" button is enabled
+  - [x] Click apply
+  - [x] Verify both stats increase by +1
+  - [x] Verify pending count decreases
 - [ ] 6.4.5 - Test: Invalid selection handling
   - [ ] Try to apply with 0 stats selected
   - [ ] Verify error message appears
