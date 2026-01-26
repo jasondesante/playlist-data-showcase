@@ -1,0 +1,573 @@
+/* ============================================
+   STAT SELECTION MODAL COMPONENT
+   ============================================ */
+
+/* Modal Overlay - Backdrop with blur */
+.statmodal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: hsl(0 0% 0% / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: statmodalOverlayFadeIn 0.3s ease-out;
+}
+
+@keyframes statmodalOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.statmodal-container {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    hsl(270 30% 15%),
+    hsl(280 40% 12%)
+  );
+  border: 2px solid hsl(280 60% 50% / 0.5);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px hsl(280 80% 60% / 0.2),
+    0 25px 50px -12px hsl(0 0% 0% / 0.5),
+    0 0 100px -20px hsl(280 80% 60% / 0.3);
+  animation: statmodalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes statmodalSlideIn {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .statmodal-container {
+    max-width: 36rem;
+  }
+}
+
+/* Modal Header */
+.statmodal-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 25% / 0.5),
+    hsl(270 60% 20% / 0.5)
+  );
+  border-bottom: 1px solid hsl(280 60% 40% / 0.3);
+}
+
+.statmodal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: hsl(280 20% 95%);
+  letter-spacing: 0.02em;
+}
+
+.statmodal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: hsl(280 20% 70%);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.statmodal-close-btn:hover {
+  background: hsl(0 0% 0% / 0.2);
+  color: hsl(280 20% 90%);
+}
+
+.statmodal-close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(280 80% 60% / 0.5);
+}
+
+/* Modal Content - Scrollable area */
+.statmodal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Custom scrollbar for modal content */
+.statmodal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.statmodal-content::-webkit-scrollbar-track {
+  background: hsl(280 30% 15%);
+  border-radius: 3px;
+}
+
+.statmodal-content::-webkit-scrollbar-thumb {
+  background: hsl(280 60% 40%);
+  border-radius: 3px;
+}
+
+.statmodal-content::-webkit-scrollbar-thumb:hover {
+  background: hsl(280 60% 50%);
+}
+
+/* Info Section */
+.statmodal-info {
+  padding: 1rem;
+  background: hsl(45 100% 20% / 0.15);
+  border: 1px solid hsl(45 100% 40% / 0.3);
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.statmodal-info-text {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: hsl(280 20% 95%);
+}
+
+.statmodal-pending-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(45 100% 95%);
+  background: hsl(45 100% 50%);
+  border-radius: 9999px;
+  margin: 0 0.25rem;
+}
+
+.statmodal-info-subtext {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(280 20% 70%);
+}
+
+/* Mode Toggle Section */
+.statmodal-mode-toggle {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.statmodal-mode-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.875rem 0.75rem;
+  background: hsl(280 20% 18%);
+  border: 2px solid hsl(280 50% 35% / 0.4);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.statmodal-mode-btn:hover {
+  background: hsl(280 20% 22%);
+  border-color: hsl(280 50% 45% / 0.5);
+}
+
+.statmodal-mode-btn:active {
+  transform: scale(0.98);
+}
+
+.statmodal-mode-btn.statmodal-mode-active {
+  background: hsl(150 70% 25% / 0.2);
+  border-color: hsl(150 70% 50%);
+}
+
+.statmodal-mode-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(280 20% 95%);
+  margin-bottom: 0.25rem;
+}
+
+.statmodal-mode-active .statmodal-mode-label {
+  color: hsl(150 70% 70%);
+}
+
+.statmodal-mode-desc {
+  font-size: 0.75rem;
+  color: hsl(280 20% 60%);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Stat Selection Grid */
+.statmodal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .statmodal-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Stat Button */
+.statmodal-stat-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.875rem 0.5rem;
+  background: hsl(0 0% 0% / 0.25);
+  border: 2px solid hsl(280 50% 35% / 0.4);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.statmodal-stat-btn:hover:not(:disabled) {
+  background: hsl(0 0% 0% / 0.35);
+  border-color: hsl(280 50% 50% / 0.5);
+  transform: translateY(-2px);
+}
+
+.statmodal-stat-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.statmodal-stat-btn.statmodal-stat-selected {
+  background: hsl(var(--stat-color) / 0.15);
+  border-color: hsl(var(--stat-color));
+  box-shadow:
+    0 0 0 1px hsl(var(--stat-color) / 0.3) inset,
+    0 4px 12px hsl(var(--stat-color) / 0.3);
+}
+
+.statmodal-stat-btn.statmodal-stat-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.statmodal-stat-btn.statmodal-stat-disabled:hover {
+  transform: none;
+  background: hsl(0 0% 0% / 0.25);
+  border-color: hsl(280 50% 35% / 0.4);
+}
+
+.statmodal-stat-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px hsl(280 80% 60% / 0.5),
+    0 0 0 4px hsl(var(--stat-color) / 0.4);
+}
+
+/* Stat Button Header */
+.statmodal-stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+
+.statmodal-stat-short {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: hsl(280 20% 90%);
+  letter-spacing: 0.05em;
+}
+
+.statmodal-stat-selected .statmodal-stat-short {
+  color: hsl(var(--stat-color));
+}
+
+.statmodal-stat-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(280 20% 60%);
+  background: hsl(0 0% 0% / 0.3);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+.statmodal-stat-selected .statmodal-stat-value {
+  color: hsl(var(--stat-color));
+  background: hsl(var(--stat-color) / 0.2);
+}
+
+/* Stat Full Name */
+.statmodal-stat-full {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(280 20% 60%);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+/* Selection Badge */
+.statmodal-stat-badge {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: hsl(var(--stat-color));
+  background: hsl(var(--stat-color) / 0.2);
+  border: 1px solid hsl(var(--stat-color) / 0.4);
+  border-radius: 0.25rem;
+}
+
+/* Validation Message */
+.statmodal-validation {
+  padding: 0.75rem 1rem;
+  background: hsl(0 70% 25% / 0.2);
+  border: 1px solid hsl(0 70% 40% / 0.4);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(0 70% 70%);
+  text-align: center;
+  animation: statmodalShake 0.4s ease;
+}
+
+@keyframes statmodalShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* Modal Footer */
+.statmodal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.25rem;
+  background: hsl(280 20% 15%);
+  border-top: 1px solid hsl(280 60% 40% / 0.3);
+}
+
+.statmodal-cancel-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(280 20% 80%);
+  background: hsl(0 0% 0% / 0.3);
+  border: 1px solid hsl(280 50% 35% / 0.4);
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.statmodal-cancel-btn:hover {
+  background: hsl(0 0% 0% / 0.4);
+  border-color: hsl(280 50% 45% / 0.5);
+}
+
+.statmodal-cancel-btn:active {
+  transform: scale(0.98);
+}
+
+.statmodal-cancel-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(280 80% 60% / 0.5);
+}
+
+.statmodal-apply-btn {
+  flex: 2;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(150 70% 95%);
+  background: linear-gradient(
+    135deg,
+    hsl(150 70% 50%),
+    hsl(150 70% 40%)
+  );
+  border: none;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+  box-shadow:
+    0 4px 12px hsl(150 70% 30% / 0.4),
+    0 0 0 1px hsl(150 70% 60% / 0.3) inset;
+}
+
+.statmodal-apply-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px hsl(150 70% 30% / 0.5),
+    0 0 0 1px hsl(150 70% 70% / 0.4) inset;
+  filter: brightness(1.1);
+}
+
+.statmodal-apply-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px hsl(150 70% 30% / 0.4),
+    0 0 0 1px hsl(150 70% 60% / 0.3) inset;
+}
+
+.statmodal-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.statmodal-apply-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px hsl(150 70% 60% / 0.3),
+    0 4px 12px hsl(150 70% 30% / 0.4);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .statmodal-container {
+    max-height: 95vh;
+  }
+
+  .statmodal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .statmodal-title {
+    font-size: 1.125rem;
+  }
+
+  .statmodal-content {
+    padding: 1rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .statmodal-info {
+    padding: 0.875rem;
+  }
+
+  .statmodal-info-text {
+    font-size: 0.875rem;
+  }
+
+  .statmodal-info-subtext {
+    font-size: 0.75rem;
+  }
+
+  .statmodal-mode-toggle {
+    gap: 0.5rem;
+  }
+
+  .statmodal-mode-btn {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .statmodal-mode-label {
+    font-size: 0.875rem;
+  }
+
+  .statmodal-mode-desc {
+    font-size: 0.6875rem;
+  }
+
+  .statmodal-grid {
+    gap: 0.625rem;
+  }
+
+  .statmodal-stat-btn {
+    padding: 0.75rem 0.375rem;
+  }
+
+  .statmodal-stat-short {
+    font-size: 0.8125rem;
+  }
+
+  .statmodal-stat-value {
+    font-size: 0.75rem;
+  }
+
+  .statmodal-stat-full {
+    font-size: 0.625rem;
+  }
+
+  .statmodal-footer {
+    padding: 0.875rem 1.25rem 1rem;
+  }
+
+  .statmodal-cancel-btn,
+  .statmodal-apply-btn {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .statmodal-overlay,
+  .statmodal-container,
+  .statmodal-validation {
+    animation: none;
+  }
+
+  .statmodal-stat-btn,
+  .statmodal-mode-btn,
+  .statmodal-cancel-btn,
+  .statmodal-apply-btn {
+    transition: none;
+  }
+}

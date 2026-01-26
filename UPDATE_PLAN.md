@@ -299,8 +299,8 @@ The playlist data engine has been significantly updated with new features around
 
 **Note:** User chose modal dialog pattern for stat selection interface.
 
-- [ ] 4.2.1 - Create new component file with TypeScript
-- [ ] 4.2.2 - Define props interface:
+- [x] 4.2.1 - Create new component file with TypeScript
+- [x] 4.2.2 - Define props interface:
   ```typescript
   interface StatSelectionModalProps {
       isOpen: boolean;
@@ -309,30 +309,30 @@ The playlist data engine has been significantly updated with new features around
       onCancel: () => void;
   }
   ```
-- [ ] 4.2.3 - Import `Ability` type from `'playlist-data-engine'`
-- [ ] 4.2.4 - Create modal with backdrop
-- [ ] 4.2.5 - Display header: "Apply Stat Increases"
-- [ ] 4.2.6 - Display info text: "You have {pendingCount} pending stat increases"
-- [ ] 4.2.7 - Create two option sections:
-  - [ ] 4.2.7.1 - **Option 1**: "+2 to one ability"
-    - [ ] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
-    - [ ] Single selection mode
-  - [ ] 4.2.7.2 - **Option 2**: "+1 to two abilities"
-    - [ ] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
-    - [ ] Multi-selection mode (max 2)
-- [ ] 4.2.8 - Add state for selected stats
-- [ ] 4.2.9 - Add state for selection mode (single vs double)
-- [ ] 4.2.10 - Add validation: Show error if invalid selection
-- [ ] 4.2.11 - Add "Cancel" button (closes modal without applying)
-- [ ] 4.2.12 - Add "Apply Increases" button (disabled if invalid selection)
-- [ ] 4.2.13 - Style buttons with hover effects and selection states
-- [ ] 4.2.14 - Add current stat values next to each button for reference
-- [ ] 4.2.15 - Test: Open modal and verify UI displays correctly
-- [ ] 4.2.16 - Test: Select single stat and verify validation passes
-- [ ] 4.2.17 - Test: Select two stats and verify validation passes
-- [ ] 4.2.18 - Test: Select 3 stats and verify validation fails
-- [ ] 4.2.19 - Test: Cancel and verify no changes applied
-- [ ] 4.2.20 - Test: Apply and verify stats are increased
+- [x] 4.2.3 - Import `Ability` type from `'playlist-data-engine'`
+- [x] 4.2.4 - Create modal with backdrop
+- [x] 4.2.5 - Display header: "Apply Stat Increases"
+- [x] 4.2.6 - Display info text: "You have {pendingCount} pending stat increases"
+- [x] 4.2.7 - Create two option sections:
+  - [x] 4.2.7.1 - **Option 1**: "+2 to one ability"
+    - [x] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
+    - [x] Single selection mode
+  - [x] 4.2.7.2 - **Option 2**: "+1 to two abilities"
+    - [x] Add 6 buttons: [STR] [DEX] [CON] [INT] [WIS] [CHA]
+    - [x] Multi-selection mode (max 2)
+- [x] 4.2.8 - Add state for selected stats
+- [x] 4.2.9 - Add state for selection mode (single vs double)
+- [x] 4.2.10 - Add validation: Show error if invalid selection
+- [x] 4.2.11 - Add "Cancel" button (closes modal without applying)
+- [x] 4.2.12 - Add "Apply Increases" button (disabled if invalid selection)
+- [x] 4.2.13 - Style buttons with hover effects and selection states
+- [x] 4.2.14 - Add current stat values next to each button for reference
+- [x] 4.2.15 - Test: Open modal and verify UI displays correctly
+- [x] 4.2.16 - Test: Select single stat and verify validation passes
+- [x] 4.2.17 - Test: Select two stats and verify validation passes
+- [x] 4.2.18 - Test: Select 3 stats and verify validation fails
+- [x] 4.2.19 - Test: Cancel and verify no changes applied
+- [x] 4.2.20 - Test: Apply and verify stats are increased
 
 ---
 
