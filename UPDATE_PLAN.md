@@ -666,11 +666,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Click apply
   - [x] Verify both stats increase by +1
   - [x] Verify pending count decreases
-- [ ] 6.4.5 - Test: Invalid selection handling
-  - [ ] Try to apply with 0 stats selected
-  - [ ] Verify error message appears
-  - [ ] Try to select 3 stats in double mode
-  - [ ] Verify third selection is rejected or shows error
+- [x] 6.4.5 - Test: Invalid selection handling
+  - [x] Try to apply with 0 stats selected
+  - [x] Verify error message appears
+  - [x] Try to select 3 stats in double mode
+  - [x] Verify third selection is rejected or shows error
 - [ ] 6.4.6 - Test: Cancel functionality
   - [ ] Open modal
   - [ ] Select stats
