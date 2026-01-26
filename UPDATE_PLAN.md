@@ -1077,13 +1077,13 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.10: Delete DESIGN_DOCS Folder After Verification
 **Goal:** Remove the old DESIGN_DOCS folder once all content has been moved to docs/.
 
-- [ ] 7.10.1 - Verify all files from DESIGN_DOCS have been moved to docs/:
-  - [ ] SMOKE_TEST_CHECKLIST.md → docs/development/testing/smoke-tests.md (done in 7.3.1)
-  - [ ] DETERMINISM_TESTING.md → docs/development/testing/determinism.md (done in 7.3.2)
-  - [ ] PERFORMANCE_TESTING.md → docs/development/testing/performance.md (done in 7.3.3)
-  - [ ] IOS_ANDROID_SENSOR_TESTING.md → docs/development/testing/mobile-sensors.md (done in 7.3.4)
-  - [ ] BUGS_TO_FIX.md → docs/design/bugs-to-fix.md (done in 7.3.5)
-  - [ ] FROM_DATA_ENGINE/ → docs/engine/ (done in 7.8)
+- [x] 7.10.1 - Verify all files from DESIGN_DOCS have been moved to docs/:
+  - [x] SMOKE_TEST_CHECKLIST.md → docs/development/testing/smoke-tests.md (done in 7.3.1)
+  - [x] DETERMINISM_TESTING.md → docs/development/testing/determinism.md (done in 7.3.2)
+  - [x] PERFORMANCE_TESTING.md → docs/development/testing/performance.md (done in 7.3.3)
+  - [x] IOS_ANDROID_SENSOR_TESTING.md → docs/development/testing/mobile-sensors.md (done in 7.3.4)
+  - [x] BUGS_TO_FIX.md → docs/design/bugs-to-fix.md (done in 7.3.5)
+  - [x] FROM_DATA_ENGINE/ → docs/engine/ (done in 7.8)
 - [ ] 7.10.2 - Delete DESIGN_DOCS folder completely
 - [ ] 7.10.3 - Verify no broken links remain after deletion
 - [ ] 7.10.4 - Verify /docs/ is now the ONLY documentation folder
