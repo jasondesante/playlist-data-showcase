@@ -366,9 +366,9 @@ The playlist data engine has been significantly updated with new features around
 
 **Note:** StatManager strategy determines how stats are automatically increased on level-up. Different strategies suit different playstyles.
 
-- [ ] 4.4.1 - Create new component file with TypeScript
-- [ ] 4.4.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
-- [ ] 4.4.3 - Define props interface:
+- [x] 4.4.1 - Create new component file with TypeScript
+- [x] 4.4.2 - Import `StatIncreaseStrategyType` from `'playlist-data-engine'`
+- [x] 4.4.3 - Define props interface:
   ```typescript
   interface StatStrategySelectorProps {
       value: StatIncreaseStrategyType;
@@ -376,24 +376,24 @@ The playlist data engine has been significantly updated with new features around
       disabled?: boolean;
   }
   ```
-- [ ] 4.4.4 - Import Lucide icons: `Settings`, `Zap`, `Shield`, `TrendingUp`
-- [ ] 4.4.5 - Create dropdown/select component with options:
-  - [ ] **Manual D&D 5e** (`'dnD5e'`) - 2-step level-up, you choose stats manually
-  - [ ] **Smart Auto** (`'dnD5e_smart'`) - Intelligently picks best stats based on class
-  - [ ] **Balanced** (`'balanced'`) - +1 to two lowest stats each time
-  - [ ] **Primary Only** (`'primary_only'`) - Always boosts class's primary stat
-  - [ ] **Random** (`'random'`) - Random stat selection each level-up
-- [ ] 4.4.6 - Add descriptions/tooltip for each strategy:
-  - [ ] Manual: "Standard D&D 5e - choose +2 to one stat or +1 to two"
-  - [ ] Smart: "AI picks optimal stats for your class automatically"
-  - [ ] Balanced: "Distributes evenly across your lowest stats"
-  - [ ] Primary: "Always maximizes your class's main ability"
-  - [ ] Random: "Rolls the dice for unpredictable builds"
-- [ ] 4.4.7 - Add visual indicator showing currently active strategy
-- [ ] 4.4.8 - Style with CSS
-- [ ] 4.4.9 - Add to UI exports
-- [ ] 4.4.10 - Test: Verify dropdown shows all 5 strategies
-- [ ] 4.4.11 - Test: Verify changing strategy updates `CharacterUpdater` configuration
+- [x] 4.4.4 - Import Lucide icons: `Settings`, `Zap`, `Shield`, `TrendingUp`, `Dice1`
+- [x] 4.4.5 - Create dropdown/select component with options:
+  - [x] **Manual D&D 5e** (`'dnD5e'`) - 2-step level-up, you choose stats manually
+  - [x] **Smart Auto** (`'dnD5e_smart'`) - Intelligently picks best stats based on class
+  - [x] **Balanced** (`'balanced'`) - +1 to two lowest stats each time
+  - [x] **Primary Only** (`'primary_only'`) - Always boosts class's primary stat
+  - [x] **Random** (`'random'`) - Random stat selection each level-up
+- [x] 4.4.6 - Add descriptions/tooltip for each strategy:
+  - [x] Manual: "Standard D&D 5e - choose +2 to one stat or +1 to two"
+  - [x] Smart: "AI picks optimal stats for your class automatically"
+  - [x] Balanced: "Distributes evenly across your lowest stats"
+  - [x] Primary: "Always maximizes your class's main ability"
+  - [x] Random: "Rolls the dice for unpredictable builds"
+- [x] 4.4.7 - Add visual indicator showing currently active strategy
+- [x] 4.4.8 - Style with CSS
+- [x] 4.4.9 - Add to UI exports
+- [x] 4.4.10 - Test: Verify dropdown shows all 5 strategies
+- [x] 4.4.11 - Test: Verify changing strategy updates `CharacterUpdater` configuration
 
 ---
 

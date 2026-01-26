@@ -1,0 +1,421 @@
+/**
+ * StatStrategySelector Component Styles
+ *
+ * Pure CSS implementation (no Tailwind utility classes).
+ * Follows existing component patterns from GameModeToggle.
+ */
+
+/* ============================================
+   BASE CONTAINER
+   ============================================ */
+
+.stat-strategy-selector {
+  width: 100%;
+  position: relative;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.stat-strategy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.stat-strategy-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   INFO BUTTON & TOOLTIP
+   ============================================ */
+
+.stat-strategy-info-wrapper {
+  position: relative;
+}
+
+.stat-strategy-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.stat-strategy-info-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.stat-strategy-info-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stat-strategy-info-icon {
+  display: block;
+}
+
+/* Tooltip container */
+.stat-strategy-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-width: 90vw;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  animation: stat-strategy-tooltip-fade-in 0.2s ease;
+}
+
+@keyframes stat-strategy-tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-strategy-tooltip-content {
+  padding: var(--space-4);
+}
+
+.stat-strategy-tooltip-content p {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.stat-strategy-tooltip-content p:last-child {
+  margin-bottom: 0;
+}
+
+.stat-strategy-tooltip-content ul {
+  margin: var(--space-3) 0;
+  padding-left: var(--space-5);
+  list-style: none;
+}
+
+.stat-strategy-tooltip-content li {
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.stat-strategy-tooltip-content li strong {
+  color: var(--color-text-primary);
+}
+
+.stat-strategy-tooltip-note {
+  margin-top: var(--space-3) !important;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-style: italic;
+  color: var(--color-text-tertiary) !important;
+}
+
+.stat-strategy-tooltip-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.stat-strategy-tooltip-close:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   DROPDOWN CONTAINER
+   ============================================ */
+
+.stat-strategy-dropdown-container {
+  position: relative;
+}
+
+/* Dropdown button */
+.stat-strategy-dropdown {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.stat-strategy-dropdown:hover:not(.stat-strategy-dropdown-disabled) {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.stat-strategy-dropdown-open {
+  border-color: var(--color-primary);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.stat-strategy-dropdown-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-surface-elevated);
+}
+
+.stat-strategy-selected-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-strategy-selected-label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.stat-strategy-dropdown-arrow {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.stat-strategy-dropdown-open .stat-strategy-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   OPTIONS LIST
+   ============================================ */
+
+.stat-strategy-options {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  animation: stat-strategy-options-fade-in 0.2s ease;
+}
+
+@keyframes stat-strategy-options-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-strategy-option {
+  border-bottom: 1px solid var(--color-border-elevated);
+}
+
+.stat-strategy-option:last-child {
+  border-bottom: none;
+}
+
+.stat-strategy-option-selected {
+  background: var(--color-primary-light);
+}
+
+.stat-strategy-option-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: left;
+}
+
+.stat-strategy-option-button:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.stat-strategy-option-selected .stat-strategy-option-button {
+  background: var(--color-primary-light);
+}
+
+.stat-strategy-option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-strategy-option-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-strategy-option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.stat-strategy-option-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.stat-strategy-option-check {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.stat-strategy-option-description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.stat-strategy-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.stat-strategy-badge-manual {
+  background: #f59e0b;
+  color: white;
+}
+
+.stat-strategy-badge-smart {
+  background: #8b5cf6;
+  color: white;
+}
+
+.stat-strategy-badge-balanced {
+  background: #10b981;
+  color: white;
+}
+
+.stat-strategy-badge-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.stat-strategy-badge-random {
+  background: #ec4899;
+  color: white;
+}
+
+/* ============================================
+   INSTRUCTIONS TEXT
+   ============================================ */
+
+.stat-strategy-instructions {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.stat-strategy-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stat-strategy-options::-webkit-scrollbar-track {
+  background: var(--color-surface-elevated);
+}
+
+.stat-strategy-options::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.stat-strategy-options::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .stat-strategy-tooltip {
+    right: auto;
+    left: 0;
+    width: calc(100vw - 48px);
+  }
+}
