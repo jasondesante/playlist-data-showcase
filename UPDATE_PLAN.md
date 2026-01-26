@@ -853,7 +853,7 @@ The playlist data engine has been significantly updated with new features around
   - [x] Copy content
   - [x] Update internal links
   - [x] Add navigation footer
-- [ ] 7.3.6 - Test: Verify all moved files render correctly
+- [x] 7.3.6 - Test: Verify all moved files render correctly
 
 ---
 
