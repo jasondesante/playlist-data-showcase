@@ -776,17 +776,17 @@ The playlist data engine has been significantly updated with new features around
   - [x] Update internal links
   - [x] Add navigation footer
   - [x] Test: Verify file renders correctly
-- [ ] 7.2.3 - Keep original files as redirects
+- [x] 7.2.3 - Keep original files as redirects
 
 ---
 
 ### Task 7.3: Move Test Documents
 **Move:** `DESIGN_DOCS/*.md` → `/docs/development/testing/`
 
-- [ ] 7.3.1 - Move `DESIGN_DOCS/SMOKE_TEST_CHECKLIST.md` → `/docs/development/testing/smoke-tests.md`
-  - [ ] Copy content
-  - [ ] Update internal links
-  - [ ] Add navigation footer
+- [x] 7.3.1 - Move `DESIGN_DOCS/SMOKE_TEST_CHECKLIST.md` → `/docs/development/testing/smoke-tests.md`
+  - [x] Copy content
+  - [x] Update internal links
+  - [x] Add navigation footer
 - [ ] 7.3.2 - Move `DESIGN_DOCS/DETERMINISM_TESTING.md` → `/docs/development/testing/determinism.md`
   - [ ] Copy content
   - [ ] Update internal links
