@@ -1,14 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Clock, Music, Sparkles } from 'lucide-react';
+import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
+import { useCharacterStore } from '../../store/characterStore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { TrackCard } from '../ui/TrackCard';
 import type { ListeningSession } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
+
+// XP thresholds for D&D 5e levels 1-20
+const XP_THRESHOLDS = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
 
 /**
  * SessionTrackingTab Component
@@ -78,8 +82,12 @@ export function SessionTrackingTab() {
   const { play, stop } = useAudioPlayerStore();
   const { startSession, endSession: hookEndSession, isActive, elapsedTime } = useSessionTracker();
   const { calculateXP } = useXPCalculator();
+  const { getActiveCharacter } = useCharacterStore();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Get active character for XP progress display
+  const activeCharacter = getActiveCharacter();
 
   // Calculate real-time XP based on elapsed time
   // Update whenever elapsedTime changes (every second when session is active)
@@ -95,6 +103,34 @@ export function SessionTrackingTab() {
 
   // Animated XP counter state
   const [displayedXP, setDisplayedXP] = useState(0);
+
+  // Calculate XP progress toward next level for active character
+  const xpProgress = useMemo(() => {
+    if (!activeCharacter) return null;
+
+    const currentXP = activeCharacter.xp.current;
+    const nextLevelXP = activeCharacter.xp.next_level;
+    const level = activeCharacter.level;
+
+    // Calculate progress within current level
+    const prevLevelThreshold = XP_THRESHOLDS[level - 1] || 0;
+    const currentLevelProgress = currentXP - prevLevelThreshold;
+    const levelXPNeeded = nextLevelXP - prevLevelThreshold;
+
+    const progressPercent = levelXPNeeded > 0
+      ? (currentLevelProgress / levelXPNeeded) * 100
+      : 100; // Max level or complete
+
+    const xpNeeded = Math.max(0, nextLevelXP - currentXP);
+
+    return {
+      currentXP,
+      nextLevelXP,
+      level,
+      progressPercent,
+      xpNeeded
+    };
+  }, [activeCharacter, displayedXP]); // Include displayedXP to update during session
 
   // Animate XP counter towards actual value
   useEffect(() => {
@@ -271,11 +307,74 @@ export function SessionTrackingTab() {
                   <div className="session-info-item session-xp-display">
                     <span className="session-info-label">
                       <Sparkles className="session-xp-icon" size={14} />
-                      XP Earned
+                      XP Earned This Session
                     </span>
                     <span className="session-info-value session-xp-value">
                       {displayedXP} XP
                     </span>
+                  </div>
+                )}
+
+                {/* XP Progress Bar (if active character exists) */}
+                {isActive && xpProgress && (
+                  <div className="session-xp-progress-section">
+                    <div className="session-xp-progress-header">
+                      <span className="session-xp-progress-label">
+                        Level {xpProgress.level} Progress
+                      </span>
+                      <span className="session-xp-progress-text">
+                        {xpProgress.currentXP.toLocaleString()} / {xpProgress.nextLevelXP.toLocaleString()} XP
+                      </span>
+                    </div>
+                    <div className="session-xp-progress-bar-container">
+                      <div
+                        className="session-xp-progress-bar"
+                        style={{ width: `${Math.min(xpProgress.progressPercent, 100)}%` }}
+                      />
+                    </div>
+                    <p className="session-xp-progress-hint">
+                      {xpProgress.xpNeeded.toLocaleString()} XP to next level
+                    </p>
+                  </div>
+                )}
+
+                {/* Bonus XP Breakdown */}
+                {isActive && xpBreakdown && (xpBreakdown.environmentalBonusXP > 0 || xpBreakdown.gamingBonusXP > 0 || xpBreakdown.masteryBonusXP > 0) && (
+                  <div className="session-bonus-breakdown">
+                    <p className="session-bonus-title">Bonus XP Breakdown</p>
+                    {xpBreakdown.environmentalBonusXP > 0 && (
+                      <div className="session-bonus-item">
+                        <span className="session-bonus-label">
+                          <Zap size={12} className="session-bonus-icon" />
+                          Environmental
+                        </span>
+                        <span className="session-bonus-value">+{xpBreakdown.environmentalBonusXP} XP</span>
+                      </div>
+                    )}
+                    {xpBreakdown.gamingBonusXP > 0 && (
+                      <div className="session-bonus-item">
+                        <span className="session-bonus-label">
+                          <Gamepad2 size={12} className="session-bonus-icon" />
+                          Gaming
+                        </span>
+                        <span className="session-bonus-value">+{xpBreakdown.gamingBonusXP} XP</span>
+                      </div>
+                    )}
+                    {xpBreakdown.masteryBonusXP > 0 && (
+                      <div className="session-bonus-item">
+                        <span className="session-bonus-label">
+                          <Star size={12} className="session-bonus-icon" />
+                          Mastery
+                        </span>
+                        <span className="session-bonus-value">+{xpBreakdown.masteryBonusXP} XP</span>
+                      </div>
+                    )}
+                    {xpBreakdown.totalMultiplier > 1 && (
+                      <div className="session-bonus-total">
+                        <span className="session-bonus-total-label">Total Multiplier</span>
+                        <span className="session-bonus-total-value">{xpBreakdown.totalMultiplier.toFixed(2)}x</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

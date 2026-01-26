@@ -286,12 +286,21 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - `src/components/Tabs/SessionTrackingTab.tsx` - Added XP calculation state, animated counter, and XP display JSX
     - `src/components/Tabs/SessionTrackingTab.css` - Added styles for XP display with animations
 
-- [ ] **Task 5.2: Display XP Progress in Session Tab**
+- [x] **Task 5.2: Display XP Progress in Session Tab** ✅
   - File: [src/components/Tabs/SessionTrackingTab.tsx](src/components/Tabs/SessionTrackingTab.tsx)
-  - Add "XP Earned This Session" display
-  - Show progress bar toward next level
-  - Display: "X / Y XP to next level"
-  - Show bonus XP breakdown (environmental, gaming, mastery)
+  - Added "XP Earned This Session" display with animated XP counter
+  - Added progress bar toward next level with gradient fill and glow effect
+  - Added display: "X / Y XP to next level" with level indicator
+  - Added bonus XP breakdown section showing:
+    - Environmental bonus (with Zap icon)
+    - Gaming bonus (with Gamepad2 icon)
+    - Mastery bonus (with Star icon)
+    - Total multiplier display
+  - XP progress calculates dynamically based on active character's current XP and next level threshold
+  - Progress bar animates smoothly as XP increases during session
+  - Files modified:
+    - `src/components/Tabs/SessionTrackingTab.tsx` - Added XP progress calculation, progress bar JSX, bonus breakdown display
+    - `src/components/Tabs/SessionTrackingTab.css` - Added styles for progress bar, bonus breakdown, and associated animations
 
 - [ ] **Task 5.3: Display Character Info in Session Tab**
   - File: [src/components/Tabs/SessionTrackingTab.tsx](src/components/Tabs/SessionTrackingTab.tsx)
