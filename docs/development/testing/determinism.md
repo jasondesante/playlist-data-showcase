@@ -1,12 +1,5 @@
 # Determinism Testing Results
 
-> **This document has moved!**
-> The latest version of this document is now located at: [`/docs/development/testing/determinism.md`](../docs/development/testing/determinism.md)
->
-> Please update your bookmarks. This file is kept as a redirect for compatibility.
-
----
-
 **Task:** Phase 6.2.3 - Test Determinism
 **Date:** 2026-01-25
 **Status:** DOCUMENTED ✅ (Manual testing required)
@@ -401,3 +394,7 @@ The implementation uses:
 
 **Last Updated:** 2026-01-25
 **Build Status:** TypeScript compilation passes (605.58 kB output)
+
+---
+
+**Back to [Documentation Index](../../index.md)**
