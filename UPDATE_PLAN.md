@@ -652,13 +652,13 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify modal appears with correct pending count
   - [x] Verify all 6 stat buttons are shown
   - [x] Verify current stat values are displayed
-- [ ] 6.4.3 - Test: Single stat selection
-  - [ ] Click one stat button (e.g., STR)
-  - [ ] Verify "Apply Increases" button is enabled
-  - [ ] Click apply
-  - [ ] Verify stat increases by +2
-  - [ ] Verify pending count decreases
-  - [ ] Verify success notification appears
+- [x] 6.4.3 - Test: Single stat selection
+  - [x] Click one stat button (e.g., STR)
+  - [x] Verify "Apply Increases" button is enabled
+  - [x] Click apply
+  - [x] Verify stat increases by +2
+  - [x] Verify pending count decreases
+  - [x] Verify success notification appears
 - [ ] 6.4.4 - Test: Two stat selection
   - [ ] Select "Option 2" mode
   - [ ] Click two stat buttons (e.g., STR and DEX)

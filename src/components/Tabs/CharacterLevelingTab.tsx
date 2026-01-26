@@ -284,6 +284,7 @@ export function CharacterLevelingTab() {
       .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
       .join(', ');
 
+    showToast(`✅ Stats applied: ${statChangeText}`, 'success');
     console.log(`✅ Stats applied: ${statChangeText}`);
     console.log(`Remaining pending increases: ${result.remainingPending}`);
 
