@@ -31,6 +31,10 @@ interface CharacterState {
     getPendingStatIncreaseCount: (id: string) => number;
     /** Check if character has pending stat increases by ID (seed) */
     hasPendingStatIncreases: (id: string) => boolean;
+    /** Set the stat strategy for a character by seed */
+    setCharacterStrategy: (seed: string, strategy: StatIncreaseStrategyType) => void;
+    /** Get the stat strategy for a character by seed */
+    getCharacterStrategy: (seed: string) => StatIncreaseStrategyType | undefined;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -191,6 +195,41 @@ export const useCharacterStore = create<CharacterState>()(
             hasPendingStatIncreases: (id: string) => {
                 const character = get().characters.find((c) => c.seed === id);
                 return (character?.pendingStatIncreases ?? 0) > 0;
+            },
+
+            /**
+             * Set the stat strategy for a character by seed.
+             * Persists to localStorage via zustand persist middleware.
+             *
+             * @param seed - The seed (unique ID) of the character
+             * @param strategy - The stat increase strategy to set
+             * @example
+             * ```ts
+             * setCharacterStrategy('seed-123', 'dnD5e');
+             * ```
+             */
+            setCharacterStrategy: (seed: string, strategy: StatIncreaseStrategyType) => {
+                logger.debug('Store', 'Setting character strategy', { seed, strategy });
+                set((state) => ({
+                    characterStrategies: {
+                        ...state.characterStrategies,
+                        [seed]: strategy
+                    }
+                }));
+            },
+
+            /**
+             * Get the stat strategy for a character by seed.
+             *
+             * @param seed - The seed (unique ID) of the character
+             * @returns The stat strategy or undefined if not set
+             * @example
+             * ```ts
+             * const strategy = getCharacterStrategy('seed-123') ?? 'dnD5e_smart';
+             * ```
+             */
+            getCharacterStrategy: (seed: string) => {
+                return get().characterStrategies[seed];
             }
         }),
         {

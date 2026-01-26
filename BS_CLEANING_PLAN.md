@@ -177,14 +177,14 @@ const formatSessionTime = (timestamp: number) => {
 - - - Imported `StatIncreaseStrategyType` from `@/components/ui/StatStrategySelector`
 
 **Task 3.2:** Add helper functions to characterStore
-- [ ] File: `src/store/characterStore.ts`
-- [ ] Add `setCharacterStrategy(seed: string, strategy: StatIncreaseStrategyType)`
-- [ ] Add `getCharacterStrategy(seed: string): StatIncreaseStrategyType | undefined`
+- [x] File: `src/store/characterStore.ts`
+- [x] Add `setCharacterStrategy(seed: string, strategy: StatIncreaseStrategyType)`
+- [x] Add `getCharacterStrategy(seed: string): StatIncreaseStrategyType | undefined`
 -
 - **Implementation Summary:**
-- - - `setCharacterStrategy`: Updates map, persists to storage
+- - - `setCharacterStrategy`: Updates map, persists to storage via zustand middleware
 - - - `getCharacterStrategy`: Returns strategy or undefined
-- - - Exported for use in hooks and components
+- - - Both exported for use in hooks and components
 - - - Build passes
 
 **Task 3.3:** Update `getInitialStrategy()` in useCharacterUpdater
