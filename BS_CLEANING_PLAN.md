@@ -204,7 +204,7 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
 **This fixes Bug #1 - sessions not saving XP to character.**
 **⚠️ DO NOT START THIS PHASE until Phase 1 tasks are ALL verified working.**
 
-- [ ] **Task 2.1: Integrate processSession in SessionTrackingTab**
+- [x] **Task 2.1: Integrate processSession in SessionTrackingTab**
   - File: [`src/components/Tabs/SessionTrackingTab.tsx`](src/components/Tabs/SessionTrackingTab.tsx)
   - Import `useCharacterUpdater` hook
   - Get `processSession` function
@@ -229,6 +229,18 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
     ```
   - Handle level-up modals if triggered
   - Show success toast when XP applied
+  -
+  - **Implementation Summary:**
+  - - Added imports for `useCharacterUpdater`, `LevelUpDetailModal`, `showToast`, and `LevelUpDetail` type
+  - - Added state: `showLevelUpModal` and `levelUpDetails`
+  - - In `handleEnd()`: calls `processSession()` with active character and session
+  - - Shows success toast: `⭐ +${session.total_xp_earned} XP earned!`
+  - - Shows warning toast if no active character: `⚠️ No active character selected - XP not saved`
+  - - For uncapped mode: shows stat increase notification with stat changes
+  - - Shows LevelUpDetailModal when character levels up
+  - - Added `handleCloseLevelUpModal()` handler
+  - - Build passes with no errors
+  - - CSS lint passes with no errors
 
 - [ ] **Task 2.2: Integrate processSession in AppHeader**
   - File: [`src/components/Layout/AppHeader.tsx`](src/components/Layout/AppHeader.tsx)
