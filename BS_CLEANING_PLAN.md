@@ -199,6 +199,14 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
 
 ---
 
+## notes: BUG for Phase 1 was NOT fixed. New bugs were introduced though.
+
+- Now when I click stop audio in the ui that shows up on the top of the page, now clicking stop there doesn't work and it says "no active session to end"
+
+- When I start playback on the "playlist" tab, it doesn't affect the session xp gathering, and it doesn't make the ui up top show up either. 
+
+- When I start playback and then change tabs and go back to the session tab, it says the session isn't ongoing, but the audio is still playing. So now it's all broken in the opposite way where the audio is playing so it should say the session is ongoing, but it says "start session" or something, it so frustrating. I need this to work.
+
 ### **PHASE 2: Add XP Processing on Session End** (Critical)
 
 **This fixes Bug #1 - sessions not saving XP to character.**
@@ -242,11 +250,23 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
   - - Build passes with no errors
   - - CSS lint passes with no errors
 
-- [ ] **Task 2.2: Integrate processSession in AppHeader**
+- [x] **Task 2.2: Integrate processSession in AppHeader**
   - File: [`src/components/Layout/AppHeader.tsx`](src/components/Layout/AppHeader.tsx)
   - Same logic as Session tab
   - Get active character and process session
   - Show notification when XP applied
+  -
+  - **Implementation Summary:**
+  - - Added imports for `useState`, `useCharacterUpdater`, `useCharacterStore`, `LevelUpDetailModal`, and `LevelUpDetail` type
+  - - Added state: `showLevelUpModal` and `levelUpDetails`
+  - - In `handleStop()`: calls `processSession()` with active character and session
+  - - Shows success toast: `⭐ +${session.total_xp_earned} XP earned!`
+  - - Shows warning toast if no active character: `⚠️ No active character selected - XP not saved`
+  - - For uncapped mode: shows stat increase notification with stat changes
+  - - Shows LevelUpDetailModal when character levels up
+  - - Added `handleCloseLevelUpModal()` handler
+  - - Build passes with no errors
+  - - CSS lint passes with no errors
 
 - [ ] **Task 2.3: Test XP application from sessions**
   - Start session → let it run → end session → verify XP added to character
