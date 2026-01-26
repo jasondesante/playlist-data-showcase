@@ -27,7 +27,7 @@ import { showToast } from '../ui/Toast';
 export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
-  const { characters, addCharacter } = useCharacterStore();
+  const { addCharacter, getActiveCharacter } = useCharacterStore();
 
   // State for determinism verification
   const [determinismResult, setDeterminismResult] = useState<{
@@ -44,8 +44,8 @@ export function CharacterGenTab() {
   // State for game mode selection
   const [gameMode, setGameMode] = useState<GameMode>('uncapped');
 
-  // Only show the most recent character
-  const character = characters.length > 0 ? characters[characters.length - 1] : null;
+  // Get the active character
+  const character = getActiveCharacter();
 
   const handleGenerate = async () => {
     if (!audioProfile) {
@@ -82,8 +82,8 @@ export function CharacterGenTab() {
     // Regenerate with the same seed
     await generateCharacter(audioProfile, selectedTrack.id, gameMode);
 
-    // Get the regenerated character
-    const regenerated = characters.length > 0 ? characters[characters.length - 1] : null;
+    // Get the regenerated character (active character may have changed)
+    const regenerated = getActiveCharacter();
 
     if (!regenerated) {
       console.error('[CharacterGenTab] Regeneration failed - no character returned');

@@ -82,7 +82,7 @@ export function CombatSimulatorTab() {
     getLivingCombatants,
     combat
   } = useCombatEngine();
-  const { characters } = useCharacterStore();
+  const { getActiveCharacter } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
 
   // State for manual attack selection (task 4.9.6)
@@ -116,10 +116,11 @@ export function CombatSimulatorTab() {
   const isActive = combat?.isActive ?? false;
 
   const handleStartCombat = () => {
-    if (characters.length === 0) return;
-    // Create a mock enemy
-    const enemy = { ...characters[0], name: 'Goblin', hp: { current: 20, max: 20, temp: 0 } };
-    startCombat([characters[0]], [enemy]);
+    const activeChar = getActiveCharacter();
+    if (!activeChar) return;
+    // Create a mock enemy based on the active character
+    const enemy = { ...activeChar, name: 'Goblin', hp: { current: 20, max: 20, temp: 0 } };
+    startCombat([activeChar], [enemy]);
   };
 
   const handleNextTurn = () => {
@@ -339,9 +340,9 @@ export function CombatSimulatorTab() {
   // Award XP when combat ends (Task 3.4)
   useEffect(() => {
     const result = combat && !combat.isActive ? getCombatResult() : null;
-    if (result && characters.length > 0 && result.winner.character.name !== 'Goblin') {
+    const activeChar = getActiveCharacter();
+    if (result && activeChar && result.winner.character.name !== 'Goblin') {
       // Award XP to the active character
-      const activeChar = characters[characters.length - 1];
       const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
 
       console.log(`[Combat] ${activeChar.name} received ${result.xpAwarded} XP from combat!`);
@@ -371,7 +372,7 @@ export function CombatSimulatorTab() {
         {combat && <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />}
       </div>
 
-      {characters.length === 0 ? (
+      {!getActiveCharacter() ? (
         <p className="combat-prompt">Generate a character first</p>
       ) : !combat ? (
         <button

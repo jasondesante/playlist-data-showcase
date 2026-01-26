@@ -38,7 +38,7 @@ import './CharacterLevelingTab.css';
  * ```
  */
 export function CharacterLevelingTab() {
-  const { characters } = useCharacterStore();
+  const { getActiveCharacter } = useCharacterStore();
   const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
@@ -50,7 +50,7 @@ export function CharacterLevelingTab() {
   const [showStatModal, setShowStatModal] = useState(false);
   const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>('dnD5e_smart');
 
-  const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
+  const activeChar = getActiveCharacter();
 
   // Helper function to get pending stat increase count
   const getPendingStatIncreaseCount = (character: typeof activeChar): number => {
@@ -68,13 +68,6 @@ export function CharacterLevelingTab() {
       setCurrentXP(activeChar.xp.current);
     }
   }, [activeChar]);
-
-  // Sync currentXP when character is updated by addXPFromSource
-  useEffect(() => {
-    if (activeChar) {
-      setCurrentXP(activeChar.xp.current);
-    }
-  }, [characters]);
 
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string): string => {
