@@ -78,16 +78,18 @@ const formatSessionTime = (timestamp: number) => {
 ### PHASE 1: Fix Mini Player Disappearing Bug (High Priority)
 
 **Task 1.1:** Remove `hasAutoStartedSession` local state
-- [ ] File: `src/hooks/useSessionTracker.ts`
-- [ ] Remove line 70: `const [hasAutoStartedSession, setHasAutoStartedSession] = useState(false);`
-- [ ] Remove lines 141-162: Entire auto-start effect with the flag
-- [ ] Remove lines 135-137: `startSessionRef` (no longer needed)
+- [x] File: `src/hooks/useSessionTracker.ts`
+- [x] Remove line 70: `const [hasAutoStartedSession, setHasAutoStartedSession] = useState(false);`
+- [x] Remove lines 141-162: Entire auto-start effect with the flag
+- [x] Remove lines 135-137: `startSessionRef` (no longer needed)
+- [x] Remove `useRef` from imports (no longer used)
 -
 - **Implementation Summary:**
-- - - Remove `hasAutoStartedSession` state declaration
-- - - Remove `startSessionRef` ref
-- - - Remove entire auto-start useEffect (lines 141-162)
-- - - Build passes
+- - - Removed `hasAutoStartedSession` state declaration
+- - - Removed `startSessionRef` ref
+- - - Removed entire auto-start useEffect (lines 141-162)
+- - - Removed unused `useRef` import from React
+- - - Build passes ✓
 -
 - **Verification Summary:**
 - - - No local flag means no race condition
@@ -95,8 +97,8 @@ const formatSessionTime = (timestamp: number) => {
 - - - Sessions auto-start based on `playbackState` and `activeSession` from store
 
 **Task 1.2:** Add simplified auto-start effect
-- [ ] File: `src/hooks/useSessionTracker.ts`
-- [ ] Replace removed effect with simpler version:
+- [x] File: `src/hooks/useSessionTracker.ts`
+- [x] Replace removed effect with simpler version:
   ```typescript
   // Auto-start session when audio plays (if not already started)
   useEffect(() => {
@@ -111,7 +113,7 @@ const formatSessionTime = (timestamp: number) => {
 - - - New effect checks store state directly
 - - - No local flag to get out of sync
 - - - Dependencies: `playbackState`, `activeSession`, `selectedTrack`, `startSession`
-- - - Build passes
+- - - Build passes ✓
 
 **Task 1.3:** Test mini player visibility
 - [ ] Start audio → navigate to Session tab → verify mini player stays visible

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
@@ -67,7 +67,6 @@ export const useSessionTracker = () => {
     const { playbackState } = useAudioPlayerStore();
     const { selectedTrack } = usePlaylistStore();
     const [tracker] = useState(() => new SessionTracker());
-    const [hasAutoStartedSession, setHasAutoStartedSession] = useState(false);
 
     // Derive state directly from store - no local state sync issues
     const isActive = !!activeSession;
@@ -132,34 +131,14 @@ export const useSessionTracker = () => {
         }
     }, [tracker, storeStartSession]);
 
-    // Store startSession in a ref for use in auto-start effect
-    const startSessionRef = useRef(startSession);
-    startSessionRef.current = startSession;
-
     // Auto-start session when audio plays (if not already started)
     // This ensures that playing audio from any tab (including playlist) starts a session
     useEffect(() => {
-        // Only auto-start if:
-        // 1. Audio is playing
-        // 2. No active session exists
-        // 3. A track is selected in the playlist store
-        // 4. We haven't already auto-started (prevents loops)
-        if (
-            playbackState === 'playing' &&
-            !activeSession &&
-            selectedTrack &&
-            !hasAutoStartedSession
-        ) {
-            logger.info('SessionTracker', 'Auto-starting session due to audio playback', { trackId: selectedTrack.id });
-            setHasAutoStartedSession(true);
-            startSessionRef.current(selectedTrack.id, selectedTrack);
+        if (playbackState === 'playing' && !activeSession && selectedTrack) {
+            logger.info('SessionTracker', 'Auto-starting session', { trackId: selectedTrack.id });
+            startSession(selectedTrack.id, selectedTrack);
         }
-
-        // Reset flag when audio stops or session ends
-        if (playbackState !== 'playing' || !activeSession) {
-            setHasAutoStartedSession(false);
-        }
-    }, [playbackState, activeSession, selectedTrack, hasAutoStartedSession]);
+    }, [playbackState, activeSession, selectedTrack, startSession]);
 
     const endSession = useCallback((): ListeningSession | null => {
         // Check store state directly, not local state
