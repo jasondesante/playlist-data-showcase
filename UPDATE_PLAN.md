@@ -577,10 +577,10 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify character sheet displays correctly
 - [x] 6.1.3 - Test: Toggle between modes and regenerate
   - [x] Verify different modes produce different characters
-- [ ] 6.1.4 - Test: Verify game mode badges display correctly
-  - [ ] Standard badge shows on standard characters
-  - [ ] Uncapped badge shows on uncapped characters
-- [ ] 6.1.5 - Test: Verify party tab shows badges on all cards
+- [x] 6.1.4 - Test: Verify game mode badges display correctly
+  - [x] Standard badge shows on standard characters
+  - [x] Uncapped badge shows on uncapped characters
+- [x] 6.1.5 - Test: Verify party tab shows badges on all cards
 - [ ] 6.1.6 - Test: Verify tooltips explain mode differences
 
 ---
