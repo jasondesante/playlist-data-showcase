@@ -166,11 +166,14 @@ The XP is only shown **after the session ends** in the "Last Session" card.
     - `src/components/Tabs/PartyTab.tsx` - Wire up `activeCharacterId` and `setActiveCharacter` from store, pass props to CharacterCard
     - `src/components/Tabs/PartyTab.css` - Added `.party-card-active`, `.party-card-active-badge`, `.party-card-set-active-btn` styles
 
-- [ ] **Task 2.2: Update Character Store Integration**
+- [x] **Task 2.2: Update Character Store Integration** ✅
   - File: [src/store/characterStore.ts](src/store/characterStore.ts)
-  - Ensure `activeCharacterId` is properly persisted
-  - Add a getter that returns the active character object
-  - Update all tabs to use `getActiveCharacter()` instead of `characters[characters.length - 1]`
+  - Verified `activeCharacterId` is properly persisted via zustand persist middleware
+  - Verified `getActiveCharacter()` getter exists and returns the active character object
+  - Updated all tabs to use `getActiveCharacter()` instead of `characters[characters.length - 1]`:
+    - `src/components/Tabs/CharacterLevelingTab.tsx` - Uses getActiveCharacter()
+    - `src/components/Tabs/CharacterGenTab.tsx` - Uses getActiveCharacter()
+    - `src/components/Tabs/CombatSimulatorTab.tsx` - Uses getActiveCharacter()
 
 - [ ] **Task 2.3: Use Active Character in Leveling Tab**
   - File: [src/components/Tabs/CharacterLevelingTab.tsx](src/components/Tabs/CharacterLevelingTab.tsx)
