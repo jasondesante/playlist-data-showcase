@@ -113,25 +113,25 @@ The playlist data engine has been significantly updated with new features around
 ### Task 2.1: Create Game Mode Toggle Component
 **New File:** `src/components/ui/GameModeToggle.tsx`
 
-- [ ] 2.1.1 - Create new component file with TypeScript
-- [ ] 2.1.2 - Define props interface:
+- [x] 2.1.1 - Create new component file with TypeScript
+- [x] 2.1.2 - Define props interface:
   ```typescript
   interface GameModeToggleProps {
       value: 'standard' | 'uncapped';
       onChange: (mode: 'standard' | 'uncapped') => void;
   }
   ```
-- [ ] 2.1.3 - Import Lucide icons: `Shield`, `TrendingUp`, `Info`
-- [ ] 2.1.4 - Create radio button group with two options
-- [ ] 2.1.5 - Add labels:
+- [x] 2.1.3 - Import Lucide icons: `Shield`, `TrendingUp`, `Info`
+- [x] 2.1.4 - Create radio button group with two options
+- [x] 2.1.5 - Add labels:
   - **Standard Mode**: "Stats cap at 20, manual selection"
   - **Uncapped Mode**: "Unlimited stats, automatic increases"
-- [ ] 2.1.6 - Add info icon with tooltip explaining differences
-- [ ] 2.1.7 - Style with CSS (follow existing component patterns)
-- [ ] 2.1.8 - Add component to UI exports
-- [ ] 2.1.9 - Create `GameModeToggle.css` for component-specific styles
-- [ ] 2.1.10 - Test: Verify toggle switches between modes
-- [ ] 2.1.11 - Test: Verify `onChange` callback is called with correct value
+- [x] 2.1.6 - Add info icon with tooltip explaining differences
+- [x] 2.1.7 - Style with CSS (follow existing component patterns)
+- [x] 2.1.8 - Add component to UI exports
+- [x] 2.1.9 - Create `GameModeToggle.css` for component-specific styles
+- [x] 2.1.10 - Test: Verify toggle switches between modes
+- [x] 2.1.11 - Test: Verify `onChange` callback is called with correct value
 
 ---
 

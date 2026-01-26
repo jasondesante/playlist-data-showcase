@@ -1,0 +1,277 @@
+/* ============================================
+   GAME MODE TOGGLE COMPONENT
+   ============================================ */
+
+/* Container */
+.gamemode-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .gamemode-toggle {
+    padding: 1rem;
+  }
+}
+
+/* Header with title and info button */
+.gamemode-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.gamemode-toggle-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .gamemode-toggle-title {
+    font-size: 0.875rem;
+  }
+}
+
+/* Info button and tooltip */
+.gamemode-info-wrapper {
+  position: relative;
+}
+
+.gamemode-info-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              border-color var(--duration-fast) var(--ease-out-cubic),
+              color var(--duration-fast) var(--ease-out-cubic);
+  flex-shrink: 0;
+}
+
+.gamemode-info-btn:hover {
+  background-color: hsl(var(--surface-3));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.gamemode-info-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Tooltip */
+.gamemode-tooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  margin-top: 0.25rem;
+  background-color: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  min-width: 18rem;
+  max-width: 20rem;
+}
+
+.gamemode-tooltip-content {
+  padding: 0.75rem;
+}
+
+.gamemode-tooltip-content p {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: 0 0 0.5rem 0;
+  color: hsl(var(--popover-foreground));
+}
+
+.gamemode-tooltip-content p:last-child {
+  margin-bottom: 0;
+}
+
+.gamemode-tooltip-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  border-radius: var(--radius);
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.gamemode-tooltip-close:hover {
+  background-color: hsl(var(--surface-3));
+  color: hsl(var(--foreground));
+}
+
+/* Options container */
+.gamemode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual option */
+.gamemode-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.gamemode-option:hover {
+  background-color: hsl(var(--surface-3));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.gamemode-option-selected {
+  background-color: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary));
+}
+
+/* Hidden radio input */
+.gamemode-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+/* Option content */
+.gamemode-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.gamemode-option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gamemode-option-icon {
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.gamemode-option-selected .gamemode-option-icon {
+  color: hsl(var(--primary));
+}
+
+.gamemode-option-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .gamemode-option-label {
+    font-size: 0.875rem;
+  }
+}
+
+.gamemode-option-description {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin-left: 1.625rem;
+}
+
+@media (min-width: 768px) {
+  .gamemode-option-description {
+    font-size: 0.75rem;
+  }
+}
+
+/* Badge */
+.gamemode-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-left: auto;
+}
+
+@media (min-width: 768px) {
+  .gamemode-badge {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.625rem;
+  }
+}
+
+/* Standard mode badge - gray */
+.gamemode-badge-standard {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+/* Uncapped mode badge - purple */
+.gamemode-badge-uncapped {
+  background-color: hsl(270 80% 60% / 0.2);
+  color: hsl(270 80% 60%);
+  border: 1px solid hsl(270 80% 60% / 0.3);
+}
+
+/* Focus styles for accessibility */
+.gamemode-option:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .gamemode-option-header {
+    flex-wrap: wrap;
+  }
+
+  .gamemode-badge {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.25rem;
+    justify-content: center;
+  }
+
+  .gamemode-tooltip {
+    left: 0;
+    right: 0;
+    min-width: 100%;
+  }
+}
