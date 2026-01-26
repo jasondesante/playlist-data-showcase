@@ -849,10 +849,10 @@ The playlist data engine has been significantly updated with new features around
   - [x] Copy content
   - [x] Update internal links
   - [x] Add navigation footer
-- [ ] 7.3.5 - Move `DESIGN_DOCS/BUGS_TO_FIX.md` → `/docs/design/bugs-to-fix.md`
-  - [ ] Copy content
-  - [ ] Update internal links
-  - [ ] Add navigation footer
+- [x] 7.3.5 - Move `DESIGN_DOCS/BUGS_TO_FIX.md` → `/docs/design/bugs-to-fix.md`
+  - [x] Copy content
+  - [x] Update internal links
+  - [x] Add navigation footer
 - [ ] 7.3.6 - Test: Verify all moved files render correctly
 
 ---
