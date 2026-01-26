@@ -325,11 +325,24 @@ const isMatch = JSON.stringify(original) === JSON.stringify(regenerated);
   - - - CSS lint passes with no errors
   - **Task 3.1 COMPLETE - Real-time XP display architecture verified**
 
-- [ ] **Task 3.2: Debug only if still broken**
+- [x] **Task 3.2: Debug only if still broken**
   - If XP still not updating after Phase 1:
   - Check useMemo dependencies are correct
   - Check `calculateXP` is called with correct `elapsedTime`
   - Check animation loop is running
+  -
+  - **Verification Summary:**
+  - - Code inspection confirms real-time XP display architecture is sound:
+  - - - Timer Manager increments `elapsedSeconds` every second (useSessionTracker.ts:21-28)
+  - - - Store `updateElapsedTime` creates new `activeSession` object (sessionStore.ts:74-77)
+  - - - Hook derives `elapsedTime` from `activeSession.elapsedSeconds` (useSessionTracker.ts:74)
+  - - - React re-renders when `activeSession` changes (zustand subscription)
+  - - - `xpBreakdown` useMemo recalculates when `elapsedTime` changes (SessionTrackingTab.tsx:99-107)
+  - - - `displayedXP` animates towards `xpBreakdown.totalXP` (SessionTrackingTab.tsx:141-170)
+  - - - UI displays `displayedXP` when `isActive && displayedXP > 0` (SessionTrackingTab.tsx:425-434)
+  - - - Build passes with no errors
+  - - - CSS lint passes with no errors
+  - - **Task 3.2 COMPLETE - No bugs found, architecture is correct**
 
 - [ ] **Task 3.3: Test real-time XP display**
   - Start session → watch XP counter go up every second ✓
