@@ -697,11 +697,11 @@ The playlist data engine has been significantly updated with new features around
   - [x] Level up and gain pending stat increases
   - [x] Refresh page
   - [x] Verify `pendingStatIncreases` count is preserved
-- [ ] 6.5.3 - Test: XP persists
-  - [ ] Add XP from various sources
-  - [ ] Refresh page
-  - [ ] Verify XP total is preserved
-  - [ ] Verify XP source history (if tracked)
+- [x] 6.5.3 - Test: XP persists
+  - [x] Add XP from various sources
+  - [x] Refresh page
+  - [x] Verify XP total is preserved
+  - [x] Verify XP source history (if tracked)
 
 ---
 
