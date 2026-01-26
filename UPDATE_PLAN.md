@@ -841,10 +841,10 @@ The playlist data engine has been significantly updated with new features around
   - [x] Copy content
   - [x] Update internal links
   - [x] Add navigation footer
-- [ ] 7.3.3 - Move `DESIGN_DOCS/PERFORMANCE_TESTING.md` → `/docs/development/testing/performance.md`
-  - [ ] Copy content
-  - [ ] Update internal links
-  - [ ] Add navigation footer
+- [x] 7.3.3 - Move `DESIGN_DOCS/PERFORMANCE_TESTING.md` → `/docs/development/testing/performance.md`
+  - [x] Copy content
+  - [x] Update internal links
+  - [x] Add navigation footer
 - [ ] 7.3.4 - Move `DESIGN_DOCS/IOS_ANDROID_SENSOR_TESTING.md` → `/docs/development/testing/mobile-sensors.md`
   - [ ] Copy content
   - [ ] Update internal links
