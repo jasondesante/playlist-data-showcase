@@ -254,18 +254,18 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/components/Tabs/CombatSimulatorTab.tsx`
 **Location:** After victory overlay (around line 774)
 
-- [ ] 3.4.1 - Import `useCharacterUpdater` hook
-- [ ] 3.4.2 - Import `useCharacterStore` to get active character
-- [ ] 3.4.3 - Add `useEffect` that triggers when `combatResult` changes
-- [ ] 3.4.4 - Check if `combatResult` exists and active character exists
-- [ ] 3.4.5 - Call `addXPFromSource(activeChar, combatResult.xpAwarded, 'combat')`
-- [ ] 3.4.6 - Add success toast: "Character received {XP} XP from combat!"
-- [ ] 3.4.7 - If `leveledUp`, show notification or trigger level-up modal
-- [ ] 3.4.8 - Add loading state during XP award
-- [ ] 3.4.9 - Update victory overlay to show "XP Awarded to: {Character Name}"
-- [ ] 3.4.10 - Test: Complete combat and verify XP is awarded
-- [ ] 3.4.11 - Test: Verify combat XP source is tracked correctly
-- [ ] 3.4.12 - Test: Verify level-up modal appears if threshold reached
+- [x] 3.4.1 - Import `useCharacterUpdater` hook
+- [x] 3.4.2 - Import `useCharacterStore` to get active character
+- [x] 3.4.3 - Add `useEffect` that triggers when `combatResult` changes
+- [x] 3.4.4 - Check if `combatResult` exists and active character exists
+- [x] 3.4.5 - Call `addXPFromSource(activeChar, combatResult.xpAwarded, 'combat')`
+- [x] 3.4.6 - Add success toast: "Character received {XP} XP from combat!"
+- [x] 3.4.7 - If `leveledUp`, show notification or trigger level-up modal
+- [x] 3.4.8 - Add loading state during XP award
+- [x] 3.4.9 - Update victory overlay to show "XP Awarded to: {Character Name}"
+- [x] 3.4.10 - Test: Complete combat and verify XP is awarded
+- [x] 3.4.11 - Test: Verify combat XP source is tracked correctly
+- [x] 3.4.12 - Test: Verify level-up modal appears if threshold reached
 
 ---
 

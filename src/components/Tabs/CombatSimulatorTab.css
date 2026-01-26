@@ -973,6 +973,35 @@
 
 .combat-victory-xp {
   color: hsl(142 76% 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.combat-victory-xp-recipient {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  .combat-victory-xp-recipient {
+    font-size: 0.875rem;
+  }
+}
+
+.combat-victory-levelup {
+  font-size: 0.75rem;
+  color: hsl(48 96% 53%);
+  font-weight: 600;
+  animation: combat-pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (min-width: 768px) {
+  .combat-victory-levelup {
+    font-size: 0.875rem;
+  }
 }
 
 .combat-victory-performance-pass {

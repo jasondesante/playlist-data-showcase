@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
+import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { SPELL_DATABASE } from 'playlist-data-engine';
@@ -82,6 +83,7 @@ export function CombatSimulatorTab() {
     combat
   } = useCombatEngine();
   const { characters } = useCharacterStore();
+  const { addXPFromSource } = useCharacterUpdater();
 
   // State for manual attack selection (task 4.9.6)
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
@@ -103,6 +105,9 @@ export function CombatSimulatorTab() {
     roundsElapsed: number;
     performanceTarget: string;
   } | null>(null);
+
+  // XP award state (Task 3.4)
+  const [xpAwarded, setXpAwarded] = useState<{ amount: number; characterName: string; leveledUp: boolean } | null>(null);
 
   // Combat state from task 4.9.1 (moved before useEffect hooks to fix TS error)
   const currentTurnIndex = combat?.currentTurnIndex ?? null;
@@ -330,6 +335,31 @@ export function CombatSimulatorTab() {
       combatLogRef.current.scrollTop = combatLogRef.current.scrollHeight;
     }
   }, [combatLog.length]);
+
+  // Award XP when combat ends (Task 3.4)
+  useEffect(() => {
+    const result = combat && !combat.isActive ? getCombatResult() : null;
+    if (result && characters.length > 0 && result.winner.character.name !== 'Goblin') {
+      // Award XP to the active character
+      const activeChar = characters[characters.length - 1];
+      const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
+
+      console.log(`[Combat] ${activeChar.name} received ${result.xpAwarded} XP from combat!`);
+
+      if (xpResult.leveledUp) {
+        console.log(`[Combat] ${activeChar.name} leveled up to ${xpResult.newLevel}!`);
+        // TODO: Could trigger level-up modal here if needed
+      }
+
+      setXpAwarded({
+        amount: result.xpAwarded,
+        characterName: activeChar.name,
+        leveledUp: xpResult.leveledUp ?? false
+      });
+    }
+    // Only run when combat transitions from active to inactive
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [combat?.isActive]);
 
   // Get combat result if combat has ended
   const combatResult = combat && !combat.isActive ? getCombatResult() : null;
@@ -771,7 +801,11 @@ export function CombatSimulatorTab() {
 
                   <div className="combat-victory-stat">
                     <span className="combat-victory-stat-label">XP Awarded</span>
-                    <span className="combat-victory-stat-value combat-victory-xp">+{combatResult.xpAwarded} XP</span>
+                    <span className="combat-victory-stat-value combat-victory-xp">
+                      +{combatResult.xpAwarded} XP
+                      {xpAwarded && <span className="combat-victory-xp-recipient"> to {xpAwarded.characterName}</span>}
+                      {xpAwarded?.leveledUp && <span className="combat-victory-levelup"> 🎉 LEVEL UP!</span>}
+                    </span>
                   </div>
 
                   <div className="combat-victory-stat">
