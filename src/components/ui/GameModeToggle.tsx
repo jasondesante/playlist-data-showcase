@@ -11,6 +11,7 @@
  * - Pure CSS (no Tailwind utility classes in CSS)
  */
 
+import '../../styles/components/GameModeToggle.css';
 import { Shield, TrendingUp, Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { LucideIcon } from 'lucide-react';

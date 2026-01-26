@@ -9,6 +9,8 @@ import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
+import { GameModeToggle } from '../ui/GameModeToggle';
+import type { GameMode } from '../ui/GameModeToggle';
 
 /**
  * CharacterGenTab Component
@@ -38,6 +40,9 @@ export function CharacterGenTab() {
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // State for game mode selection
+  const [gameMode, setGameMode] = useState<GameMode>('uncapped');
+
   // Only show the most recent character
   const character = characters.length > 0 ? characters[characters.length - 1] : null;
 
@@ -54,7 +59,7 @@ export function CharacterGenTab() {
     // Use track UUID as deterministic seed for consistent character generation
     // This ensures the same track always generates the same character
     const seed = selectedTrack.id;
-    await generateCharacter(audioProfile, seed);
+    await generateCharacter(audioProfile, seed, gameMode);
 
     // Reset determinism verification state on new generation
     setDeterminismResult({ isMatch: null, original: null, regenerated: null });
@@ -72,7 +77,7 @@ export function CharacterGenTab() {
     console.log('[CharacterGenTab] Verifying determinism with seed:', selectedTrack.id);
 
     // Regenerate with the same seed
-    await generateCharacter(audioProfile, selectedTrack.id);
+    await generateCharacter(audioProfile, selectedTrack.id, gameMode);
 
     // Get the regenerated character
     const regenerated = characters.length > 0 ? characters[characters.length - 1] : null;
@@ -319,6 +324,9 @@ export function CharacterGenTab() {
           )}
         </div>
       </div>
+
+      {/* Game Mode Selector */}
+      <GameModeToggle value={gameMode} onChange={setGameMode} />
 
       {/* Import Status Messages */}
       {importError && (

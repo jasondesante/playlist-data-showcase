@@ -139,15 +139,15 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/components/Tabs/CharacterGenTab.tsx`
 **Location:** Above the "Generate Character" button (around line 44)
 
-- [ ] 2.2.1 - Import `GameModeToggle` component
-- [ ] 2.2.2 - Add state for `gameMode` with default `'uncapped'`
-- [ ] 2.2.3 - Add handler for game mode changes
-- [ ] 2.2.4 - Pass `gameMode` to `useCharacterGenerator` hook
-- [ ] 2.2.5 - Render `GameModeToggle` component above generate button
-- [ ] 2.2.6 - Update `handleGenerate` to use current `gameMode` state
-- [ ] 2.2.7 - Test: Generate character with standard mode selected
-- [ ] 2.2.8 - Test: Generate character with uncapped mode selected
-- [ ] 2.2.9 - Test: Verify generated character has correct `gameMode` property
+- [x] 2.2.1 - Import `GameModeToggle` component
+- [x] 2.2.2 - Add state for `gameMode` with default `'uncapped'`
+- [x] 2.2.3 - Add handler for game mode changes
+- [x] 2.2.4 - Pass `gameMode` to `useCharacterGenerator` hook
+- [x] 2.2.5 - Render `GameModeToggle` component above generate button
+- [x] 2.2.6 - Update `handleGenerate` to use current `gameMode` state
+- [x] 2.2.7 - Test: Generate character with standard mode selected
+- [x] 2.2.8 - Test: Generate character with uncapped mode selected
+- [x] 2.2.9 - Test: Verify generated character has correct `gameMode` property
 
 ---
 
