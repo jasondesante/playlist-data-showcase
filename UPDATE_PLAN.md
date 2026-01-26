@@ -155,15 +155,15 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/components/Tabs/CharacterGenTab.tsx`
 **Location:** In the character sheet header section
 
-- [ ] 2.3.1 - Find character display section (after line ~150)
-- [ ] 2.3.2 - Add conditional rendering for game mode badge
-- [ ] 2.3.3 - Create badge styles:
+- [x] 2.3.1 - Find character display section (after line ~150)
+- [x] 2.3.2 - Add conditional rendering for game mode badge
+- [x] 2.3.3 - Create badge styles:
   - **STANDARD**: Gray background, "STATS CAPPED @ 20"
   - **UNCAPPED**: Purple background, "UNLIMITED PROGRESSION"
-- [ ] 2.3.4 - Add tooltip on hover with full description
-- [ ] 2.3.5 - Test: Verify badge shows correct mode for standard characters
-- [ ] 2.3.6 - Test: Verify badge shows correct mode for uncapped characters
-- [ ] 2.3.7 - Test: Verify tooltip displays on hover
+- [x] 2.3.4 - Add tooltip on hover with full description
+- [x] 2.3.5 - Test: Verify badge shows correct mode for standard characters
+- [x] 2.3.6 - Test: Verify badge shows correct mode for uncapped characters
+- [x] 2.3.7 - Test: Verify tooltip displays on hover
 
 ---
 

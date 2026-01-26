@@ -456,7 +456,22 @@ export function CharacterGenTab() {
 
               {/* Character Info */}
               <div className="character-info">
-                <h3 className="character-name">{character.name}</h3>
+                <div className="character-name-row">
+                  <h3 className="character-name">{character.name}</h3>
+                  {/* Game Mode Badge */}
+                  {character.gameMode && (
+                    <div
+                      className={`character-game-mode-badge ${character.gameMode}`}
+                      title={
+                        character.gameMode === 'standard'
+                          ? 'Standard Mode: Stats cap at 20, manual stat selection required at level-ups'
+                          : 'Uncapped Mode: Unlimited stat progression, automatic stat increases on level-up'
+                      }
+                    >
+                      {character.gameMode === 'standard' ? 'STATS CAPPED @ 20' : 'UNLIMITED PROGRESSION'}
+                    </div>
+                  )}
+                </div>
                 <p className="character-class">
                   Level {character.level} {character.race} {character.class}
                 </p>
