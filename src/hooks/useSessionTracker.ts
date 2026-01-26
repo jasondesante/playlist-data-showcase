@@ -63,42 +63,19 @@ const timerManager = new SessionTimerManager();
 export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession, activeSession } = useSessionStore();
     const [tracker] = useState(() => new SessionTracker());
-    const [isActive, setIsActive] = useState(false);
-    const [elapsedTime, setElapsedTime] = useState(0);
 
-    // Sync local state with persisted session state
+    // Derive state directly from store - no local state sync issues
+    const isActive = !!activeSession;
+    const elapsedTime = activeSession?.elapsedSeconds ?? 0;
+
+    // Manage timer based on active session state from store
     useEffect(() => {
-        if (activeSession && !isActive) {
-            setIsActive(true);
-            setElapsedTime(activeSession.elapsedSeconds);
-            // Start the global timer if not paused
-            if (!activeSession.isPaused) {
-                timerManager.start();
-            }
-        } else if (!activeSession && isActive) {
-            setIsActive(false);
-            setElapsedTime(0);
+        if (activeSession && !activeSession.isPaused) {
+            timerManager.start();
+        } else {
             timerManager.stop();
         }
-    }, [activeSession, isActive]);
-
-    // Handle pause/resume changes
-    useEffect(() => {
-        if (activeSession) {
-            if (activeSession.isPaused) {
-                timerManager.stop();
-            } else {
-                timerManager.start();
-            }
-        }
-    }, [activeSession?.isPaused]);
-
-    // Keep local elapsedTime in sync with store (for components that read it)
-    useEffect(() => {
-        if (activeSession) {
-            setElapsedTime(activeSession.elapsedSeconds);
-        }
-    }, [activeSession?.elapsedSeconds]);
+    }, [activeSession]);
 
     const startSession = useCallback((trackId: string, track: PlaylistTrack, options?: SessionStartOptions) => {
         logger.info('SessionTracker', 'Starting session', { trackId, hasContext: !!options });
@@ -108,8 +85,6 @@ export const useSessionTracker = () => {
             // Reference: USAGE_IN_OTHER_PROJECTS.md lines 146, 414-417
             const sessionId = tracker.startSession(trackId, track, options);
             storeStartSession(sessionId, trackId, track);
-            setIsActive(true);
-            setElapsedTime(0);
 
             return sessionId;
         } catch (error) {
@@ -119,12 +94,13 @@ export const useSessionTracker = () => {
     }, [tracker, storeStartSession]);
 
     const endSession = useCallback((): ListeningSession | null => {
-        if (!isActive) return null;
+        // Check store state directly, not local state
+        if (!activeSession) return null;
 
         logger.info('SessionTracker', 'Ending session');
 
         try {
-            const currentSessionId = activeSession?.sessionId;
+            const currentSessionId = activeSession.sessionId;
             if (!currentSessionId) {
                 logger.warn('SessionTracker', 'Attempted to end session but no active sessionId found.');
                 return null;
@@ -136,7 +112,6 @@ export const useSessionTracker = () => {
             if (session) {
                 storeEndSession(session);
             }
-            setIsActive(false);
             timerManager.stop();
 
             return session;
@@ -144,7 +119,7 @@ export const useSessionTracker = () => {
             handleError(error, 'SessionTracker');
             return null;
         }
-    }, [tracker, isActive, storeEndSession, activeSession]);
+    }, [tracker, storeEndSession, activeSession]);
 
     return { startSession, endSession, isActive, elapsedTime };
 };
