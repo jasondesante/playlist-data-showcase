@@ -81,20 +81,18 @@
 }
 
 .playlist-input-compact {
-  flex: 1 1 0 !important;
-  min-width: 0 !important;
-}
-
-.playlist-input-compact .input-wrapper {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .playlist-input-compact .input-field {
-  width: 100%;
+  width: auto;
 }
 
 .playlist-load-button-compact {
   flex: 0 0 auto;
+  height: auto;
+  min-height: auto;
 }
 
 /* ========================================
@@ -386,5 +384,5 @@
 .playlist-track-skeleton-list {
   display: flex;
   flex-direction: column;
-  gap: 0.0625rem;
+  gap: 0.5rem;
 }
