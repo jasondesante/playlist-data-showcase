@@ -24,6 +24,10 @@ interface CharacterState {
     getActiveCharacter: () => CharacterSheet | undefined;
     /** Clear all characters and reset state */
     resetCharacters: () => void;
+    /** Get count of pending stat increases for a character by ID (seed) */
+    getPendingStatIncreaseCount: (id: string) => number;
+    /** Check if character has pending stat increases by ID (seed) */
+    hasPendingStatIncreases: (id: string) => boolean;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -149,6 +153,40 @@ export const useCharacterStore = create<CharacterState>()(
                     characters: [],
                     activeCharacterId: null
                 });
+            },
+
+            /**
+             * Get the count of pending stat increases for a character by ID (seed).
+             * Pending stat increases are awarded at levels 4, 8, 12, 16, 19 in standard game mode.
+             *
+             * @param id - The seed (unique ID) of the character
+             * @returns Number of pending stat increases (0 if none or character not found)
+             * @example
+             * ```ts
+             * const pendingCount = getPendingStatIncreaseCount('seed-123');
+             * if (pendingCount > 0) console.log(`Apply ${pendingCount} stat increases!`);
+             * ```
+             */
+            getPendingStatIncreaseCount: (id: string) => {
+                const character = get().characters.find((c) => c.seed === id);
+                return character?.pendingStatIncreases ?? 0;
+            },
+
+            /**
+             * Check if a character has pending stat increases by ID (seed).
+             *
+             * @param id - The seed (unique ID) of the character
+             * @returns true if character exists and has pending stat increases > 0
+             * @example
+             * ```ts
+             * if (hasPendingStatIncreases('seed-123')) {
+             *     showStatSelectionModal();
+             * }
+             * ```
+             */
+            hasPendingStatIncreases: (id: string) => {
+                const character = get().characters.find((c) => c.seed === id);
+                return (character?.pendingStatIncreases ?? 0) > 0;
             }
         }),
         {

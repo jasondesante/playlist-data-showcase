@@ -94,15 +94,15 @@ The playlist data engine has been significantly updated with new features around
 ### Task 1.4: Update `characterStore` for New Properties
 **File:** `src/store/characterStore.ts`
 
-- [ ] 1.4.1 - Verify `CharacterSheet` type includes `pendingStatIncreases?: number`
-- [ ] 1.4.2 - Verify `CharacterSheet` type includes `gameMode?: GameMode`
-- [ ] 1.4.3 - Verify `CharacterSheet` type includes `statStrategy?: StatIncreaseStrategyType` (for per-character strategy)
-- [ ] 1.4.4 - Add `getPendingStatIncreaseCount(id: string): number` selector method
-- [ ] 1.4.5 - Add `hasPendingStatIncreases(id: string): boolean` selector method
-- [ ] 1.4.6 - Verify `persist` middleware configuration saves new properties
-- [ ] 1.4.7 - Test: Create a character and verify `gameMode` is persisted
-- [ ] 1.4.8 - Test: Level up a standard mode character and verify `pendingStatIncreases` is saved
-- [ ] 1.4.9 - Test: Change stat strategy and verify it's persisted to character sheet
+- [x] 1.4.1 - Verify `CharacterSheet` type includes `pendingStatIncreases?: number`
+- [x] 1.4.2 - Verify `CharacterSheet` type includes `gameMode?: GameMode`
+- [x] 1.4.3 - Verify `CharacterSheet` type includes `statStrategy?: StatIncreaseStrategyType` (for per-character strategy)
+- [x] 1.4.4 - Add `getPendingStatIncreaseCount(id: string): number` selector method
+- [x] 1.4.5 - Add `hasPendingStatIncreases(id: string): boolean` selector method
+- [x] 1.4.6 - Verify `persist` middleware configuration saves new properties
+- [x] 1.4.7 - Test: Create a character and verify `gameMode` is persisted
+- [x] 1.4.8 - Test: Level up a standard mode character and verify `pendingStatIncreases` is saved
+- [x] 1.4.9 - Test: Change stat strategy and verify it's persisted to character sheet
 
 ---
 
