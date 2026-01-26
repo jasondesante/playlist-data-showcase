@@ -1,10 +1,10 @@
-study UPDATE_PLAN.md and pick the most important thing to do. 
+study BS_CLEANING_PLAN.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
 
-Do that one task only. For example, do task 1.1 or task 1.2. Do not combine two tasks like task 1.2 and 1.3 within the same run. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
+Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
-I might add new stuff to the UPDATE_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
+I might add new stuff to the BS_CLEANING_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
 
 When you're done, say "done". When there's no tasks left for you to do then say "ITS TIME TO EAT"
 
