@@ -402,18 +402,18 @@ The playlist data engine has been significantly updated with new features around
 
 **Note:** The `StatManager` class supports runtime strategy changes via `updateConfig()`. The hook should expose a method to change strategy without recreating the `CharacterUpdater` instance.
 
-- [ ] 4.5.1 - Import `StatIncreaseStrategyType` and `StatManager` from `'playlist-data-engine'`
-- [ ] 4.5.2 - Create `StatManager` instance in hook (outside useMemo, single instance):
+- [x] 4.5.1 - Import `StatIncreaseStrategyType` and `StatManager` from `'playlist-data-engine'`
+- [x] 4.5.2 - Create `StatManager` instance in hook (outside useMemo, single instance):
   ```typescript
   const statManager = new StatManager({ strategy: 'dnD5e_smart' });
   ```
-- [ ] 4.5.3 - Pass `statManager` to `CharacterUpdater` constructor (existing code, verify it's there)
-- [ ] 4.5.4 - Add method to hook return: `updateStatStrategy: (strategy: StatIncreaseStrategyType) => void`
-- [ ] 4.5.5 - Implement method to call `statManager.updateConfig({ strategy })`
-- [ ] 4.5.6 - Add JSDoc explaining that strategy changes affect future level-ups only
-- [ ] 4.5.7 - Test: Verify hook works with default strategy
-- [ ] 4.5.8 - Test: Call `updateStatStrategy()` and verify subsequent level-ups use new strategy
-- [ ] 4.5.9 - Test: Verify strategy change doesn't break existing methods or pending stat increases
+- [x] 4.5.3 - Pass `statManager` to `CharacterUpdater` constructor (existing code, verify it's there)
+- [x] 4.5.4 - Add method to hook return: `updateStatStrategy: (strategy: StatIncreaseStrategyType) => void`
+- [x] 4.5.5 - Implement method to call `statManager.updateConfig({ strategy })`
+- [x] 4.5.6 - Add JSDoc explaining that strategy changes affect future level-ups only
+- [x] 4.5.7 - Test: Verify hook works with default strategy
+- [x] 4.5.8 - Test: Call `updateStatStrategy()` and verify subsequent level-ups use new strategy
+- [x] 4.5.9 - Test: Verify strategy change doesn't break existing methods or pending stat increases
 
 ---
 

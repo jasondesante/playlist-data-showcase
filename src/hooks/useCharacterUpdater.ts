@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { CharacterUpdater, CharacterSheet, ListeningSession, type CharacterUpdateResult, type Ability } from 'playlist-data-engine';
+import { CharacterUpdater, CharacterSheet, ListeningSession, type CharacterUpdateResult, type Ability, type StatIncreaseStrategyType, StatManager } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
@@ -32,12 +32,15 @@ interface ApplyPendingStatIncreaseResult {
  *
  * @example
  * ```tsx
- * const { processSession, addManualXP, addXPFromSource } = useCharacterUpdater();
+ * const { processSession, addManualXP, addXPFromSource, updateStatStrategy } = useCharacterUpdater();
  * const result = await processSession(character, session);
  * if (result.leveledUp) console.log('Level up!', result.newLevel);
  *
  * // Add XP from specific source
  * const xpResult = addXPFromSource(character, 500, 'quest');
+ *
+ * // Change stat strategy (affects future level-ups only)
+ * updateStatStrategy('dnD5e_smart');
  * ```
  *
  * @returns {Object} Hook return object
@@ -47,10 +50,17 @@ interface ApplyPendingStatIncreaseResult {
  * @returns {Function} applyPendingStatIncrease - Applies pending stat increases with selected stats
  * @returns {Function} hasPendingStatIncreases - Checks if character has pending stat increases
  * @returns {Function} getPendingStatIncreaseCount - Gets count of pending stat increases
+ * @returns {Function} updateStatStrategy - Updates the StatManager strategy for future level-ups
  */
 export const useCharacterUpdater = () => {
     const { updateCharacter } = useCharacterStore();
-    const [updater] = useState(() => new CharacterUpdater());
+
+    // Create a single StatManager instance outside of CharacterUpdater
+    // This allows us to update its configuration at runtime
+    const [statManager] = useState(() => new StatManager({ strategy: 'dnD5e_smart' }));
+
+    // Pass statManager to CharacterUpdater constructor
+    const [updater] = useState(() => new CharacterUpdater(statManager));
 
     const processSession = useCallback((character: CharacterSheet, session: ListeningSession) => {
         logger.info('CharacterUpdater', 'Processing session for character', {
@@ -201,12 +211,47 @@ export const useCharacterUpdater = () => {
         return updater.getPendingStatIncreaseCount(character);
     }, [updater]);
 
+    /**
+     * Update the StatManager strategy for future level-ups.
+     * This changes how stats are automatically increased when characters level up.
+     *
+     * Strategy changes affect future level-ups only, not existing pending stat increases.
+     *
+     * Valid strategies:
+     * - 'dnD5e': Manual D&D 5e - standard mode, you choose stats manually (+2 to one or +1 to two)
+     * - 'dnD5e_smart': Smart Auto - intelligently picks best stats based on class
+     * - 'balanced': Balanced - +1 to two lowest stats each time
+     * - 'primary_only': Primary Only - always boosts class's primary stat
+     * - 'random': Random - random stat selection each level-up
+     *
+     * @param strategy - The new stat increase strategy to use
+     *
+     * @example
+     * ```tsx
+     * // Switch to smart auto-selection
+     * updateStatStrategy('dnD5e_smart');
+     *
+     * // Switch to balanced distribution
+     * updateStatStrategy('balanced');
+     * ```
+     */
+    const updateStatStrategy = useCallback((strategy: StatIncreaseStrategyType): void => {
+        logger.info('CharacterUpdater', 'Updating stat strategy', { strategy });
+        try {
+            statManager.updateConfig({ strategy });
+            logger.info('CharacterUpdater', 'Stat strategy updated successfully', { strategy });
+        } catch (error) {
+            handleError(error, 'CharacterUpdater');
+        }
+    }, [statManager]);
+
     return {
         processSession,
         addManualXP,
         addXPFromSource,
         applyPendingStatIncrease,
         hasPendingStatIncreases,
-        getPendingStatIncreaseCount
+        getPendingStatIncreaseCount,
+        updateStatStrategy
     };
 };
