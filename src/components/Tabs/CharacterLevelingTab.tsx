@@ -98,42 +98,49 @@ export function CharacterLevelingTab() {
   // D&D 5e XP thresholds for levels 1-20
   const xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
 
-  const addXP = (amount: number) => {
-    if (!activeChar) return;
+  const addXP = async (amount: number) => {
+    if (!activeChar || isProcessing) return;
 
-    const newXP = currentXP + amount;
-    setCurrentXP(newXP);
+    setIsProcessing(true);
+    try {
+      const newXP = currentXP + amount;
+      setCurrentXP(newXP);
 
-    // Check if we should level up
-    let newLevel = activeChar.level;
-    let newNextLevel = activeChar.xp.next_level;
+      // Check if we should level up
+      let newLevel = activeChar.level;
+      let newNextLevel = activeChar.xp.next_level;
 
-    for (let i = activeChar.level; i < xpThresholds.length; i++) {
-      if (newXP >= xpThresholds[i]) {
-        newLevel = i + 1;
-        newNextLevel = xpThresholds[i + 1] || 999999;
-      } else {
-        break;
+      for (let i = activeChar.level; i < xpThresholds.length; i++) {
+        if (newXP >= xpThresholds[i]) {
+          newLevel = i + 1;
+          newNextLevel = xpThresholds[i + 1] || 999999;
+        } else {
+          break;
+        }
       }
-    }
 
-    // Update the character
-    const updatedChar = {
-      ...activeChar,
-      level: newLevel,
-      xp: {
-        current: newXP,
-        next_level: newNextLevel
+      // Update the character
+      const updatedChar = {
+        ...activeChar,
+        level: newLevel,
+        xp: {
+          current: newXP,
+          next_level: newNextLevel
+        }
+      };
+
+      updateCharacter(updatedChar);
+
+      if (newLevel > activeChar.level) {
+        console.log(`🎉 LEVEL UP! Now level ${newLevel}!`);
+        triggerLevelUpCelebration();
       }
-    };
-
-    updateCharacter(updatedChar);
-
-    if (newLevel > activeChar.level) {
-      console.log(`🎉 LEVEL UP! Now level ${newLevel}!`);
-      triggerLevelUpCelebration();
+      console.log(`Added ${amount} XP. Total: ${newXP} (Level ${newLevel})`);
+    } finally {
+      // Small delay to prevent accidental double-clicks
+      await new Promise(resolve => setTimeout(resolve, 100));
+      setIsProcessing(false);
     }
-    console.log(`Added ${amount} XP. Total: ${newXP} (Level ${newLevel})`);
   };
 
   const triggerLevelUpCelebration = () => {
@@ -431,10 +438,10 @@ export function CharacterLevelingTab() {
         <div className="leveling-quick-add">
           <span className="leveling-quick-label">Quick Add</span>
           <div className="leveling-quick-grid">
-            <Button variant="outline" size="md" onClick={() => addXP(50)} leftIcon={Zap}>+50 XP</Button>
-            <Button variant="outline" size="md" onClick={() => addXP(100)} leftIcon={Zap}>+100 XP</Button>
-            <Button variant="outline" size="md" onClick={() => addXP(300)} leftIcon={Zap}>+300 XP</Button>
-            <Button variant="outline" size="md" onClick={() => addXP(1000)} leftIcon={Zap}>+1,000 XP</Button>
+            <Button variant="outline" size="md" onClick={() => addXP(50)} leftIcon={Zap} disabled={isProcessing || !activeChar}>+50 XP</Button>
+            <Button variant="outline" size="md" onClick={() => addXP(100)} leftIcon={Zap} disabled={isProcessing || !activeChar}>+100 XP</Button>
+            <Button variant="outline" size="md" onClick={() => addXP(300)} leftIcon={Zap} disabled={isProcessing || !activeChar}>+300 XP</Button>
+            <Button variant="outline" size="md" onClick={() => addXP(1000)} leftIcon={Zap} disabled={isProcessing || !activeChar}>+1,000 XP</Button>
           </div>
         </div>
 
@@ -448,6 +455,7 @@ export function CharacterLevelingTab() {
             min="1"
             helperText="Enter a custom amount of XP to add"
             size="md"
+            disabled={isProcessing || !activeChar}
           />
           <Button
             variant="primary"
@@ -455,6 +463,7 @@ export function CharacterLevelingTab() {
             onClick={() => addXP(xpAmount)}
             leftIcon={Star}
             className="leveling-add-button"
+            disabled={isProcessing || !activeChar}
           >
             Add {xpAmount.toLocaleString()} XP
           </Button>

@@ -776,9 +776,23 @@ The playlist data engine has been significantly updated with new features around
     - This is better UX than showing a disabled button - the element simply doesn't render when not applicable
     - Test created in `test-task-6.7.4.ts` verifies the conditional logic
     - All tests pass: button correctly hidden when no pending stat increases
-- [ ] 6.7.5 - Test: Rapid clicking of XP buttons
-  - [ ] Verify no race conditions
-  - [ ] Verify all XP is applied correctly
+- [x] 6.7.5 - Test: Rapid clicking of XP buttons
+  - [x] Verify no race conditions
+  - [x] Verify all XP is applied correctly
+  - **Implementation Summary:**
+    - **ISSUE FOUND:** The `addXP()` function and Quick Add buttons lacked `isProcessing` guard
+    - XP Source buttons (Quest, Boss, Exploration) already had the guard implemented
+    - **FIX APPLIED:**
+      - Made `addXP()` function async
+      - Added `isProcessing` guard check at start of function: `if (!activeChar || isProcessing) return;`
+      - Added `disabled={isProcessing || !activeChar}` to all Quick Add buttons
+      - Added `disabled={isProcessing || !activeChar}` to Custom XP Input field and button
+      - Added 100ms delay in finally block to prevent accidental double-clicks
+    - **VERIFICATION:**
+      - Created test suite in `test-task-6.7.5.js` demonstrating the issue
+      - Created verification test in `test-task-6.7.5-verification.js` confirming the fix
+      - All tests pass: race conditions prevented, sequential clicks work correctly
+    - Build passes with no errors
 
 ---
 
