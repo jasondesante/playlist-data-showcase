@@ -516,6 +516,138 @@
   width: 100%;
 }
 
+/* XP Sources Section */
+.leveling-xp-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.leveling-xp-sources-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.leveling-xp-sources-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .leveling-xp-sources-grid {
+    grid-template-columns: repeat(3, 1fr);
+    display: grid;
+  }
+}
+
+/* XP Source Buttons */
+.leveling-xp-source-btn {
+  position: relative;
+  height: auto !important;
+  padding: 0.875rem 1rem !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.leveling-xp-source-btn .button-icon {
+  align-self: flex-start;
+}
+
+.leveling-xp-source-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.leveling-xp-source-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.leveling-xp-source-amount {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  opacity: 0.8;
+}
+
+/* Quest button - blue/teal theme */
+.leveling-xp-source-quest {
+  border-color: hsl(var(--primary) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-quest:hover:not(:disabled) {
+  border-color: hsl(var(--primary)) !important;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-quest .button-icon {
+  color: hsl(var(--primary)) !important;
+}
+
+.leveling-xp-source-quest .leveling-xp-source-amount {
+  color: hsl(var(--primary));
+}
+
+/* Boss button - red/destructive theme */
+.leveling-xp-source-boss {
+  border-color: hsl(var(--destructive) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--destructive) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-boss:hover:not(:disabled) {
+  border-color: hsl(var(--destructive)) !important;
+  background: linear-gradient(135deg, hsl(var(--destructive) / 0.2), hsl(var(--destructive) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-boss .button-icon {
+  color: hsl(var(--destructive)) !important;
+}
+
+.leveling-xp-source-boss .leveling-xp-source-amount {
+  color: hsl(var(--destructive));
+}
+
+/* Exploration button - green/teal theme */
+.leveling-xp-source-exploration {
+  border-color: hsl(var(--cute-teal) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-exploration:hover:not(:disabled) {
+  border-color: hsl(var(--cute-teal)) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.2), hsl(var(--cute-teal) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-exploration .button-icon {
+  color: hsl(var(--cute-teal)) !important;
+}
+
+.leveling-xp-source-exploration .leveling-xp-source-amount {
+  color: hsl(var(--cute-teal));
+}
+
+/* Disabled state for source buttons */
+.leveling-xp-source-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Stats Card */
 .leveling-stats-card {
   background: hsl(var(--surface-2));

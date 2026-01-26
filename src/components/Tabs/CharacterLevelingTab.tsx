@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
+import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { TrendingUp, Heart, Shield, Star, Zap } from 'lucide-react';
+import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
 /**
@@ -32,10 +33,12 @@ import './CharacterLevelingTab.css';
  */
 export function CharacterLevelingTab() {
   const { characters, updateCharacter } = useCharacterStore();
+  const { addXPFromSource } = useCharacterUpdater();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [levelUpPulse, setLevelUpPulse] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const activeChar = characters.length > 0 ? characters[characters.length - 1] : null;
 
@@ -45,6 +48,13 @@ export function CharacterLevelingTab() {
       setCurrentXP(activeChar.xp.current);
     }
   }, [activeChar]);
+
+  // Sync currentXP when character is updated by addXPFromSource
+  useEffect(() => {
+    if (activeChar) {
+      setCurrentXP(activeChar.xp.current);
+    }
+  }, [characters]);
 
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string): string => {
@@ -111,6 +121,49 @@ export function CharacterLevelingTab() {
     setLevelUpPulse(true);
     setTimeout(() => setShowConfetti(false), 3000);
     setTimeout(() => setLevelUpPulse(false), 600);
+  };
+
+  // XP Source handlers
+  const handleCompleteQuest = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 500, 'quest');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+      }
+      console.log(`Quest completed! +500 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDefeatBoss = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 5000, 'boss_defeat');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+      }
+      console.log(`Boss defeated! +5,000 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleExploration = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 250, 'exploration');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+      }
+      console.log(`Exploration completed! +250 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (!activeChar) {
@@ -259,6 +312,52 @@ export function CharacterLevelingTab() {
           >
             Add {xpAmount.toLocaleString()} XP
           </Button>
+        </div>
+
+        {/* XP Sources (Simulate Activities) */}
+        <div className="leveling-xp-sources">
+          <span className="leveling-xp-sources-label">XP Sources (Simulate Activities)</span>
+          <div className="leveling-xp-sources-grid">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleCompleteQuest}
+              leftIcon={Scroll}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-quest"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Complete Quest</span>
+                <span className="leveling-xp-source-amount">+500 XP</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleDefeatBoss}
+              leftIcon={Sword}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-boss"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Defeat Boss</span>
+                <span className="leveling-xp-source-amount">+5,000 XP</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleExploration}
+              leftIcon={Compass}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-exploration"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Exploration</span>
+                <span className="leveling-xp-source-amount">+250 XP</span>
+              </span>
+            </Button>
+          </div>
         </div>
       </Card>
 

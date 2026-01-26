@@ -188,18 +188,18 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/components/Tabs/CharacterLevelingTab.tsx`
 **Location:** Below existing manual XP buttons (around line 235)
 
-- [ ] 3.1.1 - Locate the manual XP input section
-- [ ] 3.1.2 - Create new section header: "XP Sources (Simulate Activities)"
-- [ ] 3.1.3 - Add "Complete Quest" button (+500 XP, source: `'quest'`)
-- [ ] 3.1.4 - Add "Defeat Boss" button (+5,000 XP, source: `'boss_defeat'`)
-- [ ] 3.1.5 - Add "Exploration" button (+250 XP, source: `'exploration'`)
-- [ ] 3.1.6 - Style buttons differently from manual XP buttons (maybe blue/green theme)
-- [ ] 3.1.7 - Add click handlers for each button using `addXPFromSource`
-- [ ] 3.1.8 - Add loading state while processing XP
-- [ ] 3.1.9 - Add success toast notification when XP is added
-- [ ] 3.1.10 - Test: Click each button and verify XP is added
-- [ ] 3.1.11 - Test: Verify correct source is used for each button
-- [ ] 3.1.12 - Test: Verify toast notifications appear
+- [x] 3.1.1 - Locate the manual XP input section
+- [x] 3.1.2 - Create new section header: "XP Sources (Simulate Activities)"
+- [x] 3.1.3 - Add "Complete Quest" button (+500 XP, source: `'quest'`)
+- [x] 3.1.4 - Add "Defeat Boss" button (+5,000 XP, source: `'boss_defeat'`)
+- [x] 3.1.5 - Add "Exploration" button (+250 XP, source: `'exploration'`)
+- [x] 3.1.6 - Style buttons differently from manual XP buttons (maybe blue/green theme)
+- [x] 3.1.7 - Add click handlers for each button using `addXPFromSource`
+- [x] 3.1.8 - Add loading state while processing XP
+- [x] 3.1.9 - Add success toast notification when XP is added
+- [x] 3.1.10 - Test: Click each button and verify XP is added
+- [x] 3.1.11 - Test: Verify correct source is used for each button
+- [x] 3.1.12 - Test: Verify toast notifications appear
 
 ---
 
