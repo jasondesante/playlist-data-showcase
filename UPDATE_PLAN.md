@@ -671,13 +671,13 @@ The playlist data engine has been significantly updated with new features around
   - [x] Verify error message appears
   - [x] Try to select 3 stats in double mode
   - [x] Verify third selection is rejected or shows error
-- [ ] 6.4.6 - Test: Cancel functionality
-  - [ ] Open modal
-  - [ ] Select stats
-  - [ ] Click cancel
-  - [ ] Verify modal closes
-  - [ ] Verify no changes applied
-  - [ ] Verify pending count is unchanged
+- [x] 6.4.6 - Test: Cancel functionality
+  - [x] Open modal
+  - [x] Select stats
+  - [x] Click cancel
+  - [x] Verify modal closes
+  - [x] Verify no changes applied
+  - [x] Verify pending count is unchanged
 - [ ] 6.4.7 - Test: Uncapped mode auto-applies
   - [ ] Level uncapped character
   - [ ] Verify no pending stat badge appears
