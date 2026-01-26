@@ -271,11 +271,20 @@ The XP is only shown **after the session ends** in the "Last Session" card.
 
 ### **PHASE 5: Add Real-time XP Display to Session Tab**
 
-- [ ] **Task 5.1: Calculate Real-time XP During Session**
+- [x] **Task 5.1: Calculate Real-time XP During Session** ✅
   - File: [src/components/Tabs/SessionTrackingTab.tsx](src/components/Tabs/SessionTrackingTab.tsx)
-  - Use `useXPCalculator` hook to calculate XP based on elapsed time
-  - Update XP display every second (sync with timer)
-  - Show animated counter going up
+  - Added `useXPCalculator` hook to calculate XP based on elapsed time
+  - XP breakdown calculated with `useMemo` based on `elapsedTime` state
+  - XP display updates every second (sync with timer) via `useEffect` animation
+  - Added animated counter using smooth interpolation towards target XP value
+  - Added visual XP display in Session Info Card with:
+    - Sparkles icon with rotation animation
+    - Pulsing gradient background
+    - Monospace font for tabular numbers
+    - Special highlight styling with primary color
+  - Files modified:
+    - `src/components/Tabs/SessionTrackingTab.tsx` - Added XP calculation state, animated counter, and XP display JSX
+    - `src/components/Tabs/SessionTrackingTab.css` - Added styles for XP display with animations
 
 - [ ] **Task 5.2: Display XP Progress in Session Tab**
   - File: [src/components/Tabs/SessionTrackingTab.tsx](src/components/Tabs/SessionTrackingTab.tsx)

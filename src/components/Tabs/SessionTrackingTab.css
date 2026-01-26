@@ -513,3 +513,52 @@
     font-size: 1.75rem;
   }
 }
+
+/* ========================================
+   REAL-TIME XP DISPLAY
+   ======================================== */
+
+.session-xp-display {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05));
+  border-left: 3px solid hsl(var(--primary));
+  animation: xpDisplayPulse 2s ease-in-out infinite;
+}
+
+@keyframes xpDisplayPulse {
+  0%, 100% {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05));
+  }
+  50% {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.08));
+  }
+}
+
+.session-xp-icon {
+  display: inline-block;
+  margin-right: 0.25rem;
+  color: hsl(var(--primary));
+  animation: sparkleSpin 3s linear infinite;
+}
+
+@keyframes sparkleSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.session-xp-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--primary));
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--duration-fast) var(--ease-out-cubic);
+  display: inline-block;
+}

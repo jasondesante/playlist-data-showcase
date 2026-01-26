@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Play, Pause, Clock, Music } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Play, Pause, Clock, Music, Sparkles } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
+import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { TrackCard } from '../ui/TrackCard';
@@ -76,8 +77,56 @@ export function SessionTrackingTab() {
   const { selectedTrack } = usePlaylistStore();
   const { play, stop } = useAudioPlayerStore();
   const { startSession, endSession: hookEndSession, isActive, elapsedTime } = useSessionTracker();
+  const { calculateXP } = useXPCalculator();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Calculate real-time XP based on elapsed time
+  // Update whenever elapsedTime changes (every second when session is active)
+  const xpBreakdown = useMemo(() => {
+    if (!isActive || elapsedTime === 0) {
+      return null;
+    }
+    // Calculate XP based on elapsed session time
+    // For now, using base calculation without environmental/gaming context
+    // Those would be added in future tasks
+    return calculateXP(elapsedTime, undefined, undefined, false);
+  }, [isActive, elapsedTime, calculateXP]);
+
+  // Animated XP counter state
+  const [displayedXP, setDisplayedXP] = useState(0);
+
+  // Animate XP counter towards actual value
+  useEffect(() => {
+    if (!xpBreakdown) {
+      setDisplayedXP(0);
+      return;
+    }
+
+    const targetXP = xpBreakdown.totalXP;
+    const diff = targetXP - displayedXP;
+
+    // If difference is small, just set it directly
+    if (Math.abs(diff) <= 1) {
+      setDisplayedXP(targetXP);
+      return;
+    }
+
+    // Animate towards target XP
+    const animationInterval = setInterval(() => {
+      setDisplayedXP((prev) => {
+        const newDiff = targetXP - prev;
+        if (Math.abs(newDiff) <= 1) {
+          clearInterval(animationInterval);
+          return targetXP;
+        }
+        // Increment/decrement by a portion of the difference
+        return prev + Math.ceil(newDiff / 5);
+      });
+    }, 100); // Update 10 times per second for smooth animation
+
+    return () => clearInterval(animationInterval);
+  }, [xpBreakdown?.totalXP]);
 
   const handleStart = () => {
     if (!selectedTrack) return;
@@ -216,6 +265,19 @@ export function SessionTrackingTab() {
                   <span className="session-info-label">Duration</span>
                   <span className="session-info-value">{formatTime(trackDuration)}</span>
                 </div>
+
+                {/* Real-time XP Display */}
+                {isActive && displayedXP > 0 && (
+                  <div className="session-info-item session-xp-display">
+                    <span className="session-info-label">
+                      <Sparkles className="session-xp-icon" size={14} />
+                      XP Earned
+                    </span>
+                    <span className="session-info-value session-xp-value">
+                      {displayedXP} XP
+                    </span>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="session-info-footer">
                 {!isActive ? (
