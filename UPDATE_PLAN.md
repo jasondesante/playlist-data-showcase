@@ -1111,6 +1111,8 @@ The playlist data engine has been significantly updated with new features around
 
 **USER FEEDBACK ACKNOWLEDGED:** Added Tasks 7.8-7.11 to properly consolidate ALL documentation into a single /docs/ folder, including moving DESIGN_DOCS/FROM_DATA_ENGINE to docs/engine/. Prompt files will NOT be deleted.
 
+More feedback - You don't understand what I've been saying. TOO MANY FILES means TOO MANY FILES means DELETE MOST OF THOSE MARKDOWN FILES BECAUSE I DONT THINK ILL EVER NEED THEM. Here's the idea if you generated most of the markdown files on your own just writing stereotypical stuff for this and that, then you never need those docs ever and you need only the information unique to this project that needs to be in the most concentrated information dense form as possible so all those markdown files are literally retarded.
+
 ## Quick Reference Files
 
 ### Files to Modify
