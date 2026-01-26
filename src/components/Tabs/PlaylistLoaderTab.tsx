@@ -221,6 +221,31 @@ export function PlaylistLoaderTab() {
             </div>
           </div>
 
+          {/* Selected Track Display */}
+          {selectedTrack && (
+            <div className="playlist-selected-track-compact">
+              <div className="selected-track-status">
+                <span className="selected-track-pulse" />
+                <span className="selected-track-label">NOW PLAYING</span>
+              </div>
+              <div className="selected-track-info">
+                <span className="selected-track-index">
+                  #{currentPlaylist.tracks.findIndex(t => t.title === selectedTrack.title && t.artist === selectedTrack.artist) + 1}
+                </span>
+                <span className="selected-track-separator" />
+                <span className="selected-track-title">{selectedTrack.title}</span>
+                <span className="selected-track-separator" />
+                <span className="selected-track-artist">{selectedTrack.artist}</span>
+                {selectedTrack.album && (
+                  <>
+                    <span className="selected-track-separator" />
+                    <span className="selected-track-album">{selectedTrack.album}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Compact Search + Track List */}
           <div className="playlist-search-section-compact">
             <div className="playlist-search-bar-compact">

@@ -378,6 +378,94 @@
 }
 
 /* ========================================
+   SELECTED TRACK DISPLAY
+   ======================================== */
+
+.playlist-selected-track-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.06));
+  border: 1px solid hsl(var(--primary) / 0.2);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+.selected-track-status {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.selected-track-pulse {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: hsl(142 76% 68%);
+  box-shadow: 0 0 0 0 hsl(142 76% 68%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(142 76% 68%);
+  }
+  50% {
+    box-shadow: 0 0 0 0.375rem hsl(142 76% 68%);
+  }
+}
+
+.selected-track-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: hsl(142 76% 68%);
+}
+
+.selected-track-info {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.selected-track-index {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: hsl(var(--primary));
+}
+
+.selected-track-separator {
+  width: 0.1875rem;
+  height: 0.1875rem;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, hsl(var(--muted-foreground) / 0.6), hsl(var(--muted-foreground) / 0.3));
+}
+
+.selected-track-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+}
+
+.selected-track-artist {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.selected-track-album {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+/* ========================================
    COMPACT SEARCH SECTION
    ======================================== */
 

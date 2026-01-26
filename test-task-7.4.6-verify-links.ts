@@ -25,7 +25,6 @@ const workspaceRoot = '/workspace';
 const docsToCheck = [
   'README.md',
   'IMPLEMENTATION_STATUS.md',
-  'TASK_COMPLETION_SUMMARY.md',
   'ARCHITECTURE.md',
   'CONTRIBUTING.md',
   'DEBUGGING.md',
