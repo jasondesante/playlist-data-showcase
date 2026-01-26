@@ -860,7 +860,10 @@ The playlist data engine has been significantly updated with new features around
 ### Task 7.4: Update All Cross-References
 **Files:** All markdown files
 
-- [ ] 7.4.1 - Search for all references to `../ARCHITECTURE.md` and update to `../../docs/architecture/overview.md`
+- [x] 7.4.1 - Search for all references to `../ARCHITECTURE.md` and update to `../../docs/architecture/overview.md`
+  - **Summary:** Updated README.md to link directly to `./docs/architecture/overview.md` and `./docs/development/contributing.md`
+  - Fixed docs/index.md engine doc links to point to `../../DESIGN_DOCS/FROM_DATA_ENGINE/` (engine docs stay in DESIGN_DOCS)
+  - Fixed docs/architecture/overview.md engine doc links to point to `../../../DESIGN_DOCS/FROM_DATA_ENGINE/`
 - [ ] 7.4.2 - Search for all references to `../CONTRIBUTING.md` and update to `../../docs/development/contributing.md`
 - [ ] 7.4.3 - Search for all references to `../DEBUGGING.md` and update to `../../docs/development/debugging.md`
 - [ ] 7.4.4 - Update relative paths in all moved files

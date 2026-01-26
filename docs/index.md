@@ -36,8 +36,8 @@ Welcome to the Playlist Character Generator documentation. This demo showcases a
 
 ## Data Engine
 
-- [API Reference](./engine/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
-- [Usage Examples](./engine/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
+- [API Reference](../../DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md)
+- [Usage Examples](../../DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md)
 
 ---
 

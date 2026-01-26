@@ -36,9 +36,9 @@ This application demonstrates all features of the `playlist-data-engine` library
 
 ## Documentation
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design and patterns
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
-- [docs/](./docs/) - Full documentation (coming soon)
+- [Architecture Overview](./docs/architecture/overview.md) - System design and patterns
+- [Contributing Guide](./docs/development/contributing.md) - Contribution guidelines
+- [Documentation Index](./docs/index.md) - Full documentation hub
 
 ## Data Engine Docs
 
