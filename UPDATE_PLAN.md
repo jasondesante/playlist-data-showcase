@@ -50,8 +50,8 @@ The playlist data engine has been significantly updated with new features around
 ### Task 1.2: Add `addXP()` Method to `useCharacterUpdater` Hook
 **File:** `src/hooks/useCharacterUpdater.ts`
 
-- [x] 1.2.1 - Import `Omit` and `CharacterUpdateResult` types from engine
-- [x] 1.2.2 - Add new method `addXPFromSource` with signature:
+- [ ] 1.2.1 - Import `Omit` and `CharacterUpdateResult` types from engine
+- [ ] 1.2.2 - Add new method `addXPFromSource` with signature:
   ```typescript
   addXPFromSource: (
       character: CharacterSheet,
@@ -59,11 +59,11 @@ The playlist data engine has been significantly updated with new features around
       source?: string
   ) => Omit<CharacterUpdateResult, 'masteredTrack' | 'masteryBonusXP'>
   ```
-- [x] 1.2.3 - Implement the method using `updater.addXP(character, amount, source)`
-- [x] 1.2.4 - Update the returned character in the store
-- [x] 1.2.5 - Return the full result including `levelUpDetails`
-- [x] 1.2.6 - Add the method to the hook's return object
-- [x] 1.2.7 - Add JSDoc comment explaining valid source strings: `'combat'`, `'quest'`, `'boss_defeat'`, `'exploration'`, `'crafting'`, `'social'`, etc.
+- [ ] 1.2.3 - Implement the method using `updater.addXP(character, amount, source)`
+- [ ] 1.2.4 - Update the returned character in the store
+- [ ] 1.2.5 - Return the full result including `levelUpDetails`
+- [ ] 1.2.6 - Add the method to the hook's return object
+- [ ] 1.2.7 - Add JSDoc comment explaining valid source strings: `'combat'`, `'quest'`, `'boss_defeat'`, `'exploration'`, `'crafting'`, `'social'`, etc.
 - [ ] 1.2.8 - Test: Call `addXPFromSource` with `'quest'` source and verify XP is added
 - [ ] 1.2.9 - Test: Verify `levelUpDetails` are returned when character levels up
 
@@ -72,8 +72,8 @@ The playlist data engine has been significantly updated with new features around
 ### Task 1.3: Add `applyPendingStatIncrease` Method to Hook
 **File:** `src/hooks/useCharacterUpdater.ts`
 
-- [x] 1.3.1 - Import `Ability` type from `'playlist-data-engine'`
-- [x] 1.3.2 - Add new method `applyPendingStatIncrease` with signature:
+- [ ] 1.3.1 - Import `Ability` type from `'playlist-data-engine'`
+- [ ] 1.3.2 - Add new method `applyPendingStatIncrease` with signature:
   ```typescript
   applyPendingStatIncrease: (
       character: CharacterSheet,
@@ -81,11 +81,11 @@ The playlist data engine has been significantly updated with new features around
       secondaryStats?: Ability[]
   ) => { character: CharacterSheet; statIncreases: Array<{...}>; remainingPending: number }
   ```
-- [x] 1.3.3 - Implement using `updater.applyPendingStatIncrease(character, primaryStat, secondaryStats)`
-- [x] 1.3.4 - Update the returned character in the store
-- [x] 1.3.5 - Return the full result with stat changes
-- [x] 1.3.6 - Add the method to the hook's return object
-- [x] 1.3.7 - Add JSDoc comment explaining D&D 5e stat increase rules (+2 to one OR +1 to two)
+- [ ] 1.3.3 - Implement using `updater.applyPendingStatIncrease(character, primaryStat, secondaryStats)`
+- [ ] 1.3.4 - Update the returned character in the store
+- [ ] 1.3.5 - Return the full result with stat changes
+- [ ] 1.3.6 - Add the method to the hook's return object
+- [ ] 1.3.7 - Add JSDoc comment explaining D&D 5e stat increase rules (+2 to one OR +1 to two)
 - [ ] 1.3.8 - Test: Apply pending stat increase with single stat
 - [ ] 1.3.9 - Test: Apply pending stat increase with two stats
 
