@@ -39,8 +39,8 @@ const docsToCheck = [
   'docs/development/testing/performance.md',
   'docs/development/testing/mobile-sensors.md',
   'docs/design/bugs-to-fix.md',
-  'DESIGN_DOCS/FROM_DATA_ENGINE/DATA_ENGINE_REFERENCE.md',
-  'DESIGN_DOCS/FROM_DATA_ENGINE/USAGE_IN_OTHER_PROJECTS.md',
+  'docs/engine/data-engine-reference.md',
+  'docs/engine/usage-in-other-projects.md',
 ];
 
 // Markdown link regex: [text](link) or [text](link "title")

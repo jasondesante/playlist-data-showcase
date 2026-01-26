@@ -1084,9 +1084,16 @@ The playlist data engine has been significantly updated with new features around
   - [x] IOS_ANDROID_SENSOR_TESTING.md → docs/development/testing/mobile-sensors.md (done in 7.3.4)
   - [x] BUGS_TO_FIX.md → docs/design/bugs-to-fix.md (done in 7.3.5)
   - [x] FROM_DATA_ENGINE/ → docs/engine/ (done in 7.8)
-- [ ] 7.10.2 - Delete DESIGN_DOCS folder completely
-- [ ] 7.10.3 - Verify no broken links remain after deletion
-- [ ] 7.10.4 - Verify /docs/ is now the ONLY documentation folder
+- [x] 7.10.2 - Delete DESIGN_DOCS folder completely
+  - **Summary:** Deleted DESIGN_DOCS/ folder using `rm -rf DESIGN_DOCS/`
+  - Build passes with no errors
+- [x] 7.10.3 - Verify no broken links remain after deletion
+  - **Summary:** Updated test-task-7.4.6-verify-links.ts to use new paths
+  - All user-facing documentation has correct links
+  - Only UPDATE_PLAN.md contains old path references in task descriptions (self-referencing, acceptable)
+  - Build passes with no errors
+- [x] 7.10.4 - Verify /docs/ is now the ONLY documentation folder
+  - **Summary:** DESIGN_DOCS folder deleted. /docs/ contains all documentation (12 files total)
 
 ---
 
