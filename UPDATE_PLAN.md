@@ -29,9 +29,9 @@ The playlist data engine has been significantly updated with new features around
 **File:** `src/hooks/useCharacterGenerator.ts`
 **Lines:** 35-39
 
-- [ ] 1.1.1 - Add `gameMode?: 'standard' | 'uncapped'` parameter to the `generateCharacter` function
-- [ ] 1.1.2 - Import `GameMode` and `CharacterGeneratorOptions` types from `'playlist-data-engine'`
-- [ ] 1.1.3 - Update the `CharacterGenerator.generate()` call to include options object:
+- [x] 1.1.1 - Add `gameMode?: 'standard' | 'uncapped'` parameter to the `generateCharacter` function
+- [x] 1.1.2 - Import `GameMode` and `CharacterGeneratorOptions` types from `'playlist-data-engine'`
+- [x] 1.1.3 - Update the `CharacterGenerator.generate()` call to include options object:
   ```typescript
   const character = CharacterGenerator.generate(
       seed || `seed-${Date.now()}`,
@@ -40,8 +40,8 @@ The playlist data engine has been significantly updated with new features around
       { gameMode: gameMode || 'uncapped' }
   );
   ```
-- [ ] 1.1.4 - Update hook return type to include `GameMode` if needed
-- [ ] 1.1.5 - Add JSDoc comment explaining the `gameMode` parameter
+- [x] 1.1.4 - Update hook return type to include `GameMode` if needed
+- [x] 1.1.5 - Add JSDoc comment explaining the `gameMode` parameter
 - [ ] 1.1.6 - Test: Generate a character with `gameMode: 'standard'` and verify stats cap at 20
 - [ ] 1.1.7 - Test: Generate a character with `gameMode: 'uncapped'` and verify stats can exceed 20
 
@@ -936,13 +936,18 @@ The playlist data engine has been significantly updated with new features around
 ## Notes for Implementation Agent
 
 1. **Type Safety:** Always import types from `'playlist-data-engine'` rather than defining them locally
-2. **Game Mode Defaults:** Engine defaults to `'uncapped'` - match this in the UI
+2. **Game Mode Defaults:** Engine defaults to `'standard'`, hook defaults to `'uncapped'` - match this in the UI
 3. **Stat Cap:** Standard mode caps at 20, uncapped has no limit
 4. **Pending Stats:** Only standard mode gets pending stat increases at levels 4, 8, 12, 16, 19
 5. **XP Sources:** Use meaningful source strings for tracking: `'combat'`, `'quest'`, `'boss_defeat'`, `'exploration'`, `'crafting'`, `'social'`
 6. **Documentation:** Keep docs in sync with code changes - update as you go
 7. **Testing:** Test each phase before moving to the next
 8. **Git Commits:** Commit after each major task completion
+
+## Implementation Notes
+
+### 2026-01-26: Engine Build Required
+The playlist-data-engine had to be rebuilt to expose new types (`GameMode`, updated `CharacterGeneratorOptions`). The engine's `index.ts` was updated to export `PlaylistParser` which was missing. After rebuilding the engine (`npm run build` in `/playlist-data-engine`), the demo project needed to reinstall the engine to pick up the updated types.
 
 ---
 
