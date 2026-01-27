@@ -89,6 +89,7 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Add a new character or update existing one (finds by seed)
              * Replaces any existing character with the same seed, or adds as new if seed doesn't exist
+             * Also clears the stat strategy for this character (resets to default on generation)
              * @param character - The CharacterSheet to add or update
              * @example
              * ```ts
@@ -99,19 +100,29 @@ export const useCharacterStore = create<CharacterState>()(
             addOrUpdateCharacter: (character) => {
                 const existing = get().characters.find((c) => c.seed === character.seed);
                 if (existing) {
-                    logger.info('Store', 'Updating existing character', { name: character.name, class: character.class, seed: character.seed });
-                    set((state) => ({
-                        characters: state.characters.map((c) =>
-                            c.seed === character.seed ? character : c
-                        ),
-                        activeCharacterId: character.seed
-                    }));
+                    logger.info('Store', 'Updating existing character (resetting strategy)', { name: character.name, class: character.class, seed: character.seed });
+                    set((state) => {
+                        // Clear the strategy for this character on regeneration
+                        const { [character.seed]: _removed, ...remainingStrategies } = state.characterStrategies;
+                        return {
+                            characters: state.characters.map((c) =>
+                                c.seed === character.seed ? character : c
+                            ),
+                            activeCharacterId: character.seed,
+                            characterStrategies: remainingStrategies
+                        };
+                    });
                 } else {
                     logger.info('Store', 'Adding new character', { name: character.name, class: character.class, seed: character.seed });
-                    set((state) => ({
-                        characters: [...state.characters, character],
-                        activeCharacterId: character.seed
-                    }));
+                    set((state) => {
+                        // Clear any stale strategy for this seed (shouldn't exist, but just in case)
+                        const { [character.seed]: _removed, ...remainingStrategies } = state.characterStrategies;
+                        return {
+                            characters: [...state.characters, character],
+                            activeCharacterId: character.seed,
+                            characterStrategies: remainingStrategies
+                        };
+                    });
                 }
             },
 
@@ -127,14 +138,20 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Delete a character by seed ID
              * If the deleted character was active, clears activeCharacterId
+             * Also cleans up the character's stat strategy preference
              * @param id - The seed of the character to delete
              */
             deleteCharacter: (id) => {
                 logger.info('Store', 'Deleting character', id);
-                set((state) => ({
-                    characters: state.characters.filter((c) => c.seed !== id),
-                    activeCharacterId: state.activeCharacterId === id ? null : state.activeCharacterId
-                }));
+                set((state) => {
+                    // Clean up the strategy for the deleted character
+                    const { [id]: _removed, ...remainingStrategies } = state.characterStrategies;
+                    return {
+                        characters: state.characters.filter((c) => c.seed !== id),
+                        activeCharacterId: state.activeCharacterId === id ? null : state.activeCharacterId,
+                        characterStrategies: remainingStrategies
+                    };
+                });
             },
 
             /**
@@ -154,12 +171,14 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Clear all characters and reset state
              * Useful for resetting the app or clearing all data
+             * Also clears all saved stat strategy preferences
              */
             resetCharacters: () => {
                 logger.warn('Store', 'Resetting all characters');
                 set({
                     characters: [],
-                    activeCharacterId: null
+                    activeCharacterId: null,
+                    characterStrategies: {}
                 });
             },
 

@@ -85,6 +85,9 @@ export const useSessionStore = create<SessionState>()(
         {
             name: 'session-storage',
             storage: createJSONStorage(() => storage),
+            // Only persist completed session history, NOT active session
+            // Active sessions can't be restored (SessionTracker engine is fresh on page load)
+            partialize: (state) => ({ sessionHistory: state.sessionHistory }),
         }
     )
 );

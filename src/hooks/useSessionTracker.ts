@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
@@ -39,6 +39,14 @@ class SessionTimerManager {
 
 const timerManager = new SessionTimerManager();
 
+// Global singleton tracker - ensures all components share the same SessionTracker instance
+// This prevents issues where one component starts a session and another tries to end it
+const globalTracker = new SessionTracker();
+
+// Global flag to ensure zombie cleanup only runs ONCE per app load
+// (not once per component instance that uses the hook)
+let hasRunZombieCleanup = false;
+
 /**
  * React hook for tracking listening sessions with the SessionTracker engine module.
  *
@@ -66,45 +74,28 @@ export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession, activeSession } = useSessionStore();
     const { playbackState } = useAudioPlayerStore();
     const { selectedTrack } = usePlaylistStore();
-    const [tracker] = useState(() => new SessionTracker());
+    // Use global singleton tracker instead of per-component instance
+    const tracker = globalTracker;
 
     // Derive state directly from store - no local state sync issues
     const isActive = !!activeSession;
     const elapsedTime = activeSession?.elapsedSeconds ?? 0;
 
-    // Kill zombie sessions on page load - but check if we should preserve the session
-    // We check synchronously if audio might be playing by checking the audio element directly
+    // Session cleanup on page load: ALWAYS clear any persisted session
+    // The SessionTracker engine instance is fresh on page load and can't restore previous sessions
+    // So we must clear the store to avoid orphaned sessions that can't be ended
     useEffect(() => {
+        if (hasRunZombieCleanup) return;
+
         const activeSessionOnMount = useSessionStore.getState().activeSession;
         if (activeSessionOnMount) {
-            // Try to check the actual audio element state
-            // The audio element is a global singleton that might still be playing
-            let isAudioActuallyPlaying = false;
-
-            // Check if there's an audio element and if it's playing
-            // We can't import audioPlayerStore here due to potential circular dependency
-            // But we can check the DOM directly as a workaround
-            const audioElements = document.getElementsByTagName('audio');
-            if (audioElements.length > 0) {
-                const audioEl = audioElements[0];
-                isAudioActuallyPlaying = !audioEl.paused && audioEl.readyState >= 2; // HAVE_CURRENT_DATA
-            }
-
-            if (isAudioActuallyPlaying) {
-                // Audio is playing - preserve the session and restart timer
-                logger.info('SessionTracker', 'Session restored - audio is playing', { sessionId: activeSessionOnMount.sessionId });
-                timerManager.start();
-            } else {
-                // Audio is not playing - this is a zombie session, kill it
-                logger.info('SessionTracker', 'Cleaning up zombie session on page load', { sessionId: activeSessionOnMount.sessionId });
-                timerManager.stop();
-                // Clear the active session from store without adding to history
-                useSessionStore.setState({ activeSession: null, currentSessionId: null });
-            }
+            logger.info('SessionTracker', 'Clearing persisted session on page load (cannot restore)', { sessionId: activeSessionOnMount.sessionId });
+            timerManager.stop();
+            useSessionStore.setState({ activeSession: null, currentSessionId: null });
         }
-        // Run once on mount - empty deps array
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+
+        hasRunZombieCleanup = true;
+    }, []); // Empty deps - only runs once on mount
 
     // Manage timer based on active session state from store
     useEffect(() => {
