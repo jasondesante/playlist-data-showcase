@@ -373,7 +373,7 @@ export function SessionTrackingTab() {
                       </div>
                     </div>
                     {/* Pending Stat Increases for Manual Mode */}
-                    {activeCharacter.gameMode === 'standard' && activeCharacter.pendingStatIncreases && activeCharacter.pendingStatIncreases > 0 && (
+                    {activeCharacter.pendingStatIncreases && activeCharacter.pendingStatIncreases > 0 && (
                       <div className="session-pending-stats-alert">
                         <TrendingUp className="session-pending-stats-icon" size={14} />
                         <span className="session-pending-stats-text">
@@ -382,10 +382,10 @@ export function SessionTrackingTab() {
                       </div>
                     )}
                     {/* For manual mode, show info about future stat increases */}
-                    {activeCharacter.gameMode === 'standard' && (!activeCharacter.pendingStatIncreases || activeCharacter.pendingStatIncreases === 0) && (
+                    {(!activeCharacter.pendingStatIncreases || activeCharacter.pendingStatIncreases === 0) && (
                       <div className="session-stat-info">
                         <span className="session-stat-info-text">
-                          Stat increases at levels 4, 8, 12, 16, 19
+                          {activeCharacter.gameMode === 'standard' ? 'Stat increases at levels 4, 8, 12, 16, 19' : 'Stat increases at every level (manual mode)'}
                         </span>
                       </div>
                     )}

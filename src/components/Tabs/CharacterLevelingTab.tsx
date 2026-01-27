@@ -600,8 +600,8 @@ export function CharacterLevelingTab() {
         </div>
       </Card>
 
-      {/* Pending Stat Increases Badge (Standard Mode Only) */}
-      {activeChar.gameMode === 'standard' && hasPendingStatIncreases(activeChar) && (
+      {/* Pending Stat Increases Badge - Shows for any character with manual strategy */}
+      {hasPendingStatIncreases(activeChar) && (
         <Card variant="elevated" padding="md" className="leveling-pending-badge-card">
           <div className="leveling-pending-badge-content">
             <div className="leveling-pending-badge-icon">
@@ -612,7 +612,8 @@ export function CharacterLevelingTab() {
                 Pending Stat Increases: {getPendingStatIncreaseCount(activeChar)}
               </h4>
               <p className="leveling-pending-badge-description">
-                You have stat increases waiting to be applied. In standard mode, stat increases are awarded at levels 4, 8, 12, 16, and 19.
+                You have stat increases waiting to be applied. When using manual strategy, stat increases must be applied manually.
+                {activeChar.gameMode === 'standard' ? ' In standard mode, increases are awarded at levels 4, 8, 12, 16, and 19.' : ' In uncapped mode, increases are awarded at every level-up.'}
               </p>
             </div>
           </div>
