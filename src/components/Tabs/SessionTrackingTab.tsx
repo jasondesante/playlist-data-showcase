@@ -5,13 +5,10 @@ import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
-import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { TrackCard } from '../ui/TrackCard';
-import { LevelUpDetailModal } from '../LevelUpDetailModal';
-import { showToast } from '../ui/Toast';
-import type { ListeningSession, LevelUpDetail } from 'playlist-data-engine';
+import type { ListeningSession } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
 // XP thresholds for D&D 5e levels 1-20
@@ -86,10 +83,7 @@ export function SessionTrackingTab() {
   const { startSession, endSession: hookEndSession, isActive, elapsedTime, sessionId } = useSessionTracker();
   const { calculateXP } = useXPCalculator();
   const { getActiveCharacter } = useCharacterStore();
-  const { processSession } = useCharacterUpdater();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
-  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
-  const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
   // Get active character for XP progress display
   const activeCharacter = getActiveCharacter();
@@ -181,62 +175,13 @@ export function SessionTrackingTab() {
 
   const handleEnd = () => {
     // End session and capture the session data
+    // Note: XP processing and toasts are now handled by useSessionCompletion hook at App level
     const session = hookEndSession();
     if (session) {
       setLastSession(session);
-
-      // Process session for character XP
-      const activeChar = getActiveCharacter();
-      if (activeChar) {
-        const result = processSession(activeChar, session);
-        if (result) {
-          // Show success toast when XP applied
-          showToast(`⭐ +${session.total_xp_earned} XP earned!`, 'success');
-
-          // Show level-up notification and modal if leveled up
-          if (result.leveledUp) {
-            // For uncapped mode, show auto-apply notification if stats were increased
-            if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-              const allStatIncreases: Array<{ ability: string; delta: number; oldValue: number; newValue: number }> = [];
-              for (const detail of result.levelUpDetails) {
-                if (detail.statIncreases) {
-                  for (const stat of detail.statIncreases) {
-                    allStatIncreases.push({
-                      ability: stat.ability,
-                      delta: stat.delta,
-                      oldValue: stat.oldValue,
-                      newValue: stat.newValue
-                    });
-                  }
-                }
-              }
-              if (allStatIncreases.length > 0) {
-                const statChangeText = allStatIncreases
-                  .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
-                  .join(', ');
-                showToast(`📊 Stats auto-increased: ${statChangeText}`, 'info');
-              }
-            }
-
-            // Show level-up modal with details
-            if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-              setLevelUpDetails(result.levelUpDetails);
-              setShowLevelUpModal(true);
-            }
-          }
-        }
-      } else {
-        showToast('⚠️ No active character selected - XP not saved', 'warning');
-      }
     }
     // Stop audio
     stop();
-  };
-
-  // Handler for closing level-up modal
-  const handleCloseLevelUpModal = () => {
-    setShowLevelUpModal(false);
-    setLevelUpDetails([]);
   };
 
   // Calculate progress percentage
@@ -666,13 +611,6 @@ export function SessionTrackingTab() {
           )}
         </div>
       )}
-
-      {/* Level-Up Detail Modal */}
-      <LevelUpDetailModal
-        levelUpDetails={levelUpDetails}
-        isOpen={showLevelUpModal}
-        onClose={handleCloseLevelUpModal}
-      />
     </div>
   );
 }

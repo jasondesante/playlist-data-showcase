@@ -25,13 +25,13 @@ interface AppHeaderProps {
 
 export function AppHeader({ title = 'Playlist Data Engine Showcase', subtitle = 'Technical validation • Console logging enabled' }: AppHeaderProps) {
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, stop } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, stop, currentUrl } = useAudioPlayerStore();
   const { endSession: hookEndSession, isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
-  // Show mini player when audio is playing OR when there's an active session
-  // This ensures the player is visible even when session is being auto-started
-  const showMiniPlayer = playbackState === 'playing' || activeSession !== null;
+  // Show mini player when audio is playing/loading OR when there's an active session OR when audio is loaded
+  // This ensures the player is visible immediately when playback starts, even before session is created
+  const showMiniPlayer = playbackState === 'playing' || playbackState === 'loading' || activeSession !== null || currentUrl !== null;
 
   // Use activeSession track if available, otherwise fall back to selectedTrack
   const track = activeSession?.track || selectedTrack;

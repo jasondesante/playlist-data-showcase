@@ -72,8 +72,7 @@ let hasRunZombieCleanup = false;
  */
 export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession, activeSession } = useSessionStore();
-    const { playbackState } = useAudioPlayerStore();
-    const { selectedTrack } = usePlaylistStore();
+    const { playbackState, currentUrl } = useAudioPlayerStore();
     // Use global singleton tracker instead of per-component instance
     const tracker = globalTracker;
 
@@ -84,6 +83,7 @@ export const useSessionTracker = () => {
     // Session cleanup on page load: ALWAYS clear any persisted session
     // The SessionTracker engine instance is fresh on page load and can't restore previous sessions
     // So we must clear the store to avoid orphaned sessions that can't be ended
+    // Also clear stale selectedTrack to prevent race conditions with auto-start
     useEffect(() => {
         if (hasRunZombieCleanup) return;
 
@@ -92,6 +92,19 @@ export const useSessionTracker = () => {
             logger.info('SessionTracker', 'Clearing persisted session on page load (cannot restore)', { sessionId: activeSessionOnMount.sessionId });
             timerManager.stop();
             useSessionStore.setState({ activeSession: null, currentSessionId: null });
+        }
+
+        // Clear stale selectedTrack if currentUrl doesn't match
+        // This prevents race conditions where auto-start creates session for old track
+        const selectedTrackOnMount = usePlaylistStore.getState().selectedTrack;
+        const currentUrlOnMount = useAudioPlayerStore.getState().currentUrl;
+        if (selectedTrackOnMount && selectedTrackOnMount.audio_url !== currentUrlOnMount) {
+            logger.info('SessionTracker', 'Clearing stale selectedTrack on page load (URL mismatch)', {
+                trackId: selectedTrackOnMount.id,
+                trackUrl: selectedTrackOnMount.audio_url,
+                currentUrl: currentUrlOnMount
+            });
+            usePlaylistStore.setState({ selectedTrack: null });
         }
 
         hasRunZombieCleanup = true;
@@ -125,23 +138,81 @@ export const useSessionTracker = () => {
     // Auto-start session when audio plays (if not already started)
     // This ensures that playing audio from any tab (including playlist) starts a session
     useEffect(() => {
-        if (playbackState === 'playing' && !activeSession && selectedTrack) {
-            logger.info('SessionTracker', 'Auto-starting session', { trackId: selectedTrack.id });
-            startSession(selectedTrack.id, selectedTrack);
+        // CRITICAL: Always read fresh selectedTrack from store to avoid stale closure values
+        // The zombie cleanup may have cleared selectedTrack, but we need to see that change
+        const freshSelectedTrack = usePlaylistStore.getState().selectedTrack;
+        const playlist = usePlaylistStore.getState().currentPlaylist;
+
+        logger.info('SessionTracker', 'Auto-start effect check', {
+            playbackState,
+            hasActiveSession: !!activeSession,
+            hasSelectedTrack: !!freshSelectedTrack,
+            currentUrl,
+            selectedTrackId: freshSelectedTrack?.id,
+            selectedTrackTitle: freshSelectedTrack?.title,
+            hasPlaylist: !!playlist,
+            playlistTrackCount: playlist?.tracks.length
+        });
+
+        if (playbackState === 'playing' && !activeSession) {
+            if (!freshSelectedTrack) {
+                logger.warn('SessionTracker', 'CANNOT AUTO-START: selectedTrack is null!', {
+                    currentUrl,
+                    playlist: playlist?.name
+                });
+                // Try to find track from playlist using currentUrl
+                if (currentUrl && playlist) {
+                    const trackFromPlaylist = playlist.tracks.find(t => t.audio_url === currentUrl);
+                    if (trackFromPlaylist) {
+                        logger.info('SessionTracker', 'Found track from playlist via currentUrl', {
+                            trackId: trackFromPlaylist.id,
+                            trackTitle: trackFromPlaylist.title
+                        });
+                        usePlaylistStore.setState({ selectedTrack: trackFromPlaylist });
+                        logger.info('SessionTracker', 'Auto-starting session after setting selectedTrack', {
+                            trackId: trackFromPlaylist.id,
+                            currentUrl
+                        });
+                        startSession(trackFromPlaylist.id, trackFromPlaylist);
+                        return;
+                    }
+                }
+            } else {
+                logger.info('SessionTracker', 'Auto-starting session', {
+                    trackId: freshSelectedTrack.id,
+                    trackTitle: freshSelectedTrack.title,
+                    currentUrl
+                });
+                startSession(freshSelectedTrack.id, freshSelectedTrack);
+            }
         }
-    }, [playbackState, activeSession, selectedTrack, startSession]);
+    }, [playbackState, activeSession, startSession, currentUrl]);
 
     // Auto-end session when audio pauses or ends
     // This ensures pausing music stops the session and awards XP
     useEffect(() => {
+        logger.debug('SessionTracker', 'Auto-end effect check', {
+            playbackState,
+            hasActiveSession: !!activeSession,
+            shouldEnd: (playbackState === 'paused' || playbackState === 'ended') && !!activeSession
+        });
+
         if ((playbackState === 'paused' || playbackState === 'ended') && activeSession) {
-            logger.info('SessionTracker', 'Auto-ending session on pause/end', { playbackState });
+            logger.info('SessionTracker', '✓ Auto-ending session on pause/end', {
+                playbackState,
+                sessionTrackId: activeSession.trackId,
+                sessionDuration: activeSession.elapsedSeconds
+            });
             // Get the endSession function directly to avoid dependency issues
             const currentSessionId = activeSession.sessionId;
             if (currentSessionId) {
                 try {
                     const session = globalTracker.endSession(currentSessionId);
                     if (session) {
+                        logger.info('SessionTracker', 'Session ended, duration:', {
+                            duration: session.duration_seconds,
+                            xp: session.total_xp_earned
+                        });
                         storeEndSession(session);
                     }
                     timerManager.stop();
@@ -155,12 +226,39 @@ export const useSessionTracker = () => {
     // Auto-end and restart session when switching to a different track while playing
     // This ensures XP is awarded for the previous track before starting a new session
     useEffect(() => {
-        if (playbackState === 'playing' && activeSession && selectedTrack) {
-            // Check if the selected track is different from the active session's track
-            if (activeSession.trackId !== selectedTrack.id) {
+        logger.debug('SessionTracker', 'Track-change effect check', {
+            playbackState,
+            hasActiveSession: !!activeSession,
+            activeSessionTrackId: activeSession?.trackId,
+            activeSessionUrl: activeSession?.track.audio_url,
+            currentUrl,
+            urlMismatch: activeSession ? activeSession.track.audio_url !== currentUrl : 'N/A'
+        });
+
+        if (playbackState === 'playing' && activeSession) {
+            // Check if the currentUrl is different from the active session's track URL
+            // This is more reliable than comparing track IDs because URLs update atomically
+            if (activeSession.track.audio_url !== currentUrl) {
+                const freshSelectedTrack = usePlaylistStore.getState().selectedTrack;
+
+                // CRITICAL: Only end session if we're switching to a DIFFERENT track
+                // If currentUrl is null or there's no selected track, don't end the session
+                // The audio is still playing, so the session should continue
+                if (!currentUrl || !freshSelectedTrack || freshSelectedTrack.audio_url === activeSession.track.audio_url) {
+                    logger.warn('SessionTracker', '⚠️ URL mismatch but NOT ending session - no actual track change', {
+                        activeSessionUrl: activeSession.track.audio_url,
+                        currentUrl,
+                        hasSelectedTrack: !!freshSelectedTrack,
+                        selectedTrackUrl: freshSelectedTrack?.audio_url
+                    });
+                    return;
+                }
+
                 logger.info('SessionTracker', 'Track changed while playing - ending old session and starting new', {
+                    oldUrl: activeSession.track.audio_url,
+                    newUrl: currentUrl,
                     oldTrackId: activeSession.trackId,
-                    newTrackId: selectedTrack.id
+                    newTrackId: freshSelectedTrack?.id
                 });
 
                 // End the current session
@@ -181,7 +279,7 @@ export const useSessionTracker = () => {
                 // Note: This will be handled by the auto-start effect since activeSession will be null after storeEndSession
             }
         }
-    }, [playbackState, activeSession, selectedTrack, storeEndSession]);
+    }, [playbackState, activeSession, storeEndSession, currentUrl]); // Note: selectedTrack NOT in deps
 
     const endSession = useCallback((): ListeningSession | null => {
         // Check store state directly, not local state

@@ -137,6 +137,16 @@ export const usePlaylistStore = create<PlaylistState>()(
         {
             name: 'playlist-storage',
             storage: createJSONStorage(() => storage),
+            // Don't persist selectedTrack - it causes race conditions with session tracking
+            // When a new track is selected, stale persisted data can cause incorrect behavior
+            partialize: (state) => ({
+                currentPlaylist: state.currentPlaylist,
+                audioProfile: state.audioProfile,
+                isLoading: state.isLoading,
+                error: state.error,
+                rawResponseData: state.rawResponseData,
+                parsedTimestamp: state.parsedTimestamp,
+            }),
         }
     )
 );

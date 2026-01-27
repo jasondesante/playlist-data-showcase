@@ -28,12 +28,30 @@ export const useSessionCompletion = () => {
     // Track which sessions we've already processed
     const processedSessionsRef = useRef<Set<string>>(new Set());
 
+    // Track if we've done the initial load (to skip processing persisted sessions)
+    const hasInitializedRef = useRef(false);
+
     // State for level-up modal
     const [showLevelUpModal, setShowLevelUpModal] = useState(false);
     const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
     useEffect(() => {
         if (sessionHistory.length === 0) return;
+
+        // On first encounter with sessionHistory data (after Zustand rehydration),
+        // mark all existing sessions as processed and skip processing.
+        // This prevents re-processing old persisted sessions on page load.
+        if (!hasInitializedRef.current) {
+            logger.info('SessionCompletion', 'Initial load - marking existing sessions as processed', {
+                count: sessionHistory.length
+            });
+            for (const session of sessionHistory) {
+                const sessionKey = `${session.track_uuid}-${session.start_time}-${session.end_time}`;
+                processedSessionsRef.current.add(sessionKey);
+            }
+            hasInitializedRef.current = true;
+            return; // Skip processing on initial load
+        }
 
         // Get the most recent session
         const latestSession = sessionHistory[0];

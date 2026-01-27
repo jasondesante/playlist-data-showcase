@@ -55,7 +55,23 @@ const getAudioElement = (): HTMLAudioElement => {
 
         audioElement.addEventListener('canplay', () => {
             const store = useAudioPlayerStore.getState();
-            if (store.playbackState === 'loading') {
+
+            // CRITICAL: Check the actual audio element state, not the store state
+            // The 'play' event might have set store.playbackState to 'playing', but due to
+            // React batching, it might not be visible here. So we check audioElement.paused directly.
+            const isActuallyPlaying = audioElement && !audioElement.paused && audioElement.readyState >= 2; // HAVE_CURRENT_DATA
+
+            // If audio is actually playing, keep it as 'playing' - don't override to 'paused'
+            if (isActuallyPlaying) {
+                // Ensure the store reflects reality
+                if (store.playbackState !== 'playing') {
+                    useAudioPlayerStore.getState().setPlaybackState('playing');
+                }
+                return;
+            }
+
+            // Only set to 'paused' if currently 'loading' AND not actually playing
+            if (store.playbackState === 'loading' && !isActuallyPlaying) {
                 // Don't auto-play, just transition to ready state
                 useAudioPlayerStore.getState().setPlaybackState('paused');
             }
