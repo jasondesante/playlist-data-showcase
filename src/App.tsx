@@ -3,6 +3,7 @@ import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'l
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import { ToastContainer } from './components/ui/Toast';
+import { LevelUpDetailModal } from './components/LevelUpDetailModal';
 import type { TabItem } from './components/Layout/Sidebar';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
@@ -15,11 +16,19 @@ import { EnvironmentalSensorsTab } from './components/Tabs/EnvironmentalSensorsT
 import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
 import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
+import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
+import { useSessionCompletion } from './hooks/useSessionCompletion';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
+
+  // Auto-analyze and generate characters on first listen of new tracks
+  useAutoCharacterSetup();
+
+  // Handle session completion - process XP and show level-up modals
+  const { showLevelUpModal, levelUpDetails, closeLevelUpModal } = useSessionCompletion();
 
   const tabs: TabItem[] = [
     { id: 'playlist', label: 'Playlist', icon: Music },
@@ -61,6 +70,13 @@ function App() {
       </MainLayout>
 
       <ToastContainer position="top-right" />
+
+      {/* Level-Up Detail Modal */}
+      <LevelUpDetailModal
+        levelUpDetails={levelUpDetails}
+        isOpen={showLevelUpModal}
+        onClose={closeLevelUpModal}
+      />
     </div>
   );
 }

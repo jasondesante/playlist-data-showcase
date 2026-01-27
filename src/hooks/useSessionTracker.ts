@@ -131,6 +131,58 @@ export const useSessionTracker = () => {
         }
     }, [playbackState, activeSession, selectedTrack, startSession]);
 
+    // Auto-end session when audio pauses or ends
+    // This ensures pausing music stops the session and awards XP
+    useEffect(() => {
+        if ((playbackState === 'paused' || playbackState === 'ended') && activeSession) {
+            logger.info('SessionTracker', 'Auto-ending session on pause/end', { playbackState });
+            // Get the endSession function directly to avoid dependency issues
+            const currentSessionId = activeSession.sessionId;
+            if (currentSessionId) {
+                try {
+                    const session = globalTracker.endSession(currentSessionId);
+                    if (session) {
+                        storeEndSession(session);
+                    }
+                    timerManager.stop();
+                } catch (error) {
+                    handleError(error, 'SessionTracker');
+                }
+            }
+        }
+    }, [playbackState, activeSession, storeEndSession]);
+
+    // Auto-end and restart session when switching to a different track while playing
+    // This ensures XP is awarded for the previous track before starting a new session
+    useEffect(() => {
+        if (playbackState === 'playing' && activeSession && selectedTrack) {
+            // Check if the selected track is different from the active session's track
+            if (activeSession.trackId !== selectedTrack.id) {
+                logger.info('SessionTracker', 'Track changed while playing - ending old session and starting new', {
+                    oldTrackId: activeSession.trackId,
+                    newTrackId: selectedTrack.id
+                });
+
+                // End the current session
+                const currentSessionId = activeSession.sessionId;
+                if (currentSessionId) {
+                    try {
+                        const session = globalTracker.endSession(currentSessionId);
+                        if (session) {
+                            storeEndSession(session);
+                        }
+                        timerManager.stop();
+                    } catch (error) {
+                        handleError(error, 'SessionTracker');
+                    }
+                }
+
+                // Start a new session for the new track
+                // Note: This will be handled by the auto-start effect since activeSession will be null after storeEndSession
+            }
+        }
+    }, [playbackState, activeSession, selectedTrack, storeEndSession]);
+
     const endSession = useCallback((): ListeningSession | null => {
         // Check store state directly, not local state
         if (!activeSession) return null;

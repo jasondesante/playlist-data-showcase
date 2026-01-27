@@ -8,3 +8,5 @@ export * from './useEnvironmentalSensors';
 export * from './useGamingPlatforms';
 export * from './useCombatEngine';
 export * from './useDebounce';
+export * from './useAutoCharacterSetup';
+export * from './useSessionCompletion';

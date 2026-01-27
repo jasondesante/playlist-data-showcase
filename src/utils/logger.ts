@@ -17,7 +17,9 @@ type LogCategory =
     | 'GamingPlatformSensors'
     | 'CombatEngine'
     | 'Settings'
-    | 'Store';
+    | 'Store'
+    | 'AutoCharacterSetup'
+    | 'SessionCompletion';
 
 
 
