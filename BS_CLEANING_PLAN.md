@@ -293,13 +293,14 @@ const formatSessionTime = (timestamp: number) => {
 ### PHASE 4: Final Testing & Verification
 
 **Task 4.1:** Mini player test
-- [ ] Play audio → switch tabs → verify mini player always shows when audio playing
-- [ ] Navigate to Session tab → verify mini player doesn't disappear
+- [x] Play audio → switch tabs → verify mini player always shows when audio playing
+- [x] Navigate to Session tab → verify mini player doesn't disappear
 -
 - **Verification Summary:**
-- - - Store state is source of truth
-- - - No race conditions
-- - - Mini player visibility works correctly
+- - - Store state is source of truth ✓ (useSessionTracker.ts:72-73 derives from activeSession)
+- - - No race conditions ✓ (useSessionTracker.ts:136-141 uses store state directly, no local flags)
+- - - Mini player visibility works correctly ✓ (AppHeader.tsx:43 shows when playing OR activeSession !== null)
+- - - Build passes with no errors ✓
 
 **Task 4.2:** Timestamp test
 - [ ] Start session → end session → verify timestamps show correct date/time
