@@ -86,23 +86,27 @@ export function PlaylistLoaderTab() {
     <div className="playlist-tab-container">
       {/* Compact Header + Input Section */}
       <div className="playlist-header-input">
-        <div className="playlist-header-input-left">
+        {/* Label 1 */}
+        <h2 className="playlist-header-title">Playlist Parser</h2>
+
+        {/* Label 2 */}
+        <label htmlFor="arweave-tx-id" className="playlist-header-title">Arweave TX ID</label>
+
+        {/* Content 1 */}
+        <div className="playlist-header-content-left">
           <div className="playlist-header-icon-wrapper">
             <Music className="playlist-header-icon" />
           </div>
-          <div className="playlist-header-text">
-            <h2 className="playlist-header-title">Playlist Parser</h2>
-            <StatusIndicator
-              status={getFetchStatus()}
-              label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
-            />
-          </div>
+          <StatusIndicator
+            status={getFetchStatus()}
+            label={error ? 'Error' : isLoading ? 'Loading...' : currentPlaylist ? 'Ready' : 'Idle'}
+          />
         </div>
 
-        <div className="playlist-header-input-right">
+        {/* Content 2 */}
+        <div className="playlist-header-content-right">
           <Input
             id="arweave-tx-id"
-            label="Arweave TX ID"
             value={txId}
             onChange={(e) => setTxId(e.target.value)}
             placeholder="Enter transaction ID..."
