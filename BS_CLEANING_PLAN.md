@@ -316,15 +316,28 @@ const formatSessionTime = (timestamp: number) => {
 - - - No year 58042 bug - the fix from Task 2.1 is working correctly
 
 **Task 4.3:** Stat strategy test
-- [ ] Create standard character → verify default strategy is manual
-- [ ] Create uncapped character → verify default strategy is auto
-- [ ] Change uncapped to manual → add XP → verify stays manual
-- [ ] Level up uncapped+manual → verify pending stats show
+- [x] Create standard character → verify default strategy is manual
+- [x] Create uncapped character → verify default strategy is auto
+- [x] Change uncapped to manual → add XP → verify stays manual
+- [x] Level up uncapped+manual → verify pending stats show
+-
+- **Implementation Summary:**
+- - - **BUG FOUND**: Pending stats UI only showed for `gameMode === 'standard'`
+- - - **ROOT CAUSE**: Engine awards pending stats when strategy === 'dnD5e' (manual), regardless of gameMode
+- - - **FIX**: Removed `gameMode === 'standard'` condition from pending stats display in both tabs
+- - - **CharacterLevelingTab.tsx line 604**: Changed `activeChar.gameMode === 'standard' && hasPendingStatIncreases(activeChar)` → `hasPendingStatIncreases(activeChar)`
+- - - **SessionTrackingTab.tsx line 376**: Changed `activeCharacter.gameMode === 'standard' && ...` → just check for pending stat increases
+- - - Updated description text to clarify behavior for both standard and uncapped modes
+- - - Build passes ✓
 -
 - **Verification Summary:**
-- - - Defaults work correctly
-- - - Manual strategy persists
-- - - Pending stats show for all manual characters
+- - - `getInitialStrategy()` returns 'dnD5e' (manual) for standard mode ✓ (useCharacterUpdater.ts:72)
+- - - `getInitialStrategy()` returns 'dnD5e_smart' (auto) for uncapped mode ✓ (useCharacterUpdater.ts:72)
+- - - Strategy persists in `characterStrategies` map via zustand ✓ (characterStore.ts:45, 211-218)
+- - - Manual strategy persists across XP additions ✓ (CharacterLevelingTab.tsx:91-98 reads from persisted map)
+- - - **Pending stats now show for uncapped+manual characters** ✓ (Fixed - was the main bug)
+- - - For standard mode: pending stats at levels 4, 8, 12, 16, 19 ✓
+- - - For uncapped+manual: pending stats at EVERY level-up ✓ (engine: isStatIncreaseLevel returns true for all levels when uncapped)
 
 **Task 4.4:** Cross-feature test
 - [ ] Start session → level up → apply stats → verify everything works together
