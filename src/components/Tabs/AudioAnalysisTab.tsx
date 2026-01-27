@@ -97,7 +97,15 @@ export function AudioAnalysisTab() {
           <Card variant="elevated" padding="md" className="audio-analysis-track-card">
             <div className="audio-analysis-track-info">
               <div className="audio-analysis-track-icon">
-                <Music className="audio-analysis-track-music-icon" />
+                {selectedTrack.image_url ? (
+                  <img
+                    src={selectedTrack.image_url}
+                    alt={selectedTrack.title}
+                    className="audio-analysis-track-image"
+                  />
+                ) : (
+                  <Music className="audio-analysis-track-music-icon" />
+                )}
               </div>
               <div className="audio-analysis-track-details">
                 <p className="audio-analysis-track-title">{selectedTrack.title}</p>

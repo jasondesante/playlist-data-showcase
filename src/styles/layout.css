@@ -18,8 +18,8 @@
   margin-right: auto;
   padding-left: 1rem;
   padding-right: 1rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 @media (min-width: 768px) {
@@ -231,6 +231,68 @@
   .mini-player-time {
     order: 2;
   }
+}
+
+/* Mini player placeholder state */
+.mini-player-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--font-size-sm);
+}
+
+.mini-player-placeholder-text {
+  white-space: nowrap;
+}
+
+/* ========================================
+   HEADER TABS
+   ======================================== */
+
+.app-header-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.app-header-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-out-cubic),
+              color var(--transition-fast) var(--ease-out-cubic);
+}
+
+.app-header-tab:hover {
+  background-color: hsl(var(--accent));
+}
+
+.app-header-tab-active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.app-header-tab-active:hover {
+  background-color: hsl(var(--primary));
+}
+
+.app-header-tab-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.app-header-tab-label {
+  white-space: nowrap;
 }
 
 /* ========================================

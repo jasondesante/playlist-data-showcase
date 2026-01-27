@@ -236,6 +236,7 @@
   overflow: hidden;
   box-shadow: 0 4px 12px hsl(var(--primary) / 0.15), 0 2px 4px hsl(0 0% 0% / 0.1);
   flex-shrink: 0;
+  margin-top: 10px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 

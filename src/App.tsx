@@ -63,7 +63,7 @@ function App() {
 
   return (
     <div className="app-root">
-      <AppHeader />
+      <AppHeader tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)} />
 
       <MainLayout tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)}>
         {renderActiveTab()}
