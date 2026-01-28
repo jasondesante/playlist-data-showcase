@@ -5,8 +5,8 @@
  * Features: search, sort, detail modal, empty state.
  */
 
-import { useState, useMemo } from 'react';
-import { Users, Search, X, Trash2 } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Users, Search, X, Trash2, ChevronDown } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -62,6 +62,30 @@ export function PartyTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
   const [selectedCharacter, setSelectedCharacter] = useState<typeof characters[number] | null>(null);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    if (isSortDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSortDropdownOpen]);
+
+  const handleSortSelect = (value: SortOption) => {
+    setSortBy(value);
+    setIsSortDropdownOpen(false);
+  };
 
   // Filter and sort characters
   const filteredAndSortedCharacters = useMemo(() => {
@@ -204,18 +228,32 @@ export function PartyTab() {
             size="md"
           />
         </div>
-        <div className="party-sort">
-          <select
-            className="party-sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
+        <div className="party-sort" ref={sortDropdownRef}>
+          <button
+            className="party-sort-dropdown-btn"
+            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+            aria-label={`Sort by ${SORT_OPTIONS[sortBy]}`}
+            aria-expanded={isSortDropdownOpen}
           >
-            {(Object.entries(SORT_OPTIONS) as [SortOption, string][]).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+            <span className="party-sort-label">{SORT_OPTIONS[sortBy]}</span>
+            <ChevronDown
+              size={16}
+              className={`party-sort-chevron ${isSortDropdownOpen ? 'party-sort-chevron-open' : ''}`}
+            />
+          </button>
+          {isSortDropdownOpen && (
+            <div className="party-sort-dropdown-menu">
+              {(Object.entries(SORT_OPTIONS) as [SortOption, string][]).map(([value, label]) => (
+                <button
+                  key={value}
+                  className={`party-sort-dropdown-item ${sortBy === value ? 'party-sort-dropdown-item-active' : ''}`}
+                  onClick={() => handleSortSelect(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

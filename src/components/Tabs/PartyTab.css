@@ -63,28 +63,123 @@
 
 .party-sort {
   min-width: 150px;
+  position: relative;
 }
 
-.party-sort-select {
+/* Party Sort Dropdown Button - Pill/Toggle Style */
+.party-sort-dropdown-btn {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  min-width: 150px;
+  height: 2.5rem;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   background: var(--color-surface);
   color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+  transform: var(--gpu-accel);
 }
 
-.party-sort-select:hover {
+.party-sort-dropdown-btn:hover {
   border-color: var(--color-primary);
+  background: var(--color-surface-dim);
 }
 
-.party-sort-select:focus {
+.party-sort-dropdown-btn:active {
+  transform: scale(0.98) var(--gpu-accel);
+}
+
+.party-sort-dropdown-btn:focus-visible {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.party-sort-label {
+  flex: 1;
+  text-align: left;
+}
+
+.party-sort-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform: var(--gpu-accel);
+}
+
+.party-sort-chevron-open {
+  transform: rotate(180deg) var(--gpu-accel);
+}
+
+/* Party Sort Dropdown Menu */
+.party-sort-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  overflow: hidden;
+  animation: partySortDropdownFadeIn 0.2s ease;
+}
+
+@keyframes partySortDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) var(--gpu-accel);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) var(--gpu-accel);
+  }
+}
+
+/* Party Sort Dropdown Items */
+.party-sort-dropdown-item {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  text-align: left;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  transform: var(--gpu-accel);
+}
+
+.party-sort-dropdown-item:hover {
+  background: var(--color-surface-dim);
+}
+
+.party-sort-dropdown-item-active {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-weight: 500;
+}
+
+.party-sort-dropdown-item-active:hover {
+  background: var(--color-primary);
+  opacity: 0.9;
+}
+
+.party-sort-dropdown-item:active {
+  transform: scale(0.98) var(--gpu-accel);
+}
+
+.party-sort-dropdown-item:focus-visible {
+  outline: none;
+  background: var(--color-surface-dim);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
 /* Character Grid */

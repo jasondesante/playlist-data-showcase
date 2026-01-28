@@ -266,16 +266,18 @@ The PartyTab has several issues:
 **Summary**: The "O" overlap was caused by the Search icon's magnifying glass circle being too close to the placeholder text. The icon is positioned at `left: 0.75rem` with a width of `1.25rem` (for md size), spanning from 0.75rem to 2.0rem. The original padding-left was 2.75rem, which only provided 0.75rem of space. Fixed by increasing the padding-left from 2.75rem to 3rem, providing adequate space between the icon and the placeholder text.
 
 ### Task 3.3: Create date added toggle/pill buttons
-- [ ] Replace select dropdown with expandable dropdown button
-- [ ] Button shows current selection, click to expand options
-- [ ] Dropdown shows sort options in a vertical list
-- [ ] Add active state styling (highlighted) for selected option
-- [ ] Click outside or selecting an option closes the dropdown
-- [ ] Keep pill/toggle visual style for the button itself
+- [x] Replace select dropdown with expandable dropdown button
+- [x] Button shows current selection, click to expand options
+- [x] Dropdown shows sort options in a vertical list
+- [x] Add active state styling (highlighted) for selected option
+- [x] Click outside or selecting an option closes the dropdown
+- [x] Keep pill/toggle visual style for the button itself
 
 **Files**:
-- [src/components/Tabs/PartyTab.tsx:200-213](src/components/Tabs/PartyTab.tsx)
-- [src/components/Tabs/PartyTab.css:64-89](src/components/Tabs/PartyTab.css)
+- [src/components/Tabs/PartyTab.tsx:200-247](src/components/Tabs/PartyTab.tsx)
+- [src/components/Tabs/PartyTab.css:64-200](src/components/Tabs/PartyTab.css)
+
+**Summary**: Replaced the native `<select>` dropdown with a custom expandable dropdown button. The button shows the current sort option with a chevron icon that rotates when open. Clicking opens a dropdown menu with all sort options in a vertical list. The selected option is highlighted with primary color background. Clicking outside or selecting an option closes the dropdown. Implemented with proper click-outside detection using useEffect, and added smooth fade-in animation for the dropdown menu. The button has pill/toggle visual style with hover effects and proper focus states.
 
 ### Task 3.4: Move "Active" badge to bottom of hero card
 - [ ] Change positioning from `top: 0.5rem; left: 0.5rem` to bottom-center
