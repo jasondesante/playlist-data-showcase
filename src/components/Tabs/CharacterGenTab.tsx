@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import './CharacterGenTab.css';
-import { User, Sparkles, Download, Upload, Wand2 } from 'lucide-react';
+import { User, Sparkles, Download, Upload, Wand2, Plus } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
@@ -36,6 +36,7 @@ export function CharacterGenTab() {
 
   // State for game mode selection
   const [gameMode, setGameMode] = useState<GameMode>('uncapped');
+  const [showGameModeSelector, setShowGameModeSelector] = useState(false);
 
   // Get the active character
   const character = getActiveCharacter();
@@ -60,6 +61,10 @@ export function CharacterGenTab() {
       // This will show the "Ready to generate" state
       setActiveCharacter(null as unknown as string);
     }
+
+    // Reset game mode selection state when switching tracks
+    // This allows users to start fresh with the "New" button flow for each track
+    setShowGameModeSelector(false);
   }, [selectedTrack?.id, characters, setActiveCharacter]);
 
   const handleGenerate = async () => {
@@ -82,6 +87,9 @@ export function CharacterGenTab() {
     // This ensures the same track always generates the same character
     const seed = selectedTrack.id;
     await generateCharacter(audioProfile, seed, gameMode);
+
+    // Hide the game mode selector after generation
+    setShowGameModeSelector(false);
 
     // Show appropriate message based on whether this was a new generation or regeneration
     if (isRegenerating) {
@@ -239,16 +247,29 @@ export function CharacterGenTab() {
           <div className="character-gen-header-subtitle">Generate D&D characters from audio profiles</div>
         </div>
         <div className="character-gen-actions">
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || !audioProfile}
-            isLoading={isGenerating}
-            leftIcon={Wand2}
-            variant="primary"
-            size="sm"
-          >
-            Generate
-          </Button>
+          {/* Show "New" button when selector is closed, "Generate" when selector is open */}
+          {!showGameModeSelector ? (
+            <Button
+              onClick={() => setShowGameModeSelector(true)}
+              disabled={!audioProfile}
+              leftIcon={Plus}
+              variant="primary"
+              size="sm"
+            >
+              New
+            </Button>
+          ) : (
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !audioProfile}
+              isLoading={isGenerating}
+              leftIcon={Wand2}
+              variant="primary"
+              size="sm"
+            >
+              Generate
+            </Button>
+          )}
           {character && (
             <>
               <Button
@@ -281,8 +302,13 @@ export function CharacterGenTab() {
         </div>
       </div>
 
-      {/* Game Mode Selector */}
-      <GameModeToggle value={gameMode} onChange={setGameMode} />
+      {/* Game Mode Selector - show when "New" was clicked, stay visible until "Generate" */}
+      {showGameModeSelector && (
+        <GameModeToggle
+          value={gameMode}
+          onChange={setGameMode}
+        />
+      )}
 
       {/* Import Status Messages */}
       {importError && (
