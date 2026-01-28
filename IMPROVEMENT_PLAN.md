@@ -308,16 +308,17 @@ The PartyTab has several issues:
 **Summary**: Redesigned the equipment list in the PartyTab modal with proper organization and styling. Added category grouping (Weapons, Armor, Items) with category labels. Each equipment item is now displayed as an individual styled card with borders between items. Equipped items show a checkmark icon (lucide-react Check component), an "Equipped" badge with teal color, and a visual highlight with gradient background. Added equipment weight display at the bottom showing "Equipped: X lbs | Total: Y lbs" in a centered container with border. All equipment items now have consistent styling matching the CharacterGenTab equipment display, with hover effects and proper spacing.
 
 ### Task 3.6: Redesign modal with dark theme and borders
-- [ ] Add visible borders to all sections
-- [ ] Improve section separation with proper spacing
-- [ ] Add subtle border color that contrasts with dark background
-- [ ] Update section title styling
-- [ ] Improve overall modal padding and layout
-- [ ] Change modal animation to fade + scale in (from 90% to 100%)
+- [x] Add visible borders to all sections
+- [x] Improve section separation with proper spacing
+- [x] Add subtle border color that contrasts with dark background
+- [x] Update section title styling
+- [x] Improve overall modal padding and layout
+- [x] Change modal animation to fade + scale in (from 90% to 100%)
 
 **Files**:
-- [src/components/Tabs/PartyTab.tsx:241-452](src/components/Tabs/PartyTab.tsx)
-- [src/components/Tabs/PartyTab.css:381-540](src/components/Tabs/PartyTab.css)
+- [src/components/Tabs/PartyTab.css:478-540](src/components/Tabs/PartyTab.css)
+
+**Summary**: Redesigned the PartyTab modal with dark theme and visible borders. Changed the modal animation from `slideUp` (translateY) to `fadeScaleIn` (scale from 90% to 100% with opacity fade). Added visible borders to all sections using `hsl(var(--color-surface-h) var(--color-surface-s) calc(var(--color-surface-l) + 8))` for subtle contrast with the dark background. Added background color `hsl(var(--color-surface-h) var(--color-surface-s) calc(var(--color-surface-l) + 2))` to sections for depth. Added border-bottom to section titles for better separation. Improved overall modal layout by adding gap to the body container and adjusting padding.
 
 ### Task 3.7: Add missing character data to modal
 - [ ] Update race/class format to "Race: Elf | Class: Rogue"
