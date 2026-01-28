@@ -8,13 +8,14 @@
  * XP processing and level-up modals are handled by useSessionCompletion hook at the App level.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, Square, Music } from 'lucide-react';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { formatTime } from '@/utils/formatters';
+import { logger } from '@/utils/logger';
 import type { TabItem } from './Sidebar';
 
 interface AppHeaderProps {
@@ -42,6 +43,18 @@ export function AppHeader({
   const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
   const { isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
+
+  // Log the track state for debugging
+  useEffect(() => {
+    logger.info('System', 'AppHeader: Mini player track state', {
+      hasActiveSession: !!activeSession,
+      hasSelectedTrack: !!selectedTrack,
+      selectedTrackId: selectedTrack?.id,
+      selectedTrackTitle: selectedTrack?.title,
+      trackIsSelectedTrack: !activeSession && !!selectedTrack,
+      currentUrl
+    });
+  }, [activeSession, selectedTrack, currentUrl]);
 
   // Always show mini player (with placeholder state when no audio is loaded)
   const showMiniPlayer = true;

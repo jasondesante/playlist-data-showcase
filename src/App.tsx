@@ -19,6 +19,8 @@ import { SettingsTab } from './components/Tabs/SettingsTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
+import { usePlaylistStore } from './store/playlistStore';
+import { logger } from './utils/logger';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -39,8 +41,36 @@ function App() {
   // Restore selectedTrack from activeCharacterId on app mount
   // This ensures hero-track synchronization after page reload
   useEffect(() => {
-    const { restoreSelectedTrackFromActiveCharacter } = useCharacterStore.getState();
+    logger.info('System', 'Mount: Starting track restoration from active character');
+    const { restoreSelectedTrackFromActiveCharacter, activeCharacterId, characters } = useCharacterStore.getState();
+    logger.info('System', 'Mount: Character state', {
+      activeCharacterId,
+      characterCount: characters.length,
+      characterNames: characters.map(c => ({ name: c.name, seed: c.seed }))
+    });
+
+    // Log playlist state before restoration
+    const playlistBefore = usePlaylistStore.getState().currentPlaylist;
+    const selectedTrackBefore = usePlaylistStore.getState().selectedTrack;
+    logger.info('System', 'Mount: Playlist state before restoration', {
+      hasPlaylist: !!playlistBefore,
+      playlistName: playlistBefore?.name,
+      trackCount: playlistBefore?.tracks.length,
+      hasSelectedTrack: !!selectedTrackBefore,
+      selectedTrackId: selectedTrackBefore?.id
+    });
+
     restoreSelectedTrackFromActiveCharacter();
+
+    // Log playlist state after restoration
+    setTimeout(() => {
+      const selectedTrackAfter = usePlaylistStore.getState().selectedTrack;
+      logger.info('System', 'Mount: Playlist state after restoration (100ms delay)', {
+        hasSelectedTrack: !!selectedTrackAfter,
+        selectedTrackId: selectedTrackAfter?.id,
+        selectedTrackTitle: selectedTrackAfter?.title
+      });
+    }, 100);
   }, []); // Only run once on mount
 
   const tabs: TabItem[] = [

@@ -47,9 +47,19 @@ async function attemptTrackRestorationAsync(activeCharacterId: string, character
                 characterName: activeCharacter.name,
                 trackId: matchingTrack.id,
                 trackTitle: matchingTrack.title,
+                trackUrl: matchingTrack.audio_url,
                 retryCount: restorationState.retryCount
             });
             usePlaylistStore.getState().selectTrack(matchingTrack);
+
+            // Verify selectedTrack was set correctly
+            const verifyTrack = usePlaylistStore.getState().selectedTrack;
+            logger.info('Store', 'Verification: selectedTrack after restoration', {
+                isSelectedTrackSet: !!verifyTrack,
+                selectedTrackId: verifyTrack?.id,
+                selectedTrackTitle: verifyTrack?.title,
+                matchesRestored: verifyTrack?.id === matchingTrack.id
+            });
 
             // Clear restoration state on success
             restorationState = { needsRetry: false, attemptTime: 0, retryCount: 0 };
@@ -109,17 +119,33 @@ function setupPlaylistListener(activeCharacterId: string, characters: CharacterS
     // This handles the case where playlist is set or rehydrated after we start listening
     import('@/store/playlistStore').then(({ onPlaylistLoad }) => {
         const unsubscribe = onPlaylistLoad(async (playlist) => {
+            logger.info('Store', 'Playlist load callback triggered', {
+                hasRestorationState: restorationState.needsRetry,
+                hasPlaylist: !!playlist,
+                playlistName: playlist?.name,
+                trackCount: playlist?.tracks.length,
+                activeCharacterId
+            });
+
             if (!restorationState.needsRetry) {
                 // Restoration already completed or abandoned, unsubscribe
+                logger.info('Store', 'Playlist load callback: No restoration needed, unsubscribing');
                 unsubscribe();
                 clearInterval(checkInterval);
                 return;
             }
 
             if (playlist) {
-                logger.info('Store', 'Playlist load event received, attempting track restoration');
+                logger.info('Store', 'Playlist load event received, attempting track restoration', {
+                    activeCharacterId,
+                    playlistName: playlist.name
+                });
                 // Try to restore with the newly loaded playlist
                 const result = await attemptTrackRestorationAsync(activeCharacterId, characters);
+                logger.info('Store', 'Playlist load event: Restoration result', {
+                    success: result.success,
+                    stopRetrying: result.stopRetrying
+                });
                 if (result.stopRetrying) {
                     // Success or permanent failure - clean up
                     unsubscribe();
