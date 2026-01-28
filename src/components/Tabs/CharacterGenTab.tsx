@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './CharacterGenTab.css';
-import { User, Sparkles, Download, Upload, RefreshCw, Wand2 } from 'lucide-react';
+import { User, Sparkles, Download, Upload, Wand2 } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
@@ -16,25 +16,18 @@ import { showToast } from '../ui/Toast';
 /**
  * CharacterGenTab Component
  *
- * Demonstrates the CharacterGenerator engine module by:
- * 1. Generating a D&D 5e character from an audio profile
- * 2. Displaying character sheet with all attributes (HP, AC, stats, skills, equipment, spells)
- * 3. Using real audio profile from the Audio Analysis tab (via playlistStore)
- * 4. Using track UUID as deterministic seed for consistent character generation
- * 5. Storing generated characters in the character store
- * 6. Verifying determinism by regenerating with the same seed and comparing results
+ * Generates D&D 5e characters from audio profiles:
+ * 1. Generates a unique D&D character from an audio profile
+ * 2. Displays character sheet with all attributes (HP, AC, stats, skills, equipment, spells)
+ * 3. Uses real audio profile from the Audio Analysis tab (via playlistStore)
+ * 4. Uses track UUID as deterministic seed for consistent character generation
+ * 5. Stores generated characters in the character store
+ * 6. Supports importing/exporting characters as JSON files
  */
 export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
-  const { addCharacter, getActiveCharacter } = useCharacterStore();
-
-  // State for determinism verification
-  const [determinismResult, setDeterminismResult] = useState<{
-    isMatch: boolean | null;
-    original: CharacterSheet | null;
-    regenerated: CharacterSheet | null;
-  }>({ isMatch: null, original: null, regenerated: null });
+  const { addCharacter, getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
 
   // State for import/export
   const [importError, setImportError] = useState<string | null>(null);
@@ -46,6 +39,28 @@ export function CharacterGenTab() {
 
   // Get the active character
   const character = getActiveCharacter();
+
+  // Sync active character when selected track changes
+  // This ensures we show the correct character (or "ready to generate" state) when switching tracks
+  useEffect(() => {
+    if (!selectedTrack?.id) {
+      // No track selected, clear active character
+      setActiveCharacter(null as unknown as string);
+      return;
+    }
+
+    // Find character with matching seed (seed === track.id)
+    const matchingCharacter = characters.find(c => c.seed === selectedTrack.id);
+
+    if (matchingCharacter) {
+      // Set the matching character as active
+      setActiveCharacter(matchingCharacter.seed);
+    } else {
+      // No character exists for this track yet, clear active character
+      // This will show the "Ready to generate" state
+      setActiveCharacter(null as unknown as string);
+    }
+  }, [selectedTrack?.id, characters, setActiveCharacter]);
 
   const handleGenerate = async () => {
     if (!audioProfile) {
@@ -59,51 +74,21 @@ export function CharacterGenTab() {
       return;
     }
 
+    // Check if character already exists for this track
+    const existingCharacter = characters.find(c => c.seed === selectedTrack.id);
+    const isRegenerating = !!existingCharacter;
+
     // Use track UUID as deterministic seed for consistent character generation
     // This ensures the same track always generates the same character
     const seed = selectedTrack.id;
     await generateCharacter(audioProfile, seed, gameMode);
 
-    // Reset determinism verification state on new generation
-    setDeterminismResult({ isMatch: null, original: null, regenerated: null });
-  };
-
-  const handleVerifyDeterminism = async () => {
-    if (!audioProfile || !selectedTrack || !character) {
-      console.warn('[CharacterGenTab] Cannot verify determinism - missing prerequisites');
-      return;
+    // Show appropriate message based on whether this was a new generation or regeneration
+    if (isRegenerating) {
+      showToast('✨ Character regenerated! Stats have been reset to base values.', 'success');
+    } else {
+      showToast('✨ Character generated successfully!', 'success');
     }
-
-    // Store the current character as the original for comparison
-    const original = character;
-
-    console.log('[CharacterGenTab] Verifying determinism with seed:', selectedTrack.id);
-
-    // Regenerate with the same seed
-    await generateCharacter(audioProfile, selectedTrack.id, gameMode);
-
-    // Get the regenerated character (active character may have changed)
-    const regenerated = getActiveCharacter();
-
-    if (!regenerated) {
-      console.error('[CharacterGenTab] Regeneration failed - no character returned');
-      return;
-    }
-
-    // Create comparison copies without timestamps and other runtime-generated fields
-    const compareObj = (obj: any) => {
-      const { generated_at, ...rest } = obj;
-      return rest;
-    };
-    const isMatch = JSON.stringify(compareObj(original)) === JSON.stringify(compareObj(regenerated));
-
-    console.log('[CharacterGenTab] Determinism check result:', isMatch ? 'MATCH' : 'MISMATCH');
-
-    setDeterminismResult({
-      isMatch,
-      original,
-      regenerated
-    });
   };
 
   const handleExportCharacter = () => {
@@ -221,30 +206,6 @@ export function CharacterGenTab() {
     fileInputRef.current?.click();
   };
 
-  // Helper to get the difference key path between two objects
-  const getDiffPath = (obj1: any, obj2: any, path = ''): string[] | null => {
-    if (obj1 === obj2) return null;
-
-    if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
-      return [path];
-    }
-
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-    const allKeys = new Set([...keys1, ...keys2]);
-
-    for (const key of allKeys) {
-      const newPath = path ? `${path}.${key}` : key;
-      if (!(key in obj1) || !(key in obj2)) {
-        return [newPath];
-      }
-      const diff = getDiffPath(obj1[key], obj2[key], newPath);
-      if (diff) return diff;
-    }
-
-    return null;
-  };
-
   // Get character avatar emoji based on class
   const getCharacterAvatar = (charClass: string) => {
     const classEmojis: Record<string, string> = {
@@ -278,18 +239,6 @@ export function CharacterGenTab() {
           <div className="character-gen-header-subtitle">Generate D&D characters from audio profiles</div>
         </div>
         <div className="character-gen-actions">
-          {character && (
-            <Button
-              onClick={handleVerifyDeterminism}
-              disabled={isGenerating || !audioProfile}
-              isLoading={isGenerating}
-              leftIcon={RefreshCw}
-              variant="secondary"
-              size="sm"
-            >
-              Regenerate
-            </Button>
-          )}
           <Button
             onClick={handleGenerate}
             disabled={isGenerating || !audioProfile}
@@ -298,7 +247,7 @@ export function CharacterGenTab() {
             variant="primary"
             size="sm"
           >
-            {character ? 'Generate New' : 'Generate'}
+            Generate
           </Button>
           {character && (
             <>
@@ -379,67 +328,6 @@ export function CharacterGenTab() {
               <div className="character-ready-seed">
                 Seed: {selectedTrack.id} (deterministic - same track always generates same character)
               </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Determinism Verification Result */}
-      {determinismResult.isMatch !== null && (
-        <Card
-          variant={determinismResult.isMatch ? 'flat' : 'outlined'}
-          padding="sm"
-          className={determinismResult.isMatch ? 'border-cute-teal/30' : 'border-destructive/30'}
-          style={{
-            backgroundColor: determinismResult.isMatch
-              ? 'hsl(var(--cute-teal) / 0.1)'
-              : 'hsl(var(--destructive) / 0.1)'
-          }}
-        >
-          <div className="character-determinism-result">
-            <span className={`character-determinism-icon ${determinismResult.isMatch ? 'match' : 'mismatch'}`}>
-              {determinismResult.isMatch ? '✓' : '✗'}
-            </span>
-            <div className="character-determinism-content">
-              <div className="character-determinism-title">
-                {determinismResult.isMatch ? 'Deterministic match!' : 'Mismatch!'}
-              </div>
-              <div className="character-determinism-description">
-                {determinismResult.isMatch
-                  ? `The character was regenerated identically with the same seed (${selectedTrack?.id}).`
-                  : 'The regenerated character differs from the original (this should not happen).'}
-              </div>
-              {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
-                <div className="character-determinism-mismatch">
-                  <div className="character-determinism-mismatch-title">Difference detected:</div>
-                  {(() => {
-                    const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
-                    return diffPath ? (
-                      <code className="character-determinism-diff-code">
-                        {diffPath.join(' → ')}
-                      </code>
-                    ) : (
-                      <div className="character-determinism-deep-note">Deep comparison shows differences</div>
-                    );
-                  })()}
-                  <div className="character-determinism-comparison">
-                    <div>
-                      <div className="character-determinism-comparison-label">Original:</div>
-                      <div className="character-determinism-comparison-name">{determinismResult.original.name}</div>
-                      <div className="character-determinism-comparison-details">
-                        {determinismResult.original.race} {determinismResult.original.class}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="character-determinism-comparison-label">Regenerated:</div>
-                      <div className="character-determinism-comparison-name">{determinismResult.regenerated.name}</div>
-                      <div className="character-determinism-comparison-details">
-                        {determinismResult.regenerated.race} {determinismResult.regenerated.class}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </Card>
