@@ -280,15 +280,17 @@ The PartyTab has several issues:
 **Summary**: Replaced the native `<select>` dropdown with a custom expandable dropdown button. The button shows the current sort option with a chevron icon that rotates when open. Clicking opens a dropdown menu with all sort options in a vertical list. The selected option is highlighted with primary color background. Clicking outside or selecting an option closes the dropdown. Implemented with proper click-outside detection using useEffect, and added smooth fade-in animation for the dropdown menu. The button has pill/toggle visual style with hover effects and proper focus states.
 
 ### Task 3.4: Move "Active" badge to bottom of hero card
-- [ ] Change positioning from `top: 0.5rem; left: 0.5rem` to bottom-center
-- [ ] Position at bottom-center, inside card padding
-- [ ] Ensure it doesn't overlap XP bar or other elements
-- [ ] Update CSS for proper spacing at bottom
-- [ ] Add small margin above card content to accommodate badge
+- [x] Change positioning from `top: 0.5rem; left: 0.5rem` to bottom-center
+- [x] Position at bottom-center, inside card padding
+- [x] Ensure it doesn't overlap XP bar or other elements
+- [x] Update CSS for proper spacing at bottom
+- [x] Add small margin above card content to accommodate badge
 
 **Files**:
 - [src/components/ui/CharacterCard.tsx:67](src/components/ui/CharacterCard.tsx)
 - [src/components/Tabs/PartyTab.css:308-340](src/components/Tabs/PartyTab.css)
+
+**Summary**: Moved the "Active" badge from top-left corner (top: 0.5rem; left: 0.5rem) to bottom-center of the hero card (bottom: 0.5rem; left: 50%; transform: translateX(-50%)). Added `padding-bottom: 2.5rem` to `.party-card` to provide adequate space for the badge at the bottom without overlapping the XP bar or other card content. The badge maintains its gradient background, pulsing glow animation, and z-index layering.
 
 ### Task 3.5: Redesign equipment list in modal
 - [ ] Add borders between equipment items
