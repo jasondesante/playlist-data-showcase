@@ -606,6 +606,78 @@ export function CharacterGenTab() {
             </Card>
           )}
 
+          {/* Appearance */}
+          {character.appearance && (
+            <Card variant="default" padding="md">
+              <div className="character-section-title">Appearance</div>
+              <div className="character-appearance-section">
+                {/* Body Type */}
+                {character.appearance.body_type && (
+                  <div className="character-appearance-row">
+                    <span className="character-appearance-label">Body Type</span>
+                    <span className="character-appearance-value">{character.appearance.body_type}</span>
+                  </div>
+                )}
+
+                {/* Color Swatches Grid */}
+                <div className="character-appearance-colors-grid">
+                  {character.appearance.skin_tone && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.skin_tone }}
+                        title="Skin Tone"
+                      />
+                      <span className="character-appearance-color-label">Skin</span>
+                    </div>
+                  )}
+                  {character.appearance.hair_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.hair_color }}
+                        title="Hair Color"
+                      />
+                      <span className="character-appearance-color-label">Hair</span>
+                    </div>
+                  )}
+                  {character.appearance.eye_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.eye_color }}
+                        title="Eye Color"
+                      />
+                      <span className="character-appearance-color-label">Eyes</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hair Style */}
+                {character.appearance.hair_style && (
+                  <div className="character-appearance-row">
+                    <span className="character-appearance-label">Hair Style</span>
+                    <span className="character-appearance-value">{character.appearance.hair_style}</span>
+                  </div>
+                )}
+
+                {/* Facial Features */}
+                {character.appearance.facial_features && character.appearance.facial_features.length > 0 && (
+                  <div className="character-appearance-features">
+                    <span className="character-appearance-label">Facial Features</span>
+                    <div className="character-traits-grid">
+                      {character.appearance.facial_features.map((feature, idx) => (
+                        <span key={idx} className="character-trait-badge">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {/* Equipment */}
           {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (() => {
             const equipment = character.equipment;

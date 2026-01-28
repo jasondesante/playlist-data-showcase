@@ -671,6 +671,109 @@
   transform: translateY(-1px);
 }
 
+/* Appearance section */
+.character-appearance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .character-appearance-section {
+    gap: 0.75rem;
+  }
+}
+
+.character-appearance-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.character-appearance-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  min-width: 5rem;
+}
+
+@media (min-width: 640px) {
+  .character-appearance-label {
+    font-size: 0.875rem;
+    min-width: 6rem;
+  }
+}
+
+.character-appearance-value {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 640px) {
+  .character-appearance-value {
+    font-size: 1rem;
+  }
+}
+
+/* Color swatches grid */
+.character-appearance-colors-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.character-appearance-color-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.character-appearance-color-swatch {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.1);
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 640px) {
+  .character-appearance-color-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.character-appearance-color-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px hsl(var(--foreground) / 0.15);
+}
+
+.character-appearance-color-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+@media (min-width: 640px) {
+  .character-appearance-color-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Facial features subsection */
+.character-appearance-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.character-appearance-features .character-appearance-label {
+  margin-bottom: 0;
+}
+
 /* Equipment section */
 .character-equipment-section {
   display: flex;

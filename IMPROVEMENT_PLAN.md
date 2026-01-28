@@ -170,21 +170,23 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Added class features section to CharacterGenTab, positioned after the racial traits section. The section displays each feature from `character.class_features` array as a styled badge. Reuses the existing `.character-traits-grid` and `.character-trait-badge` CSS classes for consistent styling with the racial traits section (gradient background, border, hover effects). The section only renders when class_features exists and is not empty.
 
 ### Task 2.6: Create appearance section
-- [ ] Create new section component for appearance
-- [ ] Display all appearance fields:
+- [x] Create new section component for appearance
+- [x] Display all appearance fields:
   - body_type (text label)
   - skin_tone (small rounded square color swatch, ~20px)
   - hair_style (text label)
   - hair_color (small rounded square color swatch, ~20px)
   - eye_color (small rounded square color swatch, ~20px)
   - facial_features (array, display as tags)
-- [ ] Add section title "Appearance"
-- [ ] Position after class features section
-- [ ] Use grid layout for color swatches with labels
+- [x] Add section title "Appearance"
+- [x] Position after class features section
+- [x] Use grid layout for color swatches with labels
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
-- [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:608-668](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:674-768](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Added appearance section to CharacterGenTab, positioned after the class features section. Displays all appearance fields: body_type and hair_style as text labels with label/value pairs, skin_tone/hair_color/eye_color as small rounded square color swatches (~20px) in a horizontal flex grid with labels, and facial_features as badges using the existing `.character-trait-badge` styling. Color swatches have hover effects (scale + shadow). The section only renders when `character.appearance` exists.
 
 ### Task 2.7: Update equipment display
 - [ ] Add equipped status indicator (checkmark icon)
