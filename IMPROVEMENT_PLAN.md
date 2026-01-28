@@ -337,14 +337,16 @@ The PartyTab has several issues:
 **Summary**: Added all missing character data sections to the PartyTab modal. Updated the race/class format from "Level X Race Class" to "Race: {race} | Class: {class}" in the modal header. Added proficiency bonus stat card with Star icon. Updated HP display to show current/max format (e.g., "7/7"). Added saving throws section with proficiency indicators (Check for proficient, Circle for not proficient). Added racial traits section with styled gradient badges. Added class features section with the same badge styling. Added appearance section with color swatches for skin tone, hair color, and eye color, plus body type, hair style, and facial features. Equipment weight display was already implemented in Task 3.5. All new sections match the styling and behavior of CharacterGenTab for consistency.
 
 ### Task 3.8: Show "No spells learned yet" in modal
-- [ ] Add empty state message when no spells
-- [ ] Style as left-aligned, muted color (`--muted-foreground`)
-- [ ] Keep the section visible even when empty
-- [ ] Style empty state appropriately
+- [x] Add empty state message when no spells
+- [x] Style as left-aligned, muted color (`--muted-foreground`)
+- [x] Keep the section visible even when empty
+- [x] Style empty state appropriately
 
 **Files**:
-- [src/components/Tabs/PartyTab.tsx:380-426](src/components/Tabs/PartyTab.tsx)
-- [src/components/Tabs/PartyTab.css:639-673](src/components/Tabs/PartyTab.css)
+- [src/components/Tabs/PartyTab.tsx:626-629](src/components/Tabs/PartyTab.tsx)
+- [src/components/Tabs/PartyTab.css:869-877](src/components/Tabs/PartyTab.css)
+
+**Summary**: Added empty state message "No spells learned yet" to the PartyTab modal spells section. The message displays when both `cantrips` and `known_spells` arrays are empty. Styled with left-alignment, muted foreground color using `hsl(var(--muted-foreground))`, italic font style, and appropriate padding. The section title "Spells" remains visible even when the character has no spells, matching the behavior implemented in CharacterGenTab (Task 2.8).
 
 ---
 

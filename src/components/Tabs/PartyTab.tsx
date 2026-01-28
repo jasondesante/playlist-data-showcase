@@ -623,6 +623,9 @@ export function PartyTab() {
                         </div>
                       </div>
                     )}
+                    {selectedCharacter.spells.cantrips.length === 0 && selectedCharacter.spells.known_spells.length === 0 && (
+                      <div className="party-detail-spells-empty">No spells learned yet</div>
+                    )}
                   </div>
                 </div>
               )}

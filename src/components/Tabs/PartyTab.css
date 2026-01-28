@@ -866,6 +866,15 @@
   color: var(--color-text-primary);
 }
 
+/* Spells empty state in modal */
+.party-detail-spells-empty {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: left;
+  padding: 0.5rem 0;
+  font-style: italic;
+}
+
 /* XP Progress in Detail View */
 .party-detail-xp-section {
   padding: 1rem;
