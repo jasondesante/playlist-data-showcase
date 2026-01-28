@@ -500,7 +500,7 @@ export function CharacterGenTab() {
 
           {/* Ability Scores */}
           <Card variant="default" padding="md">
-            <h4 className="card-title">Ability Scores</h4>
+            <div className="character-section-title">Ability Scores</div>
             <div className="character-abilities-grid">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                 <div key={ability} className="character-ability-card">
@@ -517,7 +517,7 @@ export function CharacterGenTab() {
 
           {/* Skills Grid */}
           <Card variant="default" padding="md">
-            <h4 className="card-title">Skills</h4>
+            <div className="character-section-title">Skills</div>
             <div className="character-skills-grid">
               {Object.entries(character.skills).map(([skill, prof]) => (
                 <div key={skill} className="character-skill-item" title={
@@ -538,7 +538,7 @@ export function CharacterGenTab() {
             const equipment = character.equipment;
             return (
               <Card variant="default" padding="md">
-                <h4 className="card-title">Equipment</h4>
+                <div className="character-section-title">Equipment</div>
                 <div className="character-equipment-section">
                   {equipment.weapons.length > 0 && (
                     <Card variant="flat" padding="sm" className="character-equipment-card">
@@ -578,7 +578,7 @@ export function CharacterGenTab() {
           {/* Spells */}
           {character.spells && (character.spells.cantrips.length > 0 || character.spells.known_spells.length > 0) && (
             <Card variant="default" padding="md">
-              <h4 className="card-title">Spells</h4>
+              <div className="character-section-title">Spells</div>
               <div className="character-equipment-section">
                 {character.spells.cantrips.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">
@@ -598,12 +598,10 @@ export function CharacterGenTab() {
 
           {/* Raw JSON Dump - Character Sheet */}
           <Card variant="default" padding="md">
-            <CardHeader>
-              <CardTitle>Raw Character Data</CardTitle>
-              <CardDescription>
-                Complete character sheet data from the playlist-data-engine CharacterGenerator module
-              </CardDescription>
-            </CardHeader>
+            <div className="character-section-title">Raw Character Data</div>
+            <CardDescription style={{ marginTop: '0.25rem' }}>
+              Complete character sheet data from the playlist-data-engine CharacterGenerator module
+            </CardDescription>
             <RawJsonDump
               data={character}
               title={`Character Sheet: ${character.name}`}
