@@ -745,7 +745,7 @@ export function CharacterGenTab() {
           })()}
 
           {/* Spells */}
-          {character.spells && (character.spells.cantrips.length > 0 || character.spells.known_spells.length > 0) && (
+          {character.spells && (
             <Card variant="default" padding="md">
               <div className="character-section-title">Spells</div>
               <div className="character-equipment-section">
@@ -760,6 +760,9 @@ export function CharacterGenTab() {
                     <div className="character-equipment-label">Known Spells</div>
                     <div className="character-equipment-items">{character.spells.known_spells.join(', ')}</div>
                   </Card>
+                )}
+                {character.spells.cantrips.length === 0 && character.spells.known_spells.length === 0 && (
+                  <div className="character-spells-empty">No spells learned yet</div>
                 )}
               </div>
             </Card>

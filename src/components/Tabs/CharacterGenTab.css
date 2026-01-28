@@ -895,6 +895,15 @@
   font-size: 0.8125rem;
 }
 
+/* Spells empty state */
+.character-spells-empty {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: left;
+  padding: 0.5rem 0;
+  font-style: italic;
+}
+
 /* Audio mapping table */
 .character-audio-mapping-table {
   width: 100%;
