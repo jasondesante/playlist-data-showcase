@@ -83,7 +83,6 @@ export const useSessionTracker = () => {
     // Session cleanup on page load: ALWAYS clear any persisted session
     // The SessionTracker engine instance is fresh on page load and can't restore previous sessions
     // So we must clear the store to avoid orphaned sessions that can't be ended
-    // Also clear stale selectedTrack to prevent race conditions with auto-start
     useEffect(() => {
         if (hasRunZombieCleanup) return;
 
@@ -94,17 +93,35 @@ export const useSessionTracker = () => {
             useSessionStore.setState({ activeSession: null, currentSessionId: null });
         }
 
-        // Clear stale selectedTrack if currentUrl doesn't match
-        // This prevents race conditions where auto-start creates session for old track
+        // Only clear stale selectedTrack if there's an actual URL mismatch
+        // CRITICAL: Do NOT clear selectedTrack if currentUrl is null - this means nothing is playing yet
+        // and the selectedTrack may have been intentionally restored from the active character
         const selectedTrackOnMount = usePlaylistStore.getState().selectedTrack;
         const currentUrlOnMount = useAudioPlayerStore.getState().currentUrl;
-        if (selectedTrackOnMount && selectedTrackOnMount.audio_url !== currentUrlOnMount) {
-            logger.info('SessionTracker', 'Clearing stale selectedTrack on page load (URL mismatch)', {
+
+        logger.info('SessionTracker', 'Zombie cleanup: checking selectedTrack state', {
+            hasSelectedTrack: !!selectedTrackOnMount,
+            selectedTrackId: selectedTrackOnMount?.id,
+            selectedTrackUrl: selectedTrackOnMount?.audio_url,
+            currentUrl: currentUrlOnMount,
+            urlMismatch: selectedTrackOnMount ? selectedTrackOnMount.audio_url !== currentUrlOnMount : 'N/A',
+            currentUrlIsNull: currentUrlOnMount === null
+        });
+
+        // Only clear selectedTrack if BOTH URLs are non-null AND different
+        // If currentUrl is null, it means audio hasn't started - don't interfere with restoration
+        if (selectedTrackOnMount && currentUrlOnMount !== null && selectedTrackOnMount.audio_url !== currentUrlOnMount) {
+            logger.info('SessionTracker', 'Clearing stale selectedTrack on page load (URL mismatch with playing audio)', {
                 trackId: selectedTrackOnMount.id,
                 trackUrl: selectedTrackOnMount.audio_url,
                 currentUrl: currentUrlOnMount
             });
             usePlaylistStore.setState({ selectedTrack: null });
+        } else if (selectedTrackOnMount && currentUrlOnMount === null) {
+            logger.info('SessionTracker', 'Preserving selectedTrack - currentUrl is null (audio not started yet)', {
+                trackId: selectedTrackOnMount.id,
+                trackUrl: selectedTrackOnMount.audio_url
+            });
         }
 
         hasRunZombieCleanup = true;

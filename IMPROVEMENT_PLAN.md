@@ -55,11 +55,13 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 **Summary**: Modified `setPlaylist()` to trigger `restoreSelectedTrackFromActiveCharacter()` via dynamic import after playlist is loaded. This handles the race condition where restoration is called before playlist loads.
 
 ### Task 1.3: Fix session tracker interference
-- [ ] Review `useSessionTracker.ts` cleanup logic
-- [ ] Ensure it doesn't clear the restored selectedTrack
-- [ ] Add logging to verify timing
+- [x] Review `useSessionTracker.ts` cleanup logic
+- [x] Ensure it doesn't clear the restored selectedTrack
+- [x] Add logging to verify timing
 
 **File**: [src/hooks/useSessionTracker.ts](src/hooks/useSessionTracker.ts)
+
+**Summary**: Fixed the zombie cleanup logic in `useSessionTracker.ts:97-130`. The original code was clearing `selectedTrack` when `selectedTrack.audio_url !== currentUrl`, but on page load `currentUrl` is always `null` (nothing playing yet). This caused the restoration to be immediately undone. The fix: only clear `selectedTrack` if BOTH URLs are non-null AND different (actual mismatch). If `currentUrl` is `null`, preserve the `selectedTrack` as it was likely intentionally restored. Added detailed logging to track the cleanup timing and decision-making.
 
 ### Task 1.4: Test the fix
 - [ ] Load page with active character set
