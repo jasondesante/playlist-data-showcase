@@ -39,7 +39,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [hasStopped, setHasStopped] = useState(false);
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
   const { isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
@@ -60,9 +60,19 @@ export function AppHeader({
         seek(0);
         setHasStopped(false);
       }
-      // Resume both audio and session
-      resume();
-      resumeSession();
+
+      // CRITICAL FIX: If there's a selectedTrack but no currentUrl loaded, play the track
+      // This handles the case where:
+      // 1. Page loads and track is restored (selectedTrack set, but currentUrl is null)
+      // 2. User switches active hero in party tab (selectedTrack set, but currentUrl is null)
+      if (selectedTrack && !currentUrl) {
+        play(selectedTrack.audio_url);
+        // Session will auto-start via useSessionTracker hook when playbackState becomes 'playing'
+      } else {
+        // Resume both audio and session (normal case)
+        resume();
+        resumeSession();
+      }
     }
   };
 
