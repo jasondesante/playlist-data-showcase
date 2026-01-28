@@ -19,6 +19,18 @@ This plan covers enhancements to the Character Generation Tab, Party Tab, a bug 
 
 ---
 
+## IMPORTANT EDITS AND NOTES
+
+The fix doesn't seem to have worked. When I reload the page I still don't see the track that's related to the active her getting loaded into the mini player.
+
+You need to uncheck every single checkbox in tasks 1.1-1.4 and then do them again.
+
+There is also another bug I noticed which is when you select the songs in the party tab, it does load up the different names of the songs in the mini player but when I cick play it doesn't actually play them. When I click play nothing happens actually, even though I can click on the different heroes and it will change the name of the song in the mini player, clicking play won't actually play the song. So I need to get to the bottom of that, add a task or two to research and fix that.
+
+Please make those changes before doing anything else.
+
+---
+
 # Phase 1: Bug Fix - Track/Hero Synchronization on Page Load
 
 ## Problem
@@ -64,10 +76,6 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 **Summary**: Fixed the zombie cleanup logic in `useSessionTracker.ts:97-130`. The original code was clearing `selectedTrack` when `selectedTrack.audio_url !== currentUrl`, but on page load `currentUrl` is always `null` (nothing playing yet). This caused the restoration to be immediately undone. The fix: only clear `selectedTrack` if BOTH URLs are non-null AND different (actual mismatch). If `currentUrl` is `null`, preserve the `selectedTrack` as it was likely intentionally restored. Added detailed logging to track the cleanup timing and decision-making.
 
 
-
-## NOTES
-
-The fix doesn't seem to have worked. When I reload the page I still don't see the track that's related to the active her getting loaded into the mini player.
 
 
 ### Task 1.4: Test the fix
