@@ -420,7 +420,7 @@ export function CharacterGenTab() {
               <div className="character-stats-grid">
                 <Card variant="elevated" padding="sm" className="character-stat-card">
                   <div className="character-stat-label">HP</div>
-                  <div className="character-stat-value character-count-up">{character.hp.max}</div>
+                  <div className="character-stat-value character-count-up">{character.hp.current}/{character.hp.max}</div>
                 </Card>
                 <Card variant="elevated" padding="sm" className="character-stat-card">
                   <div className="character-stat-label">AC</div>

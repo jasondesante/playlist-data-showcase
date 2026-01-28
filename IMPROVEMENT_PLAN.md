@@ -133,13 +133,15 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Added proficiency bonus stat card to the character stats grid. The card displays "Proficiency" as the label and "+{proficiency_bonus}" as the value (e.g., "+2"). Updated the CSS grid from 4 columns to 5 columns on desktop to accommodate the new stat card. The card uses the same elevated Card variant styling as the other stat cards (HP, AC, Initiative, Speed).
 
 ### Task 2.3: Update HP display to show current/max
-- [ ] Change from just `hp.max` to `hp.current/hp.max` format
-- [ ] Example: "7/7" instead of just "7"
-- [ ] No spaces around slash (use letter-spacing in container for tweaking)
+- [x] Change from just `hp.max` to `hp.current/hp.max` format
+- [x] Example: "7/7" instead of just "7"
+- [x] No spaces around slash (use letter-spacing in container for tweaking)
 - [ ] Update both header stats card and modal
 
 **Files**:
 - [src/components/Tabs/CharacterGenTab.tsx:397-400](src/components/Tabs/CharacterGenTab.tsx)
+
+**Summary**: Updated HP display in CharacterGenTab header stats card to show `current/max` format (e.g., "7/7"). The format uses no spaces around the slash as specified. Note: The modal update for PartyTab will be completed in Task 3.7 (Phase 3), as CharacterGenTab doesn't have a modal - the modal is in PartyTab.tsx.
 
 ### Task 2.4: Create racial traits section
 - [ ] Create new section component for racial traits
@@ -409,7 +411,7 @@ Add a visual indicator to the "Leveling" tab button in the navigation bar:
 ### Phase 2: CharacterGenTab Verification
 - [ ] Verify race/class format: "Race: Elf | Class: Rogue"
 - [ ] Verify proficiency bonus is displayed in stats grid
-- [ ] Verify HP shows "7/7" format
+- [x] Verify HP shows "7/7" format
 - [ ] Verify racial traits section appears with all traits listed
 - [ ] Verify class features section appears with all features listed
 - [ ] Verify appearance section shows all fields including facial features
