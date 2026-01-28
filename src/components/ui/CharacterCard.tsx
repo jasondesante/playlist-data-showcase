@@ -89,10 +89,10 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
         <div className="party-card-avatar">{avatar}</div>
         <div className="party-card-info">
           <h3 className="party-card-name">{character.name}</h3>
-          <p className="party-card-subtitle">
+          <div className="party-card-subtitle">
             <span>{character.race} {character.class}</span>
             <span className="party-card-level">Lv {character.level}</span>
-          </p>
+          </div>
         </div>
       </div>
 
@@ -101,10 +101,10 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
         <div className="party-xp-bar">
           <div className="party-xp-fill" style={{ width: `${Math.min(progressPercent, 100)}%` }} />
         </div>
-        <p className="party-xp-label">
+        <div className="party-xp-label">
           <span className="party-xp-current">{formatNumber(character.xp.current)} / {formatNumber(character.xp.next_level)} XP</span>
           <span>{Math.round(progressPercent)}%</span>
-        </p>
+        </div>
       </div>
 
       {/* Set as Active Button */}

@@ -373,7 +373,7 @@ export function CombatSimulatorTab() {
       </div>
 
       {!getActiveCharacter() ? (
-        <p className="combat-prompt">Generate a character first</p>
+        <div className="combat-prompt">Generate a character first</div>
       ) : !combat ? (
         <button
           onClick={handleStartCombat}
@@ -393,16 +393,16 @@ export function CombatSimulatorTab() {
           {isActive && combat && (
             <div className="combat-controls">
               <h3 className="combat-controls-title">Manual Attack Controls</h3>
-              <p className="combat-controls-description">
+              <div className="combat-controls-description">
                 Choose a target to attack instead of auto-attacking the first available target.
-              </p>
+              </div>
 
               {/* Available attacks for current combatant */}
               <div className="combat-controls-section">
                 <div className="combat-controls-label">Available Attacks:</div>
                 {(() => {
                   const current = getCurrentCombatant();
-                  if (!current) return <p className="combat-attacks-empty">No current combatant</p>;
+                  if (!current) return <div className="combat-attacks-empty">No current combatant</div>;
 
                   const weapons = current.character.equipment?.weapons ?? [];
                   if (weapons.length === 0) {
@@ -453,9 +453,9 @@ export function CombatSimulatorTab() {
                 </div>
               </div>
 
-              <p className="combat-controls-hint">
+              <div className="combat-controls-hint">
                 Click a target to perform an attack with your current combatant's available weapon(s).
-              </p>
+              </div>
             </div>
           )}
 
@@ -484,7 +484,7 @@ export function CombatSimulatorTab() {
                     .sort(([a], [b]) => parseInt(a) - parseInt(b));
 
                   if (slots.length === 0) {
-                    return <p className="combat-slots-empty">No spell slots remaining</p>;
+                    return <div className="combat-slots-empty">No spell slots remaining</div>;
                   }
 
                   return (
@@ -505,7 +505,7 @@ export function CombatSimulatorTab() {
                 <div className="combat-spells-grid">
                   {(() => {
                     const current = getCurrentCombatant();
-                    if (!current?.character.spells) return <p className="combat-stat-text">No spells available</p>;
+                    if (!current?.character.spells) return <div className="combat-stat-text">No spells available</div>;
 
                     const allSpells = [
                       ...(current.character.spells.cantrips || []).map(name => ({ name, level: 0 })),
@@ -584,9 +584,9 @@ export function CombatSimulatorTab() {
               )}
 
               {selectedSpellName && selectedTargetIds.length === 0 && (
-                <p className="combat-spell-warning">
+                <div className="combat-spell-warning">
                   ⚠️ Select at least one target to cast this spell
-                </p>
+                </div>
               )}
             </div>
           )}
@@ -644,7 +644,7 @@ export function CombatSimulatorTab() {
                       <div className="combat-combatant-header">
                         <div>
                           <h3 className="combat-combatant-name">{combatant.character.name}</h3>
-                          <p className="combat-combatant-class">{combatant.character.race} {combatant.character.class}</p>
+                          <div className="combat-combatant-class">{combatant.character.race} {combatant.character.class}</div>
                         </div>
                         {isCurrentTurn && <span className="combat-combatant-badge">Current</span>}
                       </div>
@@ -843,9 +843,9 @@ export function CombatSimulatorTab() {
 
                   {combatResult.description && (
                     <div className="combat-victory-description">
-                      <p className="combat-victory-description-text">
+                      <div className="combat-victory-description-text">
                         {combatResult.description}
-                      </p>
+                      </div>
                     </div>
                   )}
                 </div>

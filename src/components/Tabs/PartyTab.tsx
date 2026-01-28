@@ -132,9 +132,9 @@ export function PartyTab() {
         <Card variant="elevated" className="party-empty-state">
           <div className="party-empty-icon">👥</div>
           <h3 className="party-empty-title">No Characters Yet</h3>
-          <p className="party-empty-description">
+          <div className="party-empty-description">
             Go to the Character Generation tab to create characters from your playlist tracks.
-          </p>
+          </div>
         </Card>
       </div>
     );
@@ -195,9 +195,9 @@ export function PartyTab() {
         <Card variant="default" className="party-no-results">
           <div className="party-no-results-icon">🔍</div>
           <h3 className="party-no-results-title">No Results Found</h3>
-          <p className="party-no-results-text">
+          <div className="party-no-results-text">
             Try adjusting your search or sort criteria.
-          </p>
+          </div>
         </Card>
       )}
 
@@ -225,9 +225,9 @@ export function PartyTab() {
                 <div className="party-detail-avatar">{getCharacterAvatar(selectedCharacter.class)}</div>
                 <div className="party-detail-info">
                   <h2>{selectedCharacter.name}</h2>
-                  <p>
+                  <div>
                     Level {selectedCharacter.level} {selectedCharacter.race} {selectedCharacter.class}
-                  </p>
+                  </div>
                 </div>
               </div>
               <button className="party-detail-close" onClick={handleCloseModal} aria-label="Close">
@@ -244,29 +244,29 @@ export function PartyTab() {
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('HP')}</span>
                     <div>
-                      <p className="party-detail-stat-label">Hit Points</p>
-                      <p className="party-detail-stat-value">{selectedCharacter.hp.max}</p>
+                      <div className="party-detail-stat-label">Hit Points</div>
+                      <div className="party-detail-stat-value">{selectedCharacter.hp.max}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('AC')}</span>
                     <div>
-                      <p className="party-detail-stat-label">Armor Class</p>
-                      <p className="party-detail-stat-value">{selectedCharacter.armor_class}</p>
+                      <div className="party-detail-stat-label">Armor Class</div>
+                      <div className="party-detail-stat-value">{selectedCharacter.armor_class}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('Initiative')}</span>
                     <div>
-                      <p className="party-detail-stat-label">Initiative</p>
-                      <p className="party-detail-stat-value">+{selectedCharacter.initiative}</p>
+                      <div className="party-detail-stat-label">Initiative</div>
+                      <div className="party-detail-stat-value">+{selectedCharacter.initiative}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('Speed')}</span>
                     <div>
-                      <p className="party-detail-stat-label">Speed</p>
-                      <p className="party-detail-stat-value">{selectedCharacter.speed} ft</p>
+                      <div className="party-detail-stat-label">Speed</div>
+                      <div className="party-detail-stat-value">{selectedCharacter.speed} ft</div>
                     </div>
                   </div>
                 </div>
@@ -278,12 +278,12 @@ export function PartyTab() {
                 <div className="party-detail-abilities-grid">
                   {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                     <div key={ability} className="party-detail-ability-item">
-                      <p className="party-detail-ability-name">{ability}</p>
-                      <p className="party-detail-ability-score">{selectedCharacter.ability_scores[ability]}</p>
-                      <p className="party-detail-ability-modifier">
+                      <div className="party-detail-ability-name">{ability}</div>
+                      <div className="party-detail-ability-score">{selectedCharacter.ability_scores[ability]}</div>
+                      <div className="party-detail-ability-modifier">
                         {selectedCharacter.ability_modifiers[ability] >= 0 ? '+' : ''}
                         {selectedCharacter.ability_modifiers[ability]}
-                      </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -362,7 +362,7 @@ export function PartyTab() {
                   <div className="party-detail-spells-section">
                     {selectedCharacter.spells.cantrips.length > 0 && (
                       <div className="party-detail-spells-group">
-                        <p className="party-detail-spells-group-title">Cantrips</p>
+                        <div className="party-detail-spells-group-title">Cantrips</div>
                         <div className="party-detail-spells-list">
                           {selectedCharacter.spells.cantrips.map((spell) => (
                             <span key={spell} className="party-detail-spell-tag">
@@ -374,7 +374,7 @@ export function PartyTab() {
                     )}
                     {selectedCharacter.spells.known_spells.length > 0 && (
                       <div className="party-detail-spells-group">
-                        <p className="party-detail-spells-group-title">Known Spells</p>
+                        <div className="party-detail-spells-group-title">Known Spells</div>
                         <div className="party-detail-spells-list">
                           {selectedCharacter.spells.known_spells.map((spell) => (
                             <span key={spell} className="party-detail-spell-tag">
@@ -386,7 +386,7 @@ export function PartyTab() {
                     )}
                     {selectedCharacter.spells.spell_slots && Object.keys(selectedCharacter.spells.spell_slots).length > 0 && (
                       <div className="party-detail-spells-group">
-                        <p className="party-detail-spells-group-title">Spell Slots</p>
+                        <div className="party-detail-spells-group-title">Spell Slots</div>
                         <div className="party-detail-spells-list">
                           {Object.entries(selectedCharacter.spells.spell_slots)
                             .filter(([_, slot]) => slot.total > 0)
@@ -419,9 +419,9 @@ export function PartyTab() {
                       style={{ width: `${Math.min(calculateXPProgress(selectedCharacter), 100)}%` }}
                     />
                   </div>
-                  <p className="party-detail-xp-hint">
+                  <div className="party-detail-xp-hint">
                     {formatNumber(selectedCharacter.xp.next_level - selectedCharacter.xp.current)} XP needed for next level
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>

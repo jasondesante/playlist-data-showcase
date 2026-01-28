@@ -249,9 +249,9 @@ export function XPCalculatorTab() {
           <div className="xp-calculator-header-icon">⭐</div>
           <div className="xp-calculator-header-content">
             <h2>XP Calculator</h2>
-            <p className="xp-calculator-header-subtitle">
+            <div className="xp-calculator-header-subtitle">
               Calculate experience points from listening sessions
-            </p>
+            </div>
           </div>
         </div>
 
@@ -267,7 +267,7 @@ export function XPCalculatorTab() {
                   </div>
                   <div className="xp-character-details">
                     <h3 className="xp-character-name">{activeCharacter.name}</h3>
-                    <p className="xp-character-class">{activeCharacter.race} {activeCharacter.class}</p>
+                    <div className="xp-character-class">{activeCharacter.race} {activeCharacter.class}</div>
                   </div>
                 </div>
                 <div className="xp-character-stats">
@@ -308,9 +308,9 @@ export function XPCalculatorTab() {
               <div className="xp-character-empty">
                 <User size={32} className="xp-empty-icon" />
                 <h3 className="xp-empty-title">No Character Selected</h3>
-                <p className="xp-empty-description">
+                <div className="xp-empty-description">
                   Select a character to apply calculated XP
-                </p>
+                </div>
                 {characters.length > 0 && (
                   <div className="xp-character-selector">
                     <label htmlFor="xp-character-select-empty" className="xp-selector-label">
@@ -405,12 +405,12 @@ export function XPCalculatorTab() {
                   </div>
                 )}
 
-                <p className="xp-context-hint">From Environmental Sensors tab</p>
+                <div className="xp-context-hint">From Environmental Sensors tab</div>
               </div>
             ) : (
-              <p className="xp-context-empty">
+              <div className="xp-context-empty">
                 No environmental data available. Visit the Environmental Sensors tab to set up sensors.
-              </p>
+              </div>
             )}
           </Card>
 
@@ -449,12 +449,12 @@ export function XPCalculatorTab() {
                   </div>
                 )}
 
-                <p className="xp-context-hint">From Gaming Platforms tab</p>
+                <div className="xp-context-hint">From Gaming Platforms tab</div>
               </div>
             ) : (
-              <p className="xp-context-empty">
+              <div className="xp-context-empty">
                 No gaming data available. Visit the Gaming Platforms tab to connect platforms.
-              </p>
+              </div>
             )}
           </Card>
 
@@ -463,9 +463,9 @@ export function XPCalculatorTab() {
             <div className="xp-toggle-header">
               <div className="xp-toggle-content">
                 <h3 className="xp-toggle-title">Track Mastery Bonus</h3>
-                <p className="xp-toggle-description">
+                <div className="xp-toggle-description">
                   Simulate a mastered track (+50 bonus XP)
-                </p>
+                </div>
               </div>
               <label className="xp-toggle-switch">
                 <input
@@ -484,9 +484,9 @@ export function XPCalculatorTab() {
             <div className="xp-toggle-header">
               <div className="xp-toggle-content">
                 <h3 className="xp-toggle-title">Manual Mode</h3>
-                <p className="xp-toggle-description">
+                <div className="xp-toggle-description">
                   Override automatic calculation with custom values
-                </p>
+                </div>
               </div>
               <label className="xp-toggle-switch">
                 <input
@@ -511,11 +511,11 @@ export function XPCalculatorTab() {
                     placeholder="Leave empty to use duration × rate"
                     min="0"
                   />
-                  <p className="xp-override-hint">
+                  <div className="xp-override-hint">
                     {manualOverrides.baseXP
                       ? `${manualOverrides.baseXP} XP (manual)`
                       : `${Math.floor(duration * 1)} XP (auto: ${duration}s × 1.0)`}
-                  </p>
+                  </div>
                 </div>
 
                 <div className="xp-override-field">
@@ -530,13 +530,13 @@ export function XPCalculatorTab() {
                     max="3.0"
                     step="0.1"
                   />
-                  <p className="xp-override-hint">
+                  <div className="xp-override-hint">
                     {manualOverrides.environmentalMultiplier
                       ? `${manualOverrides.environmentalMultiplier}x (manual)`
                       : environmentalContext
                         ? 'Using sensor data'
                         : '1.0x (no data)'}
-                  </p>
+                  </div>
                 </div>
 
                 <div className="xp-override-field">
@@ -551,18 +551,18 @@ export function XPCalculatorTab() {
                     max="1.75"
                     step="0.05"
                   />
-                  <p className="xp-override-hint">
+                  <div className="xp-override-hint">
                     {manualOverrides.gamingMultiplier
                       ? `${manualOverrides.gamingMultiplier}x (manual)`
                       : gamingContext?.isActivelyGaming
                         ? 'Using gaming data'
                         : '1.0x (not gaming)'}
-                  </p>
+                  </div>
                 </div>
 
-                <p className="xp-manual-hint">
+                <div className="xp-manual-hint">
                   Leave fields empty to use automatic values from sensors/stores
-                </p>
+                </div>
               </div>
             )}
           </Card>
@@ -579,9 +579,9 @@ export function XPCalculatorTab() {
               >
                 {isApplying ? 'Calculating & Applying...' : 'Calculate & Apply XP'}
               </button>
-              <p className="xp-calculate-hint">
+              <div className="xp-calculate-hint">
                 XP will be immediately applied to <strong>{activeCharacter.name}</strong> (Level {activeCharacter.level})
-              </p>
+              </div>
             </>
           ) : (
             <>
@@ -591,9 +591,9 @@ export function XPCalculatorTab() {
               >
                 Calculate XP
               </button>
-              <p className="xp-calculate-hint xp-calculate-hint-warning">
+              <div className="xp-calculate-hint xp-calculate-hint-warning">
                 ⚠️ No character selected - XP will be calculated but not applied
-              </p>
+              </div>
             </>
           )}
         </div>
@@ -603,16 +603,16 @@ export function XPCalculatorTab() {
           <div className={`xp-results-section ${isCelebrating ? 'xp-level-up-celebration' : ''}`}>
             {/* Total XP Display */}
             <div className={`xp-total-card ${isCelebrating ? 'xp-level-up-pulse' : ''}`}>
-              <p className="xp-total-label">Total XP</p>
-              <p className="xp-total-value">{result.totalXP}</p>
-              <p className="xp-total-multiplier">
+              <div className="xp-total-label">Total XP</div>
+              <div className="xp-total-value">{result.totalXP}</div>
+              <div className="xp-total-multiplier">
                 Total Multiplier: <strong>{result.totalMultiplier.toFixed(2)}x</strong>
                 {result.totalMultiplier >= 3.0 && ' (capped)'}
-              </p>
+              </div>
               {activeCharacter && (
-                <p className="xp-total-applied">
+                <div className="xp-total-applied">
                   ✅ Applied to {activeCharacter.name}
-                </p>
+                </div>
               )}
             </div>
 
@@ -706,9 +706,9 @@ export function XPCalculatorTab() {
 
                 {/* No bonuses message */}
                 {result.environmentalBonusXP === 0 && result.gamingBonusXP === 0 && result.masteryBonusXP === 0 && (
-                  <p className="xp-no-bonuses">
+                  <div className="xp-no-bonuses">
                     No active bonuses. Enable environmental sensors or start gaming to earn bonus XP!
-                  </p>
+                  </div>
                 )}
               </div>
             </Card>
@@ -753,9 +753,9 @@ export function XPCalculatorTab() {
                     ))}
                   </div>
                 </div>
-                <p className="xp-donut-hint">
+                <div className="xp-donut-hint">
                   Visual breakdown of XP sources for this session
-                </p>
+                </div>
               </Card>
             )}
 

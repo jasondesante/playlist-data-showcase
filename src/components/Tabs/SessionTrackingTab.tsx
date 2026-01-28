@@ -209,7 +209,7 @@ export function SessionTrackingTab() {
         </div>
         <div>
           <h1 className="session-tab-title">Session Tracker</h1>
-          <p className="session-tab-subtitle">Track your listening sessions and view detailed analytics</p>
+          <div className="session-tab-subtitle">Track your listening sessions and view detailed analytics</div>
         </div>
       </div>
 
@@ -219,9 +219,9 @@ export function SessionTrackingTab() {
           <div className="session-empty-state">
             <Music className="session-empty-icon" />
             <h3 className="session-empty-title">No Track Selected</h3>
-            <p className="session-empty-description">
+            <div className="session-empty-description">
               Select a track from the Playlist tab to start a listening session
-            </p>
+            </div>
           </div>
         </Card>
       ) : (
@@ -253,15 +253,15 @@ export function SessionTrackingTab() {
                   isActive={isActive}
                 />
                 <div className="session-timer-text-container">
-                  <p className="session-time-label">
+                  <div className="session-time-label">
                     {isActive ? 'Listening' : 'Ready'}
-                  </p>
-                  <p className="session-time-value">
+                  </div>
+                  <div className="session-time-value">
                     {formatTime(elapsedTime)}
-                  </p>
-                  <p className="session-time-total">
+                  </div>
+                  <div className="session-time-total">
                     / {formatTime(trackDuration)}
-                  </p>
+                  </div>
                 </div>
               </div>
 
@@ -298,9 +298,9 @@ export function SessionTrackingTab() {
                             </span>
                           )}
                         </div>
-                        <p className="session-character-details">
+                        <div className="session-character-details">
                           Level {activeCharacter.level} {activeCharacter.race} {activeCharacter.class}
-                        </p>
+                        </div>
                       </div>
                     </div>
                     <div className="session-character-stats">
@@ -396,16 +396,16 @@ export function SessionTrackingTab() {
                         style={{ width: `${Math.min(xpProgress.progressPercent, 100)}%` }}
                       />
                     </div>
-                    <p className="session-xp-progress-hint">
+                    <div className="session-xp-progress-hint">
                       {xpProgress.xpNeeded.toLocaleString()} XP to next level
-                    </p>
+                    </div>
                   </div>
                 )}
 
                 {/* Bonus XP Breakdown */}
                 {isActive && xpBreakdown && (xpBreakdown.environmentalBonusXP > 0 || xpBreakdown.gamingBonusXP > 0 || xpBreakdown.masteryBonusXP > 0) && (
                   <div className="session-bonus-breakdown">
-                    <p className="session-bonus-title">Bonus XP Breakdown</p>
+                    <div className="session-bonus-title">Bonus XP Breakdown</div>
                     {xpBreakdown.environmentalBonusXP > 0 && (
                       <div className="session-bonus-item">
                         <span className="session-bonus-label">

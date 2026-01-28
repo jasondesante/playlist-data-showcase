@@ -88,7 +88,7 @@ export function AppHeader({
           <div className="app-header-row">
             <div className="app-header-text">
               <h1 className="app-header-title">{title}</h1>
-              <p className="app-header-subtitle">{subtitle}</p>
+              <div className="app-header-subtitle">{subtitle}</div>
             </div>
 
             {/* Mini Audio Player - always shown, with placeholder when no track */}

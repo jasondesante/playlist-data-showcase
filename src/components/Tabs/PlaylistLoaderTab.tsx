@@ -212,7 +212,7 @@ export function PlaylistLoaderTab() {
                   </div>
                 </div>
                 {currentPlaylist.description && (
-                  <p className="playlist-display-description-compact">{currentPlaylist.description}</p>
+                  <div className="playlist-display-description-compact">{currentPlaylist.description}</div>
                 )}
                 {currentPlaylist.tags && currentPlaylist.tags.length > 0 && (
                   <div className="playlist-display-tags-compact">

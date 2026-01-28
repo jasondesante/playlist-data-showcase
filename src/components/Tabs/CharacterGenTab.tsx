@@ -275,7 +275,7 @@ export function CharacterGenTab() {
             </div>
             <h2 className="character-gen-header-title">Character Generator</h2>
           </div>
-          <p className="character-gen-header-subtitle">Generate D&D characters from audio profiles</p>
+          <div className="character-gen-header-subtitle">Generate D&D characters from audio profiles</div>
         </div>
         <div className="character-gen-actions">
           {character && (
@@ -338,14 +338,14 @@ export function CharacterGenTab() {
       {/* Import Status Messages */}
       {importError && (
         <div className="character-status-message error fade-in">
-          <p className="character-status-title error">Import Error</p>
-          <p className="character-status-text">{importError}</p>
+          <div className="character-status-title error">Import Error</div>
+          <div className="character-status-text">{importError}</div>
         </div>
       )}
       {importSuccess && (
         <div className="character-status-message success fade-in">
-          <p className="character-status-title success">Success!</p>
-          <p className="character-status-text">Character imported successfully. Check the Character Leveling tab to view all stored characters.</p>
+          <div className="character-status-title success">Success!</div>
+          <div className="character-status-text">Character imported successfully. Check the Character Leveling tab to view all stored characters.</div>
         </div>
       )}
 
@@ -357,9 +357,9 @@ export function CharacterGenTab() {
               <span className="character-gen-empty-icon" role="img" aria-label="Character">👤</span>
             </div>
             <h4 className="character-gen-empty-title">No Track Selected</h4>
-            <p className="character-gen-empty-description">
+            <div className="character-gen-empty-description">
               Select a track from the Playlist tab and analyze its audio to generate a unique character based on the audio profile.
-            </p>
+            </div>
           </div>
         </Card>
       )}
@@ -372,13 +372,13 @@ export function CharacterGenTab() {
               <Sparkles className="character-ready-icon" />
             </div>
             <div className="character-ready-text">
-              <p className="character-ready-title">Ready to generate</p>
-              <p className="character-ready-description">
+              <div className="character-ready-title">Ready to generate</div>
+              <div className="character-ready-description">
                 Using audio profile from <span>{selectedTrack.title}</span> by {selectedTrack.artist}
-              </p>
-              <p className="character-ready-seed">
+              </div>
+              <div className="character-ready-seed">
                 Seed: {selectedTrack.id} (deterministic - same track always generates same character)
-              </p>
+              </div>
             </div>
           </div>
         </Card>
@@ -401,17 +401,17 @@ export function CharacterGenTab() {
               {determinismResult.isMatch ? '✓' : '✗'}
             </span>
             <div className="character-determinism-content">
-              <p className="character-determinism-title">
+              <div className="character-determinism-title">
                 {determinismResult.isMatch ? 'Deterministic match!' : 'Mismatch!'}
-              </p>
-              <p className="character-determinism-description">
+              </div>
+              <div className="character-determinism-description">
                 {determinismResult.isMatch
                   ? `The character was regenerated identically with the same seed (${selectedTrack?.id}).`
                   : 'The regenerated character differs from the original (this should not happen).'}
-              </p>
+              </div>
               {!determinismResult.isMatch && determinismResult.original && determinismResult.regenerated && (
                 <div className="character-determinism-mismatch">
-                  <p className="character-determinism-mismatch-title">Difference detected:</p>
+                  <div className="character-determinism-mismatch-title">Difference detected:</div>
                   {(() => {
                     const diffPath = getDiffPath(determinismResult.original, determinismResult.regenerated);
                     return diffPath ? (
@@ -419,23 +419,23 @@ export function CharacterGenTab() {
                         {diffPath.join(' → ')}
                       </code>
                     ) : (
-                      <p className="character-determinism-deep-note">Deep comparison shows differences</p>
+                      <div className="character-determinism-deep-note">Deep comparison shows differences</div>
                     );
                   })()}
                   <div className="character-determinism-comparison">
                     <div>
-                      <p className="character-determinism-comparison-label">Original:</p>
-                      <p className="character-determinism-comparison-name">{determinismResult.original.name}</p>
-                      <p className="character-determinism-comparison-details">
+                      <div className="character-determinism-comparison-label">Original:</div>
+                      <div className="character-determinism-comparison-name">{determinismResult.original.name}</div>
+                      <div className="character-determinism-comparison-details">
                         {determinismResult.original.race} {determinismResult.original.class}
-                      </p>
+                      </div>
                     </div>
                     <div>
-                      <p className="character-determinism-comparison-label">Regenerated:</p>
-                      <p className="character-determinism-comparison-name">{determinismResult.regenerated.name}</p>
-                      <p className="character-determinism-comparison-details">
+                      <div className="character-determinism-comparison-label">Regenerated:</div>
+                      <div className="character-determinism-comparison-name">{determinismResult.regenerated.name}</div>
+                      <div className="character-determinism-comparison-details">
                         {determinismResult.regenerated.race} {determinismResult.regenerated.class}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -479,12 +479,12 @@ export function CharacterGenTab() {
                     </div>
                   )}
                 </div>
-                <p className="character-class">
+                <div className="character-class">
                   Level {character.level} {character.race} {character.class}
-                </p>
-                <p className="character-xp">
+                </div>
+                <div className="character-xp">
                   XP: {character.xp.current} / {character.xp.next_level}
-                </p>
+                </div>
               </div>
             </div>
           </Card>
@@ -492,20 +492,20 @@ export function CharacterGenTab() {
           {/* Core Stats Grid */}
           <div className="character-stats-grid">
             <Card variant="elevated" padding="sm" className="character-stat-card">
-              <p className="character-stat-label">HP</p>
-              <p className="character-stat-value character-count-up">{character.hp.max}</p>
+              <div className="character-stat-label">HP</div>
+              <div className="character-stat-value character-count-up">{character.hp.max}</div>
             </Card>
             <Card variant="elevated" padding="sm" className="character-stat-card">
-              <p className="character-stat-label">AC</p>
-              <p className="character-stat-value character-count-up">{character.armor_class}</p>
+              <div className="character-stat-label">AC</div>
+              <div className="character-stat-value character-count-up">{character.armor_class}</div>
             </Card>
             <Card variant="elevated" padding="sm" className="character-stat-card">
-              <p className="character-stat-label">Initiative</p>
-              <p className="character-stat-value character-count-up">+{character.initiative}</p>
+              <div className="character-stat-label">Initiative</div>
+              <div className="character-stat-value character-count-up">+{character.initiative}</div>
             </Card>
             <Card variant="elevated" padding="sm" className="character-stat-card">
-              <p className="character-stat-label">Speed</p>
-              <p className="character-stat-value character-count-up">{character.speed} ft</p>
+              <div className="character-stat-label">Speed</div>
+              <div className="character-stat-value character-count-up">{character.speed} ft</div>
             </Card>
           </div>
 
@@ -604,9 +604,9 @@ export function CharacterGenTab() {
                   </tbody>
                 </table>
               </div>
-              <p className="character-audio-trait-note">
+              <div className="character-audio-trait-note">
                 Higher values in each audio trait contribute to higher ability scores. The combination of traits creates unique character builds based on the audio profile.
-              </p>
+              </div>
             </Card>
           )}
 
@@ -616,12 +616,12 @@ export function CharacterGenTab() {
             <div className="character-abilities-grid">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                 <div key={ability} className="character-ability-card">
-                  <p className="character-ability-label">{ability}</p>
-                  <p className="character-ability-score character-count-up">{character.ability_scores[ability]}</p>
-                  <p className="character-ability-modifier">
+                  <div className="character-ability-label">{ability}</div>
+                  <div className="character-ability-score character-count-up">{character.ability_scores[ability]}</div>
+                  <div className="character-ability-modifier">
                     {character.ability_modifiers[ability] >= 0 ? '+' : ''}
                     {character.ability_modifiers[ability]}
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -694,14 +694,14 @@ export function CharacterGenTab() {
               <div className="character-equipment-section">
                 {character.spells.cantrips.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">
-                    <p className="character-equipment-label">Cantrips</p>
-                    <p className="character-equipment-items">{character.spells.cantrips.join(', ')}</p>
+                    <div className="character-equipment-label">Cantrips</div>
+                    <div className="character-equipment-items">{character.spells.cantrips.join(', ')}</div>
                   </Card>
                 )}
                 {character.spells.known_spells.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">
-                    <p className="character-equipment-label">Known Spells</p>
-                    <p className="character-equipment-items">{character.spells.known_spells.join(', ')}</p>
+                    <div className="character-equipment-label">Known Spells</div>
+                    <div className="character-equipment-items">{character.spells.known_spells.join(', ')}</div>
                   </Card>
                 )}
               </div>

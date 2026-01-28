@@ -76,8 +76,8 @@ export function GameModeToggle({ value, onChange, className }: GameModeTogglePro
           {showTooltip && (
             <div className="gamemode-tooltip" role="tooltip">
               <div className="gamemode-tooltip-content">
-                <p><strong>Standard Mode:</strong> Traditional D&D 5e rules with stats capped at 20. You manually choose stat increases when leveling up.</p>
-                <p><strong>Uncapped Mode:</strong> Stats can exceed 20 for unlimited progression. Stat increases are applied automatically based on your chosen strategy.</p>
+                <div><strong>Standard Mode:</strong> Traditional D&D 5e rules with stats capped at 20. You manually choose stat increases when leveling up.</div>
+                <div><strong>Uncapped Mode:</strong> Stats can exceed 20 for unlimited progression. Stat increases are applied automatically based on your chosen strategy.</div>
               </div>
               <button
                 type="button"

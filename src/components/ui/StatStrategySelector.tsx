@@ -132,7 +132,7 @@ export function StatStrategySelector({
           {showTooltip && (
             <div className="stat-strategy-tooltip" role="tooltip">
               <div className="stat-strategy-tooltip-content">
-                <p><strong>Strategy determines how stats increase when leveling up.</strong></p>
+                <div><strong>Strategy determines how stats increase when leveling up.</strong></div>
                 <ul>
                   {strategyOptions.map(opt => (
                     <li key={opt.value}>
@@ -140,9 +140,9 @@ export function StatStrategySelector({
                     </li>
                   ))}
                 </ul>
-                <p className="stat-strategy-tooltip-note">
+                <div className="stat-strategy-tooltip-note">
                   Note: Changing strategy won't affect existing pending stat increases.
-                </p>
+                </div>
               </div>
               <button
                 type="button"

@@ -127,9 +127,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {/* Helper Text / Error Message */}
         {showMessage && (
-          <p className={cn('input-helper-text', hasError && 'input-helper-text-error', disabled && 'input-helper-text-disabled')}>
+          <div className={cn('input-helper-text', hasError && 'input-helper-text-error', disabled && 'input-helper-text-disabled')}>
             {hasError ? error : helperText}
-          </p>
+          </div>
         )}
       </div>
     );

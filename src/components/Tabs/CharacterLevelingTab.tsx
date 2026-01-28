@@ -334,9 +334,9 @@ export function CharacterLevelingTab() {
               <UserCircle2 size={64} strokeWidth={1.5} />
             </div>
             <h3 className="leveling-empty-title">No Active Character Selected</h3>
-            <p className="leveling-empty-description">
+            <div className="leveling-empty-description">
               Select a character to begin tracking their progress.
-            </p>
+            </div>
             <div className="leveling-character-selector">
               <label htmlFor="character-select" className="leveling-selector-label">
                 Choose a character:
@@ -381,9 +381,9 @@ export function CharacterLevelingTab() {
         <Card variant="elevated" className="leveling-empty-state">
           <div className="leveling-empty-icon">👤</div>
           <h3 className="leveling-empty-title">No Character Generated</h3>
-          <p className="leveling-empty-description">
+          <div className="leveling-empty-description">
             Go to the Character Generation tab to create a character first.
-          </p>
+          </div>
         </Card>
       </div>
     );
@@ -451,7 +451,7 @@ export function CharacterLevelingTab() {
           </div>
           <div className="leveling-character-info">
             <h3 className="leveling-character-name">{activeChar.name}</h3>
-            <p className="leveling-character-class">{activeChar.race} {activeChar.class}</p>
+            <div className="leveling-character-class">{activeChar.race} {activeChar.class}</div>
           </div>
         </div>
 
@@ -469,9 +469,9 @@ export function CharacterLevelingTab() {
               <div className="leveling-progress-glow" />
             </div>
           </div>
-          <p className="leveling-xp-hint">
+          <div className="leveling-xp-hint">
             {(levelXPNeeded - currentLevelProgress).toLocaleString()} XP needed for next level
-          </p>
+          </div>
         </div>
       </Card>
 
@@ -509,9 +509,9 @@ export function CharacterLevelingTab() {
           onChange={handleStrategyChange}
           disabled={!activeChar}
         />
-        <p className="leveling-strategy-note">
+        <div className="leveling-strategy-note">
           Note: Changing strategy won't affect existing pending stat increases.
-        </p>
+        </div>
       </Card>
 
       {/* XP Addition Section */}
@@ -611,10 +611,10 @@ export function CharacterLevelingTab() {
               <h4 className="leveling-pending-badge-title">
                 Pending Stat Increases: {getPendingStatIncreaseCount(activeChar)}
               </h4>
-              <p className="leveling-pending-badge-description">
+              <div className="leveling-pending-badge-description">
                 You have stat increases waiting to be applied. When using manual strategy, stat increases must be applied manually.
                 {activeChar.gameMode === 'standard' ? ' In standard mode, increases are awarded at levels 4, 8, 12, 16, and 19.' : ' In uncapped mode, increases are awarded at every level-up.'}
-              </p>
+              </div>
             </div>
           </div>
           <Button

@@ -66,7 +66,7 @@ export function AudioAnalysisTab() {
             </div>
             <h2 className="audio-analysis-header-title">Audio Analysis</h2>
           </div>
-          <p className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</p>
+          <div className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</div>
         </div>
         <StatusIndicator
           status={getAnalysisStatus()}
@@ -84,9 +84,9 @@ export function AudioAnalysisTab() {
               </span>
             </div>
             <h4 className="audio-analysis-empty-title">No Track Selected</h4>
-            <p className="audio-analysis-empty-description">
+            <div className="audio-analysis-empty-description">
               Select a track from the Playlist tab to analyze its audio frequencies and extract color palettes.
-            </p>
+            </div>
           </div>
         </Card>
       )}
@@ -108,8 +108,8 @@ export function AudioAnalysisTab() {
                 )}
               </div>
               <div className="audio-analysis-track-details">
-                <p className="audio-analysis-track-title">{selectedTrack.title}</p>
-                <p className="audio-analysis-track-artist">{selectedTrack.artist}</p>
+                <div className="audio-analysis-track-title">{selectedTrack.title}</div>
+                <div className="audio-analysis-track-artist">{selectedTrack.artist}</div>
               </div>
             </div>
           </Card>
@@ -146,8 +146,8 @@ export function AudioAnalysisTab() {
                         title={`Bass: ${(audioProfile.bass_dominance * 100).toFixed(1)}%`}
                       />
                     </div>
-                    <p className="audio-analysis-bar-label audio-analysis-bar-label-bass">Bass</p>
-                    <p className="audio-analysis-bar-value">{(audioProfile.bass_dominance * 100).toFixed(1)}%</p>
+                    <div className="audio-analysis-bar-label audio-analysis-bar-label-bass">Bass</div>
+                    <div className="audio-analysis-bar-value">{(audioProfile.bass_dominance * 100).toFixed(1)}%</div>
                   </div>
 
                   {/* Mid Bar */}
@@ -162,8 +162,8 @@ export function AudioAnalysisTab() {
                         title={`Mid: ${(audioProfile.mid_dominance * 100).toFixed(1)}%`}
                       />
                     </div>
-                    <p className="audio-analysis-bar-label audio-analysis-bar-label-mid">Mid</p>
-                    <p className="audio-analysis-bar-value">{(audioProfile.mid_dominance * 100).toFixed(1)}%</p>
+                    <div className="audio-analysis-bar-label audio-analysis-bar-label-mid">Mid</div>
+                    <div className="audio-analysis-bar-value">{(audioProfile.mid_dominance * 100).toFixed(1)}%</div>
                   </div>
 
                   {/* Treble Bar */}
@@ -178,8 +178,8 @@ export function AudioAnalysisTab() {
                         title={`Treble: ${(audioProfile.treble_dominance * 100).toFixed(1)}%`}
                       />
                     </div>
-                    <p className="audio-analysis-bar-label audio-analysis-bar-label-treble">Treble</p>
-                    <p className="audio-analysis-bar-value">{(audioProfile.treble_dominance * 100).toFixed(1)}%</p>
+                    <div className="audio-analysis-bar-label audio-analysis-bar-label-treble">Treble</div>
+                    <div className="audio-analysis-bar-value">{(audioProfile.treble_dominance * 100).toFixed(1)}%</div>
                   </div>
                 </div>
                 <div className="audio-analysis-frequency-divider" />
@@ -188,7 +188,7 @@ export function AudioAnalysisTab() {
               {/* Average Amplitude */}
               <Card variant="elevated" padding="md" className="audio-analysis-card">
                 <h3 className="audio-analysis-card-title">Average Amplitude</h3>
-                <p className="audio-analysis-amplitude-value">{audioProfile.average_amplitude.toFixed(3)}</p>
+                <div className="audio-analysis-amplitude-value">{audioProfile.average_amplitude.toFixed(3)}</div>
               </Card>
 
               {/* Advanced Metrics (Optional) */}
@@ -240,8 +240,8 @@ export function AudioAnalysisTab() {
                         style={{ backgroundColor: audioProfile.color_palette.primary_color }}
                         title={audioProfile.color_palette.primary_color}
                       />
-                      <p className="audio-analysis-color-name">Primary</p>
-                      <p className="audio-analysis-color-hex">{audioProfile.color_palette.primary_color}</p>
+                      <div className="audio-analysis-color-name">Primary</div>
+                      <div className="audio-analysis-color-hex">{audioProfile.color_palette.primary_color}</div>
                     </div>
 
                     {audioProfile.color_palette.secondary_color && (
@@ -251,8 +251,8 @@ export function AudioAnalysisTab() {
                           style={{ backgroundColor: audioProfile.color_palette.secondary_color }}
                           title={audioProfile.color_palette.secondary_color}
                         />
-                        <p className="audio-analysis-color-name">Secondary</p>
-                        <p className="audio-analysis-color-hex">{audioProfile.color_palette.secondary_color}</p>
+                        <div className="audio-analysis-color-name">Secondary</div>
+                        <div className="audio-analysis-color-hex">{audioProfile.color_palette.secondary_color}</div>
                       </div>
                     )}
 
@@ -263,8 +263,8 @@ export function AudioAnalysisTab() {
                           style={{ backgroundColor: audioProfile.color_palette.accent_color }}
                           title={audioProfile.color_palette.accent_color}
                         />
-                        <p className="audio-analysis-color-name">Accent</p>
-                        <p className="audio-analysis-color-hex">{audioProfile.color_palette.accent_color}</p>
+                        <div className="audio-analysis-color-name">Accent</div>
+                        <div className="audio-analysis-color-hex">{audioProfile.color_palette.accent_color}</div>
                       </div>
                     )}
                   </div>
@@ -272,7 +272,7 @@ export function AudioAnalysisTab() {
                   {/* All Colors */}
                   {audioProfile.color_palette.colors.length > 0 && (
                     <div className="audio-analysis-all-colors">
-                      <p className="audio-analysis-all-colors-label">All detected colors:</p>
+                      <div className="audio-analysis-all-colors-label">All detected colors:</div>
                       <div className="audio-analysis-all-colors-grid">
                         {audioProfile.color_palette.colors.map((color, idx) => (
                           <div

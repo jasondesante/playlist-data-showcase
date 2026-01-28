@@ -169,13 +169,13 @@ export function StatSelectionModal({
         <div className="statmodal-content">
           {/* Info Section */}
           <div className="statmodal-info">
-            <p className="statmodal-info-text">
+            <div className="statmodal-info-text">
               You have <span className="statmodal-pending-count">{pendingCount}</span> pending
               stat increase{pendingCount !== 1 ? 's' : ''} to apply.
-            </p>
-            <p className="statmodal-info-subtext">
+            </div>
+            <div className="statmodal-info-subtext">
               Choose how to distribute your increases following D&D 5e rules.
-            </p>
+            </div>
           </div>
 
           {/* Selection Mode Toggle */}

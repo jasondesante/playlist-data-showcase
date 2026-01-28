@@ -128,16 +128,16 @@ export interface CardDescriptionProps extends HTMLAttributes<HTMLParagraphElemen
   children?: ReactNode;
 }
 
-export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+export const CardDescription = forwardRef<HTMLDivElement, CardDescriptionProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <p
+      <div
         ref={ref}
         className={cn('card-description', className)}
         {...props}
       >
         {children}
-      </p>
+      </div>
     );
   }
 );
