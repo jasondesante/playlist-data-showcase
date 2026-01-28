@@ -35,6 +35,12 @@ interface CharacterState {
     setCharacterStrategy: (seed: string, strategy: StatIncreaseStrategyType) => void;
     /** Get the stat strategy for a character by seed */
     getCharacterStrategy: (seed: string) => StatIncreaseStrategyType | undefined;
+    /**
+     * Restore selectedTrack from activeCharacterId
+     * Called on app mount to ensure hero-track synchronization after page reload
+     * Finds the track in the current playlist that matches the active character's seed
+     */
+    restoreSelectedTrackFromActiveCharacter: () => void;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -249,6 +255,65 @@ export const useCharacterStore = create<CharacterState>()(
              */
             getCharacterStrategy: (seed: string) => {
                 return get().characterStrategies[seed];
+            },
+
+            /**
+             * Restore selectedTrack from activeCharacterId
+             * Called on app mount to ensure hero-track synchronization after page reload
+             * Finds the track in the current playlist that matches the active character's seed
+             *
+             * This avoids persisting selectedTrack (which causes race conditions with session tracking)
+             * while still maintaining user experience across page reloads.
+             *
+             * @example
+             * ```ts
+             * // In App.tsx on mount
+             * useCharacterStore.getState().restoreSelectedTrackFromActiveCharacter();
+             * ```
+             */
+            restoreSelectedTrackFromActiveCharacter: () => {
+                const { activeCharacterId, characters } = get();
+
+                if (!activeCharacterId) {
+                    logger.debug('Store', 'No active character to restore track from');
+                    return;
+                }
+
+                // Find the active character
+                const activeCharacter = characters.find((c) => c.seed === activeCharacterId);
+                if (!activeCharacter) {
+                    logger.warn('Store', 'Active character not found in characters list', { activeCharacterId });
+                    return;
+                }
+
+                // Import playlistStore dynamically to avoid circular dependency
+                import('@/store/playlistStore').then(({ usePlaylistStore }) => {
+                    const playlist = usePlaylistStore.getState().currentPlaylist;
+
+                    if (!playlist) {
+                        logger.debug('Store', 'No playlist loaded, cannot restore track');
+                        return;
+                    }
+
+                    // Find track matching character seed (track.id === character.seed)
+                    const matchingTrack = playlist.tracks.find((t) => t.id === activeCharacter.seed);
+
+                    if (matchingTrack) {
+                        logger.info('Store', 'Restoring selectedTrack from activeCharacterId', {
+                            characterSeed: activeCharacter.seed,
+                            characterName: activeCharacter.name,
+                            trackId: matchingTrack.id,
+                            trackTitle: matchingTrack.title
+                        });
+                        usePlaylistStore.getState().selectTrack(matchingTrack);
+                    } else {
+                        logger.warn('Store', 'Track not found in current playlist for active character', {
+                            characterSeed: activeCharacter.seed,
+                            characterName: activeCharacter.name,
+                            playlistName: playlist.name
+                        });
+                    }
+                });
             }
         }),
         {

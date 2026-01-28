@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -18,6 +18,7 @@ import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
+import { useCharacterStore } from './store/characterStore';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -34,6 +35,13 @@ function App() {
 
   // Handle session completion - process XP and show level-up modals
   const { showLevelUpModal, levelUpDetails, closeLevelUpModal } = useSessionCompletion();
+
+  // Restore selectedTrack from activeCharacterId on app mount
+  // This ensures hero-track synchronization after page reload
+  useEffect(() => {
+    const { restoreSelectedTrackFromActiveCharacter } = useCharacterStore.getState();
+    restoreSelectedTrackFromActiveCharacter();
+  }, []); // Only run once on mount
 
   const tabs: TabItem[] = [
     { id: 'playlist', label: 'Playlist', icon: Music },

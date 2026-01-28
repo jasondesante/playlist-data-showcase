@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import './CharacterGenTab.css';
 import { User, Sparkles, Download, Upload, Wand2, Plus } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
-import type { CharacterSheet } from 'playlist-data-engine';
 import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
@@ -38,32 +37,45 @@ export function CharacterGenTab() {
   const [gameMode, setGameMode] = useState<GameMode>('uncapped');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
 
-  // Get the active character
-  const character = getActiveCharacter();
+  // Get the character to display based on priority:
+  // 1. First priority: Character for selectedTrack (if exists)
+  // 2. Second priority: Active character (if no track selected)
+  const character = useMemo(() => {
+    // First priority: selected track's character
+    if (selectedTrack?.id) {
+      return characters.find((c) => c.seed === selectedTrack.id);
+    }
 
-  // Sync active character when selected track changes
-  // This ensures we show the correct character (or "ready to generate" state) when switching tracks
+    // Second priority: active character
+    return getActiveCharacter();
+  }, [selectedTrack?.id, characters, getActiveCharacter]);
+
+  // Sync active character based on priority:
+  // 1. If selectedTrack exists, show its character
+  // 2. Otherwise, fall back to activeCharacterId (keep existing active character)
   useEffect(() => {
-    if (!selectedTrack?.id) {
-      // No track selected, clear active character
-      setActiveCharacter(null as unknown as string);
+    // PRIORITY 1: Show character for selectedTrack
+    if (selectedTrack?.id) {
+      const matchingCharacter = characters.find((c) => c.seed === selectedTrack.id);
+
+      if (matchingCharacter) {
+        setActiveCharacter(matchingCharacter.seed);
+      } else {
+        // No character exists for this track yet, clear active character
+        // This will show the "Ready to generate" state
+        setActiveCharacter(null as unknown as string);
+      }
+
+      // Reset game mode selection state when switching tracks
+      setShowGameModeSelector(false);
       return;
     }
 
-    // Find character with matching seed (seed === track.id)
-    const matchingCharacter = characters.find(c => c.seed === selectedTrack.id);
+    // PRIORITY 2: No track selected - keep active character as-is
+    // Don't change activeCharacterId - let it persist from previous state
+    // The display logic (useMemo above) will use getActiveCharacter() to render
 
-    if (matchingCharacter) {
-      // Set the matching character as active
-      setActiveCharacter(matchingCharacter.seed);
-    } else {
-      // No character exists for this track yet, clear active character
-      // This will show the "Ready to generate" state
-      setActiveCharacter(null as unknown as string);
-    }
-
-    // Reset game mode selection state when switching tracks
-    // This allows users to start fresh with the "New" button flow for each track
+    // Reset game mode selection state
     setShowGameModeSelector(false);
   }, [selectedTrack?.id, characters, setActiveCharacter]);
 

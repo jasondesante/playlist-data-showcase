@@ -8,8 +8,10 @@
 import { useState, useMemo } from 'react';
 import { Users, Search, X, Trash2 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 import { CharacterCard } from '../ui/CharacterCard';
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
+import { logger } from '../../utils/logger';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -112,7 +114,27 @@ export function PartyTab() {
   };
 
   const handleSetActiveCharacter = (characterSeed: string) => {
+    // Set the active character (existing behavior)
     setActiveCharacter(characterSeed);
+
+    // NEW: Find and select the corresponding track for bidirectional sync
+    const { currentPlaylist, selectTrack } = usePlaylistStore.getState();
+    if (currentPlaylist) {
+      const matchingTrack = currentPlaylist.tracks.find((t) => t.id === characterSeed);
+      if (matchingTrack) {
+        logger.info('Store', 'PartyTab: Syncing track selection when setting active hero', {
+          characterSeed,
+          trackId: matchingTrack.id,
+          trackTitle: matchingTrack.title
+        });
+        selectTrack(matchingTrack);
+      } else {
+        logger.warn('Store', 'PartyTab: Could not find track for active character', {
+          characterSeed,
+          playlistName: currentPlaylist.name
+        });
+      }
+    }
   };
 
   // Empty state - no characters
