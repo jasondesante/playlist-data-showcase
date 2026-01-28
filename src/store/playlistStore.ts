@@ -65,6 +65,16 @@ export const usePlaylistStore = create<PlaylistState>()(
                     // Clear audio profile when loading new playlist
                     audioProfile: null
                 });
+
+                // Trigger track restoration after playlist is set
+                // This handles the race condition where restoration is called before playlist loads
+                // Use dynamic import to avoid circular dependency issues
+                import('@/store/characterStore').then(({ useCharacterStore }) => {
+                    useCharacterStore.getState().restoreSelectedTrackFromActiveCharacter();
+                }).catch((error) => {
+                    // Character store may not be initialized yet, which is fine
+                    logger.debug('Store', 'Could not trigger restoration after playlist load', error);
+                });
             },
 
             /**

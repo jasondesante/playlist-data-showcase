@@ -36,19 +36,23 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 ## Tasks
 
 ### Task 1.1: Add retry/debounce logic to restore function
-- [ ] Add a flag to track if restoration was attempted but failed due to missing playlist
-- [ ] Add a listener for when playlist is loaded
-- [ ] Retry restoration after playlist loads
-- [ ] Add timeout to prevent infinite retry attempts
+- [x] Add a flag to track if restoration was attempted but failed due to missing playlist
+- [x] Add a listener for when playlist is loaded
+- [x] Retry restoration after playlist loads
+- [x] Add timeout to prevent infinite retry attempts
 
 **File**: [src/store/characterStore.ts:274-317](src/store/characterStore.ts)
 
+**Summary**: Added module-scoped `restorationState` to track retry attempts, `attemptTrackRestorationAsync()` function for async restoration with proper dynamic imports, and `setupPlaylistListener()` for polling-based retries. Added 10-second timeout with 500ms polling interval.
+
 ### Task 1.2: Add playlist loaded listener
-- [ ] Create a new action in playlistStore that emits when playlist is loaded
-- [ ] Subscribe to this event in characterStore's restore function
-- [ ] Trigger restoration when playlist becomes available
+- [x] Create a new action in playlistStore that emits when playlist is loaded
+- [x] Subscribe to this event in characterStore's restore function
+- [x] Trigger restoration when playlist becomes available
 
 **File**: [src/store/playlistStore.ts](src/store/playlistStore.ts)
+
+**Summary**: Modified `setPlaylist()` to trigger `restoreSelectedTrackFromActiveCharacter()` via dynamic import after playlist is loaded. This handles the race condition where restoration is called before playlist loads.
 
 ### Task 1.3: Fix session tracker interference
 - [ ] Review `useSessionTracker.ts` cleanup logic
