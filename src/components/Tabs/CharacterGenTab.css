@@ -240,6 +240,76 @@
   background: linear-gradient(90deg, hsl(var(--cute-purple)), hsl(var(--primary)), hsl(var(--cute-pink)));
 }
 
+/* ========================================
+   COMBINED HEADER AND STATS CARD
+   ======================================== */
+
+/* Combined header and stats card with gradient */
+.character-header-stats-card {
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.15), hsl(var(--primary) / 0.1), hsl(var(--cute-pink) / 0.05));
+  border: 1px solid hsl(var(--cute-purple) / 0.2);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+
+/* Top gradient border */
+.character-header-stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, hsl(var(--cute-purple)), hsl(var(--primary)), hsl(var(--cute-pink)));
+}
+
+/* Content container - flex row on desktop, column on mobile */
+.character-header-stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .character-header-stats-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+/* Left section - avatar + character info */
+.character-info-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Right section - stats grid inside combined card */
+.character-header-stats-content .character-stats-grid {
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .character-header-stats-content .character-stats-grid {
+    gap: 0.5rem;
+  }
+}
+
+/* Adjust stats card padding for the new layout */
+.character-header-stats-content .character-stat-card {
+  min-width: 3.5rem;
+}
+
+/* ========================================
+   ORIGINAL HEADER CARD STYLES (kept for reference)
+   ======================================== */
+
 .character-header-content {
   display: flex;
   flex-direction: column;

@@ -361,66 +361,69 @@ export function CharacterGenTab() {
 
       {character && (
         <div className="character-sheet fade-in-up">
-          {/* Character Header with Avatar and Level Badge */}
-          <Card variant="default" padding="md" className="character-header-card">
-            <div className="character-header-content">
-              {/* Character Avatar */}
-              <div className="character-avatar">
-                <span role="img" aria-label="Character class">
-                  {getCharacterAvatar(character.class)}
-                </span>
-                {/* Level Badge */}
-                <div className="character-level-badge">
-                  {character.level}
+          {/* Combined Character Header and Stats Card */}
+          <div className="character-header-stats-card">
+            <div className="character-header-stats-content">
+              {/* Left Section: Character Avatar and Info */}
+              <div className="character-info-section">
+                {/* Character Avatar */}
+                <div className="character-avatar">
+                  <span role="img" aria-label="Character class">
+                    {getCharacterAvatar(character.class)}
+                  </span>
+                  {/* Level Badge */}
+                  <div className="character-level-badge">
+                    {character.level}
+                  </div>
+                </div>
+
+                {/* Character Info */}
+                <div className="character-info">
+                  <div className="character-name-row">
+                    <h3 className="character-name">{character.name}</h3>
+                    {/* Game Mode Badge */}
+                    {character.gameMode && (
+                      <div
+                        className={`character-game-mode-badge ${character.gameMode}`}
+                        title={
+                          character.gameMode === 'standard'
+                            ? 'Standard Mode: Stats cap at 20, manual stat selection required at level-ups'
+                            : 'Uncapped Mode: Unlimited stat progression, automatic stat increases on level-up'
+                        }
+                      >
+                        {character.gameMode === 'standard' ? 'STATS CAPPED @ 20' : 'UNLIMITED PROGRESSION'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="character-class">
+                    Level {character.level} {character.race} {character.class}
+                  </div>
+                  <div className="character-xp">
+                    XP: {character.xp.current} / {character.xp.next_level}
+                  </div>
                 </div>
               </div>
 
-              {/* Character Info */}
-              <div className="character-info">
-                <div className="character-name-row">
-                  <h3 className="character-name">{character.name}</h3>
-                  {/* Game Mode Badge */}
-                  {character.gameMode && (
-                    <div
-                      className={`character-game-mode-badge ${character.gameMode}`}
-                      title={
-                        character.gameMode === 'standard'
-                          ? 'Standard Mode: Stats cap at 20, manual stat selection required at level-ups'
-                          : 'Uncapped Mode: Unlimited stat progression, automatic stat increases on level-up'
-                      }
-                    >
-                      {character.gameMode === 'standard' ? 'STATS CAPPED @ 20' : 'UNLIMITED PROGRESSION'}
-                    </div>
-                  )}
-                </div>
-                <div className="character-class">
-                  Level {character.level} {character.race} {character.class}
-                </div>
-                <div className="character-xp">
-                  XP: {character.xp.current} / {character.xp.next_level}
-                </div>
+              {/* Right Section: Core Stats Grid */}
+              <div className="character-stats-grid">
+                <Card variant="elevated" padding="sm" className="character-stat-card">
+                  <div className="character-stat-label">HP</div>
+                  <div className="character-stat-value character-count-up">{character.hp.max}</div>
+                </Card>
+                <Card variant="elevated" padding="sm" className="character-stat-card">
+                  <div className="character-stat-label">AC</div>
+                  <div className="character-stat-value character-count-up">{character.armor_class}</div>
+                </Card>
+                <Card variant="elevated" padding="sm" className="character-stat-card">
+                  <div className="character-stat-label">Initiative</div>
+                  <div className="character-stat-value character-count-up">+{character.initiative}</div>
+                </Card>
+                <Card variant="elevated" padding="sm" className="character-stat-card">
+                  <div className="character-stat-label">Speed</div>
+                  <div className="character-stat-value character-count-up">{character.speed} ft</div>
+                </Card>
               </div>
             </div>
-          </Card>
-
-          {/* Core Stats Grid */}
-          <div className="character-stats-grid">
-            <Card variant="elevated" padding="sm" className="character-stat-card">
-              <div className="character-stat-label">HP</div>
-              <div className="character-stat-value character-count-up">{character.hp.max}</div>
-            </Card>
-            <Card variant="elevated" padding="sm" className="character-stat-card">
-              <div className="character-stat-label">AC</div>
-              <div className="character-stat-value character-count-up">{character.armor_class}</div>
-            </Card>
-            <Card variant="elevated" padding="sm" className="character-stat-card">
-              <div className="character-stat-label">Initiative</div>
-              <div className="character-stat-value character-count-up">+{character.initiative}</div>
-            </Card>
-            <Card variant="elevated" padding="sm" className="character-stat-card">
-              <div className="character-stat-label">Speed</div>
-              <div className="character-stat-value character-count-up">{character.speed} ft</div>
-            </Card>
           </div>
 
           {/* Audio Trait Mapping */}
