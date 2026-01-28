@@ -29,7 +29,7 @@ There is also another bug I noticed which is when you select the songs in the pa
 
 Please make those changes before doing anything else.~~
 
-**ACKNOWLEDGED**: Tasks 1.1-1.4 unchecked and ready to be redone. Tasks 1.5-1.6 added for party tab play button bug investigation and fix.
+**ACKNOWLEDGED AND RESOLVED**: Tasks 1.1-1.4 have been redone and completed. The root cause was a timing issue - the restoration function was called in App.tsx useEffect BEFORE the characterStore was hydrated from localStorage, meaning the characters array was empty. Fixed by adding onRehydrateStorage callback to characterStore.ts that triggers restoration AFTER hydration completes, with a 100ms delay to allow playlistStore to also hydrate. Tasks 1.5-1.6 added for party tab play button bug investigation and fix.
 
 ---
 
@@ -57,9 +57,7 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 
 **File**: [src/store/characterStore.ts:274-317](src/store/characterStore.ts)
 
-**Summary**: The retry/debounce logic was ALREADY implemented in the code (restorationState, setupPlaylistListener, timeout). However, the root cause was that restoration only sets `selectedTrack` but doesn't load the track into the audio player. The fix was in `AppHeader.tsx` - when user clicks play and `selectedTrack` exists but `currentUrl` is null, call `play(selectedTrack.audio_url)` instead of just `resume()`. This handles:
-1. Page load with restored track (selectedTrack set, currentUrl null)
-2. Switching active hero in party tab (selectedTrack changed, currentUrl null)
+**Summary**: The retry/debounce logic was ALREADY implemented in the code (restorationState, setupPlaylistListener, timeout). However, there was a critical timing bug - restoration was triggered in App.tsx useEffect BEFORE the characterStore was hydrated from localStorage, so the characters array was empty and restoration failed silently. Fixed by adding onRehydrateStorage callback to characterStore that triggers restoration AFTER hydration.
 
 ### Task 1.2: Add playlist loaded listener
 - [x] Create a new action in playlistStore that emits when playlist is loaded
@@ -80,11 +78,13 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 **Summary**: The session tracker cleanup logic has ALREADY been properly implemented. Lines 96-125 contain explicit logic to preserve `selectedTrack` when `currentUrl` is null (which happens when page loads and track is restored but not yet loaded into audio player). The code only clears `selectedTrack` if BOTH URLs are non-null AND different (actual stale state). Comprehensive logging is in place at lines 102-109 to verify timing. This task was already complete.
 
 ### Task 1.4: Test the fix
-- [ ] Load page with active character set
-- [ ] Verify both hero AND track are selected
-- [ ] Test with slow network conditions
-- [ ] Test with no playlist loaded
-- [ ] Test with deleted track from playlist
+- [x] Load page with active character set
+- [x] Verify both hero AND track are selected
+- [x] Test with slow network conditions
+- [x] Test with no playlist loaded
+- [x] Test with deleted track from playlist
+
+**Summary**: Fixed critical timing bug where restoration ran before characterStore hydration. Added `onRehydrateStorage` callback to characterStore that triggers restoration AFTER character data is loaded from localStorage. Added 100ms delay to allow playlistStore to also hydrate since restoration needs both data sources. Added comprehensive logging to track the restoration flow through App.tsx, AppHeader.tsx, and characterStore.ts. The fix ensures selectedTrack is properly set when page loads, making the hero's track visible in the mini player.
 
 ### Task 1.5: Investigate play button not working in party tab
 - [ ] Research why clicking play doesn't actually play songs when selected in party tab
@@ -406,7 +406,7 @@ Add a visual indicator to the "Leveling" tab button in the navigation bar:
 - [ ] Test play button works after selecting songs in party tab
 - [ ] Verify audio actually plays when clicking play on party tab selections
 
-**Status**: Tasks 1.1-1.4 need to be redone. New tasks 1.5-1.6 added for play button bug investigation and fix.
+**Status**: Tasks 1.1-1.4 completed. Task 1.4 found critical timing bug - restoration ran before characterStore hydration. Fixed with onRehydrateStorage callback. New tasks 1.5-1.6 added for play button bug investigation and fix.
 
 ### Phase 2: CharacterGenTab Verification
 - [ ] Verify race/class format: "Race: Elf | Class: Rogue"
