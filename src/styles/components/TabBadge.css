@@ -1,0 +1,151 @@
+/* ============================================
+   TAB BADGE COMPONENT (Phase 4: Navigation Badge)
+   ============================================ */
+
+/**
+ * Tab Badge - Notification indicator for tab navigation
+ *
+ * Specifications:
+ * - Shape: Small rounded square (not circular), approximately 18-20px
+ * - Colors: Yellow accent using --cute-yellow variable
+ * - Animation: 2s ease-in-out infinite pulsing box-shadow (when glow is enabled)
+ * - Position: Above-center of tab icon, using absolute positioning
+ * - Cap: Displays "9+" for any count over 9
+ * - Z-index: Higher than tab button to appear above
+ */
+
+.tab-badge {
+  /* Positioning - relative to the tab button which has position: relative */
+  position: absolute;
+  top: -6px;
+  left: 50%;
+
+  /* Size - small rounded square */
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+
+  /* Shape - slightly rounded square (not circular) */
+  border-radius: 4px;
+
+  /* Colors - yellow accent */
+  background-color: hsl(var(--cute-yellow));
+  color: hsl(var(--background));
+
+  /* Typography */
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  white-space: nowrap;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Z-index - above tab button */
+  z-index: 10;
+
+  /* Transitions */
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+
+  /* Performance optimization - combined transform with gpu-accel */
+  transform: translateX(-50%) var(--gpu-accel);
+  backface-visibility: hidden;
+}
+
+/**
+ * Tab Badge Glow - Pulsing yellow glow animation
+ *
+ * Applied when there are pending stat increases that need attention.
+ * The glow pulses with a 2s ease-in-out infinite animation.
+ */
+.tab-badge-glow {
+  /* Yellow pulsing box-shadow animation */
+  box-shadow: 0 0 8px 2px hsl(var(--cute-yellow) / 0.6);
+  animation: tabBadgeGlowPulse 2s ease-in-out infinite;
+}
+
+/**
+ * Keyframes for the pulsing glow animation.
+ * Creates a subtle pulsing effect that draws attention without being distracting.
+ */
+@keyframes tabBadgeGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px hsl(var(--cute-yellow) / 0.6);
+  }
+  50% {
+    box-shadow: 0 0 14px 4px hsl(var(--cute-yellow) / 0.8);
+  }
+}
+
+/**
+ * Respect user's reduced motion preferences.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .tab-badge-glow {
+    animation: none;
+    box-shadow: 0 0 8px 2px hsl(var(--cute-yellow) / 0.6);
+  }
+}
+
+/**
+ * Hover effect on parent tab button - slightly scale up the badge.
+ * This is applied when the parent .app-header-tab is hovered.
+ */
+.app-header-tab:hover .tab-badge {
+  transform: translateX(-50%) scale(1.05);
+}
+
+/**
+ * Active tab state - reduce badge prominence slightly when tab is active.
+ */
+.app-header-tab-active .tab-badge {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--primary));
+}
+
+.app-header-tab-active .tab-badge-glow {
+  box-shadow: 0 0 8px 2px hsl(var(--foreground) / 0.4);
+  animation: tabBadgeGlowPulseActive 2s ease-in-out infinite;
+}
+
+@keyframes tabBadgeGlowPulseActive {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px hsl(var(--foreground) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 14px 4px hsl(var(--foreground) / 0.6);
+  }
+}
+
+/**
+ * Sidebar tab badge support (for future use if needed).
+ * Similar styles but adjusted for sidebar positioning.
+ */
+.sidebar-button .tab-badge {
+  /* Position at top-right of sidebar button */
+  top: 4px;
+  right: 4px;
+  left: auto;
+  transform: none;
+}
+
+.sidebar-button .tab-badge-glow {
+  animation: tabBadgeGlowPulse 2s ease-in-out infinite;
+}
+
+.sidebar-button:hover .tab-badge {
+  transform: scale(1.05);
+}
+
+.sidebar-button-active .tab-badge {
+  background-color: hsl(var(--primary-foreground));
+  color: hsl(var(--primary));
+}
+
+.sidebar-button-active .tab-badge-glow {
+  box-shadow: 0 0 8px 2px hsl(var(--primary-foreground) / 0.4);
+}

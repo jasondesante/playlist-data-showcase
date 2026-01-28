@@ -14,6 +14,10 @@ export interface TabItem {
   label: string;
   /** Icon component from lucide-react */
   icon: LucideIcon;
+  /** Optional: Badge count to display on the tab (e.g., pending stat increases) */
+  badgeCount?: number;
+  /** Optional: Whether to show the glow animation for the badge */
+  showBadgeGlow?: boolean;
 }
 
 interface SidebarProps {

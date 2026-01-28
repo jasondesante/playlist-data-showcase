@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useMemo } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -18,6 +18,7 @@ import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
+import { useCharacterStore } from './store/characterStore';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -35,6 +36,16 @@ function App() {
   // Handle session completion - process XP and show level-up modals
   const { showLevelUpModal, levelUpDetails, closeLevelUpModal } = useSessionCompletion();
 
+  // Get pending stat increases count for the Leveling tab badge
+  const activeCharacterId = useCharacterStore((state) => state.activeCharacterId);
+  const getPendingStatIncreaseCount = useCharacterStore((state) => state.getPendingStatIncreaseCount);
+
+  // Compute pending stat increases count for badge
+  const pendingStatIncreasesCount = useMemo(() => {
+    if (!activeCharacterId) return 0;
+    return getPendingStatIncreaseCount(activeCharacterId);
+  }, [activeCharacterId, getPendingStatIncreaseCount]);
+
   // Note: Track restoration from activeCharacterId is now handled by the
   // onRehydrateStorage callback in characterStore.ts, which fires AFTER
   // the character data is loaded from localStorage. This ensures that
@@ -47,7 +58,14 @@ function App() {
     { id: 'party', label: 'Party', icon: Users },
     { id: 'session', label: 'Session', icon: Activity },
     { id: 'xp', label: 'XP Calc', icon: Zap },
-    { id: 'leveling', label: 'Leveling', icon: User },
+    {
+      id: 'leveling',
+      label: 'Leveling',
+      icon: User,
+      // Show badge with count if there are pending stat increases
+      badgeCount: pendingStatIncreasesCount > 0 ? pendingStatIncreasesCount : undefined,
+      showBadgeGlow: pendingStatIncreasesCount > 0
+    },
     { id: 'sensors', label: 'Sensors', icon: Activity },
     { id: 'gaming', label: 'Gaming', icon: Gamepad2 },
     { id: 'combat', label: 'Combat', icon: Swords },

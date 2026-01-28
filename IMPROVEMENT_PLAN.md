@@ -362,52 +362,62 @@ Add a visual indicator to the "Leveling" tab button in the navigation bar:
 ## Tasks
 
 ### Task 4.1: Create TabBadge component for navigation indicators
-- [ ] Create a new reusable `TabBadge` component
-- [ ] Support badge count display (cap at "9+" for anything over 9)
-- [ ] Support optional glow effect (yellow pulsing animation)
-- [ ] Style with yellow accent color (`--cute-yellow`)
-- [ ] Position badge above-center of tab icon
-- [ ] Small rounded square shape (not circular)
+- [x] Create a new reusable `TabBadge` component
+- [x] Support badge count display (cap at "9+" for anything over 9)
+- [x] Support optional glow effect (yellow pulsing animation)
+- [x] Style with yellow accent color (`--cute-yellow`)
+- [x] Position badge above-center of tab icon
+- [x] Small rounded square shape (not circular)
 
 **Files**:
 - [src/components/ui/TabBadge.tsx](src/components/ui/TabBadge.tsx) - new file
 - [src/components/ui/TabBadge.css](src/components/ui/TabBadge.css) - new file
 
-### Task 4.2: Update TabItem interface to support badge props
-- [ ] Add optional `badgeCount?: number` prop to `TabItem` interface
-- [ ] Add optional `showBadge?: boolean` prop to `TabItem` interface
-- [ ] Update TypeScript types in `Sidebar.tsx`
+**Summary**: Created a reusable TabBadge component that displays notification counts on tab navigation items. The component caps the displayed count at "9+" for values over 9. It supports an optional yellow glow animation with a 2s ease-in-out infinite pulsing box-shadow effect. The badge is styled with the `--cute-yellow` CSS variable, positioned above-center of tab icons using absolute positioning, and has a small rounded square shape (border-radius: 4px, 18px min-width/height). The component includes proper accessibility with aria-labels and respects reduced motion preferences.
 
-**File**: [src/components/Layout/Sidebar.tsx:10-17](src/components/Layout/Sidebar.tsx)
+### Task 4.2: Update TabItem interface to support badge props
+- [x] Add optional `badgeCount?: number` prop to `TabItem` interface
+- [x] Add optional `showBadgeGlow?: boolean` prop to `TabItem` interface
+- [x] Update TypeScript types in `Sidebar.tsx`
+
+**File**: [src/components/Layout/Sidebar.tsx:10-21](src/components/Layout/Sidebar.tsx)
+
+**Summary**: Updated the TabItem interface in Sidebar.tsx to support badge functionality. Added `badgeCount?: number` prop for the badge count and `showBadgeGlow?: boolean` prop for the glow animation. The props are optional to maintain backward compatibility with existing tab items that don't need badges.
 
 ### Task 4.3: Update AppHeader to render tab badges
-- [ ] Import the new `TabBadge` component
-- [ ] Render badge when `tab.badgeCount > 0`
-- [ ] Add glow class when `tab.showBadge` is true
-- [ ] Position badge above-center of the tab icon
-- [ ] Use relative positioning on tab button, absolute on badge
+- [x] Import the new `TabBadge` component
+- [x] Render badge when `tab.badgeCount > 0`
+- [x] Add glow class when `tab.showBadgeGlow` is true
+- [x] Position badge above-center of the tab icon
+- [x] Use relative positioning on tab button, absolute on badge
 
-**File**: [src/components/Layout/AppHeader.tsx:157-171](src/components/Layout/AppHeader.tsx)
+**File**: [src/components/Layout/AppHeader.tsx:19,180-196](src/components/Layout/AppHeader.tsx)
+
+**Summary**: Updated AppHeader.tsx to render the TabBadge component. Added import for TabBadge and inline style for relative positioning on tab buttons. The badge renders conditionally when `tab.badgeCount > 0`, receiving both count and showGlow props. The CSS handles absolute positioning to place the badge above-center of the tab icon using `top: -6px; left: 50%; transform: translateX(-50%)`.
 
 ### Task 4.4: Get pending stat increases count in App.tsx
-- [ ] Import `useCharacterStore` hook
-- [ ] Get active character from store
-- [ ] Get pending stat increases count using `getPendingStatIncreaseCount(activeCharacterId)`
-- [ ] Pass badge props to Leveling tab in tabs array
+- [x] Import `useCharacterStore` hook
+- [x] Get active character from store
+- [x] Get pending stat increases count using `getPendingStatIncreaseCount(activeCharacterId)`
+- [x] Pass badge props to Leveling tab in tabs array
 
-**File**: [src/App.tsx:46-58](src/App.tsx)
+**File**: [src/App.tsx:1,29-53,62-67](src/App.tsx)
+
+**Summary**: Updated App.tsx to fetch and display pending stat increases count on the Leveling tab. Added import for useCharacterStore and used useMemo to compute the pending count based on activeCharacterId. The Leveling tab in the tabs array now receives `badgeCount` (when count > 0) and `showBadgeGlow` props. The badge automatically updates when the active character's pending stat increases change.
 
 ### Task 4.5: Create CSS for badge glow effect
-- [ ] Add `tab-badge-glow` class with yellow box-shadow animation
-- [ ] Create pulsing animation (2s ease-in-out infinite) for visibility
-- [ ] Add badge positioning styles (above-center of icon)
-- [ ] Badge shape: small rounded square (not circular)
-- [ ] Ensure z-index places badge above other elements
-- [ ] Cap display at "9+" for counts over 9
+- [x] Add `tab-badge-glow` class with yellow box-shadow animation
+- [x] Create pulsing animation (2s ease-in-out infinite) for visibility
+- [x] Add badge positioning styles (above-center of icon)
+- [x] Badge shape: small rounded square (not circular)
+- [x] Ensure z-index places badge above other elements
+- [x] Cap display at "9+" for counts over 9
 
 **Files**:
-- [src/components/ui/TabBadge.css](src/components/ui/TabBadge.css)
-- [src/components/Layout/AppHeader.css](src/components/Layout/AppHeader.css)
+- [src/styles/components/TabBadge.css](src/styles/components/TabBadge.css) - new file
+- [src/styles/index.css](src/styles/index.css:21)
+
+**Summary**: Created comprehensive CSS for the TabBadge component. The `.tab-badge` class sets up a small rounded square (18px height, min-width 18px, border-radius 4px) with yellow background color using `--cute-yellow`. Positioned absolutely at `top: -6px; left: 50%; transform: translateX(-50%)` to appear above-center of tab icons. The `.tab-badge-glow` class adds a pulsing box-shadow animation (`tabBadgeGlowPulse`) with 2s ease-in-out infinite timing. Includes hover effects, active tab styling adjustments, reduced motion media query support, and sidebar button compatibility. The CSS is imported via the main index.css file for proper loading order.
 
 ### Task 4.6: Test the badge functionality
 - [ ] Level up a character with manual strategy to create pending stat increases

@@ -16,6 +16,7 @@ import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { formatTime } from '@/utils/formatters';
 import { logger } from '@/utils/logger';
+import { TabBadge } from '@/components/ui/TabBadge';
 import type { TabItem } from './Sidebar';
 
 interface AppHeaderProps {
@@ -185,9 +186,13 @@ export function AppHeader({
                     onClick={() => onTabChange(tab.id)}
                     aria-current={activeTab === tab.id ? 'page' : undefined}
                     className={`app-header-tab ${activeTab === tab.id ? 'app-header-tab-active' : ''}`}
+                    style={{ position: 'relative' }}
                   >
                     <Icon className="app-header-tab-icon" />
                     <span className="app-header-tab-label">{tab.label}</span>
+                    {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                      <TabBadge count={tab.badgeCount} showGlow={tab.showBadgeGlow} />
+                    )}
                   </button>
                 );
               })}
