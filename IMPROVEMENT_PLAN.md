@@ -189,15 +189,17 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Added appearance section to CharacterGenTab, positioned after the class features section. Displays all appearance fields: body_type and hair_style as text labels with label/value pairs, skin_tone/hair_color/eye_color as small rounded square color swatches (~20px) in a horizontal flex grid with labels, and facial_features as badges using the existing `.character-trait-badge` styling. Color swatches have hover effects (scale + shadow). The section only renders when `character.appearance` exists.
 
 ### Task 2.7: Update equipment display
-- [ ] Add equipped status indicator (checkmark icon)
-- [ ] Add "Equipped" badge for equipped items
-- [ ] Add visual highlight (different background) for equipped items
-- [ ] Add equipment weight display: "Equipped: 12 lbs | Total: 61 lbs"
-- [ ] Show all item categories: weapons, armor, items
+- [x] Add equipped status indicator (checkmark icon)
+- [x] Add "Equipped" badge for equipped items
+- [x] Add visual highlight (different background) for equipped items
+- [x] Add equipment weight display: "Equipped: 12 lbs | Total: 61 lbs"
+- [x] Show all item categories: weapons, armor, items
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx:578-617](src/components/Tabs/CharacterGenTab.tsx)
-- [src/components/Tabs/CharacterGenTab.css:633-692](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:681-743](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:833-908](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Updated the equipment display in CharacterGenTab with all requested features. Added checkmark icon (lucide-react Check component) for equipped items. Added "Equipped" badge with teal color and rounded styling. Added visual highlight with gradient background and border for equipped items using `character-equipment-item-equipped` class. Added equipment weight display showing "Equipped: X lbs | Total: Y lbs" in a centered container with border. Added the missing "items" category with Package icon. Removed inline comma separators in favor of individual item cards with proper spacing. All equipment items now display as individual styled elements with equipped state indicators.
 
 ### Task 2.8: Show spells section even when empty
 - [ ] Remove conditional rendering when spells arrays are empty

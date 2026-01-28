@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import './CharacterGenTab.css';
-import { User, Sparkles, Download, Upload, Wand2, Plus } from 'lucide-react';
+import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useCharacterStore } from '../../store/characterStore';
@@ -679,7 +679,7 @@ export function CharacterGenTab() {
           )}
 
           {/* Equipment */}
-          {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (() => {
+          {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0 || character.equipment.items.length > 0) && (() => {
             const equipment = character.equipment;
             return (
               <Card variant="default" padding="md">
@@ -690,11 +690,11 @@ export function CharacterGenTab() {
                       <div className="character-equipment-label">Weapons</div>
                       <div className="character-equipment-items">
                         {equipment.weapons.map((weapon, idx) => (
-                          <span key={idx} className="character-equipment-item">
-                            {weapon.name}
+                          <span key={idx} className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}>
+                            {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                            <span>{weapon.name}</span>
                             {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
-                            {weapon.equipped && <span className="character-equipment-equipped" title="Equipped"> ✓</span>}
-                            {idx < equipment.weapons.length - 1 && ', '}
+                            {weapon.equipped && <span className="character-equipment-badge">Equipped</span>}
                           </span>
                         ))}
                       </div>
@@ -705,16 +705,40 @@ export function CharacterGenTab() {
                       <div className="character-equipment-label">Armor</div>
                       <div className="character-equipment-items">
                         {equipment.armor.map((armor, idx) => (
-                          <span key={idx} className="character-equipment-item">
-                            {armor.name}
+                          <span key={idx} className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}>
+                            {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                            <span>{armor.name}</span>
                             {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
-                            {armor.equipped && <span className="character-equipment-equipped" title="Equipped"> ✓</span>}
-                            {idx < equipment.armor.length - 1 && ', '}
+                            {armor.equipped && <span className="character-equipment-badge">Equipped</span>}
                           </span>
                         ))}
                       </div>
                     </Card>
                   )}
+                  {equipment.items.length > 0 && (
+                    <Card variant="flat" padding="sm" className="character-equipment-card">
+                      <div className="character-equipment-label">
+                        <Package size={14} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />
+                        Items
+                      </div>
+                      <div className="character-equipment-items">
+                        {equipment.items.map((item, idx) => (
+                          <span key={idx} className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''}`}>
+                            {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                            <span>{item.name}</span>
+                            {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
+                            {item.equipped && <span className="character-equipment-badge">Equipped</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+                  {/* Equipment Weight Display */}
+                  <div className="character-equipment-weight">
+                    <span className="character-equipment-weight-label">Equipped: <strong>{equipment.equippedWeight} lbs</strong></span>
+                    <span className="character-equipment-weight-separator">|</span>
+                    <span className="character-equipment-weight-label">Total: <strong>{equipment.totalWeight} lbs</strong></span>
+                  </div>
                 </div>
               </Card>
             );
