@@ -435,7 +435,7 @@
 
 @media (min-width: 480px) {
   .character-stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
   }
 }

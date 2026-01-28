@@ -434,6 +434,10 @@ export function CharacterGenTab() {
                   <div className="character-stat-label">Speed</div>
                   <div className="character-stat-value character-count-up">{character.speed} ft</div>
                 </Card>
+                <Card variant="elevated" padding="sm" className="character-stat-card">
+                  <div className="character-stat-label">Proficiency</div>
+                  <div className="character-stat-value character-count-up">+{character.proficiency_bonus}</div>
+                </Card>
               </div>
             </div>
           </div>

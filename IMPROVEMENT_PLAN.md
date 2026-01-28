@@ -122,13 +122,15 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Updated the character class subtitle display from "Level X Race Class" format to "Race: {race} | Class: {class}" format. The level badge remains on the avatar as a separate element, keeping the original design intent while making the race/class information more explicit and readable.
 
 ### Task 2.2: Add proficiency bonus display
-- [ ] Create a new stat card for proficiency bonus
-- [ ] Add it to the stats grid in the header
-- [ ] Display with appropriate icon (star or similar)
+- [x] Create a new stat card for proficiency bonus
+- [x] Add it to the stats grid in the header
+- [x] Display with appropriate icon (star or similar)
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx:390-440](src/components/Tabs/CharacterGenTab.tsx)
-- [src/components/Tabs/CharacterGenTab.css:429-483](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:437-440](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:436-440](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Added proficiency bonus stat card to the character stats grid. The card displays "Proficiency" as the label and "+{proficiency_bonus}" as the value (e.g., "+2"). Updated the CSS grid from 4 columns to 5 columns on desktop to accommodate the new stat card. The card uses the same elevated Card variant styling as the other stat cards (HP, AC, Initiative, Speed).
 
 ### Task 2.3: Update HP display to show current/max
 - [ ] Change from just `hp.max` to `hp.current/hp.max` format
