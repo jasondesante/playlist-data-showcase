@@ -321,17 +321,20 @@ The PartyTab has several issues:
 **Summary**: Redesigned the PartyTab modal with dark theme and visible borders. Changed the modal animation from `slideUp` (translateY) to `fadeScaleIn` (scale from 90% to 100% with opacity fade). Added visible borders to all sections using `hsl(var(--color-surface-h) var(--color-surface-s) calc(var(--color-surface-l) + 8))` for subtle contrast with the dark background. Added background color `hsl(var(--color-surface-h) var(--color-surface-s) calc(var(--color-surface-l) + 2))` to sections for depth. Added border-bottom to section titles for better separation. Improved overall modal layout by adding gap to the body container and adjusting padding.
 
 ### Task 3.7: Add missing character data to modal
-- [ ] Update race/class format to "Race: Elf | Class: Rogue"
-- [ ] Add proficiency bonus display
-- [ ] Add racial traits section
-- [ ] Add class features section
-- [ ] Add appearance section
-- [ ] Add saving throws display
-- [ ] Update HP to show current/max
-- [ ] Update equipment with weight display
+- [x] Update race/class format to "Race: Elf | Class: Rogue"
+- [x] Add proficiency bonus display
+- [x] Add racial traits section
+- [x] Add class features section
+- [x] Add appearance section
+- [x] Add saving throws display
+- [x] Update HP to show current/max
+- [x] Update equipment with weight display
 
 **Files**:
 - [src/components/Tabs/PartyTab.tsx:245-450](src/components/Tabs/PartyTab.tsx)
+- [src/components/Tabs/PartyTab.css](src/components/Tabs/PartyTab.css)
+
+**Summary**: Added all missing character data sections to the PartyTab modal. Updated the race/class format from "Level X Race Class" to "Race: {race} | Class: {class}" in the modal header. Added proficiency bonus stat card with Star icon. Updated HP display to show current/max format (e.g., "7/7"). Added saving throws section with proficiency indicators (Check for proficient, Circle for not proficient). Added racial traits section with styled gradient badges. Added class features section with the same badge styling. Added appearance section with color swatches for skin tone, hair color, and eye color, plus body type, hair style, and facial features. Equipment weight display was already implemented in Task 3.5. All new sections match the styling and behavior of CharacterGenTab for consistency.
 
 ### Task 3.8: Show "No spells learned yet" in modal
 - [ ] Add empty state message when no spells
