@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Users, Search, X, Trash2, ChevronDown } from 'lucide-react';
+import { Users, Search, X, Trash2, ChevronDown, Check } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -391,33 +391,58 @@ export function PartyTab() {
               {selectedCharacter.equipment && (
                 <div className="party-detail-section">
                   <h4 className="party-detail-section-title">Equipment</h4>
-                  <div className="party-detail-equipment-list">
-                    {selectedCharacter.equipment.weapons.map((weapon, idx) => (
-                      <div key={idx} className="party-detail-equipment-item">
-                        <span className="party-detail-equipment-name">{weapon.name}</span>
-                        <span className="party-detail-equipment-qty">
-                          {weapon.quantity > 1 ? `×${weapon.quantity}` : ''}
-                          {weapon.equipped && ' (equipped)'}
-                        </span>
+                  <div className="party-detail-equipment-section">
+                    {selectedCharacter.equipment.weapons.length > 0 && (
+                      <div className="party-detail-equipment-category">
+                        <div className="party-detail-equipment-category-label">Weapons</div>
+                        <div className="party-detail-equipment-items">
+                          {selectedCharacter.equipment.weapons.map((weapon, idx) => (
+                            <div key={idx} className={`party-detail-equipment-item ${weapon.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
+                              {weapon.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                              <span className="party-detail-equipment-name">{weapon.name}</span>
+                              {weapon.quantity > 1 && <span className="party-detail-equipment-quantity">×{weapon.quantity}</span>}
+                              {weapon.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                    {selectedCharacter.equipment.armor.map((armor, idx) => (
-                      <div key={idx} className="party-detail-equipment-item">
-                        <span className="party-detail-equipment-name">{armor.name}</span>
-                        <span className="party-detail-equipment-qty">
-                          {armor.quantity > 1 ? `×${armor.quantity}` : ''}
-                          {armor.equipped && ' (equipped)'}
-                        </span>
+                    )}
+                    {selectedCharacter.equipment.armor.length > 0 && (
+                      <div className="party-detail-equipment-category">
+                        <div className="party-detail-equipment-category-label">Armor</div>
+                        <div className="party-detail-equipment-items">
+                          {selectedCharacter.equipment.armor.map((armor, idx) => (
+                            <div key={idx} className={`party-detail-equipment-item ${armor.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
+                              {armor.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                              <span className="party-detail-equipment-name">{armor.name}</span>
+                              {armor.quantity > 1 && <span className="party-detail-equipment-quantity">×{armor.quantity}</span>}
+                              {armor.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                    {selectedCharacter.equipment.items.map((item, idx) => (
-                      <div key={idx} className="party-detail-equipment-item">
-                        <span className="party-detail-equipment-name">{item.name}</span>
-                        <span className="party-detail-equipment-qty">
-                          {item.quantity > 1 ? `×${item.quantity}` : ''}
-                        </span>
+                    )}
+                    {selectedCharacter.equipment.items.length > 0 && (
+                      <div className="party-detail-equipment-category">
+                        <div className="party-detail-equipment-category-label">Items</div>
+                        <div className="party-detail-equipment-items">
+                          {selectedCharacter.equipment.items.map((item, idx) => (
+                            <div key={idx} className={`party-detail-equipment-item ${item.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
+                              {item.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                              <span className="party-detail-equipment-name">{item.name}</span>
+                              {item.quantity > 1 && <span className="party-detail-equipment-quantity">×{item.quantity}</span>}
+                              {item.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
+                    {/* Equipment Weight Display */}
+                    <div className="party-detail-equipment-weight">
+                      <span className="party-detail-equipment-weight-label">Equipped: <strong>{selectedCharacter.equipment.equippedWeight} lbs</strong></span>
+                      <span className="party-detail-equipment-weight-separator">|</span>
+                      <span className="party-detail-equipment-weight-label">Total: <strong>{selectedCharacter.equipment.totalWeight} lbs</strong></span>
+                    </div>
                   </div>
                 </div>
               )}

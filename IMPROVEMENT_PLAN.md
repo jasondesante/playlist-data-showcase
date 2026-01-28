@@ -293,17 +293,19 @@ The PartyTab has several issues:
 **Summary**: Moved the "Active" badge from top-left corner (top: 0.5rem; left: 0.5rem) to bottom-center of the hero card (bottom: 0.5rem; left: 50%; transform: translateX(-50%)). Added `padding-bottom: 2.5rem` to `.party-card` to provide adequate space for the badge at the bottom without overlapping the XP bar or other card content. The badge maintains its gradient background, pulsing glow animation, and z-index layering.
 
 ### Task 3.5: Redesign equipment list in modal
-- [ ] Add borders between equipment items
-- [ ] Improve spacing (reduce gap between item name and status)
-- [ ] Add equipped status indicators:
+- [x] Add borders between equipment items
+- [x] Improve spacing (reduce gap between item name and status)
+- [x] Add equipped status indicators:
   - Checkmark icon
   - "Equipped" badge
   - Visual highlight background
-- [ ] Display equipment weight: "Equipped: 12 lbs | Total: 61 lbs"
+- [x] Display equipment weight: "Equipped: 12 lbs | Total: 61 lbs"
 
 **Files**:
-- [src/components/Tabs/PartyTab.tsx:345-378](src/components/Tabs/PartyTab.tsx)
-- [src/components/Tabs/PartyTab.css:613-638](src/components/Tabs/PartyTab.css)
+- [src/components/Tabs/PartyTab.tsx:390-450](src/components/Tabs/PartyTab.tsx)
+- [src/components/Tabs/PartyTab.css:710-818](src/components/Tabs/PartyTab.css)
+
+**Summary**: Redesigned the equipment list in the PartyTab modal with proper organization and styling. Added category grouping (Weapons, Armor, Items) with category labels. Each equipment item is now displayed as an individual styled card with borders between items. Equipped items show a checkmark icon (lucide-react Check component), an "Equipped" badge with teal color, and a visual highlight with gradient background. Added equipment weight display at the bottom showing "Equipped: X lbs | Total: Y lbs" in a centered container with border. All equipment items now have consistent styling matching the CharacterGenTab equipment display, with hover effects and proper spacing.
 
 ### Task 3.6: Redesign modal with dark theme and borders
 - [ ] Add visible borders to all sections
