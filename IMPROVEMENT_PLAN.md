@@ -202,15 +202,17 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Updated the equipment display in CharacterGenTab with all requested features. Added checkmark icon (lucide-react Check component) for equipped items. Added "Equipped" badge with teal color and rounded styling. Added visual highlight with gradient background and border for equipped items using `character-equipment-item-equipped` class. Added equipment weight display showing "Equipped: X lbs | Total: Y lbs" in a centered container with border. Added the missing "items" category with Package icon. Removed inline comma separators in favor of individual item cards with proper spacing. All equipment items now display as individual styled elements with equipped state indicators.
 
 ### Task 2.8: Show spells section even when empty
-- [ ] Remove conditional rendering when spells arrays are empty
-- [ ] Display "No spells learned yet" message when no spells
-- [ ] Style as left-aligned, muted color (`--muted-foreground`)
-- [ ] Keep the section title "Spells"
-- [ ] Add empty state styling
+- [x] Remove conditional rendering when spells arrays are empty
+- [x] Display "No spells learned yet" message when no spells
+- [x] Style as left-aligned, muted color (`--muted-foreground`)
+- [x] Keep the section title "Spells"
+- [x] Add empty state styling
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx:620-638](src/components/Tabs/CharacterGenTab.tsx)
-- [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:747-771](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:897-905](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Updated the spells section in CharacterGenTab to always render when `character.spells` exists, regardless of whether the spells arrays are empty. Removed the conditional check that prevented rendering when both `cantrips` and `known_spells` arrays were empty. Added a new `.character-spells-empty` CSS class that styles the "No spells learned yet" message with left-alignment, muted foreground color, italic font style, and appropriate padding. The empty state message only renders when both spell arrays are empty, while the section title "Spells" is always visible when the character has a spells object.
 
 ### Task 2.9: Add saving throws display (bonus)
 - [ ] Create saving throws section
@@ -425,7 +427,7 @@ Add a visual indicator to the "Leveling" tab button in the navigation bar:
 - [ ] Verify appearance section shows all fields including facial features
 - [ ] Verify equipment shows checkmark, badge, and highlight for equipped items
 - [ ] Verify equipment weight shows "Equipped: 12 lbs | Total: 61 lbs"
-- [ ] Verify spells section shows "No spells learned yet" when empty
+- [x] Verify spells section shows "No spells learned yet" when empty
 
 ### Phase 3: PartyTab Verification
 - [ ] Verify search input has proper spacing (no overlap)
