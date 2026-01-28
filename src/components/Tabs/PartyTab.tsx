@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Users, Search, X, Trash2, ChevronDown, Check } from 'lucide-react';
+import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -293,7 +293,7 @@ export function PartyTab() {
                 <div className="party-detail-info">
                   <h2>{selectedCharacter.name}</h2>
                   <div>
-                    Level {selectedCharacter.level} {selectedCharacter.race} {selectedCharacter.class}
+                    Race: {selectedCharacter.race} | Class: {selectedCharacter.class}
                   </div>
                 </div>
               </div>
@@ -312,7 +312,7 @@ export function PartyTab() {
                     <span className="party-detail-stat-icon">{getStatIcon('HP')}</span>
                     <div>
                       <div className="party-detail-stat-label">Hit Points</div>
-                      <div className="party-detail-stat-value">{selectedCharacter.hp.max}</div>
+                      <div className="party-detail-stat-value">{selectedCharacter.hp.current}/{selectedCharacter.hp.max}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
@@ -334,6 +334,13 @@ export function PartyTab() {
                     <div>
                       <div className="party-detail-stat-label">Speed</div>
                       <div className="party-detail-stat-value">{selectedCharacter.speed} ft</div>
+                    </div>
+                  </div>
+                  <div className="party-detail-stat-item">
+                    <span className="party-detail-stat-icon"><Star size={16} /></span>
+                    <div>
+                      <div className="party-detail-stat-label">Proficiency</div>
+                      <div className="party-detail-stat-value">+{selectedCharacter.proficiency_bonus}</div>
                     </div>
                   </div>
                 </div>
@@ -386,6 +393,131 @@ export function PartyTab() {
                   })}
                 </div>
               </div>
+
+              {/* Saving Throws */}
+              {selectedCharacter.saving_throws && (
+                <div className="party-detail-section">
+                  <h4 className="party-detail-section-title">Saving Throws</h4>
+                  <div className="party-detail-saving-throws-grid">
+                    {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
+                      <div
+                        key={ability}
+                        className={`party-detail-saving-throw-item ${selectedCharacter.saving_throws[ability] ? 'proficient' : ''}`}
+                        title={selectedCharacter.saving_throws[ability] ? 'Proficient' : 'Not proficient'}
+                      >
+                        <span className="party-detail-saving-throw-ability">{ability}</span>
+                        <span className="party-detail-saving-throw-indicator">
+                          {selectedCharacter.saving_throws[ability] ? (
+                            <Check size={14} />
+                          ) : (
+                            <Circle size={14} />
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Racial Traits */}
+              {selectedCharacter.racial_traits && selectedCharacter.racial_traits.length > 0 && (
+                <div className="party-detail-section">
+                  <h4 className="party-detail-section-title">Racial Traits</h4>
+                  <div className="party-detail-traits-grid">
+                    {selectedCharacter.racial_traits.map((trait, idx) => (
+                      <span key={idx} className="party-detail-trait-badge">
+                        {trait}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Class Features */}
+              {selectedCharacter.class_features && selectedCharacter.class_features.length > 0 && (
+                <div className="party-detail-section">
+                  <h4 className="party-detail-section-title">Class Features</h4>
+                  <div className="party-detail-traits-grid">
+                    {selectedCharacter.class_features.map((feature, idx) => (
+                      <span key={idx} className="party-detail-trait-badge">
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Appearance */}
+              {selectedCharacter.appearance && (
+                <div className="party-detail-section">
+                  <h4 className="party-detail-section-title">Appearance</h4>
+                  <div className="party-detail-appearance-section">
+                    {/* Body Type */}
+                    {selectedCharacter.appearance.body_type && (
+                      <div className="party-detail-appearance-row">
+                        <span className="party-detail-appearance-label">Body Type</span>
+                        <span className="party-detail-appearance-value">{selectedCharacter.appearance.body_type}</span>
+                      </div>
+                    )}
+
+                    {/* Color Swatches Grid */}
+                    <div className="party-detail-appearance-colors-grid">
+                      {selectedCharacter.appearance.skin_tone && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.skin_tone }}
+                            title="Skin Tone"
+                          />
+                          <span className="party-detail-appearance-color-label">Skin</span>
+                        </div>
+                      )}
+                      {selectedCharacter.appearance.hair_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.hair_color }}
+                            title="Hair Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Hair</span>
+                        </div>
+                      )}
+                      {selectedCharacter.appearance.eye_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.eye_color }}
+                            title="Eye Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Eyes</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hair Style */}
+                    {selectedCharacter.appearance.hair_style && (
+                      <div className="party-detail-appearance-row">
+                        <span className="party-detail-appearance-label">Hair Style</span>
+                        <span className="party-detail-appearance-value">{selectedCharacter.appearance.hair_style}</span>
+                      </div>
+                    )}
+
+                    {/* Facial Features */}
+                    {selectedCharacter.appearance.facial_features && selectedCharacter.appearance.facial_features.length > 0 && (
+                      <div className="party-detail-appearance-features">
+                        <span className="party-detail-appearance-label">Facial Features</span>
+                        <div className="party-detail-traits-grid">
+                          {selectedCharacter.appearance.facial_features.map((feature, idx) => (
+                            <span key={idx} className="party-detail-trait-badge">
+                              {feature}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Equipment */}
               {selectedCharacter.equipment && (
