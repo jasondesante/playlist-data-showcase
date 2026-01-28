@@ -71,11 +71,13 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 **Summary**: Added event-driven playlist load notification system. Created `onPlaylistLoad()` function that allows other stores to register callbacks. Added `onRehydrateStorage` callback to zustand persist config so playlist restoration from localStorage triggers notifications. The characterStore's `setupPlaylistListener` now subscribes to these events for immediate response when playlist becomes available, with polling as a fallback safety net.
 
 ### Task 1.3: Fix session tracker interference
-- [ ] Review `useSessionTracker.ts` cleanup logic
-- [ ] Ensure it doesn't clear the restored selectedTrack
-- [ ] Add logging to verify timing
+- [x] Review `useSessionTracker.ts` cleanup logic
+- [x] Ensure it doesn't clear the restored selectedTrack
+- [x] Add logging to verify timing
 
 **File**: [src/hooks/useSessionTracker.ts](src/hooks/useSessionTracker.ts)
+
+**Summary**: The session tracker cleanup logic has ALREADY been properly implemented. Lines 96-125 contain explicit logic to preserve `selectedTrack` when `currentUrl` is null (which happens when page loads and track is restored but not yet loaded into audio player). The code only clears `selectedTrack` if BOTH URLs are non-null AND different (actual stale state). Comprehensive logging is in place at lines 102-109 to verify timing. This task was already complete.
 
 ### Task 1.4: Test the fix
 - [ ] Load page with active character set
