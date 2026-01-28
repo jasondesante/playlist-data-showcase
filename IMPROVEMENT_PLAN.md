@@ -244,11 +244,13 @@ The PartyTab has several issues:
 ## Tasks
 
 ### Task 3.1: Add missing CSS variables to base.css
-- [ ] Add `--color-surface-dim` to `:root`
-- [ ] Add `--color-surface-h`, `--color-surface-s`, `--color-surface-l` to `:root`
-- [ ] Define appropriate values for dark theme
+- [x] Add `--color-surface-dim` to `:root`
+- [x] Add `--color-surface-h`, `--color-surface-s`, `--color-surface-l` to `:root`
+- [x] Define appropriate values for dark theme
 
 **File**: [src/styles/base.css:9-118](src/styles/base.css)
+
+**Summary**: Added missing CSS variables to base.css for PartyTab styles. Added `--surface-dim: 222.2 84% 4%` for dimmed surface backgrounds and HSL component variables `--surface-h: 222.2`, `--surface-s: 84%`, `--surface-l: 6.5%` for HSL color construction. Also added semantic color aliases `--color-surface-dim`, `--color-surface-h`, `--color-surface-s`, and `--color-surface-l` to match the naming pattern used in PartyTab.css. These variables provide the foundation for consistent surface color theming in the PartyTab modal and other components.
 
 ### Task 3.2: Investigate and fix search input icon overlap
 - [ ] Inspect the Search icon rendering (lucide-react)
