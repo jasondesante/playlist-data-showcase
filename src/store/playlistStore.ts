@@ -34,6 +34,38 @@ interface PlaylistState {
     clearPlaylist: () => void;
 }
 
+// Callback type for playlist load events
+type PlaylistLoadCallback = (playlist: ServerlessPlaylist | null) => void;
+
+// Global registry of callbacks to notify when playlist is loaded
+// This allows characterStore to be notified when playlist becomes available
+const playlistLoadCallbacks: Set<PlaylistLoadCallback> = new Set();
+
+/**
+ * Register a callback to be invoked when the playlist is loaded or changed.
+ * Useful for components/stores that need to react to playlist availability.
+ * @returns Cleanup function to unregister the callback
+ */
+export function onPlaylistLoad(callback: PlaylistLoadCallback): () => void {
+    playlistLoadCallbacks.add(callback);
+    return () => {
+        playlistLoadCallbacks.delete(callback);
+    };
+}
+
+/**
+ * Notify all registered callbacks that the playlist has been loaded.
+ */
+function notifyPlaylistLoadCallbacks(playlist: ServerlessPlaylist | null) {
+    for (const callback of playlistLoadCallbacks) {
+        try {
+            callback(playlist);
+        } catch (error) {
+            logger.error('Store', 'Error in playlist load callback', error);
+        }
+    }
+}
+
 export const usePlaylistStore = create<PlaylistState>()(
     persist(
         (set) => ({
@@ -66,15 +98,8 @@ export const usePlaylistStore = create<PlaylistState>()(
                     audioProfile: null
                 });
 
-                // Trigger track restoration after playlist is set
-                // This handles the race condition where restoration is called before playlist loads
-                // Use dynamic import to avoid circular dependency issues
-                import('@/store/characterStore').then(({ useCharacterStore }) => {
-                    useCharacterStore.getState().restoreSelectedTrackFromActiveCharacter();
-                }).catch((error) => {
-                    // Character store may not be initialized yet, which is fine
-                    logger.debug('Store', 'Could not trigger restoration after playlist load', error);
-                });
+                // Notify all registered callbacks that playlist has been loaded
+                notifyPlaylistLoadCallbacks(playlist);
             },
 
             /**
@@ -157,6 +182,21 @@ export const usePlaylistStore = create<PlaylistState>()(
                 rawResponseData: state.rawResponseData,
                 parsedTimestamp: state.parsedTimestamp,
             }),
+            // Callback after zustand finishes hydrating from localStorage
+            // This is critical because setPlaylist is NOT called during hydration
+            // So we need to notify listeners that the playlist is now available
+            onRehydrateStorage: () => {
+                return (state) => {
+                    if (state?.currentPlaylist) {
+                        logger.info('Store', 'Playlist rehydrated from storage, notifying listeners', {
+                            name: state.currentPlaylist.name,
+                            tracks: state.currentPlaylist.tracks.length
+                        });
+                        // Notify all registered callbacks that playlist has been loaded from storage
+                        notifyPlaylistLoadCallbacks(state.currentPlaylist);
+                    }
+                };
+            },
         }
     )
 );

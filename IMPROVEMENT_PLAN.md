@@ -62,11 +62,13 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 2. Switching active hero in party tab (selectedTrack changed, currentUrl null)
 
 ### Task 1.2: Add playlist loaded listener
-- [ ] Create a new action in playlistStore that emits when playlist is loaded
-- [ ] Subscribe to this event in characterStore's restore function
-- [ ] Trigger restoration when playlist becomes available
+- [x] Create a new action in playlistStore that emits when playlist is loaded
+- [x] Subscribe to this event in characterStore's restore function
+- [x] Trigger restoration when playlist becomes available
 
 **File**: [src/store/playlistStore.ts](src/store/playlistStore.ts)
+
+**Summary**: Added event-driven playlist load notification system. Created `onPlaylistLoad()` function that allows other stores to register callbacks. Added `onRehydrateStorage` callback to zustand persist config so playlist restoration from localStorage triggers notifications. The characterStore's `setupPlaylistListener` now subscribes to these events for immediate response when playlist becomes available, with polling as a fallback safety net.
 
 ### Task 1.3: Fix session tracker interference
 - [ ] Review `useSessionTracker.ts` cleanup logic
