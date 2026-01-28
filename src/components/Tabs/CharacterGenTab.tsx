@@ -592,6 +592,20 @@ export function CharacterGenTab() {
             </Card>
           )}
 
+          {/* Class Features */}
+          {character.class_features && character.class_features.length > 0 && (
+            <Card variant="default" padding="md">
+              <div className="character-section-title">Class Features</div>
+              <div className="character-traits-grid">
+                {character.class_features.map((feature, idx) => (
+                  <span key={idx} className="character-trait-badge">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* Equipment */}
           {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (() => {
             const equipment = character.equipment;

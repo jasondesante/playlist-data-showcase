@@ -157,15 +157,17 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Added racial traits section to CharacterGenTab. The section displays each trait from `character.racial_traits` array as a styled badge with a gradient background (purple to pink) and border. Badges have hover effects with slight elevation and color shift. The section only renders when racial_traits exists and is not empty. The traits are displayed in a flex-wrap grid with responsive spacing.
 
 ### Task 2.5: Create class features section
-- [ ] Create new section component for class features
-- [ ] Map through `character.class_features` array
-- [ ] Display each feature as a badge/tag
-- [ ] Add section title "Class Features"
-- [ ] Position after racial traits section
+- [x] Create new section component for class features
+- [x] Map through `character.class_features` array
+- [x] Display each feature as a badge/tag
+- [x] Add section title "Class Features"
+- [x] Position after racial traits section
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.tsx:594-606](src/components/Tabs/CharacterGenTab.tsx)
 - [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Added class features section to CharacterGenTab, positioned after the racial traits section. The section displays each feature from `character.class_features` array as a styled badge. Reuses the existing `.character-traits-grid` and `.character-trait-badge` CSS classes for consistent styling with the racial traits section (gradient background, border, hover effects). The section only renders when class_features exists and is not empty.
 
 ### Task 2.6: Create appearance section
 - [ ] Create new section component for appearance
