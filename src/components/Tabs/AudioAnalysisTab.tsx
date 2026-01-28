@@ -152,10 +152,10 @@ export function AudioAnalysisTab() {
             <div className="audio-analysis-results fade-in">
               {/* Frequency Band Bar Chart Visualization */}
               <Card variant="elevated" padding="md" className="audio-analysis-card">
-                <h3 className="audio-analysis-card-title">
+                <div className="audio-analysis-card-title">
                   <Waves className="audio-analysis-card-title-icon" />
                   Frequency Band Visualization
-                </h3>
+                </div>
                 <div className="audio-analysis-frequency-container">
                   {/* Bass Bar */}
                   <div className="audio-analysis-frequency-bar">
@@ -209,7 +209,7 @@ export function AudioAnalysisTab() {
 
               {/* Average Amplitude */}
               <Card variant="elevated" padding="md" className="audio-analysis-card">
-                <h3 className="audio-analysis-card-title">Average Amplitude</h3>
+                <div className="audio-analysis-card-title">Average Amplitude</div>
                 <div className="audio-analysis-amplitude-value">{audioProfile.average_amplitude.toFixed(3)}</div>
               </Card>
 
@@ -218,10 +218,10 @@ export function AudioAnalysisTab() {
                 audioProfile.spectral_rolloff !== undefined ||
                 audioProfile.zero_crossing_rate !== undefined) && (
                 <Card variant="elevated" padding="md" className="audio-analysis-card">
-                  <h3 className="audio-analysis-card-title">
+                  <div className="audio-analysis-card-title">
                     Advanced Metrics
                     <span className="audio-analysis-card-subtitle">(Only shown when includeAdvancedMetrics=true)</span>
-                  </h3>
+                  </div>
                   <div className="audio-analysis-metrics-list">
                     {audioProfile.spectral_centroid !== undefined && (
                       <div className="audio-analysis-metric-item">
@@ -248,11 +248,11 @@ export function AudioAnalysisTab() {
               {/* Color Palette Display */}
               {audioProfile.color_palette && (
                 <Card variant="elevated" padding="md" className="audio-analysis-card">
-                  <h3 className="audio-analysis-card-title">
+                  <div className="audio-analysis-card-title">
                     <Sparkles className="audio-analysis-card-title-icon" />
                     Color Palette
                     <span className="audio-analysis-card-subtitle">(from artwork)</span>
-                  </h3>
+                  </div>
 
                   {/* Color Swatches */}
                   <div className="audio-analysis-color-swatches">
@@ -328,7 +328,7 @@ export function AudioAnalysisTab() {
 
               {/* Sampling Timeline Visualization */}
               <Card variant="elevated" padding="md" className="audio-analysis-card">
-                <h3 className="audio-analysis-card-title">Sampling Timeline</h3>
+                <div className="audio-analysis-card-title">Sampling Timeline</div>
 
                 {/* Timeline bar */}
                 <div className="audio-analysis-timeline">
@@ -377,7 +377,7 @@ export function AudioAnalysisTab() {
 
               {/* Analysis Metadata */}
               <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--metadata">
-                <h3 className="audio-analysis-card-title">Analysis Metadata</h3>
+                <div className="audio-analysis-card-title">Analysis Metadata</div>
                 <div className="audio-analysis-metadata-list">
                   <div className="audio-analysis-metadata-item">
                     <span className="audio-analysis-metadata-label">Duration analyzed:</span>
