@@ -144,15 +144,17 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Updated HP display in CharacterGenTab header stats card to show `current/max` format (e.g., "7/7"). The format uses no spaces around the slash as specified. Note: The modal update for PartyTab will be completed in Task 3.7 (Phase 3), as CharacterGenTab doesn't have a modal - the modal is in PartyTab.tsx.
 
 ### Task 2.4: Create racial traits section
-- [ ] Create new section component for racial traits
-- [ ] Map through `character.racial_traits` array
-- [ ] Display each trait as a badge/tag
-- [ ] Add section title "Racial Traits"
-- [ ] Position after skills section
+- [x] Create new section component for racial traits
+- [x] Map through `character.racial_traits` array
+- [x] Display each trait as a badge/tag
+- [x] Add section title "Racial Traits"
+- [x] Position after skills section
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx:560-575](src/components/Tabs/CharacterGenTab.tsx) - insert after this section
-- [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:580-591](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:633-673](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Added racial traits section to CharacterGenTab. The section displays each trait from `character.racial_traits` array as a styled badge with a gradient background (purple to pink) and border. Badges have hover effects with slight elevation and color shift. The section only renders when racial_traits exists and is not empty. The traits are displayed in a flex-wrap grid with responsive spacing.
 
 ### Task 2.5: Create class features section
 - [ ] Create new section component for class features

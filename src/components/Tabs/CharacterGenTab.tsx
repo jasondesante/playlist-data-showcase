@@ -578,6 +578,20 @@ export function CharacterGenTab() {
             </div>
           </Card>
 
+          {/* Racial Traits */}
+          {character.racial_traits && character.racial_traits.length > 0 && (
+            <Card variant="default" padding="md">
+              <div className="character-section-title">Racial Traits</div>
+              <div className="character-traits-grid">
+                {character.racial_traits.map((trait, idx) => (
+                  <span key={idx} className="character-trait-badge">
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* Equipment */}
           {character.equipment && (character.equipment.weapons.length > 0 || character.equipment.armor.length > 0) && (() => {
             const equipment = character.equipment;
