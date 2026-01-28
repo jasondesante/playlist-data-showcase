@@ -38,7 +38,7 @@ export function AppHeader({
   onTabChange
 }: AppHeaderProps) {
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, stop, currentUrl } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, stop } = useAudioPlayerStore();
   const { endSession: hookEndSession, isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
@@ -76,30 +76,11 @@ export function AppHeader({
     <>
       <header className="app-header">
         <div className="app-header-inner">
-          <div className="app-header-content">
+          {/* Row 1: Title/Subtitle + Mini Player */}
+          <div className="app-header-row">
             <div className="app-header-text">
               <h1 className="app-header-title">{title}</h1>
               <p className="app-header-subtitle">{subtitle}</p>
-
-              {/* Tab Navigation */}
-              {tabs && onTabChange && (
-                <nav className="app-header-tabs">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => onTabChange(tab.id)}
-                        aria-current={activeTab === tab.id ? 'page' : undefined}
-                        className={`app-header-tab ${activeTab === tab.id ? 'app-header-tab-active' : ''}`}
-                      >
-                        <Icon className="app-header-tab-icon" />
-                        <span className="app-header-tab-label">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
-              )}
             </div>
 
             {/* Mini Audio Player - always shown, with placeholder when no track */}
@@ -118,8 +99,8 @@ export function AppHeader({
                         )}
                       </div>
                       <div className="mini-player-text">
-                        <p className="mini-player-title">{track.title}</p>
-                        <p className="mini-player-artist">{track.artist}</p>
+                        <div className="mini-player-title">{track.title}</div>
+                        <div className="mini-player-artist">{track.artist}</div>
                       </div>
                     </div>
 
@@ -161,6 +142,26 @@ export function AppHeader({
               </div>
             )}
           </div>
+
+          {/* Row 2: Tab Navigation (separate, full width) */}
+          {tabs && onTabChange && (
+            <nav className="app-header-tabs">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => onTabChange(tab.id)}
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
+                    className={`app-header-tab ${activeTab === tab.id ? 'app-header-tab-active' : ''}`}
+                  >
+                    <Icon className="app-header-tab-icon" />
+                    <span className="app-header-tab-label">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
         </div>
       </header>
     </>
