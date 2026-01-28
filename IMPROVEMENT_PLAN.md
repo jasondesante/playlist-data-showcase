@@ -215,14 +215,16 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 **Summary**: Updated the spells section in CharacterGenTab to always render when `character.spells` exists, regardless of whether the spells arrays are empty. Removed the conditional check that prevented rendering when both `cantrips` and `known_spells` arrays were empty. Added a new `.character-spells-empty` CSS class that styles the "No spells learned yet" message with left-alignment, muted foreground color, italic font style, and appropriate padding. The empty state message only renders when both spell arrays are empty, while the section title "Spells" is always visible when the character has a spells object.
 
 ### Task 2.9: Add saving throws display (bonus)
-- [ ] Create saving throws section
-- [ ] Show which abilities have saving throw proficiency
-- [ ] Display as simple list or grid
-- [ ] Position after ability scores section
+- [x] Create saving throws section
+- [x] Show which abilities have saving throw proficiency
+- [x] Display as simple list or grid
+- [x] Position after ability scores section
 
 **Files**:
-- [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
-- [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+- [src/components/Tabs/CharacterGenTab.tsx:562-583](src/components/Tabs/CharacterGenTab.tsx)
+- [src/components/Tabs/CharacterGenTab.css:632-702](src/components/Tabs/CharacterGenTab.css)
+
+**Summary**: Added saving throws section to CharacterGenTab, positioned after the ability scores section. The section displays each ability (STR, DEX, CON, INT, WIS, CHA) in a grid layout with an indicator showing proficiency status. Proficient saving throws display a Check icon from lucide-react, while non-proficient throws show a hollow circle (○). Proficient items have a gradient background (primary to yellow) and enhanced border styling. The section uses a responsive grid layout: 2 columns on mobile, 3 columns on medium screens, 6 columns on larger screens. Each item has hover effects with elevation and border color changes.
 
 ---
 

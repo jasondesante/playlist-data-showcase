@@ -560,6 +560,29 @@ export function CharacterGenTab() {
             </div>
           </Card>
 
+          {/* Saving Throws */}
+          <Card variant="default" padding="md">
+            <div className="character-section-title">Saving Throws</div>
+            <div className="character-saving-throws-grid">
+              {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
+                <div
+                  key={ability}
+                  className={`character-saving-throw-item ${character.saving_throws?.[ability] ? 'proficient' : ''}`}
+                  title={character.saving_throws?.[ability] ? 'Proficient' : 'Not proficient'}
+                >
+                  <span className="character-saving-throw-ability">{ability}</span>
+                  <span className="character-saving-throw-indicator">
+                    {character.saving_throws?.[ability] ? (
+                      <Check size={14} />
+                    ) : (
+                      <span className="character-saving-throw-empty">○</span>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
           {/* Skills Grid */}
           <Card variant="default" padding="md">
             <div className="character-section-title">Skills</div>
