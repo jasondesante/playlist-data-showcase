@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -20,6 +20,11 @@ import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+
+// Create context for active tab
+const TabContext = createContext<{ activeTab: Tab } | null>(null);
+
+export const useTabContext = () => useContext(TabContext);
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
@@ -62,8 +67,9 @@ function App() {
   };
 
   return (
-    <div className="app-root">
-      <AppHeader tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)} />
+    <TabContext.Provider value={{ activeTab }}>
+      <div className="app-root">
+        <AppHeader tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as Tab)} />
 
       <MainLayout>
         {renderActiveTab()}
@@ -71,13 +77,14 @@ function App() {
 
       <ToastContainer position="top-right" />
 
-      {/* Level-Up Detail Modal */}
-      <LevelUpDetailModal
-        levelUpDetails={levelUpDetails}
-        isOpen={showLevelUpModal}
-        onClose={closeLevelUpModal}
-      />
-    </div>
+        {/* Level-Up Detail Modal */}
+        <LevelUpDetailModal
+          levelUpDetails={levelUpDetails}
+          isOpen={showLevelUpModal}
+          onClose={closeLevelUpModal}
+        />
+      </div>
+    </TabContext.Provider>
   );
 }
 

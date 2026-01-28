@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Waves, Music, Sparkles } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -7,6 +7,7 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { useTabContext } from '../../App';
 
 /**
  * AudioAnalysisTab Component
@@ -24,6 +25,8 @@ export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
   const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
+  const tabContext = useTabContext();
+  const previousTabRef = useRef<string | undefined>(undefined);
 
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
@@ -39,6 +42,24 @@ export function AudioAnalysisTab() {
   useEffect(() => {
     setAnimateBars(false);
   }, [selectedTrack]);
+
+  // Re-trigger animation when switching back to audio tab with existing profile
+  useEffect(() => {
+    if (!tabContext) return;
+
+    const currentTab = tabContext.activeTab;
+    const previousTab = previousTabRef.current;
+
+    // Check if we just switched TO the audio tab FROM a different tab
+    if (currentTab === 'audio' && previousTab !== 'audio' && audioProfile) {
+      // Reset and re-trigger the animation
+      setAnimateBars(false);
+      setTimeout(() => setAnimateBars(true), 50);
+    }
+
+    // Update previous tab ref
+    previousTabRef.current = currentTab;
+  }, [tabContext?.activeTab, audioProfile]);
 
   // Determine status indicator based on current state
   const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
@@ -57,76 +78,77 @@ export function AudioAnalysisTab() {
 
   return (
     <div className="audio-analysis-container">
-      {/* Header with Icon Badge and Status Indicator */}
+      {/* Header with Icon Badge, Title, Selected Song, and Status */}
       <div className="audio-analysis-header">
-        <div className="audio-analysis-header-content">
+        <div className="audio-analysis-header-left">
           <div className="audio-analysis-header-title-row">
             <div className="audio-analysis-header-icon-wrapper">
               <Waves className="audio-analysis-header-icon" />
             </div>
-            <h2 className="audio-analysis-header-title">Audio Analysis</h2>
+            <div className="audio-analysis-header-titles">
+              <h2 className="audio-analysis-header-title">Audio Analysis</h2>
+              <div className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</div>
+            </div>
           </div>
-          <div className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</div>
         </div>
-        <StatusIndicator
-          status={getAnalysisStatus()}
-          label={getStatusLabel()}
-        />
+        <div className="audio-analysis-header-right">
+          {selectedTrack && (
+            <div className="audio-analysis-selected-track">
+              <div className="audio-analysis-selected-track-image">
+                {selectedTrack.image_url ? (
+                  <img src={selectedTrack.image_url} alt={selectedTrack.title} />
+                ) : (
+                  <Music className="audio-analysis-selected-track-fallback" />
+                )}
+              </div>
+              <div className="audio-analysis-selected-track-info">
+                <div className="audio-analysis-selected-track-title">{selectedTrack.title}</div>
+                <div className="audio-analysis-selected-track-artist">{selectedTrack.artist}</div>
+              </div>
+            </div>
+          )}
+          <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
+        </div>
       </div>
 
       {/* Empty State - No Track Selected */}
       {!selectedTrack && (
-        <Card variant="flat" padding="lg">
-          <div className="audio-analysis-empty-state">
-            <div className="audio-analysis-empty-icon-wrapper">
-              <span className="audio-analysis-empty-icon" role="img" aria-label="Music">
-                🎵
-              </span>
-            </div>
-            <h4 className="audio-analysis-empty-title">No Track Selected</h4>
-            <div className="audio-analysis-empty-description">
-              Select a track from the Playlist tab to analyze its audio frequencies and extract color palettes.
-            </div>
-          </div>
-        </Card>
+        <div className="audio-analysis-empty-state">
+          <div className="audio-analysis-empty-icon">🎵</div>
+          <h2 className="audio-analysis-empty-title">Select a Track</h2>
+          <p className="audio-analysis-empty-subtitle">Choose from the Playlist tab to begin</p>
+        </div>
       )}
 
-      {selectedTrack && (
-        <>
-          {/* Selected Track Card */}
-          <Card variant="elevated" padding="md" className="audio-analysis-track-card">
-            <div className="audio-analysis-track-info">
-              <div className="audio-analysis-track-icon">
-                {selectedTrack.image_url ? (
-                  <img
-                    src={selectedTrack.image_url}
-                    alt={selectedTrack.title}
-                    className="audio-analysis-track-image"
-                  />
-                ) : (
-                  <Music className="audio-analysis-track-music-icon" />
-                )}
-              </div>
-              <div className="audio-analysis-track-details">
-                <div className="audio-analysis-track-title">{selectedTrack.title}</div>
-                <div className="audio-analysis-track-artist">{selectedTrack.artist}</div>
-              </div>
+      {selectedTrack && !audioProfile && (
+        <div className="audio-analysis-ready-state">
+          <div className="audio-analysis-ready-track">
+            <div className="audio-analysis-ready-image">
+              {selectedTrack.image_url ? (
+                <img src={selectedTrack.image_url} alt={selectedTrack.title} />
+              ) : (
+                <Music className="audio-analysis-ready-fallback" />
+              )}
             </div>
-          </Card>
-
-          {/* Analyze Button */}
+            <div className="audio-analysis-ready-info">
+              <div className="audio-analysis-ready-title">{selectedTrack.title}</div>
+              <div className="audio-analysis-ready-artist">{selectedTrack.artist}</div>
+            </div>
+          </div>
           <Button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
             isLoading={isAnalyzing}
             variant="primary"
             size="lg"
-            className="audio-analysis-analyze-button"
+            className="audio-analysis-analyze-button-large"
           >
             {isAnalyzing ? `Analyzing... ${progress}%` : 'Analyze Audio'}
           </Button>
+        </div>
+      )}
 
-          {audioProfile && (
+      {selectedTrack && audioProfile && (
             <div className="audio-analysis-results fade-in">
               {/* Frequency Band Bar Chart Visualization */}
               <Card variant="elevated" padding="md" className="audio-analysis-card">
@@ -354,7 +376,7 @@ export function AudioAnalysisTab() {
               </Card>
 
               {/* Analysis Metadata */}
-              <Card variant="elevated" padding="md" className="audio-analysis-card">
+              <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--metadata">
                 <h3 className="audio-analysis-card-title">Analysis Metadata</h3>
                 <div className="audio-analysis-metadata-list">
                   <div className="audio-analysis-metadata-item">
@@ -390,8 +412,6 @@ export function AudioAnalysisTab() {
               />
             </div>
           )}
-        </>
-      )}
     </div>
   );
 }
