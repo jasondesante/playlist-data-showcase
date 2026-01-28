@@ -8,13 +8,13 @@
  * XP processing and level-up modals are handled by useSessionCompletion hook at the App level.
  */
 
+import { useState } from 'react';
 import { Play, Pause, Square, Music } from 'lucide-react';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { formatTime } from '@/utils/formatters';
-import { logger } from '@/utils/logger';
 import type { TabItem } from './Sidebar';
 
 interface AppHeaderProps {
@@ -37,9 +37,10 @@ export function AppHeader({
   activeTab,
   onTabChange
 }: AppHeaderProps) {
+  const [hasStopped, setHasStopped] = useState(false);
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, stop } = useAudioPlayerStore();
-  const { endSession: hookEndSession, isActive: isSessionActive } = useSessionTracker();
+  const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
+  const { isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
   // Always show mini player (with placeholder state when no audio is loaded)
@@ -54,6 +55,11 @@ export function AppHeader({
       pause();
       pauseSession();
     } else {
+      // If was stopped, seek to beginning first
+      if (hasStopped) {
+        seek(0);
+        setHasStopped(false);
+      }
       // Resume both audio and session
       resume();
       resumeSession();
@@ -61,16 +67,18 @@ export function AppHeader({
   };
 
   const handleStop = () => {
-    // End the session - XP processing is handled by useSessionCompletion hook
-    const session = hookEndSession();
-    if (!session) {
-      logger.info('SessionTracker', 'Stop clicked but no active session - stopping audio only');
-    }
-    // Always stop audio
-    stop();
+    // Pause both audio and session
+    pause();
+    pauseSession();
+
+    // Set hasStopped flag (don't call pause - it triggers auto-end effect causing double XP)
+    setHasStopped(true);
   };
 
   const isPlaying = playbackState === 'playing';
+
+  // Display 0 for time when hasStopped
+  const displayTime = hasStopped ? 0 : currentTime;
 
   return (
     <>
@@ -125,7 +133,7 @@ export function AppHeader({
 
                     <div className="mini-player-time">
                       <span className="mini-player-current-time">
-                        {formatTime(Math.floor(currentTime))}
+                        {formatTime(Math.floor(displayTime))}
                       </span>
                       <span className="mini-player-time-separator">/</span>
                       <span className="mini-player-total-time">
