@@ -112,12 +112,14 @@ The CharacterGenTab doesn't display many fields from the character JSON, includi
 ## Tasks
 
 ### Task 2.1: Update race/class display format
-- [ ] Change from "Level X Race Class" to "Race: Elf | Class: Rogue"
-- [ ] Keep level badge in its current position
-- [ ] Update the character class subtitle display
+- [x] Change from "Level X Race Class" to "Race: Elf | Class: Rogue"
+- [x] Keep level badge in its current position
+- [x] Update the character class subtitle display
 
 **Files**:
 - [src/components/Tabs/CharacterGenTab.tsx:423-427](src/components/Tabs/CharacterGenTab.tsx)
+
+**Summary**: Updated the character class subtitle display from "Level X Race Class" format to "Race: {race} | Class: {class}" format. The level badge remains on the avatar as a separate element, keeping the original design intent while making the race/class information more explicit and readable.
 
 ### Task 2.2: Add proficiency bonus display
 - [ ] Create a new stat card for proficiency bonus

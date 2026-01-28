@@ -408,7 +408,7 @@ export function CharacterGenTab() {
                     )}
                   </div>
                   <div className="character-class">
-                    Level {character.level} {character.race} {character.class}
+                    Race: {character.race} | Class: {character.class}
                   </div>
                   <div className="character-xp">
                     XP: {character.xp.current} / {character.xp.next_level}
