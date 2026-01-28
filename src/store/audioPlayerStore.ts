@@ -38,6 +38,8 @@ interface AudioPlayerState {
     updateDuration: (duration: number) => void;
     setPlaybackState: (state: PlaybackState) => void;
     setError: (error: string | null) => void;
+    /** Load a track URL without starting playback (preloads the audio) */
+    load: (url: string) => void;
 }
 
 // Global HTML5 Audio instance
@@ -199,6 +201,19 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         audio.pause();
         audio.currentTime = 0;
         set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null });
+    },
+
+    load: (url: string) => {
+        const audio = getAudioElement();
+        const currentUrl = get().currentUrl;
+
+        // Only load if it's a different URL
+        if (currentUrl !== url) {
+            audio.src = url;
+            // Set to paused state (ready to play) rather than loading
+            // The canplay event will transition to 'paused' when ready
+            set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
+        }
     },
 
     seek: (time: number) => {

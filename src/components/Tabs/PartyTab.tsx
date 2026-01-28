@@ -9,6 +9,7 @@ import { useState, useMemo } from 'react';
 import { Users, Search, X, Trash2 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { CharacterCard } from '../ui/CharacterCard';
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
 import { logger } from '../../utils/logger';
@@ -119,6 +120,8 @@ export function PartyTab() {
 
     // NEW: Find and select the corresponding track for bidirectional sync
     const { currentPlaylist, selectTrack } = usePlaylistStore.getState();
+    const { load } = useAudioPlayerStore.getState();
+
     if (currentPlaylist) {
       const matchingTrack = currentPlaylist.tracks.find((t) => t.id === characterSeed);
       if (matchingTrack) {
@@ -128,6 +131,10 @@ export function PartyTab() {
           trackTitle: matchingTrack.title
         });
         selectTrack(matchingTrack);
+        // CRITICAL FIX: Load the new track into the audio player so it's ready to play
+        // Without this, currentUrl remains outdated and clicking play won't work
+        // Using load() instead of play() to avoid auto-playing - user clicks play button
+        load(matchingTrack.audio_url);
       } else {
         logger.warn('Store', 'PartyTab: Could not find track for active character', {
           characterSeed,

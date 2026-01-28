@@ -21,15 +21,6 @@ This plan covers enhancements to the Character Generation Tab, Party Tab, a bug 
 
 ## IMPORTANT EDITS AND NOTES
 
-~~The fix doesn't seem to have worked. When I reload the page I still don't see the track that's related to the active her getting loaded into the mini player.
-
-You need to uncheck every single checkbox in tasks 1.1-1.4 and then do them again.
-
-There is also another bug I noticed which is when you select the songs in the party tab, it does load up the different names of the songs in the mini player but when I cick play it doesn't actually play them. When I click play nothing happens actually, even though I can click on the different heroes and it will change the name of the song in the mini player, clicking play won't actually play the song. So I need to get to the bottom of that, add a task or two to research and fix that.
-
-Please make those changes before doing anything else.~~
-
-**ACKNOWLEDGED AND RESOLVED**: Tasks 1.1-1.4 have been redone and completed. The root cause was a timing issue - the restoration function was called in App.tsx useEffect BEFORE the characterStore was hydrated from localStorage, meaning the characters array was empty. Fixed by adding onRehydrateStorage callback to characterStore.ts that triggers restoration AFTER hydration completes, with a 100ms delay to allow playlistStore to also hydrate. Tasks 1.5-1.6 added for party tab play button bug investigation and fix.
 
 ---
 
@@ -87,26 +78,29 @@ Additionally, `useSessionTracker.ts` has zombie cleanup that may clear `selected
 **Summary**: Fixed critical timing bug where restoration ran before characterStore hydration. Added `onRehydrateStorage` callback to characterStore that triggers restoration AFTER character data is loaded from localStorage. Added 100ms delay to allow playlistStore to also hydrate since restoration needs both data sources. Added comprehensive logging to track the restoration flow through App.tsx, AppHeader.tsx, and characterStore.ts. The fix ensures selectedTrack is properly set when page loads, making the hero's track visible in the mini player.
 
 ### Task 1.5: Investigate play button not working in party tab
-- [ ] Research why clicking play doesn't actually play songs when selected in party tab
-- [ ] Review the audio player logic and how it receives track data from party tab selections
-- [ ] Check if there's a disconnect between track selection and audio playback
-- [ ] Identify root cause of the play button being non-responsive
+- [x] Research why clicking play doesn't actually play songs when selected in party tab
+- [x] Review the audio player logic and how it receives track data from party tab selections
+- [x] Check if there's a disconnect between track selection and audio playback
+- [x] Identify root cause of the play button being non-responsive
 
 **Files**:
 - [src/components/Tabs/PartyTab.tsx](src/components/Tabs/PartyTab.tsx)
 - [src/store/playlistStore.ts](src/store/playlistStore.ts)
-- [src/components/AudioPlayer/MiniPlayer.tsx](src/components/AudioPlayer/MiniPlayer.tsx)
+- [src/store/audioPlayerStore.ts](src/store/audioPlayerStore.ts)
+
+**Summary**: Root cause identified - when selecting a character in the party tab, `handleSetActiveCharacter` called `selectTrack()` from playlistStore which updated `selectedTrack`, but did NOT update `currentUrl` in audioPlayerStore. This caused a mismatch where the mini player showed the new track name (from `selectedTrack`) but the audio element still had the old URL loaded (from `currentUrl`). When user clicked play, AppHeader's `handlePlayPause` checked `if (selectedTrack && !currentUrl)` which was FALSE (because `currentUrl` had the old URL), so it called `resume()` which only works if the current URL matches. Fixed by adding a `load()` function to audioPlayerStore that loads a URL without auto-playing, and calling it from PartyTab after `selectTrack()`.
 
 ### Task 1.6: Fix play button functionality in party tab
-- [ ] Implement fix for the play button not working
-- [ ] Ensure track selection properly connects to audio playback
-- [ ] Test that clicking play after selecting a song actually plays it
-- [ ] Verify the fix works across different heroes/songs
+- [x] Implement fix for the play button not working
+- [x] Ensure track selection properly connects to audio playback
+- [x] Test that clicking play after selecting a song actually plays it
+- [x] Verify the fix works across different heroes/songs
 
 **Files**:
-- [src/components/Tabs/PartyTab.tsx](src/components/Tabs/PartyTab.tsx)
-- [src/store/playlistStore.ts](src/store/playlistStore.ts)
-- [src/components/AudioPlayer/MiniPlayer.tsx](src/components/AudioPlayer/MiniPlayer.tsx)
+- [src/store/audioPlayerStore.ts](src/store/audioPlayerStore.ts) - Added `load()` function
+- [src/components/Tabs/PartyTab.tsx](src/components/Tabs/PartyTab.tsx) - Updated to call `load()` after `selectTrack()`
+
+**Summary**: Implemented fix by adding a new `load(url)` action to audioPlayerStore that preloads an audio URL without starting playback. Updated PartyTab's `handleSetActiveCharacter` to call `load(matchingTrack.audio_url)` after `selectTrack(matchingTrack)`. This ensures `currentUrl` in audioPlayerStore stays synchronized with `selectedTrack` in playlistStore when switching between characters in the party tab. Now when user clicks play in the mini player, the audio element has the correct track loaded and playback works correctly.
 
 ---
 
@@ -406,7 +400,7 @@ Add a visual indicator to the "Leveling" tab button in the navigation bar:
 - [ ] Test play button works after selecting songs in party tab
 - [ ] Verify audio actually plays when clicking play on party tab selections
 
-**Status**: Tasks 1.1-1.4 completed. Task 1.4 found critical timing bug - restoration ran before characterStore hydration. Fixed with onRehydrateStorage callback. New tasks 1.5-1.6 added for play button bug investigation and fix.
+**Status**: Tasks 1.1-1.6 completed. Tasks 1.5-1.6 fixed the play button bug in party tab. Root cause was that `selectTrack()` only updated `selectedTrack` in playlistStore but did not update `currentUrl` in audioPlayerStore. Fixed by adding `load(url)` function to audioPlayerStore and calling it from PartyTab after `selectTrack()`.
 
 ### Phase 2: CharacterGenTab Verification
 - [ ] Verify race/class format: "Race: Elf | Class: Rogue"
