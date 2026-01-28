@@ -270,7 +270,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Input field with icons */
 .input-field-with-left-icon {
-  padding-left: 2.75rem;
+  padding-left: 3rem;
 }
 
 .input-field-with-right-icon {

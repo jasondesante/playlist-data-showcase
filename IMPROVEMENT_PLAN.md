@@ -253,15 +253,17 @@ The PartyTab has several issues:
 **Summary**: Added missing CSS variables to base.css for PartyTab styles. Added `--surface-dim: 222.2 84% 4%` for dimmed surface backgrounds and HSL component variables `--surface-h: 222.2`, `--surface-s: 84%`, `--surface-l: 6.5%` for HSL color construction. Also added semantic color aliases `--color-surface-dim`, `--color-surface-h`, `--color-surface-s`, and `--color-surface-l` to match the naming pattern used in PartyTab.css. These variables provide the foundation for consistent surface color theming in the PartyTab modal and other components.
 
 ### Task 3.2: Investigate and fix search input icon overlap
-- [ ] Inspect the Search icon rendering (lucide-react)
-- [ ] Check if the "O" is actually the magnifying glass circle rendering poorly
-- [ ] Add left padding to the placeholder text
-- [ ] Fix icon container spacing
+- [x] Inspect the Search icon rendering (lucide-react)
+- [x] Check if the "O" is actually the magnifying glass circle rendering poorly
+- [x] Add left padding to the placeholder text
+- [x] Fix icon container spacing
 
 **Files**:
 - [src/components/ui/Input.tsx:96-102](src/components/ui/Input.tsx)
-- [src/components/ui/Input.css](src/components/ui/Input.css)
+- [src/styles/components/Input.css:272-274](src/styles/components/Input.css)
 - [src/components/Tabs/PartyTab.tsx:190-199](src/components/Tabs/PartyTab.tsx)
+
+**Summary**: The "O" overlap was caused by the Search icon's magnifying glass circle being too close to the placeholder text. The icon is positioned at `left: 0.75rem` with a width of `1.25rem` (for md size), spanning from 0.75rem to 2.0rem. The original padding-left was 2.75rem, which only provided 0.75rem of space. Fixed by increasing the padding-left from 2.75rem to 3rem, providing adequate space between the icon and the placeholder text.
 
 ### Task 3.3: Create date added toggle/pill buttons
 - [ ] Replace select dropdown with expandable dropdown button
