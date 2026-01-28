@@ -507,6 +507,52 @@ export const useCharacterStore = create<CharacterState>()(
         {
             name: 'character-storage',
             storage: createJSONStorage(() => storage),
+            // Callback after zustand finishes hydrating from localStorage
+            // This is critical because we need the characters array to be loaded before we can restore
+            // the selected track from the active character
+            onRehydrateStorage: () => {
+                return (state) => {
+                    if (state?.activeCharacterId && state.characters.length > 0) {
+                        logger.info('Store', 'Character store rehydrated from storage, triggering track restoration', {
+                            activeCharacterId: state.activeCharacterId,
+                            characterCount: state.characters.length,
+                            characterNames: state.characters.map(c => ({ name: c.name, seed: c.seed }))
+                        });
+
+                        // Small delay to ensure playlist store has also hydrated
+                        // This is because restoration needs both character AND playlist data
+                        setTimeout(() => {
+                            const activeChar = state.characters.find(c => c.seed === state.activeCharacterId);
+                            if (activeChar && state.activeCharacterId) {
+                                logger.info('Store', 'Post-rehydration: Starting track restoration for active character', {
+                                    characterName: activeChar.name,
+                                    characterSeed: activeChar.seed
+                                });
+
+                                // Call the restoration logic directly
+                                // We need to manually trigger the restoration since we're in a callback
+                                // Non-null assertion is safe here because we checked above
+                                attemptTrackRestorationAsync(state.activeCharacterId!, state.characters).then((result) => {
+                                    if (!result.stopRetrying) {
+                                        logger.info('Store', 'Post-rehydration: Playlist not loaded yet, setting up retry listener');
+                                        setupPlaylistListener(state.activeCharacterId!, state.characters);
+                                    }
+                                }).catch((error) => {
+                                    logger.error('Store', 'Post-rehydration: Error during track restoration', error);
+                                    if (state.activeCharacterId) {
+                                        setupPlaylistListener(state.activeCharacterId, state.characters);
+                                    }
+                                });
+                            }
+                        }, 100); // 100ms delay to allow playlist store to hydrate
+                    } else {
+                        logger.info('Store', 'Character store rehydrated but no active character or characters found', {
+                            activeCharacterId: state?.activeCharacterId,
+                            characterCount: state?.characters?.length ?? 0
+                        });
+                    }
+                };
+            },
         }
     )
 );

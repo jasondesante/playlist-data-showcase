@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useEffect } from 'react';
+import { useState, createContext, useContext } from 'react';
 import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -18,9 +18,6 @@ import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
-import { useCharacterStore } from './store/characterStore';
-import { usePlaylistStore } from './store/playlistStore';
-import { logger } from './utils/logger';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -38,40 +35,10 @@ function App() {
   // Handle session completion - process XP and show level-up modals
   const { showLevelUpModal, levelUpDetails, closeLevelUpModal } = useSessionCompletion();
 
-  // Restore selectedTrack from activeCharacterId on app mount
-  // This ensures hero-track synchronization after page reload
-  useEffect(() => {
-    logger.info('System', 'Mount: Starting track restoration from active character');
-    const { restoreSelectedTrackFromActiveCharacter, activeCharacterId, characters } = useCharacterStore.getState();
-    logger.info('System', 'Mount: Character state', {
-      activeCharacterId,
-      characterCount: characters.length,
-      characterNames: characters.map(c => ({ name: c.name, seed: c.seed }))
-    });
-
-    // Log playlist state before restoration
-    const playlistBefore = usePlaylistStore.getState().currentPlaylist;
-    const selectedTrackBefore = usePlaylistStore.getState().selectedTrack;
-    logger.info('System', 'Mount: Playlist state before restoration', {
-      hasPlaylist: !!playlistBefore,
-      playlistName: playlistBefore?.name,
-      trackCount: playlistBefore?.tracks.length,
-      hasSelectedTrack: !!selectedTrackBefore,
-      selectedTrackId: selectedTrackBefore?.id
-    });
-
-    restoreSelectedTrackFromActiveCharacter();
-
-    // Log playlist state after restoration
-    setTimeout(() => {
-      const selectedTrackAfter = usePlaylistStore.getState().selectedTrack;
-      logger.info('System', 'Mount: Playlist state after restoration (100ms delay)', {
-        hasSelectedTrack: !!selectedTrackAfter,
-        selectedTrackId: selectedTrackAfter?.id,
-        selectedTrackTitle: selectedTrackAfter?.title
-      });
-    }, 100);
-  }, []); // Only run once on mount
+  // Note: Track restoration from activeCharacterId is now handled by the
+  // onRehydrateStorage callback in characterStore.ts, which fires AFTER
+  // the character data is loaded from localStorage. This ensures that
+  // the characters array is populated before we try to find the active character.
 
   const tabs: TabItem[] = [
     { id: 'playlist', label: 'Playlist', icon: Music },
