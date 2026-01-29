@@ -562,18 +562,40 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/XPCalculatorTab.css`
 
 **Sub-tasks**:
-- [ ] **3.3.1** Research: Create a `useMemo` or `useEffect` that recalculates XP whenever inputs change (duration, environmental, gaming, mastery, manual)
-- [ ] **3.3.2** Implementation: Calculate `estimatedXP` using the same logic as `handleCalculate` but without applying
-- [ ] **3.3.3** Implementation: Create a display component showing:
-  - [ ] **3.3.3.1** Estimated Total XP (prominent)
-  - [ ] **3.3.3.2** Brief breakdown (Base: 180, Environmental: +45, etc.)
-- [ ] **3.3.4** Implementation: Place this display above the Calculate button (lines 571-599)
-- [ ] **3.3.5** Implementation: Update calculation whenever any input changes
-- [ ] **3.3.6** CSS: Style the estimate display to look like a preview/summary
-- [ ] **3.3.7** CSS: Ensure it's visually distinct from the actual results
-- [ ] **3.3.8** Testing: Verify estimate updates when duration changes
-- [ ] **3.3.9** Testing: Verify estimate updates when toggles change
-- [ ] **3.3.10** Testing: Verify estimate matches actual calculated result
+- [x] **3.3.1** Research: Create a `useMemo` or `useEffect` that recalculates XP whenever inputs change (duration, environmental, gaming, mastery, manual)
+- [x] **3.3.2** Implementation: Calculate `estimatedXP` using the same logic as `handleCalculate` but without applying
+- [x] **3.3.3** Implementation: Create a display component showing:
+  - [x] **3.3.3.1** Estimated Total XP (prominent)
+  - [x] **3.3.3.2** Brief breakdown (Base: 180, Environmental: +45, etc.)
+- [x] **3.3.4** Implementation: Place this display above the Calculate button (lines 571-599)
+- [x] **3.3.5** Implementation: Update calculation whenever any input changes
+- [x] **3.3.6** CSS: Style the estimate display to look like a preview/summary
+- [x] **3.3.7** CSS: Ensure it's visually distinct from the actual results
+- [x] **3.3.8** Testing: Verify estimate updates when duration changes
+- [x] **3.3.9** Testing: Verify estimate updates when toggles change
+- [x] **3.3.10** Testing: Verify estimate matches actual calculated result
+
+**Summary of Findings**:
+- Added `useMemo` hook `estimatedXP` that recalculates whenever any input changes: `duration`, `environmentalContext`, `gamingContext`, `isMastered`, `isManualMode`, `manualOverrides`
+- Uses the same `calculateXP` function as `handleCalculate` but doesn't apply to character
+- Created a new `xp-estimate-card` component with:
+  - Header with "Estimated XP" title and "Preview" badge
+  - Prominent total XP display (1.75rem/2rem font size, centered, with gradient background)
+  - Breakdown rows showing Base XP and any bonuses (Environmental, Gaming, Mastery)
+  - Color-coded bonus rows (teal for environmental, primary for gaming, purple for mastery)
+  - Hint text: "Updates automatically as you change inputs above"
+- CSS styling for preview/summary look:
+  - Dashed border with primary color (`hsl(var(--primary) / 0.4)`)
+  - Top gradient bar with primary to cute-yellow colors
+  - Light gradient background (`linear-gradient(135deg, hsl(var(--surface-1)), hsl(var(--surface-2) / 0.7))`)
+  - "Preview" badge with uppercase text, letter-spacing, and pill shape
+- Visual distinction from actual results:
+  - Estimate card uses dashed border vs solid border for results
+  - Estimate has lighter background vs gradient background for results total card
+  - "Preview" badge clearly indicates this is a preview, not final
+  - Smaller font sizes compared to results section (1.75rem/2rem vs 2rem/2.5rem for total)
+- Real-time updates work automatically through `useMemo` dependency array
+- Build completed successfully with no errors
 
 **Reference**:
 - React `useMemo` for derived values

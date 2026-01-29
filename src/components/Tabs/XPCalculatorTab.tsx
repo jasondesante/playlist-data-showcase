@@ -110,6 +110,17 @@ export function XPCalculatorTab() {
     return classEmojis[charClass] || '👤';
   };
 
+  // Estimated XP calculation - updates in real-time as inputs change (Task 3.3.1)
+  const estimatedXP = useMemo<XPBreakdown | null>(() => {
+    return calculateXP(
+      duration,
+      isManualMode ? undefined : environmentalContext || undefined,
+      isManualMode ? undefined : gamingContext || undefined,
+      isMastered,
+      isManualMode ? manualOverrides : undefined
+    );
+  }, [duration, environmentalContext, gamingContext, isMastered, isManualMode, manualOverrides, calculateXP]);
+
   const handleCalculate = async () => {
     const xpResult = calculateXP(
       duration,
@@ -601,6 +612,47 @@ export function XPCalculatorTab() {
             )}
           </Card>
         </div>
+
+        {/* Estimated XP Display (Task 3.3.3 - 3.3.4) */}
+        {estimatedXP && (
+          <Card variant="default" padding="md" className="xp-estimate-card">
+            <div className="xp-estimate-header">
+              <h3 className="xp-estimate-title">Estimated XP</h3>
+              <span className="xp-estimate-badge">Preview</span>
+            </div>
+            <div className="xp-estimate-total">
+              <span className="xp-estimate-value">{estimatedXP.totalXP.toLocaleString()}</span>
+              <span className="xp-estimate-label">Total XP</span>
+            </div>
+            <div className="xp-estimate-breakdown">
+              <div className="xp-estimate-row">
+                <span className="xp-estimate-row-label">Base XP</span>
+                <span className="xp-estimate-row-value">{estimatedXP.baseXP} XP</span>
+              </div>
+              {estimatedXP.environmentalBonusXP > 0 && (
+                <div className="xp-estimate-row bonus-environmental">
+                  <span className="xp-estimate-row-label">Environmental</span>
+                  <span className="xp-estimate-row-value">+{estimatedXP.environmentalBonusXP} XP</span>
+                </div>
+              )}
+              {estimatedXP.gamingBonusXP > 0 && (
+                <div className="xp-estimate-row bonus-gaming">
+                  <span className="xp-estimate-row-label">Gaming</span>
+                  <span className="xp-estimate-row-value">+{estimatedXP.gamingBonusXP} XP</span>
+                </div>
+              )}
+              {estimatedXP.masteryBonusXP > 0 && (
+                <div className="xp-estimate-row bonus-mastery">
+                  <span className="xp-estimate-row-label">Mastery</span>
+                  <span className="xp-estimate-row-value">+{estimatedXP.masteryBonusXP} XP</span>
+                </div>
+              )}
+            </div>
+            <div className="xp-estimate-hint">
+              Updates automatically as you change inputs above
+            </div>
+          </Card>
+        )}
 
         {/* Calculate & Apply Button */}
         <div className="xp-calculate-section">

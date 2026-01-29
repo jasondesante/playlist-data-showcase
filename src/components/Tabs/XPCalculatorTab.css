@@ -835,6 +835,193 @@
 }
 
 /* ========================================
+   ESTIMATED XP DISPLAY (Task 3.3)
+   ======================================== */
+
+.xp-estimate-card {
+  background: linear-gradient(135deg, hsl(var(--surface-1)), hsl(var(--surface-2) / 0.7));
+  border: 1px dashed hsl(var(--primary) / 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-estimate-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.6), hsl(var(--cute-yellow) / 0.6));
+}
+
+.xp-estimate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-header {
+    margin-bottom: 1rem;
+  }
+}
+
+.xp-estimate-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-title {
+    font-size: 0.875rem;
+  }
+}
+
+.xp-estimate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.15);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-badge {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.625rem;
+  }
+}
+
+.xp-estimate-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.1), transparent);
+  border-radius: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-total {
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+  }
+}
+
+.xp-estimate-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-value {
+    font-size: 2rem;
+  }
+}
+
+.xp-estimate-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-label {
+    font-size: 0.75rem;
+  }
+}
+
+.xp-estimate-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-breakdown {
+    gap: 0.5rem;
+  }
+}
+
+.xp-estimate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background-color: hsl(var(--surface-1) / 0.5);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-row {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+}
+
+.xp-estimate-row-label {
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.xp-estimate-row-value {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-family: ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+.xp-estimate-row.bonus-environmental .xp-estimate-row-label,
+.xp-estimate-row.bonus-environmental .xp-estimate-row-value {
+  color: hsl(var(--cute-teal));
+}
+
+.xp-estimate-row.bonus-gaming .xp-estimate-row-label,
+.xp-estimate-row.bonus-gaming .xp-estimate-row-value {
+  color: hsl(var(--primary));
+}
+
+.xp-estimate-row.bonus-mastery .xp-estimate-row-label,
+.xp-estimate-row.bonus-mastery .xp-estimate-row-value {
+  color: hsl(var(--cute-purple));
+}
+
+.xp-estimate-hint {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .xp-estimate-hint {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ========================================
    CALCULATE BUTTON SECTION
    ======================================== */
 
