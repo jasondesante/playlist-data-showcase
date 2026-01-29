@@ -25,14 +25,14 @@ import { useTabContext } from '../../App';
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
   const { playbackState } = useAudioPlayerStore();
-  const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
+  const { analyzeTrackWithPalette, isAnalyzing, progress } = useAudioAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
 
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
-    const profile = await analyzeTrack(selectedTrack.audio_url);
+    const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url);
     if (profile) {
       setAudioProfile(profile);
       // Trigger bar animation after profile is set
@@ -146,7 +146,7 @@ export function AudioAnalysisTab() {
             className="audio-analysis-analyze-button-large"
             title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
           >
-            {isAnalyzing ? `Analyzing... ${progress}%` : 'Analyze Audio'}
+            {isAnalyzing ? `Analyzing audio and extracting colors... ${progress}%` : 'Analyze Audio'}
           </Button>
         </div>
       )}
