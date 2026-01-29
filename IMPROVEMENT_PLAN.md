@@ -369,9 +369,9 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - [x] **4.1.6** CSS: Update `.leveling-header` to be a row instead of column
 - [x] **4.1.7** CSS: Add styles for inline character selector in header
 - [x] **4.1.8** CSS: Ensure responsive behavior (stacks on mobile, row on desktop)
-- [ ] **4.1.9** Testing: Verify header is more compact (less vertical height)
-- [ ] **4.1.10** Testing: Verify character selector is accessible
-- [ ] **4.1.11** Testing: Verify responsive behavior
+- [x] **4.1.9** Testing: Verify header is more compact (less vertical height)
+- [x] **4.1.10** Testing: Verify character selector is accessible
+- [x] **4.1.11** Testing: Verify responsive behavior
 
 **Reference**:
 - Flexbox layout with space-between
