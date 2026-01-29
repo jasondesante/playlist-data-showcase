@@ -974,7 +974,40 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/workspace/src/components/Tabs/SessionTrackingTab.tsx` - Add ARIA live regions, expand keyboard support
 
 **Build Verification**: Successfully completed `npm run build` with no compilation errors
-- [ ] **5.1.9** Check loading states and error handling
+- [x] **5.1.9** Check loading states and error handling
+
+**Summary of Findings**:
+- **Implemented loading states and error handling for PartyTab.tsx** - Previously identified as the tab with no loading states and no error handling
+- **Loading States Added**:
+  - `isSettingActive` state tracks when setting active character
+  - `settingActiveSeed` tracks which specific character is being set as active
+  - `isClearing` state tracks when clearing all characters
+  - Button uses built-in `isLoading` prop to show LoadingSpinner during clear operation
+  - CharacterCard shows spinner and "Setting..." text when setting as active
+  - Cards have visual feedback (opacity, pointer-events) during loading state
+- **Error Handling Added**:
+  - Try-catch blocks around async operations in `handleSetActiveCharacter` and `handleClearAll`
+  - Toast notifications for success/error states using `showToast()` utility
+  - Proper error logging with `logger.error()` for debugging
+  - Graceful handling of audio loading failures (shows warning toast if track selection succeeds but audio load fails)
+- **UI Improvements**:
+  - Clear All button disabled during clearing, shows "Clearing..." text and LoadingSpinner
+  - Set as Active button disabled and shows spinner during operation
+  - CharacterCard has `isLoading` prop to control button state
+  - CSS animation for button spinner (`@keyframes party-btn-spin`)
+  - `.party-card-loading` class for visual feedback on cards
+- **Files Modified**:
+  - `/workspace/src/components/Tabs/PartyTab.tsx` - Added loading states, error handling, toast notifications
+  - `/workspace/src/components/ui/CharacterCard.tsx` - Added `isLoading` prop and loading UI
+  - `/workspace/src/components/Tabs/PartyTab.css` - Added loading state styles and animations
+- **Build Verification**: Successfully completed `npm run build` with no compilation errors, TypeScript check passed, CSS linting passed
+
+**Reference**:
+- React async/await patterns for error handling
+- Toast notification patterns for user feedback
+- Loading state management with useState
+- Button component built-in isLoading prop
+
 - [ ] **5.1.10** Performance check - no significant performance regressions
 
 ---

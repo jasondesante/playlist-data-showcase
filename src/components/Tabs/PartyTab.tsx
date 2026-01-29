@@ -16,6 +16,7 @@ import { logger } from '../../utils/logger';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { showToast } from '../ui/Toast';
 import './PartyTab.css';
 
 type SortOption = 'date-added' | 'level' | 'name' | 'xp' | 'class';
@@ -64,6 +65,11 @@ export function PartyTab() {
   const [selectedCharacter, setSelectedCharacter] = useState<typeof characters[number] | null>(null);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Loading states
+  const [isSettingActive, setIsSettingActive] = useState(false);
+  const [settingActiveSeed, setSettingActiveSeed] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -132,39 +138,87 @@ export function PartyTab() {
     setSelectedCharacter(null);
   };
 
-  const handleClearAll = () => {
-    if (confirm(`Are you sure you want to delete all ${characters.length} character(s)? This cannot be undone.`)) {
+  const handleClearAll = async () => {
+    if (isClearing) return;
+
+    const confirmMessage = `Are you sure you want to delete all ${characters.length} character(s)? This cannot be undone.`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      logger.info('System', 'PartyTab: Clearing all characters', { count: characters.length });
       resetCharacters();
+      setSelectedCharacter(null);
+      showToast(`Successfully deleted ${characters.length} character(s)`, 'success');
+      logger.info('System', 'PartyTab: All characters cleared successfully');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear characters';
+      logger.error('System', 'PartyTab: Failed to clear characters', error);
+      showToast(errorMessage, 'error');
+    } finally {
+      setIsClearing(false);
     }
   };
 
-  const handleSetActiveCharacter = (characterSeed: string) => {
-    // Set the active character (existing behavior)
-    setActiveCharacter(characterSeed);
+  const handleSetActiveCharacter = async (characterSeed: string) => {
+    if (isSettingActive) return;
 
-    // NEW: Find and select the corresponding track for bidirectional sync
-    const { currentPlaylist, selectTrack } = usePlaylistStore.getState();
-    const { load } = useAudioPlayerStore.getState();
+    setIsSettingActive(true);
+    setSettingActiveSeed(characterSeed);
+    try {
+      // Find the character for toast message
+      const character = characters.find(c => c.seed === characterSeed);
+      const characterName = character?.name || 'Unknown character';
 
-    if (currentPlaylist) {
-      const matchingTrack = currentPlaylist.tracks.find((t) => t.id === characterSeed);
-      if (matchingTrack) {
-        logger.info('Store', 'PartyTab: Syncing track selection when setting active hero', {
-          characterSeed,
-          trackId: matchingTrack.id,
-          trackTitle: matchingTrack.title
-        });
-        selectTrack(matchingTrack);
-        // CRITICAL FIX: Load the new track into the audio player so it's ready to play
-        // Without this, currentUrl remains outdated and clicking play won't work
-        // Using load() instead of play() to avoid auto-playing - user clicks play button
-        load(matchingTrack.audio_url);
-      } else {
-        logger.warn('Store', 'PartyTab: Could not find track for active character', {
-          characterSeed,
-          playlistName: currentPlaylist.name
-        });
+      // Set the active character (existing behavior)
+      setActiveCharacter(characterSeed);
+
+      // NEW: Find and select the corresponding track for bidirectional sync
+      const { currentPlaylist, selectTrack } = usePlaylistStore.getState();
+      const { load } = useAudioPlayerStore.getState();
+
+      if (currentPlaylist) {
+        const matchingTrack = currentPlaylist.tracks.find((t) => t.id === characterSeed);
+        if (matchingTrack) {
+          logger.info('Store', 'PartyTab: Syncing track selection when setting active hero', {
+            characterSeed,
+            trackId: matchingTrack.id,
+            trackTitle: matchingTrack.title
+          });
+          selectTrack(matchingTrack);
+          // CRITICAL FIX: Load the new track into the audio player so it's ready to play
+          // Without this, currentUrl remains outdated and clicking play won't work
+          // Using load() instead of play() to avoid auto-playing - user clicks play button
+          try {
+            load(matchingTrack.audio_url);
+          } catch (loadError) {
+            logger.warn('Store', 'PartyTab: Failed to load track into audio player', {
+              trackId: matchingTrack.id,
+              error: loadError
+            });
+            // Track selection still worked, just audio loading failed - show warning toast
+            showToast(`Set ${characterName} as active (audio loading failed)`, 'warning');
+            return;
+          }
+        } else {
+          logger.warn('Store', 'PartyTab: Could not find track for active character', {
+            characterSeed,
+            playlistName: currentPlaylist.name
+          });
+        }
       }
+
+      showToast(`Set ${characterName} as active character`, 'success');
+      logger.info('System', 'PartyTab: Active character set successfully', { characterSeed, characterName });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to set active character';
+      logger.error('System', 'PartyTab: Failed to set active character', error);
+      showToast(errorMessage, 'error');
+    } finally {
+      setIsSettingActive(false);
+      setSettingActiveSeed(null);
     }
   };
 
@@ -210,9 +264,11 @@ export function PartyTab() {
           size="sm"
           onClick={handleClearAll}
           leftIcon={Trash2}
+          disabled={isClearing}
+          isLoading={isClearing}
           title={`Delete all ${characters.length} character(s)`}
         >
-          Clear All
+          {isClearing ? 'Clearing...' : 'Clear All'}
         </Button>
       </header>
 
@@ -278,6 +334,7 @@ export function PartyTab() {
             variant="selectable"
             isActive={character.seed === activeCharacterId}
             onSetActive={() => handleSetActiveCharacter(character.seed)}
+            isLoading={isSettingActive && settingActiveSeed === character.seed}
           />
         ))}
       </div>

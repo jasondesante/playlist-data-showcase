@@ -7,7 +7,7 @@
 
 import { CharacterSheet } from '@/types';
 import { getCharacterAvatar } from '@/utils/characterIcons';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 
 interface CharacterCardProps {
   /** The character to display */
@@ -20,6 +20,8 @@ interface CharacterCardProps {
   isActive?: boolean;
   /** Optional handler for setting this character as active */
   onSetActive?: () => void;
+  /** Whether the card is in a loading state (e.g., setting as active) */
+  isLoading?: boolean;
 }
 
 /**
@@ -41,7 +43,7 @@ function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
-export function CharacterCard({ character, onClick, variant = 'default', isActive, onSetActive }: CharacterCardProps) {
+export function CharacterCard({ character, onClick, variant = 'default', isActive, onSetActive, isLoading = false }: CharacterCardProps) {
   const progressPercent = calculateXPProgress(character);
   const avatar = getCharacterAvatar(character.class);
 
@@ -51,13 +53,16 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
     variant === 'selected' && 'party-card-selected',
     isActive && 'party-card-active',
     onClick && 'party-card-clickable',
+    isLoading && 'party-card-loading',
   ]
     .filter(Boolean)
     .join(' ');
 
   const handleSetActiveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSetActive?.();
+    if (!isLoading) {
+      onSetActive?.();
+    }
   };
 
   return (
@@ -114,8 +119,16 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
             className="party-card-set-active-btn"
             onClick={handleSetActiveClick}
             type="button"
+            disabled={isLoading}
           >
-            Set as Active
+            {isLoading ? (
+              <>
+                <Loader2 size={14} className="party-card-btn-spinner" />
+                Setting...
+              </>
+            ) : (
+              'Set as Active'
+            )}
           </button>
         </div>
       )}
