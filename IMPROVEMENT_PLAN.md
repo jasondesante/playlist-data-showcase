@@ -615,14 +615,37 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/XPCalculatorTab.css`
 
 **Sub-tasks**:
-- [ ] **3.4.1** Research: Examine current card sizes in the grid (`.xp-calculator-context-grid`)
-- [ ] **3.4.2** Implementation: Make duration input card span 2 columns in the grid (or full width on desktop)
-- [ ] **3.4.3** Implementation: Increase font size of the input field and label
-- [ ] **3.4.4** Implementation: Add visual emphasis (border, shadow, or background)
-- [ ] **3.4.5** CSS: Update grid layout to accommodate larger duration card
-- [ ] **3.4.6** CSS: Style the duration card to stand out from context cards
-- [ ] **3.4.7** Testing: Verify duration input draws visual attention
-- [ ] **3.4.8** Testing: Verify responsive layout works on mobile
+- [x] **3.4.1** Research: Examine current card sizes in the grid (`.xp-calculator-context-grid`)
+- [x] **3.4.2** Implementation: Make duration input card span 2 columns in the grid (or full width on desktop)
+- [x] **3.4.3** Implementation: Increase font size of the input field and label
+- [x] **3.4.4** Implementation: Add visual emphasis (border, shadow, or background)
+- [x] **3.4.5** CSS: Update grid layout to accommodate larger duration card
+- [x] **3.4.6** CSS: Style the duration card to stand out from context cards
+- [x] **3.4.7** Testing: Verify duration input draws visual attention
+- [x] **3.4.8** Testing: Verify responsive layout works on mobile
+
+**Summary of Findings**:
+- Grid layout (`.xp-calculator-context-grid`): Mobile has 1 column, Desktop (768px+) has 2 columns with `grid-template-columns: repeat(2, 1fr)`
+- Duration card previously used same class as grid container (incorrectly) - now uses unique `xp-duration-card` class
+- Implementation changes:
+  - Added `grid-column: 1 / -1` on desktop to make duration card span full width (all columns)
+  - Mobile retains single column layout naturally
+  - Increased padding from 0.875rem to 1.25rem (mobile) / 1.5rem (desktop)
+  - Added gradient background: `linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--surface-2)))`
+  - Added 2px primary border with 30% opacity, increases to 50% on hover
+  - Added top gradient bar (3px height) with primary to cute-yellow colors
+  - Added box shadow: `0 4px 12px hsl(var(--primary) / 0.1)` with hover enhancement
+  - Added hover effect: `translateY(-2px)` lift with increased shadow
+  - Input field styling:
+    - Font size increased to 1.25rem (mobile) / 1.5rem (desktop)
+    - Increased padding: 0.875rem / 1rem
+    - Increased min-height: 3rem / 3.5rem
+    - Added 2px border with 40% opacity, increases to 60% on hover
+    - Focus state: primary border color with 3px shadow ring and subtle scale(1.01)
+    - Label font size: 1rem / 1.125rem with font-weight 700
+    - Helper text: 0.875rem / 0.9375rem
+- Responsive behavior verified: Card stacks vertically on mobile, spans full width on desktop
+- Build completed successfully with no errors
 
 **Reference**:
 - CSS Grid span properties

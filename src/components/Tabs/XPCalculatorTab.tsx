@@ -387,8 +387,8 @@ export function XPCalculatorTab() {
         )}
 
         <div className="xp-calculator-context-grid">
-          {/* Duration Input Card */}
-          <Card variant="default" padding="md" className="xp-calculator-context-grid">
+          {/* Duration Input Card - Main Attraction */}
+          <Card variant="default" padding="md" className="xp-duration-card">
             <Input
               label="Duration (seconds)"
               type="number"
@@ -397,6 +397,7 @@ export function XPCalculatorTab() {
               min="0"
               max="3600"
               helperText={`${Math.floor(duration / 60)} minutes ${duration % 60} seconds`}
+              className="xp-duration-input"
             />
           </Card>
 

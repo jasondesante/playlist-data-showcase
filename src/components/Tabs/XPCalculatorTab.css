@@ -510,6 +510,104 @@
   }
 }
 
+/* Duration Card - Main Attraction (Task 3.4) */
+.xp-duration-card {
+  grid-column: 1;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--surface-2)));
+  border: 2px solid hsl(var(--primary) / 0.3);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.1);
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic),
+              transform var(--duration-fast) var(--ease-out-cubic);
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-duration-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-yellow)));
+}
+
+@media (min-width: 768px) {
+  .xp-duration-card {
+    grid-column: 1 / -1;
+    padding: 1.5rem;
+  }
+}
+
+.xp-duration-card:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 6px 16px hsl(var(--primary) / 0.15);
+  transform: translateY(-2px);
+}
+
+/* Duration input styling */
+.xp-duration-input {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.xp-duration-input input {
+  font-size: 1.25rem;
+  padding: 0.875rem;
+  min-height: 3rem;
+  border: 2px solid hsl(var(--primary) / 0.4);
+  background-color: hsl(var(--background));
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic),
+              transform var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-duration-input input:hover {
+  border-color: hsl(var(--primary) / 0.6);
+}
+
+.xp-duration-input input:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+  outline: none;
+  transform: scale(1.01);
+}
+
+.xp-duration-input label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.xp-duration-input .input-helper-text {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .xp-duration-input {
+    font-size: 1.25rem;
+  }
+
+  .xp-duration-input input {
+    font-size: 1.5rem;
+    padding: 1rem;
+    min-height: 3.5rem;
+  }
+
+  .xp-duration-input label {
+    font-size: 1.125rem;
+  }
+
+  .xp-duration-input .input-helper-text {
+    font-size: 0.9375rem;
+  }
+}
+
 /* Shared context card pattern */
 .xp-context-card {
   background-color: hsl(var(--surface-2));
