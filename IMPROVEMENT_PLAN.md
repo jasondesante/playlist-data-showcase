@@ -252,7 +252,7 @@ This plan outlines comprehensive improvements to four tabs in the application: A
     - **Can be reused** for Start/End button - already in use
   - **Summary**: All major UI components exist and can be reused. Main work is layout restructuring and CSS styling for new arrangement.
 - [x] **2.3.3** Implementation: Reduce header padding in CSS (`.session-tab-header`, `.session-tab-icon-badge`)
-- [ ] **2.3.4** Implementation: Remove the "Now Playing" card section (lines 230-242) - info will be moved
+- [x] **2.3.4** Implementation: Remove the "Now Playing" card section (lines 230-242) - info will be moved
 - [ ] **2.3.5** Implementation: Create a new "Hero & Song" grid section with two equal-width cards
   - [ ] **2.3.5.1** Left card: Hero info with combined XP display (in stats grid), clickable pending stats
   - [ ] **2.3.5.2** Right card: Song info with image, title, artist, Active/Inactive status badge
@@ -294,6 +294,16 @@ This plan outlines comprehensive improvements to four tabs in the application: A
   - Title: Fixed at `1.25rem` (removed responsive scaling), changed weight from `700` to `600`
   - Subtitle: Fixed at `0.75rem` (removed responsive scaling)
   - Subtitle margin: Reduced from `0.25rem` to `0.125rem`
+- Build completed successfully with no errors
+
+**Summary of Findings** (2.3.4):
+- The "Now Playing" card was a standalone `Card` component containing a `TrackCard` component
+- Located at lines 263-276 in SessionTrackingTab.tsx
+- Removed the entire card section including CardHeader with "Now Playing" title and CardContent with TrackCard
+- Removed unused `TrackCard` import from the imports
+- Removed CSS styles for `.session-track-card`, `.session-track-card-header`, `.session-track-card-title`, and `.session-track-card-content` (lines 125-145)
+- Updated component documentation comment to remove reference to TrackCard and add new feature descriptions
+- The track information (title, artist, duration) is still displayed in the Session Info card under "Session Details" (lines 411-422)
 - Build completed successfully with no errors
 
 **Reference**:

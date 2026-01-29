@@ -123,28 +123,6 @@
 }
 
 /* ========================================
-   SESSION TRACK CARD
-   ======================================== */
-
-.session-track-card {
-  overflow: hidden;
-}
-
-.session-track-card-header {
-  margin-bottom: 1rem;
-}
-
-.session-track-card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: hsl(var(--foreground));
-}
-
-.session-track-card-content {
-  padding: 0 !important;
-}
-
-/* ========================================
    TIMER RING COMPONENT
    ======================================== */
 

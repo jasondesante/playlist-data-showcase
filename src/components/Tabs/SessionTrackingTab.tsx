@@ -8,7 +8,6 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { TrackCard } from '../ui/TrackCard';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
 import type { ListeningSession, Ability } from 'playlist-data-engine';
@@ -27,7 +26,8 @@ const XP_THRESHOLDS = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 6400
  * - Card-based layout for session info
  * - Animated timer with ring progress
  * - Pulse effect on active session
- * - Selected track displayed in TrackCard
+ * - Real-time XP calculation during sessions
+ * - Character stats display with pending stat increases
  *
  * Engine module: SessionTracker
  */
@@ -260,21 +260,6 @@ export function SessionTrackingTab() {
         </Card>
       ) : (
         <div className="session-content">
-          {/* Selected Track Card */}
-          <Card variant="elevated" padding="md" className="session-track-card">
-            <CardHeader className="session-track-card-header">
-              <CardTitle className="session-track-card-title">Now Playing</CardTitle>
-            </CardHeader>
-            <CardContent className="session-track-card-content">
-              <TrackCard
-                track={selectedTrack}
-                isSelected={false}
-                onClick={() => {}}
-                size="compact"
-              />
-            </CardContent>
-          </Card>
-
           {/* Timer Section */}
           <div className="session-timer-layout">
             {/* Timer Ring Card */}
