@@ -370,13 +370,13 @@ export function PartyTab() {
                   {Object.entries(selectedCharacter.skills).map(([skill, prof]) => {
                     const modifier = selectedCharacter.ability_modifiers[
                       skill.includes('Athletics') ? 'STR' :
-                      skill.includes('Acrobatics|Sleight|Stealth') ? 'DEX' :
-                      skill.includes('Arcana|History|Investigation|Nature|Religion') ? 'INT' :
-                      skill.includes('Animal|Insight|Medicine|Perception|Survival') ? 'WIS' :
-                      'CHA'
+                        skill.includes('Acrobatics|Sleight|Stealth') ? 'DEX' :
+                          skill.includes('Arcana|History|Investigation|Nature|Religion') ? 'INT' :
+                            skill.includes('Animal|Insight|Medicine|Perception|Survival') ? 'WIS' :
+                              'CHA'
                     ] || 0;
                     const proficiencyBonus = prof === 'expertise' ? selectedCharacter.proficiency_bonus * 2 :
-                                           prof === 'proficient' ? selectedCharacter.proficiency_bonus : 0;
+                      prof === 'proficient' ? selectedCharacter.proficiency_bonus : 0;
                     const totalMod = modifier + proficiencyBonus;
 
                     return (
