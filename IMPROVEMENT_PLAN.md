@@ -295,14 +295,27 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/XPCalculatorTab.css`
 
 **Sub-tasks**:
-- [ ] **3.2.1** Research: Compare header styling in AudioAnalysisTab.css (lines 18-73) as reference
-- [ ] **3.2.2** Implementation: Reduce icon badge size from current to match other tabs (~2.25rem or 2.5rem)
-- [ ] **3.2.3** Implementation: Reduce title font size to match other tabs (~1.25rem or 1.5rem)
-- [ ] **3.2.4** Implementation: Reduce subtitle font size and vertical spacing
-- [ ] **3.2.5** CSS: Update `.xp-calculator-header` spacing/padding
-- [ ] **3.2.6** CSS: Update `.xp-calculator-header-icon` size
-- [ ] **3.2.7** CSS: Update `.xp-calculator-header-content` spacing
-- [ ] **3.2.8** Testing: Visually compare header size with other tabs
+- [x] **3.2.1** Research: Compare header styling in AudioAnalysisTab.css (lines 18-73) as reference
+- [x] **3.2.2** Implementation: Reduce icon badge size from current to match other tabs (~2.25rem or 2.5rem)
+- [x] **3.2.3** Implementation: Reduce title font size to match other tabs (~1.25rem or 1.5rem)
+- [x] **3.2.4** Implementation: Reduce subtitle font size and vertical spacing
+- [x] **3.2.5** CSS: Update `.xp-calculator-header` spacing/padding
+- [x] **3.2.6** CSS: Update `.xp-calculator-header-icon` size
+- [x] **3.2.7** CSS: Update `.xp-calculator-header-content` spacing
+- [x] **3.2.8** Testing: Visually compare header size with other tabs
+
+**Summary of Findings**:
+- AudioAnalysisTab header uses: `width: 2.25rem; height: 2.25rem` icon badge, `font-size: 1.25rem; font-weight: 600` title, `font-size: 0.75rem` subtitle, `gap: 0.125rem` between title/subtitle
+- XP Calculator tab previously had: `width: 2.5rem/3rem` icon badge (responsive), `font-size: 1.25rem/1.5rem` title (responsive), `font-size: 0.75rem/0.875rem` subtitle (responsive)
+- Changes made to XP Calculator header CSS:
+  - Icon badge: Reduced from `2.5rem/3rem` to `2.25rem` (removed responsive scaling)
+  - Icon emoji font size: Reduced from `1.25rem/1.5rem` to `1.125rem`
+  - Border radius: Reduced from `0.75rem` to `0.5rem` (matching AudioAnalysisTab)
+  - Title: Fixed at `1.25rem` (removed responsive scaling), changed weight from `700` to `600`
+  - Added `line-height: 1.2` to title and subtitle
+  - Added `gap: 0.125rem` to `.xp-calculator-header-content` for proper spacing
+  - Subtitle: Fixed at `0.75rem` (removed responsive scaling)
+- Build completed successfully with no errors
 
 **Reference**:
 - CSS sizing units (rem, px, em)
