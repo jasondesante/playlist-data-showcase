@@ -37,14 +37,15 @@ function App() {
   const { showLevelUpModal, levelUpDetails, closeLevelUpModal } = useSessionCompletion();
 
   // Get pending stat increases count for the Leveling tab badge
+  const characters = useCharacterStore((state) => state.characters);
   const activeCharacterId = useCharacterStore((state) => state.activeCharacterId);
-  const getPendingStatIncreaseCount = useCharacterStore((state) => state.getPendingStatIncreaseCount);
 
   // Compute pending stat increases count for badge
   const pendingStatIncreasesCount = useMemo(() => {
     if (!activeCharacterId) return 0;
-    return getPendingStatIncreaseCount(activeCharacterId);
-  }, [activeCharacterId, getPendingStatIncreaseCount]);
+    const character = characters.find((c) => c.seed === activeCharacterId);
+    return character?.pendingStatIncreases ?? 0;
+  }, [activeCharacterId, characters]);
 
   // Note: Track restoration from activeCharacterId is now handled by the
   // onRehydrateStorage callback in characterStore.ts, which fires AFTER
