@@ -407,19 +407,19 @@ export function CharacterLevelingTab() {
       )}
 
       <header className="leveling-header">
-        <div className="leveling-header-icon">
-          <TrendingUp size={24} />
+        <div className="leveling-header-left">
+          <div className="leveling-header-icon">
+            <TrendingUp size={24} />
+          </div>
+          <div className="leveling-header-text">
+            <h1 className="leveling-header-title">Character Leveling</h1>
+            <h2 className="leveling-header-subtitle">Track your character&#39;s growth and adventure</h2>
+          </div>
         </div>
-        <div className="leveling-header-text">
-          <h1 className="leveling-header-title">Character Leveling</h1>
-          <h2 className="leveling-header-subtitle">Track your character&#39;s growth and adventure</h2>
-        </div>
-      </header>
 
-      {/* Character Selector - Shows when there are multiple characters */}
-      {characters.length > 1 && (
-        <Card variant="default" padding="md" className="leveling-character-selector-card">
-          <div className="leveling-selector-content">
+        {/* Character Selector - Inline in header when there are multiple characters */}
+        {characters.length > 1 && (
+          <div className="leveling-header-selector">
             <div className="leveling-selector-info">
               <UserCircle2 size={18} className="leveling-selector-icon" />
               <span className="leveling-selector-label">Active Character</span>
@@ -439,8 +439,8 @@ export function CharacterLevelingTab() {
               <ChevronDown size={16} className="leveling-select-icon" />
             </div>
           </div>
-        </Card>
-      )}
+        )}
+      </header>
 
       {/* Character Card with Avatar and XP Progress */}
       <Card variant="elevated" padding="lg" className={`leveling-character-card ${levelUpPulse ? 'leveling-pulse' : ''}`}>

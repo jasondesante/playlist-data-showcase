@@ -361,14 +361,14 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/CharacterLevelingTab.css`
 
 **Sub-tasks**:
-- [ ] **4.1.1** Research: Examine header structure and current character selector implementation
-- [ ] **4.1.2** Implementation: Restructure header to be flex row with `justify-content: space-between`
-- [ ] **4.1.3** Implementation: Move title/icon to left side
-- [ ] **4.1.4** Implementation: Move character selector inline to right side (only when multiple characters exist)
-- [ ] **4.1.5** Implementation: Remove the separate `leveling-character-selector-card` component
-- [ ] **4.1.6** CSS: Update `.leveling-header` to be a row instead of column
-- [ ] **4.1.7** CSS: Add styles for inline character selector in header
-- [ ] **4.1.8** CSS: Ensure responsive behavior (stacks on mobile, row on desktop)
+- [x] **4.1.1** Research: Examine header structure and current character selector implementation
+- [x] **4.1.2** Implementation: Restructure header to be flex row with `justify-content: space-between`
+- [x] **4.1.3** Implementation: Move title/icon to left side
+- [x] **4.1.4** Implementation: Move character selector inline to right side (only when multiple characters exist)
+- [x] **4.1.5** Implementation: Remove the separate `leveling-character-selector-card` component
+- [x] **4.1.6** CSS: Update `.leveling-header` to be a row instead of column
+- [x] **4.1.7** CSS: Add styles for inline character selector in header
+- [x] **4.1.8** CSS: Ensure responsive behavior (stacks on mobile, row on desktop)
 - [ ] **4.1.9** Testing: Verify header is more compact (less vertical height)
 - [ ] **4.1.10** Testing: Verify character selector is accessible
 - [ ] **4.1.11** Testing: Verify responsive behavior
