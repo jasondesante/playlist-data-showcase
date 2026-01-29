@@ -261,9 +261,9 @@ This plan outlines comprehensive improvements to four tabs in the application: A
   - [x] **2.3.6.1** Keep the circular progress concept but make it more compact and visually interesting
   - [x] **2.3.6.2** Consider: smaller size, different color scheme, animated elements, or alternative layout
   - [x] **2.3.6.3** Place in a more compact container (reduce padding/empty space)
-- [ ] **2.3.7** Implementation: Move the Start/End button below the Hero & Song cards
-  - [ ] **2.3.7.1** Create a dedicated button section with proper spacing
-  - [ ] **2.3.7.2** Make button full-width or centered, larger than current
+- [x] **2.3.7** Implementation: Move the Start/End button below the Hero & Song cards
+  - [x] **2.3.7.1** Create a dedicated button section with proper spacing
+  - [x] **2.3.7.2** Make button full-width or centered, larger than current
 - [ ] **2.3.8** Implementation: Consolidate the session info items (track, artist, duration) into the song card
 - [ ] **2.3.9** CSS: Update grid/flex layouts for responsive design (mobile: stack, desktop: side-by-side)
 - [ ] **2.3.10** CSS: Ensure proper spacing and visual hierarchy (hero & song = primary, timer = secondary)
@@ -341,7 +341,7 @@ This plan outlines comprehensive improvements to four tabs in the application: A
   - Active/Inactive status badge overlaid on top-right of image
   - Song title, artist, duration metadata below image
   - Compact XP display (+X XP this session) during active sessions
-- Session Info card still contains: Session Details header, XP progress bar, Bonus XP breakdown, Start/End button
+- Session Info card still contains: Session Details header, XP progress bar, Bonus XP breakdown
 - Build completed successfully with no errors
 
 **Reference**:
@@ -349,6 +349,28 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - Responsive design with media queries
 - Visual hierarchy principles (size, position, contrast)
 - Component composition patterns
+
+**Summary of Findings** (2.3.7):
+- Created new `.session-action-section` with centered flex layout and proper padding (0.75rem top/bottom)
+- Moved Start/End Session button from Session Info card `CardFooter` to new dedicated section
+- Button now appears between Hero & Song grid and Timer section for better visibility
+- Styled `.session-action-button-prominent` with:
+  - Full width with max-width of 500px for constrained width on large screens
+  - Larger font size (1rem base, 1.063rem on 640px+ screens)
+  - Increased padding (0.875rem/1.5rem base, 1rem/2rem on 640px+)
+  - Minimum height of 3rem (3.25rem on 640px+)
+  - Box shadow for depth (0 4px 12px)
+  - Hover effect: translateY(-2px) with increased shadow
+  - Active effect: translateY(0) with reduced shadow
+- Removed `CardFooter` import from SessionTrackingTab.tsx since it's no longer used
+- Removed `session-info-footer` CSS class (no longer needed)
+- Build completed successfully with no errors
+
+**Reference**:
+- Flexbox centering techniques
+- CSS max-width for constrained layouts
+- Button styling with visual feedback (hover/active states)
+- Component restructuring and prop removal
 
 ---
 
