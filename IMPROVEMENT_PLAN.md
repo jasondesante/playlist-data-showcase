@@ -227,7 +227,30 @@ This plan outlines comprehensive improvements to four tabs in the application: A
   - **Wireframe created at**: `/tmp/claude-1000/-workspace/f183ab55-fc2e-4340-81ff-832202858c6a/scratchpad/session-tab-wireframe.md`
   - **Summary**: Created comprehensive wireframe showing current layout issues, proposed new structure, key design changes, responsive behavior, and CSS classes to modify/create
   - **Key decisions**: Hero & Song cards as side-by-side primary cards, compact timer display, prominent Start/End button below main cards
-- [ ] **2.3.2** Research: Identify which existing components can be reused (TrackCard, TimerRing)
+- [x] **2.3.2** Research: Identify which existing components can be reused (TrackCard, TimerRing)
+  - **TrackCard component** (`src/components/ui/TrackCard.tsx`):
+    - Already used in Session tab for "Now Playing" section (lines 269-275)
+    - Supports size variants: 'compact' | 'default' | 'large'
+    - Features: album art, track info, play button overlay, selection state
+    - **Can be reused** for Song card - shows album art, title, artist, duration
+    - Note: Currently shows separator dots between metadata; may need custom display for Song card
+  - **TimerRing component** (`src/components/Tabs/SessionTrackingTab.tsx` lines 35-81):
+    - Internal component (not exported) defined within SessionTrackingTab
+    - Props: progress, size, strokeWidth, isActive
+    - Current size: 180px with 12px stroke width
+    - Features: circular SVG progress with pulse animation when active
+    - **Can be reused** - just need to adjust size/strokeWidth for compact version
+  - **Card component** (`src/components/ui/Card.tsx`):
+    - Fully reusable with variants: 'default' | 'elevated' | 'outlined' | 'flat'
+    - Padding options: 'none' | 'sm' | 'md' | 'lg'
+    - Sub-components: CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+    - **Can be reused** for Hero and Song cards
+  - **Button component** (`src/components/ui/Button.tsx`):
+    - Variants: 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive'
+    - Sizes: 'sm' | 'md' | 'lg' | 'icon'
+    - Features: leftIcon, rightIcon, loading state, ripple effect
+    - **Can be reused** for Start/End button - already in use
+  - **Summary**: All major UI components exist and can be reused. Main work is layout restructuring and CSS styling for new arrangement.
 - [ ] **2.3.3** Implementation: Reduce header padding in CSS (`.session-tab-header`, `.session-tab-icon-badge`)
 - [ ] **2.3.4** Implementation: Remove the "Now Playing" card section (lines 230-242) - info will be moved
 - [ ] **2.3.5** Implementation: Create a new "Hero & Song" grid section with two equal-width cards
