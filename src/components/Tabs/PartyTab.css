@@ -64,6 +64,7 @@
 .party-sort {
   min-width: 150px;
   position: relative;
+  flex-shrink: 0;
 }
 
 /* Party Sort Dropdown Button - Pill/Toggle Style */
@@ -354,7 +355,10 @@
 
 /* Set as Active Button */
 .party-card-set-active-btn {
-  margin-top: 0.25rem;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%) !important;
   padding: 0.5rem 0.75rem;
   background: var(--color-surface-dim);
   border: 1px solid var(--color-border);
@@ -367,18 +371,24 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
+  z-index: 2;
 }
 
 .party-card-set-active-btn:hover {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   border-color: var(--color-primary);
   color: var(--color-on-primary);
-  transform: translateY(-1px);
   box-shadow: 0 2px 6px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
 }
 
 .party-card-set-active-btn:active {
-  transform: translateY(0);
+  transform: translateX(-50%) !important;
+}
+
+.party-card-set-active-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+  transform: translateX(-50%) !important;
 }
 
 /* Game Mode Badge on Party Cards */

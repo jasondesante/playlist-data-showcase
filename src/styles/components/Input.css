@@ -176,7 +176,9 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .input-icon-left {
-  left: 0.75rem;
+  left: 0.5rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .input-icon-right {
@@ -270,7 +272,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Input field with icons */
 .input-field-with-left-icon {
-  padding-left: 3rem;
+  padding-left: 5rem;
 }
 
 .input-field-with-right-icon {
