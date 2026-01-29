@@ -5,10 +5,13 @@ import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
+import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { TrackCard } from '../ui/TrackCard';
-import type { ListeningSession } from 'playlist-data-engine';
+import { StatSelectionModal } from '../StatSelectionModal';
+import { showToast } from '../ui/Toast';
+import type { ListeningSession, Ability } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
 // XP thresholds for D&D 5e levels 1-20
@@ -83,7 +86,9 @@ export function SessionTrackingTab() {
   const { startSession, endSession: hookEndSession, isActive, elapsedTime, sessionId } = useSessionTracker();
   const { calculateXP } = useXPCalculator();
   const { getActiveCharacter } = useCharacterStore();
+  const { applyPendingStatIncrease } = useCharacterUpdater();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
+  const [showStatModal, setShowStatModal] = useState(false);
 
   // Get active character for XP progress display
   const activeCharacter = getActiveCharacter();
@@ -182,6 +187,35 @@ export function SessionTrackingTab() {
     }
     // Stop audio
     stop();
+  };
+
+  // Handler for opening the stat selection modal
+  const handleOpenStatModal = () => {
+    setShowStatModal(true);
+  };
+
+  // Handler for closing the stat selection modal
+  const handleCloseStatModal = () => {
+    setShowStatModal(false);
+  };
+
+  // Handler for applying stat increases
+  const handleApplyStats = (primary: Ability, secondary?: Ability[]) => {
+    if (!activeCharacter) return;
+
+    const result = applyPendingStatIncrease(activeCharacter, primary, secondary);
+
+    // Show success notification with stat changes
+    const statChangeText = result.statIncreases
+      .map((inc) => `${inc.ability} +${inc.delta} (${inc.oldValue} → ${inc.newValue})`)
+      .join(', ');
+
+    showToast(`✅ Stats applied: ${statChangeText}`, 'success');
+    console.log(`✅ Stats applied: ${statChangeText}`);
+    console.log(`Remaining pending increases: ${result.remainingPending}`);
+
+    // Close the modal
+    setShowStatModal(false);
   };
 
   // Calculate progress percentage
@@ -319,7 +353,19 @@ export function SessionTrackingTab() {
                     </div>
                     {/* Pending Stat Increases for Manual Mode */}
                     {activeCharacter.pendingStatIncreases && activeCharacter.pendingStatIncreases > 0 && (
-                      <div className="session-pending-stats-alert">
+                      <div
+                        className="session-pending-stats-alert"
+                        onClick={handleOpenStatModal}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleOpenStatModal();
+                          }
+                        }}
+                        aria-label="Open stat selection modal"
+                      >
                         <TrendingUp className="session-pending-stats-icon" size={14} />
                         <span className="session-pending-stats-text">
                           {activeCharacter.pendingStatIncreases} stat increase{activeCharacter.pendingStatIncreases > 1 ? 's' : ''} pending
@@ -611,6 +657,15 @@ export function SessionTrackingTab() {
           )}
         </div>
       )}
+
+      {/* Stat Selection Modal */}
+      <StatSelectionModal
+        isOpen={showStatModal}
+        pendingCount={activeCharacter?.pendingStatIncreases ?? 0}
+        currentStats={activeCharacter?.ability_scores}
+        onApply={handleApplyStats}
+        onCancel={handleCloseStatModal}
+      />
     </div>
   );
 }

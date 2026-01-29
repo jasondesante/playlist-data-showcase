@@ -465,8 +465,27 @@
   gap: 0.375rem;
   padding: 0.5rem 0.75rem;
   background: linear-gradient(135deg, hsl(var(--cute-green) / 0.15), hsl(var(--cute-green) / 0.05));
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   border: 1px solid hsl(var(--cute-green) / 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.session-pending-stats-alert:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-green) / 0.25), hsl(var(--cute-green) / 0.1));
+  box-shadow: 0 0 12px hsl(var(--cute-green) / 0.5);
+  border-color: hsl(var(--cute-green) / 0.5);
+  transform: translateY(-1px);
+}
+
+.session-pending-stats-alert:active {
+  transform: translateY(0);
+  box-shadow: 0 0 8px hsl(var(--cute-green) / 0.4);
+}
+
+.session-pending-stats-alert:focus-visible {
+  outline: 2px solid hsl(var(--cute-green));
+  outline-offset: 2px;
 }
 
 .session-pending-stats-icon {
