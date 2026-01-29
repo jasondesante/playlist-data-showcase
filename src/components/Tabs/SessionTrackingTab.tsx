@@ -338,9 +338,18 @@ export function SessionTrackingTab() {
                       </div>
                     </div>
                     <div className="session-character-stats">
-                      <div className="session-character-stat-item">
-                        <span className="session-character-stat-label">Current XP</span>
-                        <span className="session-character-stat-value">{activeCharacter.xp.current.toLocaleString()}</span>
+                      <div className="session-character-stat-item session-character-stat-xp">
+                        <div className="session-character-xp-content">
+                          <span className="session-character-stat-label">Total XP</span>
+                          <span className="session-character-stat-value">
+                            {(activeCharacter.xp.current + displayedXP).toLocaleString()}
+                          </span>
+                          {displayedXP > 0 && (
+                            <span className="session-character-xp-session">
+                              +{displayedXP} this session
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="session-character-stat-item">
                         <span className="session-character-stat-label">Next Level</span>

@@ -459,6 +459,29 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Combined XP Display */
+.session-character-stat-xp {
+  grid-column: span 1;
+}
+
+.session-character-xp-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.session-character-xp-session {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: hsl(var(--cute-green));
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
 .session-pending-stats-alert {
   display: flex;
   align-items: center;
