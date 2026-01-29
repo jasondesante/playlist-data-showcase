@@ -6,7 +6,7 @@ import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
@@ -427,6 +427,31 @@ export function SessionTrackingTab() {
             </Card>
           </div>
 
+          {/* Start/End Session Button Section */}
+          <div className="session-action-section">
+            {!isActive ? (
+              <Button
+                variant="primary"
+                size="lg"
+                leftIcon={Play}
+                onClick={handleStart}
+                className="session-action-button-prominent"
+              >
+                Start Session & Play Audio
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                size="lg"
+                leftIcon={Pause}
+                onClick={handleEnd}
+                className="session-action-button-prominent"
+              >
+                End Session & Stop Audio
+              </Button>
+            )}
+          </div>
+
           {/* Timer Section */}
           <div className="session-timer-layout">
             {/* Timer Ring Card - Redesigned compact version */}
@@ -532,29 +557,6 @@ export function SessionTrackingTab() {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="session-info-footer">
-                {!isActive ? (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    leftIcon={Play}
-                    onClick={handleStart}
-                    className="session-action-button"
-                  >
-                    Start Session & Play Audio
-                  </Button>
-                ) : (
-                  <Button
-                    variant="destructive"
-                    size="lg"
-                    leftIcon={Pause}
-                    onClick={handleEnd}
-                    className="session-action-button"
-                  >
-                    End Session & Stop Audio
-                  </Button>
-                )}
-              </CardFooter>
             </Card>
           </div>
 
