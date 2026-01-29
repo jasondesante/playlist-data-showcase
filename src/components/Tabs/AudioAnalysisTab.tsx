@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Waves, Music, Sparkles } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -23,6 +24,7 @@ import { useTabContext } from '../../App';
  */
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
+  const { playbackState } = useAudioPlayerStore();
   const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
@@ -137,11 +139,12 @@ export function AudioAnalysisTab() {
           </div>
           <Button
             onClick={handleAnalyze}
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || playbackState !== 'playing'}
             isLoading={isAnalyzing}
             variant="primary"
             size="lg"
             className="audio-analysis-analyze-button-large"
+            title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
           >
             {isAnalyzing ? `Analyzing... ${progress}%` : 'Analyze Audio'}
           </Button>
