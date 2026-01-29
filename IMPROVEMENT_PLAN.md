@@ -223,7 +223,10 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/SessionTrackingTab.css`
 
 **Sub-tasks**:
-- [ ] **2.3.1** Research & Sketch: Create a visual mockup/wireframe of the new layout before coding
+- [x] **2.3.1** Research & Sketch: Create a visual mockup/wireframe of the new layout before coding
+  - **Wireframe created at**: `/tmp/claude-1000/-workspace/f183ab55-fc2e-4340-81ff-832202858c6a/scratchpad/session-tab-wireframe.md`
+  - **Summary**: Created comprehensive wireframe showing current layout issues, proposed new structure, key design changes, responsive behavior, and CSS classes to modify/create
+  - **Key decisions**: Hero & Song cards as side-by-side primary cards, compact timer display, prominent Start/End button below main cards
 - [ ] **2.3.2** Research: Identify which existing components can be reused (TrackCard, TimerRing)
 - [ ] **2.3.3** Implementation: Reduce header padding in CSS (`.session-tab-header`, `.session-tab-icon-badge`)
 - [ ] **2.3.4** Implementation: Remove the "Now Playing" card section (lines 230-242) - info will be moved
@@ -246,6 +249,16 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - [ ] **2.3.13** Testing: Test layout on desktop viewport (1024px+)
 - [ ] **2.3.14** Testing: Verify all functionality still works after reorganization
 - [ ] **2.3.15** Testing: Verify button is easily accessible and prominent
+
+**Summary of Findings** (2.3.1):
+- Current layout has excessive whitespace, scattered information, and redundant elements
+- "Now Playing" card and "Session Details" header take up space without adding value
+- Hero info and song info are separated when they should be co-located as primary content
+- Timer card is too large (280px min-height, 180px ring size)
+- Start/End button is buried at the bottom of the Session Info card
+- Proposed layout consolidates Hero & Song into side-by-side primary cards, makes timer more compact, and promotes the Start/End button to a dedicated section
+- Wireframe includes: ASCII diagrams of current vs proposed layout, responsive behavior strategy, component reuse analysis, and CSS class modifications needed
+- Next step: Task 2.3.2 - Identify which existing components can be reused
 
 **Reference**:
 - CSS Grid and Flexbox for layout
