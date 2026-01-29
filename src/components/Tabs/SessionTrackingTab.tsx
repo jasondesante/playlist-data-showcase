@@ -260,50 +260,13 @@ export function SessionTrackingTab() {
         </Card>
       ) : (
         <div className="session-content">
-          {/* Timer Section */}
-          <div className="session-timer-layout">
-            {/* Timer Ring Card */}
-            <Card variant="elevated" padding="lg" className={`session-timer-card ${isActive ? 'session-timer-card-active' : ''}`}>
-              <div className="session-timer-display">
-                <TimerRing
-                  progress={isActive ? progress : 0}
-                  size={180}
-                  strokeWidth={12}
-                  isActive={isActive}
-                />
-                <div className="session-timer-text-container">
-                  <div className="session-time-label">
-                    {isActive ? 'Listening' : 'Ready'}
-                  </div>
-                  <div className="session-time-value">
-                    {formatTime(elapsedTime)}
-                  </div>
-                  <div className="session-time-total">
-                    / {formatTime(trackDuration)}
-                  </div>
-                </div>
-              </div>
-
-              {isActive && sessionId && (
-                <div className="session-id-display">
-                  <span className="session-id-label">Session ID:</span>
-                  <span className="session-id-value">{sessionId}</span>
-                </div>
-              )}
-            </Card>
-
-            {/* Session Info Card */}
-            <Card variant="elevated" padding="lg" className="session-info-card">
-              <CardHeader className="session-info-header">
-                <CardTitle>Session Details</CardTitle>
-                <CardDescription>
-                  {isActive ? 'Session in progress' : 'Start a session to track your listening'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="session-info-content">
-                {/* Character Info Section */}
+          {/* Hero & Song Section */}
+          <div className="session-hero-song-grid">
+            {/* Left Card: Hero Info */}
+            <Card variant="elevated" padding="lg" className="session-hero-card">
+              <CardContent className="session-hero-card-content">
                 {activeCharacter && (
-                  <div className="session-character-section">
+                  <>
                     <div className="session-character-header">
                       <div className="session-character-avatar">
                         <User className="session-character-icon" size={20} />
@@ -374,9 +337,8 @@ export function SessionTrackingTab() {
                         </span>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
-
                 {/* No active character warning */}
                 {!activeCharacter && (
                   <div className="session-no-character-warning">
@@ -386,39 +348,92 @@ export function SessionTrackingTab() {
                     </span>
                   </div>
                 )}
+              </CardContent>
+            </Card>
 
-                <div className="session-info-item">
-                  <span className="session-info-label">Status</span>
-                  <span className={`session-info-value ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
-                    {isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className="session-info-item">
-                  <span className="session-info-label">Track</span>
-                  <span className="session-info-value">{selectedTrack.title}</span>
-                </div>
-                <div className="session-info-item">
-                  <span className="session-info-label">Artist</span>
-                  <span className="session-info-value">{selectedTrack.artist}</span>
-                </div>
-                <div className="session-info-item">
-                  <span className="session-info-label">Duration</span>
-                  <span className="session-info-value">{formatTime(trackDuration)}</span>
+            {/* Right Card: Song Info */}
+            <Card variant="elevated" padding="lg" className="session-song-card">
+              <CardContent className="session-song-card-content">
+                <div className="session-song-header">
+                  <div className="session-song-image-container">
+                    {selectedTrack.image_url ? (
+                      <img
+                        src={selectedTrack.image_url}
+                        alt={selectedTrack.title}
+                        className="session-song-image"
+                      />
+                    ) : (
+                      <div className="session-song-image-placeholder">
+                        <Music className="session-song-placeholder-icon" size={24} />
+                      </div>
+                    )}
+                    <span className={`session-song-status-badge ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
+                      {isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div className="session-song-info">
+                    <h3 className="session-song-title">{selectedTrack.title}</h3>
+                    <p className="session-song-artist">{selectedTrack.artist}</p>
+                    <div className="session-song-meta">
+                      <span className="session-song-duration">{formatTime(trackDuration)}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Real-time XP Display */}
                 {isActive && displayedXP > 0 && (
-                  <div className="session-info-item session-xp-display">
-                    <span className="session-info-label">
-                      <Sparkles className="session-xp-icon" size={14} />
-                      XP Earned This Session
-                    </span>
-                    <span className="session-info-value session-xp-value">
-                      {displayedXP} XP
+                  <div className="session-xp-display-compact">
+                    <Sparkles className="session-xp-icon" size={14} />
+                    <span className="session-xp-value-compact">
+                      +{displayedXP} XP this session
                     </span>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
 
+          {/* Timer Section */}
+          <div className="session-timer-layout">
+            {/* Timer Ring Card */}
+            <Card variant="elevated" padding="lg" className={`session-timer-card ${isActive ? 'session-timer-card-active' : ''}`}>
+              <div className="session-timer-display">
+                <TimerRing
+                  progress={isActive ? progress : 0}
+                  size={180}
+                  strokeWidth={12}
+                  isActive={isActive}
+                />
+                <div className="session-timer-text-container">
+                  <div className="session-time-label">
+                    {isActive ? 'Listening' : 'Ready'}
+                  </div>
+                  <div className="session-time-value">
+                    {formatTime(elapsedTime)}
+                  </div>
+                  <div className="session-time-total">
+                    / {formatTime(trackDuration)}
+                  </div>
+                </div>
+              </div>
+
+              {isActive && sessionId && (
+                <div className="session-id-display">
+                  <span className="session-id-label">Session ID:</span>
+                  <span className="session-id-value">{sessionId}</span>
+                </div>
+              )}
+            </Card>
+
+            {/* Session Info Card */}
+            <Card variant="elevated" padding="lg" className="session-info-card">
+              <CardHeader className="session-info-header">
+                <CardTitle>Session Details</CardTitle>
+                <CardDescription>
+                  {isActive ? 'Session in progress' : 'Start a session to track your listening'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="session-info-content">
                 {/* XP Progress Bar (if active character exists) */}
                 {isActive && xpProgress && (
                   <div className="session-xp-progress-section">

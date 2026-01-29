@@ -253,10 +253,10 @@ This plan outlines comprehensive improvements to four tabs in the application: A
   - **Summary**: All major UI components exist and can be reused. Main work is layout restructuring and CSS styling for new arrangement.
 - [x] **2.3.3** Implementation: Reduce header padding in CSS (`.session-tab-header`, `.session-tab-icon-badge`)
 - [x] **2.3.4** Implementation: Remove the "Now Playing" card section (lines 230-242) - info will be moved
-- [ ] **2.3.5** Implementation: Create a new "Hero & Song" grid section with two equal-width cards
-  - [ ] **2.3.5.1** Left card: Hero info with combined XP display (in stats grid), clickable pending stats
-  - [ ] **2.3.5.2** Right card: Song info with image, title, artist, Active/Inactive status badge
-  - [ ] **2.3.5.3** Remove redundant "Session Details" header/text
+- [x] **2.3.5** Implementation: Create a new "Hero & Song" grid section with two equal-width cards
+  - [x] **2.3.5.1** Left card: Hero info with combined XP display (in stats grid), clickable pending stats
+  - [x] **2.3.5.2** Right card: Song info with image, title, artist, Active/Inactive status badge
+  - [x] **2.3.5.3** Remove redundant "Session Details" header/text
 - [ ] **2.3.6** Implementation: Redesign the session timer/counter visual style
   - [ ] **2.3.6.1** Keep the circular progress concept but make it more compact and visually interesting
   - [ ] **2.3.6.2** Consider: smaller size, different color scheme, animated elements, or alternative layout
@@ -304,6 +304,22 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - Removed CSS styles for `.session-track-card`, `.session-track-card-header`, `.session-track-card-title`, and `.session-track-card-content` (lines 125-145)
 - Updated component documentation comment to remove reference to TrackCard and add new feature descriptions
 - The track information (title, artist, duration) is still displayed in the Session Info card under "Session Details" (lines 411-422)
+- Build completed successfully with no errors
+
+**Summary of Findings** (2.3.5):
+- Created new `.session-hero-song-grid` container with CSS Grid layout (stacked on mobile, 2 columns on desktop 768px+)
+- Left card (Hero card): Moved character info section from Session Info card into standalone card
+  - Contains: Character avatar, name, game mode badge, class/level/race details
+  - Stats grid with: Total XP (with session gain), Next Level, HP
+  - Clickable pending stats alert for manual mode characters
+  - Stat info text for standard mode characters
+  - No active character warning
+- Right card (Song card): New card displaying track information
+  - Album artwork image (1:1 aspect ratio) with placeholder for missing images
+  - Active/Inactive status badge overlaid on top-right of image
+  - Song title, artist, duration metadata below image
+  - Compact XP display (+X XP this session) during active sessions
+- Session Info card still contains: Session Details header, XP progress bar, Bonus XP breakdown, Start/End button
 - Build completed successfully with no errors
 
 **Reference**:
