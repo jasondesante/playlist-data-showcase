@@ -2,6 +2,144 @@
    XP CALCULATOR TAB STYLES
    ======================================== */
 
+/* ========================================
+   TAB NAVIGATION
+   ======================================== */
+
+.xp-calculator-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+@media (min-width: 768px) {
+  .xp-calculator-tabs {
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.xp-calculator-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out-cubic),
+              background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .xp-calculator-tab {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
+.xp-calculator-tab:hover:not(:disabled) {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--surface-2) / 0.5);
+}
+
+.xp-calculator-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.xp-calculator-tab-active {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  background-color: hsl(var(--surface-2));
+}
+
+.xp-calculator-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-yellow)));
+  border-radius: 1px 1px 0 0;
+}
+
+.xp-calculator-tab-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: hsl(var(--cute-green));
+  border-radius: 50%;
+  animation: tabPulse 2s ease-in-out infinite;
+}
+
+@keyframes tabPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* Empty state for Results tab */
+.xp-results-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.xp-results-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+@media (min-width: 768px) {
+  .xp-results-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.xp-results-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .xp-results-empty-title {
+    font-size: 1.125rem;
+  }
+}
+
+.xp-results-empty-description {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  max-width: 25rem;
+}
+
+@media (min-width: 768px) {
+  .xp-results-empty-description {
+    font-size: 0.9375rem;
+  }
+}
+
 /* Small utility classes used in the component */
 .ml-2 {
   margin-left: 0.5rem;

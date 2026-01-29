@@ -14,6 +14,11 @@ import type { LevelUpDetail } from 'playlist-data-engine';
 import './XPCalculatorTab.css';
 
 /**
+ * Tab type for XP Calculator
+ */
+type XPCalculatorTab = 'calculator' | 'results';
+
+/**
  * Pie chart data for XP source visualization
  */
 interface XPPieSlice {
@@ -61,6 +66,9 @@ export function XPCalculatorTab() {
   const [isApplying, setIsApplying] = useState(false);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
+
+  // Two-tab system state
+  const [activeTab, setActiveTab] = useState<XPCalculatorTab>('calculator');
 
   // Manual mode state (Task 4.5.5)
   const [isManualMode, setIsManualMode] = useState(false);
@@ -117,6 +125,9 @@ export function XPCalculatorTab() {
       setIsCelebrating(true);
       setTimeout(() => setIsCelebrating(false), 3000);
     }
+
+    // Auto-switch to results tab after calculation
+    setActiveTab('results');
 
     // If a character is selected, immediately apply the XP
     if (xpResult && activeCharacter && !isApplying) {
@@ -255,7 +266,30 @@ export function XPCalculatorTab() {
           </div>
         </div>
 
-        {/* Character Selector Card */}
+        {/* Tab Navigation */}
+        <div className="xp-calculator-tabs">
+          <button
+            className={`xp-calculator-tab ${activeTab === 'calculator' ? 'xp-calculator-tab-active' : ''}`}
+            onClick={() => setActiveTab('calculator')}
+            aria-current={activeTab === 'calculator' ? 'true' : undefined}
+          >
+            <span className="xp-calculator-tab-label">Calculator</span>
+          </button>
+          <button
+            className={`xp-calculator-tab ${activeTab === 'results' ? 'xp-calculator-tab-active' : ''}`}
+            onClick={() => setActiveTab('results')}
+            aria-current={activeTab === 'results' ? 'true' : undefined}
+            disabled={!result}
+          >
+            <span className="xp-calculator-tab-label">Results</span>
+            {result && <span className="xp-calculator-tab-indicator" />}
+          </button>
+        </div>
+
+        {/* Calculator Tab Content */}
+        {activeTab === 'calculator' && (
+          <>
+            {/* Character Selector Card */}
         {characters.length > 0 && (
           <Card variant="default" padding="md" className="xp-calculator-character-card">
             {activeCharacter ? (
@@ -597,9 +631,12 @@ export function XPCalculatorTab() {
             </>
           )}
         </div>
+          </>
+        )}
 
-        {/* Results */}
-        {result && (
+        {/* Results Tab Content */}
+        {activeTab === 'results' && (
+          result ? (
           <div className={`xp-results-section ${isCelebrating ? 'xp-level-up-celebration' : ''}`}>
             {/* Total XP Display */}
             <div className={`xp-total-card ${isCelebrating ? 'xp-level-up-pulse' : ''}`}>
@@ -777,6 +814,15 @@ export function XPCalculatorTab() {
               status="healthy"
             />
           </div>
+          ) : (
+            <div className="xp-results-empty">
+              <div className="xp-results-empty-icon">⭐</div>
+              <h3 className="xp-results-empty-title">No Calculation Yet</h3>
+              <p className="xp-results-empty-description">
+                Go to the Calculator tab to calculate XP from your listening session.
+              </p>
+            </div>
+          )
         )}
 
         {/* Level-Up Detail Modal */}

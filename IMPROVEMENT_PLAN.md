@@ -271,23 +271,38 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 - `/Users/jasondesante/playlist-data-showcase/src/components/Tabs/XPCalculatorTab.css`
 
 **Sub-tasks**:
-- [ ] **3.1.1** Research: Examine existing tab patterns in the codebase (how are tabs implemented elsewhere?)
-- [ ] **3.1.2** Research: Create a reusable tab component OR implement inline tabs
-- [ ] **3.1.3** Implementation: Add state for `activeTab` ('calculator' | 'results')
-- [ ] **3.1.4** Implementation: Create tab navigation UI with two tabs
-  - [ ] **3.1.4.1** Tab labels: "Calculator" and "Results"
-  - [ ] **3.1.4.2** Active tab styling (underline, background color, etc.)
-  - [ ] **3.1.4.3** Click handlers to switch tabs
-- [ ] **3.1.5** Implementation: Wrap existing calculator content in conditional: `{activeTab === 'calculator' && ...}`
-- [ ] **3.1.6** Implementation: Move results section (lines 602-780) into conditional: `{activeTab === 'results' && result && ...}`
-- [ ] **3.1.7** Implementation: Add empty state for Results tab when no calculation yet
-- [ ] **3.1.8** Implementation: Update `handleCalculate` function to automatically switch to results tab after calculation: `setActiveTab('results')`
-- [ ] **3.1.9** CSS: Style tab navigation to match app design system
-- [ ] **3.1.10** CSS: Ensure smooth transitions between tabs
-- [ ] **3.1.11** Testing: Verify tabs switch correctly when clicked
-- [ ] **3.1.12** Testing: Verify auto-switch to results after calculation
-- [ ] **3.1.13** Testing: Verify results tab shows empty state before calculation
-- [ ] **3.1.14** Testing: Verify calculator tab is accessible from results tab
+- [x] **3.1.1** Research: Examine existing tab patterns in the codebase (how are tabs implemented elsewhere?)
+- [x] **3.1.2** Research: Create a reusable tab component OR implement inline tabs
+- [x] **3.1.3** Implementation: Add state for `activeTab` ('calculator' | 'results')
+- [x] **3.1.4** Implementation: Create tab navigation UI with two tabs
+  - [x] **3.1.4.1** Tab labels: "Calculator" and "Results"
+  - [x] **3.1.4.2** Active tab styling (underline, background color, etc.)
+  - [x] **3.1.4.3** Click handlers to switch tabs
+- [x] **3.1.5** Implementation: Wrap existing calculator content in conditional: `{activeTab === 'calculator' && ...}`
+- [x] **3.1.6** Implementation: Move results section (lines 602-780) into conditional: `{activeTab === 'results' && result && ...}`
+- [x] **3.1.7** Implementation: Add empty state for Results tab when no calculation yet
+- [x] **3.1.8** Implementation: Update `handleCalculate` function to automatically switch to results tab after calculation: `setActiveTab('results')`
+- [x] **3.1.9** CSS: Style tab navigation to match app design system
+- [x] **3.1.10** CSS: Ensure smooth transitions between tabs
+- [x] **3.1.11** Testing: Verify tabs switch correctly when clicked
+- [x] **3.1.12** Testing: Verify auto-switch to results after calculation
+- [x] **3.1.13** Testing: Verify results tab shows empty state before calculation
+- [x] **3.1.14** Testing: Verify calculator tab is accessible from results tab
+
+**Summary of Findings**:
+- Examined tab patterns in App.tsx, AppHeader.tsx, and Sidebar.tsx
+- Pattern uses `activeTab` state string, conditional rendering, and CSS classes for active styling
+- Created inline tabs within XPCalculatorTab component (no reusable component needed)
+- Added `XPCalculatorTab` type: `'calculator' | 'results'`
+- Implemented tab navigation UI with two buttons below header
+- Active tab styling includes: background color, font weight, and gradient underline indicator
+- Results tab button shows a pulsing green indicator when result exists
+- Calculator content wrapped in `{activeTab === 'calculator' && ...}`
+- Results section wrapped in `{activeTab === 'results' && (result ? ... : emptyState)}`
+- Empty state shows icon, title, and description directing user to Calculator tab
+- Auto-switch to results tab implemented via `setActiveTab('results')` in `handleCalculate`
+- CSS includes smooth transitions, hover states, disabled state, and pulsing indicator animation
+- Build completed successfully with no errors
 
 **Reference**:
 - React state for tab management
