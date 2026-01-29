@@ -576,6 +576,36 @@ export function PartyTab() {
                           <span className="party-detail-appearance-color-label">Eyes</span>
                         </div>
                       )}
+                      {selectedCharacter.appearance.primary_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.primary_color }}
+                            title="Primary Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Primary</span>
+                        </div>
+                      )}
+                      {selectedCharacter.appearance.secondary_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.secondary_color }}
+                            title="Secondary Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Secondary</span>
+                        </div>
+                      )}
+                      {selectedCharacter.appearance.aura_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: selectedCharacter.appearance.aura_color }}
+                            title="Aura Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Aura</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Hair Style */}

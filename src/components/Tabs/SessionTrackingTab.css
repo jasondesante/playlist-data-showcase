@@ -218,14 +218,16 @@
 
 .session-song-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1rem;
+  align-items: center;
 }
 
 .session-song-image-container {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
   border-radius: var(--radius);
   overflow: hidden;
   background-color: hsl(var(--muted) / 0.3);

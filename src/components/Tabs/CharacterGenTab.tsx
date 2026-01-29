@@ -701,6 +701,36 @@ export function CharacterGenTab() {
                       <span className="character-appearance-color-label">Eyes</span>
                     </div>
                   )}
+                  {character.appearance.primary_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.primary_color }}
+                        title="Primary Color"
+                      />
+                      <span className="character-appearance-color-label">Primary</span>
+                    </div>
+                  )}
+                  {character.appearance.secondary_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.secondary_color }}
+                        title="Secondary Color"
+                      />
+                      <span className="character-appearance-color-label">Secondary</span>
+                    </div>
+                  )}
+                  {character.appearance.aura_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.aura_color }}
+                        title="Aura Color"
+                      />
+                      <span className="character-appearance-color-label">Aura</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Hair Style */}
