@@ -37,28 +37,49 @@ interface TimerRingProps {
   size: number;
   strokeWidth: number;
   isActive: boolean;
+  isCompact?: boolean;
 }
 
-function TimerRing({ progress, size, strokeWidth, isActive }: TimerRingProps) {
+function TimerRing({ progress, size, strokeWidth, isActive, isCompact = false }: TimerRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="timer-ring-container" style={{ width: size, height: size }}>
+    <div className={`timer-ring-container ${isCompact ? 'timer-ring-compact' : ''}`} style={{ width: size, height: size }}>
       <svg
         width={size}
         height={size}
         className="timer-ring-svg"
         style={{ transform: 'rotate(-90deg)' }}
       >
+        <defs>
+          {/* Gradient for the progress ring */}
+          <linearGradient id={`timer-gradient-${isCompact ? 'compact' : 'main'}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(var(--primary))" />
+            <stop offset="100%" stopColor="hsl(var(--cute-teal))" />
+          </linearGradient>
+        </defs>
+        {/* Outer decorative ring */}
+        {!isCompact && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius + 8}
+            fill="none"
+            stroke="hsl(var(--primary) / 0.1)"
+            strokeWidth={2}
+            strokeDasharray="4 8"
+            className="timer-ring-outer"
+          />
+        )}
         {/* Background circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          fill="none"
-          stroke="hsl(var(--muted))"
+          fill={isCompact ? 'hsl(var(--muted) / 0.1)' : 'none'}
+          stroke={isCompact ? 'hsl(var(--primary) / 0.2)' : 'hsl(var(--muted)'}
           strokeWidth={strokeWidth}
           className="timer-ring-bg"
         />
@@ -68,13 +89,26 @@ function TimerRing({ progress, size, strokeWidth, isActive }: TimerRingProps) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke={`url(#timer-gradient-${isCompact ? 'compact' : 'main'})`}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
           className={`timer-ring-progress ${isActive ? 'timer-ring-active' : ''}`}
         />
+        {/* Inner decorative dots */}
+        {isCompact && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius - 10}
+            fill="none"
+            stroke="hsl(var(--primary) / 0.15)"
+            strokeWidth={1}
+            strokeDasharray="2 6"
+            className="timer-ring-inner"
+          />
+        )}
       </svg>
     </div>
   );
@@ -395,14 +429,15 @@ export function SessionTrackingTab() {
 
           {/* Timer Section */}
           <div className="session-timer-layout">
-            {/* Timer Ring Card */}
+            {/* Timer Ring Card - Redesigned compact version */}
             <Card variant="elevated" padding="lg" className={`session-timer-card ${isActive ? 'session-timer-card-active' : ''}`}>
               <div className="session-timer-display">
                 <TimerRing
                   progress={isActive ? progress : 0}
-                  size={180}
-                  strokeWidth={12}
+                  size={120}
+                  strokeWidth={10}
                   isActive={isActive}
+                  isCompact={true}
                 />
                 <div className="session-timer-text-container">
                   <div className="session-time-label">
@@ -412,7 +447,7 @@ export function SessionTrackingTab() {
                     {formatTime(elapsedTime)}
                   </div>
                   <div className="session-time-total">
-                    / {formatTime(trackDuration)}
+                    of {formatTime(trackDuration)}
                   </div>
                 </div>
               </div>
