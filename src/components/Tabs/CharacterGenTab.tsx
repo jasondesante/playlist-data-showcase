@@ -8,6 +8,7 @@ import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
+import { Tooltip } from '../ui/Tooltip';
 import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
 import { showToast } from '../ui/Toast';
@@ -423,19 +424,27 @@ export function CharacterGenTab() {
                   <div className="character-stat-value character-count-up">{character.hp.current}/{character.hp.max}</div>
                 </Card>
                 <Card variant="elevated" padding="sm" className="character-stat-card">
-                  <div className="character-stat-label">AC</div>
+                  <div className="character-stat-label">
+                    AC <Tooltip content="Armor Class (AC): How hard you are to hit in combat. Attackers must roll equal to or higher than this number to successfully strike you. Ranges from 10 (unarmored) up to 20+ (heavy armor with magic), with your Dexterity modifier often adding to this value." />
+                  </div>
                   <div className="character-stat-value character-count-up">{character.armor_class}</div>
                 </Card>
                 <Card variant="elevated" padding="sm" className="character-stat-card">
-                  <div className="character-stat-label">Initiative</div>
+                  <div className="character-stat-label">
+                    Initiative <Tooltip content="Initiative: Your reflexes and reaction time in combat. Higher initiative means you act earlier in the turn order. Calculated as your Dexterity modifier plus the roll of a d20 when combat begins." />
+                  </div>
                   <div className="character-stat-value character-count-up">+{character.initiative}</div>
                 </Card>
                 <Card variant="elevated" padding="sm" className="character-stat-card">
-                  <div className="character-stat-label">Speed</div>
+                  <div className="character-stat-label">
+                    Speed <Tooltip content="Speed: How many feet your character can move in one 6-second turn during combat. Most races have 30 feet speed (Dwarves and Halflings have 25). You can split this movement before and after your actions." />
+                  </div>
                   <div className="character-stat-value character-count-up">{character.speed} ft</div>
                 </Card>
                 <Card variant="elevated" padding="sm" className="character-stat-card">
-                  <div className="character-stat-label">Proficiency</div>
+                  <div className="character-stat-label">
+                    Proficiency <Tooltip content="Proficiency Bonus: A measure of your overall training that adds to attacks, skills, and saving throws you're proficient with. Starts at +2 and increases to +6 by level 17. You add this bonus whenever you use something your character has specifically trained in." />
+                  </div>
                   <div className="character-stat-value character-count-up">+{character.proficiency_bonus}</div>
                 </Card>
               </div>
@@ -545,7 +554,10 @@ export function CharacterGenTab() {
 
           {/* Ability Scores */}
           <Card variant="default" padding="md">
-            <div className="character-section-title">Ability Scores</div>
+            <div className="character-section-title">
+              Ability Scores
+              <Tooltip content="Ability Scores (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma) represent your character's raw natural talent. Each score has a modifier (ranging from -5 to +5) that you add to related actions—attacks, damage, skill checks, and saving throws. These modifiers are calculated as floor((score - 10) / 2), so a score of 14 gives a +2 modifier while a score of 8 gives a -1." />
+            </div>
             <div className="character-abilities-grid">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                 <div key={ability} className="character-ability-card">
@@ -562,7 +574,10 @@ export function CharacterGenTab() {
 
           {/* Saving Throws */}
           <Card variant="default" padding="md">
-            <div className="character-section-title">Saving Throws</div>
+            <div className="character-section-title">
+              Saving Throws
+              <Tooltip content="Saving throws are your ability to resist sudden threats—dodging fireballs, enduring poison, or shaking off mind control. You roll a d20 plus the relevant ability modifier, plus your proficiency bonus if your class is trained in that saving throw. Each class specializes in two saving throws (like Constitution for Barbarians or Dexterity for Rogues)." />
+            </div>
             <div className="character-saving-throws-grid">
               {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                 <div
@@ -585,7 +600,10 @@ export function CharacterGenTab() {
 
           {/* Skills Grid */}
           <Card variant="default" padding="md">
-            <div className="character-section-title">Skills</div>
+            <div className="character-section-title">
+              Skills
+              <Tooltip content="Skills represent specific trained abilities like Stealth, Athletics, or Persuasion. When making a skill check, you roll a d20 plus the ability modifier (like DEX for Stealth) and add your proficiency bonus if you're trained in that skill. Some characters (Bards and Rogues) can have expertise in skills, adding double their proficiency bonus for even better results." />
+            </div>
             <div className="character-skills-grid">
               {Object.entries(character.skills).map(([skill, prof]) => (
                 <div key={skill} className="character-skill-item" title={
@@ -604,7 +622,10 @@ export function CharacterGenTab() {
           {/* Racial Traits */}
           {character.racial_traits && character.racial_traits.length > 0 && (
             <Card variant="default" padding="md">
-              <div className="character-section-title">Racial Traits</div>
+              <div className="character-section-title">
+                Racial Traits
+                <Tooltip content="Racial Traits are innate special abilities that all members of your character's race possess. Examples include Darkvision (seeing in darkness), Dwarven Resilience (resisting poison), or Fey Ancestry (resisting magic charms). These traits are passive bonuses that are always active and don't require any action to use." />
+              </div>
               <div className="character-traits-grid">
                 {character.racial_traits.map((trait, idx) => (
                   <span key={idx} className="character-trait-badge">
@@ -618,7 +639,10 @@ export function CharacterGenTab() {
           {/* Class Features */}
           {character.class_features && character.class_features.length > 0 && (
             <Card variant="default" padding="md">
-              <div className="character-section-title">Class Features</div>
+              <div className="character-section-title">
+                Class Features
+                <Tooltip content="Class Features are special abilities and techniques your character learns as they level up, representing their specialized training. Examples include Action Surge (Fighters can act twice), Rage (Barbarians gain combat bonuses), or Spellcasting (magic users learn to cast spells). Features unlock at specific levels and make each class play differently." />
+              </div>
               <div className="character-traits-grid">
                 {character.class_features.map((feature, idx) => (
                   <span key={idx} className="character-trait-badge">
@@ -632,7 +656,10 @@ export function CharacterGenTab() {
           {/* Appearance */}
           {character.appearance && (
             <Card variant="default" padding="md">
-              <div className="character-section-title">Appearance</div>
+              <div className="character-section-title">
+                Appearance
+                <Tooltip content="Your character's physical appearance is generated deterministically from the music's characteristics—body type, skin tone, hair color and style, eye color, and 1-3 facial features like scars or tattoos are all derived from the audio profile. Magical classes also gain an aura color that glows with mystical energy based on the album artwork's color palette." />
+              </div>
               <div className="character-appearance-section">
                 {/* Body Type */}
                 {character.appearance.body_type && (
@@ -706,7 +733,10 @@ export function CharacterGenTab() {
             const equipment = character.equipment;
             return (
               <Card variant="default" padding="md">
-                <div className="character-section-title">Equipment</div>
+                <div className="character-section-title">
+                  Equipment
+                  <Tooltip content="Equipment includes weapons, armor, and adventure gear. Each item has a weight (in pounds) and can be equipped or unequipped. Equipped items contribute to your carried weight, and while the system tracks equipment, stat bonuses from gear are not currently applied to your character. Items can have quantities greater than 1, useful for things like ammunition or consumables." />
+                </div>
                 <div className="character-equipment-section">
                   {equipment.weapons.length > 0 && (
                     <Card variant="flat" padding="sm" className="character-equipment-card">
@@ -770,7 +800,10 @@ export function CharacterGenTab() {
           {/* Spells */}
           {character.spells && (
             <Card variant="default" padding="md">
-              <div className="character-section-title">Spells</div>
+              <div className="character-section-title">
+                Spells
+                <Tooltip content="Spells are magical abilities that spellcasters can use. Cantrips are weak spells you can cast endlessly, while leveled spells consume spell slots (a limited resource that refreshes after a long rest). Each spell has a casting time, range, duration, and effects—spells can deal damage, heal allies, create magical effects, or manipulate the battlefield." />
+              </div>
               <div className="character-equipment-section">
                 {character.spells.cantrips.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">

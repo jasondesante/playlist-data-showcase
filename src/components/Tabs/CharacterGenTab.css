@@ -250,7 +250,7 @@
   border: 1px solid hsl(var(--cute-purple) / 0.2);
   border-radius: var(--radius);
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Allow tooltips to break out */
   padding: 0.75rem;
 }
 
@@ -447,6 +447,8 @@
   justify-content: center;
   padding: 0.5rem 0.375rem;
   text-align: center;
+  /* Allow tooltips to break out of the card's containment */
+  contain: none;
 }
 
 @media (min-width: 480px) {

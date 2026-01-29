@@ -17,6 +17,7 @@ import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { showToast } from '../ui/Toast';
+import { Tooltip } from '../ui/Tooltip';
 import './PartyTab.css';
 
 type SortOption = 'date-added' | 'level' | 'name' | 'xp' | 'class';
@@ -375,28 +376,36 @@ export function PartyTab() {
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('AC')}</span>
                     <div>
-                      <div className="party-detail-stat-label">Armor Class</div>
+                      <div className="party-detail-stat-label">
+                        Armor Class <Tooltip content="Armor Class (AC): How hard you are to hit in combat. Attackers must roll equal to or higher than this number to successfully strike you. Ranges from 10 (unarmored) up to 20+ (heavy armor with magic), with your Dexterity modifier often adding to this value." />
+                      </div>
                       <div className="party-detail-stat-value">{selectedCharacter.armor_class}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('Initiative')}</span>
                     <div>
-                      <div className="party-detail-stat-label">Initiative</div>
+                      <div className="party-detail-stat-label">
+                        Initiative <Tooltip content="Initiative: Your reflexes and reaction time in combat. Higher initiative means you act earlier in the turn order. Calculated as your Dexterity modifier plus the roll of a d20 when combat begins." />
+                      </div>
                       <div className="party-detail-stat-value">+{selectedCharacter.initiative}</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon">{getStatIcon('Speed')}</span>
                     <div>
-                      <div className="party-detail-stat-label">Speed</div>
+                      <div className="party-detail-stat-label">
+                        Speed <Tooltip content="Speed: How many feet your character can move in one 6-second turn during combat. Most races have 30 feet speed (Dwarves and Halflings have 25). You can split this movement before and after your actions." />
+                      </div>
                       <div className="party-detail-stat-value">{selectedCharacter.speed} ft</div>
                     </div>
                   </div>
                   <div className="party-detail-stat-item">
                     <span className="party-detail-stat-icon"><Star size={16} /></span>
                     <div>
-                      <div className="party-detail-stat-label">Proficiency</div>
+                      <div className="party-detail-stat-label">
+                        Proficiency <Tooltip content="Proficiency Bonus: A measure of your overall training that adds to attacks, skills, and saving throws you're proficient with. Starts at +2 and increases to +6 by level 17. You add this bonus whenever you use something your character has specifically trained in." />
+                      </div>
                       <div className="party-detail-stat-value">+{selectedCharacter.proficiency_bonus}</div>
                     </div>
                   </div>
@@ -405,7 +414,10 @@ export function PartyTab() {
 
               {/* Ability Scores */}
               <div className="party-detail-section">
-                <h4 className="party-detail-section-title">Ability Scores</h4>
+                <h4 className="party-detail-section-title">
+                  Ability Scores
+                  <Tooltip content="Ability Scores (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma) represent your character's raw natural talent. Each score has a modifier (ranging from -5 to +5) that you add to related actions—attacks, damage, skill checks, and saving throws. These modifiers are calculated as floor((score - 10) / 2), so a score of 14 gives a +2 modifier while a score of 8 gives a -1." />
+                </h4>
                 <div className="party-detail-abilities-grid">
                   {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                     <div key={ability} className="party-detail-ability-item">
@@ -422,7 +434,10 @@ export function PartyTab() {
 
               {/* Skills */}
               <div className="party-detail-section">
-                <h4 className="party-detail-section-title">Skills</h4>
+                <h4 className="party-detail-section-title">
+                  Skills
+                  <Tooltip content="Skills represent specific trained abilities like Stealth, Athletics, or Persuasion. When making a skill check, you roll a d20 plus the ability modifier (like DEX for Stealth) and add your proficiency bonus if you're trained in that skill. Some characters (Bards and Rogues) can have expertise in skills, adding double their proficiency bonus for even better results." />
+                </h4>
                 <div className="party-detail-skills-list">
                   {Object.entries(selectedCharacter.skills).map(([skill, prof]) => {
                     const modifier = selectedCharacter.ability_modifiers[
@@ -454,7 +469,10 @@ export function PartyTab() {
               {/* Saving Throws */}
               {selectedCharacter.saving_throws && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Saving Throws</h4>
+                  <h4 className="party-detail-section-title">
+                    Saving Throws
+                    <Tooltip content="Saving throws are your ability to resist sudden threats—dodging fireballs, enduring poison, or shaking off mind control. You roll a d20 plus the relevant ability modifier, plus your proficiency bonus if your class is trained in that saving throw. Each class specializes in two saving throws (like Constitution for Barbarians or Dexterity for Rogues)." />
+                  </h4>
                   <div className="party-detail-saving-throws-grid">
                     {(['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const).map((ability) => (
                       <div
@@ -479,7 +497,10 @@ export function PartyTab() {
               {/* Racial Traits */}
               {selectedCharacter.racial_traits && selectedCharacter.racial_traits.length > 0 && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Racial Traits</h4>
+                  <h4 className="party-detail-section-title">
+                    Racial Traits
+                    <Tooltip content="Racial Traits are innate special abilities that all members of your character's race possess. Examples include Darkvision (seeing in darkness), Dwarven Resilience (resisting poison), or Fey Ancestry (resisting magic charms). These traits are passive bonuses that are always active and don't require any action to use." />
+                  </h4>
                   <div className="party-detail-traits-grid">
                     {selectedCharacter.racial_traits.map((trait, idx) => (
                       <span key={idx} className="party-detail-trait-badge">
@@ -493,7 +514,10 @@ export function PartyTab() {
               {/* Class Features */}
               {selectedCharacter.class_features && selectedCharacter.class_features.length > 0 && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Class Features</h4>
+                  <h4 className="party-detail-section-title">
+                    Class Features
+                    <Tooltip content="Class Features are special abilities and techniques your character learns as they level up, representing their specialized training. Examples include Action Surge (Fighters can act twice), Rage (Barbarians gain combat bonuses), or Spellcasting (magic users learn to cast spells). Features unlock at specific levels and make each class play differently." />
+                  </h4>
                   <div className="party-detail-traits-grid">
                     {selectedCharacter.class_features.map((feature, idx) => (
                       <span key={idx} className="party-detail-trait-badge">
@@ -507,7 +531,10 @@ export function PartyTab() {
               {/* Appearance */}
               {selectedCharacter.appearance && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Appearance</h4>
+                  <h4 className="party-detail-section-title">
+                    Appearance
+                    <Tooltip content="Your character's physical appearance is generated deterministically from the music's characteristics—body type, skin tone, hair color and style, eye color, and 1-3 facial features like scars or tattoos are all derived from the audio profile. Magical classes also gain an aura color that glows with mystical energy based on the album artwork's color palette." />
+                  </h4>
                   <div className="party-detail-appearance-section">
                     {/* Body Type */}
                     {selectedCharacter.appearance.body_type && (
@@ -579,7 +606,10 @@ export function PartyTab() {
               {/* Equipment */}
               {selectedCharacter.equipment && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Equipment</h4>
+                  <h4 className="party-detail-section-title">
+                    Equipment
+                    <Tooltip content="Equipment includes weapons, armor, and adventure gear. Each item has a weight (in pounds) and can be equipped or unequipped. Equipped items contribute to your carried weight, and while the system tracks equipment, stat bonuses from gear are not currently applied to your character. Items can have quantities greater than 1, useful for things like ammunition or consumables." />
+                  </h4>
                   <div className="party-detail-equipment-section">
                     {selectedCharacter.equipment.weapons.length > 0 && (
                       <div className="party-detail-equipment-category">
@@ -639,7 +669,10 @@ export function PartyTab() {
               {/* Spells */}
               {selectedCharacter.spells && (
                 <div className="party-detail-section">
-                  <h4 className="party-detail-section-title">Spells</h4>
+                  <h4 className="party-detail-section-title">
+                    Spells
+                    <Tooltip content="Spells are magical abilities that spellcasters can use. Cantrips are weak spells you can cast endlessly, while leveled spells consume spell slots (a limited resource that refreshes after a long rest). Each spell has a casting time, range, duration, and effects—spells can deal damage, heal allies, create magical effects, or manipulate the battlefield." />
+                  </h4>
                   <div className="party-detail-spells-section">
                     {selectedCharacter.spells.cantrips.length > 0 && (
                       <div className="party-detail-spells-group">
