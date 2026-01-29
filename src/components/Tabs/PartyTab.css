@@ -353,12 +353,20 @@
   color: var(--color-primary);
 }
 
-/* Set as Active Button */
-.party-card-set-active-btn {
+/* Set as Active Button Wrapper - Flex container for centering */
+.party-card-set-active-btn-wrapper {
   position: absolute;
   bottom: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%) !important;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+/* Set as Active Button */
+.party-card-set-active-btn {
   padding: 0.5rem 0.75rem;
   background: var(--color-surface-dim);
   border: 1px solid var(--color-border);
@@ -371,7 +379,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
-  z-index: 2;
 }
 
 .party-card-set-active-btn:hover {
@@ -381,14 +388,9 @@
   box-shadow: 0 2px 6px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
 }
 
-.party-card-set-active-btn:active {
-  transform: translateX(-50%) !important;
-}
-
 .party-card-set-active-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--color-primary-light);
-  transform: translateX(-50%) !important;
 }
 
 /* Game Mode Badge on Party Cards */

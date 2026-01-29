@@ -109,13 +109,15 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
 
       {/* Set as Active Button */}
       {onSetActive && !isActive && (
-        <button
-          className="party-card-set-active-btn"
-          onClick={handleSetActiveClick}
-          type="button"
-        >
-          Set as Active
-        </button>
+        <div className="party-card-set-active-btn-wrapper">
+          <button
+            className="party-card-set-active-btn"
+            onClick={handleSetActiveClick}
+            type="button"
+          >
+            Set as Active
+          </button>
+        </div>
       )}
     </div>
   );
