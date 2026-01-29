@@ -914,7 +914,66 @@ This plan outlines comprehensive improvements to four tabs in the application: A
 
 **Conclusion**: Character data synchronization across tabs is implemented correctly using Zustand. All tabs receive updates when character data changes, and state persists across page refreshes.
 
-- [ ] **5.1.8** Check accessibility (keyboard navigation, screen readers)
+- [x] **5.1.8** Check accessibility (keyboard navigation, screen readers)
+
+**Summary of Findings**:
+- **Comprehensive Accessibility Audit Completed**: Analyzed all major tabs for keyboard navigation, screen reader support, and ARIA attributes
+- **Overall Assessment**: Mixed accessibility practices - some good features present but significant improvements needed for WCAG 2.1 AA compliance
+
+**Good Practices Found**:
+- **SessionTrackingTab**: Proper `role="button"`, `tabIndex={0}`, `onKeyDown` handlers (Enter/Space), `aria-label` on pending stats alert (lines 321-328)
+- **XPCalculatorTab**: Proper form labels with `htmlFor`, `aria-current` for active tab indicator, semantic button structure
+- **PartyTab**: `aria-label` and `aria-expanded` on sort dropdown, `aria-label="Close"` on modal close button
+- **PlaylistLoaderTab**: Proper `role="img"` with `aria-label` for icons, input labels with `htmlFor`
+- **CharacterGenTab**: Character avatar with `role="img"` and `aria-label`, proper form labels
+- **AudioAnalysisTab**: Images with proper `alt` attributes, clear empty state messaging
+- **CharacterLevelingTab**: Character select dropdowns with `htmlFor` labels, semantic buttons
+
+**Critical Accessibility Issues Identified**:
+
+1. **Keyboard Navigation** (Critical Impact):
+   - AudioAnalysisTab: Frequency bars are interactive but not keyboard accessible; no keyboard handlers for interactive elements
+   - XPCalculatorTab: Tab navigation lacks arrow key support; no keyboard support for custom toggle switches
+   - CharacterLevelingTab: All XP addition buttons lack keyboard support; no keyboard navigation for stat increases
+   - PlaylistLoaderTab: Track cards not keyboard accessible; search functionality lacks proper keyboard support
+   - CharacterGenTab: Character generation workflow not keyboard accessible
+   - PartyTab: Sort dropdown and character selection lack keyboard navigation; no focus trapping in modal
+   - SessionTrackingTab: Only one element (pending stats alert) has proper keyboard support; other interactive elements do not
+
+2. **Screen Reader Support** (Critical Impact):
+   - Missing ARIA live regions for dynamic content updates (XP calculations, session progress, level-up celebrations)
+   - Complex calculations in XPCalculatorTab not announced to screen readers
+   - CharacterLevelingTab: Progress indicators lack screen reader announcements; no accessibility for level-up celebrations
+   - PartyTab: Complex character details not announced; modal lacks proper ARIA attributes
+   - SessionTrackingTab: Missing ARIA attributes for dynamic content updates (real-time XP, timer progress)
+
+3. **Color-Only Indicators** (High Impact):
+   - AudioAnalysisTab: Color palette display relies solely on visual colors (no text labels for colorblind users)
+   - CharacterGenTab: Color swatches in appearance section lack text alternatives
+   - CharacterLevelingTab: Color-only stat indicators without text alternatives
+   - PlaylistLoaderTab: Status indicators lack text alternatives
+
+4. **Focus Management** (High Impact):
+   - SessionTrackingTab: No focus management when modals open/close; no focus trapping for StatSelectionModal
+   - PartyTab: Modal dialog lacks focus trapping and focus restoration
+   - CharacterLevelingTab: Missing focus management throughout
+   - No consistent focus restoration pattern when closing dialogs
+
+5. **Form Accessibility** (Medium Impact):
+   - XPCalculatorTab: Manual override inputs lack proper form labeling structure
+   - Some inputs across tabs lack proper associations with labels
+   - Missing error state announcements for form validation
+
+**Specific Files Requiring Accessibility Improvements**:
+- `/workspace/src/components/Tabs/AudioAnalysisTab.tsx` - Add keyboard support for frequency bars
+- `/workspace/src/components/Tabs/XPCalculatorTab.tsx` - Add arrow key nav for tabs, ARIA live regions for calculations
+- `/workspace/src/components/Tabs/CharacterLevelingTab.tsx` - Add keyboard support for XP buttons, focus management
+- `/workspace/src/components/Tabs/PlaylistLoaderTab.tsx` - Add keyboard navigation for track cards
+- `/workspace/src/components/Tabs/CharacterGenTab.tsx` - Add keyboard workflow, text labels for colors
+- `/workspace/src/components/Tabs/PartyTab.tsx` - Add keyboard nav for dropdown/cards, modal focus trapping
+- `/workspace/src/components/Tabs/SessionTrackingTab.tsx` - Add ARIA live regions, expand keyboard support
+
+**Build Verification**: Successfully completed `npm run build` with no compilation errors
 - [ ] **5.1.9** Check loading states and error handling
 - [ ] **5.1.10** Performance check - no significant performance regressions
 
