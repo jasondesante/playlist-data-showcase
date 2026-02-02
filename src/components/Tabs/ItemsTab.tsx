@@ -21,14 +21,22 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
-  User
+  User,
+  Dices,
+  Gem,
+  Crown,
+  Plus,
+  PlusCircle,
+  Trash,
+  Loader2
 } from 'lucide-react';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
+import { useLootBox } from '../../hooks/useLootBox';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { showToast } from '../ui/Toast';
-import type { EnhancedInventoryItem } from 'playlist-data-engine';
+import type { EnhancedInventoryItem, EnhancedEquipment } from 'playlist-data-engine';
 import './ItemsTab.css';
 
 /**
@@ -40,14 +48,65 @@ const AMMUNITION_TYPES: Record<string, number> = {
   'Bolt': 0.075
 };
 
-// RARITY_COLORS will be used in future enhancements for rarity-based coloring
-// const RARITY_COLORS: Record<string, string> = {
-//   'common': 'var(--color-text-secondary)',
-//   'uncommon': 'hsl(120 60% 40%)',
-//   'rare': 'hsl(210 80% 50%)',
-//   'very_rare': 'hsl(270 60% 50%)',
-//   'legendary': 'hsl(30 90% 50%)'
-// };
+/**
+ * Rarity color mapping for equipment display
+ */
+const RARITY_COLORS: Record<string, string> = {
+  'common': 'var(--color-text-secondary)',
+  'uncommon': 'hsl(120 60% 40%)',
+  'rare': 'hsl(210 80% 50%)',
+  'very_rare': 'hsl(270 60% 50%)',
+  'legendary': 'hsl(30 90% 50%)'
+};
+
+/**
+ * Rarity background colors for item cards
+ */
+const RARITY_BG_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.1)',
+  'uncommon': 'hsl(120 60% 40% / 0.1)',
+  'rare': 'hsl(210 80% 50% / 0.1)',
+  'very_rare': 'hsl(270 60% 50% / 0.1)',
+  'legendary': 'hsl(30 90% 50% / 0.15)'
+};
+
+/**
+ * Rarity border colors for item cards
+ */
+const RARITY_BORDER_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.3)',
+  'uncommon': 'hsl(120 60% 40% / 0.4)',
+  'rare': 'hsl(210 80% 50% / 0.4)',
+  'very_rare': 'hsl(270 60% 50% / 0.4)',
+  'legendary': 'hsl(30 90% 50% / 0.5)'
+};
+
+type SpawnMode = 'random' | 'rarity' | 'hoard';
+type RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
+
+/**
+ * Format rarity for display (snake_case to Title Case)
+ */
+function formatRarity(rarity: string): string {
+  return rarity
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Get icon for equipment type
+ */
+function getEquipmentTypeIcon(type: string) {
+  switch (type) {
+    case 'weapon':
+      return Sword;
+    case 'armor':
+      return Shield;
+    default:
+      return Package;
+  }
+}
 
 /**
  * Check if an item is ammunition
@@ -95,13 +154,33 @@ export function ItemsTab() {
     removeItem,
     getTotalWeight,
     getEquippedWeight,
-    getEquipmentByCategory
+    getEquipmentByCategory,
+    addItemToInventory
   } = useHeroEquipment();
+
+  // Use the loot box hook for spawning items
+  const {
+    isLoading: isLootBoxLoading,
+    spawnedItems,
+    lastHoardResult,
+    spawnRandomItems,
+    spawnByRarity,
+    spawnTreasureHoard,
+    clearSpawnedItems
+  } = useLootBox();
 
   // Section collapse states
   const [isEquipmentExpanded, setIsEquipmentExpanded] = useState(true);
   const [isLootBoxExpanded, setIsLootBoxExpanded] = useState(false);
   const [isCreatorExpanded, setIsCreatorExpanded] = useState(false);
+
+  // Loot Box state
+  const [spawnMode, setSpawnMode] = useState<SpawnMode>('random');
+  const [randomCount, setRandomCount] = useState(3);
+  const [selectedRarity, setSelectedRarity] = useState<RarityOption>('rare');
+  const [rarityCount, setRarityCount] = useState(3);
+  const [hoardCR, setHoardCR] = useState(5);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Get equipment grouped by category
   const equipment = useMemo(() => {
@@ -141,6 +220,106 @@ export function ItemsTab() {
       showToast(result.message || 'Item removed', 'success');
     } else {
       showToast(result.error || 'Failed to remove item', 'error');
+    }
+  };
+
+  // Handle spawning random items
+  const handleSpawnRandom = async () => {
+    setIsAnimating(true);
+    const result = await spawnRandomItems(randomCount);
+    setIsAnimating(false);
+
+    if (result.items.length > 0) {
+      showToast(`Spawned ${result.items.length} random items!`, 'success');
+    } else {
+      showToast('Failed to spawn items', 'error');
+    }
+  };
+
+  // Handle spawning by rarity
+  const handleSpawnByRarity = async () => {
+    setIsAnimating(true);
+    const result = await spawnByRarity(selectedRarity, rarityCount);
+    setIsAnimating(false);
+
+    if (result.items.length > 0) {
+      showToast(`Spawned ${result.items.length} ${formatRarity(selectedRarity)} items!`, 'success');
+    } else {
+      showToast('Failed to spawn items', 'error');
+    }
+  };
+
+  // Handle spawning treasure hoard
+  const handleSpawnTreasureHoard = async () => {
+    setIsAnimating(true);
+    const result = await spawnTreasureHoard(hoardCR);
+    setIsAnimating(false);
+
+    if (result.items.length > 0) {
+      showToast(`Spawned treasure hoard worth ${result.totalValue} gp!`, 'success');
+    } else {
+      showToast('Failed to spawn treasure hoard', 'error');
+    }
+  };
+
+  // Handle adding a spawned item to the hero
+  const handleAddToHero = async (item: EnhancedEquipment) => {
+    if (!activeCharacter) {
+      showToast('No character selected', 'error');
+      return;
+    }
+
+    const inventoryItem: EnhancedInventoryItem = {
+      name: item.name,
+      quantity: 1,
+      equipped: false,
+      instanceId: `${item.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    const result = await addItemToInventory(inventoryItem, item, false);
+
+    if (result.success) {
+      showToast(`Added ${item.name} to ${activeCharacter.name}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to add item', 'error');
+    }
+  };
+
+  // Handle adding all spawned items to the hero
+  const handleAddAllToHero = async () => {
+    if (!activeCharacter) {
+      showToast('No character selected', 'error');
+      return;
+    }
+
+    if (spawnedItems.length === 0) {
+      showToast('No items to add', 'error');
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const item of spawnedItems) {
+      const inventoryItem: EnhancedInventoryItem = {
+        name: item.name,
+        quantity: 1,
+        equipped: false,
+        instanceId: `${item.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${Math.random().toString(36).substr(2, 5)}`
+      };
+
+      const result = await addItemToInventory(inventoryItem, item, false);
+      if (result.success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      showToast(`Added ${successCount} items to ${activeCharacter.name}${failCount > 0 ? ` (${failCount} failed)` : ''}`, 'success');
+    } else {
+      showToast('Failed to add items', 'error');
     }
   };
 
@@ -390,14 +569,254 @@ export function ItemsTab() {
             </CardHeader>
 
             {isLootBoxExpanded && (
-              <div className="items-section-content items-lootbox-placeholder">
-                <div className="items-placeholder-content">
-                  <Sparkles className="items-placeholder-icon" size={32} />
-                  <p className="items-placeholder-text">Loot Box Demo coming in Task 3.x</p>
-                  <p className="items-placeholder-subtext">
-                    This section will allow you to spawn random items, treasure hoards, and rarity-based loot.
-                  </p>
+              <div className="items-section-content">
+                {/* Spawn Mode Selector */}
+                <div className="lootbox-mode-selector">
+                  <button
+                    className={`lootbox-mode-btn ${spawnMode === 'random' ? 'lootbox-mode-btn-active' : ''}`}
+                    onClick={() => setSpawnMode('random')}
+                  >
+                    <Dices size={16} />
+                    <span>Random</span>
+                  </button>
+                  <button
+                    className={`lootbox-mode-btn ${spawnMode === 'rarity' ? 'lootbox-mode-btn-active' : ''}`}
+                    onClick={() => setSpawnMode('rarity')}
+                  >
+                    <Gem size={16} />
+                    <span>By Rarity</span>
+                  </button>
+                  <button
+                    className={`lootbox-mode-btn ${spawnMode === 'hoard' ? 'lootbox-mode-btn-active' : ''}`}
+                    onClick={() => setSpawnMode('hoard')}
+                  >
+                    <Crown size={16} />
+                    <span>Treasure Hoard</span>
+                  </button>
                 </div>
+
+                {/* Spawn Controls */}
+                <div className="lootbox-controls">
+                  {spawnMode === 'random' && (
+                    <div className="lootbox-control-group">
+                      <label className="lootbox-control-label">Number of Items</label>
+                      <div className="lootbox-control-inputs">
+                        <input
+                          type="range"
+                          min="1"
+                          max="10"
+                          value={randomCount}
+                          onChange={(e) => setRandomCount(parseInt(e.target.value))}
+                          className="lootbox-slider"
+                        />
+                        <span className="lootbox-control-value">{randomCount}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {spawnMode === 'rarity' && (
+                    <>
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Rarity</label>
+                        <select
+                          value={selectedRarity}
+                          onChange={(e) => setSelectedRarity(e.target.value as RarityOption)}
+                          className="lootbox-select"
+                        >
+                          <option value="common">Common</option>
+                          <option value="uncommon">Uncommon</option>
+                          <option value="rare">Rare</option>
+                          <option value="very_rare">Very Rare</option>
+                          <option value="legendary">Legendary</option>
+                        </select>
+                      </div>
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Count</label>
+                        <div className="lootbox-control-inputs">
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            value={rarityCount}
+                            onChange={(e) => setRarityCount(parseInt(e.target.value))}
+                            className="lootbox-slider"
+                          />
+                          <span className="lootbox-control-value">{rarityCount}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {spawnMode === 'hoard' && (
+                    <div className="lootbox-control-group">
+                      <label className="lootbox-control-label">Challenge Rating</label>
+                      <div className="lootbox-control-inputs">
+                        <input
+                          type="range"
+                          min="1"
+                          max="20"
+                          value={hoardCR}
+                          onChange={(e) => setHoardCR(parseInt(e.target.value))}
+                          className="lootbox-slider"
+                        />
+                        <span className="lootbox-control-value">CR {hoardCR}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Spawn Button */}
+                <div className="lootbox-spawn-actions">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={
+                      spawnMode === 'random'
+                        ? handleSpawnRandom
+                        : spawnMode === 'rarity'
+                        ? handleSpawnByRarity
+                        : handleSpawnTreasureHoard
+                    }
+                    isLoading={isLootBoxLoading || isAnimating}
+                    leftIcon={isLootBoxLoading || isAnimating ? Loader2 : Sparkles}
+                    className="lootbox-spawn-btn"
+                  >
+                    {isLootBoxLoading || isAnimating
+                      ? 'Opening...'
+                      : spawnMode === 'hoard'
+                      ? 'Open Treasure Hoard'
+                      : 'Open Loot Box'}
+                  </Button>
+
+                  {spawnedItems.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={clearSpawnedItems}
+                      leftIcon={Trash}
+                      className="lootbox-clear-btn"
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+
+                {/* Treasure Hoard Value Display */}
+                {lastHoardResult?.totalValue !== undefined && (
+                  <div className="lootbox-hoard-value">
+                    <Crown size={20} />
+                    <span className="lootbox-hoard-label">Treasure Value:</span>
+                    <span className="lootbox-hoard-amount">{lastHoardResult.totalValue} gp</span>
+                  </div>
+                )}
+
+                {/* Spawned Items Grid */}
+                {spawnedItems.length > 0 && (
+                  <>
+                    <div className={`lootbox-items-grid ${isAnimating ? 'lootbox-items-animating' : ''}`}>
+                      {spawnedItems.map((item, index) => {
+                        const TypeIcon = getEquipmentTypeIcon(item.type);
+                        const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
+                        const bgColor = RARITY_BG_COLORS[item.rarity] || RARITY_BG_COLORS.common;
+                        const borderColor = RARITY_BORDER_COLORS[item.rarity] || RARITY_BORDER_COLORS.common;
+
+                        return (
+                          <div
+                            key={`${item.name}-${index}`}
+                            className="lootbox-item-card"
+                            style={{
+                              backgroundColor: bgColor,
+                              borderColor: borderColor,
+                              animationDelay: `${index * 0.05}s`
+                            }}
+                          >
+                            <div className="lootbox-item-header">
+                              <TypeIcon size={16} style={{ color: rarityColor }} />
+                              <span
+                                className="lootbox-item-name"
+                                style={{ color: rarityColor }}
+                                title={item.name}
+                              >
+                                {item.name}
+                              </span>
+                            </div>
+
+                            <div className="lootbox-item-meta">
+                              <span
+                                className="lootbox-item-rarity"
+                                style={{ color: rarityColor }}
+                              >
+                                {formatRarity(item.rarity)}
+                              </span>
+                              <span className="lootbox-item-type">
+                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                              </span>
+                            </div>
+
+                            {item.damage && (
+                              <div className="lootbox-item-stat">
+                                <span className="lootbox-item-stat-label">Damage:</span>
+                                <span className="lootbox-item-stat-value">
+                                  {item.damage.dice} {item.damage.damageType}
+                                </span>
+                              </div>
+                            )}
+
+                            {item.acBonus !== undefined && (
+                              <div className="lootbox-item-stat">
+                                <span className="lootbox-item-stat-label">AC:</span>
+                                <span className="lootbox-item-stat-value">+{item.acBonus}</span>
+                              </div>
+                            )}
+
+                            <div className="lootbox-item-stat">
+                              <span className="lootbox-item-stat-label">Weight:</span>
+                              <span className="lootbox-item-stat-value">{item.weight} lb</span>
+                            </div>
+
+                            {activeCharacter && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleAddToHero(item)}
+                                leftIcon={Plus}
+                                className="lootbox-add-item-btn"
+                              >
+                                Add to Hero
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add All Button */}
+                    {activeCharacter && spawnedItems.length > 1 && (
+                      <div className="lootbox-add-all">
+                        <Button
+                          variant="primary"
+                          size="md"
+                          onClick={handleAddAllToHero}
+                          leftIcon={PlusCircle}
+                          className="lootbox-add-all-btn"
+                        >
+                          Add All {spawnedItems.length} Items to Hero
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Raw JSON Dump */}
+                {spawnedItems.length > 0 && (
+                  <div className="lootbox-json-dump">
+                    <RawJsonDump
+                      data={spawnedItems}
+                      title="Spawned Items (Raw)"
+                      defaultOpen={false}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </Card>

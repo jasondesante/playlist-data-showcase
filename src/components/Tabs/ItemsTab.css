@@ -455,6 +455,294 @@
 }
 
 /* ========================================
+   LOOT BOX SECTION
+   ======================================== */
+
+/* Mode Selector */
+.lootbox-mode-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+}
+
+.lootbox-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lootbox-mode-btn:hover {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.lootbox-mode-btn-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.lootbox-mode-btn-active:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Controls */
+.lootbox-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.lootbox-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lootbox-control-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.lootbox-control-inputs {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lootbox-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-full);
+  outline: none;
+  cursor: pointer;
+}
+
+.lootbox-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.lootbox-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.lootbox-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s ease;
+}
+
+.lootbox-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+.lootbox-control-value {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  padding: 0.25rem 0.5rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+}
+
+.lootbox-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.lootbox-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Spawn Actions */
+.lootbox-spawn-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lootbox-spawn-btn {
+  min-width: 180px;
+}
+
+.lootbox-clear-btn {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+/* Hoard Value Display */
+.lootbox-hoard-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.15), hsl(var(--cute-orange) / 0.1));
+  border: 1px solid hsl(var(--cute-yellow) / 0.3);
+  border-radius: var(--radius-md);
+  color: hsl(var(--cute-yellow));
+}
+
+.lootbox-hoard-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.lootbox-hoard-amount {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Items Grid */
+.lootbox-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.lootbox-items-animating .lootbox-item-card {
+  animation: lootbox-item-appear 0.3s ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes lootbox-item-appear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lootbox-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: all 0.2s ease;
+}
+
+.lootbox-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.lootbox-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.lootbox-item-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.lootbox-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.lootbox-item-rarity {
+  font-weight: 600;
+}
+
+.lootbox-item-type {
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+.lootbox-item-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.lootbox-item-stat-label {
+  color: var(--color-text-secondary);
+}
+
+.lootbox-item-stat-value {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.lootbox-add-item-btn {
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+/* Add All Section */
+.lootbox-add-all {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.lootbox-add-all-btn {
+  min-width: 250px;
+}
+
+/* JSON Dump */
+.lootbox-json-dump {
+  margin-top: 0.5rem;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 
@@ -477,6 +765,28 @@
 
   .items-section-header-right {
     display: none;
+  }
+
+  .lootbox-mode-selector {
+    flex-direction: column;
+  }
+
+  .lootbox-mode-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lootbox-items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lootbox-spawn-actions {
+    flex-direction: column;
+  }
+
+  .lootbox-spawn-btn,
+  .lootbox-clear-btn {
+    width: 100%;
   }
 }
 
