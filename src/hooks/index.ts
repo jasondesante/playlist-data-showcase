@@ -13,3 +13,4 @@ export * from './useSessionCompletion';
 export * from './useFeatureNames';
 export * from './useHeroEquipment';
 export * from './useLootBox';
+export * from './useItemCreator';

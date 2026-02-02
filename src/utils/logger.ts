@@ -22,7 +22,8 @@ type LogCategory =
     | 'SessionCompletion'
     | 'FeatureNames'
     | 'HeroEquipment'
-    | 'LootBox';
+    | 'LootBox'
+    | 'ItemCreator';
 
 
 

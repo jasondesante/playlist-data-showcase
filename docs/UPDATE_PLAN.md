@@ -469,22 +469,49 @@ Created a comprehensive Loot Box Demo section in ItemsTab with the following fea
 ## Phase 4: Items Tab - Custom Item Creator Section
 
 ### Task 4.1: Create useItemCreator hook
-- [ ] Create src/hooks/useItemCreator.ts
-- [ ] Import necessary types from playlist-data-engine
-- [ ] Define interface for custom item creation form data
-- [ ] Implement createCustomItem() function that:
-  - [ ] Takes item properties (name, type, rarity, weight)
-  - [ ] Creates EnhancedEquipment object
-  - [ ] Validates item data
-  - [ ] Returns created item
-- [ ] Implement addItemToCharacter() function that:
-  - [ ] Takes character and item
-  - [ ] Uses EquipmentEffectApplier to add to inventory
-  - [ ] Updates character store
-  - [ ] Returns success/failure
-- [ ] Add loading states
-- [ ] Add error handling with logger
-- [ ] Export hook interface
+- [x] Create src/hooks/useItemCreator.ts
+- [x] Import necessary types from playlist-data-engine
+- [x] Define interface for custom item creation form data
+- [x] Implement createCustomItem() function that:
+  - [x] Takes item properties (name, type, rarity, weight)
+  - [x] Creates EnhancedEquipment object
+  - [x] Validates item data
+  - [x] Returns created item
+- [x] Implement addItemToCharacter() function that:
+  - [x] Takes character and item
+  - [x] Uses EquipmentEffectApplier to add to inventory
+  - [x] Updates character store
+  - [x] Returns success/failure
+- [x] Add loading states
+- [x] Add error handling with logger
+- [x] Export hook interface
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive hook for creating custom items with the following features:
+- `CustomItemFormData` interface for form data including name, type, rarity, weight, quantity, damage dice, AC bonus, etc.
+- `validateItemData()` function that validates:
+  - Name (required, 2-100 characters)
+  - Type (weapon, armor, item)
+  - Rarity (common, uncommon, rare, very_rare, legendary)
+  - Weight (non-negative, max 1000 lbs)
+  - Quantity (1-9999)
+  - Weapon damage dice format (e.g., "1d8")
+  - AC bonus range (0-20)
+- `createCustomItem()` function that builds an EnhancedEquipment object with all provided properties
+- `addItemToCharacter()` function that adds the item to the active character's inventory
+- `createAndAddItem()` convenience function for one-step creation and addition
+- Proper integration with EquipmentEffectApplier for auto-equip functionality
+- Comprehensive logging via logger utility
+- Full JSDoc documentation
+
+**Files Created:**
+- `src/hooks/useItemCreator.ts` - Main hook implementation
+
+**Files Modified:**
+- `src/utils/logger.ts` - Added 'ItemCreator' to LogCategory
+- `src/hooks/index.ts` - Exported the new hook
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ### Task 4.2: Add Item Creator section to ItemsTab
 - [ ] In ItemsTab.tsx, add collapsible Item Creator section
