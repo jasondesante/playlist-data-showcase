@@ -374,25 +374,44 @@ Updated App.tsx to integrate the ItemsTab:
 ## Phase 3: Items Tab - Loot Box Demo Section
 
 ### Task 3.1: Create useLootBox hook
-- [ ] Create src/hooks/useLootBox.ts
-- [ ] Import EquipmentSpawnHelper from playlist-data-engine
-- [ ] Import SeededRNG for deterministic spawning
-- [ ] Define LootBoxResult interface
-- [ ] Implement spawnRandomItems() function:
-  - [ ] Takes count and optional seed
-  - [ ] Uses EquipmentSpawnHelper.spawnRandom()
-  - [ ] Returns array of EnhancedEquipment
-- [ ] Implement spawnTreasureHoard() function:
-  - [ ] Takes CR (challenge rating) number
-  - [ ] Uses EquipmentSpawnHelper.spawnTreasureHoard()
-  - [ ] Returns hoard result with items and value
-- [ ] Implement spawnByRarity() function:
-  - [ ] Takes rarity and count
-  - [ ] Uses EquipmentSpawnHelper.spawnByRarity()
-  - [ ] Returns filtered items
-- [ ] Add loading states for each spawn type
-- [ ] Add error handling
-- [ ] Add logging for spawn operations
+- [x] Create src/hooks/useLootBox.ts
+- [x] Import EquipmentSpawnHelper from playlist-data-engine
+- [x] Import SeededRNG for deterministic spawning
+- [x] Define LootBoxResult interface
+- [x] Implement spawnRandomItems() function:
+  - [x] Takes count and optional seed
+  - [x] Uses EquipmentSpawnHelper.spawnRandom()
+  - [x] Returns array of EnhancedEquipment
+- [x] Implement spawnTreasureHoard() function:
+  - [x] Takes CR (challenge rating) number
+  - [x] Uses EquipmentSpawnHelper.spawnTreasureHoard()
+  - [x] Returns hoard result with items and value
+- [x] Implement spawnByRarity() function:
+  - [x] Takes rarity and count
+  - [x] Uses EquipmentSpawnHelper.spawnByRarity()
+  - [x] Returns filtered items
+- [x] Add loading states for each spawn type
+- [x] Add error handling
+- [x] Add logging for spawn operations
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive hook for loot box style equipment spawning with the following features:
+- `spawnRandomItems(count, seed?)` - Spawns random items using weighted selection via `EquipmentSpawnHelper.spawnRandom()`
+- `spawnByRarity(rarity, count, seed?)` - Spawns items of a specific rarity
+- `spawnTreasureHoard(cr, seed?)` - Spawns a treasure hoard based on challenge rating with total value
+- `spawnFromList(itemNames, seed?)` - Spawns specific items by name (filters out undefined for missing items)
+- `clearSpawnedItems()` - Clears the spawned items state
+- Tracks loading state with `isLoading` flag
+- Comprehensive error handling with logger integration
+- Uses `SeededRNG` for deterministic spawning when seed is provided
+- Returns `LootBoxResult` with items, totalValue (for hoards), and cr
+
+**Files Created:**
+- `src/hooks/useLootBox.ts` - Main hook implementation with full JSDoc documentation
+
+**Files Modified:**
+- `src/utils/logger.ts` - Added 'LootBox' to LogCategory
+- `src/hooks/index.ts` - Exported the new hook
 
 ### Task 3.2: Add Loot Box section to ItemsTab
 - [ ] In ItemsTab.tsx, add collapsible Loot Box section

@@ -96,6 +96,7 @@ export function CombatSimulatorTab() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const combatLogRef = useRef<HTMLDivElement>(null);
+  const executeAutoPlayTurnRef = useRef<() => void>(() => {});
 
   // Performance timing state (Phase 5.5.2)
   const combatStartTimeRef = useRef<number | null>(null);
@@ -309,11 +310,16 @@ export function CombatSimulatorTab() {
     );
   };
 
+  // Keep the ref updated with the latest executeAutoPlayTurn function
+  useEffect(() => {
+    executeAutoPlayTurnRef.current = executeAutoPlayTurn;
+  }, [executeAutoPlayTurn]);
+
   // Auto-play interval effect (task 4.9.7)
   useEffect(() => {
     if (isAutoPlaying && isActive) {
       autoPlayIntervalRef.current = setInterval(() => {
-        executeAutoPlayTurn();
+        executeAutoPlayTurnRef.current();
       }, AUTO_PLAY_INTERVAL_MS);
     } else {
       if (autoPlayIntervalRef.current) {
@@ -328,7 +334,7 @@ export function CombatSimulatorTab() {
         clearInterval(autoPlayIntervalRef.current);
       }
     };
-  }, [isAutoPlaying, isActive]); // Note: executeAutoPlayTurn is not in deps to avoid recreating interval
+  }, [isAutoPlaying, isActive]); // Note: executeAutoPlayTurn is not in deps to avoid recreating interval - we use the ref instead
 
   // Auto-scroll combat log to bottom (task 4.9.7)
   useEffect(() => {
@@ -910,14 +916,4 @@ export function CombatSimulatorTab() {
           <div className="combat-dump-section">
             <div className="combat-dump-header">
               <h3 className="combat-dump-title">Combat Engine Data</h3>
-              <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />
-            </div>
-            <RawJsonDump data={combat} title="Combat Instance JSON" defaultOpen={false} />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default CombatSimulatorTab;
+              <StatusIndicator status={

@@ -21,7 +21,8 @@ type LogCategory =
     | 'AutoCharacterSetup'
     | 'SessionCompletion'
     | 'FeatureNames'
-    | 'HeroEquipment';
+    | 'HeroEquipment'
+    | 'LootBox';
 
 
 

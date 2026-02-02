@@ -129,7 +129,12 @@ export const useCombatEngine = () => {
               attack_bonus: attacker.character.ability_modifiers.STR
             };
 
-        return engine.executeAttack(combat, attacker, target, attack);
+        const action = engine.executeAttack(combat, attacker, target, attack);
+
+        // Update combat state to reflect HP changes from the attack
+        setCombat({ ...combat });
+
+        return action;
     }, [combat, engine]);
 
     const nextTurn = useCallback(() => {
