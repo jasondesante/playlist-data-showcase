@@ -2402,13 +2402,19 @@ These features are intentionally NOT included in this plan but noted for future 
 Before marking plan complete:
 
 ### Core Features:
-- [ ] ItemsTab displays current hero's equipment
-- [ ] ItemsTab allows equipping/unequipping items
-- [ ] ItemsTab allows removing items
-- [ ] Loot Box section allows spawning items via different methods
-- [ ] Spawned items can be added to current hero
-- [ ] Item Creator section allows creating custom items
-- [ ] Custom items can be added to current hero
-- [ ] DataViewerTab shows all game data categories
-- [ ] Data Viewer updates when custom items are added
-- [ ] Equipment displ
+- [x] ItemsTab displays current hero's equipment (VERIFIED 2026-02-02: ItemsTab.tsx lines 654-757 fully implemented with equipment display by category, weight calculations, empty states, and RawJsonDump)
+- [x] ItemsTab allows equipping/unequipping items (VERIFIED 2026-02-02: handleEquipToggle function with useHeroEquipment integration)
+- [x] ItemsTab allows removing items (VERIFIED 2026-02-02: handleRemoveItem function with drop button)
+- [x] Loot Box section allows spawning items via different methods (VERIFIED 2026-02-02: Three spawn modes - Random, By Rarity, Treasure Hoard with controls, animations, and item cards)
+- [x] Spawned items can be added to current hero (VERIFIED 2026-02-02: handleAddToHero and handleAddAllToHero functions with "Add to Hero" buttons)
+- [x] Item Creator section allows creating custom items (VERIFIED 2026-02-02: Full form with name, type, rarity, weight, damage dice, AC bonus, quantity, auto-equip options)
+- [x] Custom items can be added to current hero (VERIFIED 2026-02-02: handleCreateItem with createAndAddItem, validation, and toast notifications)
+- [x] DataViewerTab shows all game data categories (VERIFIED 2026-02-02: 7 categories implemented - Spells, Skills, Class Features, Racial Traits, Races, Classes, Equipment with category selector, search, and filters)
+- [x] Data Viewer updates when custom items are added (VERIFIED 2026-02-02: useDataViewer with lastDataChange dependency, dataViewerStore integration, new items banner, and equipment count tracking)
+- [x] Equipment display shows rarity, properties, and stats (VERIFIED 2026-02-02: Rarity color coding, damage/AC stats, weight, properties, granted features/skills/spells displayed across CharacterGenTab, ItemsTab, and DataViewerTab)
+
+All Core Features have been verified and implemented. The Playlist Data Showcase is complete with:
+- ItemsTab with equipment management, loot box spawning, and custom item creation
+- DataViewerTab with comprehensive game data browser
+- Migration Guide compatibility (ammunition format, feature IDs, subraces)
+- All bugs fixed (loot box rarity, equip/unequip, drop button, custom item persistence)
