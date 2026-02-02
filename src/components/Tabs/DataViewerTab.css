@@ -22,6 +22,36 @@
 }
 
 /* ========================================
+   NEW ITEMS BANNER
+   ======================================== */
+
+.dataviewer-new-items-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.15) 0%, hsl(var(--cute-yellow) / 0.05) 100%);
+  border: 1px solid hsl(var(--cute-yellow) / 0.3);
+  border-radius: var(--radius-md);
+  color: hsl(var(--cute-yellow));
+  font-weight: 600;
+  font-size: 0.875rem;
+  animation: dataviewerNewItemsFadeIn 0.3s ease-out;
+}
+
+@keyframes dataviewerNewItemsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
    HEADER
    ======================================== */
 

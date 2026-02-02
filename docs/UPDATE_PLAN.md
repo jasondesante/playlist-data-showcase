@@ -867,15 +867,48 @@ Updated App.tsx to integrate the DataViewerTab:
 - `src/App.tsx` - Added Data Viewer tab integration
 
 ### Task 5.4: Add live update indicators
-- [ ] When custom items are added via Item Creator, increment equipment count
-- [ ] Show "New!" badge on Data Viewer tab when data changes
+- [x] When custom items are added via Item Creator, increment equipment count
+- [x] Show "New!" badge on Data Viewer tab when data changes
 - [x] Add refresh button to reload data from engine
 
 **IMPLEMENTATION SUMMARY:**
-The refresh button has been added to the DataViewerTab header. Clicking it calls `refreshData()` from the `useDataViewer` hook, which re-initializes all registries to pick up any new custom content.
+Created a comprehensive live update system for the Data Viewer tab:
+
+1. **Data Viewer Store** (`useDataViewerStore`):
+   - Tracks `lastDataChange` timestamp when custom items are added
+   - `hasPendingChanges` flag to control the "New!" badge visibility
+   - `lastEquipmentCount` to detect when new items are added
+   - `notifyDataChanged()` - called when custom items are created
+   - `markChangesViewed()` - clears the badge when user visits Data Viewer
+   - `hasEquipmentCountIncreased()` - compares current vs stored equipment count
+
+2. **Integration with Item Creator**:
+   - `useItemCreator` hook now calls `notifyDataChanged()` when items are added
+   - This triggers the badge to appear on the Data Viewer tab
+
+3. **Badge System**:
+   - Updated `TabItem` interface to accept `badgeCount: number | string`
+   - Updated `TabBadge` component to handle string labels like "New!"
+   - Updated `Sidebar` and `AppHeader` to render badges
+   - Badge shows with yellow glow animation when `showBadgeGlow` is true
+
+4. **Data Viewer Tab**:
+   - Calls `markChangesViewed()` on mount to clear pending changes
+   - Shows a notification banner "New custom items added!" when new items detected
+   - Updates stored equipment count on mount
+
+**Files Created:**
+- `src/store/dataViewerStore.ts` - New store for tracking data viewer state
 
 **Files Modified:**
-- `src/components/Tabs/DataViewerTab.tsx` - Added refresh button with loading state
+- `src/hooks/useItemCreator.ts` - Added notification call when items are added
+- `src/App.tsx` - Added Data Viewer badge with "New!" indicator
+- `src/components/Layout/Sidebar.tsx` - Updated to support string badges
+- `src/components/Layout/AppHeader.tsx` - Updated badge rendering logic
+- `src/components/ui/TabBadge.tsx` - Updated to accept string counts
+- `src/components/Tabs/DataViewerTab.tsx` - Added notification banner and change tracking
+- `src/components/Tabs/DataViewerTab.css` - Added styles for new items banner
+- `src/store/index.ts` - Exported new dataViewerStore
 
 ### Task 5.5: Visual polish and CSS refinement
 - [x] **Layout and spacing**

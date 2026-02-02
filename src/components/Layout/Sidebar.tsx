@@ -14,8 +14,8 @@ export interface TabItem {
   label: string;
   /** Icon component from lucide-react */
   icon: LucideIcon;
-  /** Optional: Badge count to display on the tab (e.g., pending stat increases) */
-  badgeCount?: number;
+  /** Optional: Badge count or text to display on the tab (e.g., pending stat increases, "New!") */
+  badgeCount?: number | string;
   /** Optional: Whether to show the glow animation for the badge */
   showBadgeGlow?: boolean;
 }
@@ -35,6 +35,7 @@ export function Sidebar({ tabs, activeTab, onTabChange }: SidebarProps) {
       <nav className="sidebar-nav">
         {tabs.map((tab) => {
           const Icon = tab.icon;
+          const hasBadge = tab.badgeCount !== undefined;
           return (
             <button
               key={tab.id}
@@ -44,6 +45,11 @@ export function Sidebar({ tabs, activeTab, onTabChange }: SidebarProps) {
             >
               <Icon className="sidebar-icon" />
               <span className="sidebar-label">{tab.label}</span>
+              {hasBadge && (
+                <span className={`tab-badge ${tab.showBadgeGlow ? 'tab-badge-glow' : ''}`}>
+                  {tab.badgeCount}
+                </span>
+              )}
             </button>
           );
         })}

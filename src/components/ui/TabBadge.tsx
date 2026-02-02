@@ -12,8 +12,8 @@
  */
 
 export interface TabBadgeProps {
-  /** The count to display (capped at "9+" for values over 9) */
-  count: number;
+  /** The count to display (capped at "9+" for values over 9) or a string label like "New!" */
+  count: number | string;
   /** Whether to show the yellow glow animation */
   showGlow?: boolean;
   /** Additional CSS class name */
@@ -22,8 +22,10 @@ export interface TabBadgeProps {
 
 /**
  * Format the badge count, capping at "9+" for values over 9.
+ * If a string is provided, returns it as-is.
  */
-function formatBadgeCount(count: number): string {
+function formatBadgeCount(count: number | string): string {
+  if (typeof count === 'string') return count;
   if (count <= 0) return '';
   return count > 9 ? '9+' : String(count);
 }

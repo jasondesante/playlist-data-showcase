@@ -190,7 +190,7 @@ export function AppHeader({
                   >
                     <Icon className="app-header-tab-icon" />
                     <span className="app-header-tab-label">{tab.label}</span>
-                    {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                    {tab.badgeCount !== undefined && (
                       <TabBadge count={tab.badgeCount} showGlow={tab.showBadgeGlow} />
                     )}
                   </button>

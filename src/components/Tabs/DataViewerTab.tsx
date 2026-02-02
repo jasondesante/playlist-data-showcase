@@ -14,7 +14,7 @@
  * - Raw JSON dump for detailed data inspection
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Database,
   Search,
@@ -34,6 +34,7 @@ import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, 
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
+import { useDataViewerStore } from '../../store/dataViewerStore';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 
@@ -165,8 +166,26 @@ export function DataViewerTab() {
     getEquipmentRarities
   } = useDataViewer();
 
+  // Get Data Viewer store actions
+  const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased } = useDataViewerStore();
+
   // State
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
+  const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
+
+  // Mark changes as viewed when tab is mounted and check for new items
+  useEffect(() => {
+    markChangesViewed();
+    // Check if equipment count has increased
+    if (hasEquipmentCountIncreased(dataCounts.equipment)) {
+      setShowNewItemsIndicator(true);
+      // Auto-hide after 5 seconds
+      const timer = setTimeout(() => setShowNewItemsIndicator(false), 5000);
+      return () => clearTimeout(timer);
+    }
+    // Update the stored equipment count to current count
+    updateEquipmentCount(dataCounts.equipment);
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -812,6 +831,14 @@ export function DataViewerTab() {
 
   return (
     <div className="dataviewer-tab">
+      {/* New Items Notification Banner */}
+      {showNewItemsIndicator && (
+        <div className="dataviewer-new-items-banner">
+          <Sparkles size={18} />
+          <span>New custom items added! Equipment count updated.</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="dataviewer-header">
         <div className="dataviewer-header-icon">

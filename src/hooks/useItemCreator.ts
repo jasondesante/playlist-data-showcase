@@ -7,6 +7,7 @@ import {
     ExtensionManager
 } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
+import { useDataViewerStore } from '@/store/dataViewerStore';
 import { logger } from '@/utils/logger';
 import type { CharacterSheet } from '@/types';
 
@@ -151,6 +152,7 @@ export interface UseItemCreatorReturn {
  */
 export const useItemCreator = (): UseItemCreatorReturn => {
     const { getActiveCharacter, updateCharacter } = useCharacterStore();
+    const { notifyDataChanged } = useDataViewerStore();
     const [isLoading, setIsLoading] = useState(false);
     const [lastCreatedItem, setLastCreatedItem] = useState<EnhancedEquipment | null>(null);
 
@@ -330,9 +332,17 @@ export const useItemCreator = (): UseItemCreatorReturn => {
                 const extensionManager = ExtensionManager.getInstance();
                 // Only register if not already registered
                 const existingEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
-                if (!existingEquipment.find(e => e.name === equipment.name)) {
+                logger.debug('ItemCreator', `ExtensionManager has ${existingEquipment.length} equipment items`);
+                const alreadyRegistered = existingEquipment.find(e => e.name === equipment.name);
+                if (!alreadyRegistered) {
+                    logger.info('ItemCreator', `Registering custom equipment with ExtensionManager: ${equipment.name}`);
                     extensionManager.register('equipment', [equipment]);
-                    logger.debug('ItemCreator', `Registered custom equipment with ExtensionManager: ${equipment.name}`);
+                    // Verify registration
+                    const afterRegistration = extensionManager.get('equipment') as EnhancedEquipment[];
+                    const found = afterRegistration.find(e => e.name === equipment.name);
+                    logger.info('ItemCreator', `Verification - equipment ${equipment.name} ${found ? 'found' : 'NOT found'} after registration`);
+                } else {
+                    logger.debug('ItemCreator', `Equipment ${equipment.name} already registered, skipping`);
                 }
             }
 
@@ -387,12 +397,37 @@ export const useItemCreator = (): UseItemCreatorReturn => {
             // Update the character in the store
             updateCharacter(updatedCharacter);
 
+            // Notify that data has changed (for Data Viewer live updates)
+            notifyDataChanged();
+
             logger.info('ItemCreator', `Added ${equipment.name} to ${activeCharacter.name}'s inventory`, {
                 itemId: inventoryItem.instanceId,
                 autoEquip,
                 category,
                 quantity
             });
+
+            // DEBUG: Write ExtensionManager state to file for diagnosis
+            try {
+                const extensionManager = ExtensionManager.getInstance();
+                const allEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
+                const customEquipment = extensionManager.getCustom('equipment') as EnhancedEquipment[];
+                const debugData = {
+                    timestamp: new Date().toISOString(),
+                    totalEquipmentCount: allEquipment?.length || 0,
+                    customEquipmentCount: customEquipment?.length || 0,
+                    allEquipmentNames: allEquipment?.map(e => e.name) || [],
+                    customEquipmentNames: customEquipment?.map(e => e.name) || [],
+                    lastRegisteredItem: equipment.name,
+                    itemFoundInAll: allEquipment?.some(e => e.name === equipment.name) || false,
+                    itemFoundInCustom: customEquipment?.some(e => e.name === equipment.name) || false
+                };
+                // Use a global variable to store last debug state instead of writing to file
+                (window as unknown as Record<string, unknown>).__itemCreatorDebug = debugData;
+                logger.info('ItemCreator', 'Debug state stored in window.__itemCreatorDebug', debugData);
+            } catch (e) {
+                logger.warn('ItemCreator', 'Failed to store debug state', { error: String(e) });
+            }
 
             return {
                 success: true,

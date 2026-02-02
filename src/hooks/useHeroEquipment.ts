@@ -71,8 +71,16 @@ export interface UseHeroEquipmentReturn {
  * @returns {UseHeroEquipmentReturn} Hook return object with equipment management functions
  */
 export const useHeroEquipment = (): UseHeroEquipmentReturn => {
-    const { getActiveCharacter, updateCharacter } = useCharacterStore();
+    const { characters, activeCharacterId, updateCharacter } = useCharacterStore();
     const [isLoading, setIsLoading] = useState(false);
+
+    /**
+     * Get the active character from store state
+     * This subscribes to store changes so the hook re-renders when characters update
+     */
+    const rawActiveCharacter = useMemo(() => {
+        return characters.find((c) => c.seed === activeCharacterId);
+    }, [characters, activeCharacterId]);
 
     /**
      * Ensure all equipment items have instance IDs
@@ -118,12 +126,11 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
     }, [updateCharacter]);
 
     const activeCharacter = useMemo(() => {
-        const character = getActiveCharacter();
-        if (character) {
-            return ensureEquipmentInstanceIds(character);
+        if (rawActiveCharacter) {
+            return ensureEquipmentInstanceIds(rawActiveCharacter);
         }
         return undefined;
-    }, [getActiveCharacter, ensureEquipmentInstanceIds]);
+    }, [rawActiveCharacter, ensureEquipmentInstanceIds]);
 
     /**
      * Update the character in the store after equipment changes
@@ -140,12 +147,20 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
         // First check ExtensionManager (includes custom items)
         const extensionManager = ExtensionManager.getInstance();
         const allEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
-        const fromExtension = allEquipment.find(e => e.name === itemName);
+        logger.debug('HeroEquipment', `Looking up "${itemName}" in ExtensionManager (${allEquipment?.length || 0} items)`);
+        const fromExtension = allEquipment?.find(e => e.name === itemName);
         if (fromExtension) {
+            logger.debug('HeroEquipment', `Found "${itemName}" in ExtensionManager`);
             return fromExtension;
         }
         // Fall back to default database
-        return EQUIPMENT_DATABASE[itemName];
+        const fromDatabase = EQUIPMENT_DATABASE[itemName];
+        if (fromDatabase) {
+            logger.debug('HeroEquipment', `Found "${itemName}" in EQUIPMENT_DATABASE`);
+        } else {
+            logger.warn('HeroEquipment', `Equipment "${itemName}" not found in ExtensionManager or database`);
+        }
+        return fromDatabase;
     }, []);
 
     /**
@@ -204,6 +219,18 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             // Look up full equipment data from database
             const equipmentData = getEquipmentData(item.name);
             if (!equipmentData) {
+                // DEBUG: Log detailed state when equipment not found
+                const extensionManager = ExtensionManager.getInstance();
+                const allEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
+                const customEquipment = extensionManager.getCustom('equipment') as EnhancedEquipment[];
+                logger.error('HeroEquipment', `Equipment lookup failed for "${item.name}"`, {
+                    lookupName: item.name,
+                    extensionManagerTotalItems: allEquipment?.length || 0,
+                    extensionManagerCustomItems: customEquipment?.length || 0,
+                    allEquipmentNames: allEquipment?.map(e => e.name).slice(0, 20) || [], // First 20 names
+                    customEquipmentNames: customEquipment?.map(e => e.name) || [],
+                    windowDebugState: (window as unknown as Record<string, unknown>).__itemCreatorDebug
+                });
                 return { success: false, error: `Equipment data not found for "${item.name}"` };
             }
 

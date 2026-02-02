@@ -21,6 +21,7 @@ import { DataViewerTab } from './components/Tabs/DataViewerTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
+import { useDataViewerStore } from './store/dataViewerStore';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -42,6 +43,9 @@ function App() {
   const characters = useCharacterStore((state) => state.characters);
   const activeCharacterId = useCharacterStore((state) => state.activeCharacterId);
 
+  // Get Data Viewer pending changes state
+  const hasPendingDataChanges = useDataViewerStore((state) => state.hasPendingChanges);
+
   // Compute pending stat increases count for badge
   const pendingStatIncreasesCount = useMemo(() => {
     if (!activeCharacterId) return 0;
@@ -60,7 +64,14 @@ function App() {
     { id: 'character', label: 'Character Gen', icon: User },
     { id: 'party', label: 'Party', icon: Users },
     { id: 'items', label: 'Items', icon: Backpack },
-    { id: 'dataviewer', label: 'Data Viewer', icon: Database },
+    {
+      id: 'dataviewer',
+      label: 'Data Viewer',
+      icon: Database,
+      // Show "New!" badge when custom items are added
+      badgeCount: hasPendingDataChanges ? 'New!' : undefined,
+      showBadgeGlow: hasPendingDataChanges
+    },
     { id: 'session', label: 'Session', icon: Activity },
     { id: 'xp', label: 'XP Calc', icon: Zap },
     {
