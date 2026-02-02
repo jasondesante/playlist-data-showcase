@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client'
 import {
   ensureAllDefaultsInitialized,
   ExtensionManager,
-  MAGIC_ITEM_EXAMPLES
+  MAGIC_ITEM_EXAMPLES,
+  EquipmentValidator
 } from 'playlist-data-engine'
 import App from './App.tsx'
 import './styles/index.css'
@@ -31,7 +32,26 @@ const magicItemsWithAdjustedWeight = MAGIC_ITEM_EXAMPLES.map((item: any) => {
 const magicItemsWithSpawnWeight = magicItemsWithAdjustedWeight.filter(
   (item: any) => (item.spawnWeight ?? 1) > 0
 )
-manager.register('equipment', magicItemsWithSpawnWeight, { validate: false })
+
+// Validate and register magic items one by one, skipping invalid ones
+const validMagicItems: any[] = []
+const invalidItemNames: string[] = []
+
+for (const item of magicItemsWithSpawnWeight) {
+  const validation = EquipmentValidator.validateEquipment(item)
+  if (validation.valid) {
+    validMagicItems.push(item)
+  } else {
+    invalidItemNames.push(item.name)
+    console.warn(`Skipping invalid magic item "${item.name}":`, validation.errors)
+  }
+}
+
+if (invalidItemNames.length > 0) {
+  console.warn(`Skipped ${invalidItemNames.length} invalid magic items:`, invalidItemNames)
+}
+
+manager.register('equipment', validMagicItems, { validate: true })
 
 // Restore custom equipment cache from localStorage and ExtensionManager
 // This ensures custom items remain equippable after page reloads
