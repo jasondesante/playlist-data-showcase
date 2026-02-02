@@ -1017,7 +1017,7 @@ All visual polish and CSS refinement has been completed:
 
 **Files Created:**
 - `src/components/Tabs/DataViewerTab.css` - Complete styling (1200+ lines)
-  - [ ] Adjust column counts based on viewport width
+  - [x] Adjust column counts based on viewport width
   - [ ] Ensure filters wrap on mobile
   - [ ] Test at various screen sizes
 - [ ] **Final polish pass**
