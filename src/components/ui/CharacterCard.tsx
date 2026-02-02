@@ -95,7 +95,7 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
         <div className="party-card-info">
           <h3 className="party-card-name">{character.name}</h3>
           <div className="party-card-subtitle">
-            <span>{character.race} {character.class}</span>
+            <span>{character.race}{character.subrace ? ` (${character.subrace})` : ''} {character.class}</span>
             <span className="party-card-level">Lv {character.level}</span>
           </div>
         </div>

@@ -376,7 +376,7 @@ export function PartyTab() {
                 <div className="party-detail-info">
                   <h2>{selectedCharacter.name}</h2>
                   <div>
-                    Race: {selectedCharacter.race} | Class: {selectedCharacter.class}
+                    Race: {selectedCharacter.race}{selectedCharacter.subrace ? ` (${selectedCharacter.subrace})` : ''} | Class: {selectedCharacter.class}
                   </div>
                 </div>
               </div>

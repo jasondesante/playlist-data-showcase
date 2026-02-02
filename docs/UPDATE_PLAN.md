@@ -211,12 +211,37 @@ All tasks already completed in previous commits:
 - Build passes successfully with no TypeScript errors
 
 ### Task 1.5.3: Add Subrace Display to Character UI
-- [ ] **Update character display components to show subrace property**
-- [ ] **Modify CharacterGenTab character sheet display to show subrace below race**
-- [ ] **Update PartyTab character cards to include subrace badge**
-- [ ] **Update PartyTab detail modal to show full subrace information**
-- [ ] **If character has no subrace, hide the field entirely (don't show "undefined")**
-- [ ] **Style subrace display distinct from race (smaller, muted color)**
+- [x] **Update character display components to show subrace property**
+- [x] **Modify CharacterGenTab character sheet display to show subrace below race**
+- [x] **Update PartyTab character cards to include subrace badge**
+- [x] **Update PartyTab detail modal to show full subrace information**
+- [x] **If character has no subrace, hide the field entirely (don't show "undefined")**
+- [x] **Style subrace display distinct from race (smaller, muted color)**
+
+**IMPLEMENTATION SUMMARY:**
+Updated three components to display subrace information:
+
+1. **CharacterGenTab.tsx** (line 437): Modified character class display to show subrace in parentheses after race:
+   - Format: `Race: Elf (High Elf) | Class: Wizard`
+   - Only shows subrace when `character.subrace` is defined
+   - Uses existing `.character-class` styling (muted color, smaller font)
+
+2. **PartyTab.tsx** (line 379): Updated detail modal header to show subrace:
+   - Format: `Race: Dwarf (Hill Dwarf) | Class: Cleric`
+   - Consistent with CharacterGenTab display format
+   - Hidden when subrace is undefined
+
+3. **CharacterCard.tsx** (line 98): Updated character card subtitle:
+   - Format: `Elf (High Elf) Wizard`
+   - Compact inline display suitable for card layout
+   - Maintains existing styling with `party-card-subtitle` class
+
+**Files Modified:**
+- `src/components/Tabs/CharacterGenTab.tsx`
+- `src/components/Tabs/PartyTab.tsx`
+- `src/components/ui/CharacterCard.tsx`
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ---
 
