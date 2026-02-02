@@ -22,18 +22,13 @@ This plan outlines improvements and new features for the playlist-data-showcase 
 ---
 Notes from user:
 
-~~The items tab has buttons to equip and unequip items but those buttons don't work right now because they're returning an error saying "Item has no instance ID". The drop button is also not working. I can create a custom item correctly but when I try to equip the custom item it says "Equipment data not found for ..."~~
+~~The items tab has buttons to equip and unequip items but those buttons don't work right now because they're returning an error saying "Item has no instance ID". The drop button is also not working. I can create a custom item correctly but when I try to equip the custom item it says "Equipment data not found for ..."~~ **FIXED** in Task 10.2
 
-~~The loot box demo's "by rarity" mode doesn't work. The other random and treasure hoard modes work great though.~~
-
-**FIXED:** All issues above have not been resolved. See Phase 10 for details on the partial success partial failures.
-
-
-FOLLOW UP NOTES:
+~~The loot box demo's "by rarity" mode doesn't work. The other random and treasure hoard modes work great though.~~ **FIXED** in Task 10.1b
 
 ~~The rarity loot box is still broken, it spawns something now but it spawns the exact same 1 single item no matter what the parameter is.~~ **FIXED** in Task 10.1b - MAGIC_ITEM_EXAMPLES are now registered with ExtensionManager, providing variety for all rarities.
 
-And I still can't equip items that were made custom in the app. I can equip default items, but the custom items that I've made in the UI, aren't being made correctly. They are still saying the same error "Equipment data not found for..."
+~~And I still can't equip items that were made custom in the app. I can equip default items, but the custom items that I've made in the UI, aren't being made correctly. They are still saying the same error "Equipment data not found for..."~~ **FIXED** in Task 10.4b - Custom equipment cache now persists to localStorage and is restored on page load
 
 
 ---
@@ -1338,6 +1333,29 @@ This provides variety for the loot box rarity spawning while keeping truly curse
 **Files Modified:**
 - `src/hooks/useHeroEquipment.ts` - Updated `getEquipmentData()` to check ExtensionManager
 - `src/hooks/useItemCreator.ts` - Added ExtensionManager registration for custom items
+
+---
+
+### Task 10.4b: Fix custom item equipment persistence across page reloads
+**Issue:** Custom items created via the Item Creator could be equipped during the same session, but after a page reload, attempting to equip them would show "Equipment data not found for ..." error again.
+
+**Root Cause:** The `CUSTOM_EQUIPMENT_CACHE` in `useItemCreator.ts` was only stored in memory. When the page was reloaded:
+1. The cache was cleared (module re-initialization)
+2. But the custom items remained in the character's inventory (persisted via zustand)
+3. When trying to equip, the cache lookup failed because the cache was empty
+
+**Fix:**
+1. Added `saveCustomEquipmentCache()` function to persist the cache to localStorage
+2. Added `loadCustomEquipmentCache()` function to restore the cache from localStorage on module load
+3. Added `restoreCustomEquipmentFromExtensionManager()` to restore custom items from ExtensionManager
+4. Updated `registerCustomEquipment()` to save the cache whenever a new item is registered
+5. Called `restoreCustomEquipmentFromExtensionManager()` in `main.tsx` after ExtensionManager initialization
+
+**Files Modified:**
+- `src/hooks/useItemCreator.ts` - Added localStorage persistence functions and restoration logic
+- `src/main.tsx` - Added call to restore custom equipment from ExtensionManager
+
+**Status:** ✅ Complete
 
 ---
 
