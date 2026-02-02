@@ -582,29 +582,104 @@ A tab to browse all game data: spells, skills, features, races, subraces, classe
 This will visually demonstrate the content library growing when custom items are added.
 
 ### Task 5.0: Research available data sources from engine
-- [ ] **Deep dive into playlist-data-engine exports**
-  - [ ] List all registries available (FeatureRegistry, SkillRegistry, etc.)
-  - [ ] Check for any data managers or database objects beyond SPELL_DATABASE
-  - [ ] Look for SubraceRegistry or similar for subrace data access
-  - [ ] Investigate ExtensionManager methods for listing content
-  - [ ] Check for any equipment database or item list exports
-- [ ] **Verify data structure for each category**
-  - [ ] Spell data structure (name, level, school, casting time, range, etc.)
-  - [ ] Skill data structure (name, ability, description)
-  - [ ] Feature data structure (name, class, level, type, prerequisites, description)
-  - [ ] Racial trait data structure (name, race, subrace, description)
-  - [ ] Race data structure (name, speed, ability bonuses, traits, subraces)
-  - [ ] Class data structure (name, hit die, primary abilities, spellcasting, features by level)
-  - [ ] Equipment data structure (name, type, rarity, weight, damage/AC, properties)
-- [ ] **Identify any missing data access methods**
-  - [ ] Can we get all spells or do we need to iterate levels?
-  - [ ] Are there helper functions for getting data by category?
-  - [ ] Is there a way to get feature descriptions from FeatureRegistry?
-  - [ ] Can we access prerequisite data for display?
-- [ ] **Document data source decisions**
-  - [ ] Note which engine exports to use for each category
-  - [ ] Document any workarounds needed for missing accessors
-  - [ ] Create type definitions for any data structures not fully typed
+- [x] **Deep dive into playlist-data-engine exports**
+  - [x] List all registries available (FeatureRegistry, SkillRegistry, etc.)
+  - [x] Check for any data managers or database objects beyond SPELL_DATABASE
+  - [x] Look for SubraceRegistry or similar for subrace data access
+  - [x] Investigate ExtensionManager methods for listing content
+  - [x] Check for any equipment database or item list exports
+- [x] **Verify data structure for each category**
+  - [x] Spell data structure (name, level, school, casting time, range, etc.)
+  - [x] Skill data structure (name, ability, description)
+  - [x] Feature data structure (name, class, level, type, prerequisites, description)
+  - [x] Racial trait data structure (name, race, subrace, description)
+  - [x] Race data structure (name, speed, ability bonuses, traits, subraces)
+  - [x] Class data structure (name, hit die, primary abilities, spellcasting, features by level)
+  - [x] Equipment data structure (name, type, rarity, weight, damage/AC, properties)
+- [x] **Identify any missing data access methods**
+  - [x] Can we get all spells or do we need to iterate levels?
+  - [x] Are there helper functions for getting data by category?
+  - [x] Is there a way to get feature descriptions from FeatureRegistry?
+  - [x] Can we access prerequisite data for display?
+- [x] **Document data source decisions**
+  - [x] Note which engine exports to use for each category
+  - [x] Document any workarounds needed for missing accessors
+  - [x] Create type definitions for any data structures not fully typed
+
+**FINDINGS:**
+
+#### Available Registries and Data Sources:
+
+1. **SpellRegistry** (`getSpellRegistry()`)
+   - `getSpells()` - Returns all spells as RegisteredSpell[]
+   - `getSpellsByLevel(level)` - Get spells by level (0-9)
+   - `getSpellsBySchool(school)` - Get spells by school (Abjuration, Conjuration, etc.)
+   - `getSpellsForClass(className)` - Get spells available to a specific class
+   - `getRegistryStats()` - Returns counts by level, school, etc.
+   - Data: `RegisteredSpell` extends `Spell` with id, classes, source
+
+2. **SkillRegistry** (`getSkillRegistry()`)
+   - `getAllSkills()` - Returns all skills as CustomSkill[]
+   - `getSkillsByAbility(ability)` - Get skills by ability (STR, DEX, etc.)
+   - `getSkillsByCategory(category)` - Get skills by category
+   - `getCategories()` - Returns all category names
+   - `getRegistryStats()` - Returns counts by ability, source, etc.
+   - Data: `CustomSkill` with id, name, ability, description, categories, source
+
+3. **FeatureRegistry** (`getFeatureRegistry()`)
+   - `getAllClassFeatures()` - Returns Map<string, ClassFeature[]> (class -> features)
+   - `getAllRacialTraits()` - Returns Map<string, RacialTrait[]> (race -> traits)
+   - `getClassFeatureById(id)` - Get single feature by ID
+   - `getRacialTraitById(id)` - Get single trait by ID
+   - `getClassFeatures(class, level)` - Get features for class at level
+   - `getRacialTraits(race)` - Get traits for a race
+   - `getAvailableSubraces(race)` - Get subraces for a race
+   - `getRegistryStats()` - Returns counts
+   - Data: `ClassFeature` and `RacialTrait` with full description, prerequisites, effects
+
+4. **Constants from utils/constants.js**
+   - `SPELL_DATABASE` - Record<string, Spell> - All spells by name
+   - `EQUIPMENT_DATABASE` - Record<string, Equipment> - All equipment by name
+   - `RACE_DATA` - Record<Race, RaceDataEntry> - Race data with ability bonuses, speed, traits, subraces
+   - `CLASS_DATA` - Record<string, ClassDataEntry> - Class data with hit die, abilities, spellcasting
+   - `CLASS_SPELL_LISTS` - Spell lists by class
+   - Helper functions: `getRaceData()`, `getClassData()`, `getClassSpellList()`
+
+5. **ExtensionManager** (`ExtensionManager.getInstance()`)
+   - `get(category)` - Get merged data (defaults + custom) for a category
+   - `getCustom(category)` - Get only custom items
+   - `getRegisteredCategories()` - Get all registered category names
+   - `hasCustomData(category)` - Check if category has custom data
+   - Categories include: 'equipment', 'spells', 'races', 'classes', 'classFeatures.*', 'racialTraits.*', etc.
+
+#### Data Structures Summary:
+
+| Category | Source | Data Structure | Key Fields |
+|----------|--------|----------------|------------|
+| Spells | SpellRegistry | RegisteredSpell | id, name, level, school, casting_time, range, components, duration, description |
+| Skills | SkillRegistry | CustomSkill | id, name, ability, description, categories, source |
+| Class Features | FeatureRegistry | ClassFeature | id, name, description, class, level, type, prerequisites, effects |
+| Racial Traits | FeatureRegistry | RacialTrait | id, name, description, race, subrace, prerequisites, effects |
+| Races | RACE_DATA | RaceDataEntry | ability_bonuses, speed, traits, subraces |
+| Classes | CLASS_DATA | ClassDataEntry | primary_ability, hit_die, saving_throws, is_spellcaster, available_skills |
+| Equipment | EQUIPMENT_DATABASE | Equipment | name, type, rarity, weight, damage, acBonus, properties |
+
+#### Data Access Decisions:
+
+1. **Spells**: Use `SpellRegistry.getSpells()` for all spells, `getSpellsByLevel()` for filtering
+2. **Skills**: Use `SkillRegistry.getAllSkills()` for all skills, `getSkillsByAbility()` for grouping
+3. **Class Features**: Use `FeatureRegistry.getAllClassFeatures()` then flatten the Map
+4. **Racial Traits**: Use `FeatureRegistry.getAllRacialTraits()` then flatten the Map
+5. **Races**: Use `RACE_DATA` constant directly (Record of all races)
+6. **Classes**: Use `CLASS_DATA` constant directly (Record of all classes)
+7. **Equipment**: Use `EQUIPMENT_DATABASE` constant directly (Record of all equipment)
+
+#### Workarounds Needed:
+
+1. **No SubraceRegistry**: Subrace data is accessed via `FeatureRegistry.getAvailableSubraces(race)` or from `RACE_DATA[race].subraces`
+2. **Feature descriptions**: Available directly from FeatureRegistry (no workaround needed)
+3. **Prerequisite data**: Available directly from feature/trait/spell objects (no workaround needed)
+4. **Custom content**: Use ExtensionManager to get custom items merged with defaults
 
 ### Task 5.1: Create useDataViewer hook
 - [ ] Create src/hooks/useDataViewer.ts
