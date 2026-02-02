@@ -1,6 +1,6 @@
 # Technical Notes & Implementation Insights
 
-This document captures key architectural decisions, implementation patterns, and technical insights from the IMPROVEMENT_PLAN.md work.
+This document captures key architectural decisions, implementation patterns, and technical insights.
 
 ---
 
