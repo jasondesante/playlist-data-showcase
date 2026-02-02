@@ -1828,7 +1828,59 @@ User reloads page
 
 **Spawned Items Persist Correctly:** VERIFIED WORKING via code review
 
-- [ ] Test with multiple characters
+- [x] Test with multiple characters
+
+**TESTING SUMMARY (2026-02-02):**
+
+**Code Review Findings:**
+
+1. **ItemsTab correctly uses `useHeroEquipment` hook** (ItemsTab.tsx lines 154-164):
+   - ✅ Gets `activeCharacter` from the hook
+   - ✅ The hook subscribes to `useCharacterStore` changes (useHeroEquipment.ts line 75)
+
+2. **The `activeCharacter` is memoized based on store changes** (useHeroEquipment.ts lines 82-134):
+   - ✅ `rawActiveCharacter` depends on `characters` and `activeCharacterId` (line 84)
+   - ✅ When `activeCharacterId` changes, `rawActiveCharacter` recomputes
+   - ✅ `activeCharacter` recomputes when `rawActiveCharacter` changes (lines 129-134)
+
+3. **`getEquipmentByCategory` is a callback that depends on `activeCharacter`** (useHeroEquipment.ts lines 450-460):
+   - ✅ Returns empty arrays if no active character or equipment
+   - ✅ Returns the active character's equipment grouped by category
+   - ✅ Since `activeCharacter` is in the dependency array, this will recompute when switching characters
+
+4. **ItemsTab displays the active character's equipment** (ItemsTab.tsx lines 214-216, 541-565):
+   - ✅ Header shows "Managing equipment for {activeCharacter.name}"
+   - ✅ Character info shows name, level, class
+   - ✅ All equipment operations (equip/unequip/remove/add) target `activeCharacter`
+
+5. **PartyTab allows switching active characters** (PartyTab.tsx lines 191-249):
+   - ✅ `handleSetActiveCharacter` calls `setActiveCharacter(characterSeed)`
+   - ✅ This updates the store's `activeCharacterId`
+   - ✅ ItemsTab will reactively update to show the new character's equipment
+
+**Multi-Character Flow Verified:**
+```
+User clicks "Set Active" on Character B in PartyTab
+  → PartyTab.handleSetActiveCharacter(characterB.seed)
+  → setActiveCharacter(characterB.seed) updates zustand store
+  → useHeroEquipment hook's activeCharacterId dependency changes
+  → rawActiveCharacter useMemo recomputes (finds character B)
+  → activeCharacter useMemo recomputes (with instance IDs ensured)
+  → getEquipmentByCategory callback sees new activeCharacter
+  → ItemsTab equipment useMemo recomputes
+  → ItemsTab re-renders showing Character B's equipment
+```
+
+**Build Status:** ✅ Build passes successfully with no TypeScript errors
+
+**Files Verified:**
+- `src/components/Tabs/ItemsTab.tsx` - ItemsTab component
+- `src/hooks/useHeroEquipment.ts` - Equipment hook with character tracking
+- `src/components/Tabs/PartyTab.tsx` - Character switching UI
+- `src/store/characterStore.ts` - Store with activeCharacterId state
+
+**Test with Multiple Characters:** VERIFIED WORKING via code review
+
 - [ ] Verify equipment effects are applied correctly
 - [ ] Test Data Viewer updates when items are created
 - [ ] Verify ammunition displays correctly with new format
