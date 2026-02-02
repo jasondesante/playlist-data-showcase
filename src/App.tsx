@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, useMemo } from 'react';
-import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users } from 'lucide-react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import { ToastContainer } from './components/ui/Toast';
@@ -16,11 +16,12 @@ import { EnvironmentalSensorsTab } from './components/Tabs/EnvironmentalSensorsT
 import { GamingPlatformsTab } from './components/Tabs/GamingPlatformsTab';
 import { CombatSimulatorTab } from './components/Tabs/CombatSimulatorTab';
 import { SettingsTab } from './components/Tabs/SettingsTab';
+import { ItemsTab } from './components/Tabs/ItemsTab';
 import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
 
-type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'items' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
 // Create context for active tab
 const TabContext = createContext<{ activeTab: Tab } | null>(null);
@@ -57,6 +58,7 @@ function App() {
     { id: 'audio', label: 'Audio Analysis', icon: Music },
     { id: 'character', label: 'Character Gen', icon: User },
     { id: 'party', label: 'Party', icon: Users },
+    { id: 'items', label: 'Items', icon: Backpack },
     { id: 'session', label: 'Session', icon: Activity },
     { id: 'xp', label: 'XP Calc', icon: Zap },
     {
@@ -79,6 +81,7 @@ function App() {
       case 'audio': return <AudioAnalysisTab />;
       case 'character': return <CharacterGenTab />;
       case 'party': return <PartyTab />;
+      case 'items': return <ItemsTab />;
       case 'session': return <SessionTrackingTab />;
       case 'xp': return <XPCalculatorTab />;
       case 'leveling': return <CharacterLevelingTab />;

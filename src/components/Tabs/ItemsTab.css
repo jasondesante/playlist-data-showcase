@@ -1,0 +1,495 @@
+/**
+ * Items Tab Styles
+ *
+ * Styles for the ItemsTab component including:
+ * - Equipment display and management
+ * - Section layouts
+ * - Item cards and actions
+ * - Weight summaries
+ * - Empty states
+ */
+
+/* ========================================
+   MAIN CONTAINER
+   ======================================== */
+
+.items-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* ========================================
+   HEADER SECTION
+   ======================================== */
+
+.items-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.items-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-lg);
+  color: var(--color-on-primary);
+}
+
+.items-header-text {
+  flex: 1;
+}
+
+.items-header-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.items-header-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* ========================================
+   SECTION CARDS
+   ======================================== */
+
+.items-section {
+  overflow: hidden;
+}
+
+.items-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 1rem;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.items-section-header:hover {
+  background: var(--color-surface-dim);
+}
+
+.items-section-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.items-section-header-text {
+  flex: 1;
+}
+
+.items-section-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.items-section-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.items-section-icon-lootbox {
+  color: hsl(var(--cute-yellow));
+}
+
+.items-section-icon-creator {
+  color: hsl(var(--cute-purple));
+}
+
+.items-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.items-section-description {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin: 0.125rem 0 0 0;
+}
+
+.items-section-chevron {
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.items-section-content {
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Weight summary in header */
+.items-weight-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.items-weight-label {
+  font-weight: 500;
+}
+
+/* ========================================
+   EQUIPMENT CATEGORIES
+   ======================================== */
+
+.items-equipment-category {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.items-equipment-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.items-category-icon {
+  color: var(--color-primary);
+}
+
+.items-equipment-category-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.items-equipment-category-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.items-equipment-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ========================================
+   EQUIPMENT ITEMS
+   ======================================== */
+
+.items-equipment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.items-equipment-item:hover {
+  border-color: var(--color-primary);
+  background: hsl(var(--color-surface-h) var(--color-surface-s) calc(var(--color-surface-l) + 2));
+}
+
+/* Equipped item styling */
+.items-equipment-item-equipped {
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.15), hsl(var(--cute-teal) / 0.05));
+  border-color: hsl(var(--cute-teal) / 0.4);
+}
+
+.items-equipment-item-equipped:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.2), hsl(var(--cute-teal) / 0.08));
+  border-color: hsl(var(--cute-teal) / 0.5);
+}
+
+/* Ammunition item styling */
+.items-equipment-item-ammunition {
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.1), hsl(var(--cute-yellow) / 0.05));
+  border-color: hsl(var(--cute-orange) / 0.3);
+}
+
+.items-equipment-item-ammunition:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.15), hsl(var(--cute-yellow) / 0.1));
+  border-color: hsl(var(--cute-orange) / 0.4);
+}
+
+/* Equipped ammunition gets combined styling */
+.items-equipment-item-ammunition.items-equipment-item-equipped {
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.15), hsl(var(--cute-orange) / 0.1));
+  border-color: hsl(var(--cute-teal) / 0.4);
+}
+
+.items-equipment-item-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.items-equipment-checkmark {
+  color: hsl(var(--cute-teal));
+  flex-shrink: 0;
+}
+
+.items-equipment-ammo-icon {
+  color: hsl(var(--cute-orange));
+  flex-shrink: 0;
+}
+
+.items-equipment-name {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.items-equipment-ammo-weight {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  cursor: help;
+}
+
+.items-equipment-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background: hsl(var(--cute-teal) / 0.2);
+  color: hsl(var(--cute-teal));
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.items-equipment-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.items-equipment-remove-btn {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.items-equipment-remove-btn:hover {
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+}
+
+/* ========================================
+   WEIGHT FOOTER
+   ======================================== */
+
+.items-weight-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.items-weight-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.items-weight-stat-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.items-weight-stat-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ========================================
+   JSON DUMP
+   ======================================== */
+
+.items-json-dump {
+  margin-top: 0.5rem;
+}
+
+/* ========================================
+   EMPTY STATES
+   ======================================== */
+
+.items-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.items-empty-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.1), hsl(var(--cute-pink) / 0.1));
+  border-radius: var(--radius-full);
+  margin-bottom: 1rem;
+}
+
+.items-empty-icon {
+  color: hsl(var(--cute-purple));
+}
+
+.items-empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.items-empty-description {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 400px;
+}
+
+.items-empty-equipment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  gap: 0.5rem;
+}
+
+.items-empty-equipment-icon {
+  opacity: 0.5;
+}
+
+.items-empty-equipment-text {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ========================================
+   PLACEHOLDER SECTIONS (Loot Box / Creator)
+   ======================================== */
+
+.items-lootbox-placeholder,
+.items-creator-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.items-placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.items-placeholder-icon {
+  opacity: 0.5;
+}
+
+.items-placeholder-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.items-placeholder-subtext {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 400px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 640px) {
+  .items-equipment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .items-equipment-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .items-weight-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .items-section-header-right {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .items-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .items-section-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
