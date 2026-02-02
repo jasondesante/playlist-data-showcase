@@ -31,7 +31,8 @@ import {
   Loader2,
   Wand2,
   Hammer,
-  Save
+  Save,
+  Zap
 } from 'lucide-react';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
@@ -528,6 +529,107 @@ export function ItemsTab() {
     </div>
   );
 
+  // Render equipment effects section
+  const renderEquipmentEffects = () => {
+    const equipmentEffects = activeCharacter?.equipment_effects;
+    if (!equipmentEffects || equipmentEffects.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="items-effects-section">
+        <div className="items-effects-header">
+          <Zap className="items-effects-icon" size={16} />
+          <h4 className="items-effects-title">Active Equipment Effects</h4>
+        </div>
+        <div className="items-effects-list">
+          {equipmentEffects.map((effect, idx) => (
+            <div key={idx} className="items-effect-card">
+              <div className="items-effect-source">
+                <Sparkles size={14} className="items-effect-source-icon" />
+                <span className="items-effect-source-name">{effect.source}</span>
+                {effect.instanceId && (
+                  <span className="items-effect-instance-id" title={`Instance: ${effect.instanceId}`}>
+                    #{effect.instanceId.slice(-6)}
+                  </span>
+                )}
+              </div>
+
+              {/* Properties */}
+              {effect.effects && effect.effects.length > 0 && (
+                <div className="items-effect-properties">
+                  {effect.effects.map((prop, propIdx) => (
+                    <div key={propIdx} className="items-effect-property">
+                      <span className="items-effect-property-type">{prop.type}</span>
+                      <span className="items-effect-property-target">{prop.target}</span>
+                      <span className="items-effect-property-value">{String(prop.value)}</span>
+                      {prop.description && (
+                        <span className="items-effect-property-description" title={prop.description}>
+                          {prop.description}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Features */}
+              {effect.features && effect.features.length > 0 && (
+                <div className="items-effect-features">
+                  {effect.features.map((feature, featureIdx) => (
+                    <div key={featureIdx} className="items-effect-feature">
+                      <span className="items-effect-feature-name">
+                        {feature.featureId}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Skills */}
+              {effect.skills && effect.skills.length > 0 && (
+                <div className="items-effect-skills">
+                  {effect.skills.map((skill, skillIdx) => (
+                    <div key={skillIdx} className="items-effect-skill">
+                      <Target size={12} className="items-effect-skill-icon" />
+                      <span className="items-effect-skill-name">{skill.skillId}</span>
+                      <span className={`items-effect-skill-level items-effect-skill-level-${skill.level}`}>
+                        {skill.level}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Spells */}
+              {effect.spells && effect.spells.length > 0 && (
+                <div className="items-effect-spells">
+                  {effect.spells.map((spell, spellIdx) => (
+                    <div key={spellIdx} className="items-effect-spell">
+                      <Wand2 size={12} className="items-effect-spell-icon" />
+                      <span className="items-effect-spell-name">{spell.spellId}</span>
+                      {spell.level && (
+                        <span className="items-effect-spell-level">Level {spell.level}</span>
+                      )}
+                      {spell.uses && (
+                        <span className="items-effect-spell-uses">{spell.uses} uses</span>
+                      )}
+                      {spell.recharge && (
+                        <span className="items-effect-spell-recharge" title={`Recharges: ${spell.recharge}`}>
+                          ↻
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="items-tab">
       {/* Header */}
@@ -610,6 +712,9 @@ export function ItemsTab() {
                   equipment.items.length === 0 &&
                   renderEmptyEquipmentState()}
 
+                {/* Equipment Effects */}
+                {renderEquipmentEffects()}
+
                 {/* Weight summary footer */}
                 {(equipment.weapons.length > 0 ||
                   equipment.armor.length > 0 ||
@@ -639,6 +744,13 @@ export function ItemsTab() {
                     title="Equipment Data (Raw)"
                     defaultOpen={false}
                   />
+                  {activeCharacter.equipment_effects && activeCharacter.equipment_effects.length > 0 && (
+                    <RawJsonDump
+                      data={activeCharacter.equipment_effects}
+                      title="Equipment Effects (Raw)"
+                      defaultOpen={false}
+                    />
+                  )}
                 </div>
               </div>
             )}

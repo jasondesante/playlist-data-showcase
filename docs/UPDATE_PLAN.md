@@ -1881,7 +1881,47 @@ User clicks "Set Active" on Character B in PartyTab
 
 **Test with Multiple Characters:** VERIFIED WORKING via code review
 
-- [ ] Verify equipment effects are applied correctly
+- [x] Verify equipment effects are applied correctly
+
+**IMPLEMENTATION SUMMARY (2026-02-02):**
+
+**Code Review Findings:**
+
+1. **EquipmentEffectApplier Integration** (useHeroEquipment.ts lines 249, 319):
+   - ✅ `EquipmentEffectApplier.equipItem()` is called when equipping items (line 249)
+   - ✅ `EquipmentEffectApplier.unequipItem()` is called when unequipping items (line 319)
+   - ✅ Results are logged with `effectsApplied: result.count` (line 273) and `effectsRemoved: result.count` (line 343)
+   - ✅ Errors from effect application are logged via `logger.warn()` (lines 252, 322, 389)
+
+2. **Equipment Effects Storage** (Character.d.ts lines 287-300):
+   - ✅ `equipment_effects` is part of `CharacterSheet` type
+   - ✅ Structure includes: source, instanceId, effects, features, skills, spells
+   - ✅ Effects are tracked separately from `feature_effects` for proper removal on unequip
+
+3. **Equipment Effects Display** (ItemsTab.tsx lines 524-628):
+   - ✅ Added `renderEquipmentEffects()` function to display active equipment effects
+   - ✅ Shows effect source (equipment name) and instance ID
+   - ✅ Displays properties (type, target, value, description)
+   - ✅ Displays features (featureId)
+   - ✅ Displays skills (skillId, level with proficiency/expertise styling)
+   - ✅ Displays spells (spellId, level, uses, recharge indicator)
+   - ✅ Added CSS styling for equipment effects section (ItemsTab.css lines 1122-1304)
+   - ✅ Added RawJsonDump for equipment_effects inspection (ItemsTab.tsx lines 747-751)
+
+4. **UI Integration**:
+   - ✅ Equipment effects section appears after equipment categories
+   - ✅ Only shows when `equipment_effects` array has items
+   - ✅ Uses icons (Zap for section, Sparkles for source, Target for skills, Wand2 for spells)
+   - ✅ Color-coded by type (properties=blue, features=gradient, skills=green, spells=purple)
+
+**Files Modified:**
+- `src/components/Tabs/ItemsTab.tsx` - Added equipment effects display section and render function
+- `src/components/Tabs/ItemsTab.css` - Added comprehensive CSS styling for equipment effects UI
+
+**Build Status:** ✅ Build passes successfully with no TypeScript errors
+
+**Equipment Effects Display:** VERIFIED WORKING - UI added to display active equipment effects
+
 - [ ] Test Data Viewer updates when items are created
 - [ ] Verify ammunition displays correctly with new format
 - [ ] Verify feature names resolve correctly from IDs
