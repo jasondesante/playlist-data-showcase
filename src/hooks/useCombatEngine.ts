@@ -176,7 +176,8 @@ export const useCombatEngine = () => {
         const action = engine.executeCastSpell(combat, caster, spell, targets);
 
         // Update combat state to reflect spell slot changes
-        setCombat({ ...combat });
+        // Use structuredClone for deep copy since engine mutates nested objects
+        setCombat(structuredClone(combat));
 
         return action;
     }, [combat, engine]);
