@@ -1018,7 +1018,7 @@ All visual polish and CSS refinement has been completed:
 **Files Created:**
 - `src/components/Tabs/DataViewerTab.css` - Complete styling (1200+ lines)
   - [x] Adjust column counts based on viewport width
-  - [ ] Ensure filters wrap on mobile
+  - [x] Ensure filters wrap on mobile
   - [ ] Test at various screen sizes
 - [ ] **Final polish pass**
   - [ ] Review against other tabs for consistency
@@ -1026,6 +1026,26 @@ All visual polish and CSS refinement has been completed:
   - [ ] Ensure dark mode compatibility (if applicable)
   - [ ] Verify animations are smooth (60fps)
   - [ ] Get final approval on visual design
+
+**IMPLEMENTATION SUMMARY (Mobile Filter Wrapping):**
+
+Improved the responsive design for the DataViewerTab filters to ensure they wrap properly on mobile devices:
+
+**Changes Made:**
+- **Tablet (≤768px):** Filter groups now use `flex: 1 1 calc(50% - 0.5rem)` allowing them to wrap into a 2-column layout naturally, with reduced `min-width: 140px` for better space utilization
+- **Mobile (≤480px):** Filters stack vertically (`flex-direction: column`) with full width for better touch targets on small screens
+
+**CSS Updated:**
+- Split the responsive breakpoints into two distinct queries:
+  - `@media (max-width: 768px)` for tablet behavior (wrap filters in 2 columns)
+  - `@media (max-width: 480px)` for mobile behavior (stack filters vertically)
+- Filter groups now have flexible sizing with `calc(50% - 0.5rem)` accounting for gap
+- Mobile filters get full width with proper spacing
+
+**Files Modified:**
+- `src/components/Tabs/DataViewerTab.css` - Updated responsive design section
+
+**Build Status:** ✅ All builds pass successfully with no TypeScript errors
 
 ---
 

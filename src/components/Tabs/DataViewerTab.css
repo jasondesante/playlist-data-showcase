@@ -752,6 +752,7 @@
    RESPONSIVE DESIGN
    ======================================== */
 
+/* Tablet (481px - 768px): Allow filters to wrap naturally */
 @media (max-width: 768px) {
   .dataviewer-category-selector {
     justify-content: center;
@@ -761,16 +762,9 @@
     padding: 0.5rem;
   }
 
-  .dataviewer-filters {
-    flex-direction: column;
-  }
-
   .dataviewer-filter-group {
-    width: 100%;
-  }
-
-  .dataviewer-filter-select {
-    width: 100%;
+    min-width: 140px;
+    flex: 1 1 calc(50% - 0.5rem);
   }
 
   .dataviewer-item-stats {
@@ -788,6 +782,7 @@
   }
 }
 
+/* Mobile (≤480px): Stack filters vertically for better touch targets */
 @media (max-width: 480px) {
   .dataviewer-header {
     flex-direction: column;
@@ -802,5 +797,20 @@
   .dataviewer-search-count {
     width: 100%;
     text-align: right;
+  }
+
+  .dataviewer-filters {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dataviewer-filter-group {
+    width: 100%;
+    min-width: unset;
+    flex: unset;
+  }
+
+  .dataviewer-filter-select {
+    width: 100%;
   }
 }
