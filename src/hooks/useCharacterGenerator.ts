@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions } from 'playlist-data-engine';
+import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions, NamingEngine, PlaylistTrack } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError, AppError } from '@/utils/errorHandling';
@@ -14,12 +14,12 @@ import { handleError, AppError } from '@/utils/errorHandling';
  * @example
  * ```tsx
  * const { generateCharacter, isGenerating } = useCharacterGenerator();
- * const character = await generateCharacter(audioProfile, 'unique-seed-123', 'uncapped');
+ * const character = await generateCharacter(audioProfile, 'unique-seed-123', 'uncapped', track);
  * console.log(character.name, character.race, character.class);
  * ```
  *
  * @returns {Object} Hook return object
- * @returns {Function} generateCharacter - Generates a character from audio profile, optional seed, and optional game mode
+ * @returns {Function} generateCharacter - Generates a character from audio profile, optional seed, optional game mode, and optional track
  * @returns {boolean} isGenerating - Whether character generation is in progress
  */
 export const useCharacterGenerator = () => {
@@ -32,12 +32,14 @@ export const useCharacterGenerator = () => {
      * @param audioProfile - Audio frequency analysis results
      * @param seed - Optional deterministic seed (defaults to timestamp-based)
      * @param gameMode - Game mode: 'standard' (stats cap at 20) or 'uncapped' (unlimited stats, defaults to 'uncapped')
+     * @param track - Optional track for custom name generation via NamingEngine
      * @returns The generated character sheet or null if generation failed
      */
     const generateCharacter = useCallback(async (
         audioProfile: AudioProfile | null | undefined,
         seed?: string,
-        gameMode?: GameMode
+        gameMode?: GameMode,
+        track?: PlaylistTrack
     ): Promise<CharacterSheet | null> => {
         // Validate audio profile before proceeding
         if (!audioProfile) {
@@ -67,13 +69,22 @@ export const useCharacterGenerator = () => {
                 gameMode: gameMode || 'uncapped'
             };
 
-            // Use static method directly with options
-            // Generate deterministic name from seed for consistent regeneration
-            const nameSuffix = (seed || `seed-${Date.now()}`).slice(-4);
+            // Generate custom name using NamingEngine if track is provided
+            let characterName: string;
+            if (track) {
+                const namingEngine = new NamingEngine();
+                characterName = namingEngine.generateName(track, audioProfile);
+                logger.info('CharacterGenerator', 'Generated custom name using NamingEngine', { characterName });
+            } else {
+                // Fallback to simple Hero-{seed} format if no track provided
+                const nameSuffix = (seed || `seed-${Date.now()}`).slice(-4);
+                characterName = `Hero-${nameSuffix}`;
+            }
+
             const character = CharacterGenerator.generate(
                 seed || `seed-${Date.now()}`,
                 audioProfile,
-                `Hero-${nameSuffix}`,
+                characterName,
                 options
             );
 

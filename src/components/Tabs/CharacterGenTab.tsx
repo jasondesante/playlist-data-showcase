@@ -216,7 +216,7 @@ export function CharacterGenTab() {
     // Use track UUID as deterministic seed for consistent character generation
     // This ensures the same track always generates the same character
     const seed = selectedTrack.id;
-    await generateCharacter(audioProfile, seed, gameMode);
+    await generateCharacter(audioProfile, seed, gameMode, selectedTrack);
 
     // Hide the game mode selector after generation
     setShowGameModeSelector(false);
