@@ -132,7 +132,8 @@ export const useCombatEngine = () => {
         const action = engine.executeAttack(combat, attacker, target, attack);
 
         // Update combat state to reflect HP changes from the attack
-        setCombat({ ...combat });
+        // Use structuredClone for deep copy since engine mutates nested objects
+        setCombat(structuredClone(combat));
 
         return action;
     }, [combat, engine]);
