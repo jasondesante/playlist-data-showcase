@@ -1216,3 +1216,39 @@
     font-size: 0.75rem;
   }
 }
+
+/* ========================================
+   AMMUNITION STYLES (Migration Guide 1.5.1)
+   ======================================== */
+
+/* Ammunition item styling */
+.party-detail-equipment-item-ammunition {
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.1), hsl(var(--cute-yellow) / 0.05));
+  border-color: hsl(var(--cute-orange) / 0.3);
+}
+
+.party-detail-equipment-item-ammunition:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.15), hsl(var(--cute-yellow) / 0.1));
+  border-color: hsl(var(--cute-orange) / 0.4);
+}
+
+/* Ammunition icon (target/crosshair) */
+.party-detail-equipment-ammo-icon {
+  color: hsl(var(--cute-orange));
+  flex-shrink: 0;
+}
+
+/* Ammunition weight display */
+.party-detail-equipment-ammo-weight {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-style: italic;
+  cursor: help;
+}
+
+/* Equipped ammunition gets special styling */
+.party-detail-equipment-item-ammunition.party-detail-equipment-item-equipped {
+  background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.15), hsl(var(--cute-orange) / 0.1));
+  border-color: hsl(var(--cute-teal) / 0.4);
+}

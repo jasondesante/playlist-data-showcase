@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import './CharacterGenTab.css';
-import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package } from 'lucide-react';
+import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package, Target } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useFeatureNames } from '../../hooks/useFeatureNames';
@@ -13,6 +13,29 @@ import { Tooltip } from '../ui/Tooltip';
 import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
 import { showToast } from '../ui/Toast';
+
+/**
+ * Ammunition types and their per-item weights (in pounds)
+ * Following the Migration Guide format: individual items with quantity
+ */
+const AMMUNITION_TYPES: Record<string, number> = {
+  'Arrow': 0.05,
+  'Bolt': 0.075
+};
+
+/**
+ * Check if an item is ammunition
+ */
+function isAmmunition(itemName: string): boolean {
+  return itemName in AMMUNITION_TYPES;
+}
+
+/**
+ * Get the per-item weight for ammunition
+ */
+function getAmmunitionWeight(itemName: string): number | null {
+  return AMMUNITION_TYPES[itemName] ?? null;
+}
 
 /**
  * CharacterGenTab Component
@@ -823,14 +846,31 @@ export function CharacterGenTab() {
                         Items
                       </div>
                       <div className="character-equipment-items">
-                        {equipment.items.map((item, idx) => (
-                          <span key={idx} className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''}`}>
-                            {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                            <span>{item.name}</span>
-                            {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
-                            {item.equipped && <span className="character-equipment-badge">Equipped</span>}
-                          </span>
-                        ))}
+                        {equipment.items.map((item, idx) => {
+                          const isAmmo = isAmmunition(item.name);
+                          const ammoWeight = isAmmo ? getAmmunitionWeight(item.name) : null;
+                          const totalAmmoWeight = ammoWeight !== null
+                            ? Math.round(ammoWeight * item.quantity * 100) / 100
+                            : null;
+
+                          return (
+                            <span key={idx} className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}>
+                              {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                              {isAmmo && <Target className="character-equipment-ammo-icon" size={14} />}
+                              <span>{item.name}</span>
+                              {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
+                              {isAmmo && ammoWeight !== null && (
+                                <span
+                                  className="character-equipment-ammo-weight"
+                                  title={`${ammoWeight} lb each × ${item.quantity} = ${totalAmmoWeight} lb total`}
+                                >
+                                  ({totalAmmoWeight} lb)
+                                </span>
+                              )}
+                              {item.equipped && <span className="character-equipment-badge">Equipped</span>}
+                            </span>
+                          );
+                        })}
                       </div>
                     </Card>
                   )}

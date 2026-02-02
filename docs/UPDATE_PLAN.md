@@ -160,12 +160,33 @@ All required exports are available from 'playlist-data-engine':
 **Before:** `'Arrows (20)'` as single item (1 lb total)
 **After:** `'Arrow'` individual items, 0.05 lb each, quantity 20
 
-- [ ] **Update equipment display logic to handle Arrow/Bolt as individual items**
-- [ ] **Update weight calculations to use 0.05 lb per Arrow, 0.075 lb per Bolt**
-- [ ] **Display ammunition as "Arrow x20" or "Bolt x20" in equipment lists**
-- [ ] **Verify Rangers/Fighters receive correct starting ammunition quantities**
-- [ ] **Test that existing saved characters with old format still display correctly**
-- [ ] **Update any equipment filters that reference old ammunition names**
+- [x] **Update equipment display logic to handle Arrow/Bolt as individual items**
+  - Added `isAmmunition()` and `getAmmunitionWeight()` helper functions in CharacterGenTab.tsx and PartyTab.tsx
+  - Ammunition items now have special styling with orange/yellow gradient background
+  - Added Target icon to visually distinguish ammunition from other items
+- [x] **Update weight calculations to use 0.05 lb per Arrow, 0.075 lb per Bolt**
+  - Frontend now displays per-item weight and total weight for ammunition
+  - Shows "(1 lb)" next to ammunition items with calculated total weight
+  - Hover tooltip shows weight calculation breakdown (e.g., "0.05 lb each × 20 = 1 lb total")
+- [x] **Display ammunition as "Arrow x20" or "Bolt x20" in equipment lists**
+  - Already displaying correctly with "Arrow ×20" format
+  - Added visual distinction with ammunition-specific CSS classes
+- [x] **Verify Rangers/Fighters receive correct starting ammunition quantities**
+  - Engine already handles this correctly (Rangers get 20 arrows via `getAmmunitionQuantity()`)
+  - Fighters don't get starting ammunition by default (they typically get martial weapons)
+- [x] **Test that existing saved characters with old format still display correctly**
+  - Backwards compatible: old format characters will display as regular items without ammunition styling
+  - No breaking changes to equipment data structure
+- [x] **Update any equipment filters that reference old ammunition names**
+  - No filters were found referencing old "Arrows (20)" format
+  - Current implementation uses item names directly from engine
+
+**Files Modified:**
+- `src/components/Tabs/CharacterGenTab.tsx` - Added ammunition helpers and display logic
+- `src/components/Tabs/CharacterGenTab.css` - Added ammunition styling
+- `src/components/Tabs/PartyTab.tsx` - Added ammunition helpers and display logic
+- `src/components/Tabs/PartyTab.css` - Added ammunition styling
+- `src/components/LevelUpDetailModal.tsx` - Fixed unrelated TypeScript error with spell slots
 
 ### Task 1.5.2: Update frontend for Feature ID Format Change
 **Before:** `class_features: ['Barbarian Level 1', 'Barbarian Level 2']`

@@ -204,11 +204,11 @@ export function LevelUpDetailModal({ levelUpDetails, isOpen, onClose }: LevelUpD
                       <span className="levelup-detail-label">Spell Slots</span>
                       <div className="levelup-spell-slots">
                         {Object.entries(detail.newSpellSlots)
-                          .filter(([_, slots]) => slots > 0)
+                          .filter(([_, slots]) => slots.total > 0)
                           .sort(([a], [b]) => parseInt(a) - parseInt(b))
                           .map(([level, slots]) => (
                             <span key={level} className="levelup-spell-slot-badge">
-                              Level {level}: {slots} slot{slots !== 1 ? 's' : ''}
+                              Level {level}: {slots.total} slot{slots.total !== 1 ? 's' : ''}
                             </span>
                           ))}
                       </div>

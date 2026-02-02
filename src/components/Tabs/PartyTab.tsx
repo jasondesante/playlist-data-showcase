@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle } from 'lucide-react';
+import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -58,6 +58,29 @@ function getSkillProficiencyDisplay(prof: string): string {
   if (prof === 'expertise') return '★★';
   if (prof === 'proficient') return '★';
   return '○';
+}
+
+/**
+ * Ammunition types and their per-item weights (in pounds)
+ * Following the Migration Guide format: individual items with quantity
+ */
+const AMMUNITION_TYPES: Record<string, number> = {
+  'Arrow': 0.05,
+  'Bolt': 0.075
+};
+
+/**
+ * Check if an item is ammunition
+ */
+function isAmmunition(itemName: string): boolean {
+  return itemName in AMMUNITION_TYPES;
+}
+
+/**
+ * Get the per-item weight for ammunition
+ */
+function getAmmunitionWeight(itemName: string): number | null {
+  return AMMUNITION_TYPES[itemName] ?? null;
 }
 
 export function PartyTab() {
@@ -693,14 +716,31 @@ export function PartyTab() {
                       <div className="party-detail-equipment-category">
                         <div className="party-detail-equipment-category-label">Items</div>
                         <div className="party-detail-equipment-items">
-                          {selectedCharacter.equipment.items.map((item, idx) => (
-                            <div key={idx} className={`party-detail-equipment-item ${item.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
-                              {item.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
-                              <span className="party-detail-equipment-name">{item.name}</span>
-                              {item.quantity > 1 && <span className="party-detail-equipment-quantity">×{item.quantity}</span>}
-                              {item.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
-                            </div>
-                          ))}
+                          {selectedCharacter.equipment.items.map((item, idx) => {
+                            const isAmmo = isAmmunition(item.name);
+                            const ammoWeight = isAmmo ? getAmmunitionWeight(item.name) : null;
+                            const totalAmmoWeight = ammoWeight !== null
+                              ? Math.round(ammoWeight * item.quantity * 100) / 100
+                              : null;
+
+                            return (
+                              <div key={idx} className={`party-detail-equipment-item ${item.equipped ? 'party-detail-equipment-item-equipped' : ''} ${isAmmo ? 'party-detail-equipment-item-ammunition' : ''}`}>
+                                {item.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                                {isAmmo && <Target className="party-detail-equipment-ammo-icon" size={14} />}
+                                <span className="party-detail-equipment-name">{item.name}</span>
+                                {item.quantity > 1 && <span className="party-detail-equipment-quantity">×{item.quantity}</span>}
+                                {isAmmo && ammoWeight !== null && (
+                                  <span
+                                    className="party-detail-equipment-ammo-weight"
+                                    title={`${ammoWeight} lb each × ${item.quantity} = ${totalAmmoWeight} lb total`}
+                                  >
+                                    ({totalAmmoWeight} lb)
+                                  </span>
+                                )}
+                                {item.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
