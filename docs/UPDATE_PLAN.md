@@ -514,22 +514,65 @@ Created a comprehensive hook for creating custom items with the following featur
 **Build Status:** All builds pass successfully with no TypeScript errors.
 
 ### Task 4.2: Add Item Creator section to ItemsTab
-- [ ] In ItemsTab.tsx, add collapsible Item Creator section
-- [ ] Import useItemCreator hook
-- [ ] Create form state for item properties:
-  - [ ] Item name (text input)
-  - [ ] Item type (weapon/armor/item radio buttons)
-  - [ ] Rarity (common/uncommon/rare/very_rare/legendary select)
-  - [ ] Weight (number input)
-  - [ ] Optional: Damage dice (for weapons)
-  - [ ] Optional: AC bonus (for armor)
-  - [ ] Optional: Quantity (default 1)
-- [ ] Create preview section showing item as it will be created
-- [ ] Implement create button with loading state
-- [ ] Show success toast when item is added to character
-- [ ] Show error messages for validation failures
-- [ ] Add RawJsonDump for created item data
-- [ ] Style component following existing patterns
+- [x] In ItemsTab.tsx, add collapsible Item Creator section
+- [x] Import useItemCreator hook
+- [x] Create form state for item properties:
+  - [x] Item name (text input)
+  - [x] Item type (weapon/armor/item radio buttons)
+  - [x] Rarity (common/uncommon/rare/very_rare/legendary select)
+  - [x] Weight (number input)
+  - [x] Optional: Damage dice (for weapons)
+  - [x] Optional: AC bonus (for armor)
+  - [x] Optional: Quantity (default 1)
+- [x] Create preview section showing item as it will be created
+- [x] Implement create button with loading state
+- [x] Show success toast when item is added to character
+- [x] Show error messages for validation failures
+- [x] Add RawJsonDump for created item data
+- [x] Style component following existing patterns
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive Custom Item Creator section in ItemsTab with the following features:
+
+**Form Fields:**
+- Item Name (required, text input with validation)
+- Item Type selector (weapon/armor/item radio buttons with icons)
+- Rarity dropdown (common/uncommon/rare/very_rare/legendary)
+- Weight input (number with 0.1 step)
+- Quantity input (number, default 1)
+- Weapon-specific fields: Damage dice (format: 1d8) and Damage type dropdown
+- Armor-specific fields: AC Bonus input
+- Auto-equip checkbox option
+
+**Preview Section:**
+- Live preview card showing item as it will be created
+- Rarity-based color coding (same as Loot Box section)
+- Shows item name, type, rarity, weight
+- Shows damage/AC stats for weapons/armor
+
+**Validation & Feedback:**
+- Form validation using useItemCreator's validateItemData
+- Error messages displayed in styled error container
+- Success toast when item is created and added
+- Loading state during creation
+- Clear Last Created button to reset
+
+**Raw JSON Dump:**
+- RawJsonDump component for viewing created item data
+- Collapsible, default closed
+
+**Styling:**
+- Consistent with existing tab patterns
+- Responsive grid layout for form fields
+- Type selector buttons with active states
+- Preview card with rarity colors
+- Mobile-responsive design
+
+**Files Modified:**
+- `src/components/Tabs/ItemsTab.tsx` - Added full Item Creator section
+- `src/components/Tabs/ItemsTab.css` - Added comprehensive styling for item creator UI
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ---
 

@@ -743,6 +743,254 @@
 }
 
 /* ========================================
+   ITEM CREATOR SECTION
+   ======================================== */
+
+.item-creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.item-creator-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-creator-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.item-creator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.item-creator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.item-creator-field-full {
+  grid-column: 1 / -1;
+}
+
+.item-creator-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.item-creator-required {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.item-creator-input,
+.item-creator-select {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.item-creator-input:focus,
+.item-creator-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.1);
+}
+
+.item-creator-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.item-creator-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Type Selector */
+.item-creator-type-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.item-creator-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.item-creator-type-btn:hover {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.item-creator-type-btn-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.item-creator-type-btn-active:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Checkbox */
+.item-creator-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.item-creator-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Validation Errors */
+.item-creator-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.3);
+  border-radius: var(--radius-md);
+}
+
+.item-creator-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+/* Actions */
+.item-creator-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Preview Section */
+.item-creator-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.item-creator-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.item-creator-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.item-creator-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-creator-preview-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.item-creator-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.item-creator-preview-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.item-creator-preview-stat-label {
+  color: var(--color-text-secondary);
+}
+
+/* Last Created Section */
+.item-creator-last-created {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.item-creator-last-created-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.item-creator-json-dump {
+  margin-top: 0.5rem;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 
@@ -786,6 +1034,72 @@
 
   .lootbox-spawn-btn,
   .lootbox-clear-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .items-equipment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .items-equipment-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .items-weight-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .items-section-header-right {
+    display: none;
+  }
+
+  .lootbox-mode-selector {
+    flex-direction: column;
+  }
+
+  .lootbox-mode-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lootbox-items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lootbox-spawn-actions {
+    flex-direction: column;
+  }
+
+  .lootbox-spawn-btn,
+  .lootbox-clear-btn {
+    width: 100%;
+  }
+
+  /* Item Creator Responsive */
+  .item-creator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .item-creator-type-selector {
+    flex-direction: column;
+  }
+
+  .item-creator-type-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .item-creator-actions {
+    flex-direction: column;
+  }
+
+  .item-creator-actions button {
     width: 100%;
   }
 }
