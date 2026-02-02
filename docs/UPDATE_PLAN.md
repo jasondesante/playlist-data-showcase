@@ -682,29 +682,58 @@ This will visually demonstrate the content library growing when custom items are
 4. **Custom content**: Use ExtensionManager to get custom items merged with defaults
 
 ### Task 5.1: Create useDataViewer hook
-- [ ] Create src/hooks/useDataViewer.ts
-- [ ] Import from playlist-data-engine:
-  - [ ] SPELL_DATABASE or SpellManager
-  - [ ] SkillRegistry
-  - [ ] FeatureRegistry
-  - [ ] ExtensionManager (for equipment list)
-  - [ ] getRaceData helper
-  - [ ] getClassData helper
-- [ ] Implement functions to fetch each data type:
-  - [ ] getAllSpells() - Returns array of all spells
-  - [ ] getAllSkills() - Returns array of all skills from SkillRegistry
-  - [ ] getAllClassFeatures() - Returns array of all class features
-  - [ ] getAllRacialTraits() - Returns array of all racial traits
-  - [ ] getAllRaces() - Returns array of race data with subraces
-  - [ ] getAllClasses() - Returns array of class data
-  - [ ] getAllEquipment() - Returns array of all equipment from ExtensionManager
-- [ ] Implement search/filter functions:
-  - [ ] filterByName(data, searchTerm)
-  - [ ] filterByCategory(data, category)
-  - [ ] filterByLevel(data, level) - for spells/features
-- [ ] Add loading states
-- [ ] Add error handling
-- [ ] Export data counts (total spells, total items, etc.)
+- [x] Create src/hooks/useDataViewer.ts
+- [x] Import from playlist-data-engine:
+  - [x] SPELL_DATABASE
+  - [x] SkillRegistry
+  - [x] FeatureRegistry
+  - [x] EQUIPMENT_DATABASE (instead of ExtensionManager)
+  - [x] RACE_DATA constant
+  - [x] CLASS_DATA constant
+- [x] Implement functions to fetch each data type:
+  - [x] spells - Returns array of all spells from SpellRegistry
+  - [x] skills - Returns array of all skills from SkillRegistry
+  - [x] classFeatures - Returns array of all class features from FeatureRegistry
+  - [x] racialTraits - Returns array of all racial traits from FeatureRegistry
+  - [x] races - Returns array of race data from RACE_DATA
+  - [x] classes - Returns array of class data from CLASS_DATA
+  - [x] equipment - Returns array of all equipment from EQUIPMENT_DATABASE
+- [x] Implement search/filter functions:
+  - [x] filterByName(data, searchTerm) - Generic name filter
+  - [x] filterSpellsByLevel(spells, level) - Filter spells by level
+  - [x] filterSpellsBySchool(spells, school) - Filter spells by school
+  - [x] filterEquipmentByType(equipment, type) - Filter equipment by type
+  - [x] filterEquipmentByRarity(equipment, rarity) - Filter equipment by rarity
+- [x] Implement grouping functions:
+  - [x] groupSkillsByAbility(skills) - Group skills by ability score
+  - [x] groupClassFeaturesByClass(features) - Group features by class
+  - [x] groupRacialTraitsByRace(traits) - Group traits by race
+- [x] Add loading states (isLoading flag)
+- [x] Add error handling (error state with logger integration)
+- [x] Export data counts (total spells, total items, etc.)
+- [x] Add refreshData() function to reload from registries
+- [x] Add helper functions for filter options (getSpellSchools, getEquipmentTypes, getEquipmentRarities)
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive hook for accessing and filtering all game data with the following features:
+- Uses SpellRegistry, SkillRegistry, and FeatureRegistry singletons for data access
+- Direct constants (RACE_DATA, CLASS_DATA, EQUIPMENT_DATABASE) for static data
+- All registries are initialized if not already initialized
+- Memoized data arrays to prevent unnecessary recalculations
+- Comprehensive filtering functions for spells (by level/school) and equipment (by type/rarity)
+- Grouping functions for skills, class features, and racial traits
+- Data counts computed from all data sources
+- Error handling with logger integration
+- Full JSDoc documentation
+
+**Files Created:**
+- `src/hooks/useDataViewer.ts` - Main hook implementation
+
+**Files Modified:**
+- `src/utils/logger.ts` - Added 'DataViewer' to LogCategory
+- `src/hooks/index.ts` - Exported the new hook
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ### Task 5.2: Create DataViewerTab component
 - [ ] Create src/components/Tabs/DataViewerTab.tsx

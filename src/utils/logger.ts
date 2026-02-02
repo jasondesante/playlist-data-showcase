@@ -23,7 +23,8 @@ type LogCategory =
     | 'FeatureNames'
     | 'HeroEquipment'
     | 'LootBox'
-    | 'ItemCreator';
+    | 'ItemCreator'
+    | 'DataViewer';
 
 
 
