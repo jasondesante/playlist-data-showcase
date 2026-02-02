@@ -7,11 +7,13 @@ import {
     EQUIPMENT_DATABASE,
     RACE_DATA,
     CLASS_DATA,
+    ExtensionManager,
     type RegisteredSpell,
     type CustomSkill,
     type ClassFeature,
     type RacialTrait,
-    type Equipment
+    type Equipment,
+    type EnhancedEquipment
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
@@ -278,15 +280,32 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, []);
 
     /**
-     * Load all equipment from EQUIPMENT_DATABASE
+     * Load all equipment from ExtensionManager (includes default + custom items)
+     * Falls back to EQUIPMENT_DATABASE if ExtensionManager is not available
      */
     const equipment = useMemo(() => {
         try {
+            const extensionManager = ExtensionManager.getInstance();
+            const allEquipment = extensionManager.get('equipment') as (Equipment | EnhancedEquipment)[];
+
+            if (allEquipment && allEquipment.length > 0) {
+                // ExtensionManager has equipment data (default + custom)
+                logger.debug('DataViewer', `Loaded ${allEquipment.length} items from ExtensionManager`);
+                return allEquipment;
+            }
+
+            // Fallback to EQUIPMENT_DATABASE if ExtensionManager is empty
+            logger.debug('DataViewer', 'ExtensionManager empty, falling back to EQUIPMENT_DATABASE');
             return Object.values(EQUIPMENT_DATABASE);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             logger.error('DataViewer', 'Failed to load equipment', errorMessage);
-            return [];
+            // Fallback to EQUIPMENT_DATABASE on error
+            try {
+                return Object.values(EQUIPMENT_DATABASE);
+            } catch {
+                return [];
+            }
         }
     }, []);
 
