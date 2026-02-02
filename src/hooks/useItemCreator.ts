@@ -3,7 +3,8 @@ import {
     EnhancedEquipment,
     EnhancedInventoryItem,
     EquipmentProperty,
-    EquipmentEffectApplier
+    EquipmentEffectApplier,
+    ExtensionManager
 } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
@@ -323,6 +324,18 @@ export const useItemCreator = (): UseItemCreatorReturn => {
         setIsLoading(true);
 
         try {
+            // Register custom equipment with ExtensionManager so it can be looked up later
+            // This is necessary for equip/unequip to work with custom items
+            if (equipment.source === 'custom') {
+                const extensionManager = ExtensionManager.getInstance();
+                // Only register if not already registered
+                const existingEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
+                if (!existingEquipment.find(e => e.name === equipment.name)) {
+                    extensionManager.register('equipment', [equipment]);
+                    logger.debug('ItemCreator', `Registered custom equipment with ExtensionManager: ${equipment.name}`);
+                }
+            }
+
             // Create inventory item
             const inventoryItem: EnhancedInventoryItem = {
                 name: equipment.name,

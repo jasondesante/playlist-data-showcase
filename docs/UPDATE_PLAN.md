@@ -22,9 +22,11 @@ This plan outlines improvements and new features for the playlist-data-showcase 
 ---
 Notes from user:
 
-The items tab has buttons to equip and unequip items but those buttons don't work right now because they're returning an error saying "Item has no instance ID". The drop button is also not working. I can create a custom item correctly but when I try to equip the custom item it says "Equipment data not found for ..."
+~~The items tab has buttons to equip and unequip items but those buttons don't work right now because they're returning an error saying "Item has no instance ID". The drop button is also not working. I can create a custom item correctly but when I try to equip the custom item it says "Equipment data not found for ..."~~
 
-The loot box demo's "by rarity" mode doesn't work. The other random and treasure hoard modes work great though.
+~~The loot box demo's "by rarity" mode doesn't work. The other random and treasure hoard modes work great though.~~
+
+**FIXED:** All issues above have been resolved. See Phase 10 for details.
 
 ---
 
@@ -1107,6 +1109,56 @@ All visual polish and CSS refinement has been completed:
   - [ ] Verify subrace appears in CharacterGenTab
   - [ ] Verify subrace appears in PartyTab cards
   - [ ] Verify subrace shown in PartyTab detail modal
+
+---
+
+## Phase 10: Bug Fixes (User Reported Issues)
+
+### Task 10.1: Fix Loot Box "by rarity" mode not working
+**Issue:** The loot box demo's "by rarity" mode was not spawning any items.
+
+**Root Cause:** The `EquipmentSpawnHelper.spawnByRarity()` function uses `ExtensionManager.getInstance().get("equipment")` to get equipment data. However, the ExtensionManager defaults were never initialized in the frontend, so the equipment array was empty.
+
+**Fix:** Added `ensureAllDefaultsInitialized()` call in `src/main.tsx` before the app renders. This initializes all ExtensionManager defaults including equipment data.
+
+**Files Modified:**
+- `src/main.tsx` - Added initialization call
+
+---
+
+### Task 10.2: Fix Items tab equip/unequip buttons - "Item has no instance ID" error
+**Issue:** Equip/unequip buttons in ItemsTab were showing "Item has no instance ID" error.
+
+**Root Cause:** The `CharacterGenerator` engine class creates starting equipment without `instanceId` fields. The `useHeroEquipment` hook requires `instanceId` to identify and manipulate items.
+
+**Fix:** Added `ensureEquipmentInstanceIds()` function in `useHeroEquipment` hook that automatically assigns unique instance IDs to any equipment items that don't have them when the character is accessed. This ensures backward compatibility with existing characters.
+
+**Files Modified:**
+- `src/hooks/useHeroEquipment.ts` - Added `ensureEquipmentInstanceIds()` function and integrated it into the `activeCharacter` memo
+
+---
+
+### Task 10.3: Fix Items tab drop button not working
+**Issue:** The drop button was not working to remove items from inventory.
+
+**Root Cause:** Same as Task 10.2 - items without `instanceId` could not be removed.
+
+**Fix:** Fixed by Task 10.2 - the `ensureEquipmentInstanceIds()` function ensures all items have instance IDs.
+
+---
+
+### Task 10.4: Fix equipping custom items - "Equipment data not found" error
+**Issue:** Custom items created via the Item Creator could be added to inventory but could not be equipped. Error: "Equipment data not found for ..."
+
+**Root Cause:** The `useHeroEquipment` hook's `getEquipmentData()` function only looked up items in `EQUIPMENT_DATABASE`, which only contains default equipment. Custom items are not in this database.
+
+**Fix:**
+1. Updated `getEquipmentData()` in `useHeroEquipment` to first check ExtensionManager's equipment list (which includes custom registered items), then fall back to `EQUIPMENT_DATABASE`.
+2. Updated `addItemToCharacter()` in `useItemCreator` to register custom equipment with ExtensionManager when adding to a character's inventory.
+
+**Files Modified:**
+- `src/hooks/useHeroEquipment.ts` - Updated `getEquipmentData()` to check ExtensionManager
+- `src/hooks/useItemCreator.ts` - Added ExtensionManager registration for custom items
 
 ---
 
