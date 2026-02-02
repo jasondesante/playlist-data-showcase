@@ -22,6 +22,7 @@ import { useAutoCharacterSetup } from './hooks/useAutoCharacterSetup';
 import { useSessionCompletion } from './hooks/useSessionCompletion';
 import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
+import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
 type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
@@ -32,6 +33,10 @@ export const useTabContext = () => useContext(TabContext);
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('playlist');
+
+  // Initialize custom equipment from localStorage on app startup
+  // This ensures custom items can be equipped after page refresh
+  useCustomEquipmentInitializer();
 
   // Auto-analyze and generate characters on first listen of new tracks
   useAutoCharacterSetup();
