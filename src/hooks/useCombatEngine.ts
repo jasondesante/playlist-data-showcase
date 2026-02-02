@@ -141,7 +141,8 @@ export const useCombatEngine = () => {
     const nextTurn = useCallback(() => {
         if (!combat) return null;
         const updated = engine.nextTurn(combat);
-        setCombat(updated);
+        // Use structuredClone for deep copy since engine mutates nested objects
+        setCombat(structuredClone(updated));
         return updated;
     }, [combat, engine]);
 
