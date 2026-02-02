@@ -100,8 +100,9 @@ export function initializeCustomEquipment(): void {
 
         logger.info('ItemCreator', `Initializing ${customItems.length} custom equipment items in ExtensionManager`);
 
-        // Register all custom items with ExtensionManager
-        extensionManager.register('equipment', customItems, { validate: false });
+        // Register all custom items with ExtensionManager with validation enabled
+        // Custom items created through the UI should always be valid
+        extensionManager.register('equipment', customItems, { validate: true });
 
         logger.info('ItemCreator', `Successfully registered ${customItems.length} custom equipment items`);
     } catch (error) {
@@ -463,14 +464,15 @@ export const useItemCreator = (): UseItemCreatorReturn => {
                 registerCustomEquipment(equipment);
                 logger.info('ItemCreator', `Registered ${equipment.name} in local cache`);
 
-                // Also try ExtensionManager for completeness, but don't rely on it
+                // Also register with ExtensionManager for completeness
                 try {
                     const extensionManager = ExtensionManager.getInstance();
                     const existingEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
                     const alreadyRegistered = existingEquipment.find(e => e.name === equipment.name);
                     if (!alreadyRegistered) {
-                        extensionManager.register('equipment', [equipment], { validate: false });
-                        logger.debug('ItemCreator', `Also registered ${equipment.name} in ExtensionManager`);
+                        // Use validation - custom items created through the UI should be valid
+                        extensionManager.register('equipment', [equipment], { validate: true });
+                        logger.debug('ItemCreator', `Registered ${equipment.name} in ExtensionManager`);
                     }
                 } catch (emErr) {
                     logger.warn('ItemCreator', `ExtensionManager registration failed (using local cache)`, { error: String(emErr) });
