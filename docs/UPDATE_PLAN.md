@@ -192,13 +192,23 @@ All required exports are available from 'playlist-data-engine':
 **Before:** `class_features: ['Barbarian Level 1', 'Barbarian Level 2']`
 **After:** `class_features: ['barbarian_rage', 'barbarian_unarmored_defense']`
 
-- [ ] **Import FeatureRegistry from playlist-data-engine**
-- [ ] **Create helper function to resolve feature ID to display name**
-- [ ] **Update CharacterGenTab to show human-readable feature names instead of IDs**
-- [ ] **Update PartyTab character details to show resolved feature names**
-- [ ] **Display feature effects alongside names if available from FeatureRegistry**
-- [ ] **Add hover tooltips showing feature descriptions from registry**
-- [ ] **Handle case where feature ID isn't found in registry (show ID as fallback)**
+- [x] **Import FeatureRegistry from playlist-data-engine**
+- [x] **Create helper function to resolve feature ID to display name**
+- [x] **Update CharacterGenTab to show human-readable feature names instead of IDs**
+- [x] **Update PartyTab character details to show resolved feature names**
+- [x] **Display feature effects alongside names if available from FeatureRegistry**
+- [x] **Add hover tooltips showing feature descriptions from registry**
+- [x] **Handle case where feature ID isn't found in registry (show ID as fallback)**
+
+**FINDINGS:**
+All tasks already completed in previous commits:
+- `useFeatureNames.ts` hook created with FeatureRegistry integration
+- `resolveFeatureName()` and `resolveTraitName()` functions resolve IDs to display names
+- CharacterGenTab.tsx (lines 654-692) uses hook for both racial traits and class features
+- PartyTab.tsx (lines 530-568) uses hook in detail modal for features and traits
+- Tooltips show descriptions via `title` attribute with `getFeatureDescription()` and `getTraitDescription()`
+- Fallback to formatted ID (snake_case to Title Case) when not found in registry
+- Build passes successfully with no TypeScript errors
 
 ### Task 1.5.3: Add Subrace Display to Character UI
 - [ ] **Update character display components to show subrace property**
