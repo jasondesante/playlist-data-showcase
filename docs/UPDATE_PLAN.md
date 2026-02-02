@@ -1764,7 +1764,70 @@ User clicks "Create & Add to Hero"
 
 **Created Items Appear in ItemsTab Immediately:** VERIFIED WORKING via code review
 
-- [ ] Verify spawned items persist correctly
+- [x] Verify spawned items persist correctly
+
+**VERIFICATION SUMMARY (2026-02-02):**
+
+**Code Review Findings:**
+
+Spawned items from the Loot Box persist correctly through a robust architecture:
+
+1. **Item Storage in Character Inventory** (ItemsTab.tsx lines 300-305, 332-337):
+   - ✅ When adding spawned items to hero, creates `EnhancedInventoryItem` with name, quantity, equipped, instanceId
+   - ✅ Only the item name is stored (not full equipment data)
+   - ✅ instanceId is generated with timestamp and random string for uniqueness
+   - ✅ Item is added to appropriate category array (weapons/armor/items) in character.equipment
+
+2. **Character Persistence via Zustand** (characterStore.ts lines 254-265, 508-518):
+   - ✅ `updateCharacter()` uses zustand's `set()` to update characters array
+   - ✅ Character store has persist middleware with name: 'character-storage'
+   - ✅ Storage uses createJSONStorage() which defaults to localStorage
+   - ✅ All character data including equipment array is persisted to localStorage
+
+3. **Equipment Data Lookup on Reload** (useHeroEquipment.ts lines 147-172):
+   - ✅ `getEquipmentData()` function looks up equipment by name from three sources:
+     1. Local custom cache (`CUSTOM_EQUIPMENT_CACHE`) for user-created items
+     2. ExtensionManager for magic items and custom items
+     3. EQUIPMENT_DATABASE for default items
+   - ✅ This three-tier lookup ensures all items can be found after reload
+
+4. **Magic Items Re-registration** (main.tsx lines 15-54):
+   - ✅ `ensureAllDefaultsInitialized()` called before app renders
+   - ✅ `MAGIC_ITEM_EXAMPLES` registered with ExtensionManager on every app startup
+   - ✅ Spawn weight adjusted for Vorpal Sword (0.01 for legendary loot availability)
+   - ✅ Cursed items filtered out (spawnWeight: 0)
+   - ✅ Items validated with `EquipmentValidator.validateEquipment()` before registration
+
+5. **Custom Items Persistence** (useItemCreator.ts lines 23-85):
+   - ✅ `CUSTOM_EQUIPMENT_CACHE` is a Map stored in module memory
+   - ✅ `saveCustomEquipmentCache()` persists cache to localStorage
+   - ✅ `loadCustomEquipmentCache()` restores cache on module load (line 59)
+   - ✅ `restoreCustomEquipmentFromExtensionManager()` also restores from ExtensionManager
+   - ✅ Custom items registered with ExtensionManager when created
+
+**Persistence Flow Verified:**
+```
+User spawns item from Loot Box
+  → handleAddToHero() creates EnhancedInventoryItem {name, quantity, equipped, instanceId}
+  → addItemToInventory() adds to character.equipment[category] array
+  → updateCharacter() updates zustand store
+  → zustand persist middleware saves to localStorage (key: 'character-storage')
+
+User reloads page
+  → main.tsx: ensureAllDefaultsInitialized() initializes ExtensionManager
+  → main.tsx: MAGIC_ITEM_EXAMPLES registered with ExtensionManager
+  → main.tsx: restoreCustomEquipmentFromExtensionManager() restores custom items
+  → useItemCreator.ts: loadCustomEquipmentCache() loads from localStorage (module init)
+  → zustand rehydrates character store from localStorage
+  → useHeroEquipment: getEquipmentData() finds item by name (cache → ExtensionManager → database)
+  → Item is fully available with all properties for equip/unequip/drop operations
+```
+
+**Build Status:** ✅ Build passes successfully with no TypeScript errors
+**CSS Status:** ✅ CSS lint passes with no errors
+
+**Spawned Items Persist Correctly:** VERIFIED WORKING via code review
+
 - [ ] Test with multiple characters
 - [ ] Verify equipment effects are applied correctly
 - [ ] Test Data Viewer updates when items are created
