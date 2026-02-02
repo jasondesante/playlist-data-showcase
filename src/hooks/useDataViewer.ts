@@ -16,6 +16,7 @@ import {
     type EnhancedEquipment
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
+import { useDataViewerStore } from '@/store/dataViewerStore';
 
 /**
  * Data category types for the data viewer
@@ -151,6 +152,9 @@ export const useDataViewer = (): UseDataViewerReturn => {
     const skillRegistry = useMemo(() => SkillRegistry.getInstance(), []);
     const featureRegistry = useMemo(() => FeatureRegistry.getInstance(), []);
 
+    // Subscribe to data viewer store to detect when custom items are added
+    const lastDataChange = useDataViewerStore(state => state.lastDataChange);
+
     /**
      * Load all spells from SpellRegistry
      */
@@ -282,6 +286,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
     /**
      * Load all equipment from ExtensionManager (includes default + custom items)
      * Falls back to EQUIPMENT_DATABASE if ExtensionManager is not available
+     *
+     * Recomputes when lastDataChange changes (custom items added via Item Creator)
      */
     const equipment = useMemo(() => {
         try {
@@ -307,7 +313,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
                 return [];
             }
         }
-    }, []);
+        // Include lastDataChange as dependency to trigger re-computation when custom items are added
+    }, [lastDataChange]);
 
     /**
      * Calculate data counts
@@ -473,6 +480,10 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     /**
      * Refresh all data from registries (force re-initialization)
+     *
+     * Note: Equipment data is automatically refreshed when custom items are added
+     * via the lastDataChange dependency in the equipment useMemo. This function
+     * primarily refreshes the spell/skill/feature registries.
      */
     const refreshData = useCallback(() => {
         setIsLoading(true);

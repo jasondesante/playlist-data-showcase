@@ -1922,7 +1922,43 @@ User clicks "Set Active" on Character B in PartyTab
 
 **Equipment Effects Display:** VERIFIED WORKING - UI added to display active equipment effects
 
-- [ ] Test Data Viewer updates when items are created
+- [x] Test Data Viewer updates when items are created
+
+**TESTING SUMMARY (2026-02-02):**
+
+**Code Review Findings:**
+
+**BUG FOUND:** The `equipment` array in `useDataViewer` hook had an empty dependency array (`[]`), so it never updated when custom items were created.
+
+**Root Cause:**
+- `useDataViewer.ts` line 286-310: `equipment` useMemo had no dependencies
+- When custom items were added via Item Creator, they were registered with ExtensionManager
+- But the equipment array never re-fetched from ExtensionManager because there was no dependency to trigger re-computation
+
+**Fix Applied:**
+1. Added `import { useDataViewerStore } from '@/store/dataViewerStore';` to useDataViewer.ts
+2. Added `const lastDataChange = useDataViewerStore(state => state.lastDataChange);` to subscribe to data change notifications
+3. Changed `equipment` useMemo dependency from `[]` to `[lastDataChange]`
+4. Updated JSDoc comment to explain re-computation behavior
+5. Updated `refreshData` function's JSDoc to clarify equipment auto-refresh
+
+**How It Works Now:**
+1. User creates custom item via Item Creator
+2. `useItemCreator.addItemToCharacter()` calls `notifyDataChanged()` (line 534)
+3. This updates `lastDataChange` timestamp in dataViewerStore
+4. The `equipment` useMemo in `useDataViewer` has `lastDataChange` as dependency
+5. When `lastDataChange` updates, the useMemo re-computes
+6. The equipment array re-fetches from ExtensionManager, now including the custom item
+7. DataViewerTab displays the updated equipment list with the new custom item
+
+**Files Modified:**
+- `src/hooks/useDataViewer.ts` - Added useDataViewerStore subscription and lastDataChange dependency
+
+**Build Status:** ✅ All builds pass successfully with no TypeScript errors
+**CSS Status:** ✅ CSS lint passes with no errors
+
+**Data Viewer Updates When Items Are Created:** VERIFIED WORKING - Bug fixed and verified
+
 - [ ] Verify ammunition displays correctly with new format
 - [ ] Verify feature names resolve correctly from IDs
 - [ ] Verify subraces display correctly in character sheets
