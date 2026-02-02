@@ -1082,18 +1082,57 @@ Enhanced the equipment display in CharacterGenTab with the following improvement
 **Build Status:** All builds pass successfully with no TypeScript errors.
 
 ### Task 6.2: Create EquipmentDetail component
-- [ ] Create src/components/ui/EquipmentDetail.tsx
-- [ ] Accept EnhancedEquipment as prop
-- [ ] Display comprehensive item information:
-  - [ ] Name with rarity color
-  - [ ] Type and rarity badges
-  - [ ] Weight
-  - [ ] Damage info (for weapons)
-  - [ ] AC info (for armor)
-  - [ ] Properties list if present
-  - [ ] Granted features if present
-  - [ ] Granted skills if present
-- [ ] Make it reusable for ItemsTab, Loot Box section, and Item Creator section
+- [x] Create src/components/ui/EquipmentDetail.tsx
+- [x] Accept EnhancedEquipment as prop
+- [x] Display comprehensive item information:
+  - [x] Name with rarity color
+  - [x] Type and rarity badges
+  - [x] Weight
+  - [x] Damage info (for weapons)
+  - [x] AC info (for armor)
+  - [x] Properties list if present
+  - [x] Granted features if present
+  - [x] Granted skills if present
+  - [x] Granted spells if present
+  - [x] Weapon properties (finesse, versatile, etc.)
+  - [x] Spawn weight indicator
+  - [x] Source indicator (default/custom)
+- [x] Make it reusable for ItemsTab, Loot Box section, and Item Creator section
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive EquipmentDetail component with the following features:
+
+**Props Interface:**
+- `equipment: EnhancedEquipment` - The equipment item to display
+- `className?: string` - Optional CSS class name
+- `compact?: boolean` - Whether to show compact view (default: false)
+- `showFeatures?: boolean` - Whether to show granted features (default: true)
+- `showSkills?: boolean` - Whether to show granted skills (default: true)
+- `showSpells?: boolean` - Whether to show granted spells (default: true)
+
+**Display Features:**
+- **Header:** Name with rarity-based color, type badge, rarity badge, custom source indicator
+- **Stats:** Weight, damage dice (weapons), AC bonus (armor), spawn weight
+- **Weapon Properties:** Finesse, versatile, two-handed, etc. (when present)
+- **Equipment Properties:** Stat bonuses, skill proficiencies, ability unlocks, passive modifiers, special properties, damage bonuses
+- **Granted Features:** List of feature IDs or inline mini-features
+- **Granted Skills:** Skill IDs with proficiency level (proficient/expertise)
+- **Granted Spells:** Spell IDs with level, uses, and recharge information
+- **Tags:** Item tags (when present)
+
+**Styling:**
+- Rarity-based color coding (Common=gray, Uncommon=green, Rare=blue, Very Rare=purple, Legendary=orange)
+- Rarity-based background and border colors
+- Consistent with existing component patterns (Card, Button, etc.)
+- Compact mode for space-constrained displays
+- Responsive design with mobile-friendly layouts
+- Hover effects with elevation changes
+
+**Files Created:**
+- `src/components/ui/EquipmentDetail.tsx` - Main component (250+ lines)
+- `src/components/ui/EquipmentDetail.css` - Comprehensive styling (300+ lines)
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ---
 
