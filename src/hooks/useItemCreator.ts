@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
     EnhancedEquipment,
     EnhancedInventoryItem,
@@ -59,6 +59,21 @@ function loadCustomEquipmentCache(): void {
 loadCustomEquipmentCache();
 
 /**
+ * Clear all custom equipment from localStorage cache
+ * Use this to fix corrupted or invalid custom equipment data
+ */
+export function clearCustomEquipmentCache(): void {
+    try {
+        const count = CUSTOM_EQUIPMENT_CACHE.size;
+        CUSTOM_EQUIPMENT_CACHE.clear();
+        localStorage.removeItem(CUSTOM_EQUIPMENT_STORAGE_KEY);
+        logger.info('ItemCreator', `Cleared ${count} custom equipment items from localStorage cache`);
+    } catch (error) {
+        logger.warn('ItemCreator', 'Failed to clear custom equipment cache', { error: String(error) });
+    }
+}
+
+/**
  * Restore custom equipment from ExtensionManager
  * This is called after ExtensionManager defaults are initialized
  */
@@ -101,22 +116,72 @@ export function initializeCustomEquipment(): void {
         logger.info('ItemCreator', `Initializing ${customItems.length} custom equipment items in ExtensionManager`);
 
         // Register all custom items with ExtensionManager with validation enabled
+        // Uses default 'relative' mode to preserve items registered by main.tsx (magic items)
+        // The module-level flag in useCustomEquipmentInitializer prevents duplicate registration
         // Custom items created through the UI should always be valid
         extensionManager.register('equipment', customItems, { validate: true });
 
         logger.info('ItemCreator', `Successfully registered ${customItems.length} custom equipment items`);
     } catch (error) {
-        logger.error('ItemCreator', 'Failed to initialize custom equipment', { error: String(error) });
+        const errorMessage = String(error);
+        logger.error('ItemCreator', 'Failed to initialize custom equipment', { error: errorMessage });
+
+        // Try to identify and remove only the invalid items, keeping valid ones
+        // Parse error to find which items are problematic
+        const invalidItemNames: string[] = [];
+
+        // Error format from ExtensionManager typically includes item indices or names
+        // Extract item numbers from error messages like "Item 2:", "Item 5:", etc.
+        const itemMatches = errorMessage.match(/Item (\d+):/g);
+        if (itemMatches) {
+            const indices = itemMatches.map(m => parseInt(m.replace('Item ', '').replace(':', '')));
+            const customItems = getAllCustomEquipment();
+            indices.forEach(idx => {
+                if (customItems[idx]) {
+                    invalidItemNames.push(customItems[idx].name);
+                }
+            });
+        }
+
+        if (invalidItemNames.length > 0) {
+            logger.warn('ItemCreator', `Removing ${invalidItemNames.length} invalid items: ${invalidItemNames.join(', ')}`);
+            invalidItemNames.forEach(name => {
+                CUSTOM_EQUIPMENT_CACHE.delete(name);
+            });
+            saveCustomEquipmentCache();
+            logger.info('ItemCreator', `Cleared invalid items, ${CUSTOM_EQUIPMENT_CACHE.size} valid items remain`);
+        } else {
+            // If we can't parse the error, fall back to clearing everything
+            logger.warn('ItemCreator', 'Could not identify invalid items, clearing entire cache');
+            clearCustomEquipmentCache();
+        }
     }
 }
 
 /**
  * React hook to initialize custom equipment on mount
  * Call this in your App component or a main initialization component
+ * Uses module-level flag to ensure equipment is only registered once per session,
+ * preventing duplicates from React StrictMode double-invocation or component re-renders.
+ *
+ * Note: Custom items persist in localStorage, so they survive page reloads.
+ * The module-level flag resets on page reload, allowing fresh initialization.
  */
+let _hasInitializedCustomEquipment = false;
+
 export function useCustomEquipmentInitializer(): void {
-    // Just run once on mount
-    initializeCustomEquipment();
+    const hasInitializedRef = useRef(false);
+
+    useEffect(() => {
+        // Check both module-level flag and ref to prevent duplicate registration
+        // Module flag prevents cross-component duplicates
+        // Ref prevents React StrictMode double-invocation within same component
+        if (!_hasInitializedCustomEquipment && !hasInitializedRef.current) {
+            initializeCustomEquipment();
+            _hasInitializedCustomEquipment = true;
+            hasInitializedRef.current = true;
+        }
+    }, []);
 }
 
 /**
@@ -484,7 +549,7 @@ export const useItemCreator = (): UseItemCreatorReturn => {
                 name: equipment.name,
                 quantity: quantity,
                 equipped: autoEquip,
-                instanceId: `${equipment.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                instanceId: `${equipment.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
             };
 
             // Create a copy of the character to modify
@@ -518,9 +583,9 @@ export const useItemCreator = (): UseItemCreatorReturn => {
             const itemWeight = (equipment.weight || 0) * quantity;
             updatedCharacter.equipment.totalWeight = (updatedCharacter.equipment.totalWeight || 0) + itemWeight;
 
-            // If auto-equipping, apply effects
+            // If auto-equipping, apply effects (no instanceId to match API behavior)
             if (autoEquip) {
-                const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipment, inventoryItem.instanceId);
+                const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipment, undefined);
                 if (result.errors.length > 0) {
                     logger.warn('ItemCreator', 'Auto-equip had errors', result.errors);
                 }

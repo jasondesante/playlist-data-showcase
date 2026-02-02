@@ -245,8 +245,8 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             // Create a copy of the character to modify
             const updatedCharacter = { ...activeCharacter };
 
-            // Apply equipment effects using the engine
-            const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipmentData, item.instanceId);
+            // Apply equipment effects using the engine (no instanceId to match API behavior)
+            const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipmentData, undefined);
 
             if (result.errors.length > 0) {
                 logger.warn('HeroEquipment', 'Equipment effect application had errors', result.errors);
@@ -315,8 +315,8 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             // Create a copy of the character to modify
             const updatedCharacter = { ...activeCharacter };
 
-            // Remove equipment effects using the engine
-            const result = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, item.instanceId);
+            // Remove equipment effects using the engine (no instanceId to match API behavior)
+            const result = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, undefined);
 
             if (result.errors.length > 0) {
                 logger.warn('HeroEquipment', 'Equipment effect removal had errors', result.errors);
@@ -382,9 +382,9 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             // Create a copy of the character to modify
             const updatedCharacter = { ...activeCharacter };
 
-            // If item is equipped, unequip it first to remove effects
+            // If item is equipped, unequip it first to remove effects (no instanceId to match API behavior)
             if (item.equipped) {
-                const unequipResult = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, item.instanceId);
+                const unequipResult = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, undefined);
                 if (unequipResult.errors.length > 0) {
                     logger.warn('HeroEquipment', 'Unequip before removal had errors', unequipResult.errors);
                 }
@@ -518,9 +518,9 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             const itemWeight = (fullEquipmentData.weight || 0) * (itemToAdd.quantity || 1);
             updatedCharacter.equipment.totalWeight = (updatedCharacter.equipment.totalWeight || 0) + itemWeight;
 
-            // If auto-equipping, apply effects
+            // If auto-equipping, apply effects (no instanceId to match API behavior)
             if (autoEquip) {
-                const result = EquipmentEffectApplier.equipItem(updatedCharacter, fullEquipmentData, itemToAdd.instanceId);
+                const result = EquipmentEffectApplier.equipItem(updatedCharacter, fullEquipmentData, undefined);
                 if (result.errors.length > 0) {
                     logger.warn('HeroEquipment', 'Auto-equip had errors', result.errors);
                 }
