@@ -13,6 +13,8 @@ import { Tooltip } from '../ui/Tooltip';
 import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
 import { showToast } from '../ui/Toast';
+import { EQUIPMENT_DATABASE } from 'playlist-data-engine';
+import type { EnhancedEquipment } from 'playlist-data-engine';
 
 /**
  * Ammunition types and their per-item weights (in pounds)
@@ -35,6 +37,96 @@ function isAmmunition(itemName: string): boolean {
  */
 function getAmmunitionWeight(itemName: string): number | null {
   return AMMUNITION_TYPES[itemName] ?? null;
+}
+
+/**
+ * Rarity color mapping for equipment display
+ */
+const RARITY_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50%)',
+  'uncommon': 'hsl(120 60% 40%)',
+  'rare': 'hsl(210 80% 50%)',
+  'very_rare': 'hsl(270 60% 50%)',
+  'legendary': 'hsl(30 90% 50%)'
+};
+
+/**
+ * Rarity background colors for item cards
+ */
+const RARITY_BG_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.08)',
+  'uncommon': 'hsl(120 60% 40% / 0.08)',
+  'rare': 'hsl(210 80% 50% / 0.08)',
+  'very_rare': 'hsl(270 60% 50% / 0.08)',
+  'legendary': 'hsl(30 90% 50% / 0.12)'
+};
+
+/**
+ * Rarity border colors for item cards
+ */
+const RARITY_BORDER_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.25)',
+  'uncommon': 'hsl(120 60% 40% / 0.3)',
+  'rare': 'hsl(210 80% 50% / 0.3)',
+  'very_rare': 'hsl(270 60% 50% / 0.3)',
+  'legendary': 'hsl(30 90% 50% / 0.4)'
+};
+
+/**
+ * Get equipment data from database by name
+ */
+function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
+  return EQUIPMENT_DATABASE[itemName];
+}
+
+/**
+ * Format rarity for display (snake_case to Title Case)
+ */
+function formatRarity(rarity: string): string {
+  return rarity
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Get tooltip content for equipment item showing properties
+ */
+function getEquipmentTooltip(equipmentData?: EnhancedEquipment): string {
+  const parts: string[] = [];
+
+  // Add rarity
+  if (equipmentData?.rarity) {
+    parts.push(`Rarity: ${formatRarity(equipmentData.rarity)}`);
+  }
+
+  // Add type
+  if (equipmentData?.type) {
+    parts.push(`Type: ${equipmentData.type.charAt(0).toUpperCase() + equipmentData.type.slice(1)}`);
+  }
+
+  // Add weight
+  if (equipmentData?.weight !== undefined) {
+    parts.push(`Weight: ${equipmentData.weight} lb`);
+  }
+
+  // Add damage for weapons
+  if (equipmentData?.type === 'weapon' && equipmentData.damage) {
+    parts.push(`Damage: ${equipmentData.damage.dice} ${equipmentData.damage.damageType}`);
+  }
+
+  // Add AC for armor
+  if (equipmentData?.type === 'armor' && equipmentData.acBonus !== undefined) {
+    parts.push(`AC Bonus: +${equipmentData.acBonus}`);
+  }
+
+  // Add properties
+  if (equipmentData?.properties && equipmentData.properties.length > 0) {
+    const propNames = equipmentData.properties.map(p => p.type).join(', ');
+    parts.push(`Properties: ${propNames}`);
+  }
+
+  return parts.join('\n');
 }
 
 /**
@@ -813,14 +905,31 @@ export function CharacterGenTab() {
                     <Card variant="flat" padding="sm" className="character-equipment-card">
                       <div className="character-equipment-label">Weapons</div>
                       <div className="character-equipment-items">
-                        {equipment.weapons.map((weapon, idx) => (
-                          <span key={idx} className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}>
-                            {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                            <span>{weapon.name}</span>
-                            {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
-                            {weapon.equipped && <span className="character-equipment-badge">Equipped</span>}
-                          </span>
-                        ))}
+                        {equipment.weapons.map((weapon, idx) => {
+                          const equipmentData = getEquipmentData(weapon.name);
+                          const rarity = equipmentData?.rarity || 'common';
+                          const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                          const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
+                          const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
+                          const tooltipContent = getEquipmentTooltip(equipmentData);
+
+                          return (
+                            <span
+                              key={idx}
+                              className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}
+                              style={{
+                                backgroundColor: rarityBg,
+                                borderColor: rarityBorder
+                              }}
+                              title={tooltipContent}
+                            >
+                              {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                              <span style={{ color: rarityColor, fontWeight: 500 }}>{weapon.name}</span>
+                              {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
+                              {weapon.equipped && <span className="character-equipment-badge">Equipped</span>}
+                            </span>
+                          );
+                        })}
                       </div>
                     </Card>
                   )}
@@ -828,14 +937,31 @@ export function CharacterGenTab() {
                     <Card variant="flat" padding="sm" className="character-equipment-card">
                       <div className="character-equipment-label">Armor</div>
                       <div className="character-equipment-items">
-                        {equipment.armor.map((armor, idx) => (
-                          <span key={idx} className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}>
-                            {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                            <span>{armor.name}</span>
-                            {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
-                            {armor.equipped && <span className="character-equipment-badge">Equipped</span>}
-                          </span>
-                        ))}
+                        {equipment.armor.map((armor, idx) => {
+                          const equipmentData = getEquipmentData(armor.name);
+                          const rarity = equipmentData?.rarity || 'common';
+                          const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                          const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
+                          const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
+                          const tooltipContent = getEquipmentTooltip(equipmentData);
+
+                          return (
+                            <span
+                              key={idx}
+                              className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}
+                              style={{
+                                backgroundColor: rarityBg,
+                                borderColor: rarityBorder
+                              }}
+                              title={tooltipContent}
+                            >
+                              {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                              <span style={{ color: rarityColor, fontWeight: 500 }}>{armor.name}</span>
+                              {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
+                              {armor.equipped && <span className="character-equipment-badge">Equipped</span>}
+                            </span>
+                          );
+                        })}
                       </div>
                     </Card>
                   )}
@@ -853,11 +979,31 @@ export function CharacterGenTab() {
                             ? Math.round(ammoWeight * item.quantity * 100) / 100
                             : null;
 
+                          const equipmentData = getEquipmentData(item.name);
+                          const rarity = equipmentData?.rarity || 'common';
+                          const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                          const rarityBg = isAmmo
+                            ? 'linear-gradient(135deg, hsl(var(--cute-orange) / 0.1), hsl(var(--cute-yellow) / 0.05))'
+                            : (RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common);
+                          const rarityBorder = isAmmo
+                            ? 'hsl(var(--cute-orange) / 0.3)'
+                            : (RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common);
+                          const tooltipContent = getEquipmentTooltip(equipmentData);
+
                           return (
-                            <span key={idx} className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}>
+                            <span
+                              key={idx}
+                              className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}
+                              style={{
+                                backgroundColor: isAmmo ? undefined : rarityBg,
+                                background: isAmmo ? rarityBg : undefined,
+                                borderColor: rarityBorder
+                              }}
+                              title={tooltipContent}
+                            >
                               {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
                               {isAmmo && <Target className="character-equipment-ammo-icon" size={14} />}
-                              <span>{item.name}</span>
+                              <span style={{ color: rarityColor, fontWeight: 500 }}>{item.name}</span>
                               {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
                               {isAmmo && ammoWeight !== null && (
                                 <span

@@ -12,6 +12,34 @@ import { logger } from '@/utils/logger';
 import type { CharacterSheet } from '@/types';
 
 /**
+ * Local cache for custom equipment items.
+ * This bypasses ExtensionManager which may not persist items correctly.
+ */
+const CUSTOM_EQUIPMENT_CACHE = new Map<string, EnhancedEquipment>();
+
+/**
+ * Register a custom equipment item in the local cache
+ */
+export function registerCustomEquipment(equipment: EnhancedEquipment): void {
+    CUSTOM_EQUIPMENT_CACHE.set(equipment.name, equipment);
+    logger.info('ItemCreator', `Registered custom equipment in local cache: ${equipment.name}`);
+}
+
+/**
+ * Get custom equipment by name from local cache
+ */
+export function getCustomEquipment(name: string): EnhancedEquipment | undefined {
+    return CUSTOM_EQUIPMENT_CACHE.get(name);
+}
+
+/**
+ * Get all custom equipment from local cache
+ */
+export function getAllCustomEquipment(): EnhancedEquipment[] {
+    return Array.from(CUSTOM_EQUIPMENT_CACHE.values());
+}
+
+/**
  * Equipment type categories
  * (Re-defined here since not exported from playlist-data-engine main index)
  */
@@ -326,23 +354,24 @@ export const useItemCreator = (): UseItemCreatorReturn => {
         setIsLoading(true);
 
         try {
-            // Register custom equipment with ExtensionManager so it can be looked up later
-            // This is necessary for equip/unequip to work with custom items
+            // Register custom equipment in BOTH local cache and ExtensionManager
+            // Local cache is our primary fallback since ExtensionManager may not persist correctly
             if (equipment.source === 'custom') {
-                const extensionManager = ExtensionManager.getInstance();
-                // Only register if not already registered
-                const existingEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
-                logger.debug('ItemCreator', `ExtensionManager has ${existingEquipment.length} equipment items`);
-                const alreadyRegistered = existingEquipment.find(e => e.name === equipment.name);
-                if (!alreadyRegistered) {
-                    logger.info('ItemCreator', `Registering custom equipment with ExtensionManager: ${equipment.name}`);
-                    extensionManager.register('equipment', [equipment]);
-                    // Verify registration
-                    const afterRegistration = extensionManager.get('equipment') as EnhancedEquipment[];
-                    const found = afterRegistration.find(e => e.name === equipment.name);
-                    logger.info('ItemCreator', `Verification - equipment ${equipment.name} ${found ? 'found' : 'NOT found'} after registration`);
-                } else {
-                    logger.debug('ItemCreator', `Equipment ${equipment.name} already registered, skipping`);
+                // First, register in our local cache (reliable)
+                registerCustomEquipment(equipment);
+                logger.info('ItemCreator', `Registered ${equipment.name} in local cache`);
+
+                // Also try ExtensionManager for completeness, but don't rely on it
+                try {
+                    const extensionManager = ExtensionManager.getInstance();
+                    const existingEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
+                    const alreadyRegistered = existingEquipment.find(e => e.name === equipment.name);
+                    if (!alreadyRegistered) {
+                        extensionManager.register('equipment', [equipment], { validate: false });
+                        logger.debug('ItemCreator', `Also registered ${equipment.name} in ExtensionManager`);
+                    }
+                } catch (emErr) {
+                    logger.warn('ItemCreator', `ExtensionManager registration failed (using local cache)`, { error: String(emErr) });
                 }
             }
 

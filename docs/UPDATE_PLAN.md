@@ -26,7 +26,15 @@ Notes from user:
 
 ~~The loot box demo's "by rarity" mode doesn't work. The other random and treasure hoard modes work great though.~~
 
-**FIXED:** All issues above have been resolved. See Phase 10 for details.
+**FIXED:** All issues above have not been resolved. See Phase 10 for details on the partial success partial failures.
+
+
+FOLLOW UP NOTES:
+
+~~The rarity loot box is still broken, it spawns something now but it spawns the exact same 1 single item no matter what the parameter is.~~ **FIXED** in Task 10.1b - MAGIC_ITEM_EXAMPLES are now registered with ExtensionManager, providing variety for all rarities.
+
+And I still can't equip items that were made custom in the app. I can equip default items, but the custom items that I've made in the UI, aren't being made correctly. They are still saying the same error "Equipment data not found for..."
+
 
 ---
 
@@ -1027,17 +1035,51 @@ All visual polish and CSS refinement has been completed:
 ## Phase 6: Equipment Display Improvements
 
 ### Task 6.1: Enhance equipment display in CharacterGenTab
-- [ ] Review current equipment section in CharacterGenTab
-- [ ] Add rarity color coding to equipment items:
-  - [ ] Common: gray
-  - [ ] Uncommon: green
-  - [ ] Rare: blue
-  - [ ] Very Rare: purple
-  - [ ] Legendary: orange
-- [ ] Add hover tooltip showing equipment properties if present
-- [ ] Show equipped status more clearly
-- [ ] Add total weight display
-- [ ] Group items by category (weapons/armor/items)
+- [x] Review current equipment section in CharacterGenTab
+- [x] Add rarity color coding to equipment items:
+  - [x] Common: gray
+  - [x] Uncommon: green
+  - [x] Rare: blue
+  - [x] Very Rare: purple
+  - [x] Legendary: orange
+- [x] Add hover tooltip showing equipment properties if present
+- [x] Show equipped status more clearly
+- [x] Add total weight display
+- [x] Group items by category (weapons/armor/items)
+
+**IMPLEMENTATION SUMMARY:**
+Enhanced the equipment display in CharacterGenTab with the following improvements:
+
+**Rarity Color Coding:**
+- Added `RARITY_COLORS`, `RARITY_BG_COLORS`, and `RARITY_BORDER_COLORS` constants
+- Each equipment item now displays with rarity-based colors:
+  - Common: gray (`hsl(0 0% 50%)`)
+  - Uncommon: green (`hsl(120 60% 40%)`)
+  - Rare: blue (`hsl(210 80% 50%)`)
+  - Very Rare: purple (`hsl(270 60% 50%)`)
+  - Legendary: orange/gold (`hsl(30 90% 50%)`)
+- Equipment data is looked up from `EQUIPMENT_DATABASE` to get rarity information
+
+**Hover Tooltips:**
+- Added `getEquipmentTooltip()` function that generates detailed tooltips for each item
+- Tooltips show: Rarity, Type, Weight, Damage (weapons), AC Bonus (armor), Properties
+- Tooltips appear on hover via the native `title` attribute
+
+**Equipped Status:**
+- Equipped items continue to show the checkmark icon and "Equipped" badge
+- Equipped items have enhanced styling with teal gradient background
+- The equipped status is now more visually distinct with rarity-colored borders
+
+**Total Weight Display:**
+- Already existed: Shows "Equipped: X lbs | Total: Y lbs" at the bottom of the equipment section
+
+**Grouping by Category:**
+- Already existed: Items are grouped into Weapons, Armor, and Items sections with separate cards
+
+**Files Modified:**
+- `src/components/Tabs/CharacterGenTab.tsx` - Added imports, constants, helper functions, and updated equipment rendering
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ### Task 6.2: Create EquipmentDetail component
 - [ ] Create src/components/ui/EquipmentDetail.tsx
@@ -1159,6 +1201,38 @@ All visual polish and CSS refinement has been completed:
 
 ---
 
+### Task 10.1b: Fix Loot Box "by rarity" mode spawning the same single item
+**Issue:** The loot box demo's "by rarity" mode was spawning items, but always returned the same single item regardless of rarity parameters. For rare/very_rare/legendary, it would spawn only Plate Armor (the only rare item in the base equipment database).
+
+**Root Cause:** The `EquipmentSpawnHelper.spawnByRarity()` function uses `ExtensionManager.getInstance().get("equipment")` to get equipment data. The base `EQUIPMENT_DATABASE` only contains:
+- Common items (many)
+- Uncommon items (several)
+- Rare items (only 1: Plate Armor)
+- Very Rare items (0)
+- Legendary items (0)
+
+The engine includes `MAGIC_ITEM_EXAMPLES` with many rare, very_rare, and legendary items, but these were never registered with ExtensionManager.
+
+**Fix:** Modified `src/main.tsx` to register `MAGIC_ITEM_EXAMPLES` with ExtensionManager after defaults are initialized. This adds:
+- 15 uncommon magic items
+- 22 rare magic items
+- 3 very rare magic items
+- 1 legendary item (Vorpal Sword, with spawnWeight adjusted from 0 to 0.01)
+
+This provides variety for the loot box rarity spawning while keeping truly cursed items (Belt of Strength Drain, Helmet of Opposite Alignment) at spawnWeight: 0.
+
+**Items Now Available by Rarity:**
+- Common: ~40+ items (base equipment)
+- Uncommon: ~15+ magic items (e.g., Boots of Elvenkind, Goggles of Night, Pearl of Power)
+- Rare: ~22+ magic items (e.g., Flame Tongue, Frost Brand, +1 Plate Armor, Ring of Protection)
+- Very Rare: 3 items (e.g., Dragonslayer Longsword, +2 weapon/armor variants)
+- Legendary: 1 item (Vorpal Sword, very low spawn rate)
+
+**Files Modified:**
+- `src/main.tsx` - Added `MAGIC_ITEM_EXAMPLES` registration with ExtensionManager
+
+---
+
 ### Task 10.2: Fix Items tab equip/unequip buttons - "Item has no instance ID" error
 **Issue:** Equip/unequip buttons in ItemsTab were showing "Item has no instance ID" error.
 
@@ -1250,13 +1324,4 @@ Before marking plan complete:
 - [ ] Custom items can be added to current hero
 - [ ] DataViewerTab shows all game data categories
 - [ ] Data Viewer updates when custom items are added
-- [ ] Equipment display shows rarity colors
-
-### Migration Guide Compatibility:
-- [ ] Ammunition displays in new format (individual arrows with quantity)
-- [ ] Arrow weight uses 0.05 lb per arrow, bolt weight uses 0.075 lb per bolt
-- [ ] Feature IDs resolve to human-readable names from FeatureRegistry
-- [ ] Feature tooltips show descriptions
-- [ ] Subraces display in CharacterGenTab character sheet
-- [ ] Subraces display in PartyTab character cards
-- [ ] Subr
+- [ ] Equipment displ

@@ -3,6 +3,7 @@ import { EquipmentEffectApplier, EnhancedInventoryItem, EnhancedEquipment, EQUIP
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import type { CharacterSheet } from '@/types';
+import { getCustomEquipment } from './useItemCreator';
 
 /**
  * Result type for equipment operations
@@ -141,10 +142,17 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
 
     /**
      * Look up full equipment data from the database by name
-     * Checks ExtensionManager first (for custom items), then falls back to EQUIPMENT_DATABASE
+     * Checks: 1) Local custom cache, 2) ExtensionManager, 3) EQUIPMENT_DATABASE
      */
     const getEquipmentData = useCallback((itemName: string): EnhancedEquipment | undefined => {
-        // First check ExtensionManager (includes custom items)
+        // First check local custom cache (most reliable for custom items)
+        const fromLocalCache = getCustomEquipment(itemName);
+        if (fromLocalCache) {
+            logger.debug('HeroEquipment', `Found "${itemName}" in local custom cache`);
+            return fromLocalCache;
+        }
+
+        // Then check ExtensionManager (includes custom items)
         const extensionManager = ExtensionManager.getInstance();
         const allEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
         logger.debug('HeroEquipment', `Looking up "${itemName}" in ExtensionManager (${allEquipment?.length || 0} items)`);
@@ -158,7 +166,7 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
         if (fromDatabase) {
             logger.debug('HeroEquipment', `Found "${itemName}" in EQUIPMENT_DATABASE`);
         } else {
-            logger.warn('HeroEquipment', `Equipment "${itemName}" not found in ExtensionManager or database`);
+            logger.warn('HeroEquipment', `Equipment "${itemName}" not found in local cache, ExtensionManager, or database`);
         }
         return fromDatabase;
     }, []);
