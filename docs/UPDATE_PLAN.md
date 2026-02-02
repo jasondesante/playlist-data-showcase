@@ -1254,7 +1254,7 @@ All inline documentation was already present in the codebase:
 
 ### Task 8.2: Test Loot Box section
 - [x] Test random item spawning
-- [ ] Test rarity-based spawning
+- [x] Test rarity-based spawning
 - [ ] Test treasure hoard spawning
 - [ ] Test adding individual items to hero
 - [ ] Test "add all" functionality
@@ -1316,6 +1316,69 @@ All inline documentation was already present in the codebase:
 **CSS Status:** ✅ All CSS passes stylelint with no errors
 
 **Random Item Spawning:** VERIFIED WORKING via code review
+
+**Code Review Findings for Rarity-Based Spawning:**
+
+1. **Hook Implementation** (useLootBox.ts lines 115-149):
+   - ✅ `spawnByRarity()` correctly calls `EquipmentSpawnHelper.spawnByRarity(rarity, count, rng)`
+   - ✅ Accepts rarity parameter: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary'
+   - ✅ Creates `SeededRNG` instance with optional seed for deterministic spawning
+   - ✅ Sets loading state (`isLoading`) during spawn operation
+   - ✅ Updates `spawnedItems` state with result
+   - ✅ Comprehensive logging via `logger.info()` with rarity, count, seed, and spawned items
+   - ✅ Error handling with try/catch and error logging
+   - ✅ Returns `LootBoxResult` interface with items array
+
+2. **UI Integration** (ItemsTab.tsx lines 267-278):
+   - ✅ `handleSpawnByRarity()` correctly calls `spawnByRarity(selectedRarity, rarityCount)`
+   - ✅ Sets animation state (`setIsAnimating(true)`) before spawning
+   - ✅ Shows success toast with count and rarity: "Spawned X Rare items!"
+   - ✅ Shows error toast: "Failed to spawn items" if no items returned
+   - ✅ Animation state cleared after spawn completes
+   - ✅ Uses `formatRarity()` helper to convert snake_case to Title Case for display
+
+3. **Spawn Mode Controls** (ItemsTab.tsx lines 672-746):
+   - ✅ Spawn mode selector with three buttons: Random, By Rarity, Treasure Hoard
+   - ✅ "By Rarity" button uses Gem icon and activates `spawnMode === 'rarity'` state
+   - ✅ Rarity dropdown (select) with all five options: common, uncommon, rare, very_rare, legendary
+   - ✅ Rarity count slider: 1-10 items (min="1" max="10")
+   - ✅ Current count displayed next to slider
+   - ✅ Default count: 3 items
+   - ✅ Default rarity: 'rare'
+
+4. **Equipment Database** (main.tsx lines 11-34):
+   - ✅ `ensureAllDefaultsInitialized()` called before app renders
+   - ✅ `ExtensionManager` initialized with MAGIC_ITEM_EXAMPLES
+   - ✅ spawnWeight adjusted for Vorpal Sword (0.01 instead of 0) for legendary loot
+   - ✅ Cursed items filtered out (spawnWeight: 0 items excluded)
+   - ✅ Total equipment database: 76 items (40 common, 18 uncommon, 16 rare, 1 very_rare, 1 legendary)
+
+5. **Backend Verification** (Node.js test):
+   - ✅ Created test script to verify `EquipmentSpawnHelper.spawnByRarity()` functionality
+   - ✅ Common: spawns up to requested count (40 items available)
+   - ✅ Uncommon: spawns up to requested count (18 items available)
+   - ✅ Rare: spawns up to requested count (16 items available)
+   - ✅ Very Rare: spawns 1 item (only 1 item available: Dragonslayer Longsword)
+   - ✅ Legendary: spawns 1 item (only 1 item available: Vorpal Sword)
+   - ✅ All rarities spawn items correctly with variety
+
+6. **Item Display** (ItemsTab.tsx lines 812-889):
+   - ✅ Spawned items displayed in responsive grid with `lootbox-items-grid` class
+   - ✅ Each item card shows: name, rarity badge, type badge, damage/AC, weight
+   - ✅ Rarity color coding applied: `RARITY_COLORS`, `RARITY_BG_COLORS`, `RARITY_BORDER_COLORS`
+   - ✅ Staggered animation delay per item: `animationDelay: ${index * 0.05}s`
+   - ✅ "Add to Hero" button shown when active character exists
+
+**Files Verified:**
+- `src/hooks/useLootBox.ts` - Hook implementation complete
+- `src/components/Tabs/ItemsTab.tsx` - UI integration complete
+- `src/components/Tabs/ItemsTab.css` - Styling and animations complete
+- `src/main.tsx` - Initialization complete
+
+**Build Status:** ✅ All builds pass successfully with no TypeScript errors
+**CSS Status:** ✅ All CSS passes stylelint with no errors
+
+**Rarity-Based Spawning:** VERIFIED WORKING via code review and backend test
 
 ### Task 8.3: Test Item Creator section
 - [ ] Test creating items of each type
