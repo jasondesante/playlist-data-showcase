@@ -14,14 +14,82 @@ import type { CharacterSheet } from '@/types';
 /**
  * Local cache for custom equipment items.
  * This bypasses ExtensionManager which may not persist items correctly.
+ *
+ * IMPORTANT: This cache is also persisted to localStorage to survive page reloads.
  */
 const CUSTOM_EQUIPMENT_CACHE = new Map<string, EnhancedEquipment>();
+const CUSTOM_EQUIPMENT_STORAGE_KEY = 'custom_equipment_cache';
+
+/**
+ * Save custom equipment cache to localStorage
+ */
+function saveCustomEquipmentCache(): void {
+    try {
+        const cacheArray = Array.from(CUSTOM_EQUIPMENT_CACHE.entries());
+        localStorage.setItem(CUSTOM_EQUIPMENT_STORAGE_KEY, JSON.stringify(cacheArray));
+        logger.debug('ItemCreator', `Saved ${cacheArray.length} custom equipment items to localStorage`);
+    } catch (error) {
+        logger.warn('ItemCreator', 'Failed to save custom equipment cache to localStorage', { error: String(error) });
+    }
+}
+
+/**
+ * Load custom equipment cache from localStorage
+ */
+function loadCustomEquipmentCache(): void {
+    try {
+        const stored = localStorage.getItem(CUSTOM_EQUIPMENT_STORAGE_KEY);
+        if (stored) {
+            const cacheArray: Array<[string, EnhancedEquipment]> = JSON.parse(stored);
+            CUSTOM_EQUIPMENT_CACHE.clear();
+            for (const [name, equipment] of cacheArray) {
+                CUSTOM_EQUIPMENT_CACHE.set(name, equipment);
+            }
+            logger.info('ItemCreator', `Loaded ${cacheArray.length} custom equipment items from localStorage`);
+        }
+    } catch (error) {
+        logger.warn('ItemCreator', 'Failed to load custom equipment cache from localStorage', { error: String(error) });
+    }
+}
+
+/**
+ * Initialize the custom equipment cache from localStorage on module load
+ * This ensures custom items are available even after page reload
+ */
+loadCustomEquipmentCache();
+
+/**
+ * Restore custom equipment from ExtensionManager
+ * This is called after ExtensionManager defaults are initialized
+ */
+export function restoreCustomEquipmentFromExtensionManager(): void {
+    try {
+        const extensionManager = ExtensionManager.getInstance();
+        const allEquipment = extensionManager.get('equipment') as EnhancedEquipment[];
+        if (allEquipment) {
+            let restoredCount = 0;
+            for (const equipment of allEquipment) {
+                if (equipment.source === 'custom' && !CUSTOM_EQUIPMENT_CACHE.has(equipment.name)) {
+                    CUSTOM_EQUIPMENT_CACHE.set(equipment.name, equipment);
+                    restoredCount++;
+                }
+            }
+            if (restoredCount > 0) {
+                saveCustomEquipmentCache(); // Update localStorage
+                logger.info('ItemCreator', `Restored ${restoredCount} custom items from ExtensionManager`);
+            }
+        }
+    } catch (error) {
+        logger.warn('ItemCreator', 'Failed to restore custom equipment from ExtensionManager', { error: String(error) });
+    }
+}
 
 /**
  * Register a custom equipment item in the local cache
  */
 export function registerCustomEquipment(equipment: EnhancedEquipment): void {
     CUSTOM_EQUIPMENT_CACHE.set(equipment.name, equipment);
+    saveCustomEquipmentCache(); // Persist to localStorage
     logger.info('ItemCreator', `Registered custom equipment in local cache: ${equipment.name}`);
 }
 

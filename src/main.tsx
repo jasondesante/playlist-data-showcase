@@ -31,7 +31,12 @@ const magicItemsWithAdjustedWeight = MAGIC_ITEM_EXAMPLES.map((item: any) => {
 const magicItemsWithSpawnWeight = magicItemsWithAdjustedWeight.filter(
   (item: any) => (item.spawnWeight ?? 1) > 0
 )
-manager.register('equipment', magicItemsWithSpawnWeight)
+manager.register('equipment', magicItemsWithSpawnWeight, { validate: false })
+
+// Restore custom equipment cache from localStorage and ExtensionManager
+// This ensures custom items remain equippable after page reloads
+import { restoreCustomEquipmentFromExtensionManager } from './hooks/useItemCreator'
+restoreCustomEquipmentFromExtensionManager()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
