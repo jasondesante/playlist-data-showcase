@@ -1,6 +1,6 @@
 # Implementation Status: Playlist Data Engine Showcase
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-02-02
 **Project:** playlist-data-showcase
 **Engine:** playlist-data-engine (local import via `file:/playlist-data-engine`)
 **Status:** Active Development - See UPDATE_PLAN.md for current work
@@ -37,11 +37,21 @@ Adding new features from updated playlist-data-engine:
 
 **Completion:** Phases 1-6 complete (all features implemented). Phase 7 (documentation cleanup) in progress.
 
+**Recent Updates (February 2026):**
+- ItemsTab component for viewing and managing hero equipment
+- DataViewerTab component for browsing all game content
+- Loot Box Demo section with random/rarity/hoard spawning modes
+- Custom Item Creator section for adding user-created items
+- Migration Guide compatibility updates (ammunition format, feature IDs, subraces)
+- Equipment display improvements with rarity color coding
+- useHeroEquipment, useLootBox, useItemCreator, useDataViewer hooks
+- EquipmentDetail component for comprehensive item display
+
 ---
 
 ## Built Components
 
-### Hooks (9 total)
+### Hooks (13 total)
 
 | Hook | Purpose | Known Issues |
 |------|---------|--------------|
@@ -54,8 +64,12 @@ Adding new features from updated playlist-data-engine:
 | useGamingPlatforms | Steam, Discord integration | Discord game activity not supported (platform limit) |
 | useCombatEngine | Turn-based D&D 5e combat | None |
 | useCharacterUpdater | Apply sessions, handle level-ups | None |
+| useHeroEquipment | Manage hero equipment (equip/unequip/drop) | None |
+| useLootBox | Spawn random equipment (random/rarity/hoard) | None |
+| useItemCreator | Create custom equipment items | None |
+| useDataViewer | Browse all game data (spells, skills, etc.) | None |
 
-### Stores (5 total)
+### Stores (6 total)
 
 | Store | State Managed | Persistence |
 |-------|---------------|-------------|
@@ -64,8 +78,9 @@ Adding new features from updated playlist-data-engine:
 | sessionStore | Session history, active session | LocalForage |
 | sensorStore | Permissions, environmental/gaming context | LocalForage |
 | appStore | Settings (API keys, audio config, XP rate) | LocalForage |
+| dataViewerStore | Data change tracking, update notifications | Memory |
 
-### Tab Components (10 total)
+### Tab Components (12 total)
 
 All tabs are **fully implemented** with raw JSON dump and status indicator:
 
@@ -80,6 +95,8 @@ All tabs are **fully implemented** with raw JSON dump and status indicator:
 | Environmental Sensors | EnvironmentalSensors | ✅ Complete |
 | Gaming Platforms | GamingPlatformSensors | ✅ Complete |
 | Combat Simulator | CombatEngine | ✅ Complete |
+| Items | EquipmentSpawnHelper, EquipmentEffectApplier | ✅ Complete |
+| Data Viewer | SpellRegistry, SkillRegistry, FeatureRegistry | ✅ Complete |
 | Settings | App configuration | ✅ Complete |
 
 ---
@@ -87,7 +104,8 @@ All tabs are **fully implemented** with raw JSON dump and status indicator:
 ## Known Issues
 
 ### Minor Bugs
-None - all known bugs fixed.
+- Custom items created in UI cannot be equipped (fixed in Phase 10)
+- Loot box "by rarity" mode was spawning only Plate Armor (fixed in Phase 10)
 
 ### Engine Limitations
 
@@ -132,13 +150,14 @@ cd /playlist-data-engine && npm run build
 ```
 workspace/
 ├── src/
-│   ├── App.tsx                    # Main app (62 lines)
+│   ├── App.tsx                    # Main app
+│   ├── main.tsx                   # Entry point with ExtensionManager init
 │   ├── components/
 │   │   ├── Layout/                # Header, Sidebar, MainLayout
-│   │   ├── Tabs/                  # All 10 tab components
-│   │   └── ui/                    # Shared UI components
-│   ├── hooks/                     # 9 React hooks
-│   ├── store/                     # 5 Zustand stores
+│   │   ├── Tabs/                  # All 12 tab components
+│   │   └── ui/                    # Shared UI components (including EquipmentDetail)
+│   ├── hooks/                     # 13 React hooks
+│   ├── store/                     # 6 Zustand stores
 │   └── utils/                     # Utilities (storage, logger, etc.)
 ├── docs/                          # All documentation
 ├── UPDATE_PLAN.md                 # Current implementation plan
