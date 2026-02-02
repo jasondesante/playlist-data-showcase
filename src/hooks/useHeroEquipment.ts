@@ -1,0 +1,473 @@
+import { useState, useCallback, useMemo } from 'react';
+import { EquipmentEffectApplier, EnhancedInventoryItem, EnhancedEquipment, EQUIPMENT_DATABASE } from 'playlist-data-engine';
+import { useCharacterStore } from '@/store/characterStore';
+import { logger } from '@/utils/logger';
+import type { CharacterSheet } from '@/types';
+
+/**
+ * Result type for equipment operations
+ */
+export interface EquipmentOperationResult {
+    success: boolean;
+    message?: string;
+    error?: string;
+}
+
+/**
+ * Interface for equipment operations hook
+ */
+export interface UseHeroEquipmentReturn {
+    /** The currently active character, or undefined if none selected */
+    activeCharacter: CharacterSheet | undefined;
+    /** Whether an equipment operation is in progress */
+    isLoading: boolean;
+    /** Equip an item by its instance ID */
+    equipItem: (itemId: string) => Promise<EquipmentOperationResult>;
+    /** Unequip an item by its instance ID */
+    unequipItem: (itemId: string) => Promise<EquipmentOperationResult>;
+    /** Remove an item from inventory entirely */
+    removeItem: (itemId: string, category: 'weapons' | 'armor' | 'items') => Promise<EquipmentOperationResult>;
+    /** Get total weight of all equipment */
+    getTotalWeight: () => number;
+    /** Get weight of only equipped items */
+    getEquippedWeight: () => number;
+    /** Get all equipment grouped by category */
+    getEquipmentByCategory: () => {
+        weapons: EnhancedInventoryItem[];
+        armor: EnhancedInventoryItem[];
+        items: EnhancedInventoryItem[];
+    };
+    /** Look up full equipment data from the database by name */
+    getEquipmentData: (itemName: string) => EnhancedEquipment | undefined;
+    /** Add an item to the character's inventory */
+    addItemToInventory: (item: EnhancedInventoryItem, equipmentData?: EnhancedEquipment, autoEquip?: boolean) => Promise<EquipmentOperationResult>;
+}
+
+/**
+ * React hook for managing a hero's equipment.
+ *
+ * This hook provides functionality to equip, unequip, and manage equipment
+ * for the currently active character. It uses the EquipmentEffectApplier
+ * from playlist-data-engine to handle equipment effects.
+ *
+ * @example
+ * ```tsx
+ * const {
+ *   activeCharacter,
+ *   equipItem,
+ *   unequipItem,
+ *   removeItem,
+ *   getTotalWeight,
+ *   getEquipmentByCategory
+ * } = useHeroEquipment();
+ *
+ * // Equip an item
+ * await equipItem('sword-instance-123');
+ *
+ * // Get equipment by category
+ * const { weapons, armor, items } = getEquipmentByCategory();
+ * ```
+ *
+ * @returns {UseHeroEquipmentReturn} Hook return object with equipment management functions
+ */
+export const useHeroEquipment = (): UseHeroEquipmentReturn => {
+    const { getActiveCharacter, updateCharacter } = useCharacterStore();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const activeCharacter = useMemo(() => {
+        return getActiveCharacter();
+    }, [getActiveCharacter]);
+
+    /**
+     * Update the character in the store after equipment changes
+     */
+    const updateCharacterEquipment = useCallback((updatedCharacter: CharacterSheet) => {
+        updateCharacter(updatedCharacter);
+    }, [updateCharacter]);
+
+    /**
+     * Look up full equipment data from the database by name
+     */
+    const getEquipmentData = useCallback((itemName: string): EnhancedEquipment | undefined => {
+        return EQUIPMENT_DATABASE[itemName];
+    }, []);
+
+    /**
+     * Find an equipment item by its instance ID across all categories
+     */
+    const findEquipmentById = useCallback((
+        character: CharacterSheet,
+        itemId: string
+    ): { item: EnhancedInventoryItem | undefined; category: 'weapons' | 'armor' | 'items' | null; index: number } => {
+        if (!character.equipment) {
+            return { item: undefined, category: null, index: -1 };
+        }
+
+        // Check weapons
+        const weaponIndex = character.equipment.weapons.findIndex(w => w.instanceId === itemId);
+        if (weaponIndex !== -1) {
+            return { item: character.equipment.weapons[weaponIndex], category: 'weapons', index: weaponIndex };
+        }
+
+        // Check armor
+        const armorIndex = character.equipment.armor.findIndex(a => a.instanceId === itemId);
+        if (armorIndex !== -1) {
+            return { item: character.equipment.armor[armorIndex], category: 'armor', index: armorIndex };
+        }
+
+        // Check items
+        const itemIndex = character.equipment.items.findIndex(i => i.instanceId === itemId);
+        if (itemIndex !== -1) {
+            return { item: character.equipment.items[itemIndex], category: 'items', index: itemIndex };
+        }
+
+        return { item: undefined, category: null, index: -1 };
+    }, []);
+
+    /**
+     * Equip an item by its instance ID
+     */
+    const equipItem = useCallback(async (itemId: string): Promise<EquipmentOperationResult> => {
+        if (!activeCharacter) {
+            return { success: false, error: 'No active character selected' };
+        }
+
+        setIsLoading(true);
+
+        try {
+            const { item, category } = findEquipmentById(activeCharacter, itemId);
+
+            if (!item || !category) {
+                return { success: false, error: `Item with ID "${itemId}" not found` };
+            }
+
+            if (item.equipped) {
+                return { success: false, error: `${item.name} is already equipped` };
+            }
+
+            // Look up full equipment data from database
+            const equipmentData = getEquipmentData(item.name);
+            if (!equipmentData) {
+                return { success: false, error: `Equipment data not found for "${item.name}"` };
+            }
+
+            // Create a copy of the character to modify
+            const updatedCharacter = { ...activeCharacter };
+
+            // Apply equipment effects using the engine
+            const result = EquipmentEffectApplier.equipItem(updatedCharacter, equipmentData, item.instanceId);
+
+            if (result.errors.length > 0) {
+                logger.warn('HeroEquipment', 'Equipment effect application had errors', result.errors);
+            }
+
+            // Update the equipped flag on the item
+            const equipmentCategory = updatedCharacter.equipment?.[category];
+            if (equipmentCategory) {
+                const itemIndex = equipmentCategory.findIndex((i: EnhancedInventoryItem) => i.instanceId === itemId);
+                if (itemIndex !== -1) {
+                    equipmentCategory[itemIndex] = { ...equipmentCategory[itemIndex], equipped: true };
+                }
+            }
+
+            // Update equipped weight
+            if (updatedCharacter.equipment) {
+                const itemWeight = (equipmentData.weight || 0) * (item.quantity || 1);
+                updatedCharacter.equipment.equippedWeight = (updatedCharacter.equipment.equippedWeight || 0) + itemWeight;
+            }
+
+            // Update the character in the store
+            updateCharacterEquipment(updatedCharacter);
+
+            logger.info('HeroEquipment', `Equipped ${item.name}`, { itemId, effectsApplied: result.count });
+
+            return {
+                success: true,
+                message: `Equipped ${item.name}`
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('HeroEquipment', 'Failed to equip item', { itemId, error: errorMessage });
+            return { success: false, error: errorMessage };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeCharacter, findEquipmentById, getEquipmentData, updateCharacterEquipment]);
+
+    /**
+     * Unequip an item by its instance ID
+     */
+    const unequipItem = useCallback(async (itemId: string): Promise<EquipmentOperationResult> => {
+        if (!activeCharacter) {
+            return { success: false, error: 'No active character selected' };
+        }
+
+        setIsLoading(true);
+
+        try {
+            const { item, category } = findEquipmentById(activeCharacter, itemId);
+
+            if (!item || !category) {
+                return { success: false, error: `Item with ID "${itemId}" not found` };
+            }
+
+            if (!item.equipped) {
+                return { success: false, error: `${item.name} is not equipped` };
+            }
+
+            // Look up full equipment data from database
+            const equipmentData = getEquipmentData(item.name);
+            if (!equipmentData) {
+                return { success: false, error: `Equipment data not found for "${item.name}"` };
+            }
+
+            // Create a copy of the character to modify
+            const updatedCharacter = { ...activeCharacter };
+
+            // Remove equipment effects using the engine
+            const result = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, item.instanceId);
+
+            if (result.errors.length > 0) {
+                logger.warn('HeroEquipment', 'Equipment effect removal had errors', result.errors);
+            }
+
+            // Update the equipped flag on the item
+            const equipmentCategory = updatedCharacter.equipment?.[category];
+            if (equipmentCategory) {
+                const itemIndex = equipmentCategory.findIndex((i: EnhancedInventoryItem) => i.instanceId === itemId);
+                if (itemIndex !== -1) {
+                    equipmentCategory[itemIndex] = { ...equipmentCategory[itemIndex], equipped: false };
+                }
+            }
+
+            // Update equipped weight
+            if (updatedCharacter.equipment) {
+                const itemWeight = (equipmentData.weight || 0) * (item.quantity || 1);
+                updatedCharacter.equipment.equippedWeight = Math.max(0, (updatedCharacter.equipment.equippedWeight || 0) - itemWeight);
+            }
+
+            // Update the character in the store
+            updateCharacterEquipment(updatedCharacter);
+
+            logger.info('HeroEquipment', `Unequipped ${item.name}`, { itemId, effectsRemoved: result.count });
+
+            return {
+                success: true,
+                message: `Unequipped ${item.name}`
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('HeroEquipment', 'Failed to unequip item', { itemId, error: errorMessage });
+            return { success: false, error: errorMessage };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeCharacter, findEquipmentById, getEquipmentData, updateCharacterEquipment]);
+
+    /**
+     * Remove an item from inventory entirely
+     */
+    const removeItem = useCallback(async (
+        itemId: string,
+        category: 'weapons' | 'armor' | 'items'
+    ): Promise<EquipmentOperationResult> => {
+        if (!activeCharacter) {
+            return { success: false, error: 'No active character selected' };
+        }
+
+        setIsLoading(true);
+
+        try {
+            const { item } = findEquipmentById(activeCharacter, itemId);
+
+            if (!item) {
+                return { success: false, error: `Item with ID "${itemId}" not found` };
+            }
+
+            // Look up full equipment data from database for weight calculation
+            const equipmentData = getEquipmentData(item.name);
+            const itemWeight = (equipmentData?.weight || 0) * (item.quantity || 1);
+
+            // Create a copy of the character to modify
+            const updatedCharacter = { ...activeCharacter };
+
+            // If item is equipped, unequip it first to remove effects
+            if (item.equipped) {
+                const unequipResult = EquipmentEffectApplier.unequipItem(updatedCharacter, item.name, item.instanceId);
+                if (unequipResult.errors.length > 0) {
+                    logger.warn('HeroEquipment', 'Unequip before removal had errors', unequipResult.errors);
+                }
+            }
+
+            // Remove the item from the appropriate category
+            if (updatedCharacter.equipment?.[category]) {
+                updatedCharacter.equipment[category] = updatedCharacter.equipment[category].filter(
+                    (i: EnhancedInventoryItem) => i.instanceId !== itemId
+                );
+            }
+
+            // Update weight calculations
+            if (updatedCharacter.equipment) {
+                updatedCharacter.equipment.totalWeight = Math.max(0, (updatedCharacter.equipment.totalWeight || 0) - itemWeight);
+
+                if (item.equipped) {
+                    updatedCharacter.equipment.equippedWeight = Math.max(0, (updatedCharacter.equipment.equippedWeight || 0) - itemWeight);
+                }
+            }
+
+            // Update the character in the store
+            updateCharacterEquipment(updatedCharacter);
+
+            logger.info('HeroEquipment', `Removed ${item.name} from inventory`, { itemId });
+
+            return {
+                success: true,
+                message: `Removed ${item.name} from inventory`
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('HeroEquipment', 'Failed to remove item', { itemId, error: errorMessage });
+            return { success: false, error: errorMessage };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeCharacter, findEquipmentById, getEquipmentData, updateCharacterEquipment]);
+
+    /**
+     * Get total weight of all equipment
+     */
+    const getTotalWeight = useCallback((): number => {
+        if (!activeCharacter?.equipment) {
+            return 0;
+        }
+        return activeCharacter.equipment.totalWeight || 0;
+    }, [activeCharacter]);
+
+    /**
+     * Get weight of only equipped items
+     */
+    const getEquippedWeight = useCallback((): number => {
+        if (!activeCharacter?.equipment) {
+            return 0;
+        }
+        return activeCharacter.equipment.equippedWeight || 0;
+    }, [activeCharacter]);
+
+    /**
+     * Get all equipment grouped by category
+     */
+    const getEquipmentByCategory = useCallback(() => {
+        if (!activeCharacter?.equipment) {
+            return { weapons: [], armor: [], items: [] };
+        }
+
+        return {
+            weapons: activeCharacter.equipment.weapons || [],
+            armor: activeCharacter.equipment.armor || [],
+            items: activeCharacter.equipment.items || []
+        };
+    }, [activeCharacter]);
+
+    /**
+     * Add an item to the character's inventory
+     */
+    const addItemToInventory = useCallback(async (
+        item: EnhancedInventoryItem,
+        equipmentData?: EnhancedEquipment,
+        autoEquip: boolean = false
+    ): Promise<EquipmentOperationResult> => {
+        if (!activeCharacter) {
+            return { success: false, error: 'No active character selected' };
+        }
+
+        setIsLoading(true);
+
+        try {
+            // Look up equipment data if not provided
+            const fullEquipmentData = equipmentData || getEquipmentData(item.name);
+            if (!fullEquipmentData) {
+                return { success: false, error: `Equipment data not found for "${item.name}"` };
+            }
+
+            // Create a copy of the character to modify
+            const updatedCharacter = { ...activeCharacter };
+
+            // Initialize equipment if needed
+            if (!updatedCharacter.equipment) {
+                updatedCharacter.equipment = {
+                    weapons: [],
+                    armor: [],
+                    items: [],
+                    totalWeight: 0,
+                    equippedWeight: 0
+                };
+            }
+
+            // Determine category based on equipment type
+            let category: 'weapons' | 'armor' | 'items';
+            if (fullEquipmentData.type === 'weapon') {
+                category = 'weapons';
+            } else if (fullEquipmentData.type === 'armor') {
+                category = 'armor';
+            } else {
+                category = 'items';
+            }
+
+            // Add the item to the appropriate category
+            const itemToAdd: EnhancedInventoryItem = {
+                ...item,
+                equipped: autoEquip,
+                instanceId: item.instanceId || `${item.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                quantity: item.quantity || 1
+            };
+
+            updatedCharacter.equipment[category].push(itemToAdd);
+
+            // Update weight calculations
+            const itemWeight = (fullEquipmentData.weight || 0) * (itemToAdd.quantity || 1);
+            updatedCharacter.equipment.totalWeight = (updatedCharacter.equipment.totalWeight || 0) + itemWeight;
+
+            // If auto-equipping, apply effects
+            if (autoEquip) {
+                const result = EquipmentEffectApplier.equipItem(updatedCharacter, fullEquipmentData, itemToAdd.instanceId);
+                if (result.errors.length > 0) {
+                    logger.warn('HeroEquipment', 'Auto-equip had errors', result.errors);
+                }
+                updatedCharacter.equipment.equippedWeight = (updatedCharacter.equipment.equippedWeight || 0) + itemWeight;
+            }
+
+            // Update the character in the store
+            updateCharacterEquipment(updatedCharacter);
+
+            logger.info('HeroEquipment', `Added ${item.name} to inventory`, {
+                itemId: itemToAdd.instanceId,
+                autoEquip,
+                category
+            });
+
+            return {
+                success: true,
+                message: `Added ${item.name} to ${category}`
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('HeroEquipment', 'Failed to add item', { itemName: item.name, error: errorMessage });
+            return { success: false, error: errorMessage };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeCharacter, getEquipmentData, updateCharacterEquipment]);
+
+    return {
+        activeCharacter,
+        isLoading,
+        equipItem,
+        unequipItem,
+        removeItem,
+        getTotalWeight,
+        getEquippedWeight,
+        getEquipmentByCategory,
+        getEquipmentData,
+        addItemToInventory
+    };
+};

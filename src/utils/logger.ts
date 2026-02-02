@@ -20,7 +20,8 @@ type LogCategory =
     | 'Store'
     | 'AutoCharacterSetup'
     | 'SessionCompletion'
-    | 'FeatureNames';
+    | 'FeatureNames'
+    | 'HeroEquipment';
 
 
 

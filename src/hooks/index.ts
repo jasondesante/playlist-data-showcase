@@ -11,3 +11,4 @@ export * from './useDebounce';
 export * from './useAutoCharacterSetup';
 export * from './useSessionCompletion';
 export * from './useFeatureNames';
+export * from './useHeroEquipment';

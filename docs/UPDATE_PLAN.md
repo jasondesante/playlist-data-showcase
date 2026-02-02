@@ -248,28 +248,63 @@ Updated three components to display subrace information:
 ## Phase 2: Items Tab - Current Hero Equipment Display
 
 ### Task 2.1: Create useHeroEquipment hook
-- [ ] Create src/hooks/useHeroEquipment.ts
-- [ ] Import necessary types from playlist-data-engine (EnhancedEquipment, EquipmentEffectApplier)
-- [ ] Import useCharacterStore to get active character
-- [ ] Define interface for equipment operations:
-  - [ ] Equip/Unequip item functions
-  - [ ] Drop/remove item function
-  - [ ] Get total weight function
-  - [ ] Get equipped weight function
-- [ ] Implement equipItem(itemId) function:
-  - [ ] Finds item in character equipment
-  - [ ] Sets equipped status to true
-  - [ ] Updates character store
-  - [ ] Returns success/failure
-- [ ] Implement unequipItem(itemId) function:
-  - [ ] Sets equipped status to false
-  - [ ] Updates character store
-- [ ] Implement removeItem(itemId) function:
-  - [ ] Removes item from character inventory
-  - [ ] Updates character store
-- [ ] Add loading states for operations
-- [ ] Add error handling with logger
-- [ ] Export hook interface
+- [x] Create src/hooks/useHeroEquipment.ts
+- [x] Import necessary types from playlist-data-engine (EnhancedEquipment, EnhancedInventoryItem, EquipmentEffectApplier, EQUIPMENT_DATABASE)
+- [x] Import useCharacterStore to get active character
+- [x] Define interface for equipment operations:
+  - [x] Equip/Unequip item functions
+  - [x] Drop/remove item function
+  - [x] Get total weight function
+  - [x] Get equipped weight function
+  - [x] Get equipment data lookup function
+- [x] Implement equipItem(itemId) function:
+  - [x] Finds item in character equipment by instanceId
+  - [x] Looks up full equipment data from EQUIPMENT_DATABASE
+  - [x] Applies equipment effects via EquipmentEffectApplier.equipItem()
+  - [x] Sets equipped status to true
+  - [x] Updates equipped weight
+  - [x] Updates character store
+  - [x] Returns success/failure with message
+- [x] Implement unequipItem(itemId) function:
+  - [x] Finds item by instanceId
+  - [x] Removes equipment effects via EquipmentEffectApplier.unequipItem()
+  - [x] Sets equipped status to false
+  - [x] Updates equipped weight
+  - [x] Updates character store
+- [x] Implement removeItem(itemId, category) function:
+  - [x] Finds item by instanceId
+  - [x] Unequips first if equipped (to remove effects)
+  - [x] Removes item from character inventory array
+  - [x] Updates total and equipped weight
+  - [x] Updates character store
+- [x] Implement addItemToInventory(item, equipmentData?, autoEquip?) function:
+  - [x] Determines category from equipment type
+  - [x] Generates unique instanceId if not provided
+  - [x] Adds to appropriate equipment array
+  - [x] Updates total weight
+  - [x] Auto-equips if requested (applies effects)
+- [x] Add loading states for operations (isLoading flag)
+- [x] Add error handling with logger (HeroEquipment category)
+- [x] Export hook interface (UseHeroEquipmentReturn)
+- [x] Added 'HeroEquipment' to LogCategory in logger.ts
+- [x] Exported from hooks/index.ts
+
+**IMPLEMENTATION SUMMARY:**
+Created a comprehensive hook for managing hero equipment with the following features:
+- Uses `EQUIPMENT_DATABASE` to look up full equipment data by name (since inventory items only store name, quantity, equipped status, and instanceId)
+- Integrates with `EquipmentEffectApplier` to properly apply/remove equipment effects when equipping/unequipping
+- Tracks loading state for async operations
+- Provides detailed logging via the logger utility
+- Returns operation results with success/failure status and messages
+- Properly manages weight calculations (total and equipped)
+- Supports adding items with auto-equip option
+
+**Files Created:**
+- `src/hooks/useHeroEquipment.ts` - Main hook implementation
+
+**Files Modified:**
+- `src/utils/logger.ts` - Added 'HeroEquipment' to LogCategory
+- `src/hooks/index.ts` - Exported the new hook
 
 ### Task 2.2: Create ItemsTab component structure
 - [ ] Create src/components/Tabs/ItemsTab.tsx
