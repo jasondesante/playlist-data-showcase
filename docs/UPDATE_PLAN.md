@@ -1959,7 +1959,77 @@ User clicks "Set Active" on Character B in PartyTab
 
 **Data Viewer Updates When Items Are Created:** VERIFIED WORKING - Bug fixed and verified
 
-- [ ] Verify ammunition displays correctly with new format
+- [x] Verify ammunition displays correctly with new format
+
+**VERIFICATION SUMMARY (2026-02-02):**
+
+**Code Review and Testing Findings:**
+
+1. **Engine Test Results** (test_ammunition_verification.mjs):
+   - ✅ **Ranger gets**: Name: "Arrow", Quantity: 20 (correct format)
+   - ✅ **Rogue gets**: Name: "Bolt", Quantity: 20 (correct format)
+   - ✅ **Weight calculation**: 20 arrows × 0.05 lb = 1.0 lb (CORRECT)
+   - ✅ **Weight calculation**: 20 bolts × 0.075 lb = 1.5 lb (CORRECT)
+   - ✅ **No old format**: Neither "Arrows (20)" nor "Bolts (20)" found
+   - ✅ **Fighter**: Correctly has no ammunition (not expected in starting gear)
+
+2. **Frontend Constants** (Verified across all three files):
+   - **CharacterGenTab.tsx**: AMMUNITION_TYPES = { Arrow: 0.05, Bolt: 0.075 }
+   - **ItemsTab.tsx**: AMMUNITION_TYPES = { Arrow: 0.05, Bolt: 0.075 }
+   - **PartyTab.tsx**: AMMUNITION_TYPES = { Arrow: 0.05, Bolt: 0.075 }
+   - All three files have consistent constants
+
+3. **Display Format Verification**:
+   - ✅ **CharacterGenTab** (lines 976-1015):
+     - isAmmunition() helper identifies Arrow/Bolt items
+     - Target icon displays for ammunition
+     - Shows "Arrow ×20" with quantity display
+     - Shows weight in parentheses: "(1 lb)"
+     - Tooltip: "0.05 lb each × 20 = 1 lb total"
+     - Orange/yellow gradient background for ammunition
+     - Special styling for equipped ammunition (teal/orange mix)
+
+   - ✅ **ItemsTab** (lines 120-151, 360-415):
+     - isAmmunition() helper identifies Arrow/Bolt items
+     - getAmmunitionWeightDisplay() returns "1.00 lb" format
+     - Target icon displays for ammunition
+     - Shows weight with tooltip: "0.05 lb each × 20 = 1.00 lb total"
+     - Orange/yellow gradient background for ammunition
+
+   - ✅ **PartyTab** (lines 720-741):
+     - isAmmunition() helper identifies Arrow/Bolt items
+     - Target icon displays for ammunition
+     - Shows "Arrow ×20" with quantity display
+     - Shows weight in parentheses: "(1 lb)"
+     - Tooltip: "0.05 lb each × 20 = 1 lb total"
+
+4. **CSS Styling Verified**:
+   - **CharacterGenTab.css** (lines 1410-1444): Ammunition section with gradient backgrounds, icon styling, weight display
+   - **ItemsTab.css** (lines 230-279): Ammunition styling matching CharacterGenTab
+   - **PartyTab.css** (lines 1220-1254): Ammunition styling matching other tabs
+
+**Conclusion:**
+- ✅ Ammunition format is correct ("Arrow" and "Bolt" as individual items with quantity 20)
+- ✅ Weight calculations are accurate (0.05 lb per Arrow, 0.075 lb per Bolt)
+- ✅ UI display is consistent across all three tabs (CharacterGenTab, ItemsTab, PartyTab)
+- ✅ Visual styling with Target icon and orange/yellow gradient is applied
+- ✅ Tooltips show detailed weight calculation breakdown
+
+**Files Created:**
+- `/workspace/test_ammunition_verification.mjs` - Comprehensive test script for ammunition format
+
+**Files Verified:**
+- `src/components/Tabs/CharacterGenTab.tsx` - Ammunition display and constants
+- `src/components/Tabs/ItemsTab.tsx` - Ammunition display and constants
+- `src/components/Tabs/PartyTab.tsx` - Ammunition display and constants
+- `src/components/Tabs/CharacterGenTab.css` - Ammunition styling
+- `src/components/Tabs/ItemsTab.css` - Ammunition styling
+- `src/components/Tabs/PartyTab.css` - Ammunition styling
+
+**Build Status:** ✅ All builds pass successfully with no TypeScript errors
+
+**Verify Ammunition Displays Correctly With New Format:** VERIFIED WORKING
+
 - [ ] Verify feature names resolve correctly from IDs
 - [ ] Verify subraces display correctly in character sheets
 
