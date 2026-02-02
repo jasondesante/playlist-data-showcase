@@ -1699,7 +1699,71 @@ Updated `src/hooks/useDataViewer.ts` to use ExtensionManager for equipment data 
 
 **Tab Switching:** VERIFIED WORKING via code review
 
-- [ ] Verify created items appear in ItemsTab immediately
+- [x] Verify created items appear in ItemsTab immediately
+
+**VERIFICATION SUMMARY (2026-02-02):**
+
+**Code Review Findings:**
+
+1. **Item Creation Flow** (useItemCreator.ts lines 443-584):
+   - ✅ `addItemToCharacter` function creates inventory item with unique instanceId (line 483-488)
+   - ✅ Adds item to appropriate equipment category (weapons/armor/items) based on equipment type (line 505-515)
+   - ✅ Updates weight calculations (totalWeight and equippedWeight if auto-equip) (line 517-528)
+   - ✅ Calls `updateCharacter(updatedCharacter)` to update the store (line 531)
+   - ✅ Calls `notifyDataChanged()` for Data Viewer live updates (line 534)
+   - ✅ Registers custom equipment in local cache and ExtensionManager (lines 462-480)
+
+2. **Character Store Reactivity** (characterStore.ts lines 254-265):
+   - ✅ `updateCharacter` uses zustand's `set()` to update the `characters` array (line 261-265)
+   - ✅ Maps over characters array and replaces character matching by seed
+   - ✅ This triggers re-renders in all components subscribed to the store
+
+3. **Equipment Display Reactivity** (useHeroEquipment.ts lines 75-134):
+   - ✅ Hook subscribes to `useCharacterStore()` (line 75)
+   - ✅ `rawActiveCharacter` useMemo depends on `characters` and `activeCharacterId` (lines 82-84)
+   - ✅ When `characters` changes, `rawActiveCharacter` recomputes
+   - ✅ `activeCharacter` useMemo depends on `rawActiveCharacter` (lines 129-134)
+   - ✅ When `rawActiveCharacter` changes, `activeCharacter` recomputes
+
+4. **ItemsTab Re-rendering** (ItemsTab.tsx lines 214-216):
+   - ✅ `equipment` useMemo depends on `getEquipmentByCategory` and `activeCharacter?.equipment`
+   - ✅ `getEquipmentByCategory` useCallback depends on `activeCharacter` (lines 450-460)
+   - ✅ When `activeCharacter` changes (due to store update), equipment list re-renders
+
+**Integration Flow Verified:**
+```
+User clicks "Create & Add to Hero"
+  → ItemsTab.handleCreateItem()
+  → useItemCreator.createAndAddItem()
+  → useItemCreator.addItemToCharacter()
+  → updateCharacter(updatedCharacter) [zustand store update]
+  → useHeroEquipment re-renders (subscribes to characters)
+  → rawActiveCharacter recomputes (useMemo depends on characters)
+  → activeCharacter recomputes (useMemo depends on rawActiveCharacter)
+  → equipment useMemo recomputes (depends on activeCharacter?.equipment)
+  → ItemsTab re-renders with new equipment in the list
+```
+
+**React State Chain:**
+1. zustand store (`characters` array) updates
+2. `useCharacterStore()` hook triggers re-render
+3. `useHeroEquipment` hook receives new `characters`
+4. `rawActiveCharacter` useMemo recomputes (dependency: `characters`)
+5. `activeCharacter` useMemo recomputes (dependency: `rawActiveCharacter`)
+6. `getEquipmentByCategory` useCallback recomputes (dependency: `activeCharacter`)
+7. `equipment` useMemo in ItemsTab recomputes (dependency: `activeCharacter?.equipment`)
+8. ItemsTab component re-renders with updated equipment list
+
+**Build Status:** ✅ Build passes successfully with no TypeScript errors
+
+**Files Verified:**
+- `src/hooks/useItemCreator.ts` - Item creation and character update logic
+- `src/store/characterStore.ts` - Zustand store with reactive updates
+- `src/hooks/useHeroEquipment.ts` - Equipment display hook with proper dependencies
+- `src/components/Tabs/ItemsTab.tsx` - ItemsTab with reactive equipment display
+
+**Created Items Appear in ItemsTab Immediately:** VERIFIED WORKING via code review
+
 - [ ] Verify spawned items persist correctly
 - [ ] Test with multiple characters
 - [ ] Verify equipment effects are applied correctly
