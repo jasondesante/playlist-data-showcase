@@ -1162,15 +1162,36 @@ Updated IMPLEMENTATION_STATUS.md with all new components, hooks, and features:
 - `docs/IMPLEMENTATION_STATUS.md` - Complete documentation update
 
 ### Task 7.2: Add inline documentation
-- [ ] Add JSDoc to useHeroEquipment hook
-- [ ] Add JSDoc to useLootBox hook
-- [ ] Add JSDoc to useItemCreator hook
-- [ ] Add JSDoc to useDataViewer hook
-- [ ] Add component documentation to ItemsTab
-- [ ] Add component documentation to DataViewerTab
-- [ ] Document ammunition format change handling
-- [ ] Document feature ID resolution logic
-- [ ] Document any non-obvious logic
+- [x] Add JSDoc to useHeroEquipment hook
+- [x] Add JSDoc to useLootBox hook
+- [x] Add JSDoc to useItemCreator hook
+- [x] Add JSDoc to useDataViewer hook
+- [x] Add component documentation to ItemsTab
+- [x] Add component documentation to DataViewerTab
+- [x] Document ammunition format change handling
+- [x] Document feature ID resolution logic
+- [x] Document any non-obvious logic
+
+**IMPLEMENTATION SUMMARY:**
+All inline documentation was already present in the codebase:
+
+**Hooks with JSDoc:**
+- `useHeroEquipment.ts` - Comprehensive JSDoc with examples, interface documentation for all return types
+- `useLootBox.ts` - Full JSDoc documentation with usage examples
+- `useItemCreator.ts` - Complete JSDoc with form data interfaces and examples
+- `useDataViewer.ts` - Full documentation with data category types and filtering functions
+- `useFeatureNames.ts` - Feature ID resolution documentation with caching logic explained
+
+**Component Documentation:**
+- `ItemsTab.tsx` - Component-level JSDoc describing three main sections (Equipment, Loot Box, Custom Item Creator)
+- `DataViewerTab.tsx` - Comprehensive component documentation with features list
+
+**Special Logic Documentation:**
+- Ammunition format change handling: Documented in code comments in CharacterGenTab.tsx and ItemsTab.tsx with Migration Guide reference
+- Feature ID resolution logic: Fully documented in useFeatureNames.ts hook with caching explanation
+- Non-obvious logic: Helper functions like `isAmmunition()`, `getAmmunitionWeight()`, `formatIdToDisplayName()` all have JSDoc comments
+
+**Build Status:** All builds pass successfully with no TypeScript errors.
 
 ---
 
