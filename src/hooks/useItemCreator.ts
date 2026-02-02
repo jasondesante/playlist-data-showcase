@@ -113,15 +113,29 @@ export function initializeCustomEquipment(): void {
             return;
         }
 
-        logger.info('ItemCreator', `Initializing ${customItems.length} custom equipment items in ExtensionManager`);
+        // Check what's already in ExtensionManager to prevent duplicates
+        const existingEquipment = extensionManager.getCustom('equipment') as EnhancedEquipment[];
+        const existingNames = existingEquipment.map(e => e.name);
+
+        // Only register items that aren't already in ExtensionManager
+        const newItems = customItems.filter(item => !existingNames.includes(item.name));
+        if (newItems.length === 0) {
+            logger.debug('ItemCreator', 'All custom items already registered, skipping');
+            return;
+        }
+
+        const duplicates = customItems.length - newItems.length;
+        if (duplicates > 0) {
+            logger.debug('ItemCreator', `Skipping ${duplicates} items already registered`);
+        }
 
         // Register all custom items with ExtensionManager with validation enabled
         // Uses default 'relative' mode to preserve items registered by main.tsx (magic items)
         // The module-level flag in useCustomEquipmentInitializer prevents duplicate registration
         // Custom items created through the UI should always be valid
-        extensionManager.register('equipment', customItems, { validate: true });
+        extensionManager.register('equipment', newItems, { validate: true });
 
-        logger.info('ItemCreator', `Successfully registered ${customItems.length} custom equipment items`);
+        logger.info('ItemCreator', `Successfully registered ${newItems.length} custom equipment items`);
     } catch (error) {
         const errorMessage = String(error);
         logger.error('ItemCreator', 'Failed to initialize custom equipment', { error: errorMessage });
