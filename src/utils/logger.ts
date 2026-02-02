@@ -19,7 +19,8 @@ type LogCategory =
     | 'Settings'
     | 'Store'
     | 'AutoCharacterSetup'
-    | 'SessionCompletion';
+    | 'SessionCompletion'
+    | 'FeatureNames';
 
 
 

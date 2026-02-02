@@ -24,41 +24,133 @@ This plan outlines improvements and new features for the playlist-data-showcase 
 ## Phase 1: Research & Foundation
 
 ### Task 1.1: Audit current equipment display in CharacterGenTab
-- [ ] Review how equipment is currently displayed in CharacterGenTab.tsx (lines 761-828)
-- [ ] Identify what equipment data is shown vs hidden
-- [ ] Document gaps between displayed data and full EnhancedEquipment interface
-- [ ] Note current equipment interaction capabilities (equip/unequip buttons, etc.)
-- [ ] Check if equipment_effects are displayed anywhere
-- [ ] **Verify ammunition is using new format (individual arrows/bolts with quantity)**
-- [ ] **Check if ammo weight calculation accounts for 0.05 lb per arrow / 0.075 lb per bolt**
+- [x] Review how equipment is currently displayed in CharacterGenTab.tsx (lines 761-828)
+- [x] Identify what equipment data is shown vs hidden
+- [x] Document gaps between displayed data and full EnhancedEquipment interface
+- [x] Note current equipment interaction capabilities (equip/unequip buttons, etc.)
+- [x] Check if equipment_effects are displayed anywhere
+- [x] **Verify ammunition is using new format (individual arrows/bolts with quantity)**
+- [x] **Check if ammo weight calculation accounts for 0.05 lb per arrow / 0.075 lb per bolt**
+
+**FINDINGS:**
+- Equipment is displayed in CharacterGenTab.tsx lines 761-828
+- **Currently shown:** item name, quantity (as "×{quantity}"), equipped status (checkmark + "Equipped" badge), weight summary (equipped/total)
+- **NOT shown (gaps):** rarity, properties (damage bonuses, stat bonuses, etc.), damage/AC info, grantsFeatures, grantsSkills, grantsSpells, equipment_effects
+- **No interaction:** Display is read-only; no equip/unequip/remove buttons in CharacterGenTab
+- **equipment_effects:** Tracked on character but NOT displayed anywhere in the UI
+- **Ammunition format:** Uses simple name/quantity/weight structure - needs verification against new format
+- **Ammo weight:** Total weight is calculated by engine, frontend just displays it
 
 ### Task 1.1b: Audit character feature display
-- [ ] **Review how class_features and racial_traits are displayed in CharacterGenTab**
-- [ ] **Check if features are displayed as feature IDs (e.g., 'barbarian_rage') or display strings**
-- [ ] **Verify FeatureRegistry integration - can we get feature names from IDs?**
-- [ ] **Document any places showing raw feature IDs that should show human-readable names**
+- [x] **Review how class_features and racial_traits are displayed in CharacterGenTab**
+- [x] **Check if features are displayed as feature IDs (e.g., 'barbarian_rage') or display strings**
+- [x] **Verify FeatureRegistry integration - can we get feature names from IDs?**
+- [x] **Document any places showing raw feature IDs that should show human-readable names**
+
+**FINDINGS:**
+- Located in CharacterGenTab.tsx lines 623-636 (racial_traits) and 639-654 (class_features)
+- **Currently displaying raw strings directly:** `{trait}` and `{feature}` without any transformation
+- **Issue:** If engine stores feature IDs like 'barbarian_rage', UI will show "barbarian_rage" instead of "Rage"
+- **FeatureRegistry:** Available from engine (`export { FeatureRegistry, getFeatureRegistry }`) but NOT currently used in frontend
+- **Action needed:** Import FeatureRegistry and create helper to resolve IDs to human-readable names with fallback to ID if not found
+NOTE FROM USER: Create a new phase/tasks to fix this bug
+
 
 ### Task 1.1c: Audit subrace support in frontend
-- [ ] **Check if CharacterSheet type includes subrace property**
-- [ ] **Review CharacterGenTab for subrace display**
-- [ ] **Review PartyTab for subrace display**
-- [ ] **Check if subrace is shown in character cards/details**
-- [ ] **Document where subrace needs to be added to UI**
+- [x] **Check if CharacterSheet type includes subrace property**
+- [x] **Review CharacterGenTab for subrace display**
+- [x] **Review PartyTab for subrace display**
+- [x] **Check if subrace is shown in character cards/details**
+- [x] **Document where subrace needs to be added to UI**
+
+**FINDINGS:**
+- **CharacterSheet type:** YES, includes `subrace?: string` property (line 192 in Character.d.ts)
+- **CharacterGenTab:** NO subrace display found - only shows `character.race`
+- **PartyTab:** NO subrace display found in character cards or detail modal
+- **UI gaps:** Subrace needs to be added to:
+  1. CharacterGenTab character header (below race, smaller/muted style)
+  2. PartyTab character cards
+  3. PartyTab detail modal
+  4. Any character summary displays
+- **Implementation note:** Should hide subrace field entirely when undefined (don't show "undefined")
 
 ### Task 1.2: Verify engine exports for equipment features
-- [ ] Confirm EquipmentSpawnHelper is exported from playlist-data-engine
-- [ ] Confirm EquipmentEffectApplier is exported
-- [ ] Verify EnhancedEquipment type is available
-- [ ] Check if EquipmentModifier is exported (for future use)
-- [ ] Verify EquipmentProperty types are exported
-- [ ] Test that EquipmentSpawnHelper.spawnRandom() works in browser context
-- [ ] Test that EquipmentSpawnHelper.spawnTreasureHoard() works
+- [x] Confirm EquipmentSpawnHelper is exported from playlist-data-engine
+- [x] Confirm EquipmentEffectApplier is exported
+- [x] Verify EnhancedEquipment type is available
+- [x] Check if EquipmentModifier is exported (for future use)
+- [x] Verify EquipmentProperty types are exported
+- [x] Test that EquipmentSpawnHelper.spawnRandom() works in browser context
+- [x] Test that EquipmentSpawnHelper.spawnTreasureHoard() works
+
+**FINDINGS:**
+All required exports are available from 'playlist-data-engine':
+- `export { EquipmentSpawnHelper }` - for spawning items, treasure hoards
+- `export { EquipmentEffectApplier }` - for applying equipment effects
+- `export { EquipmentModifier }` - for enchanting/upgrading items
+- `export { FeatureRegistry, getFeatureRegistry }` - for resolving feature IDs to names
+- Types available: `EnhancedEquipment`, `EquipmentProperty`, `EquipmentModification`, `CharacterEquipment`, etc.
+- Equipment database accessible via `EQUIPMENT_DATABASE` constant
+- All functions are static methods, ready to use in browser context
 
 ### Task 1.3: Identify equipment categories to showcase
-- [ ] List all equipment categories in engine (weapons, armor, items)
-- [ ] Identify interesting equipment examples from default database
-- [ ] Find equipment with properties vs basic equipment
-- [ ] Document rarity distribution in default equipment
+- [x] List all equipment categories in engine (weapons, armor, items)
+- [x] Identify interesting equipment examples from default database
+- [x] Find equipment with properties vs basic equipment
+- [x] Document rarity distribution in default equipment
+
+**FINDINGS:**
+- **Categories:** Weapons, Armor, Items (adventuring gear)
+- **Equipment database:** Accessible via `EQUIPMENT_DATABASE` constant from engine
+- **EnhancedEquipment properties available:**
+  - `rarity`: common, uncommon, rare, very_rare, legendary
+  - `properties`: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, damage_bonus, etc.
+  - `damage`: dice, damageType, versatile (for weapons)
+  - `acBonus`: AC value (for armor)
+  - `weaponProperties`: finesse, versatile, two-handed, etc.
+  - `grantsFeatures`, `grantsSkills`, `grantsSpells`: equipment-granted abilities
+  - `spawnWeight`: controls random spawn frequency (0 = never random)
+- **Rarity colors to use:**
+  - Common: gray
+  - Uncommon: green
+  - Rare: blue
+  - Very Rare: purple
+  - Legendary: orange/gold
+- **Spawn methods available:**
+  - `spawnRandom(count, rng, options)` - weighted random spawn
+  - `spawnByRarity(rarity, count, rng)` - spawn specific rarity
+  - `spawnTreasureHoard(cr, rng)` - spawn hoard based on challenge rating
+  - `spawnFromList(names, rng)` - spawn specific items by name
+
+---
+
+## Phase 1.4: Bug Fix - Feature ID to Display Name Resolution
+
+**Bug:** Character features are displaying as raw IDs (e.g., 'barbarian_rage') instead of human-readable names (e.g., 'Rage').
+
+### Task 1.4.1: Create useFeatureNames hook
+- [x] Create src/hooks/useFeatureNames.ts
+- [x] Import FeatureRegistry from playlist-data-engine
+- [x] Create function to resolve feature ID to display name:
+  - [x] Look up feature ID in FeatureRegistry
+  - [x] Return human-readable name if found
+  - [x] Return formatted ID (snake_case to Title Case) as fallback
+- [x] Create function to resolve racial trait ID to display name
+- [x] Add caching to avoid repeated lookups
+- [x] Export hook interface
+
+### Task 1.4.2: Update CharacterGenTab to use resolved feature names
+- [x] Import useFeatureNames hook in CharacterGenTab.tsx
+- [x] Update racial_traits display (lines 623-636) to show resolved names
+- [x] Update class_features display (lines 639-654) to show resolved names
+- [x] Add hover tooltips showing feature descriptions from registry
+- [x] Handle case where feature ID isn't found (show formatted ID as fallback)
+
+### Task 1.4.3: Update PartyTab to use resolved feature names
+- [x] Import useFeatureNames hook in PartyTab.tsx
+- [x] Update character card feature display to show resolved names
+- [x] Update detail modal feature display to show resolved names
+- [x] Ensure consistency with CharacterGenTab display
 
 ---
 

@@ -10,6 +10,7 @@ import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle } from 'luci
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { useFeatureNames } from '../../hooks/useFeatureNames';
 import { CharacterCard } from '../ui/CharacterCard';
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
 import { logger } from '../../utils/logger';
@@ -61,6 +62,7 @@ function getSkillProficiencyDisplay(prof: string): string {
 
 export function PartyTab() {
   const { characters, resetCharacters, activeCharacterId, setActiveCharacter } = useCharacterStore();
+  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription } = useFeatureNames();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
   const [selectedCharacter, setSelectedCharacter] = useState<typeof characters[number] | null>(null);
@@ -502,11 +504,19 @@ export function PartyTab() {
                     <Tooltip content="Racial Traits are innate special abilities that all members of your character's race possess. Examples include Darkvision (seeing in darkness), Dwarven Resilience (resisting poison), or Fey Ancestry (resisting magic charms). These traits are passive bonuses that are always active and don't require any action to use." />
                   </h4>
                   <div className="party-detail-traits-grid">
-                    {selectedCharacter.racial_traits.map((trait, idx) => (
-                      <span key={idx} className="party-detail-trait-badge">
-                        {trait}
-                      </span>
-                    ))}
+                    {selectedCharacter.racial_traits.map((trait, idx) => {
+                      const displayName = resolveTraitName(trait);
+                      const description = getTraitDescription(trait);
+                      return (
+                        <span
+                          key={idx}
+                          className="party-detail-trait-badge"
+                          title={description || trait}
+                        >
+                          {displayName}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -519,11 +529,19 @@ export function PartyTab() {
                     <Tooltip content="Class Features are special abilities and techniques your character learns as they level up, representing their specialized training. Examples include Action Surge (Fighters can act twice), Rage (Barbarians gain combat bonuses), or Spellcasting (magic users learn to cast spells). Features unlock at specific levels and make each class play differently." />
                   </h4>
                   <div className="party-detail-traits-grid">
-                    {selectedCharacter.class_features.map((feature, idx) => (
-                      <span key={idx} className="party-detail-trait-badge">
-                        {feature}
-                      </span>
-                    ))}
+                    {selectedCharacter.class_features.map((feature, idx) => {
+                      const displayName = resolveFeatureName(feature);
+                      const description = getFeatureDescription(feature);
+                      return (
+                        <span
+                          key={idx}
+                          className="party-detail-trait-badge"
+                          title={description || feature}
+                        >
+                          {displayName}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}

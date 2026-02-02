@@ -4,6 +4,8 @@ Pick the highest priority list of tasks and then pick the first unchecked task i
 
 Do that one task only. Don't assume the feature is built. If the feature is missing something, it's up to you to identify that and build it.  Do all the work to make that one single checkbox task complete. Write a little summary of your findings and update the checklist.
 
+Each task is named something like task 1.1 or task 1.2. Those are two separate tasks, not parts of one task.
+
 I might add new stuff to the docs/UPDATE_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
 
 Take your time doing the tasks, be thorough and do your research. You have all the time in the world.

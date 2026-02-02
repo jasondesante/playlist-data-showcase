@@ -3,6 +3,7 @@ import './CharacterGenTab.css';
 import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
+import { useFeatureNames } from '../../hooks/useFeatureNames';
 import { useCharacterStore } from '../../store/characterStore';
 import { validateCharacterSheet } from '../../schemas/characterSchema';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -28,6 +29,7 @@ export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
   const { addCharacter, getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
+  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription } = useFeatureNames();
 
   // State for import/export
   const [importError, setImportError] = useState<string | null>(null);
@@ -627,11 +629,19 @@ export function CharacterGenTab() {
                 <Tooltip content="Racial Traits are innate special abilities that all members of your character's race possess. Examples include Darkvision (seeing in darkness), Dwarven Resilience (resisting poison), or Fey Ancestry (resisting magic charms). These traits are passive bonuses that are always active and don't require any action to use." />
               </div>
               <div className="character-traits-grid">
-                {character.racial_traits.map((trait, idx) => (
-                  <span key={idx} className="character-trait-badge">
-                    {trait}
-                  </span>
-                ))}
+                {character.racial_traits.map((trait, idx) => {
+                  const displayName = resolveTraitName(trait);
+                  const description = getTraitDescription(trait);
+                  return (
+                    <span
+                      key={idx}
+                      className="character-trait-badge"
+                      title={description || trait}
+                    >
+                      {displayName}
+                    </span>
+                  );
+                })}
               </div>
             </Card>
           )}
@@ -644,11 +654,19 @@ export function CharacterGenTab() {
                 <Tooltip content="Class Features are special abilities and techniques your character learns as they level up, representing their specialized training. Examples include Action Surge (Fighters can act twice), Rage (Barbarians gain combat bonuses), or Spellcasting (magic users learn to cast spells). Features unlock at specific levels and make each class play differently." />
               </div>
               <div className="character-traits-grid">
-                {character.class_features.map((feature, idx) => (
-                  <span key={idx} className="character-trait-badge">
-                    {feature}
-                  </span>
-                ))}
+                {character.class_features.map((feature, idx) => {
+                  const displayName = resolveFeatureName(feature);
+                  const description = getFeatureDescription(feature);
+                  return (
+                    <span
+                      key={idx}
+                      className="character-trait-badge"
+                      title={description || feature}
+                    >
+                      {displayName}
+                    </span>
+                  );
+                })}
               </div>
             </Card>
           )}
