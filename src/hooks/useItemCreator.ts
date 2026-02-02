@@ -85,6 +85,40 @@ export function restoreCustomEquipmentFromExtensionManager(): void {
 }
 
 /**
+ * Initialize custom equipment by registering all items from localStorage cache
+ * into ExtensionManager. This should be called on app startup.
+ */
+export function initializeCustomEquipment(): void {
+    try {
+        const extensionManager = ExtensionManager.getInstance();
+        const customItems = getAllCustomEquipment();
+
+        if (customItems.length === 0) {
+            logger.debug('ItemCreator', 'No custom equipment to initialize');
+            return;
+        }
+
+        logger.info('ItemCreator', `Initializing ${customItems.length} custom equipment items in ExtensionManager`);
+
+        // Register all custom items with ExtensionManager
+        extensionManager.register('equipment', customItems, { validate: false });
+
+        logger.info('ItemCreator', `Successfully registered ${customItems.length} custom equipment items`);
+    } catch (error) {
+        logger.error('ItemCreator', 'Failed to initialize custom equipment', { error: String(error) });
+    }
+}
+
+/**
+ * React hook to initialize custom equipment on mount
+ * Call this in your App component or a main initialization component
+ */
+export function useCustomEquipmentInitializer(): void {
+    // Just run once on mount
+    initializeCustomEquipment();
+}
+
+/**
  * Register a custom equipment item in the local cache
  */
 export function registerCustomEquipment(equipment: EnhancedEquipment): void {
