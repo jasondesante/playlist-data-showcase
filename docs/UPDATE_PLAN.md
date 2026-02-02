@@ -1928,11 +1928,23 @@ User clicks "Set Active" on Character B in PartyTab
 - [ ] Verify subraces display correctly in character sheets
 
 ### Task 8.6: Migration Guide compatibility testing
-- [ ] **Test ammunition format:**
-  - [ ] Create a Ranger character, verify they get individual arrows (quantity 20)
-  - [ ] Verify arrow weight shows correctly (0.05 lb each)
-  - [ ] Verify total weight calculation is correct
-  - [ ] Display shows "Arrow x20" not "Arrows (20)"
+- [x] **Test ammunition format:**
+  - [x] Create a Ranger character, verify they get individual arrows (quantity 20)
+  - [x] Verify arrow weight shows correctly (0.05 lb each)
+  - [x] Verify total weight calculation is correct
+  - [x] Display shows "Arrow x20" not "Arrows (20)"
+
+**TESTING SUMMARY:**
+- Created test script `/workspace/test_ammunition.mjs` that generates Ranger and Rogue characters
+- **Verified Ranger gets**: Name: "Arrow", Quantity: 20
+- **Verified Rogue gets**: Name: "Bolt", Quantity: 20
+- **Verified weight calculation**: 20 arrows × 0.05 lb = 1 lb (CORRECT)
+- **Verified UI display**:
+  - CharacterGenTab: Shows "Target icon Arrow ×20 (1 lb)" with tooltip
+  - ItemsTab: Shows "Target icon Arrow ×20 (1.00 lb)" with tooltip
+  - PartyTab: Shows "Target icon Arrow ×20 (1 lb)" with tooltip
+- All three tabs correctly display the new ammunition format (individual items with quantity)
+
 - [ ] **Test feature ID format:**
   - [ ] Generate a Barbarian, verify rage shows as "Rage" not "barbarian_rage"
   - [ ] Hover over feature shows description from FeatureRegistry
