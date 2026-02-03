@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { AudioAnalyzer, AudioProfile, ColorExtractor } from 'playlist-data-engine';
+import { AudioAnalyzer, AudioProfile, ColorExtractor, AudioAnalyzerOptions } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { useAppStore } from '@/store/appStore';
@@ -8,20 +8,23 @@ import { useAppStore } from '@/store/appStore';
  * React hook for analyzing audio tracks using the AudioAnalyzer engine module.
  *
  * Analyzes audio files to extract sonic fingerprints including frequency bands,
- * spectral characteristics, and advanced metrics. The FFT size is configurable
- * via app settings.
+ * spectral characteristics, and advanced metrics. The FFT size and frequency
+ * multipliers are configurable via audio analyzer options.
  *
  * @example
  * ```tsx
- * const { analyzeTrack, isAnalyzing, progress } = useAudioAnalyzer();
+ * const { analyzeTrack, isAnalyzing, progress, audioAnalyzerOptions, setAudioAnalyzerOptions } = useAudioAnalyzer();
  * const profile = await analyzeTrack('https://example.com/audio.mp3');
  * console.log(profile.bass_dominance, profile.mid_dominance, profile.treble_dominance);
  * ```
  *
  * @returns {Object} Hook return object
  * @returns {Function} analyzeTrack - Analyzes audio from a URL and returns an AudioProfile
+ * @returns {Function} analyzeTrackWithPalette - Analyzes audio and extracts color palette
  * @returns {boolean} isAnalyzing - Whether analysis is currently in progress
  * @returns {number} progress - Analysis progress percentage (0-100)
+ * @returns {AudioAnalyzerOptions} audioAnalyzerOptions - Current audio analyzer options
+ * @returns {Function} setAudioAnalyzerOptions - Update audio analyzer options and re-create analyzer
  */
 export const useAudioAnalyzer = () => {
     const { settings } = useAppStore();
@@ -29,18 +32,34 @@ export const useAudioAnalyzer = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    // Re-create analyzer when settings change
+    // Audio analyzer options for controlling analysis behavior
+    const [audioAnalyzerOptions, setAudioAnalyzerOptionsState] = useState<AudioAnalyzerOptions>({
+        includeAdvancedMetrics: true,
+        trebleBoost: 0.7,
+        bassBoost: 1.2,
+        midBoost: 1.1,
+    });
+
+    // Re-create analyzer when settings or audio analyzer options change
     useEffect(() => {
         try {
             const newAnalyzer = new AudioAnalyzer({
                 fftSize: settings.audioFftSize,
-                // smoothingTimeConstant not supported in options
+                includeAdvancedMetrics: audioAnalyzerOptions.includeAdvancedMetrics,
+                trebleBoost: audioAnalyzerOptions.trebleBoost,
+                bassBoost: audioAnalyzerOptions.bassBoost,
+                midBoost: audioAnalyzerOptions.midBoost,
             });
             setAnalyzer(newAnalyzer);
         } catch (error) {
             handleError(error, 'AudioAnalyzer');
         }
-    }, [settings.audioFftSize]);
+    }, [settings.audioFftSize, audioAnalyzerOptions]);
+
+    // Wrapper to update options and trigger analyzer re-creation
+    const setAudioAnalyzerOptions = useCallback((options: AudioAnalyzerOptions) => {
+        setAudioAnalyzerOptionsState(options);
+    }, []);
 
     const analyzeTrack = useCallback(async (audioUrl: string): Promise<AudioProfile | null> => {
         if (!analyzer) return null;
@@ -163,5 +182,12 @@ export const useAudioAnalyzer = () => {
         }
     }, [analyzer]);
 
-    return { analyzeTrack, analyzeTrackWithPalette, isAnalyzing, progress };
+    return {
+        analyzeTrack,
+        analyzeTrackWithPalette,
+        isAnalyzing,
+        progress,
+        audioAnalyzerOptions,
+        setAudioAnalyzerOptions,
+    };
 };
