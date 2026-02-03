@@ -1,5 +1,5 @@
 // Test script to verify ammunition format
-import { CharacterGenerator } from './node_modules/playlist-data-engine/dist/playlist-data-engine.mjs';
+import { CharacterGenerator } from 'playlist-data-engine';
 
 // Generate a Ranger character
 const testAudio = {
