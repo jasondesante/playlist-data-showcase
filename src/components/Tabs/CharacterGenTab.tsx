@@ -854,6 +854,16 @@ export function CharacterGenTab() {
                       <span className="character-appearance-color-label">Secondary</span>
                     </div>
                   )}
+                  {character.appearance.accent_color && (
+                    <div className="character-appearance-color-item">
+                      <div
+                        className="character-appearance-color-swatch"
+                        style={{ backgroundColor: character.appearance.accent_color }}
+                        title="Accent Color"
+                      />
+                      <span className="character-appearance-color-label">Accent</span>
+                    </div>
+                  )}
                   {character.appearance.aura_color && (
                     <div className="character-appearance-color-item">
                       <div

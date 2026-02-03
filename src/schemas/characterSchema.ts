@@ -92,6 +92,7 @@ const AppearanceSchema = z.object({
   // Optional dynamic features
   primary_color: z.string().optional(),
   secondary_color: z.string().optional(),
+  accent_color: z.string().optional(),
   aura_color: z.string().optional()
 }).optional();
 

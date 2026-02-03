@@ -31,15 +31,15 @@ export function AudioAnalysisTab() {
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
 
-  // Local state for multiplier controls (actual values)
-  const [trebleBoost, setTrebleBoost] = useState(0.7);
-  const [bassBoost, setBassBoost] = useState(1.2);
-  const [midBoost, setMidBoost] = useState(1.1);
+  // Local state for multiplier controls (actual values) - all default to 1.0 (neutral)
+  const [trebleBoost, setTrebleBoost] = useState(1.0);
+  const [bassBoost, setBassBoost] = useState(1.0);
+  const [midBoost, setMidBoost] = useState(1.0);
 
-  // Internal slider positions (0-100 scale for the 3-zone slider)
-  const [trebleSliderPos, setTrebleSliderPos] = useState(30); // ~0.7
-  const [bassSliderPos, setBassSliderPos] = useState(52);     // ~1.2
-  const [midSliderPos, setMidSliderPos] = useState(51);       // ~1.1
+  // Internal slider positions (0-100 scale for the 3-zone slider) - 50 = 1.0 (neutral)
+  const [trebleSliderPos, setTrebleSliderPos] = useState(50); // 1.0
+  const [bassSliderPos, setBassSliderPos] = useState(50);     // 1.0
+  const [midSliderPos, setMidSliderPos] = useState(50);       // 1.0
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -120,15 +120,26 @@ export function AudioAnalysisTab() {
   };
 
   const handleApplyMultipliers = async () => {
-    // Update the analyzer options with current slider values
-    setAudioAnalyzerOptions({
+    if (!selectedTrack?.audio_url) return;
+
+    // Create override options with current slider values
+    const overrideOptions = {
       includeAdvancedMetrics: true,
       trebleBoost,
       bassBoost,
       midBoost,
-    });
-    // Re-analyze with new multipliers
-    await handleAnalyze();
+    };
+
+    // Update the analyzer options state for future analyses
+    setAudioAnalyzerOptions(overrideOptions);
+
+    // Re-analyze with the new multipliers immediately (using override to avoid state delay)
+    const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url, overrideOptions);
+    if (profile) {
+      setAudioProfile(profile);
+      // Trigger bar animation after profile is set
+      setTimeout(() => setAnimateBars(true), 100);
+    }
   };
 
   // Reset animation when track changes
@@ -242,82 +253,85 @@ export function AudioAnalysisTab() {
         </div>
       )}
 
-      {/* Multiplier Controls - shown when track is selected */}
+      {/* 3-Band EQ Controls - shown when track is selected */}
       {selectedTrack && (
-        <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-multipliers-card">
-          <div className="audio-analysis-card-title">Frequency Band Multipliers</div>
-          <div className="audio-analysis-card-subtitle">Adjust multipliers and re-analyze to see the effect on bass, mid, and treble readings</div>
+        <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-eq-card">
+          <div className="audio-analysis-card-title">3-Band EQ</div>
+          <div className="audio-analysis-card-subtitle">Adjust frequency bands and re-analyze to see the effect on readings</div>
 
-          <div className="audio-analysis-multipliers-content">
-            {/* Treble Boost Slider */}
-            <div className="audio-analysis-slider-row">
-              <div className="audio-analysis-slider-label-group">
-                <div className="audio-analysis-slider-label">Treble Boost</div>
-                <div className="audio-analysis-slider-description">1.0 = neutral (center), attenuates on left, boosts on right</div>
+          <div className="audio-analysis-eq-content">
+            {/* Bass Slider */}
+            <div className="audio-analysis-eq-band">
+              <div className="audio-analysis-eq-label">Bass</div>
+              <div className="audio-analysis-eq-value">{bassBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-slider-wrapper">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={bassSliderPos}
+                  onChange={(e) => handleBassChange(parseFloat(e.target.value))}
+                  className="audio-analysis-eq-slider"
+                  style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={trebleSliderPos}
-                onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
-                className="audio-analysis-slider"
-              />
-              <div className="audio-analysis-slider-value">{trebleBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-description">Low freq</div>
             </div>
 
-            {/* Bass Boost Slider */}
-            <div className="audio-analysis-slider-row">
-              <div className="audio-analysis-slider-label-group">
-                <div className="audio-analysis-slider-label">Bass Boost</div>
-                <div className="audio-analysis-slider-description">1.0 = neutral (center), attenuates on left, boosts on right</div>
+            {/* Mid Slider */}
+            <div className="audio-analysis-eq-band">
+              <div className="audio-analysis-eq-label">Mid</div>
+              <div className="audio-analysis-eq-value">{midBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-slider-wrapper">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={midSliderPos}
+                  onChange={(e) => handleMidChange(parseFloat(e.target.value))}
+                  className="audio-analysis-eq-slider"
+                  style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={bassSliderPos}
-                onChange={(e) => handleBassChange(parseFloat(e.target.value))}
-                className="audio-analysis-slider"
-              />
-              <div className="audio-analysis-slider-value">{bassBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-description">Mid freq</div>
             </div>
 
-            {/* Mid Boost Slider */}
-            <div className="audio-analysis-slider-row">
-              <div className="audio-analysis-slider-label-group">
-                <div className="audio-analysis-slider-label">Mid Boost</div>
-                <div className="audio-analysis-slider-description">1.0 = neutral (center), attenuates on left, boosts on right</div>
+            {/* Treble Slider */}
+            <div className="audio-analysis-eq-band">
+              <div className="audio-analysis-eq-label">Treble</div>
+              <div className="audio-analysis-eq-value">{trebleBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-slider-wrapper">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={trebleSliderPos}
+                  onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
+                  className="audio-analysis-eq-slider"
+                  style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={midSliderPos}
-                onChange={(e) => handleMidChange(parseFloat(e.target.value))}
-                className="audio-analysis-slider"
-              />
-              <div className="audio-analysis-slider-value">{midBoost.toFixed(1)}x</div>
+              <div className="audio-analysis-eq-description">High freq</div>
             </div>
-
-            {/* Re-analyze Button */}
-            {audioProfile && (
-              <Button
-                onClick={handleApplyMultipliers}
-                disabled={isAnalyzing || playbackState !== 'playing'}
-                isLoading={isAnalyzing}
-                variant="secondary"
-                size="md"
-                className="audio-analysis-reanalyze-button"
-                title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
-              >
-                {isAnalyzing ? `Re-analyzing... ${progress}%` : 'Re-Analyze with New Multipliers'}
-              </Button>
-            )}
           </div>
+
+          {/* Re-analyze Button */}
+          {audioProfile && (
+            <Button
+              onClick={handleApplyMultipliers}
+              disabled={isAnalyzing || playbackState !== 'playing'}
+              isLoading={isAnalyzing}
+              variant="secondary"
+              size="md"
+              className="audio-analysis-reanalyze-button"
+              title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
+            >
+              {isAnalyzing ? `Re-analyzing... ${progress}%` : 'Re-Analyze with New EQ'}
+            </Button>
+          )}
         </Card>
       )}
 

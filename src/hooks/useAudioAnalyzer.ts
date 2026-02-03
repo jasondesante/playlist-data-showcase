@@ -35,9 +35,9 @@ export const useAudioAnalyzer = () => {
     // Audio analyzer options for controlling analysis behavior
     const [audioAnalyzerOptions, setAudioAnalyzerOptionsState] = useState<AudioAnalyzerOptions>({
         includeAdvancedMetrics: true,
-        trebleBoost: 0.7,
-        bassBoost: 1.2,
-        midBoost: 1.1,
+        trebleBoost: 1.0,
+        bassBoost: 1.0,
+        midBoost: 1.0,
     });
 
     // Re-create analyzer when settings or audio analyzer options change
@@ -110,17 +110,51 @@ export const useAudioAnalyzer = () => {
      *
      * @param audioUrl - URL of the audio file to analyze
      * @param imageUrl - URL of the artwork image to extract colors from (optional)
+     * @param overrideOptions - Optional AudioAnalyzerOptions to override current settings for this analysis
      * @returns Combined AudioProfile with color_palette included, or null if failed
      */
     const analyzeTrackWithPalette = useCallback(async (
         audioUrl: string,
-        imageUrl?: string
+        imageUrl?: string,
+        overrideOptions?: AudioAnalyzerOptions
     ): Promise<AudioProfile | null> => {
-        if (!analyzer) return null;
+        // Use override options if provided, otherwise use existing analyzer
+        let analyzerToUse = analyzer;
+        if (overrideOptions && !analyzer) {
+            // Create a temporary analyzer with override options
+            try {
+                analyzerToUse = new AudioAnalyzer({
+                    fftSize: settings.audioFftSize,
+                    includeAdvancedMetrics: overrideOptions.includeAdvancedMetrics,
+                    trebleBoost: overrideOptions.trebleBoost,
+                    bassBoost: overrideOptions.bassBoost,
+                    midBoost: overrideOptions.midBoost,
+                });
+            } catch (error) {
+                handleError(error, 'AudioAnalyzer');
+                return null;
+            }
+        } else if (overrideOptions && analyzer) {
+            // Recreate analyzer with new options
+            try {
+                analyzerToUse = new AudioAnalyzer({
+                    fftSize: settings.audioFftSize,
+                    includeAdvancedMetrics: overrideOptions.includeAdvancedMetrics,
+                    trebleBoost: overrideOptions.trebleBoost,
+                    bassBoost: overrideOptions.bassBoost,
+                    midBoost: overrideOptions.midBoost,
+                });
+            } catch (error) {
+                handleError(error, 'AudioAnalyzer');
+                return null;
+            }
+        }
+
+        if (!analyzerToUse) return null;
 
         // Performance timing: Start timer
         const startTime = performance.now();
-        logger.info('AudioAnalyzer', 'Starting analysis with color extraction', { url: audioUrl, imageUrl });
+        logger.info('AudioAnalyzer', 'Starting analysis with color extraction', { url: audioUrl, imageUrl, overrideOptions });
         setIsAnalyzing(true);
         setProgress(0);
 
@@ -132,7 +166,7 @@ export const useAudioAnalyzer = () => {
 
             // Run audio analysis and color extraction in parallel for better performance
             const [audioProfileResult, colorPaletteResult] = await Promise.allSettled([
-                analyzer.extractSonicFingerprint(audioUrl),
+                analyzerToUse.extractSonicFingerprint(audioUrl),
                 imageUrl ? new ColorExtractor().extractPalette(imageUrl) : Promise.resolve(undefined)
             ]);
 
