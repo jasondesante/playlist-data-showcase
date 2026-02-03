@@ -23,7 +23,7 @@ import { handleError, AppError } from '@/utils/errorHandling';
  * @returns {boolean} isGenerating - Whether character generation is in progress
  */
 export const useCharacterGenerator = () => {
-    const { addOrUpdateCharacter } = useCharacterStore();
+    const { addOrUpdateCharacter, clearTrackCharacters } = useCharacterStore();
     const [isGenerating, setIsGenerating] = useState(false);
 
     /**
@@ -93,6 +93,11 @@ export const useCharacterGenerator = () => {
                 race: character.race,
                 class: character.class
             });
+
+            // Enforce "one character per track" by clearing existing characters for this track ID
+            if (track) {
+                clearTrackCharacters(track.id);
+            }
 
             addOrUpdateCharacter(character);
             return character;

@@ -35,7 +35,10 @@ export const useAutoCharacterSetup = () => {
         const trackId = selectedTrack.id;
 
         // Check if character already exists for this track
-        const characterExists = characters.some(c => c.seed === trackId);
+        // Check both deterministic (id) and non-deterministic variations (id-random)
+        const characterExists = characters.some(
+            c => c.seed === trackId || c.seed.startsWith(`${trackId}-`)
+        );
 
         if (characterExists) {
             // Character exists, nothing to do
@@ -77,7 +80,7 @@ export const useAutoCharacterSetup = () => {
 
                 // Step 2: Generate character with default settings (uncapped mode)
                 logger.info('AutoCharacterSetup', 'Generating character...', { trackId });
-                const character = await generateCharacter(profile, trackId, 'uncapped');
+                const character = await generateCharacter(profile, trackId, 'uncapped', selectedTrack);
 
                 if (character) {
                     logger.info('AutoCharacterSetup', 'Character created successfully', {

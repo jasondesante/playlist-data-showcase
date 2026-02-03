@@ -18,8 +18,10 @@
 
 import { forwardRef, type HTMLAttributes, type MouseEvent, useState, useCallback, useEffect } from 'react';
 import { cn } from '../../utils/cn';
-import type { PlaylistTrack } from 'playlist-data-engine';
-import { Music, Play, Pause } from 'lucide-react';
+import type { PlaylistTrack, CharacterSheet } from 'playlist-data-engine';
+import { Music, Play, Pause, Star } from 'lucide-react';
+import { useXPCalculator } from '../../hooks/useXPCalculator';
+import { useSessionTracker } from '../../hooks/useSessionTracker';
 import './TrackCard.css';
 
 export type TrackCardSize = 'compact' | 'default' | 'large';
@@ -41,6 +43,10 @@ export interface TrackCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
   isLoading?: boolean;
   /** Whether this track is currently playing */
   isPlaying?: boolean;
+  /** Optional character data associated with this track (for XP display) */
+  character?: CharacterSheet;
+  /** XP thresholds for level display */
+  xpThresholds?: number[];
 }
 
 /**
@@ -93,11 +99,15 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
       size = 'default',
       isLoading = false,
       isPlaying = false,
+      character,
+      xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000],
       className,
       ...props
     },
     ref
   ) => {
+    const { calculateXP } = useXPCalculator();
+    const { elapsedTime, isActive: isSessionActive } = useSessionTracker();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
@@ -252,6 +262,40 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
             )}
           </div>
         </div>
+
+        {/* XP Progress Section (Right side) */}
+        {character && (
+          <div className="track-xp-container">
+            <div className="track-xp-header">
+              <span className="track-xp-level">
+                <Star size={8} className="track-xp-star" fill="currentColor" />
+                Lv.{character.level}
+              </span>
+              <span className="track-xp-percent">
+                {(() => {
+                  const currentXP = character.xp.current + (isPlaying && isSessionActive ? (calculateXP(elapsedTime, undefined, undefined, false)?.totalXP || 0) : 0);
+                  const prevThreshold = xpThresholds[character.level - 1] || 0;
+                  const nextThreshold = character.xp.next_level;
+                  const progress = Math.min(100, Math.max(0, ((currentXP - prevThreshold) / (nextThreshold - prevThreshold)) * 100));
+                  return `${Math.floor(progress)}%`;
+                })()}
+              </span>
+            </div>
+            <div className="track-xp-progress-bg">
+              <div
+                className="track-xp-progress-bar"
+                style={{
+                  width: `${(() => {
+                    const currentXP = character.xp.current + (isPlaying && isSessionActive ? (calculateXP(elapsedTime, undefined, undefined, false)?.totalXP || 0) : 0);
+                    const prevThreshold = xpThresholds[character.level - 1] || 0;
+                    const nextThreshold = character.xp.next_level;
+                    return Math.min(100, Math.max(0, ((currentXP - prevThreshold) / (nextThreshold - prevThreshold)) * 100));
+                  })()}%`
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }

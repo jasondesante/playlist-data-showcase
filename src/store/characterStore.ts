@@ -192,6 +192,8 @@ interface CharacterState {
     deleteCharacter: (id: string) => void;
     /** Get the currently active character object */
     getActiveCharacter: () => CharacterSheet | undefined;
+    /** Delete all characters associated with a track ID (exact match or spiced variations) */
+    clearTrackCharacters: (trackId: string) => void;
     /** Clear all characters and reset state */
     resetCharacters: () => void;
     /** Get count of pending stat increases for a character by ID (seed) */
@@ -345,6 +347,36 @@ export const useCharacterStore = create<CharacterState>()(
             getActiveCharacter: () => {
                 const { characters, activeCharacterId } = get();
                 return characters.find((c) => c.seed === activeCharacterId);
+            },
+
+            /**
+             * Delete all characters associated with a track ID (exact match or spiced variations)
+             * This ensures that "one character per song" is enforced atomically.
+             */
+            clearTrackCharacters: (trackId) => {
+                if (!trackId) return;
+                logger.info('Store', 'Clearing all characters for track', trackId);
+                set((state) => {
+                    const affectedSeeds = state.characters
+                        .filter(c => c.seed === trackId || c.seed.startsWith(`${trackId}-`))
+                        .map(c => c.seed);
+
+                    if (affectedSeeds.length === 0) return state;
+
+                    // Clean up strategies for all affected seeds
+                    const remainingStrategies = { ...state.characterStrategies };
+                    affectedSeeds.forEach(seed => {
+                        delete remainingStrategies[seed];
+                    });
+
+                    return {
+                        characters: state.characters.filter(c => !affectedSeeds.includes(c.seed)),
+                        activeCharacterId: affectedSeeds.includes(state.activeCharacterId || '')
+                            ? null
+                            : state.activeCharacterId,
+                        characterStrategies: remainingStrategies
+                    };
+                });
             },
 
             /**

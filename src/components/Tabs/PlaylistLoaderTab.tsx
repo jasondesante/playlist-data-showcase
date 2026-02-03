@@ -5,6 +5,7 @@ import { usePlaylistParser } from '../../hooks/usePlaylistParser';
 import { useDebounce } from '../../hooks/useDebounce';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { useCharacterStore } from '../../store/characterStore';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Input } from '../ui/Input';
@@ -37,6 +38,7 @@ export function PlaylistLoaderTab() {
     rawResponseData,
     parsedTimestamp
   } = usePlaylistStore();
+  const { characters } = useCharacterStore();
   const { playbackState, currentUrl, togglePlay } = useAudioPlayerStore();
 
   const handleParse = async () => {
@@ -277,6 +279,8 @@ export function PlaylistLoaderTab() {
               ) : (
                 filteredTracks.map((track: PlaylistTrack) => {
                   const originalIndex = currentPlaylist.tracks.findIndex(t => t.title === track.title && t.artist === track.artist) + 1;
+                  // Look up character by exact seed or as a random variant of this track
+                  const characterForTrack = characters.find(c => c.seed === track.id || c.seed.startsWith(`${track.id}-`));
                   return (
                     <TrackCard
                       key={`${track.title}-${track.artist}-${originalIndex}`}
@@ -284,6 +288,7 @@ export function PlaylistLoaderTab() {
                       index={originalIndex > 0 ? originalIndex : undefined}
                       isSelected={selectedTrack?.title === track.title}
                       isPlaying={isTrackPlaying(track)}
+                      character={characterForTrack}
                       onClick={() => handleCardClick(track)}
                       onPlay={() => handlePlayTrack(track)}
                       size="compact"

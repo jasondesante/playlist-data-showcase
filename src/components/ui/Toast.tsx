@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X } from 'lucide-react';
 import './Toast.css';
 
@@ -9,21 +9,38 @@ export interface ToastProps {
   onClose?: () => void;
 }
 
-export function Toast({ message, type = 'info', duration = 4000, onClose }: ToastProps) {
+export function Toast({ message, type = 'info', duration = 1500, onClose }: ToastProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const onCloseRef = useRef(onClose);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Keep the ref updated without triggering useEffect
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const hideTimer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(() => onClose?.(), 300); // Wait for exit animation
     }, duration);
 
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
+    const closeTimer = setTimeout(() => {
+      onCloseRef.current?.();
+    }, duration + 300);
+
+    timersRef.current = [hideTimer, closeTimer];
+
+    return () => {
+      clearTimeout(hideTimer);
+      clearTimeout(closeTimer);
+    };
+  }, [duration]);
 
   const handleClose = () => {
+    // Clear all pending timers
+    timersRef.current.forEach(clearTimeout);
     setIsVisible(false);
-    setTimeout(() => onClose?.(), 300);
+    setTimeout(() => onCloseRef.current?.(), 300);
   };
 
   return (
@@ -42,17 +59,18 @@ interface ToastItem {
   id: string;
   message: string;
   type: ToastProps['type'];
+  duration?: number;
 }
 
 let toastId = 0;
 const toasts: Map<string, ToastItem> = new Map();
 
-export function showToast(message: string, type: ToastProps['type'] = 'info') {
+export function showToast(message: string, type: ToastProps['type'] = 'info', duration?: number) {
   const id = `toast-${toastId++}`;
-  toasts.set(id, { id, message, type });
+  toasts.set(id, { id, message, type, duration });
 
   // Dispatch custom event for ToastContainer
-  window.dispatchEvent(new CustomEvent('toast-show', { detail: { id, message, type } }));
+  window.dispatchEvent(new CustomEvent('toast-show', { detail: { id, message, type, duration } }));
 
   return id;
 }
@@ -71,8 +89,17 @@ export function ToastContainer({ position = 'top-right' }: ToastContainerProps) 
 
   useEffect(() => {
     const handleShow = (e: CustomEvent) => {
-      const { id, message, type } = e.detail;
-      setVisibleToasts(prev => new Map(prev).set(id, { id, message, type }));
+      const { id, message, type, duration } = e.detail;
+      setVisibleToasts(prev => {
+        const newMap = new Map(prev);
+        newMap.set(id, { id, message, type, duration });
+        // Keep only the 2 most recent toasts
+        if (newMap.size > 2) {
+          const firstId = Array.from(newMap.keys())[0];
+          newMap.delete(firstId);
+        }
+        return newMap;
+      });
     };
 
     const handleRemove = (e: CustomEvent) => {
@@ -100,6 +127,7 @@ export function ToastContainer({ position = 'top-right' }: ToastContainerProps) 
           key={toast.id}
           message={toast.message}
           type={toast.type}
+          duration={toast.duration}
           onClose={() => removeToast(toast.id)}
         />
       ))}

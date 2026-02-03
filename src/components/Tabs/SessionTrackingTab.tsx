@@ -6,6 +6,7 @@ import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
+import { useSensorStore } from '../../store/sensorStore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal } from '../StatSelectionModal';
@@ -127,6 +128,8 @@ export function SessionTrackingTab() {
   // Get active character for XP progress display
   const activeCharacter = getActiveCharacter();
 
+  const { environmentalContext, gamingContext } = useSensorStore();
+
   // Calculate real-time XP based on elapsed time
   // Update whenever elapsedTime changes (every second when session is active)
   const xpBreakdown = useMemo(() => {
@@ -134,10 +137,14 @@ export function SessionTrackingTab() {
       return null;
     }
     // Calculate XP based on elapsed session time
-    // For now, using base calculation without environmental/gaming context
-    // Those would be added in future tasks
-    return calculateXP(elapsedTime, undefined, undefined, false);
-  }, [isActive, elapsedTime, calculateXP]);
+    // Use environmental and gaming context for accurate real-time calculation
+    return calculateXP(
+      elapsedTime,
+      environmentalContext || undefined,
+      gamingContext || undefined,
+      false
+    );
+  }, [isActive, elapsedTime, calculateXP, environmentalContext, gamingContext]);
 
   // Animated XP counter state
   const [displayedXP, setDisplayedXP] = useState(0);
@@ -146,7 +153,8 @@ export function SessionTrackingTab() {
   const xpProgress = useMemo(() => {
     if (!activeCharacter) return null;
 
-    const currentXP = activeCharacter.xp.current;
+    // Use current character XP plus XP earned this session for real-time progress
+    const currentXP = activeCharacter.xp.current + displayedXP;
     const nextLevelXP = activeCharacter.xp.next_level;
     const level = activeCharacter.level;
 
@@ -209,7 +217,10 @@ export function SessionTrackingTab() {
     play(selectedTrack.audio_url);
 
     // Start session tracker - sessionId is now derived from store via hook
-    startSession(selectedTrack.id, selectedTrack);
+    startSession(selectedTrack.id, selectedTrack, {
+      environmental_context: environmentalContext || undefined,
+      gaming_context: gamingContext || undefined
+    });
   };
 
   const handleEnd = () => {

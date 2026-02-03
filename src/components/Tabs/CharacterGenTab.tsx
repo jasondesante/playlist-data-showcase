@@ -12,6 +12,8 @@ import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Tooltip } from '../ui/Tooltip';
 import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
+import { GenerationModeToggle } from '../ui/GenerationModeToggle';
+import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { showToast } from '../ui/Toast';
 import { EQUIPMENT_DATABASE } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
@@ -153,19 +155,30 @@ export function CharacterGenTab() {
 
   // State for game mode selection
   const [gameMode, setGameMode] = useState<GameMode>('uncapped');
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('deterministic');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
 
   // Get the character to display based on priority:
-  // 1. First priority: Character for selectedTrack (if exists)
-  // 2. Second priority: Active character (if no track selected)
+  // 1. Current active character IF it belongs to the selected track (matches seed exactly or as a random variant)
+  // 2. The deterministic character for the selected track (seed === track.id)
+  // 3. The active character (if no track is selected)
   const character = useMemo(() => {
-    // First priority: selected track's character
+    const activeChar = getActiveCharacter();
+
+    // If a track is selected, try to find a character that "belongs" to it
     if (selectedTrack?.id) {
+      // First, check if the active character is the one we just generated (or selected) for this track
+      // It either matches the ID exactly (deterministic) or starts with it (random/spiced)
+      if (activeChar && (activeChar.seed === selectedTrack.id || activeChar.seed.startsWith(`${selectedTrack.id}-`))) {
+        return activeChar;
+      }
+
+      // If not, see if we have a deterministic character for this track in our list
       return characters.find((c) => c.seed === selectedTrack.id);
     }
 
-    // Second priority: active character
-    return getActiveCharacter();
+    // No track selected - show active character
+    return activeChar;
   }, [selectedTrack?.id, characters, getActiveCharacter]);
 
   // Sync active character based on priority:
@@ -174,13 +187,21 @@ export function CharacterGenTab() {
   useEffect(() => {
     // PRIORITY 1: Show character for selectedTrack
     if (selectedTrack?.id) {
+      const activeChar = getActiveCharacter();
+
+      // If current active character already "belongs" to this track, don't change it
+      if (activeChar && (activeChar.seed === selectedTrack.id || activeChar.seed.startsWith(`${selectedTrack.id}-`))) {
+        return;
+      }
+
+      // Otherwise, see if we have a deterministic character to switch to
       const matchingCharacter = characters.find((c) => c.seed === selectedTrack.id);
 
       if (matchingCharacter) {
         setActiveCharacter(matchingCharacter.seed);
       } else {
-        // No character exists for this track yet, clear active character
-        // This will show the "Ready to generate" state
+        // No character exists for this track yet, and current active isn't related
+        // Clear active character to show the "Ready to generate" state
         setActiveCharacter(null as unknown as string);
       }
 
@@ -189,13 +210,9 @@ export function CharacterGenTab() {
       return;
     }
 
-    // PRIORITY 2: No track selected - keep active character as-is
-    // Don't change activeCharacterId - let it persist from previous state
-    // The display logic (useMemo above) will use getActiveCharacter() to render
-
     // Reset game mode selection state
     setShowGameModeSelector(false);
-  }, [selectedTrack?.id, characters, setActiveCharacter]);
+  }, [selectedTrack?.id, characters, setActiveCharacter, getActiveCharacter]);
 
   const handleGenerate = async () => {
     if (!audioProfile) {
@@ -209,13 +226,18 @@ export function CharacterGenTab() {
       return;
     }
 
-    // Check if character already exists for this track
-    const existingCharacter = characters.find(c => c.seed === selectedTrack.id);
-    const isRegenerating = !!existingCharacter;
+    // Check if character already exists for this track (either deterministic or spiced version)
+    const isRegenerating = characters.some(
+      c => c.seed === selectedTrack.id || c.seed.startsWith(`${selectedTrack.id}-`)
+    );
 
-    // Use track UUID as deterministic seed for consistent character generation
-    // This ensures the same track always generates the same character
-    const seed = selectedTrack.id;
+    // Determine the seed based on generation mode
+    // Deterministic: use track ID (stable)
+    // Non-deterministic: use track ID + random suffix for "spice" while keeping link to track
+    const seed = generationMode === 'deterministic'
+      ? selectedTrack.id
+      : `${selectedTrack.id}-${Math.random().toString(36).substring(2, 9)}`;
+
     await generateCharacter(audioProfile, seed, gameMode, selectedTrack);
 
     // Hide the game mode selector after generation
@@ -432,12 +454,18 @@ export function CharacterGenTab() {
         </div>
       </div>
 
-      {/* Game Mode Selector - show when "New" was clicked, stay visible until "Generate" */}
+      {/* Selection Section - show when "New" was clicked */}
       {showGameModeSelector && (
-        <GameModeToggle
-          value={gameMode}
-          onChange={setGameMode}
-        />
+        <div className="character-gen-selection-grid fade-in">
+          <GameModeToggle
+            value={gameMode}
+            onChange={setGameMode}
+          />
+          <GenerationModeToggle
+            value={generationMode}
+            onChange={setGenerationMode}
+          />
+        </div>
       )}
 
       {/* Import Status Messages */}
@@ -482,7 +510,11 @@ export function CharacterGenTab() {
                 Using audio profile from <span>{selectedTrack.title}</span> by {selectedTrack.artist}
               </div>
               <div className="character-ready-seed">
-                Seed: {selectedTrack.id} (deterministic - same track always generates same character)
+                {generationMode === 'deterministic' ? (
+                  <>Seed: {selectedTrack.id} (deterministic - same track always generates same character)</>
+                ) : (
+                  <>Mode: Non-Deterministic (random spice enabled - audio profile will influence random results)</>
+                )}
               </div>
             </div>
           </div>
@@ -725,7 +757,7 @@ export function CharacterGenTab() {
               {Object.entries(character.skills).map(([skill, prof]) => (
                 <div key={skill} className="character-skill-item" title={
                   prof === 'expertise' ? 'Expertise (double proficiency)' :
-                  prof === 'proficient' ? 'Proficient' : 'Not proficient'
+                    prof === 'proficient' ? 'Proficient' : 'Not proficient'
                 }>
                   <span className="character-skill-name">{skill.replace(/_/g, ' ')}</span>
                   <span className={`character-skill-proficiency ${prof}`}>
@@ -854,14 +886,14 @@ export function CharacterGenTab() {
                       <span className="character-appearance-color-label">Secondary</span>
                     </div>
                   )}
-                  {character.appearance.accent_color && (
-                    <div className="character-appearance-color-item">
+                  {(character.appearance as any).accent_color && (
+                    <div className="character-appearance-row">
+                      <span className="character-appearance-label">Accent Color</span>
                       <div
-                        className="character-appearance-color-swatch"
-                        style={{ backgroundColor: character.appearance.accent_color }}
-                        title="Accent Color"
+                        className="character-color-swatch"
+                        style={{ backgroundColor: (character.appearance as any).accent_color }}
                       />
-                      <span className="character-appearance-color-label">Accent</span>
+                      <span className="character-appearance-value">{(character.appearance as any).accent_color}</span>
                     </div>
                   )}
                   {character.appearance.aura_color && (

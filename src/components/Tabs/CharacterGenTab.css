@@ -134,6 +134,23 @@
   gap: 0.375rem;
 }
 
+/* Selection grid for game mode and generation mode */
+.character-gen-selection-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .character-gen-selection-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
 @media (min-width: 640px) {
   .character-gen-actions {
     gap: 0.625rem;
