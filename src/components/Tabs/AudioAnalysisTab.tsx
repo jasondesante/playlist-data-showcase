@@ -43,20 +43,20 @@ export function AudioAnalysisTab() {
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
-   * Scale 1 (0-46): 0.1-0.9 (attenuation zone)
-   * Scale 2 (47-53): stuck at 1.0 (neutral zone - 7 positions for light stickiness)
-   * Scale 3 (54-100): 1.1-10.0 (boost zone)
+   * Scale 1 (0-44): 0.1-0.9 (attenuation zone)
+   * Scale 2 (45-55): stuck at 1.0 (neutral zone - 7 positions for light stickiness)
+   * Scale 3 (56-100): 1.1-10.0 (boost zone)
    */
   const sliderPosToValue = (pos: number): number => {
-    if (pos <= 46) {
-      // Scale 1: 0-46 maps to 0.1-0.9
-      return 0.1 + (pos / 46) * 0.8;
-    } else if (pos <= 53) {
-      // Scale 2: 47-53 stuck at 1.0 (small sticky zone)
+    if (pos <= 44) {
+      // Scale 1: 0-44 maps to 0.1-0.9
+      return 0.1 + (pos / 44) * 0.8;
+    } else if (pos <= 55) {
+      // Scale 2: 45-55 stuck at 1.0 (small sticky zone)
       return 1.0;
     } else {
-      // Scale 3: 54-100 maps to 1.1-10.0
-      return 1.1 + ((pos - 54) / 46) * 8.9;
+      // Scale 3: 56-100 maps to 1.1-10.0
+      return 1.1 + ((pos - 56) / 44) * 8.9;
     }
   };
 
@@ -65,14 +65,14 @@ export function AudioAnalysisTab() {
    */
   const valueToSliderPos = (value: number): number => {
     if (value < 1.0) {
-      // Scale 1: 0.1-0.9 maps to 0-46
-      return ((value - 0.1) / 0.8) * 46;
+      // Scale 1: 0.1-0.9 maps to 0-44
+      return ((value - 0.1) / 0.8) * 44;
     } else if (value === 1.0) {
       // Scale 2: 1.0 maps to center of sticky zone
       return 50;
     } else {
-      // Scale 3: 1.1-10.0 maps to 54-100
-      return 54 + ((value - 1.1) / 8.9) * 46;
+      // Scale 3: 1.1-10.0 maps to 56-100
+      return 56 + ((value - 1.1) / 8.9) * 44;
     }
   };
 
@@ -196,21 +196,6 @@ export function AudioAnalysisTab() {
           </div>
         </div>
         <div className="audio-analysis-header-right">
-          {selectedTrack && (
-            <div className="audio-analysis-selected-track">
-              <div className="audio-analysis-selected-track-image">
-                {selectedTrack.image_url ? (
-                  <img src={selectedTrack.image_url} alt={selectedTrack.title} />
-                ) : (
-                  <Music className="audio-analysis-selected-track-fallback" />
-                )}
-              </div>
-              <div className="audio-analysis-selected-track-info">
-                <div className="audio-analysis-selected-track-title">{selectedTrack.title}</div>
-                <div className="audio-analysis-selected-track-artist">{selectedTrack.artist}</div>
-              </div>
-            </div>
-          )}
           <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
         </div>
       </div>
@@ -224,114 +209,127 @@ export function AudioAnalysisTab() {
         </div>
       )}
 
-      {selectedTrack && !audioProfile && (
-        <div className="audio-analysis-ready-state">
-          <div className="audio-analysis-ready-track">
-            <div className="audio-analysis-ready-image">
-              {selectedTrack.image_url ? (
-                <img src={selectedTrack.image_url} alt={selectedTrack.title} />
-              ) : (
-                <Music className="audio-analysis-ready-fallback" />
+      {/* Primary Control Card - Cohesive Song Info + EQ + Analysis Action */}
+      {selectedTrack && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-primary-card">
+          <div className="audio-analysis-primary-layout">
+
+            {/* 1. Song Display Section */}
+            <div className="audio-analysis-song-display">
+              <div className="audio-analysis-song-artwork">
+                {selectedTrack.image_url ? (
+                  <img src={selectedTrack.image_url} alt={selectedTrack.title} />
+                ) : (
+                  <Music className="audio-analysis-ready-fallback" />
+                )}
+                {isAnalyzing && (
+                  <div className="audio-analysis-artwork-overlay">
+                    <Sparkles className="audio-analysis-sparkle-icon" />
+                  </div>
+                )}
+              </div>
+              <div className="audio-analysis-song-meta">
+                <div className="audio-analysis-song-title-large">{selectedTrack.title}</div>
+                <div className="audio-analysis-song-artist-large">{selectedTrack.artist}</div>
+                <div className="audio-analysis-song-status-badge">
+                  <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Integrated EQ Section */}
+            <div className="audio-analysis-eq-integration">
+              <div className="audio-analysis-eq-header-row">
+                <div className="audio-analysis-eq-title-main">EQ</div>
+                <div className="audio-analysis-eq-subtitle-main">Adjust for analysis</div>
+              </div>
+
+              <div className="audio-analysis-eq-grid">
+                {/* Bass Slider */}
+                <div className="audio-analysis-eq-band-compact">
+                  <div className="audio-analysis-eq-slider-vertical">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={bassSliderPos}
+                      onChange={(e) => handleBassChange(parseFloat(e.target.value))}
+                      className="audio-analysis-eq-slider"
+                      style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
+                    />
+                  </div>
+                  <div className="audio-analysis-eq-metadata">
+                    <span className="audio-analysis-eq-name">Bass</span>
+                    <span className="audio-analysis-eq-multiplier">{bassBoost.toFixed(1)}x</span>
+                  </div>
+                </div>
+
+                {/* Mid Slider */}
+                <div className="audio-analysis-eq-band-compact">
+                  <div className="audio-analysis-eq-slider-vertical">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={midSliderPos}
+                      onChange={(e) => handleMidChange(parseFloat(e.target.value))}
+                      className="audio-analysis-eq-slider"
+                      style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
+                    />
+                  </div>
+                  <div className="audio-analysis-eq-metadata">
+                    <span className="audio-analysis-eq-name">Mid</span>
+                    <span className="audio-analysis-eq-multiplier">{midBoost.toFixed(1)}x</span>
+                  </div>
+                </div>
+
+                {/* Treble Slider */}
+                <div className="audio-analysis-eq-band-compact">
+                  <div className="audio-analysis-eq-slider-vertical">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={trebleSliderPos}
+                      onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
+                      className="audio-analysis-eq-slider"
+                      style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
+                    />
+                  </div>
+                  <div className="audio-analysis-eq-metadata">
+                    <span className="audio-analysis-eq-name">Treble</span>
+                    <span className="audio-analysis-eq-multiplier">{trebleBoost.toFixed(1)}x</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Action Section */}
+            <div className="audio-analysis-action-integration">
+              <Button
+                onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}
+                disabled={isAnalyzing || playbackState !== 'playing'}
+                isLoading={isAnalyzing}
+                variant="primary"
+                size="lg"
+                className="audio-analysis-primary-action-button"
+                title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
+              >
+                {isAnalyzing
+                  ? `${progress}%`
+                  : audioProfile ? 'Re-Analyze' : 'Analyze Audio'}
+              </Button>
+
+              {playbackState !== 'playing' && !isAnalyzing && (
+                <div className="audio-analysis-playback-warning">
+                  Play audio to enable
+                </div>
               )}
             </div>
-            <div className="audio-analysis-ready-info">
-              <div className="audio-analysis-ready-title">{selectedTrack.title}</div>
-              <div className="audio-analysis-ready-artist">{selectedTrack.artist}</div>
-            </div>
           </div>
-          <Button
-            onClick={handleAnalyze}
-            disabled={isAnalyzing || playbackState !== 'playing'}
-            isLoading={isAnalyzing}
-            variant="primary"
-            size="lg"
-            className="audio-analysis-analyze-button-large"
-            title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
-          >
-            {isAnalyzing ? `Analyzing audio and extracting colors... ${progress}%` : 'Analyze Audio'}
-          </Button>
-        </div>
-      )}
-
-      {/* 3-Band EQ Controls - shown when track is selected */}
-      {selectedTrack && (
-        <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-eq-card">
-          <div className="audio-analysis-card-title">3-Band EQ</div>
-          <div className="audio-analysis-card-subtitle">Adjust frequency bands and re-analyze to see the effect on readings</div>
-
-          <div className="audio-analysis-eq-content">
-            {/* Bass Slider */}
-            <div className="audio-analysis-eq-band">
-              <div className="audio-analysis-eq-label">Bass</div>
-              <div className="audio-analysis-eq-value">{bassBoost.toFixed(1)}x</div>
-              <div className="audio-analysis-eq-slider-wrapper">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={bassSliderPos}
-                  onChange={(e) => handleBassChange(parseFloat(e.target.value))}
-                  className="audio-analysis-eq-slider"
-                  style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
-                />
-              </div>
-              <div className="audio-analysis-eq-description">Low freq</div>
-            </div>
-
-            {/* Mid Slider */}
-            <div className="audio-analysis-eq-band">
-              <div className="audio-analysis-eq-label">Mid</div>
-              <div className="audio-analysis-eq-value">{midBoost.toFixed(1)}x</div>
-              <div className="audio-analysis-eq-slider-wrapper">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={midSliderPos}
-                  onChange={(e) => handleMidChange(parseFloat(e.target.value))}
-                  className="audio-analysis-eq-slider"
-                  style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
-                />
-              </div>
-              <div className="audio-analysis-eq-description">Mid freq</div>
-            </div>
-
-            {/* Treble Slider */}
-            <div className="audio-analysis-eq-band">
-              <div className="audio-analysis-eq-label">Treble</div>
-              <div className="audio-analysis-eq-value">{trebleBoost.toFixed(1)}x</div>
-              <div className="audio-analysis-eq-slider-wrapper">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={trebleSliderPos}
-                  onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
-                  className="audio-analysis-eq-slider"
-                  style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
-                />
-              </div>
-              <div className="audio-analysis-eq-description">High freq</div>
-            </div>
-          </div>
-
-          {/* Re-analyze Button */}
-          {audioProfile && (
-            <Button
-              onClick={handleApplyMultipliers}
-              disabled={isAnalyzing || playbackState !== 'playing'}
-              isLoading={isAnalyzing}
-              variant="secondary"
-              size="md"
-              className="audio-analysis-reanalyze-button"
-              title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
-            >
-              {isAnalyzing ? `Re-analyzing... ${progress}%` : 'Re-Analyze with New EQ'}
-            </Button>
-          )}
         </Card>
       )}
 
