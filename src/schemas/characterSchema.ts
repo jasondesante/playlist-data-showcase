@@ -17,6 +17,8 @@ const ClassEnum = z.enum([
   'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'
 ]);
 
+const GameModeEnum = z.enum(['standard', 'uncapped']);
+
 // HP Schema
 const HPSchema = z.object({
   current: z.number().int().min(0),
@@ -96,6 +98,48 @@ const AppearanceSchema = z.object({
   aura_color: z.string().optional()
 }).optional();
 
+// Feature Effect Schema (permissive - allows engine's FeatureEffect structure)
+const FeatureEffectSchema = z.object({
+  type: z.string(),
+  value: z.any().optional(),
+  target: z.string().optional(),
+  duration: z.string().optional()
+}).passthrough();
+
+// Equipment Property Schema
+const EquipmentPropertySchema = z.object({
+  type: z.string(),
+  value: z.any().optional()
+}).passthrough();
+
+// Equipment Feature Schema
+const EquipmentFeatureSchema = z.object({
+  name: z.string(),
+  description: z.string().optional()
+}).passthrough();
+
+// Equipment Skill Schema
+const EquipmentSkillSchema = z.object({
+  name: z.string(),
+  proficiency: z.string().optional()
+}).passthrough();
+
+// Equipment Spell Schema
+const EquipmentSpellSchema = z.object({
+  name: z.string(),
+  uses: z.number().optional()
+}).passthrough();
+
+// Equipment Effects Schema
+const EquipmentEffectsSchema = z.object({
+  source: z.string(),
+  instanceId: z.string().optional(),
+  effects: z.array(EquipmentPropertySchema),
+  features: z.array(EquipmentFeatureSchema),
+  skills: z.array(EquipmentSkillSchema),
+  spells: z.array(EquipmentSpellSchema).optional()
+}).passthrough();
+
 // Main CharacterSheet Schema - use passthrough for flexible objects
 export const CharacterSheetSchema = z.object({
   // Core identifiers
@@ -105,6 +149,7 @@ export const CharacterSheetSchema = z.object({
   // Basic info
   level: z.number().int().min(1).max(20),
   race: RaceEnum,
+  subrace: z.string().optional(),
   class: ClassEnum,
 
   // Combat stats
@@ -135,7 +180,15 @@ export const CharacterSheetSchema = z.object({
   xp: XPSchema,
 
   // Timestamps
-  generated_at: z.string().datetime()
+  generated_at: z.string().datetime(),
+
+  // Game mode and progression
+  gameMode: GameModeEnum.optional(),
+  pendingStatIncreases: z.number().int().min(0).optional(),
+
+  // Effects
+  feature_effects: z.array(FeatureEffectSchema).optional(),
+  equipment_effects: z.array(EquipmentEffectsSchema).optional()
 });
 
 /**

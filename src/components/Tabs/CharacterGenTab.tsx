@@ -768,6 +768,23 @@ export function CharacterGenTab() {
             </div>
           </Card>
 
+          {/* Race & Heritage */}
+          <Card variant="default" padding="md">
+            <div className="character-section-title">Race & Heritage</div>
+            <div className="character-appearance-section">
+              <div className="character-appearance-row">
+                <span className="character-appearance-label">Race</span>
+                <span className="character-appearance-value">{character.race}</span>
+              </div>
+              {character.subrace && (
+                <div className="character-appearance-row">
+                  <span className="character-appearance-label">Subrace</span>
+                  <span className="character-appearance-value">{character.subrace}</span>
+                </div>
+              )}
+            </div>
+          </Card>
+
           {/* Racial Traits */}
           {character.racial_traits && character.racial_traits.length > 0 && (
             <Card variant="default" padding="md">
@@ -887,13 +904,13 @@ export function CharacterGenTab() {
                     </div>
                   )}
                   {(character.appearance as any).accent_color && (
-                    <div className="character-appearance-row">
-                      <span className="character-appearance-label">Accent Color</span>
+                    <div className="character-appearance-color-item">
                       <div
-                        className="character-color-swatch"
+                        className="character-appearance-color-swatch"
                         style={{ backgroundColor: (character.appearance as any).accent_color }}
+                        title="Accent Color"
                       />
-                      <span className="character-appearance-value">{(character.appearance as any).accent_color}</span>
+                      <span className="character-appearance-color-label">Accent</span>
                     </div>
                   )}
                   {character.appearance.aura_color && (

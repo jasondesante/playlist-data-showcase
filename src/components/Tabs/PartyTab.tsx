@@ -519,6 +519,23 @@ export function PartyTab() {
                 </div>
               )}
 
+              {/* Race & Heritage */}
+              <div className="party-detail-section">
+                <h4 className="party-detail-section-title">Race & Heritage</h4>
+                <div className="party-detail-appearance-section">
+                  <div className="party-detail-appearance-row">
+                    <span className="party-detail-appearance-label">Race</span>
+                    <span className="party-detail-appearance-value">{selectedCharacter.race}</span>
+                  </div>
+                  {selectedCharacter.subrace && (
+                    <div className="party-detail-appearance-row">
+                      <span className="party-detail-appearance-label">Subrace</span>
+                      <span className="party-detail-appearance-value">{selectedCharacter.subrace}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Racial Traits */}
               {selectedCharacter.racial_traits && selectedCharacter.racial_traits.length > 0 && (
                 <div className="party-detail-section">
@@ -635,6 +652,16 @@ export function PartyTab() {
                             title="Secondary Color"
                           />
                           <span className="party-detail-appearance-color-label">Secondary</span>
+                        </div>
+                      )}
+                      {(selectedCharacter.appearance as any).accent_color && (
+                        <div className="party-detail-appearance-color-item">
+                          <div
+                            className="party-detail-appearance-color-swatch"
+                            style={{ backgroundColor: (selectedCharacter.appearance as any).accent_color }}
+                            title="Accent Color"
+                          />
+                          <span className="party-detail-appearance-color-label">Accent</span>
                         </div>
                       )}
                       {selectedCharacter.appearance.aura_color && (
