@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
-import { FeatureRegistry, ClassFeature, RacialTrait } from 'playlist-data-engine';
+import { FeatureQuery, ClassFeature, RacialTrait } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
 /**
- * Cache for resolved feature names to avoid repeated registry lookups
+ * Cache for resolved feature names to avoid repeated query lookups
  */
 interface FeatureCache {
   classFeatures: Map<string, ClassFeature | null>;
@@ -15,7 +15,7 @@ interface FeatureCache {
  *
  * This hook uses the FeatureRegistry from playlist-data-engine to look up
  * class features and racial traits by their IDs and return their display names.
- * If a feature/trait is not found in the registry, it formats the ID as a fallback.
+ * If a feature/trait is not found in the query, it formats the ID as a fallback.
  *
  * @example
  * ```tsx
@@ -46,8 +46,8 @@ export const useFeatureNames = () => {
     racialTraits: new Map(),
   });
 
-  // Get the FeatureRegistry instance
-  const registry = useMemo(() => FeatureRegistry.getInstance(), []);
+  // Get the FeatureQuery instance
+  const query = useMemo(() => FeatureQuery.getInstance(), []);
 
   /**
    * Format a snake_case ID to a human-readable Title Case string
@@ -87,8 +87,8 @@ export const useFeatureNames = () => {
     }
 
     try {
-      // Look up in registry
-      const feature = registry.getClassFeatureById(featureId);
+      // Look up in query
+      const feature = query.getClassFeatureById(featureId);
 
       // Cache the result (null if not found)
       cache.classFeatures.set(featureId, feature ?? null);
@@ -98,7 +98,7 @@ export const useFeatureNames = () => {
       logger.warn('FeatureNames', `Failed to resolve feature ID: ${featureId}`, error);
       return formatIdToDisplayName(featureId);
     }
-  }, [cache.classFeatures, formatIdToDisplayName, registry]);
+  }, [cache.classFeatures, formatIdToDisplayName, query]);
 
   /**
    * Resolve a racial trait ID to its display name
@@ -119,8 +119,8 @@ export const useFeatureNames = () => {
     }
 
     try {
-      // Look up in registry
-      const trait = registry.getRacialTraitById(traitId);
+      // Look up in query
+      const trait = query.getRacialTraitById(traitId);
 
       // Cache the result (null if not found)
       cache.racialTraits.set(traitId, trait ?? null);
@@ -130,7 +130,7 @@ export const useFeatureNames = () => {
       logger.warn('FeatureNames', `Failed to resolve trait ID: ${traitId}`, error);
       return formatIdToDisplayName(traitId);
     }
-  }, [cache.racialTraits, formatIdToDisplayName, registry]);
+  }, [cache.racialTraits, formatIdToDisplayName, query]);
 
   /**
    * Get the description for a class feature
@@ -148,14 +148,14 @@ export const useFeatureNames = () => {
     }
 
     try {
-      const feature = registry.getClassFeatureById(featureId);
+      const feature = query.getClassFeatureById(featureId);
       cache.classFeatures.set(featureId, feature ?? null);
       return feature?.description;
     } catch (error) {
       logger.warn('FeatureNames', `Failed to get feature description: ${featureId}`, error);
       return undefined;
     }
-  }, [cache.classFeatures, registry]);
+  }, [cache.classFeatures, query]);
 
   /**
    * Get the description for a racial trait
@@ -173,14 +173,14 @@ export const useFeatureNames = () => {
     }
 
     try {
-      const trait = registry.getRacialTraitById(traitId);
+      const trait = query.getRacialTraitById(traitId);
       cache.racialTraits.set(traitId, trait ?? null);
       return trait?.description;
     } catch (error) {
       logger.warn('FeatureNames', `Failed to get trait description: ${traitId}`, error);
       return undefined;
     }
-  }, [cache.racialTraits, registry]);
+  }, [cache.racialTraits, query]);
 
   /**
    * Resolve multiple class feature IDs to their display names

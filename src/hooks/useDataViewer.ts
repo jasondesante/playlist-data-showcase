@@ -1,10 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
-    SpellRegistry,
-    SkillRegistry,
-    FeatureRegistry,
-    SPELL_DATABASE,
-    EQUIPMENT_DATABASE,
+    SpellQuery,
+    SkillQuery,
+    FeatureQuery,
+    DEFAULT_EQUIPMENT,
     RACE_DATA,
     CLASS_DATA,
     ExtensionManager,
@@ -147,58 +146,46 @@ export const useDataViewer = (): UseDataViewerReturn => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Get registry instances
-    const spellRegistry = useMemo(() => SpellRegistry.getInstance(), []);
-    const skillRegistry = useMemo(() => SkillRegistry.getInstance(), []);
-    const featureRegistry = useMemo(() => FeatureRegistry.getInstance(), []);
+    // Get query instances (read from ExtensionManager, no initialization needed)
+    const spellQuery = useMemo(() => SpellQuery.getInstance(), []);
+    const skillQuery = useMemo(() => SkillQuery.getInstance(), []);
+    const featureQuery = useMemo(() => FeatureQuery.getInstance(), []);
 
     // Subscribe to data viewer store to detect when custom items are added
     const lastDataChange = useDataViewerStore(state => state.lastDataChange);
 
     /**
-     * Load all spells from SpellRegistry
+     * Load all spells from SpellQuery
      */
     const spells = useMemo(() => {
         try {
-            // Ensure registry is initialized
-            if (!spellRegistry.isInitialized()) {
-                spellRegistry.initializeDefaults(SPELL_DATABASE);
-            }
-            return spellRegistry.getSpells();
+            return spellQuery.getSpells();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             logger.error('DataViewer', 'Failed to load spells', errorMessage);
             return [];
         }
-    }, [spellRegistry]);
+    }, [spellQuery]);
 
     /**
-     * Load all skills from SkillRegistry
+     * Load all skills from SkillQuery
      */
     const skills = useMemo(() => {
         try {
-            // Ensure registry is initialized
-            if (!skillRegistry.isInitialized()) {
-                skillRegistry.initializeDefaults();
-            }
-            return skillRegistry.getAllSkills();
+            return skillQuery.getAllSkills();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             logger.error('DataViewer', 'Failed to load skills', errorMessage);
             return [];
         }
-    }, [skillRegistry]);
+    }, [skillQuery]);
 
     /**
-     * Load all class features from FeatureRegistry
+     * Load all class features from FeatureQuery
      */
     const classFeatures = useMemo(() => {
         try {
-            // Ensure registry is initialized
-            if (!featureRegistry.isInitialized()) {
-                featureRegistry.initializeDefaults();
-            }
-            const featuresMap = featureRegistry.getAllClassFeatures();
+            const featuresMap = featureQuery.getAllClassFeatures();
             // Flatten the Map into an array
             const allFeatures: ClassFeature[] = [];
             featuresMap.forEach((features) => {
@@ -210,18 +197,14 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load class features', errorMessage);
             return [];
         }
-    }, [featureRegistry]);
+    }, [featureQuery]);
 
     /**
-     * Load all racial traits from FeatureRegistry
+     * Load all racial traits from FeatureQuery
      */
     const racialTraits = useMemo(() => {
         try {
-            // Ensure registry is initialized
-            if (!featureRegistry.isInitialized()) {
-                featureRegistry.initializeDefaults();
-            }
-            const traitsMap = featureRegistry.getAllRacialTraits();
+            const traitsMap = featureQuery.getAllRacialTraits();
             // Flatten the Map into an array
             const allTraits: RacialTrait[] = [];
             traitsMap.forEach((traits) => {
@@ -233,7 +216,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load racial traits', errorMessage);
             return [];
         }
-    }, [featureRegistry]);
+    }, [featureQuery]);
 
     /**
      * Load all races from RACE_DATA
@@ -300,15 +283,15 @@ export const useDataViewer = (): UseDataViewerReturn => {
                 return allEquipment;
             }
 
-            // Fallback to EQUIPMENT_DATABASE if ExtensionManager is empty
-            logger.debug('DataViewer', 'ExtensionManager empty, falling back to EQUIPMENT_DATABASE');
-            return Object.values(EQUIPMENT_DATABASE);
+            // Fallback to DEFAULT_EQUIPMENT if ExtensionManager is empty
+            logger.debug('DataViewer', 'ExtensionManager empty, falling back to DEFAULT_EQUIPMENT');
+            return Object.values(DEFAULT_EQUIPMENT);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             logger.error('DataViewer', 'Failed to load equipment', errorMessage);
-            // Fallback to EQUIPMENT_DATABASE on error
+            // Fallback to DEFAULT_EQUIPMENT on error
             try {
-                return Object.values(EQUIPMENT_DATABASE);
+                return Object.values(DEFAULT_EQUIPMENT);
             } catch {
                 return [];
             }
@@ -479,23 +462,23 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, [equipment]);
 
     /**
-     * Refresh all data from registries (force re-initialization)
+     * Refresh all data from queries (invalidate caches)
      *
      * Note: Equipment data is automatically refreshed when custom items are added
      * via the lastDataChange dependency in the equipment useMemo. This function
-     * primarily refreshes the spell/skill/feature registries.
+     * invalidates query caches to pick up any new custom content.
      */
     const refreshData = useCallback(() => {
         setIsLoading(true);
         setError(null);
 
         try {
-            // Re-initialize registries to pick up any new custom content
-            spellRegistry.initializeDefaults(SPELL_DATABASE);
-            skillRegistry.initializeDefaults();
-            featureRegistry.initializeDefaults();
+            // Invalidate query caches to pick up any new custom content
+            spellQuery.invalidateCache();
+            skillQuery.invalidateCache();
+            featureQuery.invalidateCache();
 
-            logger.info('DataViewer', 'Refreshed all data from registries');
+            logger.info('DataViewer', 'Refreshed all data from queries');
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             logger.error('DataViewer', 'Failed to refresh data', errorMessage);
@@ -503,7 +486,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [spellRegistry, skillRegistry, featureRegistry]);
+    }, [spellQuery, skillQuery, featureQuery]);
 
     return {
         isLoading,

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions, NamingEngine, PlaylistTrack } from 'playlist-data-engine';
+import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions, PlaylistTrack } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError, AppError } from '@/utils/errorHandling';
@@ -69,22 +69,27 @@ export const useCharacterGenerator = () => {
                 gameMode: gameMode || 'uncapped'
             };
 
-            // Generate custom name using NamingEngine if track is provided
-            let characterName: string;
-            if (track) {
-                const namingEngine = new NamingEngine();
-                characterName = namingEngine.generateName(track, audioProfile);
-                logger.info('CharacterGenerator', 'Generated custom name using NamingEngine', { characterName });
-            } else {
-                // Fallback to simple Hero-{seed} format if no track provided
-                const nameSuffix = (seed || `seed-${Date.now()}`).slice(-4);
-                characterName = `Hero-${nameSuffix}`;
-            }
+            // CharacterGenerator now handles name generation internally when track is provided
+            // Create a fallback track if none provided (with all required PlaylistTrack properties)
+            const trackForGeneration: PlaylistTrack = track || {
+                id: seed || `seed-${Date.now()}`,
+                uuid: seed || `seed-${Date.now()}`,
+                playlist_index: 0,
+                chain_name: 'unknown',
+                platform: 'unknown',
+                title: 'Generated Character',
+                artist: 'Unknown',
+                image_url: '',
+                audio_url: '',
+                duration: 0,
+                genre: 'unknown',
+                tags: []
+            };
 
             const character = CharacterGenerator.generate(
                 seed || `seed-${Date.now()}`,
                 audioProfile,
-                characterName,
+                trackForGeneration,
                 options
             );
 

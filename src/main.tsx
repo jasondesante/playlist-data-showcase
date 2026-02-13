@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import {
   ensureAllDefaultsInitialized,
   ExtensionManager,
-  MAGIC_ITEM_EXAMPLES,
+  MAGIC_ITEMS,
   EquipmentValidator
 } from 'playlist-data-engine'
 import App from './App.tsx'
@@ -21,7 +21,7 @@ ensureAllDefaultsInitialized()
 // - Truly cursed items (Belt of Strength Drain, Helmet of Opposite Alignment) remain at 0
 const manager = ExtensionManager.getInstance()
 
-const magicItemsWithAdjustedWeight = MAGIC_ITEM_EXAMPLES.map((item: any) => {
+const magicItemsWithAdjustedWeight = MAGIC_ITEMS.map((item: any) => {
   // Allow Vorpal Sword to spawn with very low probability for legendary loot boxes
   if (item.name === 'Vorpal Sword') {
     return { ...item, spawnWeight: 0.01 }

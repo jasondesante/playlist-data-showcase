@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { EquipmentEffectApplier, EnhancedInventoryItem, EnhancedEquipment, EQUIPMENT_DATABASE, ExtensionManager } from 'playlist-data-engine';
+import { EquipmentEffectApplier, EnhancedInventoryItem, EnhancedEquipment, DEFAULT_EQUIPMENT, ExtensionManager } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import type { CharacterSheet } from '@/types';
@@ -142,7 +142,7 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
 
     /**
      * Look up full equipment data from the database by name
-     * Checks: 1) Local custom cache, 2) ExtensionManager, 3) EQUIPMENT_DATABASE
+     * Checks: 1) Local custom cache, 2) ExtensionManager, 3) DEFAULT_EQUIPMENT
      */
     const getEquipmentData = useCallback((itemName: string): EnhancedEquipment | undefined => {
         // First check local custom cache (most reliable for custom items)
@@ -162,9 +162,9 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
             return fromExtension;
         }
         // Fall back to default database
-        const fromDatabase = EQUIPMENT_DATABASE[itemName];
+        const fromDatabase = DEFAULT_EQUIPMENT[itemName];
         if (fromDatabase) {
-            logger.debug('HeroEquipment', `Found "${itemName}" in EQUIPMENT_DATABASE`);
+            logger.debug('HeroEquipment', `Found "${itemName}" in DEFAULT_EQUIPMENT`);
         } else {
             logger.warn('HeroEquipment', `Equipment "${itemName}" not found in local cache, ExtensionManager, or database`);
         }

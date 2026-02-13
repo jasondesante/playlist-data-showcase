@@ -15,7 +15,7 @@ import type { GameMode } from '../ui/GameModeToggle';
 import { GenerationModeToggle } from '../ui/GenerationModeToggle';
 import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { showToast } from '../ui/Toast';
-import { EQUIPMENT_DATABASE } from 'playlist-data-engine';
+import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
 
 /**
@@ -78,7 +78,7 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
  * Get equipment data from database by name
  */
 function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
-  return EQUIPMENT_DATABASE[itemName];
+  return DEFAULT_EQUIPMENT[itemName];
 }
 
 /**
