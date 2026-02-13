@@ -2,17 +2,37 @@
 
 Complete guide to custom races, custom classes, and spawn rate control in the Playlist Data Engine.
 
-**For prerequisite details, see [PREREQUISITES.md](PREREQUISITES.md)**
-**For API details, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md)**
-**For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](../USAGE_IN_OTHER_PROJECTS.md)**
-
 ---
 
 ## Table of Contents
 
 1. [Custom Races](#custom-races)
-2. [Custom Classes](#custom-classes)
-3. [Spawn Rate Control](#spawn-rate-control)
+   - [Race Type](#race-type)
+   - [RaceDataEntry](#racedataentry)
+   - [Registering Custom Races](#registering-custom-races)
+   - [Race Validation](#race-validation)
+   - [getRaceData() Helper](#getracedata-helper)
+   - [Controlling Race Spawn Rates](#controlling-race-spawn-rates)
+2. [Subrace Support](#subrace-support)
+   - [Subrace Property](#subrace-property)
+   - [RacialTrait with Subrace](#racialtrait-with-subrace)
+   - [Subrace Validation](#subrace-validation)
+   - [Subrace Filtering](#subrace-filtering)
+   - [Complete Subrace Registration Example](#complete-subrace-registration-example)
+   - [Feature with Subrace Prerequisite](#feature-with-subrace-prerequisite)
+3. [Custom Classes](#custom-classes)
+   - [Overview](#overview)
+   - [Class Type Extensibility](#class-type-extensibility)
+   - [ClassDataEntry](#classdataentry)
+   - [getClassData() Helper](#getclassdata-helper)
+   - [Class-Specific Data Helpers](#class-specific-data-helpers)
+   - [Registering Custom Classes](#registering-custom-classes)
+   - [Controlling Class Spawn Rates](#controlling-class-spawn-rates)
+   - [Overriding Audio Preferences for Default Classes](#overriding-audio-preferences-for-default-classes)
+   - [Example: Complete Custom Class (from scratch)](#example-complete-custom-class-from-scratch)
+   - [Common Patterns](#common-patterns)
+   - [Custom Class Validation](#custom-class-validation)
+   - [ClassSuggester Custom Class Support](#classsuggester-custom-class-support)
 
 ---
 
@@ -20,48 +40,46 @@ Complete guide to custom races, custom classes, and spawn rate control in the Pl
 
 The engine supports custom races through the ExtensionManager.
 
-### Race Type Definition
+### Race Type
 
-The base `Race` type is a closed union of default races:
+**Location:** [src/core/types/Character.ts](../src/core/types/Character.ts)
+
+*Also known as: Playable race, character race*
+
+For the complete list of default D&D 5e races and type definitions, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#data-types).
+
+**Helper Functions:**
+
+| Function | Description |
+|----------|-------------|
+| `asRace(value: string)` | Convert a string to the Race type |
+| `isValidRace(value: string)` | Type guard for valid race names |
+
+**Usage:**
 
 ```typescript
-type Race =
-    | 'Human' | 'Elf' | 'Dwarf' | 'Halfling' | 'Dragonborn' | 'Gnome'
-    | 'Half-Elf' | 'Half-Orc' | 'Tiefling';
-```
+import { asRace, isValidRace } from 'playlist-data-engine';
 
-### Type Augmentation for Custom Races
-
-To use custom races, augment the type in your project:
-
-```typescript
-import 'playlist-data-engine';
-
-declare module 'playlist-data-engine' {
-    type Race =
-        | 'Human' | 'Elf' | 'Dwarf' | 'Halfling' | 'Dragonborn' | 'Gnome'
-        | 'Half-Elf' | 'Half-Orc' | 'Tiefling'
-        | 'Dragonkin';  // Custom race
+const raceName = 'Dragonkin';
+if (isValidRace(raceName)) {
+    const race: Race = asRace(raceName);
+    // Safe to use
 }
 ```
 
-### RaceDataEntry Interface
+### RaceDataEntry
 
-```typescript
-interface RaceDataEntry {
-    /** Ability score bonuses */
-    ability_bonuses: Partial<Record<Ability, number>>;
+**Location:** [src/utils/constants.ts](../src/utils/constants.ts)
 
-    /** Base speed in feet */
-    speed: number;
+For complete type definitions, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#data-types).
 
-    /** Array of trait IDs for this race */
-    traits: string[];
-
-    /** Optional: Available subraces for this race */
-    subraces?: string[];
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| `race` | string | Race identifier |
+| `ability_bonuses` | `Partial<Record<Ability, number>>` | Ability score bonuses |
+| `speed` | number | Base speed in feet |
+| `traits` | string[] | Array of trait IDs for this race |
+| `subraces?` | string[] | Optional available subraces |
 
 ### Registering Custom Races
 
@@ -106,13 +124,37 @@ The ExtensionManager validates races in this order:
 
 ### getRaceData() Helper
 
-The `getRaceData()` function retrieves race data from both default and custom races:
+The `getRaceData()` function retrieves race data from both default and custom races. For complete API reference, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#helper-functions).
 
 ```typescript
 import { getRaceData } from 'playlist-data-engine';
 
 const dragonkinData = getRaceData('Dragonkin');
 // Returns: { ability_bonuses: { STR: 2, CON: 1, CHA: 1 }, speed: 30, traits: [...] }
+```
+
+### Controlling Race Spawn Rates
+
+Adjust how frequently custom (or default) races appear during character generation:
+
+```typescript
+import { ExtensionManager, CharacterGenerator } from 'playlist-data-engine';
+
+const manager = ExtensionManager.getInstance();
+
+// Register custom races
+manager.register('races', ['Dragonkin', 'Fairy', 'Elemental']);
+
+// Set spawn rates (relative weights)
+manager.setWeights('races', {
+    'Dragonkin': 0.3,  // Rare (30% of default weight)
+    'Fairy': 0.5,      // Uncommon (50% of default weight)
+    'Human': 2.0       // Common (2x default weight)
+});
+
+// Now custom races will be selected during character generation
+const character = CharacterGenerator.generate('my-seed', audioProfile, track);
+// character.race could be 'Dragonkin', 'Fairy', or any default race
 ```
 
 ---
@@ -123,52 +165,39 @@ Characters can have subraces, and features/traits can require specific subraces.
 
 ### Subrace Property
 
-```typescript
-interface CharacterSheet {
-    race: Race;
-    /** Subrace (e.g., 'High Elf', 'Hill Dwarf', 'Wood Elf') */
-    subrace?: string;
-    // ... other properties
-}
-```
+**Location:** [src/core/types/Character.ts](../src/core/types/Character.ts)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `subrace?` | string | Optional subrace (e.g., 'High Elf', 'Hill Dwarf', 'Wood Elf') |
 
 ### RacialTrait with Subrace
 
-```typescript
-interface RacialTrait {
-    id: string;
-    name: string;
-    race: Race;
-    /** Optional subrace requirement */
-    subrace?: string;
-    prerequisites?: FeaturePrerequisite;
-    effects?: FeatureEffect[];
-    source: 'default' | 'custom';
-}
-```
+**Location:** [src/core/features/FeatureTypes.ts](../src/core/features/FeatureTypes.ts)
 
-### Subrace Validation in Prerequisites
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique trait identifier |
+| `name` | string | Trait name |
+| `race` | Race | Parent race |
+| `subrace?` | string | Optional subrace requirement |
+| `prerequisites?` | `FeaturePrerequisite` | Additional requirements |
+| `effects?` | `FeatureEffect[]` | Effects when applied |
+| `source` | `'default' \| 'custom'` | Data source |
 
-When validating feature prerequisites:
+### Subrace Validation
 
-```typescript
-// Check subrace requirement
-if (prereqs.subrace !== undefined) {
-    if (!character.subrace || character.subrace !== prereqs.subrace) {
-        errors.push(`Requires subrace ${prereqs.subrace} (current: ${character.subrace || 'none'})`);
-    }
-}
-```
+Features with subrace requirements validate that the character has the specified subrace before applying effects.
 
 ### Subrace Filtering
 
-FeatureRegistry provides `getRacialTraitsForSubrace()`:
+FeatureQuery provides `getRacialTraitsForSubrace()`:
 
 ```typescript
-const registry = FeatureRegistry.getInstance();
+const query = FeatureQuery.getInstance();
 
 // Get traits specific to High Elf subrace
-const highElfTraits = registry.getRacialTraitsForSubrace('Elf', 'High Elf');
+const highElfTraits = query.getRacialTraitsForSubrace('Elf', 'High Elf');
 ```
 
 ### Complete Subrace Registration Example
@@ -219,9 +248,10 @@ manager.register('racialTraits', [{
 }]);
 
 // ===== GENERATE CHARACTER WITH SUBRACE =====
-const character = CharacterGenerator.generate(seed, audioProfile, 'Pyro');
-// After generation, set the subrace
-character.subrace = 'Fire Dragonkin';
+const character = CharacterGenerator.generate(seed, audioProfile, track, {
+    forceRace: 'Dragonkin',
+    subrace: 'Fire Dragonkin'
+});
 
 // Character will have:
 // - Base Dragonkin traits (Draconic Ancestry, Darkvision)
@@ -234,10 +264,12 @@ character.subrace = 'Fire Dragonkin';
 Traits can require a specific subrace via prerequisites:
 
 ```typescript
-import { FeatureRegistry } from 'playlist-data-engine';
+import { ExtensionManager } from 'playlist-data-engine';
+
+const manager = ExtensionManager.getInstance();
 
 // Trait that requires a specific subrace
-FeatureRegistry.getInstance().registerRacialTrait({
+manager.register('racialTraits', [{
     id: 'inferno_breath',
     name: 'Inferno Breath',
     description: 'Breathe fire like a true red dragon',
@@ -251,30 +283,7 @@ FeatureRegistry.getInstance().registerRacialTrait({
         { type: 'active_ability', target: 'fire_breath', value: '6d6' }
     ],
     source: 'custom'
-});
-```
-
-**Type Augmentation for Custom Races:**
-
-Since `Race` is a closed union, extend it in your project:
-
-```typescript
-// In your project's global types file
-import 'playlist-data-engine';
-
-declare module 'playlist-data-engine' {
-    type Race =
-        | 'Human' | 'Elf' | 'Dwarf'
-        | 'Dwarf' | 'Halfling' | 'Dragonborn' | 'Gnome'
-        | 'Half-Elf' | 'Half-Orc' | 'Tiefling'
-        | 'Dragonkin';  // Custom race
-}
-
-// Now TypeScript accepts 'Dragonkin' as a valid Race
-const dragonkinCharacter: CharacterSheet = {
-    // ...
-    race: 'Dragonkin'  // No TypeScript error!
-};
+}]);
 ```
 
 ---
@@ -298,143 +307,59 @@ The Template Class System enables creating new classes that extend existing D&D 
 
 ### Class Type Extensibility
 
-**Location:** `src/core/types/Character.ts`
+**Location:** [src/core/types/Character.ts](../src/core/types/Character.ts)
 
-```typescript
-/**
- * Branded type for class names (supports custom classes)
- *
- * Use asClass() to convert a string to the Class type, and isValidClass()
- * to validate at runtime.
- */
-export type Class = string & { readonly __ClassBrand: unique symbol };
+*Also known as: Class name type, branded class type*
 
-/**
- * Convert a string to the Class type
- *
- * Use this function to register custom class names.
- *
- * @param value - The class name string
- * @returns The value branded as a Class type
- *
- * @example
- * const customClass: Class = asClass('Necromancer');
- */
-export function asClass(value: string): Class;
+For the complete list of default D&D 5e classes and type definitions, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#data-types).
 
-/**
- * Type guard to check if a string is a valid Class (default or custom)
- *
- * This checks against both default D&D 5e classes and any custom classes
- * registered via ExtensionManager's 'classes.data' category.
- *
- * @param value - The value to check
- * @returns True if the value is a valid class name
- */
-export function isValidClass(value: string): value is Class;
-```
+**Helper Functions:**
 
-### ClassDataEntry Interface
+| Function | Description |
+|----------|-------------|
+| `asClass(value: string)` | Convert a string to the Class type |
+| `isValidClass(value: string)` | Type guard for valid class names |
 
-**Location:** `src/utils/constants.ts`
+### ClassDataEntry
 
-```typescript
-export interface ClassDataEntry {
-    /** Primary ability score for this class */
-    primary_ability: Ability;
+**Location:** [src/utils/constants.ts](../src/utils/constants.ts)
 
-    /** Hit die size for this class */
-    hit_die: number;
+For complete type definitions, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#data-types).
 
-    /** Saving throw proficiencies */
-    saving_throws: Ability[];
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | Yes | Unique class name |
+| `baseClass?` | Class | No | Base class to inherit from (template system) |
+| `primary_ability` | Ability | Yes* | Primary ability score |
+| `hit_die` | number | Yes* | Hit die size (6, 8, 10, 12) |
+| `saving_throws` | Ability[] | Yes* | Two saving throw abilities |
+| `is_spellcaster` | boolean | Yes* | Can this class cast spells |
+| `skill_count` | number | Yes* | Number of skill proficiencies |
+| `available_skills` | string[] | Yes* | Array of skill IDs |
+| `has_expertise` | boolean | Yes* | Has expertise feature |
+| `expertise_count?` | number | No | Number of expertise choices |
+| `audio_preferences?` | object | No | Audio affinity for class suggestion |
 
-    /** Whether this class can cast spells */
-    is_spellcaster: boolean;
+*Required only if `baseClass` is not specified.
 
-    /** Number of skills to choose from */
-    skill_count: number;
+**Audio Preferences:**
 
-    /** Available skills for this class (includes custom skills) */
-    available_skills: string[];
+| Property | Type | Description |
+|----------|------|-------------|
+| `primary` | `'bass' \| 'treble' \| 'mid' \| 'amplitude' \| 'chaos'` | Primary audio trait |
+| `secondary?` | audio trait | Secondary preference |
+| `tertiary?` | audio trait | Tertiary preference |
+| `bass?`, `treble?`, `mid?`, `amplitude?` | number | Optional weight values |
 
-    /** Whether this class has expertise */
-    has_expertise: boolean;
+See also: [DATA_ENGINE_REFERENCE.md - Audio Preferences](../DATA_ENGINE_REFERENCE.md#data-types)
 
-    /** Number of expertise choices (if has_expertise is true) */
-    expertise_count?: number;
+### getClassData() Helper
 
-    /**
-     * For template-based classes: the base class to inherit from
-     *
-     * When specified, the custom class will inherit properties from the base class,
-     * with custom properties overriding inherited ones.
-     *
-     * @example
-     * // Necromancer extends Wizard
-     * baseClass: 'Wizard'
-     */
-    baseClass?: Class;
+**Location:** [src/utils/constants.ts](../src/utils/constants.ts)
 
-    /** Optional: Audio preferences for class affinity calculation */
-    audio_preferences?: {
-        primary: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        secondary?: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        tertiary?: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        bass?: number;
-        treble?: number;
-        mid?: number;
-        amplitude?: number;
-    };
-}
-```
+Retrieves class data from default CLASS_DATA or ExtensionManager. For template-based classes, merges base class data with custom data (custom properties override).
 
-### getClassData() Helper Function
-
-**Location:** `src/utils/constants.ts`
-
-```typescript
-/**
- * Get class data (default or custom)
- *
- * This helper function retrieves class data from either:
- * 1. The default CLASS_DATA constant (for built-in classes)
- * 2. The ExtensionManager (for custom classes registered via 'classes.data')
- *
- * For template-based custom classes (those with a baseClass property),
- * the base class data is merged with custom data, with custom properties
- * taking precedence.
- *
- * @param className - The class name to look up
- * @returns Class data entry or undefined if not found
- *
- * @example
- * // Get default class data
- * const wizardData = getClassData('Wizard');
- * console.log(wizardData.hit_die); // 6
- *
- * // Get custom class data (if registered via ExtensionManager)
- * const necromancerData = getClassData('Necromancer');
- * if (necromancerData) {
- *     console.log(necromancerData.baseClass); // 'Wizard'
- *     console.log(necromancerData.primary_ability); // 'INT'
- * }
- */
-export function getClassData(className: string): ClassDataEntry | undefined;
-```
-
-### Template Class Merge Logic
-
-When a custom class specifies `baseClass`, the system merges properties as follows:
-
-```typescript
-// The merge happens in getClassData() function in src/utils/constants.ts
-{
-    ...baseData,        // Base class properties (e.g., Wizard)
-    ...classEntry,      // Custom properties override base
-    available_skills: classEntry.available_skills || baseData.available_skills
-}
-```
+For complete API reference, see [DATA_ENGINE_REFERENCE.md - Helper Functions](../DATA_ENGINE_REFERENCE.md#helper-functions).
 
 **Property Override Behavior:**
 
@@ -449,52 +374,17 @@ When a custom class specifies `baseClass`, the system merges properties as follo
 | `has_expertise` | Inherited unless specified | `baseClass: 'Wizard'` → inherits `false` |
 | `audio_preferences` | Inherited unless specified | Can override for custom audio affinity |
 
-### Class-Specific Data Helper Functions
+### Class-Specific Data Helpers
 
-**Location:** `src/utils/constants.ts`
+**Location:** [src/utils/constants.ts](../src/utils/constants.ts)
 
-```typescript
-/**
- * Get spell list for a class (default or custom)
- *
- * Checks CLASS_SPELL_LISTS for default classes, or ExtensionManager
- * for custom spell lists registered via 'classSpellLists.${ClassName}'.
- *
- * @param className - The class name to look up
- * @returns Spell list with cantrips and spells_by_level, or undefined
- */
-export function getClassSpellList(className: string): {
-    cantrips: string[];
-    spells_by_level: Record<number, string[]>;
-} | undefined;
+For complete API reference, see [DATA_ENGINE_REFERENCE.md - Helper Functions](../DATA_ENGINE_REFERENCE.md#helper-functions).
 
-/**
- * Get spell slots for a class at a specific level (default or custom)
- *
- * Checks SPELL_SLOTS_BY_CLASS for default classes, or ExtensionManager
- * for custom spell slot progressions registered via 'classSpellSlots'.
- *
- * @param className - The class name to look up
- * @param characterLevel - The character level (1-20)
- * @returns Record of spell slots by level, or undefined
- */
-export function getSpellSlotsForClass(className: string, characterLevel: number): Record<number, number> | undefined;
-
-/**
- * Get starting equipment for a class (default or custom)
- *
- * Checks CLASS_STARTING_EQUIPMENT for default classes, or ExtensionManager
- * for custom equipment registered via 'classStartingEquipment.${ClassName}'.
- *
- * @param className - The class name to look up
- * @returns Equipment object with weapons, armor, items arrays, or undefined
- */
-export function getClassStartingEquipment(className: string): {
-    weapons: string[];
-    armor: string[];
-    items: string[];
-} | undefined;
-```
+| Function | Description |
+|----------|-------------|
+| `getClassSpellList(className: string)` | Get spell list for a class |
+| `getSpellSlotsForClass(className: string, level: number)` | Get spell slots at a level |
+| `getClassStartingEquipment(className: string)` | Get starting equipment |
 
 ### Registering Custom Classes
 
@@ -519,7 +409,48 @@ manager.register('classes.data', [{
 manager.register('classes', [asClass('Necromancer')]);
 ```
 
-**Complete Custom Class** (from scratch):
+### Controlling Class Spawn Rates
+
+Adjust how frequently custom (or default) classes appear during character generation:
+
+```typescript
+import { ExtensionManager, CharacterGenerator } from 'playlist-data-engine';
+
+const manager = ExtensionManager.getInstance();
+
+// Make certain classes more or less common
+manager.setWeights('classes', {
+    'Necromancer': 0.5,   // Rare (half default weight)
+    'Sorcerer': 2.0,      // Common (2x default weight)
+    'Warlock': 1.5,       // Uncommon (1.5x default weight)
+    'Paladin': 0.3        // Very rare
+});
+
+// Classes will be selected according to their weights during generation
+const character = CharacterGenerator.generate('my-seed', audioProfile, track);
+// character.class will favor Sorcerer and Warlock over Necromancer and Paladin
+```
+
+### Overriding Audio Preferences for Default Classes:
+
+```typescript
+import { ExtensionManager } from 'playlist-data-engine';
+
+const manager = ExtensionManager.getInstance();
+
+// Override default class audio preferences
+manager.register('classes.data', [{
+    name: 'Barbarian',  // Override default Barbarian
+    audio_preferences: {
+        primary: 'treble',  // Make Barbarians prefer treble instead of bass
+        treble: 1.0
+    }
+}]);
+
+// Now Barbarians will be suggested for treble-heavy audio instead of bass-heavy
+```
+
+### Example: Complete Custom Class (from scratch):
 
 ```typescript
 import { ExtensionManager, asClass } from 'playlist-data-engine';
@@ -572,30 +503,11 @@ manager.register('classStartingEquipment.Runecaster', [{
 const character = CharacterGenerator.generate(
     'my-seed',
     audioProfile,
-    'Hero Name'
+    track
 );
 ```
 
-**Class Data Properties:**
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `name` | string | Yes | Unique class name |
-| `baseClass` | Class | No | If specified, inherits properties from this class |
-| `primary_ability` | Ability | Yes* | Primary ability score (STR, DEX, CON, INT, WIS, CHA) - required if no baseClass |
-| `hit_die` | number | Yes* | Hit die size (6, 8, 10, 12) - required if no baseClass |
-| `saving_throws` | Ability[] | Yes* | Two saving throw abilities - required if no baseClass |
-| `is_spellcaster` | boolean | Yes* | Can this class cast spells - required if no baseClass |
-| `skill_count` | number | Yes* | Number of skill proficiencies - required if no baseClass |
-| `available_skills` | string[] | Yes* | Array of skill IDs - required if no baseClass |
-| `has_expertise` | boolean | Yes* | Has expertise feature - required if no baseClass |
-| `expertise_count` | number | No | Number of expertise choices (if has_expertise is true) |
-| `audio_preferences` | object | No | Audio affinity for class suggestion |
-
-**Default Classes:**
-
-The 12 default D&D 5e classes are always available:
-`Barbarian`, `Bard`, `Cleric`, `Druid`, `Fighter`, `Monk`, `Paladin`, `Ranger`, `Rogue`, `Sorcerer`, `Warlock`, `Wizard`
+**Note:** For complete ClassDataEntry property definitions and the full list of default D&D 5e classes, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md#data-types).
 
 ### Common Patterns
 
@@ -638,7 +550,7 @@ Here are common patterns for creating custom classes using the template system:
 
 ### Custom Class Validation
 
-**Location:** `src/core/extensions/ExtensionManager.ts`
+**Location:** [src/core/extensions/ExtensionManager.ts](../src/core/extensions/ExtensionManager.ts)
 
 The ExtensionManager validates custom classes:
 
@@ -656,64 +568,13 @@ manager.register('classes', ['InvalidClass']);
 
 ### ClassSuggester Custom Class Support
 
-**Location:** `src/core/generation/ClassSuggester.ts`
+**Location:** [src/core/generation/ClassSuggester.ts](../src/core/generation/ClassSuggester.ts)
 
-The `ClassSuggester` automatically includes custom classes registered via ExtensionManager when suggesting a class based on audio profile:
+The `ClassSuggester` automatically includes custom classes registered via ExtensionManager when suggesting a class based on audio profile. Custom classes with `audio_preferences` are matched against the audio profile.
 
-```typescript
-class ClassSuggester {
-    /**
-     * Suggest a class based on audio profile
-     *
-     * Selects from available classes (default 12 D&D 5e classes plus any
-     * custom classes). Custom classes with audio_preferences are matched
-     * against the audio profile.
-     *
-     * @param audioProfile - The audio analysis result
-     * @param rng - Seeded random number generator
-     * @returns Suggested class name
-     */
-    static suggest(audioProfile: AudioProfile, rng: SeededRNG): string;
-}
-```
-
----
-
-**Check Extension Status:**
-
-```typescript
-const manager = ExtensionManager.getInstance();
-
-// Check if custom data exists
-if (manager.hasCustomData('spells')) {
-    console.log('Custom spells registered');
-}
-
-// Get extension info
-const info = manager.getInfo('spells');
-console.log(info);
-// {
-//     hasCustomData: true,
-//     defaultCount: 53,
-//     customCount: 5,
-//     totalCount: 58,
-//     mode: 'relative',
-//     weights: { ... },
-//     registeredAt: 1234567890
-// }
-```
-
-**Reset and Export:**
-
-```typescript
-const manager = ExtensionManager.getInstance();
-
-// Reset single category
-manager.reset('spells');
-
-// Reset all categories
-manager.resetAll();
-```
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `suggest(audioProfile: AudioProfile, rng: SeededRNG)` | `string` | Suggest a class based on audio profile |
 
 ---
 
@@ -722,3 +583,6 @@ manager.resetAll();
 - [PREREQUISITES.md](PREREQUISITES.md) - Prerequisites system guide
 - [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md) - Complete API reference
 - [USAGE_IN_OTHER_PROJECTS.md](../USAGE_IN_OTHER_PROJECTS.md) - Usage examples
+- [EXTENSIBILITY_GUIDE.md](EXTENSIBILITY_GUIDE.md) - Custom content registration and spawn rates
+- [EQUIPMENT_SYSTEM.md](EQUIPMENT_SYSTEM.md) - Custom equipment
+- [XP_AND_STATS.md](XP_AND_STATS.md) - Progression and stat strategies

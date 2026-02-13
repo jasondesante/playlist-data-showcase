@@ -2,41 +2,169 @@
 
 Complete API reference for the Playlist Data Engine. Contains all type definitions, class constructors, and method signatures.
 
-**For quick overview, see [spec.md](specs/001-core-engine/spec.md)**
+**For quick overview, see [SPEC.md](specs/001-core-engine/SPEC.md)**
 **For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](USAGE_IN_OTHER_PROJECTS.md)**
 
 ## Table of Contents
 
-1. [Data Types](#data-types)
-2. [Core Modules](#core-modules)
-3. [Progression System](#progression-system)
-4. [Configuration](#configuration)
-5. [Environmental Sensors](#environmental-sensors)
-6. [Gaming Integration](#gaming-integration)
-6. [Combat System](#combat-system)
-7. [Equipment System](#equipment-system)
+1. [Quick Export Reference](#quick-export-reference)
+2. [Data Types](#data-types)
+3. [Core Modules](#core-modules)
+4. [Progression System](#progression-system)
+5. [Configuration](#configuration)
+6. [Environmental Sensors](#environmental-sensors)
+7. [Gaming Integration](#gaming-integration)
+8. [Combat System](#combat-system)
+9. [Enemy Generation](#enemy-generation)
+10. [Equipment System](#equipment-system)
    - [Equipment Types](#equipment-types)
-   - [Equipment Properties](#equipment-properties)
-   - [Equipment Effects](#equipment-effects)
+   - [EquipmentEffectApplier](#equipmenteffectapplier)
+   - [EquipmentValidator](#equipmentvalidator)
    - [Equipment Generator](#equipment-generator)
    - [Equipment Modifier](#equipment-modifier)
    - [Equipment Spawn Helper](#equipment-spawn-helper)
-8. [Extensibility System](#extensibility-system)
-   - [ExtensionManager](#extensionmanager)
-   - [FeatureRegistry](#featureregistry)
-   - [SkillRegistry](#skillregistry)
-   - [SpellRegistry](#spellregistry)
-   - [Per-Category Spawn Rate System](#per-category-spawn-rate-system)
-   - [WeightedSelector](#weightedselector)
-   - [CharacterGenerator Extensions](#charactergenerator-extensions)
-   - [Validation System](#validation-system)
-   - [Advanced Patterns](#advanced-patterns)
-   - [Skill Prerequisites](#skill-prerequisites)
-   - [Spell Prerequisites](#spell-prerequisites)
-   - [Custom Races](#custom-races)
-   - [Subrace Support](#subrace-support)
-   - [Custom Classes](#custom-classes)
-9. [Cross-References](#cross-references)
+10. [Extensibility System](#extensibility-system)
+    - [ExtensionManager](#extensionmanager)
+    - [FeatureQuery](#featurequery)
+    - [FeatureValidator](#featurevalidator)
+    - [WeightedSelector](#weightedselector)
+    - [SkillQuery](#skillquery)
+    - [Skill Prerequisites](#skill-prerequisites)
+    - [SkillValidator](#skillvalidator)
+    - [SpellQuery](#spellquery)
+    - [Spell Prerequisites](#spell-prerequisites)
+    - [SpellValidator](#spellvalidator)
+    - [Custom Races](#custom-races)
+    - [Subrace Support](#subrace-support)
+    - [Custom Classes](#custom-classes)
+
+    **For spawn rates, CharacterGenerator extensions, validation rules, and advanced patterns, see [EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)**
+11. [Cross-References](#cross-references)
+
+---
+
+## Quick Export Reference
+
+A concise overview of all main exports from the library, organized by category.
+
+### Core Functionality
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `PlaylistParser` | Parse playlist JSON/Araweave data | [Core Modules](#core-modules) |
+| `MetadataExtractor` | Extract metadata from track objects | [Core Modules](#core-modules) |
+| `AudioAnalyzer` | Analyze audio frequency characteristics | [Core Modules](#core-modules) |
+| `SpectrumScanner` | Analyze frequency bands | [Core Modules](#core-modules) |
+| `ColorExtractor` | Extract color palettes from images | [Core Modules](#core-modules) |
+| `CharacterGenerator` | Generate D&D 5e characters deterministically | [Core Modules](#core-modules) |
+
+### Extensibility
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `ExtensionManager` | Register and manage custom content for all categories | [Extensibility System](#extensibility-system) |
+| `FeatureQuery` | Query custom class features and racial traits | [Extensibility System](#extensibility-system) |
+| `SkillQuery` | Query custom skills | [Extensibility System](#extensibility-system) |
+| `SpellQuery` | Query spells with prerequisite validation | [Extensibility System](#extensibility-system) |
+| `FeatureValidator` | Validate feature data structures | [Extensibility System](#extensibility-system) |
+| `SkillValidator` | Validate skill data structures | [Extensibility System](#extensibility-system) |
+| `SpellValidator` | Validate spell data structures | [Extensibility System](#extensibility-system) |
+| `FeatureEffectApplier` | Apply feature effects to characters | [Extensibility System](#extensibility-system) |
+| `WeightedSelector` | Weighted random selection with multiple modes | [Extensibility System](#extensibility-system) |
+| `ensureAllDefaultsInitialized()` | Initialize all default data | [Extensibility System](#extensibility-system) |
+
+### Character Generation
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `RaceSelector` | Select character races | [Core Modules](#core-modules) |
+| `ClassSuggester` | Suggest classes based on audio | [Core Modules](#core-modules) |
+| `AbilityScoreCalculator` | Calculate ability scores | [Core Modules](#core-modules) |
+| `SkillAssigner` | Assign skills and proficiencies | [Core Modules](#core-modules) |
+| `SpellManager` | Manage spells and casting | [Core Modules](#core-modules) |
+| `EquipmentGenerator` | Generate starting equipment | [Equipment System](#equipment-system) |
+| `NamingEngine` | Generate character names | [Core Modules](#core-modules) |
+| `AppearanceGenerator` | Generate character appearance | [Core Modules](#core-modules) |
+
+### Progression & Leveling
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `XPCalculator` | Calculate XP earned and thresholds | [Progression System](#progression-system) |
+| `SessionTracker` | Track listening sessions | [Progression System](#progression-system) |
+| `LevelUpProcessor` | Handle level-ups | [Progression System](#progression-system) |
+| `MasterySystem` | Track track mastery | [Progression System](#progression-system) |
+| `CharacterUpdater` | Apply sessions to characters | [Progression System](#progression-system) |
+| `StatManager` | Manage stat increases | [Stat Increase System](#stat-increase-system) |
+
+**Stat Increase Strategies:** `DnD5eStandardStrategy`, `DnD5eSmartStrategy`, `BalancedStrategy`, `PrimaryOnlyStrategy`, `RandomStrategy`, `ManualStrategy`, `createStatIncreaseStrategy` — see [Stat Increase System](#stat-increase-system)
+
+### Equipment System
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `EquipmentEffectApplier` | Apply/remove equipment effects when equipping/unequipping | [Equipment System](#equipment-system) |
+| `EquipmentModifier` | Enchant, curse, upgrade, and modify equipment | [Equipment System](#equipment-system) |
+| `EquipmentSpawnHelper` | Batch spawn equipment by rarity, tags, or templates | [Equipment System](#equipment-system) |
+
+**Additional Equipment:** Predefined enchantment library, 38+ pre-built magic items, templates — see [Equipment System](#equipment-system) and [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md)
+
+### Sensors
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `EnvironmentalSensors` | GPS, motion, weather, light integration | [Environmental Sensors](#environmental-sensors) |
+| `GamingPlatformSensors` | Steam and Discord integration | [Gaming Integration](#gaming-integration) |
+
+> **Note:** `SteamAPIClient` and `DiscordRPCClient` are internal implementation classes. Not exported as part of the public API.
+
+### Combat System
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `CombatEngine` | Turn-based D&D 5e combat | [Combat System](#combat-system) |
+| `InitiativeRoller` | Roll initiative | [Combat System](#combat-system) |
+| `AttackResolver` | Resolve attack rolls | [Combat System](#combat-system) |
+| `SpellCaster` | Cast spells in combat | [Combat System](#combat-system) |
+| `DiceRoller` | Standalone dice rolling utilities | [Combat System](#combat-system) |
+| `EnemyGenerator` | Generate enemies and encounters | [Enemy Generation](#enemy-generation) |
+| `PartyAnalyzer` | Analyze party strength for encounters | [Enemy Generation](#enemy-generation) |
+
+### Utilities
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `generateSeed` | Generate deterministic seeds from blockchain data | [Utilities](#utilities) |
+| `hashSeedToFloat` | Hash seed to float in 0.0-1.0 range | [Utilities](#utilities) |
+| `hashSeedToInt` | Hash seed to integer in range | [Utilities](#utilities) |
+| `deriveSeed` | Derive new seed from base seed with suffix | [Utilities](#utilities) |
+| `SeededRNG` | Deterministic random number generator | [Utilities](#utilities) |
+| `Logger` / `createLogger` / `LogLevel` | Centralized logging utility | [Utilities](#utilities) |
+| `SensorDashboard` / `display*Diagnostics()` | Diagnostic dashboard for sensors | [Utilities](#utilities) |
+
+**Validation Schemas:** `PlaylistTrackSchema`, `ServerlessPlaylistSchema`, `AudioProfileSchema`, `AbilityScoresSchema`, `CharacterSheetSchema` — see [Utilities](#utilities)
+
+**Configuration:** `DEFAULT_SENSOR_CONFIG`, `loadConfigFromEnv()`, `mergeConfig()`, `DEFAULT_PROGRESSION_CONFIG`, `mergeProgressionConfig()` — see [Configuration](#configuration)
+
+### Type Exports
+
+All TypeScript types are exported, including:
+
+**Character Types:** `CharacterSheet`, `AbilityScores`, `Skill`, `ProficiencyLevel`, `Race`, `Class`, `Ability`, `GameMode` — see [Data Types](#data-types)
+
+**Generator Types:** `CharacterGeneratorOptions` (includes `gameMode`), `AudioProfile`, `ColorPalette`, `FrequencyBands` — see [Data Types](#data-types)
+
+**Context Types:** `EnvironmentalContext`, `GamingContext`, `ListeningSession` — see [Data Types](#data-types)
+
+**Stat Increase Types:** `StatIncreaseConfig`, `StatIncreaseResult`, `StatIncreaseStrategy`, `StatIncreaseOptions`, `StatIncreaseStrategyType`, `StatIncreaseFunction` — see [Stat Increase System](#stat-increase-system)
+
+**Extensibility Types:** `ClassFeature`, `RacialTrait`, `CustomSkill`, `FeatureEffect`, `FeaturePrerequisite`, `SkillPrerequisite`, `SpellPrerequisite`, `ValidationResult`, `ExtensionCategory` — see [Extensibility System](#extensibility-system) and [PREREQUISITES.md](docs/PREREQUISITES.md)
+
+**Equipment Types:** `EnhancedEquipment` (primary), `Equipment` (legacy), `InventoryItem`, `EquipmentProperty`, `EquipmentCondition`, `EquipmentModification`, `EnhancedInventoryItem`, `EquipmentMiniFeature`, `SpawnRandomOptions`, `TreasureHoardResult` — see [Equipment System](#equipment-system)
+
+**Enemy Types:** `EnemyCategory`, `EnemyRarity`, `EnemyArchetype`, `EnemyMixMode`, `EncounterDifficulty`, `SignatureAbility`, `AudioPreference`, `EnemyTemplate`, `RarityConfig`, `EnemyGenerationOptions`, `EncounterGenerationOptions`, `EnemyMetadata`, `EnemyFeature` — see [Enemy Generation](#enemy-generation)
+
+**Game Data:** `RACE_DATA`, `CLASS_DATA`, `SPELL_DATABASE`, `XP_THRESHOLDS` — see [Game Data Reference](#game-data-reference)
 
 ---
 
@@ -44,872 +172,678 @@ Complete API reference for the Playlist Data Engine. Contains all type definitio
 
 Type definitions for all core data structures.
 
-### ServerlessPlaylist
+### Playlist Types
 
-The main container object returned by the `PlaylistParser`.
+**Location:** [src/core/types/Playlist.ts](src/core/types/Playlist.ts)
 
-```typescript
-export interface ServerlessPlaylist {
-    // --- Playlist Metadata ---
-    name: string;           // Name of the playlist
-    description?: string;   // Optional description
-    image: string;          // URL to playlist cover art
-    creator: string;        // Wallet address of the curator
-    genre?: string;         // General genre
-    tags?: string[];        // Search tags
-
-    // --- The Content ---
-    tracks: PlaylistTrack[]; // Array of flattened track objects
-}
-```
-
-### PlaylistTrack
-
-**CRITICAL:** This is the object that contains the audio file URL.
-
-```typescript
-export interface PlaylistTrack {
-    // --- Identity & Blockchain Data (The Outer Shell) ---
-    id: string;             // e.g. "ethereum-0xContract-1" or "AR-{tx_id}"
-    uuid: string;           // Unique instance ID for the game engine
-    playlist_index: number; // Order in the playlist
-
-    chain_name: string;     // e.g. "ethereum", "optimism", "AR"
-    token_address?: string; // Contract Address (or 0x0 for files). Not present for AR chain.
-    token_id?: string;      // Token ID (or 0 for files). Not present for AR chain.
-    tx_id?: string;         // Arweave transaction ID (only present when chain_name is "AR")
-    platform: string;       // e.g. "sound", "catalog", "contract-wizard"
-
-    // --- Content Data (The Inner Core - Extracted from Metadata) ---
-    title: string;          // Extracted via Naming Logic
-    artist: string;         // Extracted via Artist Logic
-    description?: string;   // Description of the track
-    album?: string;         // Album name
-
-    // --- Assets (The Extracted Media) ---
-    image_url: string;      // The result of the Image Extraction Logic
-    audio_url: string;      // The result of the Audio Extraction Logic
-    duration: number;       // In seconds (parsed or estimated)
-
-    // --- Meta Tags ---
-    genre: string;          // Primary genre
-    tags: string[];         // All tags lowercased
-    bpm?: number;           // If available in metadata
-    key?: string;           // If available in metadata
-
-    // --- Raw Attributes (for edge cases) ---
-    attributes?: Record<string, string | number>;
-}
-```
-
-### RawArweavePlaylist
-
-The raw input schema received from Arweave before parsing.
-
-```typescript
-export interface RawArweavePlaylist {
-    name: string;
-    image: string;
-    creator: string;
-    description?: string;
-    genre?: string;
-    tags?: string[];
-    tracks: Array<{
-        // Outer Blockchain Data
-        chain_name: string;
-        token_address?: string;  // Not present for AR chain
-        token_id?: string;       // Not present for AR chain
-        tx_id?: string;          // Arweave transaction ID (only present when chain_name is "AR")
-        platform: string;
-        id?: string;
-        uuid?: string;
-        // The Stringified Payload
-        metadata: string; // "{ \"name\": \"Song\", \"audio_url\": ... }"
-    }>;
-}
-```
+| Type | Description | Key Properties |
+|------|-------------|----------------|
+| `ServerlessPlaylist` | Main container object returned by `PlaylistParser` | `name`, `tracks`, `image`, `creator`, `genre?`, `tags?` |
+| `PlaylistTrack` | Flattened track object containing audio_url | `audio_url` (critical), `title`, `artist`, `image_url`, chain data |
+| `RawArweavePlaylist` | Raw input schema received from Arweave before parsing | `tracks[].metadata` (stringified JSON), blockchain shell data |
 
 ### AudioProfile
 
+**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
+
 Result of the `AudioAnalyzer`. Used to generate characters.
 
-```typescript
-export interface AudioProfile {
-    /** Bass dominance (0.0 - 1.0) */
-    bass_dominance: number;
+| Property | Type | Description |
+|----------|------|-------------|
+| `bass_dominance` | number | Bass frequency dominance (0.0 - 1.0) |
+| `mid_dominance` | number | Mid-range frequency dominance (0.0 - 1.0) |
+| `treble_dominance` | number | Treble frequency dominance (0.0 - 1.0) |
+| `average_amplitude` | number | Average amplitude (0.0 - 1.0) |
+| `rms_energy?` | number | Root Mean Square energy (perceived loudness) |
+| `dynamic_range?` | number | Difference between Peak and RMS (track "punch") |
+| `spectral_centroid?` | number | Advanced metric: spectral centroid |
+| `spectral_rolloff?` | number | Advanced metric: spectral rolloff |
+| `zero_crossing_rate?` | number | Advanced metric: zero crossing rate |
+| `color_palette?` | ColorPalette | Color palette extracted from artwork |
+| `analysis_metadata` | object | Duration, buffer status, sample positions, timestamp |
 
-    /** Mid-range dominance (0.0 - 1.0) */
-    mid_dominance: number;
+### SamplingStrategy
 
-    /** Treble dominance (0.0 - 1.0) */
-    treble_dominance: number;
+Used by `analyzeTimeline` to determine how often to sample the audio.
 
-    /** Average amplitude (0.0 - 1.0) */
-    average_amplitude: number;
+| Option | Type | Description |
+|--------|------|-------------|
+| `type: 'interval'` | object | Sample every `intervalSeconds` |
+| `type: 'count'` | object | Generate exactly `count` samples across the whole song |
 
-    /** Advanced metrics (optional) */
-    spectral_centroid?: number;
-    spectral_rolloff?: number;
-    zero_crossing_rate?: number;
+### AudioTimelineEvent
 
-    /** Color palette extracted from artwork (optional) */
-    color_palette?: ColorPalette;
+Data point for a specific segment of audio.
 
-    /** Analysis metadata */
-    analysis_metadata: {
-        /** Duration of audio analyzed in seconds */
-        duration_analyzed: number;
+| Property | Type | Description |
+|----------|------|-------------|
+| `timestamp` | number | Start time of the segment in seconds |
+| `duration` | number | Duration of the segment in seconds |
+| `bass` | number | Bass dominance for this segment (0.0 - 1.0) |
+| `mid` | number | Mid dominance for this segment (0.0 - 1.0) |
+| `treble` | number | Treble dominance for this segment (0.0 - 1.0) |
+| `amplitude` | number | RMS amplitude (energy) for this segment |
+| `peak` | number | Maximum peak amplitude for this segment |
+| `spectral_centroid?` | number | Advanced metric: spectral centroid |
+| `spectral_rolloff?` | number | Advanced metric: spectral rolloff |
+| `zero_crossing_rate?` | number | Advanced metric: zero crossing rate |
 
-        /** Whether full buffer was analyzed (true for files < 3s) */
-        full_buffer_analyzed: boolean;
 
-        /** Sample positions used (percentages) */
-        sample_positions: number[];
-
-        /** Timestamp of analysis */
-        analyzed_at: string;
-    };
-}
-```
 
 ### ColorPalette
 
-Defines a color scheme derived from audio analysis.
+**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
 
-```typescript
-export interface ColorPalette {
-    primary: string;
-    secondary: string;
-    tertiary: string;
-    background: string;
-    text: string;
-    isMonochrome: boolean;
-    brightness: number; // 0-1
-    saturation: number; // 0-1
-    colors: string[]; // Full palette
-}
-```
+Defines a color scheme derived from image analysis using k-means clustering.
 
-**Note**: There is also a ColorPalette definition in `AudioProfile.ts` with different property names (`primary_color` vs `primary`, `is_monochrome` vs `isMonochrome`). The definition above (from `ColorPalette.ts`) is the canonical version.
+*Also known as: Color scheme, palette, dominant colors*
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `colors` | string[] | Dominant colors ranked by frequency (hex format) |
+| `primary_color` | string | Most dominant color |
+| `secondary_color?` | string | Secondary color |
+| `accent_color?` | string | Accent color |
+| `brightness` | number | Average brightness (0.0 - 1.0) |
+| `saturation` | number | Average saturation (0.0 - 1.0) |
+| `is_monochrome` | boolean | Whether the image is monochrome |
 
 ### FrequencyBands
 
-Audio frequency band separation for analysis.
+**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
 
-**Phase 8.1 (v2) ranges** - Rebalanced to prevent treble dominance:
-- Bass: 20Hz - 400Hz (380 Hz range, 11% of spectrum)
-- Mid: 400Hz - 4kHz (3,600 Hz range, 52% of spectrum)
-- Treble: 4kHz - 14kHz (10,000 Hz range, 37% of spectrum)
+Audio frequency band separation for analysis. Rebalanced v2 ranges prevent treble dominance.
+
+| Band | Range | Spectrum |
+|------|-------|----------|
+| Bass | 20Hz - 400Hz | 11% (380 Hz) |
+| Mid | 400Hz - 4kHz | 52% (3,600 Hz) |
+| Treble | 4kHz - 14kHz | 37% (10,000 Hz) |
 
 ```typescript
 export interface FrequencyBands {
-    /** Bass frequencies (20Hz - 400Hz) */
-    bass: number[];
-    /** Mid frequencies (400Hz - 4kHz) */
-    mid: number[];
-    /** Treble frequencies (4kHz - 14kHz) */
-    treble: number[];
+    bass: number[];   // Bass frequencies (20Hz - 400Hz)
+    mid: number[];    // Mid frequencies (400Hz - 4kHz)
+    treble: number[]; // Treble frequencies (4kHz - 14kHz)
 }
 ```
 
 ### Character Types
 
-**Location:** `src/core/types/Character.ts`
+**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
 
-```typescript
-export type Race =
-    | 'Human'
-    | 'Elf'
-    | 'Dwarf'
-    | 'Halfling'
-    | 'Dragonborn'
-    | 'Gnome'
-    | 'Half-Elf'
-    | 'Half-Orc'
-    | 'Tiefling';
+#### Race
 
-/**
- * Branded type for extensible Class names
- *
- * This allows custom classes to be registered via ExtensionManager while maintaining
- * type safety. Use asClass() to convert a string to the Class type, and isValidClass()
- * to validate at runtime.
- */
-export type Class = string & { readonly __ClassBrand: unique symbol };
+*Also known as: Character race, playable race*
 
-export type Ability = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
+Branded type for extensible race names. Default D&D 5e races:
 
-export type Skill =
-    | 'athletics'
-    | 'acrobatics'
-    | 'sleight_of_hand'
-    | 'stealth'
-    | 'arcana'
-    | 'history'
-    | 'investigation'
-    | 'nature'
-    | 'religion'
-    | 'animal_handling'
-    | 'insight'
-    | 'medicine'
-    | 'perception'
-    | 'survival'
-    | 'deception'
-    | 'intimidation'
-    | 'performance'
-    | 'persuasion';
+| Race |
+|------|
+| Human |
+| Elf |
+| Dwarf |
+| Halfling |
+| Dragonborn |
+| Gnome |
+| Half-Elf |
+| Half-Orc |
+| Tiefling |
 
-export type ProficiencyLevel = 'none' | 'proficient' | 'expertise';
+**Custom races:** Can be registered via `ExtensionManager`. Use `asRace()` to cast strings and `isValidRace()` for runtime validation.
 
-export type GameMode = 'standard' | 'uncapped';
+#### Class
 
-export interface Attack {
-    name: string;
-    bonus?: number;
-    attack_bonus?: number;
-    damage?: string;
-    damage_dice?: string;
-    damage_type?: string;
-    type?: 'melee' | 'ranged' | 'spell';
-    range?: number;
-    /** Weapon properties (e.g., 'finesse', 'versatile', 'thrown', 'reach') */
-    properties?: string[];
-}
+*Also known as: Character class, job, profession*
 
-export interface Spell {
-    name: string;
-    level?: number;
-    school?: string;
-    casting_time?: string;
-    range?: string;
-    duration?: string;
-    components?: string[];
-    description?: string;
-    damage_dice?: string;
-    damage_type?: string;
-    attack_roll?: boolean;
-    saving_throw?: string;
-}
+Branded type for extensible class names. Default D&D 5e classes:
 
-export interface AbilityScores {
-    STR: number;
-    DEX: number;
-    CON: number;
-    INT: number;
-    WIS: number;
-    CHA: number;
-    // Aliases for compatibility
-    dexterity?: number;
-    strength?: number;
-    constitution?: number;
-}
-```
+| Class |
+|-------|
+| Barbarian |
+| Bard |
+| Cleric |
+| Druid |
+| Fighter |
+| Monk |
+| Paladin |
+| Ranger |
+| Rogue |
+| Sorcerer |
+| Warlock |
+| Wizard |
+
+**Custom classes:** Can be registered via `ExtensionManager`. Use `asClass()` to cast strings and `isValidClass()` for runtime validation.
+
+#### Ability
+
+Standard D&D 5e ability scores:
+
+| Ability | Description |
+|---------|-------------|
+| STR | Strength |
+| DEX | Dexterity |
+| CON | Constitution |
+| INT | Intelligence |
+| WIS | Wisdom |
+| CHA | Charisma |
+
+#### Skill
+
+Standard D&D 5e skills:
+
+| Skill | Ability |
+|-------|---------|
+| athletics | STR |
+| acrobatics | DEX |
+| sleight_of_hand | DEX |
+| stealth | DEX |
+| arcana | INT |
+| history | INT |
+| investigation | INT |
+| nature | INT |
+| religion | INT |
+| animal_handling | WIS |
+| insight | WIS |
+| medicine | WIS |
+| perception | WIS |
+| survival | WIS |
+| deception | CHA |
+| intimidation | CHA |
+| performance | CHA |
+| persuasion | CHA |
+
+#### ProficiencyLevel
+
+Skill proficiency levels:
+
+| Level | Description |
+|-------|-------------|
+| none | No proficiency |
+| proficient | Proficient (add proficiency bonus) |
+| expertise | Expertise (add 2× proficiency bonus) |
+
+#### GameMode
+
+Character progression rules:
+
+| Mode | Description |
+|------|-------------|
+| standard | D&D 5e rules (stats capped at 20, increases at levels 4/8/12/16/19, max level 20) |
+| uncapped | No stat limits, stat increases EVERY level (unlimited progression) |
+
+#### Attack
+
+**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+
+*Also known as: Weapon attack, combat action*
+
+Combat attack representation.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| name | string | Attack name |
+| bonus | number? | Legacy bonus field (deprecated) |
+| attack_bonus | number? | Attack roll bonus |
+| damage | string? | Damage description |
+| damage_dice | string? | Damage dice (e.g., "1d8") |
+| damage_type | string? | Damage type (e.g., "fire", "slashing") |
+| type | 'melee' \| 'ranged' \| 'spell'? | Attack type |
+| range | number? | Range in feet |
+| properties | string[]? | Weapon properties (finesse, versatile, thrown, reach) |
+
+#### Spell
+
+**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+
+Spell representation for casting.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| name | string | Spell name |
+| level | number? | Spell level (0-9) |
+| school | string? | Magic school |
+| casting_time | string? | Casting time (e.g., "1 action") |
+| range | string? | Spell range |
+| duration | string? | Duration |
+| components | string[]? | Components (V, S, M) |
+| description | string? | Spell description |
+| damage_dice | string? | Damage dice |
+| damage_type | string? | Damage type |
+| attack_roll | boolean? | Requires attack roll? |
+| saving_throw | string? | Saving throw ability |
+
+#### AbilityScores
+
+**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+
+The six ability scores with optional aliases.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| STR | number | Strength score |
+| DEX | number | Dexterity score |
+| CON | number | Constitution score |
+| INT | number | Intelligence score |
+| WIS | number | Wisdom score |
+| CHA | number | Charisma score |
+| strength | number? | Alias for STR (backward compatibility) |
+| dexterity | number? | Alias for DEX (backward compatibility) |
+| constitution | number? | Alias for CON (backward compatibility) |
 
 ### CharacterSheet
 
-**Location:** `src/core/types/Character.ts` (229-373)
+**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
 
-The complete D&D 5e character object.
+The complete D&D 5e character object. This is the core data structure returned by `CharacterGenerator.generate()`.
 
-```typescript
-export interface CharacterSheet {
-    /** Character name */
-    name: string;
+| Property | Type | Description |
+|----------|------|-------------|
+| name | string | Character name |
+| race | Race | Character race |
+| subrace | string? | Subrace (e.g., 'High Elf', 'Hill Dwarf') |
+| class | Class | Character class |
+| level | number | Current level (1-20 or uncapped) |
+| ability_scores | AbilityScores | Base ability scores |
+| ability_modifiers | AbilityScores | Calculated modifiers |
+| proficiency_bonus | number | Proficiency bonus based on level |
+| hp | { current, max, temp } | Hit points |
+| armor_class | number | Armor class |
+| initiative | number | Initiative bonus |
+| speed | number | Speed in feet |
+| skills | Record\<string, ProficiencyLevel\> | Skill proficiencies |
+| saving_throws | Record\<Ability, boolean\> | Saving throw proficiencies |
+| racial_traits | string[] | Racial trait IDs |
+| class_features | string[] | Class feature IDs |
+| spells | SpellSlots? | Spell slots and known spells (if applicable) |
+| equipment | CharacterEquipment? | Equipment and inventory |
+| appearance | CharacterAppearance? | Visual appearance details |
+| xp | { current, next_level } | Experience points |
+| seed | string | Generation seed (deterministic) |
+| generated_at | string | Generation timestamp |
+| gameMode | GameMode? | Progression rules (standard/uncapped) |
+| pendingStatIncreases | number? | Number of pending stat increases awaiting selection |
+| feature_effects | FeatureEffect[]? | Effects from features/traits |
+| equipment_effects | EquipmentEffect[]? | Effects from equipped items |
 
-    /** Race */
-    race: Race;
+### InventoryItem Variants
 
-    /** Class */
-    class: Class;
+Three related types for equipment and inventory management.
 
-    /** Current level (1-20) */
-    level: number;
+| Type | Location | Description |
+|------|----------|-------------|
+| **InventoryItem** | [src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts) | Basic inventory: name, quantity, equipped flag |
+| **EnhancedInventoryItem** | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) | Adds: modifications, templateId, instanceId (for enchantments, per-instance tracking) |
+| **CharacterEquipment** | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) | Container: weapons[], armor[], items[], totalWeight, equippedWeight |
 
-    /** Ability scores */
-    ability_scores: AbilityScores;
-
-    /** Ability modifiers (calculated from scores) */
-    ability_modifiers: AbilityScores;
-
-    /** Proficiency bonus (based on level) */
-    proficiency_bonus: number;
-
-    /** Hit points */
-    hp: {
-        current: number;
-        max: number;
-        temp: number;
-    };
-
-    /** Armor class */
-    armor_class: number;
-
-    /** Initiative bonus */
-    initiative: number;
-
-    /** Speed in feet */
-    speed: number;
-
-    /** Skill proficiencies */
-    skills: Record<Skill, ProficiencyLevel>;
-
-    /** Saving throw proficiencies */
-    saving_throws: Record<Ability, boolean>;
-
-    /** Racial traits */
-    racial_traits: string[];
-
-    /** Class features */
-    class_features: string[];
-
-    /** Spells (for spellcasters) */
-    spells?: {
-        spell_slots: Record<number, { total: number; used: number }>;
-        known_spells: string[];
-        cantrips: string[];
-    };
-
-    /** Equipment */
-    equipment?: {
-        weapons: string[];
-        armor: string[];
-        items: string[];
-    };
-
-    /** Character appearance */
-    appearance?: {
-        /** Deterministic features from seed */
-        body_type: string;
-        skin_tone: string;
-        hair_style: string;
-        hair_color: string;
-        eye_color: string;
-        facial_features: string[];
-
-        /** Dynamic features from audio/visual */
-        primary_color?: string;
-        secondary_color?: string;
-        aura_color?: string;
-    };
-
-    /** Experience points */
-    xp: {
-        current: number;
-        next_level: number;
-    };
-
-    /** Track seed this character was generated from */
-    seed: string;
-
-    /** Generation timestamp */
-    generated_at: string;
-
-    /** Game mode for stat progression (standard = capped at 20, uncapped = no limits) */
-    gameMode?: GameMode;
-
-}
-```
-
-### InventoryItem
-
-**Location:** `src/core/generation/EquipmentGenerator.ts` (37-41)
-
-Basic inventory item structure.
-
-```typescript
-export interface InventoryItem {
-    name: string;
-    quantity: number;
-    equipped: boolean;
-}
-```
-
-### EnhancedInventoryItem
-
-**Location:** `src/core/types/Equipment.ts` (164-177)
-
-Enhanced inventory item with modification and instance tracking.
-
-```typescript
-export interface EnhancedInventoryItem {
-    name: string;
-    quantity: number;
-    equipped: boolean;
-    modifications?: EquipmentModification[];
-    templateId?: string;
-    instanceId?: string;
-}
-```
-
-### CharacterEquipment
-
-**Location:** `src/core/types/Equipment.ts` (183-189)
-
-Equipment and inventory state for a character.
-
-```typescript
-export interface CharacterEquipment {
-    weapons: EnhancedInventoryItem[];
-    armor: EnhancedInventoryItem[];
-    items: EnhancedInventoryItem[];
-    totalWeight: number;
-    equippedWeight: number;
-}
-```
+**Key differences:**
+- `InventoryItem` - Legacy/compatibility type
+- `EnhancedInventoryItem` - Current standard with enchantment support
+- `CharacterEquipment` - Character's complete inventory state
 
 ### CharacterAppearance
 
-**Location:** `src/core/generation/AppearanceGenerator.ts` (8-21)
+**Location:** [src/core/generation/AppearanceGenerator.ts](src/core/generation/AppearanceGenerator.ts)
 
 Visual appearance details for a character.
 
-```typescript
-export interface CharacterAppearance {
-    // Deterministic features (from seed)
-    body_type: 'slender' | 'athletic' | 'muscular' | 'stocky';
-    skin_tone: string;
-    hair_style: string;
-    hair_color: string;
-    eye_color: string;
-    facial_features: string[];
+| Property | Type | Description |
+|----------|------|-------------|
+| body_type | 'slender' \| 'athletic' \| 'muscular' \| 'stocky' | Deterministic (from seed) |
+| skin_tone | string | Deterministic (from seed) |
+| hair_style | string | Deterministic (from seed) |
+| hair_color | string | Deterministic (from seed) |
+| eye_color | string | Deterministic (from seed) |
+| facial_features | string[] | Deterministic (from seed) |
+| primary_color | string? | Dynamic (from audio/visual) |
+| secondary_color | string? | Dynamic (from audio/visual) |
+| accent_color | string? | Dynamic (from audio/visual) |
+| aura_color | string? | Dynamic (from audio/visual, magical classes only) |
     // Dynamic features (from audio/visual)
     primary_color?: string;
     secondary_color?: string;
+    accent_color?: string;
     aura_color?: string;
-}
-```
+
 
 ### EnvironmentalContext
 
-**Location:** `src/core/types/Environmental.ts` (155-163)
+*Also known as: Environmental sensors, IRL sensors, real-world context*
 
-Aggregated environmental sensor data.
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-```typescript
-export interface EnvironmentalContext {
-    geolocation?: GeolocationData;
-    motion?: MotionData;
-    weather?: WeatherData;
-    light?: LightData;
+Aggregated environmental sensor data that provides XP modifiers based on real-world conditions.
 
-    // Derived gameplay data
-    biome?: 'urban' | 'forest' | 'desert' | 'mountain' | 'valley' | 'water' | 'tundra' | 'plains' | 'jungle' | 'swamp' | 'taiga' | 'savanna';
+| Property | Type | Description |
+|----------|------|-------------|
+| geolocation | GeolocationData? | GPS position data |
+| motion | MotionData? | Device motion/acceleration |
+| weather | WeatherData? | Current weather conditions |
+| light | LightData? | Ambient light level |
+| biome | BiomeType? | Derived biome (12 types) |
+| environmental_xp_modifier | number? | Composite XP multiplier (0.5-3.0) |
+| timestamp | number | Unix timestamp |
 
-    // Composite XP multiplier (0.5 to 3.0)
-    environmental_xp_modifier?: number;
-    timestamp: number;
-}
+**Biome types:** urban, forest, desert, mountain, valley, water, tundra, plains, jungle, swamp, taiga, savanna
 
 ### GeolocationData
 
-**Location:** `src/core/types/Environmental.ts` (94-102)
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-```typescript
-export interface GeolocationData {
-    latitude: number;
-    longitude: number;
-    altitude: number | null;      // Meters above sea level (null if unavailable)
-    accuracy: number;             // Meters
-    heading: number | null;       // Direction 0-360 degrees (null if unavailable)
-    speed: number | null;         // Meters per second (null if unavailable)
-    timestamp: number;            // Unix timestamp
-}
+GPS position and movement data.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| latitude | number | Latitude coordinate |
+| longitude | number | Longitude coordinate |
+| altitude | number \| null | Meters above sea level |
+| accuracy | number | Accuracy in meters |
+| heading | number \| null | Direction 0-360 degrees |
+| speed | number \| null | Meters per second |
+| timestamp | number | Unix timestamp |
 
 ### MotionData
 
-**Location:** `src/core/types/Environmental.ts` (104-122)
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-```typescript
-export interface MotionData {
-    acceleration: {
-        x: number | null;  // m/s²
-        y: number | null;
-        z: number | null;
-    };
-    accelerationIncludingGravity: {
-        x: number;
-        y: number;
-        z: number;
-    };
-    rotationRate: {
-        alpha: number | null;  // degrees/second
-        beta: number | null;
-        gamma: number | null;
-    };
-    interval: number;          // Time interval between samples (ms)
-    timestamp: number;
-}
-```
+Device motion and acceleration data from accelerometer/gyroscope.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| acceleration | {x, y, z} | Acceleration without gravity (m/s²) |
+| accelerationIncludingGravity | {x, y, z} | Raw acceleration with gravity |
+| rotationRate | {alpha, beta, gamma} | Rotation rates (degrees/second) |
+| interval | number | Sample interval (ms) |
+| timestamp | number | Unix timestamp |
 
 ### WeatherData
 
-**Location:** `src/core/types/Environmental.ts` (124-134)
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-```typescript
-export interface WeatherData {
-    temperature: number;          // Celsius
-    humidity: number;             // Percentage
-    pressure: number;             // hPa
-    weatherType: string;          // e.g., 'Clear', 'Rain', 'Clouds'
-    windSpeed: number;            // m/s
-    windDirection: number;        // Degrees
-    isNight: boolean;             // Based on sunrise/sunset times
-    moonPhase: number;            // 0.0 to 1.0 (new to full)
-    timestamp: number;
-}
-```
+Current weather conditions from OpenWeatherMap API.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| temperature | number | Temperature in Celsius |
+| humidity | number | Humidity percentage |
+| pressure | number | Atmospheric pressure (hPa) |
+| weatherType | string | Condition (Clear, Rain, Clouds, etc.) |
+| windSpeed | number | Wind speed (m/s) |
+| windDirection | number | Wind direction (degrees) |
+| isNight | boolean | Based on sunrise/sunset |
+| moonPhase | number | Moon phase 0.0-1.0 (new to full) |
+| timestamp | number | Unix timestamp |
 
 ### LightData
 
-**Location:** `src/core/types/Environmental.ts` (148-151)
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-```typescript
-export interface LightData {
-    illuminance: number;          // lux (light intensity)
-    timestamp: number;
-}
-```
+Ambient light sensor data.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| illuminance | number | Light intensity in lux |
+| timestamp | number | Unix timestamp |
 
 ### ForecastData
 
-**Location:** `src/core/types/Environmental.ts` (136-146)
+*Also known as: Weather forecast*
 
-```typescript
-export interface ForecastData {
-    temperature: number;          // Celsius
-    humidity: number;             // Percentage
-    pressure: number;             // hPa
-    weatherType: string;          // e.g., 'Clear', 'Rain', 'Clouds'
-    windSpeed: number;           // m/s
-    windDirection: number;       // Degrees
-    timestamp: number;
-    forecastTime: Date;          // When this forecast is for
-    probabilityOfPrecipitation: number; // 0.0 to 1.0
-}
-```
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-### Sensor-Related Types
+Weather forecast data for future time periods.
 
-**Location:** `src/core/types/Environmental.ts`
+| Property | Type | Description |
+|----------|------|-------------|
+| temperature | number | Forecast temperature (Celsius) |
+| humidity | number | Forecast humidity (%) |
+| pressure | number | Forecast pressure (hPa) |
+| weatherType | string | Forecast condition |
+| windSpeed | number | Forecast wind speed (m/s) |
+| windDirection | number | Forecast wind direction (degrees) |
+| timestamp | number | Current timestamp |
+| forecastTime | Date | When forecast applies |
+| probabilityOfPrecipitation | number | PoP 0.0-1.0 |
 
-```typescript
-export type SensorType = 'geolocation' | 'motion' | 'weather' | 'light'; // (1)
+### Sensor Types
 
-export interface PerformanceMetrics { // (6-19)
-    successCount: number;        // Number of successful API calls
-    errorCount: number;          // Number of failed API calls
-    totalTime: number;           // Total time spent on successful API calls (milliseconds)
-    minTime: number;             // Time of the fastest API call (milliseconds)
-    maxTime: number;             // Time of the slowest API call (milliseconds)
-    lastCallTimestamp: number | null;
-}
+*Also known as: Sensor status, sensor health, sensor diagnostics*
 
-export interface PerformanceStatistics { // (24-35)
-    average: number;             // Average API call time in milliseconds
-    min: number;                 // Minimum API call time in milliseconds
-    max: number;                 // Maximum API call time in milliseconds
-    totalCalls: number;          // Total number of API calls
-    successRate: number;         // Success rate as percentage (0-100)
-}
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-export interface SensorPermission { // (37-41)
-    type: SensorType;
-    granted: boolean;
-    timestamp: number;
-}
+| Type | Description |
+|------|-------------|
+| **SensorType** | 'geolocation' \| 'motion' \| 'weather' \| 'light' |
+| **SensorHealthStatus** | 'healthy' \| 'degraded' \| 'failed' \| 'unknown' |
 
-export type SensorHealthStatus = 'healthy' | 'degraded' | 'failed' | 'unknown'; // (46)
+### Sensor Status & Monitoring
 
-export interface SensorStatus { // (51-60)
-    type: SensorType;
-    health: SensorHealthStatus;
-    lastSuccessTimestamp: number | null;
-    lastFailureTimestamp: number | null;
-    consecutiveFailures: number;
-    totalFailures: number;
-    lastError: string | null;
-    isRetrying: boolean;
-}
+**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
 
-export interface SensorFailureLog { // (65-71)
-    sensorType: SensorType;
-    timestamp: number;
-    error: string;
-    retryAttempt: number;
-    willRetry: boolean;
-}
-
-export interface SensorRetryConfig { // (76-81)
-    maxRetries: number;
-    initialDelayMs: number;
-    maxDelayMs: number;
-    backoffMultiplier: number;
-}
-
-export interface SensorRecoveryNotification { // (86-92)
-    sensorType: SensorType;
-    previousStatus: SensorHealthStatus;
-    newStatus: SensorHealthStatus;
-    timestamp: number;
-    message: string;
-}
-```
+| Interface | Description |
+|-----------|-------------|
+| **PerformanceMetrics** | API call metrics (success/error counts, timing) |
+| **PerformanceStatistics** | Computed stats (avg, min, max, success rate) |
+| **SensorPermission** | Permission grant status per sensor |
+| **SensorStatus** | Current health state (consecutive failures, retrying) |
+| **SensorFailureLog** | Failure log entry with retry info |
+| **SensorRetryConfig** | Retry policy (max retries, delays, backoff) |
+| **SensorRecoveryNotification** | Status change notification |
 
 ### SevereWeatherAlert
 
-**Location:** `src/core/sensors/WeatherAPIClient.ts` (50-56)
+*Also known as: Extreme weather, weather events*
 
-```typescript
-export interface SevereWeatherAlert {
-    type: SevereWeatherType;     // Enum: Blizzard, Hurricane, Typhoon, Tornado, None
-    xpBonus: number;             // 0.5 to 1.0 (50% to 100%)
-    severity: 'moderate' | 'high' | 'extreme';
-    message: string;
-    detectedAt: number;
-}
-```
+**Location:** [src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)
 
-**Related:** `SevereWeatherType` enum defined at `src/core/sensors/WeatherAPIClient.ts` (39-44)
+Severe weather event that provides XP bonus.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| type | SevereWeatherType | Blizzard, Hurricane, Typhoon, Tornado, None |
+| xpBonus | number | XP bonus 0.5-1.0 (50%-100%) |
+| severity | 'moderate' \| 'high' \| 'extreme' | Alert severity level |
+| message | string | Alert description |
+| detectedAt | number | Detection timestamp |
+
+**SevereWeatherType:** Blizzard, Hurricane, Typhoon, Tornado, None
 
 ### GamingContext
 
-**Location:** `src/core/types/Progression.ts` (36-51)
+*Also known as: Game detection, gaming activity, Steam integration*
 
-Steam gaming activity data. Note: Discord RPC CANNOT read game activity due to platform limitations. Discord RPC is only used for SETTING music presence ("Listening to" status).
+**Location:** [src/core/types/Progression.ts](src/core/types/Progression.ts)
 
-```typescript
-export interface GamingContext {
-    isActivelyGaming: boolean;
-    platformSource: 'steam' | 'none';
+Steam gaming activity data. **Note:** Discord RPC CANNOT read game activity due to platform limitations. Discord RPC is only used for SETTING music presence ("Listening to" status).
 
-    currentGame?: {
-        name: string;
-        source: 'steam';
-        genre?: string[];
-        sessionDuration?: number;  // Minutes in current session
-        partySize?: number;        // Multiplayer party size
-    };
-
-    totalGamingMinutes: number;   // Lifetime gaming while listening
-    gamesPlayedWhileListening: string[];
-    lastUpdated: number;          // Timestamp of last check
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| isActivelyGaming | boolean | Currently playing a game |
+| platformSource | 'steam' \| 'none' | Detection platform |
+| currentGame | object? | Current game info |
+| currentGame.name | string | Game title |
+| currentGame.source | 'steam' | Data source |
+| currentGame.genre | string[]? | Game genres |
+| currentGame.sessionDuration | number? | Minutes in current session |
+| currentGame.partySize | number? | Multiplayer party size |
+| totalGamingMinutes | number | Lifetime gaming while listening |
+| gamesPlayedWhileListening | string[] | All games played |
+| lastUpdated | number | Last check timestamp |
 
 ### Combat Types
 
-**Location:** `src/core/types/Combat.ts`
+**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
 
 Core D&D 5e-inspired turn-based combat type definitions.
 
-### CombatInstance
+*Also known as: Combat system, battle system, turn-based combat*
+
+#### CombatInstance
 
 State of an active combat encounter.
 
-```typescript
-export interface CombatInstance {
-  id: string;
-  combatants: Combatant[];
-  currentTurnIndex: number;  // Index into combatants array
-  roundNumber: number;
-  environment?: EnvironmentalContext;
-  history: CombatAction[];   // Log of all actions taken
-  isActive: boolean;
-  winner?: Combatant;        // Set when combat ends
-  startTime: number;
-  lastUpdated: number;
-}
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique identifier |
+| `combatants` | Combatant[] | All participants |
+| `currentTurnIndex` | number | Current turn position |
+| `roundNumber` | number | Current round |
+| `environment?` | EnvironmentalContext | Optional environmental context |
+| `history` | CombatAction[] | Action log |
+| `isActive` | boolean | Whether combat is ongoing |
+| `winner?` | Combatant | Winner when combat ends |
+| `startTime` | number | Combat start timestamp |
+| `lastUpdated` | number | Last update timestamp |
 
-export interface Combatant {
-  id: string;             // Unique ID within combat instance
-  character: CharacterSheet;
-  initiative: number;     // Initiative roll result
-  currentHP: number;      // Current hit points
-  temporaryHP?: number;   // Temporary hit points (damage is taken from these first)
-  statusEffects: StatusEffect[];
-  position?: {
-    x: number;
-    y: number;
-  };                      // Optional tactical position
-  isDefeated: boolean;    // Whether combatant is unconscious/defeated
-  actionUsed: boolean;    // Has action been used this turn
-  bonusActionUsed: boolean;
-  reactionUsed: boolean;
-  spellSlots?: {          // Remaining spell slots by level (if applicable)
-    [level: number]: number;
-  };
-}
+#### Combatant
 
-export interface CombatAction {
-  type: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready';
-  actor: Combatant;
-  target?: Combatant;
-  targets?: Combatant[];
-  attack?: Attack;
-  spell?: Spell;
-  result?: CombatActionResult;
-}
+A character participating in combat.
 
-export interface StatusEffect {
-  name: string;           // e.g., "Charmed", "Frightened", "Prone"
-  description: string;
-  duration: number;       // Rounds remaining
-  source?: string;        // Which combatant applied this
-  hasConcentration?: boolean;  // Some effects require concentration
-}
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique ID within combat |
+| `character` | CharacterSheet | The character |
+| `initiative` | number | Initiative roll result |
+| `currentHP` | number | Current hit points |
+| `temporaryHP?` | number | Temp HP (absorbs damage first) |
+| `statusEffects` | StatusEffect[] | Active conditions |
+| `position?` | {x, y} | Tactical position |
+| `isDefeated` | boolean | Defeated state |
+| `actionUsed` | boolean | Action used this turn |
+| `bonusActionUsed` | boolean | Bonus action used |
+| `reactionUsed` | boolean | Reaction used |
+| `spellSlots?` | Record<number, number> | Remaining slots by level |
 
-export interface CombatActionResult {
-  success: boolean;
-  roll?: number;          // d20 roll result
-  isCritical?: boolean;
-  damage?: number;
-  damageType?: string;
-  targetHP?: number;
-  description: string;
-}
+#### CombatAction
 
-export interface AttackRoll {
-  d20Roll: number;        // The d20 roll (1-20)
-  attackBonus: number;    // Modifier added (ability mod + proficiency)
-  totalRoll: number;      // d20 + attackBonus
-  targetAC: number;       // Defense of target
-  hit: boolean;           // Whether attack hit
-  isCritical: boolean;    // Natural 20
-  isMiss: boolean;        // Natural 1
-}
+An action taken during combat.
 
-export interface DamageRoll {
-  diceFormula: string;    // e.g., "2d6", "1d8+3"
-  rolls: number[];        // Individual die rolls
-  modifier?: number;      // Ability modifier added
-  total: number;          // Sum of rolls + modifier
-  isCritical: boolean;    // If critical hit, dice are doubled
-}
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | ActionType | `'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready'` |
+| `actor` | Combatant | Who performed the action |
+| `target?` | Combatant | Single target |
+| `targets?` | Combatant[] | Multiple targets |
+| `attack?` | Attack | Attack data |
+| `spell?` | Spell | Spell data |
+| `result?` | CombatActionResult | Outcome |
 
-export interface SpellCastResult {
-  success: boolean;
-  spellName: string;
-  caster: Combatant;
-  targets: Combatant[];
-  saveDC?: number;        // Difficulty class for saving throw
-  damage?: DamageRoll;
-  effectsApplied: StatusEffect[];
-  spellSlotUsed: number;  // Spell level
-  description: string;
-}
+#### StatusEffect
 
-export interface CombatResult {
-  winner: Combatant;
-  defeated: Combatant[];
-  roundsElapsed: number;
-  totalTurns: number;
-  xpAwarded: number;
-  treasureAwarded?: {
-    gold: number;
-    items: any[];
-  };
-  description: string;
-}
+Temporary condition affecting a combatant.
 
-export interface CombatConfig {
-  useEnvironment?: boolean;     // Apply environmental context to combat (weather, altitude, etc.)
-  useMusic?: boolean;           // Apply music-based buffs to character stats
-  tacticalMode?: boolean;       // Enable position-based distance mechanics
-  maxTurnsBeforeDraw?: number;  // Turn limit before combat is a draw (default: 100)
-  allowFleeing?: boolean;       // Can combatants attempt to flee
-}
-```
+*Also known as: Condition, debuff, buff*
 
-### Additional Combat Types
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | string | Effect name (e.g., "Charmed", "Frightened") |
+| `description` | string | Effect description |
+| `duration` | number | Rounds remaining |
+| `source?` | string | Which combatant applied it |
+| `hasConcentration?` | boolean | Requires concentration |
 
-```typescript
-export type DamageType =
-  | 'slashing' | 'piercing' | 'bludgeoning'  // Physical
-  | 'fire' | 'cold' | 'lightning' | 'thunder' | 'poison' | 'acid'  // Elemental
-  | 'necrotic' | 'radiant' | 'psychic' | 'force';  // Magical
+#### TreasureConfig
 
-export type SavingThrowAbility = 'strength' | 'dexterity' | 'constitution' | 'intelligence' | 'wisdom' | 'charisma';
-```
+Configuration for custom combat loot rewards.
 
-### Combat Helper Types
+*Also known as: Loot config, rewards*
 
-**Locations:**
-- `InitiativeResult` → `src/core/combat/InitiativeRoller.ts` (11-16)
-- `AttackResult` → `src/core/combat/AttackResolver.ts` (15-23)
-- `SpellSlots` → `src/core/generation/SpellManager.ts` (24-31)
+**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
 
-```typescript
-export interface InitiativeResult {
-    combatant: Combatant;
-    d20Roll: number;
-    dexModifier: number;
-    initiativeTotal: number;
-}
+| Property | Type | Description |
+|----------|------|-------------|
+| `gold?` | number \| `{ min: number; max: number }` | Fixed amount, or range for seeded RNG (inclusive) |
+| `items?` | any[] | Custom items to award |
 
-export interface AttackResult {
-    attacker: Combatant;
-    target: Combatant;
-    attack: Attack;
-    attackRoll: AttackRoll;
-    damageRoll?: DamageRoll;
-    hpAfterDamage?: number;
-    description: string;
-}
+#### Additional Combat Types
 
-export interface SpellSlots {
-    /** Record of spell slots by spell level (0-9) */
-    spell_slots: Record<number, { total: number; used: number }>;
-    /** Array of known spell names */
-    known_spells: string[];
-    /** Array of cantrip names */
-    cantrips: string[];
-}
-```
+**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
+
+| Type | Description |
+|------|-------------|
+| `CombatActionResult` | Outcome of a combat action (success, roll, damage) |
+| `AttackRoll` | Attack roll result (d20, bonus, hit/miss) |
+| `DamageRoll` | Damage roll result (dice, rolls, total) |
+| `SpellCastResult` | Spell casting outcome (success, save DC, effects) |
+| `CombatResult` | Final combat result (winner, XP, treasure) |
+| `CombatConfig` | Combat configuration options (environment, music, tactical, treasure) |
+| `TreasureConfig` | Custom loot rewards (fixed gold, range, items) |
+
+#### Combat Helper Types
+
+**InitiativeResult** — [src/core/combat/InitiativeRoller.ts](src/core/combat/InitiativeRoller.ts)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `combatant` | Combatant | The combatant |
+| `d20Roll` | number | d20 roll |
+| `dexModifier` | number | DEX modifier |
+| `initiativeTotal` | number | Total initiative |
+
+**AttackResult** — [src/core/combat/AttackResolver.ts](src/core/combat/AttackResolver.ts)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `attacker` | Combatant | The attacker |
+| `target` | Combatant | The target |
+| `attack` | Attack | Attack used |
+| `attackRoll` | AttackRoll | Roll result |
+| `damageRoll?` | DamageRoll | Damage rolled |
+| `hpAfterDamage?` | number | Target HP after damage |
+| `description` | string | Result description |
+
+**SpellSlots** — [src/core/generation/SpellManager.ts](src/core/generation/SpellManager.ts)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `spell_slots` | Record<number, {total, used}> | Slots by level |
+| `known_spells` | string[] | Known spell names |
+| `cantrips` | string[] | Cantrip names |
+
+#### Damage Types
+
+*Also known as: Damage categories, element types*
+
+Physical: `slashing` | `piercing` | `bludgeoning`
+
+Elemental: `fire` | `cold` | `lightning` | `thunder` | `poison` | `acid`
+
+Magical: `necrotic` | `radiant` | `psychic` | `force`
+
+#### Saving Throw Abilities
+
+*Also known as: Save abilities, saves, saving throws*
+
+`strength` | `dexterity` | `constitution` | `intelligence` | `wisdom` | `charisma`
 
 ---
 
 ### Utilities
 
-**Hashing & Seeds**
+#### Hashing & Seeds
 
-*Location: `src/utils/hash.ts`*
+*Location: [src/utils/hash.ts](src/utils/hash.ts)*
 
-- `generateSeed(chain: string, address: string, id: string): string`
-    - Creates a unique seed string.
-- `hashSeedToFloat(seed: string): number`
-    - Returns a float between 0.0 and 1.0.
-- `hashSeedToInt(seed: string, min: number, max: number): number`
-    - Returns an integer in range [min, max).
-- `deriveSeed(baseSeed: string, suffix: string): string`
-    - Creates a derived seed by appending a suffix to a base seed.
+Functions for deterministic seed generation and hashing from blockchain data.
 
-**Randomness**
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `generateSeed(chain, address, id)` | `string` | Creates a unique seed string from blockchain identifiers |
+| `hashSeedToFloat(seed)` | `number` | Float in range [0.0, 1.0) |
+| `hashSeedToInt(seed, min, max)` | `number` | Integer in range [min, max) |
+| `deriveSeed(baseSeed, suffix)` | `string` | Creates derived seed by appending suffix to base seed |
 
-*Location: `src/utils/random.ts`*
+#### SeededRNG
 
-```typescript
-class SeededRNG {
-    constructor(seed: string)
+*Location: [src/utils/random.ts](src/utils/random.ts)*
 
-    // Generate random values
-    random(): number                              // Returns float in [0.0, 1.0)
-    randomInt(min: number, max: number): number   // Returns integer in [min, max)
-    randomChoice<T>(array: T[]): T                // Selects random element from array
-    weightedChoice<T>(choices: [T, number][]): T  // Selects element using weights
-    shuffle<T>(array: T[]): T[]                   // Returns shuffled copy of array
-    reset(): void                                 // Resets internal counter (for testing)
-}
-```
-
-**SeededRNG** provides deterministic random number generation for reproducible results. The same seed always produces the same sequence of random values, making it ideal for blockchain-based character generation, procedural content, and testing.
-
-**Method Reference:**
+Deterministic random number generator for reproducible results. The same seed always produces the same sequence of random values.
 
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `constructor(seed)` | - | Creates a new RNG with the given seed string |
 | `random()` | `number` | Float in range [0.0, 1.0) |
-| `randomInt(min, max)` | `number` | Integer in range [min, max) - min is inclusive, max is exclusive |
+| `randomInt(min, max)` | `number` | Integer in range [min, max) - min inclusive, max exclusive |
 | `randomChoice(array)` | `T` | Random element from the array |
 | `weightedChoice(choices)` | `T` | Element from weighted choices - takes `[[value, weight], ...]` tuples |
 | `shuffle(array)` | `T[]` | New array with elements in random order |
@@ -917,76 +851,46 @@ class SeededRNG {
 
 **Validation Schemas**
 
-*Location: `src/utils/validators.ts`*
+*Also known as: Zod schemas, runtime validators, type validation*
 
-Zod validation schemas for runtime type validation of playlist, audio, and character data.
+*Location:* `src/utils/validators.ts`
 
-- `PlaylistTrackSchema`: Validates track metadata (lines 14-48) - includes chain-specific validation (AR requires tx_id, other chains require token_address and token_id)
-- `ServerlessPlaylistSchema`: Validates full playlist (lines 53-61) - validates playlist structure with metadata and tracks array
-- `AudioProfileSchema`: Validates audio analysis (lines 66-89) - validates frequency analysis, color palette, and analysis metadata
-- `AbilityScoresSchema`: Validates ability scores (lines 94-101) - validates all six ability scores (STR, DEX, CON, INT, WIS, CHA) are in range 1-20
-- `CharacterSheetSchema`: Validates character data (lines 106-156) - comprehensive validation of complete character sheet including nested objects for abilities, HP, skills, equipment, appearance, and XP
-
-**Logging**
-
-*Location: `src/utils/logger.ts`*
-
-The Logger utility provides centralized logging with consistent log levels across the application. It supports configurable verbosity, custom handlers for testing, and diagnostic mode for troubleshooting.
+Zod schemas for runtime type validation. Use `safeParse()` for validation:
 
 ```typescript
-enum LogLevel {
-    DEBUG = 0,   // Detailed debugging information
-    INFO = 1,    // General operational information
-    WARN = 2,    // Warning conditions that should be addressed
-    ERROR = 3,   // Error conditions that need attention
-    NONE = 4     // Disable all logging
-}
+import { PlaylistTrackSchema } from '@playlist-data-engine/utils';
 
-class Logger {
-    // Instance methods
-    debug(message: string, data?: unknown): void
-    info(message: string, data?: unknown): void
-    warn(message: string, data?: unknown): void
-    error(message: string, data?: unknown): void
-
-    // Static methods
-    static for(context: string): Logger
-    static setLevel(level: LogLevel): void
-    static getLevel(): LogLevel
-    static configure(config: LoggerConfig): void
-    static reset(): void
-
-    // Verbose mode (convenience for setting DEBUG level)
-    static enableVerbose(): void
-    static disableVerbose(): void
-    static setVerbose(enabled: boolean): void
-    static isVerbose(): boolean
-
-    // Diagnostic mode (maximum verbosity for troubleshooting)
-    static enableDiagnosticMode(): void
-    static disableDiagnosticMode(): void
-    static isDiagnosticMode(): boolean
-}
-
-function createLogger(context: string): Logger
-
-interface LogEntry {
-    timestamp: Date
-    level: LogLevel
-    context: string
-    message: string
-    data?: unknown
-}
-
-interface LoggerConfig {
-    level?: LogLevel
-    includeTimestamp?: boolean
-    includeContext?: boolean
-    customHandler?: (entry: LogEntry) => void
+const result = PlaylistTrackSchema.safeParse(data);
+if (!result.success) {
+  console.error(result.error);
 }
 ```
 
-**Method Reference:**
+| Schema | Validates |
+|--------|-----------|
+| `PlaylistTrackSchema` | Track metadata with chain-specific validation (AR: tx_id, others: token_address + token_id) |
+| `ServerlessPlaylistSchema` | Complete playlist structure (metadata + tracks array) |
+| `AudioProfileSchema` | Audio analysis (frequency, color palette, analysis metadata) |
+| `AbilityScoresSchema` | All six ability scores (STR, DEX, CON, INT, WIS, CHA) in range 1-20 |
+| `CharacterSheetSchema` | Complete character sheet (abilities, HP, skills, equipment, appearance, XP) |
+
+#### Logging
+
+*Location: [src/utils/logger.ts](src/utils/logger.ts)*
+
+Centralized logging utility with configurable log levels and diagnostic modes.
+
+**Log Levels**
+
+| Level | Value | Description |
+|-------|-------|-------------|
+| `DEBUG` | 0 | Detailed debugging information |
+| `INFO` | 1 | General operational information (default) |
+| `WARN` | 2 | Warning conditions that should be addressed |
+| `ERROR` | 3 | Error conditions that need attention |
+| `NONE` | 4 | Disable all logging |
+
+**Method Reference**
 
 | Method | Returns | Description |
 |--------|---------|-------------|
@@ -1008,346 +912,132 @@ interface LoggerConfig {
 | `Logger.disableDiagnosticMode()` | `void` | Disable diagnostic mode |
 | `Logger.isDiagnosticMode()` | `boolean` | Check if diagnostic mode is enabled |
 
-**Sensor Dashboard**
+**Types**
 
-*Location: `src/utils/sensorDashboard.ts`*
+*Location: [src/utils/logger.ts](src/utils/logger.ts)*
 
-The Sensor Dashboard provides formatted console output for sensor diagnostics during development and debugging. It displays sensor status, health indicators, cache statistics, performance metrics, and recent failures with optional color support.
+| Type | Description |
+|------|-------------|
+| `LogEntry` | Single log entry structure (timestamp, level, context, message, data) |
+| `LoggerConfig` | Configuration options (level, includeTimestamp, includeContext, customHandler) |
 
-```typescript
-interface DashboardConfig {
-    /** Use colors in output (default: true, auto-disabled in non-TTY environments) */
-    useColors?: boolean;
-    /** Compact mode for smaller output (default: false) */
-    compact?: boolean;
-    /** Show timestamp (default: true) */
-    showTimestamp?: boolean;
-    /** Maximum number of recent failures to show (default: 5) */
-    maxFailures?: number;
-}
-```
+#### Sensor Dashboard
 
-**Functions:**
+*Location: [src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
 
-- `displayEnvironmentalDiagnostics(diagnostics, config?): void`
-    - Displays environmental sensor dashboard (GPS, motion, weather, light sensors)
-    - Shows sensor health, permissions, availability, cache stats, API performance, recent failures
-    - **Parameters:**
-        - `diagnostics`: Return value of `EnvironmentalSensors.getDiagnostics()`
-        - `config`: Optional `DashboardConfig` object
-- `displayGamingDiagnostics(diagnostics, config?): void`
-    - Displays gaming platform sensor dashboard (Steam, Discord)
-    - Shows platform connection status, current game, polling status, cache, API performance
-    - **Parameters:**
-        - `diagnostics`: Return value of `GamingPlatformSensors.getDiagnostics()`
-        - `config`: Optional `DashboardConfig` object
-- `displaySystemDashboard(data, config?): void`
-    - Displays a combined system dashboard with quick health summary
-    - **Parameters:**
-        - `data`: Object with optional `environmental` and `gaming` diagnostics
-        - `config`: Optional `DashboardConfig` object
+Diagnostic tool for visual console output during development and debugging. Displays sensor status, health indicators, cache statistics, performance metrics, and recent failures.
 
-**SensorDashboard Object:**
+**Functions**
 
-All dashboard functions are also available as methods of the `SensorDashboard` object:
+| Function | Description |
+|----------|-------------|
+| `displayEnvironmentalDiagnostics(diagnostics, config?)` | Displays environmental sensor dashboard (GPS, motion, weather, light sensors) |
+| `displayGamingDiagnostics(diagnostics, config?)` | Displays gaming platform sensor dashboard (Steam, Discord) |
+| `displaySystemDashboard(data, config?)` | Displays combined system dashboard with health summary |
 
-```typescript
-import { SensorDashboard } from 'playlist-data-engine';
+**Types**
 
-SensorDashboard.displayEnvironmentalDiagnostics(diagnostics);
-SensorDashboard.displayGamingDiagnostics(diagnostics);
-SensorDashboard.displaySystemDashboard({ environmental, gaming });
-```
+*Location: [src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
 
-**Dashboard Output Sections:**
-
-*Environmental Diagnostics:*
-- Sensor Status (health, permissions, availability, consecutive failures, last error)
-- Cache Statistics (geolocation age/expiry, weather cache size, hit rates)
-- API Performance (Weather API, Forecast API - calls, success rate, avg/min/max/P95/P99 times)
-- Recent Failures (sensor type, error, retry attempt, time ago)
-- Context Data (geolocation, motion, weather, light, biome availability)
-
-*Gaming Diagnostics:*
-- Platform Status (Steam authentication/API key, Discord connection/client ID/state)
-- Gaming Context (active gaming, platform, current game with session duration/party size)
-- Polling Status (active status, interval, exponential backoff)
-- Cache (game metadata size, cached games list)
-- API Performance (Current Game API, Metadata API metrics)
+| Type | Description |
+|------|-------------|
+| `DashboardConfig` | Configuration options (useColors, compact, showTimestamp, maxFailures) |
 
 ---
 
 ### Game Data Reference
+*Also known as: Game constants, RPG data, D&D 5e data*
 
-These constants are exported for use in your application.
+D&D 5e-inspired game constants for races, classes, XP, spells, and equipment.
 
 #### Available Races (`ALL_RACES`)
-- Human
-- Elf
-- Dwarf
-- Halfling
-- Dragonborn
-- Gnome
-- Half-Elf
-- Half-Orc
-- Tiefling
+*Also known as: Character races, playable races*
+
+Human, Elf, Dwarf, Halfling, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling
 
 #### Available Classes (`ALL_CLASSES`)
-- Barbarian
-- Bard
-- Cleric
-- Druid
-- Fighter
-- Monk
-- Paladin
-- Ranger
-- Rogue
-- Sorcerer
-- Warlock
-- Wizard
+*Also known as: Character classes, job classes, professions*
+
+Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard
 
 #### Data Structures
-- `RACE_DATA`: Object containing ability bonuses, speed, and traits for each race.
-- `CLASS_DATA`: Object containing hit dice, saving throws, and skill options for each class.
-- `XP_THRESHOLDS`: Mapping of Level (1-20) to XP required.
-- `SPELL_DATABASE`: Comprehensive list of D&D 5e spells with details.
-- `EQUIPMENT_DATABASE`: Stats for weapons, armor, and items.
+*Also known as: Game databases, constant data*
+
+| Constant | Description | Source |
+|----------|-------------|--------|
+| `RACE_DATA` | Ability bonuses, speed, traits for each race | `src/utils/constants.ts` |
+| `CLASS_DATA` | Hit dice, saving throws, skill options for each class | `src/utils/constants.ts` |
+| `XP_THRESHOLDS` | Level (1-20) to XP required mapping | `src/utils/constants.ts` |
+| `SPELL_DATABASE` | D&D 5e spells with details | `src/utils/constants.ts` |
+| `DEFAULT_EQUIPMENT` | Weapons, armor, items stats (201 items) | `src/utils/equipmentConstants.ts` |
+| `MAGIC_ITEMS` | Example magic items (34 items) | `src/utils/equipmentConstants.ts` |
+| `ITEM_CREATION_TEMPLATES` | Templates for enchanting equipment (9 templates) | `src/utils/equipmentConstants.ts` |
+| `ENCHANTMENT_LIBRARY` | All enchantments and curses organized by category | `src/utils/equipmentConstants.ts` |
+| `CLASS_STARTING_EQUIPMENT` | Starting equipment by class (12 classes) | `src/utils/equipmentConstants.ts` |
 
 #### Helper Functions
+*Also known as: Data lookup functions, game data getters*
 
 **Location:** `src/utils/constants.ts`
 
-These helper functions retrieve data from both default constants and custom extensions registered via ExtensionManager.
+Retrieves data from default constants and custom extensions registered via ExtensionManager.
 
-```typescript
-/**
- * Get race data (default or custom)
- *
- * Checks both the built-in RACE_DATA and the ExtensionManager for custom race data.
- *
- * @param race - The race name to look up
- * @returns Race data entry or undefined if not found
- *
- * @example
- * // Get default race data
- * const elfData = getRaceData('Elf');
- * console.log(elfData.speed); // 30
- *
- * // Get custom race data (if registered via ExtensionManager)
- * const dragonkinData = getRaceData('Dragonkin');
- * if (dragonkinData) {
- *     console.log(dragonkinData.ability_bonuses);
- * }
- */
-export function getRaceData(race: string): RaceDataEntry | undefined
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `getRaceData()` | `race: string` | `RaceDataEntry \| undefined` | Race data (default or custom) |
+| `getClassData()` | `className: string` | `ClassDataEntry \| undefined` | Class data with template inheritance support |
+| `getClassSpellList()` | `className: string` | Spell list object \| undefined | Cantrips and spells by level |
+| `getSpellSlotsForClass()` | `className: string`, `characterLevel: number` | `Record<number, number> \| undefined` | Spell slots per level for class |
+| `getClassStartingEquipment()` | `className: string` | Equipment object \| undefined | Weapons, armor, items |
 
-/**
- * Get class data (default or custom)
- *
- * Checks both the default CLASS_DATA and the ExtensionManager for custom class data.
- *
- * For template-based custom classes (those with a baseClass property),
- * the base class data is merged with custom data, with custom properties
- * taking precedence.
- *
- * @param className - The class name to look up
- * @returns Class data entry or undefined if not found
- *
- * @example
- * // Get default class data
- * const wizardData = getClassData('Wizard');
- * console.log(wizardData.hit_die); // 6
- *
- * // Get custom class data (if registered via ExtensionManager)
- * const necromancerData = getClassData('Necromancer');
- * if (necromancerData) {
- *     console.log(necromancerData.baseClass); // 'Wizard'
- *     console.log(necromancerData.primary_ability); // 'INT'
- * }
- */
-export function getClassData(className: string): ClassDataEntry | undefined
-
-/**
- * Get spell list for a class (default or custom)
- *
- * Checks CLASS_SPELL_LISTS for default classes, or ExtensionManager
- * for custom spell lists registered via 'classSpellLists.${ClassName}'.
- *
- * @param className - The class name to look up
- * @returns Spell list with cantrips and spells_by_level, or undefined
- */
-export function getClassSpellList(className: string): {
-    cantrips: string[];
-    spells_by_level: Record<number, string[]>;
-} | undefined
-
-/**
- * Get spell slots for a class at a specific level (default or custom)
- *
- * Checks SPELL_SLOTS_BY_CLASS for default classes, or ExtensionManager
- * for custom spell slot progressions registered via 'classSpellSlots'.
- *
- * @param className - The class name to look up
- * @param characterLevel - The character level (1-20)
- * @returns Record of spell slots by level, or undefined
- */
-export function getSpellSlotsForClass(className: string, characterLevel: number): Record<number, number> | undefined
-
-/**
- * Get starting equipment for a class (default or custom)
- *
- * Checks CLASS_STARTING_EQUIPMENT for default classes, or ExtensionManager
- * for custom equipment registered via 'classStartingEquipment.${ClassName}'.
- *
- * @param className - The class name to look up
- * @returns Equipment object with weapons, armor, items arrays, or undefined
- */
-export function getClassStartingEquipment(className: string): {
-    weapons: string[];
-    armor: string[];
-    items: string[];
-} | undefined
-```
-
-#### Interface Definitions
+#### Type Definitions
 
 **RaceDataEntry**
+*Also known as: Race definition, racial stats*
 
-```typescript
-/**
- * Race data entry interface
- *
- * Defines the structure for race data including ability score bonuses,
- * base walking speed, traits, and available subraces. Used by RACE_DATA
- * and by custom races registered via ExtensionManager.
- */
-export interface RaceDataEntry {
-    /** Ability score bonuses granted by this race */
-    ability_bonuses: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+**Location:** `src/utils/constants.ts` (31-43)
 
-    /** Base walking speed in feet */
-    speed: number;
-
-    /** Array of racial trait names/IDs */
-    traits: string[];
-
-    /** Optional: Available subraces for this race */
-    subraces?: string[];
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| `ability_bonuses` | `Partial<Record<Ability, number>>` | Ability score bonuses granted |
+| `speed` | `number` | Base walking speed in feet |
+| `traits` | `string[]` | Racial trait names/IDs |
+| `subraces` | `string[]` (optional) | Available subraces |
 
 **ClassDataEntry**
+*Also known as: Class definition, job stats*
 
-```typescript
-/**
- * Class data entry interface
- *
- * Defines the structure for class data including primary ability, hit die,
- * saving throws, spellcasting, skills, expertise, and optional audio preferences.
- *
- * ## Template-Based Class System
- *
- * This interface supports creating custom classes that extend (inherit from) existing
- * D&D 5e base classes through the `baseClass` property. This enables rapid
- * creation of specialized classes (e.g., "Necromancer" extending "Wizard") without
- * duplicating all base class properties.
- *
- * ### How Template Inheritance Works
- *
- * When `baseClass` is specified in a custom class registration:
- *
- * 1. **Base class lookup**: The system retrieves the base class data from CLASS_DATA
- * 2. **Property merging**: Base class properties are merged with custom class properties
- * 3. **Override behavior**: Custom properties take precedence over base class properties
- * 4. **Special handling for available_skills**: Custom skill list replaces base skill list
- *    (not merged), allowing complete customization of class skills
- */
-export interface ClassDataEntry {
-    /** Primary ability score for this class */
-    primary_ability: Ability;
+**Location:** `src/utils/constants.ts` (243-342)
 
-    /** Hit die size for this class */
-    hit_die: number;
+| Property | Type | Description |
+|----------|------|-------------|
+| `primary_ability` | `Ability` | Primary ability score |
+| `hit_die` | `number` | Hit die size |
+| `saving_throws` | `Ability[]` | Saving throw proficiencies |
+| `is_spellcaster` | `boolean` | Whether class can cast spells |
+| `skill_count` | `number` | Number of skills to choose |
+| `available_skills` | `string[]` | Available skills (includes custom) |
+| `has_expertise` | `boolean` | Whether class has expertise |
+| `expertise_count` | `number` (optional) | Number of expertise choices |
+| `baseClass` | `Class` (optional) | Base class for template inheritance |
+| `audio_preferences` | `object` (optional) | Audio preferences for affinity |
 
-    /** Saving throw proficiencies */
-    saving_throws: Ability[];
+**Template Inheritance:** Custom classes with `baseClass` inherit properties from base D&D 5e classes. Custom properties override base properties. `available_skills` replaces (not merges) the base list.
 
-    /** Whether this class can cast spells */
-    is_spellcaster: boolean;
+#### Prerequisites
+*Also known as: Requirements, conditions*
 
-    /** Number of skills to choose from */
-    skill_count: number;
+Skills, spells, and features can have prerequisites: base skills/spells/features, ability scores, minimum level, class/race requirements, or custom conditions.
 
-    /** Available skills for this class (includes custom skills) */
-    available_skills: string[];
+**See [docs/PREREQUISITES.md](docs/PREREQUISITES.md)** for complete guide and examples.
 
-    /** Whether this class has expertise */
-    has_expertise: boolean;
+#### Type Helper Functions
+*Also known as: Type guards, type converters*
 
-    /** Number of expertise choices (if has_expertise is true) */
-    expertise_count?: number;
-
-    /**
-     * For template-based classes: the base class to inherit from
-     *
-     * When specified, the custom class will inherit properties from the base class,
-     * with custom properties overriding inherited ones.
-     */
-    baseClass?: Class;
-
-    /** Optional: Audio preferences for class affinity calculation */
-    audio_preferences?: {
-        primary: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        secondary?: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        tertiary?: 'bass' | 'treble' | 'mid' | 'amplitude' | 'chaos';
-        bass?: number;
-        treble?: number;
-        mid?: number;
-        amplitude?: number;
-    };
-}
-```
-
-**Prerequisites**
-
-**For comprehensive guide, examples, and API reference:** See [docs/PREREQUISITES.md](docs/PREREQUISITES.md)
-
-Skills, spells, and features can have prerequisites that must be met before a character can gain proficiency in them. This allows for advanced abilities that require:
-- Base skills, spells, or features
-- Specific ability scores
-- Minimum level
-- Class or race requirements
-- Custom conditions
-
-See [PREREQUISITES.md](docs/PREREQUISITES.md) for complete interface definitions and usage examples.
-
-**Type Helper Functions**
-
-```typescript
-/**
- * Convert a string to the Class type
- *
- * Use this function to register custom class names.
- *
- * @param value - The class name string
- * @returns The value branded as a Class type
- *
- * @example
- * const customClass: Class = asClass('Necromancer');
- */
-export function asClass(value: string): Class;
-
-/**
- * Type guard to check if a string is a valid Class (default or custom)
- *
- * This checks against both default D&D 5e classes and any custom classes
- * registered via ExtensionManager's 'classes.data' category.
- *
- * @param value - The value to check
- * @returns True if the value is a valid class name
- */
-export function isValidClass(value: string): value is Class;
-```
+| Function | Parameters | Returns | Description |
+|----------|------------|---------|-------------|
+| `asClass()` | `value: string` | `Class` | Brands string as Class type for custom registration |
+| `isValidClass()` | `value: string` | `boolean` | Type guard for valid class (default or custom) |
 
 ---
 
@@ -1357,7 +1047,7 @@ export function isValidClass(value: string): value is Class;
 
 **Location:** `src/core/parser/PlaylistParser.ts`
 
-The `PlaylistParser` is responsible for converting raw JSON data (typically from Arweave) into a standardized `ServerlessPlaylist` object. It handles metadata extraction, validation, and flattening of nested structures.
+Converts raw JSON data (Arweave) into standardized `ServerlessPlaylist` objects.
 
 #### Class: `PlaylistParser`
 
@@ -1365,191 +1055,121 @@ The `PlaylistParser` is responsible for converting raw JSON data (typically from
 ```typescript
 new PlaylistParser(options?: PlaylistParserOptions)
 ```
-- `options.validateAudioUrls` (boolean): If true, performs a HEAD request to verify audio URLs exist. Default: `false`.
-- `options.strict` (boolean): If true, throws errors on invalid tracks instead of skipping them. Default: `false`.
 
 **Methods:**
 
-- `async parse(data: RawArweavePlaylist): Promise<ServerlessPlaylist>`
-    - Parses the raw playlist data.
-    - **Returns:** A `ServerlessPlaylist` object containing metadata and an array of `PlaylistTrack` objects.
-    - **Throws:** Error if `strict` mode is on and parsing fails.
+| Method | Description |
+|--------|-------------|
+| `async parse(data: RawArweavePlaylist): Promise<ServerlessPlaylist>` | Parses raw playlist data into ServerlessPlaylist with metadata and track array |
+
+**Options:**
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `validateAudioUrls` | boolean | `false` | Perform HEAD request to verify audio URLs exist |
+| `strict` | boolean | `false` | Throw errors on invalid tracks instead of skipping |
+| `audioUrlValidationTimeout` | number | `5000` | Timeout in milliseconds for audio URL validation (prevents hanging) |
 
 #### Helper: `MetadataExtractor`
 
 **Location:** `src/core/parser/MetadataExtractor.ts`
 
-Extracts metadata with priority queue logic. All methods are static.
+*Also known as: Metadata parser, field extractor*
 
-- `static extractAudioUrl(data: Record<string, unknown>): string | null`
-    - Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url
-- `static extractImageUrl(data: Record<string, unknown>): string | null`
-    - Extracts image URL with priority: image_small > image > image_large > image_thumb
-- `static extractTitle(data: Record<string, unknown>): string | null`
-    - Extracts name/title with priority: name > title
-- `static extractArtist(data: Record<string, unknown>): string | null`
-    - Extracts artist with priority: artist > created_by > minter
-- `static parseMetadata(metadata: unknown): Record<string, unknown> | null`
-    - Parses metadata string to JSON object with error handling
-- `static convertAttributes(attributes: unknown): Record<string, string | number> | null`
-    - Converts OpenSea-style attributes array to key-value object
+Extracts metadata fields from playlist track data. All methods are static.
+
+| Method | Description |
+|--------|-------------|
+| `static extractAudioUrl(data): string \| null` | Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url |
+| `static extractImageUrl(data): string \| null` | Extracts image URL with priority: image_small > image > image_large > image_thumb |
+| `static extractTitle(data): string \| null` | Extracts name/title with priority: name > title |
+| `static extractArtist(data): string \| null` | Extracts artist with priority: artist > created_by > minter |
+| `static parseMetadata(metadata): Record<string, unknown> \| null` | Parses metadata string to JSON object with error handling |
+| `static convertAttributes(attributes): Record<string, string \| number> \| null` | Converts OpenSea-style attributes array to key-value object |
 
 ---
 
 ### AudioAnalyzer
 
-**Location:** `src/core/analysis/AudioAnalyzer.ts`
+*Also known as: Audio fingerprinting, frequency analysis, sonic analyzer*
 
-The `AudioAnalyzer` extracts sonic fingerprints from audio files using Web Audio API. It uses a "Triple Tap" strategy to analyze audio at 5%, 40%, and 70% marks for a representative profile.
+**Location:** [src/core/analysis/AudioAnalyzer.ts](src/core/analysis/AudioAnalyzer.ts)
 
-#### Class: `AudioAnalyzer`
+Extracts sonic fingerprints from audio files using Web Audio API. Analyzes frequency bands (bass, mid, treble dominance) for character generation.
 
-**Constructor:**
-```typescript
-new AudioAnalyzer(options?: AudioAnalyzerOptions)
-```
-- `options.includeAdvancedMetrics` (boolean): Calculate spectral centroid, rolloff, and zero crossing rate. Default: `false`.
-- `options.sampleRate` (number): Sample rate in Hz. Default: `44100`.
-- `options.fftSize` (number): FFT size (power of 2). Default: `2048`.
+#### Constructor Options
 
-**Methods:**
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `includeAdvancedMetrics` | boolean | `false` | Calculate spectral_centroid, spectral_rolloff, zero_crossing_rate |
+| `sampleRate` | number | `44100` | Sample rate in Hz |
+| `fftSize` | number | `2048` | FFT size (must be power of 2) |
+| `trebleBoost` | number | `1` | Treble boost multiplier (0.0-1.0+) |
+| `bassBoost` | number | `1` | Bass boost multiplier (0.0-1.0+) |
+| `midBoost` | number | `1` | Mid boost multiplier (0.0-1.0+) |
 
-- `async extractSonicFingerprint(audioUrl: string): Promise<AudioProfile>`
-    - Downloads and analyzes the audio file.
-    - **Returns:** `AudioProfile` containing:
-        - `bass_dominance`, `mid_dominance`, `treble_dominance` (0-255 scale)
-        - `average_amplitude`
-        - `spectral_centroid`, `spectral_rolloff`, `zero_crossing_rate` (if enabled)
-        - `analysis_metadata`
+#### Methods
 
-#### Helper: `ColorExtractor`
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `extractSonicFingerprint(audioUrl: string)` | `Promise<AudioProfile>` | Downloads and analyzes audio file; returns bass/mid/treble dominance, average_amplitude, RMS energy, dynamic range, optional advanced metrics, and analysis_metadata |
+| `analyzeTimeline(audioUrl: string, strategy: SamplingStrategy)` | `Promise<AudioTimelineEvent[]>` | Performs full-song analysis, returning an array of frequency and amplitude data points over time |
 
-**Location:** `src/core/analysis/ColorExtractor.ts`
 
-Extracts dominant colors from an image URL.
+### ColorExtractor
 
-- `async extractPalette(imageUrl: string): Promise<ColorPalette>`
-    - Uses K-Means clustering (k=4) to find dominant colors.
-    - Falls back to Median Cut algorithm if K-Means fails.
-    - Calculates brightness, saturation, and monochrome status.
+*Also known as: Color palette extractor, dominant colors, k-means color analyzer*
 
-#### Helper: `SpectrumScanner`
+**Location:** [src/core/analysis/ColorExtractor.ts](src/core/analysis/ColorExtractor.ts)
 
-**Location:** `src/core/analysis/SpectrumScanner.ts`
+Extracts dominant colors from image URLs using K-Means clustering (k=4) with Median Cut fallback.
 
-Separates raw frequency data into bands using Phase 8.1 (v2) rebalanced ranges.
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `extractPalette(imageUrl: string)` | `Promise<ColorPalette>` | Extracts 4 dominant colors ranked by frequency; calculates brightness, saturation, monochrome status |
 
-- `static separateFrequencyBands(frequencyData: Uint8Array, sampleRate: number): FrequencyBands`
-    - **Bass:** 20Hz - 400Hz (380 Hz range, 11% of spectrum)
-    - **Mid:** 400Hz - 4kHz (3,600 Hz range, 52% of spectrum)
-    - **Treble:** 4kHz - 14kHz (10,000 Hz range, 37% of spectrum)
+### SpectrumScanner
+
+*Also known as: Frequency band separator, FFT band analyzer*
+
+**Location:** [src/core/analysis/SpectrumScanner.ts](src/core/analysis/SpectrumScanner.ts)
+
+Separates raw frequency data into bands using rebalanced v2 ranges (prevents treble dominance).
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `separateFrequencyBands(frequencyData, sampleRate)` | `FrequencyBands` | Separates FFT data into bass (20-400Hz), mid (400Hz-4kHz), treble (4kHz-14kHz) bands |
+| `calculateDominance(band, bandWidthHz?)` | `number` | Calculates normalized average amplitude for a frequency band (bandwidth-aware) |
 
 ---
 
 ### CharacterGenerator
+*Also known as: Character builder, hero generator, PC creator, D&D character generator*
 
 **Location:** `src/core/generation/CharacterGenerator.ts`
 
-The `CharacterGenerator` creates deterministic D&D 5e character sheets based on a seed and an audio profile.
+Creates deterministic D&D 5e character sheets from a seed and audio profile.
 
 #### Class: `CharacterGenerator`
 
 **Methods:**
 
-```typescript
-class CharacterGenerator {
-    static generate(
-        seed: string,
-        audioProfile: AudioProfile,
-        name: string,
-        options?: CharacterGeneratorOptions
-    ): CharacterSheet
-}
+| Method | Description |
+|--------|-------------|
+| `static generate(seed: string, audioProfile: AudioProfile, track: PlaylistTrack, options?: CharacterGeneratorOptions): CharacterSheet` | Generates a complete character sheet deterministically |
 
-interface CharacterGeneratorOptions {
-    level?: number;              // Starting level (1-20). Default: 1
-    forceClass?: Class;          // Override the suggested class
-    forceRace?: Race;            // Override the race selection
-    subrace?: string | 'pure';   // Subrace selection (see below)
-    gameMode?: GameMode;         // Game mode for stat progression. Default: 'standard'
-    extensions?: CharacterGeneratorExtensions;  // Custom extensions for procedural generation
-}
+**Options:**
 
-interface CharacterGeneratorExtensions {
-    spells?: SpellExtension[];           // Custom spells to add (spell names)
-    equipment?: EquipmentExtension[];    // Custom equipment to add
-    races?: RaceExtension[];             // Custom races to add (race names)
-    classes?: ClassExtension[];          // Custom classes to add (class names)
-    appearance?: AppearanceExtension;    // Custom appearance options
-}
-
-type SpellExtension = string;
-type EquipmentExtension = string;
-type RaceExtension = string;
-type ClassExtension = string;
-
-interface AppearanceExtension {
-    hairColors?: string[];
-    skinTones?: string[];
-    eyeColors?: string[];
-    builds?: string[];
-    heights?: string[];
-}
-
-interface CharacterSheet {
-    name: string;
-    race: Race;
-    subrace?: string;
-    class: Class;
-    level: number;
-    ability_scores: AbilityScores;
-    ability_modifiers: AbilityScores;
-    skills: Record<Skill, ProficiencyLevel>;
-    spells?: SpellSlots;
-    equipment: CharacterEquipment;
-    appearance: CharacterAppearance;
-    gameMode: 'standard' | 'uncapped';
-}
-
-type Ability = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
-
-/**
- * Branded type for extensible Class names
- *
- * This allows custom classes to be registered via ExtensionManager while maintaining
- * type safety. The default D&D 5e classes are available via DEFAULT_CLASSES constant.
- *
- * Use asClass() to convert a string to the Class type, and isValidClass()
- * to validate at runtime.
- *
- * @example
- * // Default D&D 5e classes
- * const defaultClass: Class = 'Wizard' as Class;
- *
- * // Custom class (must be registered via ExtensionManager first)
- * const customClass: Class = asClass('Necromancer');
- * if (isValidClass(customClass)) {
- *   // Safe to use
- * }
- */
-type Class = string & { readonly __ClassBrand: unique symbol };
-
-type Race = 'Dwarf' | 'Elf' | 'Halfling' | 'Human' | 'Dragonborn' | 'Gnome' | 'Half-Elf' | 'Half-Orc' | 'Tiefling';
-type ProficiencyLevel = 0 | 0.5 | 1 | 2;  // None, Half-proficiency, Proficient, Expertise
-```
-
-**Method Reference:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `seed` | `string` | Unique string (e.g., track ID) to ensure deterministic results |
-| `audioProfile` | `AudioProfile` | The audio analysis result (frequency, amplitude data) |
-| `name` | `string` | Character name |
-| `options.level` | `number` | Starting level (1-20). Default: `1` |
-| `options.forceClass` | `Class` | Override the suggested class from audio analysis |
-| `options.forceRace` | `Race` | Override race selection (required when specifying subrace) |
-| `options.subrace` | `string \| 'pure'` | Subrace selection (see below) |
-| `options.gameMode` | `'standard' \| 'uncapped'` | Game mode for stat progression. Default: `'standard'` |
+| Property | Type | Description |
+|----------|------|-------------|
+| `level` | `number` | Starting level (1-20). Default: `1` |
+| `forceClass` | `Class` | Override the suggested class from audio analysis |
+| `forceRace` | `Race` | Override race selection (required when specifying subrace) |
+| `subrace` | `string \| 'pure'` | Subrace selection |
+| `gameMode` | `'standard' \| 'uncapped'` | Game mode for stat progression. Default: `'standard'` |
+| `forceName` | `string` | Override automatic name generation with custom name |
+| `deterministicName` | `boolean` | Generate deterministic names (same seed = same name). Default: `true` |
+| `extensions` | `CharacterGeneratorExtensions` | Custom extensions for procedural generation |
 
 **Subrace Options:**
 
@@ -1559,137 +1179,144 @@ type ProficiencyLevel = 0 | 0.5 | 1 | 2;  // None, Half-proficiency, Proficient,
 | `'pure'` | Explicitly no subrace | None |
 | `'High Elf'`, etc. | Specific subrace | `forceRace` must be specified |
 
-**Returns:** A complete `CharacterSheet` with:
-- Race, Class, Level
-- Subrace (if specified or randomly selected)
-- Ability Scores (STR, DEX, etc.) with modifiers
-- Skills with proficiency levels
-- Spells (for spellcasting classes)
-- Equipment (starting gear)
-- Appearance (derived from audio/seed)
+**Returns:** A complete `CharacterSheet` with race, class, level, ability scores, skills, spells (if applicable), equipment, and appearance.
+
+**Types:**
+
+| Type | Source | Description |
+|------|--------|-------------|
+| `CharacterSheet` | `src/core/types/Character.ts` | Complete character data structure |
+| `CharacterGeneratorOptions` | `src/core/generation/CharacterGenerator.ts` | Generation options interface |
+| `CharacterGeneratorExtensions` | `src/core/generation/CharacterGenerator.ts` | Custom content extensions |
 
 #### Helper: `RaceSelector`
+*Also known as: Race picker, ancestry selector*
 
 **Location:** `src/core/generation/RaceSelector.ts`
 
 Deterministically selects a race based on the seed.
 
-- `static select(rng: SeededRNG): Race`
-    - Selects from: Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling.
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static select(rng: SeededRNG): Race` | Selects from: Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling |
 
 #### Helper: `ClassSuggester`
+*Also known as: Class recommender, job suggester*
 
 **Location:** `src/core/generation/ClassSuggester.ts`
 
 Suggests a class based on audio frequency dominance.
 
-- `static suggest(audioProfile: AudioProfile, rng: SeededRNG): Class`
-    - **High Bass:** Barbarian, Fighter, Paladin
-    - **High Treble:** Rogue, Ranger, Monk
-    - **High Mid:** Wizard, Cleric, Druid
-    - **High Amplitude:** Bard, Sorcerer, Warlock
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static suggest(audioProfile: AudioProfile, rng: SeededRNG): Class` | **High Bass:** Barbarian, Fighter, Paladin. **High Treble:** Rogue, Ranger, Monk. **High Mid:** Wizard, Cleric, Druid. **High Amplitude:** Bard, Sorcerer, Warlock |
 
 #### Helper: `AbilityScoreCalculator`
+*Also known as: Stat calculator, ability mapper*
 
 **Location:** `src/core/generation/AbilityScoreCalculator.ts`
 
-Maps audio profile to ability scores (STR, DEX, CON, INT, WIS, CHA).
+Maps audio profile to ability scores (STR, DEX, CON, INT, WIS, CHA) using a randomized, 50/50 system.
 
-- `static calculateBaseScores(audioProfile: AudioProfile): AbilityScores`
-    - **STR:** Bass dominance
-    - **DEX:** Treble dominance
-    - **CON:** Average amplitude
-    - **INT:** Mid dominance
-    - **WIS:** Balance between bass and treble
-    - **CHA:** Combined mid and amplitude
-- `static applyRacialBonuses(baseScores: AbilityScores, race: Race): AbilityScores`
-    - Adds +2 bonuses based on race.
-- `static calculateModifiers(scores: AbilityScores): AbilityScores`
-    - Calculates D&D 5e modifiers (e.g., 15 -> +2).
+**System (v2):**
+- Each frequency band (bass/mid/treble) is randomly assigned to 2 abilities
+- 50% random + 50% audio-influenced for each score
+- One of each pair gets "spice" (combined with additional audio metrics like rms_energy, spectral_centroid)
+- Result: 8-15 base range (D&D 5e standard array range)
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static calculateBaseScores(audioProfile: AudioProfile, rng: SeededRNG): AbilityScores` | Randomly assigns bass/mid/treble to ability pairs; calculates 50% random + 50% audio (8-15 range) |
+| `static applyRacialBonuses(baseScores: AbilityScores, race: Race): AbilityScores` | Adds +2 bonuses based on race (capped at 20) |
+| `static calculateModifiers(scores: AbilityScores): AbilityScores` | Calculates D&D 5e modifiers (e.g., 15 → +2) |
 
 #### Helper: `SkillAssigner`
+*Also known as: Proficiency assigner, skill selector*
 
 **Location:** `src/core/generation/SkillAssigner.ts`
 
 Assigns skill proficiencies based on class.
 
-- `static assignSkills(characterClass: Class, rng: SeededRNG, character?: CharacterSheet): Record<string, ProficiencyLevel>`
-    - Selects random skills from the class's available list.
-    - Handles "Expertise" for Bards and Rogues.
-    - Supports custom skills via SkillRegistry (return type uses `string` instead of `Skill`).
-    - Optional `character` parameter enables prerequisite validation for custom skills.
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static assignSkills(characterClass: Class, rng: SeededRNG, character?: CharacterSheet): Record<string, ProficiencyLevel>` | Selects skills from class's available list using weighted selection (if registered via `skillLists` in ExtensionManager) or equal weights. Handles "Expertise" for Bards and Rogues. Supports custom skills via SkillQuery. Optional `character` enables prerequisite validation |
 
 #### Helper: `SpellManager`
+*Also known as: Spell manager, magic system, spell slot manager*
 
 **Location:** `src/core/generation/SpellManager.ts`
 
 Manages spells for spellcasting classes.
 
-- `static isSpellcaster(characterClass: Class): boolean`
-    - Returns true if the class can cast spells.
-- `static getSpellSlots(characterClass: Class, characterLevel: number): Record<number, { total: number; used: number }>`
-    - Gets spell slot counts for a class at a given level.
-- `static getCantrips(characterClass: Class): string[]`
-    - Returns all available cantrips for a spellcasting class.
-- `static getKnownSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): string[]`
-    - Returns all spells known by a spellcaster at a given level.
-    - If `character` is provided, filters spells by their prerequisites.
-- `static initializeSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): SpellSlots`
-    - Returns complete spell configuration with slots, known spells, and cantrips.
-- `static filterCharacterSpells(character: CharacterSheet): CharacterSheet`
-    - Filters a character's known spells and cantrips by their prerequisites.
-    - Returns an updated character sheet with only valid spells.
-- `static getSpellCountAtLevel(spellLevel: number, spellSlots: Record<number, { total: number; used: number }>): number`
-    - Returns number of spell slots at a given level.
-- `static useSpellSlot(spellSlots: Record<number, { total: number; used: number }>, spellLevel: number): Record<number, { total: number; used: number }>`
-    - Consumes one spell slot at the specified level.
-- `static restoreSpellSlots(spellSlots: Record<number, { total: number; used: number }>, spellLevel?: number): Record<number, { total: number; used: number }>`
-    - Restores spell slots at a specific level or all levels.
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static isSpellcaster(characterClass: Class): boolean` | Returns true if the class can cast spells |
+| `static getSpellSlots(characterClass: Class, characterLevel: number): Record<number, { total: number; used: number }>` | Gets spell slot counts for a class at a given level |
+| `static getCantrips(characterClass: Class): string[]` | Returns all available cantrips for a spellcasting class |
+| `static getKnownSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): string[]` | Returns all spells known by a spellcaster at a given level. If `character` provided, filters by prerequisites |
+| `static initializeSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): SpellSlots` | Returns complete spell configuration with slots, known spells, and cantrips |
+| `static filterCharacterSpells(character: CharacterSheet): CharacterSheet` | Filters known spells and cantrips by prerequisites, returns updated character sheet |
+| `static getSpellCountAtLevel(spellLevel: number, spellSlots: Record<number, { total: number; used: number }>): number` | Returns number of spell slots at a given level |
+| `static useSpellSlot(spellSlots: Record<number, { total: number; used: number }>, spellLevel: number): Record<number, { total: number; used: number }>` | Consumes one spell slot at the specified level |
+| `static restoreSpellSlots(spellSlots: Record<number, { total: number; used: number }>, spellLevel?: number): Record<number, { total: number; used: number }>` | Restores spell slots at a specific level or all levels |
 
 #### Helper: `EquipmentGenerator`
+*Also known as: Inventory manager, gear generator*
 
 **Location:** `src/core/generation/EquipmentGenerator.ts`
 
-Manages inventory and starting gear.
+Manages inventory and starting gear. For equipment properties, enchanting, and custom equipment, see [EQUIPMENT_SYSTEM.md](EQUIPMENT_SYSTEM.md).
 
-- `static getStartingEquipment(characterClass: Class): { weapons: string[]; armor: string[]; items: string[] }`
-    - Returns starting equipment list for a class.
-- `static initializeEquipment(characterClass: Class): CharacterEquipment`
-    - Creates complete equipment state with starting gear equipped.
-- `static addItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment`
-    - Adds an item to inventory and recalculates weight.
-- `static removeItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment`
-    - Removes an item from inventory and recalculates weight.
-- `static equipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment`
-    - Equips an item from inventory.
-- `static unequipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment`
-    - Unequips an item from inventory.
-- `static getInventoryList(equipment: CharacterEquipment): InventoryItem[]`
-    - Returns flattened list of all inventory items.
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static getStartingEquipment(characterClass: Class): { weapons: string[]; armor: string[]; items: string[] }` | Returns starting equipment list for a class |
+| `static initializeEquipment(characterClass: Class): CharacterEquipment` | Creates complete equipment state with starting gear equipped |
+| `static addItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment` | Adds an item to inventory and recalculates weight |
+| `static removeItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment` | Removes an item from inventory and recalculates weight |
+| `static equipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment` | Equips an item from inventory |
+| `static unequipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment` | Unequips an item from inventory |
+| `static getInventoryList(equipment: CharacterEquipment): InventoryItem[]` | Returns flattened list of all inventory items |
 
 #### Helper: `AppearanceGenerator`
+*Also known as: Visual generator, appearance builder*
 
 **Location:** `src/core/generation/AppearanceGenerator.ts`
 
 Generates visual traits.
 
-- `static generate(seed: string, characterClass: Class, audioProfile: AudioProfile): CharacterAppearance`
-    - **Deterministic:** Body type, skin tone, hair style/color, eye color.
-    - **Dynamic:** Primary color (from album art), Aura color (magical classes).
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static generate(seed: string, characterClass: Class, audioProfile: AudioProfile): CharacterAppearance` | **Deterministic:** Body type, skin tone, hair style/color, eye color. **Dynamic:** Primary color (from album art), Aura color (magical classes) |
 
 #### Helper: `NamingEngine`
+*Also known as: Name generator, character namer*
 
 **Location:** `src/core/generation/NamingEngine.ts`
 
-Generates RPG-style names from track metadata.
+**Note:** Internal API - automatically called by `CharacterGenerator.generate()`.
 
-- `generateName(track: PlaylistTrack, audioProfile: AudioProfile): string`
-    - **Formats:**
-        - Class Title: "Sonic Bard"
-        - Adjective Construct: "Midnight Echoes"
-        - Clan Construct: "Harmonix Collective"
-- `cleanTitle(title: string): string`
-    - Removes "(Official Video)", "ft.", etc.
+Generates RPG-style character names from track metadata using 7 naming formats with weighted distribution (20-20-10-20-15-10-5). Audio characteristics provide ~50% influence through weighted selection, random choice provides ~50%.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `generateName(seed: string, track: PlaylistTrack, audioProfile: AudioProfile, characterClass: Class, deterministic?: boolean): string` | Generates name using weighted formats: Class Title (20%), Adjective Construct (20%), Clan Construct (10%), Descriptive Epithet (20%), Compound Adjective (15%), Artist-Inspired (10%), Mononym Subtitle (5%) |
+| `cleanTitle(title: string): string` | Removes "(Official Video)", "[Remix]", "ft.", track numbers, file extensions |
 
 ---
 
@@ -1842,532 +1469,213 @@ export interface ExperienceSystem {
 
 **Location:** `src/core/progression/CharacterUpdater.ts`
 
+*Also known as: Character progression, XP handler, level-up manager, character advancement*
+
 Orchestrates applying session results to a character, handling leveling up and mastery.
 
-#### Class: `CharacterUpdater`
+**For usage examples, see [XP_AND_STATS.md](docs/XP_AND_STATS.md)**
 
-**Methods:**
+#### Method Reference
 
-- `constructor(statManager?: StatManager)`
-  - Creates a new CharacterUpdater instance
-  - Optionally accepts a StatManager to override the default stat increase strategy
-  - If no StatManager is provided, the strategy is auto-detected based on the character's gameMode
+| Method | Description |
+|--------|-------------|
+| `constructor(statManager?: StatManager)` | Creates instance with optional StatManager to override auto-detected strategy |
+| `addXP(character, xpAmount, source?)` | Add XP from any source (combat, quests, activities); triggers level-up system |
+| `updateCharacterFromSession(character, session, track?, previousListenCount?)` | Update character from listening session with XP calculation and mastery bonuses |
+| `applyPendingStatIncrease(character, primaryStat, secondaryStats?)` | Apply pending stat increase with user-selected stats (manual mode only) |
+| `hasPendingStatIncreases(character)` | Check if character has pending stat increases |
+| `getPendingStatIncreaseCount(character)` | Get count of pending stat increases |
 
-- `addXP(character: CharacterSheet, xpAmount: number, source?: string): Omit<CharacterUpdateResult, 'masteredTrack' | 'masteryBonusXP'>`
-  - Add XP from any source (combat, quests, custom activities)
-  - Triggers the same level-up system as listening sessions
-  - Returns detailed level-up breakdowns if character levels up
+#### Stat Strategy Auto-Detection
 
-- `updateCharacterFromSession(character: CharacterSheet, session: ListeningSession, track?: PlaylistTrack, previousListenCount?: number): CharacterUpdateResult`
-  - Update character from a completed listening session
-  - Calculates XP based on session duration and modifiers
-  - Handles track mastery bonuses
+`CharacterUpdater` auto-detects stat increase strategy based on character's `gameMode`:
 
-**Default Behavior - Auto-Detected by gameMode:**
+| Game Mode | Strategy | Behavior |
+|-----------|----------|----------|
+| `standard` (capped at 20) | `dnD5e` (manual) | 2-step level-up: XP adds HP/proficiency/features, stats require manual selection via `applyPendingStatIncrease()` |
+| `uncapped` | `dnD5e_smart` (auto) | 1-step level-up: Everything applied automatically, intelligently boosts primary/lowest stats |
 
-`CharacterUpdater` auto-detects the appropriate stat increase strategy based on the character's `gameMode`:
-
-- **Standard mode** (capped at level 20) → Manual D&D 5e rules (`dnD5e` strategy)
-  - 2-step level-up process: XP adds HP/proficiency/features, but stats require manual selection
-  - Stores pending stat increases in a counter
-  - User completes level-up by calling `applyPendingStatIncrease()`
-
-- **Uncapped mode** → Automatic stat selection (`dnD5e_smart` strategy)
-  - 1-step level-up process: Everything applied automatically
-  - Intelligently boosts class's primary stat or lowest stats
-  - No manual interaction required
-
-**To override the auto-detected strategy**, pass a custom `StatManager`:
-
+**Override with custom StatManager:**
 ```typescript
 import { StatManager, CharacterUpdater } from 'playlist-data-engine';
 
-// Force automatic mode even for standard characters
+// Force automatic mode for standard characters
 const statManager = new StatManager({ strategy: 'dnD5e_smart' });
 const updater = new CharacterUpdater(statManager);
-
-// Force manual mode even for uncapped characters
-const manualStatManager = new StatManager({ strategy: 'dnD5e' });
-const manualUpdater = new CharacterUpdater(manualStatManager);
 ```
 
-### addXP() - Adding XP from Any Source
+#### Types
 
-**Use this method** when you want to award XP from sources other than music listening:
+| Type | Location | Description |
+|------|----------|-------------|
+| `CharacterUpdateResult` | [src/core/progression/CharacterUpdater.ts](src/core/progression/CharacterUpdater.ts) (11-20) | Result of character update with XP, level-up, and mastery data |
+| `LevelUpDetail` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Detailed breakdown of individual level-up (HP, proficiency, stats, features, spell slots) |
+| `ApplyPendingStatIncreaseResult` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Result of applying pending stat increase with stat change details |
 
-```typescript
-const updater = new CharacterUpdater();
+---
 
-// Combat victory XP
-const combatResult = updater.addXP(character, 500, 'combat');
-
-// Quest completion XP
-const questResult = updater.addXP(character, 1000, 'quest');
-
-// Custom activity XP
-const customResult = updater.addXP(character, 250, 'exploration');
-
-// All sources return the same detailed level-up information
-if (combatResult.leveledUp && combatResult.levelUpDetails) {
-    console.log(`🎉 LEVELED UP to ${combatResult.newLevel}!`);
-
-    for (const detail of combatResult.levelUpDetails) {
-        console.log(`💚 HP: +${detail.hpIncrease} (new max: ${detail.newMaxHP})`);
-
-        if (detail.statIncreases && detail.statIncreases.length > 0) {
-            console.log(`📊 STATS INCREASED:`);
-            for (const stat of detail.statIncreases) {
-                console.log(`   ${stat.ability}: ${stat.oldValue} → ${stat.newValue} (+${stat.delta})`);
-            }
-        }
-    }
-}
-```
-
-**Return Type:**
-```typescript
-{
-    character: CharacterSheet;      // Updated character
-    xpEarned: number;               // XP amount added
-    leveledUp: boolean;             // Whether character leveled up
-    newLevel?: number;              // New level (if leveled up)
-    levelUpDetails?: LevelUpDetail[]; // Detailed breakdown of each level-up
-}
-```
-
-**Key Differences from `updateCharacterFromSession()`:**
-- No track mastery bonuses (specific to music listening)
-- Direct XP amount instead of calculated from session duration
-- **Auto-detects strategy based on character's gameMode**
-- Same level-up system and detailed breakdowns
-
-### Pending Stat Increases (Manual Level-Up)
-
-When using manual mode (standard gameMode or `dnD5e` strategy), level-ups become a 2-step process:
-
-1. **Step 1**: Add XP → Character gains level with HP/proficiency/features applied
-2. **Step 2**: User selects stats → Complete the level-up
-
-**Methods:**
-
-- `applyPendingStatIncrease(character: CharacterSheet, primaryStat: Ability, secondaryStats?: Ability[]): ApplyPendingStatIncreaseResult`
-  - Apply a pending stat increase with user-selected stats
-  - Only works if `pendingStatIncreases` counter > 0
-  - Validates D&D 5e rules: +2 to one ability OR +1 to two abilities
-  - Decrements the counter
-
-- `hasPendingStatIncreases(character: CharacterSheet): boolean`
-  - Check if character has pending stat increases
-
-- `getPendingStatIncreaseCount(character: CharacterSheet): number`
-  - Get the count of pending stat increases
-
-**Example - Manual Stat Selection:**
-
-```typescript
-import { CharacterUpdater } from 'playlist-data-engine';
-
-// Standard mode (capped) defaults to manual stat selection
-const character = CharacterGenerator.generate(seed, audio, 'Hero', { gameMode: 'standard' });
-const updater = new CharacterUpdater(); // No StatManager needed - auto-detected!
-
-// Step 1: Add XP - triggers level-up but PAUSES before stats
-const result = updater.addXP(character, 6500, 'quest');
-
-console.log(result.leveledUp); // true
-console.log(result.newLevel); // 5
-
-// Check for pending stat increases
-if (updater.hasPendingStatIncreases(character)) {
-    const count = updater.getPendingStatIncreaseCount(character);
-    console.log(`${count} stat increases pending!`);
-
-    // Step 2: User chooses +2 to STR
-    const completeResult = updater.applyPendingStatIncrease(character, 'STR');
-    console.log(`STR: ${completeResult.statIncreases[0].oldValue} → ${completeResult.statIncreases[0].newValue}`);
-
-    if (completeResult.remainingPending > 0) {
-        console.log(`${completeResult.remainingPending} more stat increases waiting!`);
-    }
-}
-
-// Or user chooses +1 to STR and +1 to DEX
-const result2 = updater.applyPendingStatIncrease(character, 'STR', ['DEX']);
-```
-
-**Return Type:**
-```typescript
-{
-    character: CharacterSheet;              // Updated character
-    statIncreases: Array<{                  // Stats that were increased
-        ability: Ability;
-        oldValue: number;
-        newValue: number;
-        delta: number;
-    }>;
-    remainingPending: number;               // Counter value after applying
-    timestamp: number;                      // Completion timestamp
-}
-```
-
-### CharacterUpdateResult
-
-**Location:** `src/core/progression/CharacterUpdater.ts` (9-18)
-
-Result of a character update operation. Now includes detailed level-up information!
-
-```typescript
-export interface CharacterUpdateResult {
-    character: CharacterSheet;
-    xpEarned: number;
-    leveledUp: boolean;
-    newLevel?: number;
-    masteredTrack: boolean;
-    masteryBonusXP: number;
-    /** Detailed breakdown of each level-up */
-    levelUpDetails?: LevelUpDetail[];
-}
-
-### LevelUpDetail
-
-**Location:** `src/core/types/Progression.ts` (219-254)
-
-```typescript
-export interface LevelUpDetail {
-    fromLevel: number;
-    toLevel: number;
-    hpIncrease: number;
-    newMaxHP: number;
-    proficiencyIncrease: number;
-    newProficiency: number;
-    statIncreases?: Array<{
-        ability: Ability;
-        oldValue: number;
-        newValue: number;
-        delta: number;
-    }>;
-    featuresGained?: string[];
-    newSpellSlots?: Record<number, number>;
-}
-```
-
-**Example - Displaying Level-Up Details:**
-
-```typescript
-const result = updater.updateCharacterFromSession(character, session, track, count);
-
-if (result.leveledUp && result.levelUpDetails) {
-    for (const detail of result.levelUpDetails) {
-        console.log(`=== Level ${detail.fromLevel} → ${detail.toLevel} ===`);
-        console.log(`HP: +${detail.hpIncrease} (new max: ${detail.newMaxHP})`);
-
-        if (detail.proficiencyIncrease > 0) {
-            console.log(`Proficiency: +${detail.proficiencyIncrease} (new: ${detail.newProficiency})`);
-        }
-
-        if (detail.statIncreases) {
-            for (const stat of detail.statIncreases) {
-                console.log(`${stat.ability}: ${stat.oldValue} → ${stat.newValue} (+${stat.delta})`);
-            }
-        }
-
-        if (detail.featuresGained) {
-            console.log(`New Features: ${detail.featuresGained.join(', ')}`);
-        }
-    }
-}
-```
-
-#### Helper: `SessionTracker`
+### SessionTracker
 
 **Location:** `src/core/progression/SessionTracker.ts`
 
-Manages active listening sessions.
+*Also known as: Session manager, listening tracker, session history*
 
-- `startSession(trackUuid: string, track?: PlaylistTrack, context?: object): string`
-    - Starts a session and returns a session ID.
-- `endSession(sessionId: string, durationOverride?: number): ListeningSession | null`
-    - Ends a session, calculates XP, and records it to history.
-- `getActiveSession(sessionId: string): ActiveSession | null`
-- `getSessionsForTrack(trackUuid: string): ListeningSession[]`
-- `isTrackMastered(trackUuid: string): boolean`
+Manages active listening sessions and records history.
 
-#### Helper: `XPCalculator`
+#### Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `constructor(xpCalculator?)` | Creates instance with optional XPCalculator |
+| `startSession(trackUuid, track?, context?)` | Starts session and returns session ID |
+| `endSession(sessionId, durationOverride?, activityType?)` | Ends session, calculates XP, returns ListeningSession record |
+| `getActiveSession(sessionId)` | Gets active session without ending it |
+| `getActiveSessionDuration(sessionId)` | Returns current duration in seconds |
+| `updateSessionContext(sessionId, context)` | Updates environmental/gaming context for live session |
+| `getSessionHistory()` | Returns all completed listening sessions |
+| `getSessionsForTrack(trackUuid)` | Returns sessions for specific track |
+| `getTotalListeningTime()` | Returns total listening time across all sessions (seconds) |
+| `getTotalXPEarned()` | Returns total XP earned across all sessions |
+| `getTrackListeningTime(trackUuid)` | Returns total listening time for specific track (seconds) |
+| `getTrackListenCount(trackUuid)` | Returns number of times track has been listened to |
+| `isTrackMastered(trackUuid, masteryThreshold?)` | Checks if track has been mastered (default threshold: 10) |
+| `getSessionsInRange(startTime, endTime)` | Returns sessions within time range |
+| `getAverageSessionLength()` | Returns average session duration (seconds) |
+| `getLongestSession()` | Returns the session with longest duration |
+| `clearHistory()` | Clears all session history |
+| `clearActiveSessions()` | Clears all active sessions |
+| `getActiveSessionCount()` | Returns number of currently active sessions |
+| `getActiveSessionIds()` | Returns all active session IDs |
+
+#### Types
+
+| Type | Location | Description |
+|------|----------|-------------|
+| `ListeningSession` | [src/core/types/Progression.ts](src/core/types/Progression.ts) (60-71) | Record of single listening session with duration, XP, and context |
+| `ActiveSession` | [src/core/progression/SessionTracker.ts](src/core/progression/SessionTracker.ts) | Active session with start time and context |
+
+---
+
+### XPCalculator
 
 **Location:** `src/core/progression/XPCalculator.ts`
 
-Calculates XP based on duration and bonuses.
+*Also known as: XP calculator, experience calculator, leveling calculator*
 
-- `calculateSessionXP(session: ListeningSession, track?: PlaylistTrack): number`
-    - Applies base XP (1/sec), activity bonuses, environmental bonuses, and gaming bonuses.
-- `getXPToNextLevel(currentLevel: number): number`
-- `getLevelFromXP(totalXP: number): number`
+Calculates XP based on duration, activity, environment, and gaming context.
 
-#### Helper: `LevelUpProcessor`
+#### Constructor
+
+| Constructor | Description |
+|-------------|-------------|
+| `constructor(options?: Partial<ExperienceSystem>)` | Creates instance with optional XP system configuration |
+
+#### Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `calculateSessionXP(session, track?)` | Calculates total XP for session with all multipliers applied |
+| `calculateTotalModifier(envContext?, gamingContext?)` | Calculates combined XP modifier (1.0 to 3.0) from environmental and gaming bonuses |
+| `getXPThresholdForLevel(level)` | Returns XP required for specific level (1-20) |
+| `getXPToNextLevel(currentLevel)` | Returns XP needed to advance from current level to next |
+| `getLevelFromXP(totalXP)` | Determines character level from total XP |
+| `isTrackMastered(listenCount)` | Checks if listen count meets mastery threshold |
+| `getMasteryBonusXP()` | Returns bonus XP for mastering a track |
+| `getConfig()` | Returns current configuration |
+
+#### Types
+
+| Type | Location | Description |
+|------|----------|-------------|
+| `ExperienceSystem` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Configuration for XP calculation (rates, thresholds, bonuses) |
+
+---
+
+### LevelUpProcessor
 
 **Location:** `src/core/progression/LevelUpProcessor.ts`
 
+*Also known as: Level-up handler, character advancement*
+
 Handles the mechanics of leveling up a character.
 
-### LevelUpBenefits
+#### Method Reference
 
-**Location:** `src/core/progression/LevelUpProcessor.ts` (25-63)
+| Method | Description |
+|--------|-------------|
+| `processLevelUp(character, newLevel)` | Calculates level-up benefits for given level |
+| `applyLevelUp(character, benefits)` | Applies calculated benefits to character sheet |
+| `getXPThreshold(level, isUncapped?)` | Returns XP required for specific level (uses uncapped formula when `isUncapped: true`) |
+| `calculateLevel(totalXP, isUncapped?)` | Determines character level from total XP |
+| `setStatManager(statManager)` | Sets StatManager for stat increase handling |
+| `processLevelUpWithoutStats(character, newLevel)` | Calculates benefits excluding stat increases (manual mode) |
+| `applyAutomaticBenefitsOnly(character, benefits)` | Applies HP/proficiency/features without stat increases |
+| `applyStatIncreasesOnly(character, statSelections)` | Applies stat increases to character with pending counter |
+| `setUncappedConfig(config)` | Sets custom formulas for uncapped mode progression (pass empty object to reset) |
+| `getUncappedConfig()` | Returns the current uncapped configuration |
 
-Benefits granted by leveling up.
+#### Types
 
-```typescript
-export interface LevelUpBenefits {
-    newLevel: number;
-    hitPointIncrease: number;
-    newHitPointsTotal: number;
-    proficiencyBonusIncrease: number;
-    newProficiencyBonus: number;
+| Type | Location | Description |
+|------|----------|-------------|
+| `LevelUpBenefits` | [src/core/progression/LevelUpProcessor.ts](src/core/progression/LevelUpProcessor.ts) | Benefits granted by leveling up (HP, proficiency, stats, spell slots, features) |
+| `UncappedProgressionConfig` | [src/core/progression/LevelUpProcessor.ts](src/core/progression/LevelUpProcessor.ts) | Custom formulas for uncapped mode XP thresholds and proficiency bonuses |
 
-    /** New: Support multiple stat increases */
-    abilityScoreIncreases?: Array<{
-        ability: 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
-        increase: number;
-    }>;
+---
 
-    /** Deprecated: Kept for backward compatibility */
-    abilityScoreIncrease?: {
-        ability: 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
-        increase: number;
-    };
-
-    newSpellSlots?: Record<number, number>;
-    classFeatures?: string[];
-}
-```
-- `static applyLevelUp(character: CharacterSheet, benefits: LevelUpBenefits): CharacterSheet`
-    - Applies the calculated benefits to the character sheet.
-- `static getXPThreshold(level: number, isUncapped: boolean = false): number`
-    - Returns XP required for a specific level.
-    - `isUncapped`: When true, uses uncapped progression formula for levels beyond 20.
-
-#### Helper: `MasterySystem`
+### MasterySystem
 
 **Location:** `src/core/progression/MasterySystem.ts`
 
+*Also known as: Track mastery, song mastery, listening achievement*
+
 Tracks song mastery based on listen counts.
 
-- `checkMastery(listenCount: number): boolean`
-    - Returns true if listens >= `MASTERY_THRESHOLD` (default 10).
-- `calculateMasteryBonus(isMastered: boolean): number`
-    - Returns bonus XP if mastered.
-- `isJustMastered(previous: number, current: number): boolean`
-    - Returns true if mastery was achieved in the current session.
+#### Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `checkMastery(listenCount)` | Returns true if listens meets mastery threshold (default: 10) |
+| `calculateMasteryBonus(isMastered)` | Returns bonus XP if mastered |
+| `isJustMastered(previous, current)` | Returns true if mastery was achieved in current session |
 
 ---
 
 ## Stat Increase System
 
+*Also known as: Stat boosts, ability score increases, stat progression, attribute increases*
+
 **Location:** `src/core/progression/stat/StatManager.ts`
 
-Provides comprehensive stat increase management for D&D 5e-style character progression with flexible strategies for level-ups, items, and custom formulas.
+Manages D&D 5e-style stat increases for character progression with flexible strategies for level-ups, items, and custom formulas.
 
-### Class: `StatManager`
+### StatManager
 
-**Constructor:**
-```typescript
-new StatManager(config?: Partial<StatIncreaseConfig>)
-```
+**Constructor:** `new StatManager(config?: Partial<StatIncreaseConfig>)`
 
-**Type: StatIncreaseConfig**
+**Method Reference:**
 
-**Location:** `src/core/types/Progression.ts` (173-185)
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `increaseStats(character, increases, source)` | `StatIncreaseResult` | Manually increase stats (potions, items, events); enforces stat cap and recalculates modifiers |
+| `decreaseStats(character, decreases, source)` | `StatIncreaseResult` | Decrease stats (curses, poison); uses same logic as increase but with negative amounts |
+| `setStat(character, ability, value, source)` | `StatIncreaseResult` | Set a stat to an absolute value; useful for setting specific values or resetting stats |
+| `processLevelUp(character, newLevel, options?)` | `StatIncreaseResult \| null` | Process stat increases for level up; returns null if level doesn't grant increases |
+| `canIncrease(character, ability, amount)` | `boolean` | Check if ability can be increased by amount; returns false if stat would exceed cap |
+| `getStatCap(character, ability)` | `number` | Get stat cap for ability (reads gameMode from character) |
+| `getConfig()` | `Readonly<Required<StatIncreaseConfig>>` | Get current configuration with all defaults applied |
+| `validateDnD5eStatSelection(character, selections, increaseAmount?)` | `{ valid: true } \| StatSelectionValidationError` | Validate stat selection follows D&D 5e rules (+2 to one OR +1 to two) |
+| `updateConfig(config)` | `void` | Update configuration mid-game; change strategies, stat cap, or increase levels |
 
-```typescript
-export interface StatIncreaseConfig {
-    maxStatCap: number;
-    strategy: StatIncreaseStrategyType | StatIncreaseStrategy | StatIncreaseFunction;
-    autoApply: boolean;
-    statIncreaseLevels: number[];
-}
-```
+**Types:**
 
-**Configuration:**
-- `maxStatCap` (number): Hard cap for all stats (default: 20)
-- `strategy`: Strategy for auto-selecting stats on level up
-- `autoApply` (boolean): Auto-apply stat increases during level up (default: true)
-- `statIncreaseLevels` (number[]): Levels that grant stat increases (default: [4, 8, 12, 16, 19])
+| Type | Location | Description |
+|------|----------|-------------|
+| `StatIncreaseConfig` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Configuration with maxStatCap, strategy, autoApply, statIncreaseLevels |
+| `StatIncreaseResult` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Result with updated character, increases array, capped array, source, timestamp |
+| `StatSelectionValidationError` | [src/core/types/Progression.ts](src/core/types/Progression.ts) | Validation error with reason (invalid_ability, invalid_amount, exceeds_cap, wrong_pattern, duplicate_ability) |
 
-**Methods:**
-
-- `increaseStats(character, increases, source): StatIncreaseResult`
-    - Manually increase stats (potions, items, events)
-    - Returns updated character with full change details
-    - Enforces stat cap and recalculates modifiers
-
-- `decreaseStats(character, decreases, source): StatIncreaseResult`
-    - Decrease stats (curses, poison)
-    - Uses same logic as increase but with negative amounts
-
-- `setStat(character, ability, value, source): StatIncreaseResult`
-    - Set a stat to an absolute value
-    - Useful for setting specific values or resetting stats
-
-- `processLevelUp(character, newLevel, options): StatIncreaseResult | null`
-    - Process stat increases for level up
-    - Returns null if this level doesn't grant stat increases
-    - Uses configured strategy to determine which stats increase
-
-- `canIncrease(character, ability, amount): boolean`
-    - Check if an ability can be increased by a given amount
-    - Returns false if stat would exceed cap
-
-- `getStatCap(character, ability): number`
-    - Get the stat cap for an ability (reads gameMode from character)
-
-- `getConfig(): Readonly<Required<StatIncreaseConfig>>`
-    - Get the current configuration
-    - Returns a readonly copy of the configuration with all defaults applied
-
-- `validateDnD5eStatSelection(character, selections, increaseAmount?): { valid: true } | StatSelectionValidationError`
-    - Validate stat selection follows D&D 5e rules
-    - Rules: +2 to one ability OR +1 to two abilities
-    - Returns `{ valid: true }` if valid, or a `StatSelectionValidationError` with details if invalid
-    - `increaseAmount` defaults to 2
-
-- `updateConfig(config): void`
-    - Update configuration mid-game
-    - Use to change stat increase strategies dynamically
-    - Can adjust stat cap or stat increase levels
-
-### Configuration
-
-**updateConfig() - Change Strategy Mid-Game:**
-
-```typescript
-const statManager = new StatManager();
-
-// Start with manual selection (D&D 5e standard)
-// Early game: Player manually chooses stats
-const result = statManager.processLevelUp(character, 4, {
-    forcedAbilities: ['STR']  // Player chose STR
-});
-
-// Mid-game: Switch to smart auto-selection
-// Example: After reaching level 10, automate stat increases
-statManager.updateConfig({
-    strategy: 'dnD5e_smart'
-});
-
-// Now level-ups are automatic - no manual input needed!
-const level11Result = statManager.processLevelUp(character, 11);
-
-// Late-game: Switch to balanced strategy
-statManager.updateConfig({
-    strategy: 'balanced'
-});
-```
-
-**Stat Decreases (Curses, Poison, etc.):**
-
-```typescript
-const statManager = new StatManager();
-
-// Curse of Weakness: -2 STR penalty
-const curseResult = statManager.decreaseStats(
-    character,
-    [{ ability: 'STR', amount: 2 }],
-    'event'
-);
-
-character = curseResult.character;
-
-// Check actual decrease
-for (const dec of curseResult.increases) {
-    console.log(`${dec.ability}: ${dec.oldValue} → ${dec.newValue} (${dec.delta})`);
-    // Output: "STR: 16 → 14 (-2)"
-}
-
-// Poison: -1 DEX, -1 CON
-const poisonResult = statManager.decreaseStats(
-    character,
-    [
-        { ability: 'DEX', amount: 1 },
-        { ability: 'CON', amount: 1 }
-    ],
-    'event'
-);
-
-// Remove curse with potion (restores stats)
-const restoreResult = statManager.increaseStats(
-    character,
-    [{ ability: 'STR', amount: 2 }],
-    'item'
-);
-```
-
-### Optional Features (Developer Implementation)
-
-**Banked Stat Points:**
-
-The engine does not include a "banked stat points" system. Stat increases must be applied immediately - they are not stored for later use. If your game requires this feature, you'll need to implement it yourself:
-
-```typescript
-// Example: Custom banked points system
-interface BankedPoints {
-    available: number;
-    history: Array<{ timestamp: number; source: string; amount: number }>;
-}
-
-class CharacterWithBankedPoints {
-    character: CharacterSheet;
-    banked: BankedPoints;
-
-    // Apply banked points to a stat
-    applyBankedPoints(ability: Ability, amount: number): void {
-        if (this.banked.available < amount) {
-            throw new Error('Not enough banked points');
-        }
-
-        const statManager = new StatManager();
-        const result = statManager.increaseStats(
-            this.character,
-            [{ ability, amount }],
-            'manual'
-        );
-
-        this.character = result.character;
-        this.banked.available -= amount;
-        this.banked.history.push({
-            timestamp: Date.now(),
-            source: 'banked',
-            amount
-        });
-    }
-}
-```
-
-**Respec System:**
-
-Similarly, a stat respec system is not included. You can implement this by tracking the history of stat increases:
-
-```typescript
-// Example: Custom respec system
-interface StatHistory {
-    level: number;
-    timestamp: number;
-    increases: Array<{ ability: Ability; amount: number }>;
-}
-
-class CharacterWithRespec {
-    character: CharacterSheet;
-    statHistory: StatHistory[];
-
-    // Respec all stat increases back to base values
-    respec(): void {
-        // 1. Reset all stats to base (before any level-up increases)
-        // 2. Return all spent stat points to a pool
-        // 3. Let player re-allocate
-
-        // This is game-specific logic that depends on your stat system
-        // The engine provides the building blocks (increaseStats, decreaseStats)
-    }
-}
-```
+For complete stat increase examples (manual selection, auto-selection, custom formulas, potions/curses), see [XP_AND_STATS.md](docs/XP_AND_STATS.md#stat-increase-strategies).
 
 ### Built-in Strategies
 
@@ -2383,116 +1691,18 @@ class CharacterWithRespec {
 
 ### Strategy Types
 
-**Type: StatIncreaseStrategyType**
+**Type:** `StatIncreaseStrategyType`
 
-**Location:** `src/core/types/Progression.ts` (107-113)
+**Location:** [src/core/types/Progression.ts](src/core/types/Progression.ts)
 
-```typescript
-type StatIncreaseStrategyType =
-    | 'dnD5e'          // Manual selection (D&D 5e standard)
-    | 'dnD5e_smart'    // Intelligent auto-selection
-    | 'balanced'       // +1 to two lowest stats
-    | 'primary_only'   // Always boosts class primary
-    | 'random'         // Random selection
-    | 'manual';        // Requires manual selection
-```
-
-### Stat Increase Result
-
-**Location:** `src/core/types/Progression.ts` (190-214)
-
-```typescript
-export interface StatIncreaseResult {
-    character: CharacterSheet;        // Updated character
-    increases: Array<{
-        ability: Ability;             // Which stat increased
-        oldValue: number;             // Value before increase
-        newValue: number;             // Value after increase
-        delta: number;                // Amount increased
-    }>;
-    capped: Array<{
-        ability: Ability;             // Stat that was capped
-        attemptedValue: number;       // Value that was attempted
-        cappedAt: number;             // The cap (20)
-    }>;
-    source: 'level_up' | 'manual' | 'item' | 'event';
-    timestamp: number;
-}
-```
-
-### Stat Selection Validation Error
-
-**Location:** `src/core/types/Progression.ts` (281-290)
-
-Returned by `StatManager.validateDnD5eStatSelection()` when stat selection validation fails.
-
-```typescript
-export interface StatSelectionValidationError {
-    /** Error message */
-    error: string;
-
-    /** What was wrong */
-    reason: 'invalid_ability' | 'invalid_amount' | 'exceeds_cap' | 'wrong_pattern' | 'duplicate_ability';
-
-    /** Valid patterns allowed */
-    allowedPatterns: string[];
-}
-```
-
-### Usage Examples
-
-**Manual Stat Selection (D&D 5e Standard):**
-```typescript
-const statManager = new StatManager();
-
-// At level 4, 8, 12, 16, or 19 - player must choose
-const result = statManager.processLevelUp(character, 4, {
-    forcedAbilities: ['STR']  // Player chose STR
-});
-
-console.log(`STR increased from ${result.increases[0].oldValue} to ${result.increases[0].newValue}`);
-```
-
-**Smart Auto-Selection:**
-```typescript
-const statManager = new StatManager({
-    strategy: 'dnD5e_smart'  // Automatically picks best stats
-});
-const updater = new CharacterUpdater(statManager);
-
-// Stats automatically increase on level up!
-```
-
-**Potion/Item Stat Boosts:**
-```typescript
-const statManager = new StatManager();
-
-// Potion of Strength: +4 STR
-const result = statManager.increaseStats(
-    character,
-    [{ ability: 'STR', amount: 4 }],
-    'item'
-);
-
-character = result.character;
-
-if (result.capped.length > 0) {
-    console.log('Stat was capped at 20!');
-}
-```
-
-**Custom Formula:**
-```typescript
-// Define your own stat selection logic
-const tankStrategy = (character, amount, options) => {
-    if (character.ability_scores.CON < 18) {
-        return [{ ability: 'CON', amount }];
-    }
-    return [{ ability: 'DEX', amount }];
-};
-
-const statManager = new StatManager({ strategy: tankStrategy });
-```
+| Strategy Value | Description |
+|----------------|-------------|
+| `dnD5e` | Manual selection (D&D 5e standard) - requires player choice via `forcedAbilities` |
+| `dnD5e_smart` | Intelligent auto-selection - boosts class primary if below 16, otherwise lowest stat |
+| `balanced` | +1 to two lowest stats - ensures balanced character development |
+| `primary_only` | Always boosts class primary ability score (+2 to one ability) |
+| `random` | Random stat selection - can grant +2 to one or +1 to two at random |
+| `manual` | Always defers to manual stat selection via `applyPendingStatIncrease()` |
 
 ---
 
@@ -2519,7 +1729,7 @@ The engine supports two game modes for character progression:
 const character = CharacterGenerator.generate(
     seed,
     audioProfile,
-    'Hero',
+    track,
     { gameMode: 'standard' }
 );
 
@@ -2527,82 +1737,14 @@ const character = CharacterGenerator.generate(
 const epicCharacter = CharacterGenerator.generate(
     seed,
     audioProfile,
-    'Epic Hero',
+    track,
     { gameMode: 'uncapped' }
 );
 ```
 
 The `gameMode` is stored on the character and automatically used during level-ups.
 
-### Uncapped Progression Configuration
-
-For uncapped mode, you can provide custom formulas for XP thresholds and proficiency bonuses that apply to ALL levels (1-∞).
-
-```typescript
-import { LevelUpProcessor, type UncappedProgressionConfig } from 'playlist-data-engine';
-
-// Set custom formulas BEFORE generating characters
-LevelUpProcessor.setUncappedConfig({
-    // Your formula for XP: receives level, returns TOTAL XP required
-    xpFormula: (level: number) => number,
-    // Your formula for proficiency bonus: receives level, returns bonus
-    proficiencyBonusFormula: (level: number) => number
-});
-```
-
-**Interface: UncappedProgressionConfig**
-
-**Location:** `src/core/progression/LevelUpProcessor.ts` (75-82)
-
-```typescript
-export interface UncappedProgressionConfig {
-    /** Custom formula for calculating XP threshold for ANY level */
-    xpFormula?: (level: number) => number;
-    /** Custom formula for calculating proficiency bonus for ANY level */
-    proficiencyBonusFormula?: (level: number) => number;
-}
-```
-
-**Methods:**
-
-- `static setUncappedConfig(config: UncappedProgressionConfig): void`
-    - Sets custom formulas for uncapped mode progression
-    - Pass empty object `{}` to reset to default D&D 5e pattern
-
-- `static getUncappedConfig(): UncappedProgressionConfig | undefined`
-    - Returns the current uncapped configuration
-
-**Default Behavior (No Config Provided):**
-
-If no custom formulas are provided, uncapped mode uses the natural continuation of D&D 5e patterns:
-
-- **XP Formula**: `XP(n) = XP(n-1) + (n-1) × n × 500`
-  - Level 21: 565,000 XP
-  - Level 25: ~735,000 XP
-  - Level 30: ~1,120,000 XP
-
-- **Proficiency Bonus**: Continues +1 every 4 levels
-  - Level 21-24: 6
-  - Level 25-28: 7
-  - Level 29-32: 8, etc.
-
-**Example: Linear Scaling**
-
-```typescript
-LevelUpProcessor.setUncappedConfig({
-    xpFormula: (level) => (level - 1) * 50000,  // 50,000 XP per level
-    proficiencyBonusFormula: (level) => 2 + Math.floor((level - 1) / 2)  // +1 every 2 levels
-});
-```
-
-**Example: Exponential Scaling**
-
-```typescript
-LevelUpProcessor.setUncappedConfig({
-    xpFormula: (level) => Math.floor(1000 * Math.pow(1.5, level - 1)),
-    proficiencyBonusFormula: (level) => 2 + Math.floor(Math.sqrt(level))
-});
-```
+For uncapped progression configuration examples, see [XP_AND_STATS.md](docs/XP_AND_STATS.md#uncapped-mode-custom-formulas).
 
 ---
 
@@ -2616,673 +1758,910 @@ The engine provides centralized configuration options for sensors and progressio
 
 ### Sensor Configuration
 
-**Sensor Configuration Types**
+*Also known as: Sensor settings, environment configuration, runtime configuration*
 
-```typescript
-// Complete sensor configuration
-export interface SensorConfig {
-    geolocation: Partial<GeolocationSensorConfig>;
-    weather: Partial<WeatherSensorConfig>;
-    gaming: Partial<GamingSensorConfig>;
-    xpModifier: Partial<XPModifierConfig>;
-    retry: Partial<RetryConfig>;
-}
+**Location:** `src/core/config/sensorConfig.ts`
 
-// Individual sensor configs
-export interface GeolocationSensorConfig {
-    cacheTTL?: number;              // Default: 5 minutes
-    useLocalStorage?: boolean;      // Default: true
-    enableHighAccuracy?: boolean;   // Default: true
-    timeout?: number;               // Default: 5000ms
-}
+Centralized configuration for sensors, XP modifiers, and retry logic.
 
-export interface WeatherSensorConfig {
-    apiKey?: string;
-    cacheTTL?: number;              // Default: 12 minutes
-    forecastCacheTTL?: number;      // Default: 60 minutes
-    useLocalStorage?: boolean;      // Default: true
-}
+#### Configuration Types
 
-export interface GamingSensorConfig {
-    steam?: {
-        apiKey?: string;
-        steamId?: string;
-        pollInterval?: number;      // Default: 60000ms (1 minute)
-    };
-    discord?: {
-        clientId?: string;
-        enableRichPresence?: boolean; // Default: true
-        pollInterval?: number;      // Default: 60000ms
-    };
-    metadataCacheExpiry?: number;   // Default: 24 hours
-    maxBackoffMs?: number;         // Default: 10 minutes
-    xpModifier?: Partial<XPModifierConfig>;
-}
+| Type | Description |
+|------|-------------|
+| `SensorConfig` | Complete sensor configuration (geolocation, weather, gaming, xpModifier, retry) |
+| `GeolocationSensorConfig` | GPS sensor settings (cacheTTL, useLocalStorage, enableHighAccuracy, timeout) |
+| `WeatherSensorConfig` | Weather API settings (apiKey, cacheTTL, forecastCacheTTL, useLocalStorage) |
+| `GamingSensorConfig` | Steam/Discord settings (steam, discord, metadataCacheExpiry, maxBackoffMs, xpModifier) |
+| `XPModifierConfig` | XP multiplier settings (maxModifier, gaming bonuses, environmental bonuses) |
+| `RetryConfig` | Retry policy (enabled, maxRetries, delays, backoffMultiplier) |
 
-export interface XPModifierConfig {
-    maxModifier: number;           // Default: 3.0
-    maxGamingModifier: number;     // Default: 1.75
-    runningBonus: number;          // Default: 0.5
-    walkingBonus: number;          // Default: 0.2
-    stormBonus: number;            // Default: 0.4
-    snowBonus: number;             // Default: 0.3
-    nightBonus: number;            // Default: 0.25
-    altitudeThreshold: number;     // Default: 1000m
-    altitudeBonus: number;         // Default: 0.3
-    gamingBaseBonus: number;       // Default: 0.25
-    gamingRPGBonus: number;        // Default: 0.2
-    gamingMultiplayerBonus: number; // Default: 0.15
-}
+#### Functions
 
-export interface RetryConfig {
-    enabled: boolean;              // Default: true
-    maxRetries?: number;           // Default: 3
-    initialDelayMs?: number;       // Default: 1000ms
-    maxDelayMs?: number;           // Default: 10000ms
-    backoffMultiplier?: number;    // Default: 2
-}
-```
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `loadConfigFromEnv()` | `Partial<SensorConfig>` | Loads configuration from environment variables |
+| `mergeConfig(userConfig?)` | `Required<SensorConfig>` | Merges user config with environment config and defaults |
 
-**Available Exports:**
+#### Constants
 
-```typescript
-import {
-    DEFAULT_SENSOR_CONFIG,
-    loadConfigFromEnv,
-    mergeConfig,
-    type SensorConfig,
-    type GeolocationSensorConfig,
-    type WeatherSensorConfig,
-    type GamingSensorConfig,
-    type XPModifierConfig,
-    type RetryConfig
-} from 'playlist-data-engine';
-```
+| Constant | Type | Description |
+|----------|------|-------------|
+| `DEFAULT_SENSOR_CONFIG` | `Required<SensorConfig>` | Default configuration values for all sensors |
 
-**Functions:**
+#### Environment Variables
 
-- `loadConfigFromEnv(): Partial<SensorConfig>`
-    - Loads configuration from environment variables
-    - Reads `WEATHER_API_KEY`, `STEAM_API_KEY`, `STEAM_USER_ID`, `DISCORD_CLIENT_ID`, `XP_MAX_MODIFIER`
+| Variable | Purpose |
+|----------|---------|
+| `WEATHER_API_KEY` | OpenWeatherMap API key for weather-based XP modifiers |
+| `STEAM_API_KEY` | Steam Web API key for gaming-based XP modifiers |
+| `STEAM_USER_ID` | 64-bit Steam ID for game detection |
+| `DISCORD_CLIENT_ID` | Discord application ID for Rich Presence music status |
+| `XP_MAX_MODIFIER` | Maximum XP multiplier cap (default: 3.0) |
 
-- `mergeConfig(userConfig?: Partial<SensorConfig>): Required<SensorConfig>`
-    - Merges user config with environment config and defaults
-    - Priority: userConfig > envConfig > defaults
-
-**Constants:**
-
-- `DEFAULT_SENSOR_CONFIG: Required<SensorConfig>` - Default configuration values
+**For complete environment variable documentation and examples, see [.env.example](.env.example).**
 
 ### Progression Configuration
 
-**Progression Configuration Type**
+*Also known as: XP settings, level-up configuration, progression rules*
 
-```typescript
-export interface ProgressionConfig {
-    xp: {
-        level_thresholds: number[];
-        xp_per_second: number;
-        xp_per_track_completion: number;
-        activity_bonuses: {
-            stationary: number;
-            walking: number;
-            running: number;
-            driving: number;
-            night_time: number;
-            extreme_weather: number;
-            high_altitude: number;
-        };
-        track_mastery_threshold: number;
-        mastery_bonus_xp: number;
-    };
-    statIncrease: Partial<StatIncreaseConfig>;
-    levelUp: {
-        useAverageHP: boolean;
-        allowManualStatSelection: boolean;
-        showNotifications: boolean;
-    };
-}
-```
+**Location:** `src/core/config/progressionConfig.ts`
 
-**Available Exports:**
+Configuration for XP thresholds, stat increases, and level-up behavior.
 
-```typescript
-import {
-    DEFAULT_PROGRESSION_CONFIG,
-    mergeProgressionConfig,
-    type ProgressionConfig
-} from 'playlist-data-engine';
-```
+#### Types
 
-**Functions:**
+| Type | Description |
+|------|-------------|
+| `ProgressionConfig` | Complete progression configuration (xp, statIncrease, levelUp) |
+| `StatIncreaseConfig` | Stat increase strategy and configuration |
 
-- `mergeProgressionConfig(userConfig?: Partial<ProgressionConfig>): Required<ProgressionConfig>`
-    - Merges user configuration with defaults
-    - Returns complete configuration with all required fields
+#### Functions
 
-**Constants:**
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `mergeProgressionConfig(userConfig?)` | `Required<ProgressionConfig>` | Merges user configuration with defaults |
 
-- `DEFAULT_PROGRESSION_CONFIG: Required<ProgressionConfig>` - Default D&D 5e progression values
+#### Constants
+
+| Constant | Type | Description |
+|----------|------|-------------|
+| `DEFAULT_PROGRESSION_CONFIG` | `Required<ProgressionConfig>` | Default D&D 5e progression values |
 
 ---
 
 ## Environmental Sensors
+*Also known as: IRL sensors, real-world sensors, environmental context, GPS/weather integration*
 
 **Location:** `src/core/sensors/EnvironmentalSensors.ts`
 
+**For usage examples, see [docs/IRL_SENSORS.md](docs/IRL_SENSORS.md)**
+
 Integrates real-world data (GPS, Weather, Motion, Light) to influence XP generation.
 
-#### Class: `EnvironmentalSensors`
+### EnvironmentalSensors
+
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `requestPermissions()` | `types: SensorType[]` | `Promise<SensorPermission[]>` | Requests browser permissions for sensors |
+| `startMonitoring()` | `callback?: (context) => void` | `void` | Starts listening to sensor streams |
+| `stopMonitoring()` | - | `void` | Stops all sensor monitoring |
+| `updateSnapshot()` | - | `Promise<EnvironmentalContext>` | Fetches current pull-based data (geo, weather) |
+| `calculateXPModifier()` | - | `number` | Returns XP multiplier (1.0x - 3.0x) based on context |
+| `calculateXPModifierWithForecast()` | `forecastHours?: number` | `Promise<number>` | Calculates XP modifier including weather forecast |
+| `calculateXPModifierWithSevereWeather()` | - | `Promise<{ modifier, severeWeatherAlert, safetyWarning }>` | Calculates XP modifier with severe weather detection |
+| `detectSevereWeather()` | - | `SevereWeatherAlert \| null` | Detects severe weather from current conditions |
+| `getSevereWeatherWarning()` | - | `string \| null` | Returns safety warning for current severe weather |
+| `getSensorStatus()` | `sensorType: SensorType` | `SensorStatus \| null` | Returns current health status of a sensor |
+| `getAllSensorStatuses()` | - | `SensorStatus[]` | Returns status of all sensors |
+| `getFailureLog()` | `sensorType?: SensorType, limit?: number` | `SensorFailureLog[]` | Returns failure log entries, optionally filtered |
+| `getLastKnownGood()` | `sensorType: SensorType` | `any` | Returns last known good value for a sensor |
+| `clearFailureLog()` | - | `void` | Clears failure log entries |
+| `updateRetryConfig()` | `config: Partial<SensorRetryConfig>` | `void` | Updates retry configuration |
+| `onSensorRecovery()` | `callback: (notification) => void` | `() => void` | Registers sensor recovery callback, returns unsubscribe |
+| `getPermissions()` | - | `SensorPermission[]` | Returns current permission states |
+| `checkAvailability()` | `type: SensorType` | `boolean` | Checks if a sensor type is available in the current environment |
+| `getCurrentActivity()` | - | `'stationary' \| 'walking' \| 'running' \| 'driving' \| 'unknown'` | Returns current activity type from motion sensor |
+| `getDiagnostics()` | - | `{ timestamp, diagnosticMode, sensors, cache, performance, recentFailures, permissions, context }` | Returns comprehensive diagnostic information |
+| `enableDiagnosticMode()` | - | `void` | Enables diagnostic logging mode |
+| `disableDiagnosticMode()` | - | `void` | Disables diagnostic logging mode |
+| `printDashboard()` | `config?: DashboardConfig` | `void` | Prints formatted sensor dashboard to console |
+
+### Environmental Helper Classes
+
+#### Helper: `GeolocationProvider`
+
+**Location:** [src/core/sensors/GeolocationProvider.ts](src/core/sensors/GeolocationProvider.ts)
+
+Handles GPS data and biome detection with caching support.
 
 **Constructor:**
 ```typescript
-new EnvironmentalSensors(weatherApiKeyOrConfig?: string | { weather?: { apiKey?: string }; geolocation?: Partial<GeolocationSensorConfig>; retry?: Partial<RetryConfig>; xpModifier?: Partial<XPModifierConfig> }, retryConfig?: Partial<SensorRetryConfig>)
+new GeolocationProvider(cacheTTLMinutes?: number, useLocalStorage?: boolean)
+new GeolocationProvider(config: GeolocationSensorConfig)
 ```
 
 **Methods:**
 
-- `async requestPermissions(types: SensorType[]): Promise<SensorPermission[]>`
-    - Requests browser permissions for 'geolocation', 'motion', 'light', etc.
-- `startMonitoring(callback?: (context: EnvironmentalContext) => void): void`
-    - Starts listening to sensor streams.
-- `stopMonitoring(): void`
-    - Stops all sensor monitoring.
-- `async updateSnapshot(): Promise<EnvironmentalContext>`
-    - Manually fetches current pull-based data (Geo, Weather) with retry logic.
-- `calculateXPModifier(): number`
-    - Returns a multiplier (1.0x - 3.0x) based on current context.
-- `async calculateXPModifierWithForecast(forecastHours?: number): Promise<number>`
-    - Calculates XP modifier including upcoming weather forecast.
-- `async calculateXPModifierWithSevereWeather(): Promise<{ modifier: number; severeWeatherAlert: SevereWeatherAlert | null; safetyWarning: string | null }>`
-    - Calculates XP modifier with severe weather detection.
-- `detectSevereWeather(): SevereWeatherAlert | null`
-    - Detects severe weather from current conditions.
-- `getSevereWeatherWarning(): string | null`
-    - Returns safety warning for current severe weather.
-- `getSensorStatus(sensorType: SensorType): SensorStatus | null`
-    - Returns current health status of a sensor.
-- `getAllSensorStatuses(): SensorStatus[]`
-    - Returns status of all sensors.
-- `getFailureLog(sensorType?: SensorType, limit?: number): SensorFailureLog[]`
-    - Returns failure log entries, optionally filtered.
-- `getLastKnownGood(sensorType: SensorType): any`
-    - Returns last known good value for a sensor.
-- `clearFailureLog(): void`
-    - Clears failure log entries.
-- `updateRetryConfig(config: Partial<SensorRetryConfig>): void`
-    - Updates retry configuration.
-- `onSensorRecovery(callback: (notification: SensorRecoveryNotification) => void): () => void`
-    - Registers callback for sensor recovery notifications, returns unsubscribe function.
-- `getPermissions(): SensorPermission[]`
-    - Returns current permission states.
-- `checkAvailability(type: SensorType): boolean`
-    - Checks if a sensor type is available in the current environment.
-- `getCurrentActivity(): 'stationary' | 'walking' | 'running' | 'driving' | 'unknown'`
-    - Returns current activity type from motion sensor.
-- `getDiagnostics(): { timestamp: number; diagnosticMode: boolean; sensors: [...]; cache: {...}; performance: {...}; recentFailures: SensorFailureLog[]; permissions: SensorPermission[]; context: {...} }`
-    - Returns comprehensive diagnostic information.
-- `enableDiagnosticMode(): void`
-    - Enables diagnostic logging mode.
-- `disableDiagnosticMode(): void`
-    - Disables diagnostic logging mode.
-- `printDashboard(config?: DashboardConfig): void`
-    - Prints formatted sensor dashboard to console.
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `getCurrentPosition()` | `forceRefresh?: boolean` | `Promise<GeolocationData \| null>` | Gets current position, using cache unless force refresh |
+| `getBiome()` | `latitude: number, longitude: number, altitude?: number \| null` | `string` | Calculates biome type from coordinates (e.g., 'forest', 'desert', 'mountain_coastal') |
+| `getCachedPosition()` | - | `GeolocationData \| null` | Returns cached position without checking TTL |
+| `getCacheAge()` | - | `number \| null` | Returns age of cached position in milliseconds |
+| `isCacheExpired()` | - | `boolean` | Returns true if cache is expired or doesn't exist |
+| `invalidateCache()` | - | `void` | Clears all cached geolocation data |
+| `getCacheStats()` | - | `{ hits: number, misses: number }` | Returns cache statistics |
+| `resetCacheStats()` | - | `void` | Resets cache statistics to zero |
 
-#### Helper: `GeolocationProvider`
-
-**Location:** `src/core/sensors/GeolocationProvider.ts`
-
-Handles GPS data and biome detection.
-
-- `getCurrentPosition(): Promise<GeolocationData | null>`
-    - Returns lat, long, altitude, speed, etc.
-- `getBiome(latitude: number, longitude: number): string`
-    - Returns 'tundra', 'forest', 'urban', or 'plains' based on coordinates.
+**Biome Types:** `plains`, `forest`, `jungle`, `savanna`, `desert`, `tundra`, `taiga`, `mountain`, `swamp`, `valley`, `urban`, `coastal_urban`, `coastal_desert` (with optional `_coastal` suffix)
 
 #### Helper: `MotionDetector`
 
-**Location:** `src/core/sensors/MotionDetector.ts`
+**Location:** [src/core/sensors/MotionDetector.ts](src/core/sensors/MotionDetector.ts)
 
-Handles accelerometer and gyroscope data.
+Handles accelerometer and gyroscope data for activity detection.
 
-- `startMonitoring(callback: (data: MotionData) => void): void`
-- `detectActivity(data: MotionData): 'stationary' | 'walking' | 'running' | 'driving'`
-    - Uses acceleration magnitude to infer activity type.
+**Methods:**
+
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `startMonitoring()` | `callback: (data: MotionData) => void` | `void` | Starts listening for device motion events |
+| `stopMonitoring()` | - | `void` | Stops listening for motion events |
+| `getLastMotion()` | - | `MotionData \| null` | Returns the last recorded motion data |
+| `detectActivity()` | `data: MotionData` | `'stationary' \| 'walking' \| 'running' \| 'driving' \| 'unknown'` | Detects activity type based on motion intensity |
 
 #### Helper: `WeatherAPIClient`
 
-**Location:** `src/core/sensors/WeatherAPIClient.ts`
+**Location:** [src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)
 
-Fetches weather data from OpenWeatherMap.
+Fetches weather data and forecasts from OpenWeatherMap API.
 
-- `getWeather(lat: number, lon: number): Promise<WeatherData | null>`
-    - Returns temp, humidity, weather type, and day/night status.
+**Constructor:**
+```typescript
+new WeatherAPIClient(apiKey?: string, cacheTTLMinutes?: number, useLocalStorage?: boolean)
+new WeatherAPIClient(config: WeatherSensorConfig)
+```
+
+**Methods:**
+
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `getWeather()` | `latitude: number, longitude: number` | `Promise<WeatherData \| null>` | Fetches current weather for coordinates |
+| `getForecast()` | `latitude: number, longitude: number, hours?: number` | `Promise<ForecastData[] \| null>` | Fetches weather forecast (max 120 hours) |
+| `getUpcomingWeather()` | `latitude: number, longitude: number, hours?: number` | `Promise<UpcomingWeatherInfo \| null>` | Gets upcoming weather changes for XP modifier calculation |
+| `detectSevereWeather()` | `weather: WeatherData \| ForecastData` | `SevereWeatherAlert \| null` | Detects severe weather (blizzard, hurricane, tornado) |
+| `getSafetyWarning()` | `alert: SevereWeatherAlert` | `string` | Returns safety warning message for severe weather alert |
+| `invalidateCache()` | - | `void` | Clears all cached weather data |
+| `invalidateLocation()` | `latitude: number, longitude: number` | `void` | Clears cache for a specific location |
+| `invalidateForecastCache()` | - | `void` | Clears all forecast cache |
+| `invalidateForecastLocation()` | `latitude: number, longitude: number` | `void` | Clears forecast cache for a specific location |
+| `getCacheStats()` | - | `{ hits: number, misses: number }` | Returns cache statistics |
+| `resetCacheStats()` | - | `void` | Resets cache statistics to zero |
+| `getCacheSize()` | - | `number` | Returns number of cached entries |
+| `clearExpiredEntries()` | - | `number` | Clears expired cache entries, returns count cleared |
+| `clearExpiredForecastEntries()` | - | `number` | Clears expired forecast entries, returns count cleared |
+| `getWeatherApiMetrics()` | - | `PerformanceMetrics` | Returns performance metrics for weather API calls |
+| `getWeatherApiStatistics()` | - | `PerformanceStatistics & { p95: number, p99: number }` | Returns calculated statistics including percentiles |
+| `getForecastApiMetrics()` | - | `PerformanceMetrics` | Returns performance metrics for forecast API calls |
+| `getForecastApiStatistics()` | - | `PerformanceStatistics & { p95: number, p99: number }` | Returns calculated statistics for forecast API |
+| `resetPerformanceMetrics()` | - | `void` | Resets all performance metrics |
+
+**Severe Weather Types:** `Blizzard`, `Hurricane`, `Typhoon`, `Tornado`, `None`
 
 #### Helper: `LightSensor`
 
-**Location:** `src/core/sensors/LightSensor.ts`
+**Location:** [src/core/sensors/LightSensor.ts](src/core/sensors/LightSensor.ts)
 
-Uses the AmbientLightSensor API.
+Uses the experimental AmbientLightSensor API for illuminance detection.
 
-- `startMonitoring(callback: (data: LightData) => void): void`
-    - Returns illuminance in lux.
+**Methods:**
+
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `startMonitoring()` | `callback: (data: LightData) => void` | `void` | Starts monitoring ambient light levels |
+| `stopMonitoring()` | - | `void` | Stops monitoring light |
+| `getLastReading()` | - | `LightData \| null` | Returns the last light sensor reading |
+
+**Note:** The AmbientLightSensor API is experimental and may not be available in all browsers. The class gracefully handles unavailability.
 
 ---
 
 ## Gaming Integration
+*Also known as: Gaming sensors, platform detection, game activity monitoring, Steam integration, Discord Rich Presence*
 
 **Location:** `src/core/sensors/GamingPlatformSensors.ts`
 
-Monitors Steam and Discord activity to award gaming bonuses.
+Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord RPC cannot read game activity (platform limitation) - only displays music status.
 
-#### Class: `GamingPlatformSensors`
+### GamingPlatformSensors
 
-**Constructor:**
-```typescript
-new GamingPlatformSensors(config: { steam?: { apiKey: string; steamId?: string; pollInterval?: number }; discord?: { clientId: string; enableRichPresence?: boolean; pollInterval?: number } })
-```
+| Method | Description |
+|--------|-------------|
+| `constructor(config?: { steam?, discord? })` | Initializes with optional Steam API key/ID and Discord client ID |
+| `authenticate(steamUserId?, discordUserId?)` | Authenticates with Steam (by ID) and Discord (connects RPC) |
+| `startMonitoring(callback?)` | Starts polling for gaming activity with optional context callback |
+| `stopMonitoring()` | Stops monitoring gaming activity |
+| `isPlayingGame(gameName)` | Checks if currently playing a specific game (case-insensitive) |
+| `calculateGamingBonus()` | Calculates gaming XP bonus multiplier (1.0 to 1.75, configurable) |
+| `getContext()` | Returns current `GamingContext` snapshot |
+| `recordGameSession(name, durationMinutes)` | Records a game session in gaming history |
+| `getDiagnostics()` | Returns comprehensive diagnostic report (Steam, Discord, cache, performance) |
+| `printDashboard(config?)` | Prints formatted gaming sensor dashboard to console |
 
-**Methods:**
-
-- `async authenticate(steamUserId?: string, discordUserId?: string): Promise<boolean>`
-    - Authenticates with Steam (by ID) and Discord (connects RPC).
-- `startMonitoring(callback?: (context: GamingContext) => void): void`
-    - Starts polling for gaming activity.
-- `stopMonitoring(): void`
-    - Stops monitoring gaming activity.
-- `isPlayingGame(gameName: string): boolean`
-    - Checks if currently playing a specific game.
-- `calculateGamingBonus(): number`
-    - Calculates gaming XP bonus multiplier (1.0 to 1.75).
-- `getContext(): GamingContext`
-    - Returns current gaming context snapshot.
-- `recordGameSession(gameName: string, durationMinutes: number): void`
-    - Records a game session in the gaming history.
-- `getDiagnostics(): { timestamp: number; steam: {...}; discord: {...}; gamingContext: GamingContext; polling: {...}; cache: {...}; performance: {...} }`
-    - Returns comprehensive diagnostic information.
-- `printDashboard(config?: DashboardConfig): void`
-    - Prints formatted gaming sensor dashboard to console.
-#### Helper: `SteamAPIClient`
-
+### SteamAPIClient
 **Location:** `src/core/sensors/SteamAPIClient.ts`
 
-Integrates with Steam Web API.
+| Method | Description |
+|--------|-------------|
+| `getCurrentGame(steamUserId)` | Fetches currently played game (name, appId, sessionDuration) |
+| `getGameMetadata(gameName)` | Fetches genre tags and description for gaming bonuses |
+| `getGameSchema(appId)` | Fetches game schema/stats from Steam |
+| `getCurrentGameApiStatistics()` | Returns performance metrics (avg, min, max, success rate, p95, p99) |
+| `getMetadataApiStatistics()` | Returns metadata API performance metrics |
+| `resetPerformanceMetrics()` | Resets all performance tracking counters |
 
-- `getCurrentGame(steamUserId: string): Promise<{ name: string; appId: number; source: 'steam'; sessionDuration?: number } | null>`
-    - Fetches currently played game.
-- `getGameMetadata(gameName: string): Promise<{ appId?: number; name: string; genre?: string[]; description?: string } | null>`
-    - Fetches genre tags and metadata for gaming bonuses.
-
-#### Helper: `DiscordRPCClient`
-
+### DiscordRPCClient
 **Location:** `src/core/sensors/DiscordRPCClient.ts`
 
-**Dual-Mode Support:**
-- **Server Mode (Node.js)**: Full Discord Rich Presence functionality when running in Node.js
-- **Browser Mode**: Graceful degradation with clear console warnings
+**⚠️ Important:** Discord RPC CANNOT read game activity. Use Steam API for game detection. Discord RPC is ONLY for displaying music status ("Listening to") on user's Discord profile.
 
-**Automatic Environment Detection**: The client auto-detects the environment and switches modes automatically. No configuration required.
+| Method | Description |
+|--------|-------------|
+| `constructor(clientId)` | Initializes with Discord application client ID (auto-detects environment) |
+| `connect()` | Connects to Discord RPC (server mode only; returns `false` in browser) |
+| `disconnect()` | Disconnects from Discord RPC |
+| `isConnectedToDiscord()` | Returns connection status (`false` in browser mode) |
+| `getConnectionState()` | Returns current `DiscordConnectionState` |
+| `getLastError()` | Returns last error message or `null` |
+| `setMusicActivity(musicDetails)` | Displays "Listening to {song}" on Discord profile (server only) |
+| `clearMusicActivity()` | Clears music activity from Discord (server only) |
+| `getUserInfo()` | Retrieves Discord user information (server only) |
 
-**⚠️ IMPORTANT**: Discord RPC CANNOT read or set game activity in any environment. It is ONLY for displaying music status ("Listening to").
-
-**Methods:**
-
-- `async connect(): Promise<boolean>`
-    - **Browser**: Always returns `false` with warning
-    - **Node.js**: Connects to Discord RPC when available
-- `disconnect(): void`
-    - Disconnects from Discord RPC (no-op in browser mode)
-- `isConnectedToDiscord(): boolean`
-    - Returns connection status (always `false` in browser mode)
-- `getConnectionState(): DiscordConnectionState`
-    - Returns current connection state
-- `getLastError(): string | null`
-    - **Browser**: Returns "Discord Rich Presence requires a server environment (Node.js)"
-    - **Node.js**: Returns last error or `null`
-- `setMusicActivity(musicDetails: { songName: string, artistName?: string, albumArtKey?: string, albumName?: string, startTime?: number, endTime?: number }): Promise<boolean>`
-    - Displays "Listening to {song}" on Discord profile with progress bar (server mode only)
-- `clearMusicActivity(): Promise<boolean>`
-    - Clears music activity from Discord Rich Presence (server mode only)
-- `async getUserInfo(): Promise<DiscordUserInfo | null>`
-    - Retrieves Discord user information (server mode only)
-
-### Discord RPC Environment Modes
-
-The `DiscordRPCClient` supports dual-mode operation:
-
-#### Server Mode (Node.js)
-When running in a Node.js environment, full Discord Rich Presence is available:
-- Real-time connection to Discord's IPC server
-- Music activity display on Discord profile
-- Progress bars, album art, and artist information
-- User info retrieval
-
-#### Browser Mode
-When running in browsers, Discord RPC gracefully degrades:
-- All methods return appropriate defaults (false, null)
-- Console warnings explain the limitation
-- Connection state is `DiscordUnavailable`
-- API remains fully compatible - no breaking changes
-
-**Note**: This behavior is automatic and requires no configuration changes.
+**Environment Modes:**
+- **Server (Node.js)**: Full Discord Rich Presence using `@ryuziii/discord-rpc`
+- **Browser**: Graceful degradation - methods return `false`/`null` with console warnings
+- **Detection**: Automatic - no configuration required
 
 ### Discord Types
 
-**Location:** `src/core/sensors/DiscordRPCClient.ts`
-
-```typescript
-// User information from Discord READY event (103-109)
-export interface DiscordUserInfo {
-    id: string;
-    username: string;
-    discriminator: string;
-    avatar?: string;        // Avatar hash
-    globalName?: string;    // Display name
-}
-
-// Music activity details - specific interface for music presence (191-199)
-export interface MusicActivityDetails {
-    songName: string;
-    artistName?: string;
-    albumArtKey?: string;
-    albumName?: string;       // For album art text
-    startTime?: number;       // Unix timestamp in seconds
-    endTime?: number;         // Unix timestamp in seconds (replaces durationSeconds)
-    durationSeconds?: number; // Deprecated: Use endTime instead (for backward compatibility)
-}
-
-// Discord Rich Presence activity structure (161-186)
-export interface DiscordActivity {
-    type?: ActivityType;       // Playing, Streaming, Listening, etc.
-    details?: string;          // Main activity text (max 128 chars)
-    state?: string;            // Secondary activity text (max 128 chars)
-    startTimestamp?: number;
-    endTimestamp?: number;
-    largeImageKey?: string;
-    largeImageText?: string;
-    smallImageKey?: string;
-    smallImageText?: string;
-    party?: DiscordActivityParty;
-    buttons?: DiscordActivityButton[];
-    secret?: string;
-    matchSecret?: string;
-    spectateSecret?: string;
-}
-
-// Discord RPC connection states (87-98)
-export enum DiscordConnectionState {
-    Disconnected = 'disconnected',
-    Connecting = 'connecting',
-    Connected = 'connected',
-    DiscordUnavailable = 'discord_unavailable',
-    Error = 'error',
-}
-
-// Activity types for Discord Rich Presence (115-121)
-export enum ActivityType {
-    Playing = 0,
-    Streaming = 1,
-    Listening = 2,
-    Watching = 3,
-    Competing = 5,
-}
-
-// Supporting types for DiscordActivity
-export interface DiscordActivityButton {
-    label: string;
-    url: string;
-}
-
-export interface DiscordActivityAssets {
-    largeImageKey?: string;
-    largeImageText?: string;
-    smallImageKey?: string;
-    smallImageText?: string;
-}
-
-export interface DiscordActivityTimestamps {
-    startTimestamp?: number;
-    endTimestamp?: number;
-}
-
-export interface DiscordActivityParty {
-    id?: string;
-    size?: [current: number, max: number];
-}
-
-// Discord RPC error codes (205-222)
-export enum DiscordRPCErrorCode {
-    InvalidOpcode = 4000,
-    InvalidPayload = 4001,
-    InvalidFrameBeforeHandshake = 4002,
-    InvalidFrame = 4003,
-    NotConnected = 4004,
-    AlreadyConnected = 4005,
-    InvalidPermissions = 4006,
-    InvalidClientId = 4007,
-}
-
-// Discord RPC error response structure (227-231)
-export interface DiscordRPCErrorResponse {
-    code: DiscordRPCErrorCode;
-    message: string;
-    evt?: string;
-}
-
-// Raw Discord RPC event data (237-252)
-export interface DiscordRPCRawEvent {
-    cmd?: string;
-    evt?: string;
-    nonce?: string;
-    data?: {
-        user?: {
-            id: string;
-            username: string;
-            discriminator: string;
-            avatar?: string;
-            global_name?: string;
-        };
-        [key: string]: unknown;
-    };
-    [key: string]: unknown;
-}
-```
+| Type | Description |
+|------|-------------|
+| `DiscordUserInfo` | User information from Discord READY event (id, username, discriminator, avatar, globalName) |
+| `MusicActivityDetails` | Music presence details (songName, artistName, albumArtKey, albumName, startTime, endTime) |
+| `DiscordActivity` | Rich Presence activity structure (type, details, state, timestamps, images, buttons) |
+| `DiscordConnectionState` | Connection states: `Disconnected`, `Connecting`, `Connected`, `DiscordUnavailable`, `Error` |
+| `ActivityType` | Activity types: `Playing` (0), `Streaming` (1), `Listening` (2), `Watching` (3), `Competing` (5) |
+| `DiscordActivityButton` | Button with label and URL for activity |
+| `DiscordActivityAssets` | Image assets (largeImageKey, largeImageText, smallImageKey, smallImageText) |
+| `DiscordActivityTimestamps` | Progress bar timestamps (startTimestamp, endTimestamp) |
+| `DiscordActivityParty` | Party information for multiplayer (id, size) |
+| `DiscordRPCErrorCode` | RPC error codes (4000-4007): InvalidOpcode, InvalidPayload, NotConnected, etc. |
+| `DiscordRPCErrorResponse` | Error response structure (code, message, evt) |
+| `DiscordRPCRawEvent` | Raw event data from Discord IPC |
 
 ---
 
 ## Combat System
 
+*Also known as: D&D 5e combat, turn-based combat, battle system, encounter system*
+
+**For usage examples, see [COMBAT_SYSTEM.md](docs/COMBAT_SYSTEM.md)**
+
+### CombatEngine
+
 **Location:** `src/core/combat/CombatEngine.ts`
 
-A full D&D 5e turn-based combat engine.
-
-#### Class: `CombatEngine`
+D&D 5e turn-based combat engine with initiative, attacks, spell casting, and damage mechanics.
 
 **Constructor:**
-```typescript
-new CombatEngine(config?: CombatConfig)
-```
+
+| Constructor | Description |
+|-------------|-------------|
+| `new CombatEngine(config?: CombatConfig)` | Initialize combat engine with optional configuration (useEnvironment, useMusic, tacticalMode, maxTurnsBeforeDraw, allowFleeing, seed, treasure) |
 
 **Methods:**
 
-- `startCombat(players: CharacterSheet[], enemies: CharacterSheet[], environment?: EnvironmentalContext): CombatInstance`
-    - Rolls initiative and creates a combat session.
-- `getCurrentCombatant(combat: CombatInstance): Combatant`
-    - Returns the current active combatant.
-- `executeAttack(combat: CombatInstance, attacker: Combatant, target: Combatant, attack: Attack): CombatAction`
-    - Resolves an attack roll against AC and applies damage. Requires a pre-built `Attack` object.
-- `executeWeaponAttack(combat: CombatInstance, attacker: Combatant, target: Combatant, weaponName?: string): CombatAction`
-    - Automatically builds an `Attack` object from the attacker's equipped weapon(s) and executes the attack.
-    - If no `weaponName` is provided, uses the first equipped weapon.
-    - If `weaponName` is provided, uses that specific weapon (must be equipped).
-    - Throws an error if the attacker has no equipped weapons or the named weapon is not equipped.
-- `executeCastSpell(combat: CombatInstance, caster: Combatant, spell: Spell, targets: Combatant[]): CombatAction`
-    - Executes a spell casting action.
-- `executeDodge(combat: CombatInstance, combatant: Combatant): CombatAction`
-    - Executes dodge action (increases AC by 2 until next turn).
-- `executeDash(combat: CombatInstance, combatant: Combatant): CombatAction`
-    - Executes dash action (double movement speed).
-- `executeDisengage(combat: CombatInstance, combatant: Combatant): CombatAction`
-    - Executes disengage action (no opportunity attacks provoked).
-- `nextTurn(combat: CombatInstance): CombatInstance`
-    - Advances the turn order and resets action trackers.
-- `getCombatResult(combat: CombatInstance): CombatResult | null`
-    - Returns winner and rewards if combat is over.
-- `getCombatSummary(combat: CombatInstance): string`
-    - Returns formatted combat summary string.
-- `applyDamage(combatant: Combatant, damage: number): number`
-    - Applies damage to combatant (accounts for temp HP).
-- `healCombatant(combatant: Combatant, healing: number): number`
-    - Heals a combatant.
-- `applyTemporaryHP(combatant: Combatant, tempHP: number): void`
-    - Applies temporary hit points.
-- `getLivingCombatants(combat: CombatInstance): Combatant[]`
-    - Returns all non-defeated combatants.
-- `getDefeatedCombatants(combat: CombatInstance): Combatant[]`
-    - Returns all defeated combatants.
+| Method | Description |
+|--------|-------------|
+| `startCombat(players, enemies, environment?)` | Rolls initiative and creates combat session |
+| `getCurrentCombatant(combat)` | Returns current active combatant |
+| `executeAttack(combat, attacker, target, attack)` | Resolves attack roll vs AC and applies damage (requires pre-built Attack object) |
+| `executeWeaponAttack(combat, attacker, target, weaponName?)` | Auto-builds Attack from equipped weapon(s) and executes; uses first weapon or specific weapon if named; throws error if no weapon equipped |
+| `executeCastSpell(combat, caster, spell, targets)` | Executes spell casting action |
+| `executeDodge(combat, combatant)` | Executes dodge action (AC +2 until next turn) |
+| `executeDash(combat, combatant)` | Executes dash action (double movement speed) |
+| `executeDisengage(combat, combatant)` | Executes disengage action (no opportunity attacks) |
+| `executeFlee(combat, combatant)` | Removes combatant from combat (requires `allowFleeing: true`) |
+| `canFlee()` | Returns true if fleeing is allowed by config |
+| `nextTurn(combat)` | Advances turn order and resets action trackers |
+| `getCombatResult(combat)` | Returns winner and rewards if combat over (null if active) |
+| `getCombatSummary(combat)` | Returns formatted combat summary string |
+| `applyDamage(combatant, damage)` | Applies damage accounting for temp HP |
+| `healCombatant(combatant, healing)` | Heals combatant |
+| `applyTemporaryHP(combatant, tempHP)` | Applies temporary hit points |
+| `getLivingCombatants(combat)` | Returns all non-defeated combatants |
+| `getDefeatedCombatants(combat)` | Returns all defeated combatants |
 
-#### Helper: `InitiativeRoller` (instance class)
+### InitiativeRoller
+
+*Also known as: Turn order manager, initiative tracker*
 
 **Location:** `src/core/combat/InitiativeRoller.ts`
 
-> **Note**: This is an instance class. Create an instance with `new InitiativeRoller()` before using methods.
+> **Note:** Instance class - create with `new InitiativeRoller()`
 
-Manages initiative system for D&D combat.
+Manages D&D 5e initiative system (rolling, sorting, turn progression).
 
-- `rollInitiativeForCombatant(combatant: Combatant): InitiativeResult`
-    - Rolls initiative for a single combatant (d20 + DEX modifier)
-- `rollInitiativeForAll(combatants: Combatant[]): { results: InitiativeResult[], sortedCombatants: Combatant[] }`
-    - Rolls initiative for all combatants and sorts by descending initiative
-- `getNextCombatant(combatants: Combatant[], currentIndex: number): { combatant: Combatant, index: number, isNewRound: boolean }`
-    - Gets the next combatant in turn order (wraps around)
-- `getInitiativeOrder(combatants: Combatant[]): string[]`
-    - Returns formatted initiative order for display
-- `rerollInitiativeForCombatant(combatant: Combatant): number`
-    - Re-rolls initiative for a specific combatant
-- `delayTurn(combatants: Combatant[], combatantId: string): Combatant[]`
-    - Delays a combatant's turn (moves them later in initiative order)
-- `resortByInitiative(combatants: Combatant[]): Combatant[]`
-    - Resorts combatants by initiative value (for mid-combat joins)
+| Method | Description |
+|--------|-------------|
+| `rollInitiativeForCombatant(combatant)` | Rolls d20 + DEX, updates combatant in-place, returns InitiativeResult |
+| `rollInitiativeForAll(combatants)` | Rolls for all, sorts descending (DEX as tiebreaker), returns results and sorted array |
+| `getNextCombatant(combatants, currentIndex)` | Gets next combatant in order, wraps around, returns isNewRound flag |
+| `getInitiativeOrder(combatants)` | Returns formatted strings showing position, name, initiative, DEX |
+| `rerollInitiativeForCombatant(combatant)` | Re-rolls for specific combatant (when DEX modifier changes) |
+| `delayTurn(combatants, combatantId)` | Moves combatant one position later (Ready action) |
+| `resortByInitiative(combatants)` | Resorts by current values (mid-combat joins or changes) |
 
-#### Helper: `DiceRoller` (utility functions)
+### DiceRoller
+
+*Also known as: Dice system, RNG, random number generator, d20 roller*
 
 **Location:** `src/core/combat/DiceRoller.ts`
 
-> **Note**: This is a collection of standalone exported functions, not a class. Import functions directly.
+> **Note:** Static class - call methods directly without instantiation: `DiceRoller.rollD20()`
 
-Utility functions for D&D-style dice rolling mechanics.
+Utility class for D&D-style dice rolling mechanics.
 
-**Basic Dice Functions:**
+**Basic Dice:**
 
-- `rollDie(sides: number): number`
-    - Roll a single die with the specified number of sides (4, 6, 8, 10, 12, 20, 100)
-    - Returns a value from 1 to sides
-- `rollD20(): number`
-    - Roll a d20 (common for attacks, ability checks, saving throws)
-    - Returns a value from 1 to 20
-- `rollMultipleDice(count: number, sides: number): number[]`
-    - Roll multiple dice of the same size
-    - Returns an array of individual roll results
-- `rollPercentile(): number`
-    - Roll a d100 (percentile die)
-    - Returns a value from 1 to 100
+| Method | Description |
+|--------|-------------|
+| `rollDie(sides)` | Roll single die (4, 6, 8, 10, 12, 20, 100) |
+| `rollD20()` | Roll d20 for attacks, checks, saves |
+| `rollMultipleDice(count, sides)` | Roll multiple dice, return array |
+| `rollPercentile()` | Roll d100 |
 
 **Formula Parsing:**
 
-- `parseDiceFormula(formula: string): { diceCount: number, diceSides: number, modifier: number, rolls: number[], total: number }`
-    - Parse and roll a dice formula string like "2d6+3" or "1d20-2"
-    - Returns an object with parsed formula data and results
+| Method | Description |
+|--------|-------------|
+| `parseDiceFormula(formula)` | Parse and roll "2d6+3", returns parsed data and results |
 
 **Advantage/Disadvantage:**
 
-- `rollWithAdvantage(): { roll1: number, roll2: number, result: number }`
-    - Roll d20 with advantage (roll twice, take higher)
-    - Returns both rolls and the final result
-- `rollWithDisadvantage(): { roll1: number, roll2: number, result: number }`
-    - Roll d20 with disadvantage (roll twice, take lower)
-    - Returns both rolls and the final result
+| Method | Description |
+|--------|-------------|
+| `rollWithAdvantage()` | Roll twice, take higher |
+| `rollWithDisadvantage()` | Roll twice, take lower |
 
-**Combat Functions:**
+**Combat:**
 
-- `rollInitiative(dexModifier: number): number`
-    - Roll initiative (d20 + DEX modifier)
-    - Returns the initiative value
-- `calculateDamage(formula: string, modifier: number, isCritical?: boolean): { rolls: number[], modifier: number, total: number, isCritical: boolean }`
-    - Calculate damage from a dice formula with optional modifier
-    - For critical hits, dice are doubled (not the modifier)
-    - Returns detailed damage breakdown
-- `doubleDamage(rolls: number[]): number[]`
-    - Double the damage dice for a critical hit
-    - Returns a new array with each roll duplicated
+| Method | Description |
+|--------|-------------|
+| `rollInitiative(dexModifier)` | Roll d20 + DEX modifier |
+| `calculateDamage(formula, modifier, isCritical?)` | Calculate damage with optional modifier (doubles dice on crit) |
+| `doubleDamage(rolls)` | Double dice array for critical hit |
 
 **Saving Throws & Ability Checks:**
 
-- `rollSavingThrow(abilityModifier: number, proficiencyBonus?: number): number`
-    - Roll a saving throw (d20 + ability modifier + proficiency bonus if proficient)
-    - Returns the total save result
-- `rollAbilityCheck(abilityModifier: number, proficiencyBonus?: number): number`
-    - Roll an ability check (d20 + ability modifier + proficiency bonus if proficient)
-    - Returns the total check result
+| Method | Description |
+|--------|-------------|
+| `rollSavingThrow(abilityModifier, proficiencyBonus?)` | Roll d20 + ability + proficiency |
+| `rollAbilityCheck(abilityModifier, proficiencyBonus?)` | Roll d20 + ability + proficiency |
 
 **Critical Hit Detection:**
 
-- `isCriticalHit(d20Roll: number): boolean`
-    - Check if a d20 roll is a critical hit (natural 20)
-- `isCriticalMiss(d20Roll: number): boolean`
-    - Check if a d20 roll is a critical miss (natural 1)
+| Method | Description |
+|--------|-------------|
+| `isCriticalHit(d20Roll)` | Returns true if natural 20 |
+| `isCriticalMiss(d20Roll)` | Returns true if natural 1 |
 
 **Seeded RNG:**
 
-- `seededRoll(seed: number): number`
-    - Generate a deterministic "seeded" d20 roll for reproducibility
-    - Uses a simple LCG algorithm
-    - Returns a value from 1 to 20
+| Method | Description |
+|--------|-------------|
+| `seededRoll(seed)` | Deterministic d20 for reproducibility (LCG algorithm) |
 
-#### Helper: `AttackResolver` (instance class)
+### AttackResolver
+
+*Also known as: Attack handler, melee/ranged attacks, to-hit calculator*
 
 **Location:** `src/core/combat/AttackResolver.ts`
 
-> **Note**: This is an instance class. Create an instance with `new AttackResolver()` before using methods.
+> **Note:** Instance class - create with `new AttackResolver()`
 
-Handles melee and ranged attack resolution (D&D 5e: d20 + attack bonus vs target AC).
+Handles melee and ranged attack resolution (d20 + attack bonus vs target AC).
 
-- `resolveAttack(attacker: Combatant, target: Combatant, attack: Attack): AttackResult`
-    - Resolves a complete attack action (roll vs AC, damage if hit)
-- `isInRange(attacker: Combatant, target: Combatant, attack: Attack): boolean`
-    - Checks if an attack is within range (melee: 5ft, ranged: attack.range)
-- `calculateAttackBonus(character: any, attackName: string, abilityModifier: number, isProficient: boolean): number`
-    - Calculates attack bonus (ability modifier + proficiency bonus if proficient)
-- `attackWithAdvantage(attacker: Combatant, target: Combatant, attack: Attack): AttackResult`
-    - Resolves attack with advantage (roll twice, take higher)
-- `attackWithDisadvantage(attacker: Combatant, target: Combatant, attack: Attack): AttackResult`
-    - Resolves attack with disadvantage (roll twice, take lower)
+| Method | Description |
+|--------|-------------|
+| `resolveAttack(attacker, target, attack)` | Resolves complete attack (roll vs AC, damage if hit) |
+| `isInRange(attacker, target, attack)` | Checks if attack is within range (melee: 5ft, ranged: attack.range) |
+| `calculateAttackBonus(character, attackName, abilityModifier, isProficient)` | Calculates attack bonus (ability + proficiency if proficient) |
+| `attackWithAdvantage(attacker, target, attack)` | Resolves attack with advantage (roll twice, take higher) |
+| `attackWithDisadvantage(attacker, target, attack)` | Resolves attack with disadvantage (roll twice, take lower) |
 
-#### Helper: `SpellCaster` (instance class)
+### SpellCaster
+
+*Also known as: Spell system, magic casting, spell slot manager*
 
 **Location:** `src/core/combat/SpellCaster.ts`
 
-> **Note**: This is an instance class. Create an instance with `new SpellCaster()` before using methods.
+> **Note:** Instance class - create with `new SpellCaster()`
 
 Handles spell casting mechanics (spell slots, saving throws, spell damage).
 
-- `castSpell(caster: Combatant, spell: Spell, targets: Combatant[]): SpellCastResult`
-    - Casts a spell at one or more targets (handles slot consumption, attack rolls, saving throws)
-- `hasSpellSlot(caster: Combatant, spellLevel: number): boolean`
-    - Checks if caster has a spell slot of the given level available
-- `consumeSpellSlot(caster: Combatant, spellLevel: number): void`
-    - Consumes a spell slot
-- `restoreSpellSlots(caster: Combatant): void`
-    - Restores all spell slots to maximum (after long rest)
-- `calculateSaveDC(caster: Combatant, ability: string): number`
-    - Calculates spell save DC (8 + ability modifier + proficiency bonus)
-- `makeSavingThrow(target: Combatant, saveAbility: string, saveDC: number): boolean`
-    - Makes a saving throw against a spell (returns true if save succeeds)
-- `getSpellSlotInfo(caster: Combatant): string`
-    - Returns formatted spell slot information
-- `canUpcast(caster: Combatant, spell: Spell, targetSlotLevel: number): boolean`
-    - Checks if a spell can be upcast (cast using higher-level slot)
-- `upcastSpell(caster: Combatant, spell: Spell, targets: Combatant[], slotLevelUsed: number): SpellCastResult`
-    - Upcasts a spell using a higher-level spell slot
+| Method | Description |
+|--------|-------------|
+| `castSpell(caster, spell, targets)` | Casts spell with slot consumption, attack rolls, and saving throws |
+| `hasSpellSlot(caster, spellLevel)` | Checks if caster has slot of given level available |
+| `consumeSpellSlot(caster, spellLevel)` | Consumes a spell slot |
+| `restoreSpellSlots(caster)` | Restores all slots to maximum (after long rest) |
+| `calculateSaveDC(caster, ability)` | Calculates spell save DC (8 + ability + proficiency) |
+| `makeSavingThrow(target, saveAbility, saveDC)` | Makes saving throw against spell, returns true if succeeds |
+| `getSpellSlotInfo(caster)` | Returns formatted spell slot information |
+| `canUpcast(caster, spell, targetSlotLevel)` | Checks if spell can be upcast to higher level |
+| `upcastSpell(caster, spell, targets, slotLevelUsed)` | Upcasts spell using higher-level slot |
+
+---
+
+## Enemy Generation
+
+**For usage examples, see [ENEMY_GENERATION.md](ENEMY_GENERATION.md)**
+
+### EnemyGenerator
+
+**Location:** `src/core/generation/EnemyGenerator.ts`
+
+Deterministic enemy generator that creates balanced encounters based on party strength or target CR. All generation is seeded for reproducibility.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static generate(options: EnemyGenerationOptions): CharacterSheet` | Generate a single enemy from template or by category/archetype |
+| `static generateEncounter(party: CharacterSheet[], options: EncounterGenerationOptions): CharacterSheet[]` | Generate encounter balanced for party (analyzes party strength) |
+| `static generateEncounterByCR(options: EncounterGenerationOptions): CharacterSheet[]` | Generate encounter by target CR (no party required) |
+| `static getTemplateById(id: string): EnemyTemplate \| undefined` | Get enemy template by ID (e.g., 'orc', 'goblin-archer') |
+
+### CR/Level Conversion
+
+**Location:** `src/core/generation/CRLevelConverter.ts`
+
+Bidirectional conversion between Challenge Rating (CR) and character level for enemy generation and encounter balancing.
+
+| Method | Description |
+|--------|-------------|
+| `crToLevel(cr: number, tuning?: CRTuningConfig): number` | Convert CR to character level (CR 1 = level 1, supports fractional CR) |
+| `levelToCR(level: number, tuning?: CRTuningConfig): number` | Convert character level to CR (inverse of crToLevel) |
+| `roundLevel(level: number, minLevel?: number, maxLevel?: number): number` | Round level to nearest valid character level (default: 1-20) |
+| `roundCR(cr: number): number` | Round CR to nearest valid step (0, 1/8, 1/4, 1/2, 1, 2, etc.) |
+| `formatLevel(level: number): string` | Format level with fractional notation (e.g., "0 (1/4)") |
+| `formatCR(cr: number): string` | Format CR with fractional notation (e.g., "1/4", "1/2") |
+| `createCRTuning(options?: Partial<CRTuningConfig>): CRTuningConfig` | Create custom CR tuning configuration |
+
+**Single Enemy Generation:**
+
+```typescript
+// Generate a specific elite orc
+const orc = EnemyGenerator.generate({
+  seed: 'my-encounter',
+  templateId: 'orc',
+  rarity: 'elite'
+});
+
+// Generate a random humanoid brute
+const enemy = EnemyGenerator.generate({
+  seed: 'random-1',
+  category: 'humanoid',
+  archetype: 'brute',
+  rarity: 'common'
+});
+
+// With audio influence
+const enemy = EnemyGenerator.generate({
+  seed: 'audio-1',
+  audioProfile: profile,
+  track: trackData,
+  difficultyMultiplier: 1.2
+});
+```
+
+**Encounter Generation:**
+
+```typescript
+// Party-based balanced encounter
+const enemies = EnemyGenerator.generateEncounter(party, {
+  seed: 'dungeon-1',
+  difficulty: 'medium',
+  count: 5  // Will auto-promote 1 to uncommon as leader
+});
+
+// CR-based encounter (no party needed)
+const enemies = EnemyGenerator.generateEncounterByCR({
+  seed: 'cr5-encounter',
+  targetCR: 5,
+  count: 3
+});
+```
+
+**Generation Options (EnemyGenerationOptions):**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `seed` | `string` | **Required** - Base seed for deterministic generation |
+| `templateId?` | `string` | Force specific template (e.g., 'orc', 'goblin-archer') |
+| `rarity?` | `EnemyRarity` | Rarity tier (default: 'common') |
+| `difficultyMultiplier?` | `number` | Fine-tune difficulty (default: 1.0) |
+| `audioProfile?` | `AudioProfile` | Influences template selection |
+| `track?` | `PlaylistTrack` | Required if audioProfile provided |
+
+**Encounter Options (EncounterGenerationOptions):**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `seed` | `string` | **Required** - Base seed for deterministic generation |
+| `count` | `number` | **Required** - Number of enemies to generate |
+| `difficulty?` | `EncounterDifficulty` | Party mode: easy/medium/hard/deadly (default: 'medium') |
+| `targetCR?` | `number` | CR mode: Target CR for encounter |
+| `baseRarity?` | `EnemyRarity` | Base rarity before leader promotion (default: 'common') |
+| `difficultyMultiplier?` | `number` | Fine-tune difficulty (default: 1.0) |
+| `category?` | `EnemyCategory` | Filter by category |
+| `archetype?` | `EnemyArchetype` | Filter by archetype |
+| `templateId?` | `string` | Force specific template for all enemies |
+| `enemyMix?` | `EnemyMixMode` | Mix mode: 'uniform', 'custom', 'category', or 'random' |
+| `templates?` | `string[]` | Template IDs for 'custom' mix mode |
+| `audioProfile?` | `AudioProfile` | Influences template selection |
+| `track?` | `PlaylistTrack` | Required if audioProfile provided |
+| `enableLeaderPromotion?` | `boolean` | Auto-promote leaders for groups > 3 (default: true) |
+| `allowMixedCategories?` | `boolean` | Allow mixed categories in 'random' mode (default: true) |
+| `lairFeatures?` | `boolean` | Include lair action hints for bosses (default: false) |
+| `minRarity?` | `EnemyRarity` | Force minimum rarity tier for all enemies |
+| `maxRarity?` | `EnemyRarity` | Cap maximum rarity tier for all enemies |
+
+**Rarity Scaling:**
+
+| Rarity | Stat Multiplier | Signature Die | Extra Abilities | Resistances |
+|--------|-----------------|----------------|-----------------|-------------|
+| `common` | 1.0× | d6 | 0 | None |
+| `uncommon` | 1.1× | d8 | 1 | None |
+| `elite` | 1.25× | d10 | 2 | Type-based |
+| `boss` | 1.5× | d12 | 3 | Type-based |
+
+**Leader Promotion (groups > 3):**
+
+| Enemy Count | Leader Rule |
+|-------------|-------------|
+| 1-3 | No leader, all same rarity |
+| 4-6 | 1 enemy promoted to next rarity tier |
+| 7-9 | 1 enemy promoted two tiers up |
+| 10+ | 2 enemies promoted (1 one tier, 1 two tiers) |
+
+### PartyAnalyzer
+
+**Location:** `src/core/combat/PartyAnalyzer.ts`
+
+Analyzes party strength for encounter generation using D&D 5e encounter building rules.
+
+**Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static calculatePartyLevel(party: CharacterSheet[]): number` | `number` | Average party level (rounded down) |
+| `static calculatePartyStrength(party: CharacterSheet[]): number` | `number` | Combined strength score |
+| `static getXPBudget(party: CharacterSheet[], difficulty: EncounterDifficulty): number` | `number` | XP budget for encounter |
+| `static getAverageAC(party: CharacterSheet[]): number` | `number` | Average armor class |
+| `static getAverageHP(party: CharacterSheet[]): number` | `number` | Average hit points |
+| `static getPartySize(party: CharacterSheet[]): number` | `number` | Party member count |
+| `static getAverageDamage(party: CharacterSheet[]): number` | `number` | Estimated damage output |
+| `static analyzeParty(party: CharacterSheet[]): PartyAnalysis` | `PartyAnalysis` | Complete analysis with all stats |
+
+**PartyAnalysis Interface:**
+
+```typescript
+interface PartyAnalysis {
+  averageLevel: number;      // Average party level
+  partySize: number;         // Number of party members
+  averageAC: number;         // Average armor class
+  averageHP: number;         // Average hit points
+  averageDamage: number;      // Estimated damage output
+  totalStrength: number;      // Abstract strength score
+  easyXP: number;           // XP budget for easy difficulty
+  mediumXP: number;         // XP budget for medium difficulty
+  hardXP: number;           // XP budget for hard difficulty
+  deadlyXP: number;         // XP budget for deadly difficulty
+}
+```
+
+### Encounter Balance Constants
+
+**Location:** `src/constants/EncounterBalance.ts`
+
+D&D 5e official encounter building tables for balanced encounters.
+
+**XP Budget Per Level:**
+
+```typescript
+XP_BUDGET_PER_LEVEL[level][difficulty]
+// Example: XP_BUDGET_PER_LEVEL[5]['medium'] = 500
+```
+
+| Level | Easy | Medium | Hard | Deadly |
+|-------|-------|--------|-------|--------|
+| 1 | 25 | 50 | 75 | 100 |
+| 5 | 250 | 500 | 750 | 1000 |
+| 10 | 600 | 1200 | 1800 | 2400 |
+| 15 | 1600 | 3200 | 4800 | 6400 |
+| 20 | 5000 | 10000 | 15000 | 20000 |
+
+**CR to XP Conversion:**
+
+```typescript
+CR_TO_XP[cr]  // Returns XP value for given CR
+// Example: CR_TO_XP[5] = 1800
+```
+
+| CR | XP | CR | XP | CR | XP |
+|----|-----|----|-----|----|
+| 0 | 10 | 5 | 1800 | 15 | 13000 |
+| 1/8 | 25 | 6 | 2300 | 20 | 25000 |
+| 1/4 | 50 | 10 | 5900 | 30+ | Scales up |
+
+**Utility Functions:**
+
+| Function | Description |
+|----------|-------------|
+| `getXPForCR(cr: number): number` | Convert CR to XP |
+| `getCRFromXP(xp: number): number` | Convert XP to CR |
+| `applyTuning(xpBudget: number, tuningFactor: number): number` | Apply difficulty tuning factor |
+| `getXPBudgetPerLevel(level: number, difficulty: EncounterDifficulty): number` | Get XP budget for single character |
+| `getXPBudgetForParty(levels: number[], difficulty: EncounterDifficulty): number` | Get total XP budget for party |
+| `getEncounterMultiplier(enemyCount: number): number` | Get encounter multiplier for group size |
+| `calculateAdjustedXP(enemyCRs: number[], multiplier: number): number` | Calculate adjusted XP with multiplier |
+| `getAveragePartyLevel(levels: number[]): number` | Calculate average party level |
+
+### EnemyEquipmentGenerator
+*Also known as: Enemy equipment manager, gear generator*
+
+**Location:** `src/core/generation/EnemyEquipmentGenerator.ts`
+
+Generates equipment for enemy characters based on archetype and rarity. Equipment selection is deterministic and uses seeded RNG for reproducibility.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static generate(options: EnemyEquipmentGenerationOptions): EquipmentConfig` | Generate equipment configuration with weapon, armor, and optional shield |
+| `static getEquipmentName(templateId: string): string` | Get actual equipment name from template ID |
+| `static getAllTemplates(): EquipmentTemplate[]` | Get all equipment templates |
+| `static getTemplateById(id: string): EquipmentTemplate \| undefined` | Get equipment template by ID |
+
+**EquipmentTemplate Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique identifier |
+| `name` | `string` | Display name |
+| `type` | `'weapon' \| 'armor' \| 'shield'` | Equipment type |
+| `archetype` | `EnemyArchetype[]` | Applicable archetypes |
+| `rarity` | `EnemyRarity[]` | Applicable rarity tiers |
+| `damage?` | `string` | Damage dice (e.g., "1d8") for weapons |
+| `acBonus?` | `number` | AC bonus for armor/shields |
+
+**EquipmentConfig Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `weapon?` | `EquipmentTemplate` | Selected weapon template |
+| `armor?` | `EquipmentTemplate` | Selected armor template |
+| `shield?` | `EquipmentTemplate` | Selected shield template (if applicable) |
+
+### SpellcastingGenerator
+*Also known as: Enemy spell system, caster generator*
+
+**Location:** `src/core/generation/SpellcastingGenerator.ts`
+
+Generates innate spellcasting abilities for enemy casters. Unlike player spellcasting, enemies use a simplified system with predefined spell lists.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static generateSpellList(options: SpellcastingGenerationOptions): SpellcastingConfig` | Generate spell list with seed string |
+| `static generateSpellListWithRNG(options: SpellcastingGenerationOptionsWithRNG): SpellcastingConfig` | Same as above but accepts SeededRNG directly |
+| `static getSpellSlotsForCR(cr: number): Record<number, number>` | Get spell slot configuration for a given CR |
+| `static shouldHaveSpellcasting(archetype: EnemyArchetype, rarity: EnemyRarity): boolean` | Check if enemy archetype/rarity combo should have spellcasting |
+| `static archetypeCanCast(archetype: EnemyArchetype): boolean` | Check if archetype has spellcasting capability |
+| `static getSpellListForArchetype(archetype: EnemyArchetype): SpellList \| undefined` | Get complete spell list for an archetype |
+| `static spellToFeature(spell: InnateSpell): Record<string, unknown> & { isSpell: boolean }` | Convert spell to Feature object |
+| `static spellsToFeatures(config: SpellcastingConfig): Array<Record<string, unknown> & { isSpell: boolean }>` | Convert all spells in config to Feature array |
+
+**InnateSpell Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique identifier |
+| `name` | `string` | Display name |
+| `level` | `number` | Spell level (0 = cantrip, 1-9 = spell level) |
+| `school` | `string` | Magical school (evocation, necromancy, etc.) |
+| `effect` | `string` | Description of what spell does |
+| `damage?` | `string` | Damage dice (e.g., "2d6") for damaging spells |
+| `save?` | `string` | Save type (e.g., "DEX") |
+| `damageType?` | `string` | Damage type for resistance calculations |
+| `range?` | `number` | Range in feet |
+| `concentration?` | `boolean` | Whether spell requires concentration |
+| `tags?` | `string[]` | Classification tags |
+
+**SpellcastingConfig Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `cantrips` | `InnateSpell[]` | Cantrips enemy knows (always available) |
+| `spells` | `InnateSpell[]` | Spells enemy knows (may have limited slots) |
+| `slots` | `Record<number, number>` | Spell slots available per level |
+
+### LegendaryGenerator
+*Also known as: Boss action system, legendary action generator*
+
+**Location:** `src/core/generation/LegendaryGenerator.ts`
+
+Generates legendary actions and resistances for boss-tier enemies. Bosses receive 3 legendary actions per round and 3 legendary resistances per day.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `static generate(options: { archetype: EnemyArchetype, cr: number, seed: string }): LegendaryConfig` | Generate legendary configuration with seed string |
+| `static generateWithRNG(options: { archetype: EnemyArchetype, cr: number, rng: SeededRNG }): LegendaryConfig` | Same as above but accepts SeededRNG directly |
+| `static getResistancesForCR(cr: number): number` | Get legendary resistances per day for a given CR |
+| `static getActionById(id: string): LegendaryAction \| undefined` | Get legendary action by ID |
+| `static getActionsForArchetype(archetype: EnemyArchetype): LegendaryAction[]` | Get all legendary actions for an archetype |
+| `static shouldHaveLegendary(rarity: EnemyRarity): boolean` | Check if rarity tier should have legendary actions |
+
+**LegendaryAction Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique identifier |
+| `name` | `string` | Display name |
+| `description` | `string` | Detailed description |
+| `cost` | `number` | Cost in legendary action points (1-3) |
+| `effect` | `string` | Effect description for combat system |
+| `damage?` | `string` | Damage dice if this action deals damage |
+| `damageType?` | `string` | Damage type for damaging actions |
+| `archetypes` | `EnemyArchetype[]` | Archetypes this action is appropriate for |
+| `tags?` | `string[]` | Tags for filtering (movement, damage, control, etc.) |
+
+**LegendaryConfig Interface:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `resistances` | `number` | Number of legendary resistances per day |
+| `actions` | `LegendaryAction[]` | Array of legendary actions available to this boss |
+| `lairActionHint?` | `string` | Optional lair action hint for encounter design |
+
+### Boss Enhancements
+
+Boss-tier enemies receive special enhancements beyond standard rarity scaling:
+
+**Legendary Resistances:**
+- 3 per day for CR 1-10
+- 4 per day for CR 11-15
+- 5 per day for CR 16-20
+- 6 per day for CR 21+
+
+**Legendary Actions:**
+- 3 actions available per round
+- At least one movement option guaranteed
+- Actions selected from archetype-specific pool
+
+**Boss Name Generation:**
+- Epic titles added to base name (e.g., "Grognak the Destroyer")
+- Titles selected from archetypal pools
+- Examples: "the Destroyer", "Lord of Ruin", "the Unbroken"
+
+**Ultimate Ability:**
+- Once-per-encounter ability
+- Enhanced signature ability (2× damage dice)
+- Marked with `uses_per_encounter: 1` and `max_uses_per_encounter: 1`
+
+**Note:** Boss enemies do NOT receive spellcasting - they get ultimate abilities instead.
+
+### Audio Stat Influence
+
+Audio profile affects enemy stat distribution during generation. This is a subtle flavor modifier, not a massive power shift.
+
+**Frequency Band → Stat Mapping:**
+
+| Audio Dominance | Stat Bonus | Max Bonus |
+|-----------------|-------------|------------|
+| Bass dominance | +1 STR, +1 CON | +2 total |
+| Treble dominance | +1 DEX | +2 total |
+| Mid dominance | +1 WIS, +1 CHA | +2 total |
+| Balanced (no clear dominance) | +1 to all abilities (smaller) | +2 total |
+
+**Implementation Notes:**
+- Applied after base stat calculation
+- Capped at MAX_AUDIO_INFLUENCE (2) to prevent extreme values
+- Additive to rarity scaling, not multiplicative
+- Determined by comparing bass_dominance, treble_dominance, and mid_dominance values
+
+### Enemy Type Definitions
+
+**Location:** `src/core/types/Enemy.ts`
+
+**EnemyCategory:**
+
+| Value | Description |
+|--------|-------------|
+| `humanoid` | Civilized races that fight with weapons/armor |
+| `beast` | Natural animals and magical creatures |
+| `undead` | Undead creatures with necrotic resistance and poison immunity |
+| `dragon` | Dragon type creatures with elemental immunities and breath weapons |
+| `fiend` | Fiendish creatures with fire/cold resistance and poison immunity |
+| `construct` | Construct creatures with poison/psychic immunity and no healing |
+| `elemental` | Elemental creatures with immunity to their element type |
+| `monstrosity` | Monstrosities with varied unique abilities |
+
+**EnemyRarity:**
+
+| Value | Stat Multiplier | Signature Die | Extra Abilities |
+|--------|-----------------|----------------|-----------------|
+| `common` | 1.0× | d6 | 0 |
+| `uncommon` | 1.1× | d8 | 1 |
+| `elite` | 1.25× | d10 | 2 |
+| `boss` | 1.5× | d12 | 3 |
+
+**EnemyArchetype:**
+
+| Value | Description |
+|--------|-------------|
+| `brute` | High HP, high damage, melee-focused |
+| `archer` | Ranged specialist, high accuracy, lower HP |
+| `support` | Buffs allies, debuffs enemies, control abilities |
+
+**EnemyMixMode:**
+
+| Value | Description |
+|--------|-------------|
+| `uniform` | All enemies use same template (default) |
+| `custom` | Use specific templates array |
+| `category` | Random mix of enemies from same category |
+| `random` | Completely random enemy mix from all templates |
+
+**EncounterDifficulty:**
+
+| Value | Description |
+|--------|-------------|
+| `easy` | 40-50% of medium XP budget |
+| `medium` | Standard balanced fight (100%) |
+| `hard` | 150-200% of medium XP budget |
+| `deadly` | 250%+ of medium XP budget |
+
+**Type Guards:**
+
+| Function | Description |
+|----------|-------------|
+| `isValidEnemyCategory(value: unknown): value is EnemyCategory` | Check if valid enemy category |
+| `isValidEnemyRarity(value: unknown): value is EnemyRarity` | Check if valid rarity tier |
+| `isValidEnemyArchetype(value: unknown): value is EnemyArchetype` | Check if valid archetype |
+| `isValidEncounterDifficulty(value: unknown): value is EncounterDifficulty` | Check if valid difficulty |
+
+### Enemy Template Files
+
+**For usage examples, see [ENEMY_GENERATION.md](ENEMY_GENERATION.md)**
+
+The following template files contain enemy definitions organized by category:
+
+| Template File | Location | Description |
+|---------------|----------|-------------|
+| **Humanoid** | [`src/constants/EnemyTemplates/Humanoid.ts`](src/constants/EnemyTemplates/Humanoid.ts) | Basic civilized enemies (orc, goblin, etc.) |
+| **Beast** | [`src/constants/EnemyTemplates/Beast.ts`](src/constants/EnemyTemplates/Beast.ts) | Natural animals and magical creatures |
+| **Undead** | [`src/constants/EnemyTemplates/Undead.ts`](src/constants/EnemyTemplates/Undead.ts) | Undead creatures with necrotic resistance and poison immunity |
+| **Fiend** | [`src/constants/EnemyTemplates/Fiend.ts`](src/constants/EnemyTemplates/Fiend.ts) | Fiendish creatures with fire/cold resistance and poison immunity |
+| **Elemental** | [`src/constants/EnemyTemplates/Elemental.ts`](src/constants/EnemyTemplates/Elemental.ts) | Elemental creatures with immunity to their element type |
+| **Construct** | [`src/constants/EnemyTemplates/Construct.ts`](src/constants/EnemyTemplates/Construct.ts) | Construct creatures with poison/psychic immunity and no healing |
+| **Dragon** | [`src/constants/EnemyTemplates/Dragon.ts`](src/constants/EnemyTemplates/Dragon.ts) | Dragon type creatures with elemental immunities and breath weapons |
+| **Monstrosity** | [`src/constants/EnemyTemplates/Monstrosity.ts`](src/constants/EnemyTemplates/Monstrosity.ts) | Monstrosities with varied unique abilities |
 
 ---
 
@@ -3294,446 +2673,201 @@ Handles spell casting mechanics (spell slots, saving throws, spell damage).
 
 ### Equipment Types
 
+*Also known as: Item mods, enchantments, affixes, bonuses*
+
 **Location:** `src/core/types/Equipment.ts`
 
-```typescript
-// EquipmentPropertyType
-// Location: `src/core/types/Equipment.ts` (38-45)
-type EquipmentPropertyType =
-    | 'stat_bonus'           // +1 STR, +2 DEX, etc.
-    | 'skill_proficiency'    // Proficiency or expertise in skills
-    | 'ability_unlock'       // Darkvision, flight, etc.
-    | 'passive_modifier'     // Damage resistance, speed bonus, AC bonus
-    | 'special_property'     // Finesse, versatile, two-handed, etc.
-    | 'damage_bonus'         // +1d6 fire damage, etc.
-    | 'stat_requirement';    // Minimum stat required to use
+#### EquipmentPropertyType
 
-// EquipmentCondition
-// Location: `src/core/types/Equipment.ts` (51-59)
-type EquipmentCondition =
-    | { type: 'vs_creature_type'; value: string }
-    | { type: 'at_time_of_day'; value: 'day' | 'night' | 'dawn' | 'dusk' }
-    | { type: 'wielder_race'; value: string }
-    | { type: 'wielder_class'; value: string }
-    | { type: 'while_equipped'; value: boolean }
-    | { type: 'on_hit'; value: boolean }
-    | { type: 'on_damage_taken'; value: boolean }
-    | { type: 'custom'; value: string; description: string };
+Available equipment property types:
 
-// Equipment Property
-// Location: `src/core/types/Equipment.ts` (64-71)
-interface EquipmentProperty {
-    type: EquipmentPropertyType;
-    target: string;
-    value: number | string | boolean;
-    condition?: EquipmentCondition;
-    description?: string;
-    stackable?: boolean;
-}
+| Type | Description |
+|------|-------------|
+| `stat_bonus` | +1 STR, +2 DEX, etc. |
+| `skill_proficiency` | Proficiency or expertise in skills |
+| `ability_unlock` | Darkvision, flight, etc. |
+| `passive_modifier` | Damage resistance, speed bonus, AC bonus |
+| `special_property` | Finesse, versatile, two-handed, etc. |
+| `damage_bonus` | +1d6 fire damage, etc. |
+| `stat_requirement` | Minimum stat required to use |
 
-// Enhanced Equipment
-// Location: `src/core/types/Equipment.ts` (89-137)
-interface EnhancedEquipment {
-    name: string;
-    type: 'weapon' | 'armor' | 'item';
-    rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
-    weight: number;
-    properties?: EquipmentProperty[];
-    grantsFeatures?: Array<string | EquipmentMiniFeature>;
-    grantsSkills?: Array<{ skillId: string; level: 'proficient' | 'expertise' }>;
-    grantsSpells?: Array<{ spellId: string; level?: number; uses?: number; recharge?: string }>;
-    damage?: { dice: string; damageType: string; versatile?: string };
-    acBonus?: number;
-    weaponProperties?: string[];
-    spawnWeight?: number;
-    templateId?: string;
-    source?: 'default' | 'custom';
-    tags?: string[];
-}
+#### EquipmentCondition
 
-// Equipment Modification
-// Location: `src/core/types/Equipment.ts` (142-159)
-interface EquipmentModification {
-    id: string;
-    name: string;
-    properties: EquipmentProperty[];
-    addsFeatures?: Array<string | EquipmentMiniFeature>;
-    addsSkills?: Array<{ skillId: string; level: 'proficient' | 'expertise' }>;
-    addsSpells?: Array<{ spellId: string; level?: number; uses?: number; recharge?: string }>;
-    appliedAt: string;
-    source: string;
-}
+Conditional property triggers:
 
-// Enhanced Inventory Item
-// Location: `src/core/types/Equipment.ts` (164-177)
-// Note: Basic `InventoryItem` exists at `src/core/generation/EquipmentGenerator.ts` (37-41)
-interface EnhancedInventoryItem {
-    name: string;
-    quantity: number;
-    equipped: boolean;
-    modifications?: EquipmentModification[];
-    templateId?: string;
-    instanceId?: string;
-}
+| Type | Value |
+|------|-------|
+| `vs_creature_type` | string (e.g., "undead", "dragon") |
+| `at_time_of_day` | "day" \| "night" \| "dawn" \| "dusk" |
+| `wielder_race` | string (race name) |
+| `wielder_class` | string (class name) |
+| `while_equipped` | boolean |
+| `on_hit` | boolean |
+| `on_damage_taken` | boolean |
+| `custom` | value: string, description: string |
 
-// Effect Application Result
-// Location: `src/core/types/Equipment.ts` (231-238)
-interface EffectApplicationResult {
-    applied: boolean;
-    count: number;
-    errors: string[];
-}
+#### Equipment Interfaces
 
-// Equipment Validation Result
-// Location: `src/core/types/Equipment.ts` (243-248)
-interface EquipmentValidationResult {
-    valid: boolean;
-    errors?: string[];
-}
-
-// Spawn Random Options
-// Location: `src/core/types/Equipment.ts` (253-262)
-interface SpawnRandomOptions {
-    excludeZeroWeight?: boolean;
-    includeTypes?: ('weapon' | 'armor' | 'item')[];
-    minRarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
-    maxRarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
-}
-
-// Treasure Hoard Result
-// Location: `src/core/types/Equipment.ts` (267-274)
-interface TreasureHoardResult {
-    items: EnhancedEquipment[];
-    totalValue: number;
-    cr: number;
-}
-```
+| Type | Description | Location |
+|------|-------------|----------|
+| `EquipmentProperty` | Single property with type, target, value, optional condition | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EnhancedEquipment` | Full equipment definition with properties, features, skills, spells, damage, AC | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EquipmentModification` | Enchantment/curse applied to equipment with properties and additions | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EnhancedInventoryItem` | Inventory item with quantity, equipped status, modifications | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EffectApplicationResult` | Result of applying/removing equipment effects | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EquipmentValidationResult` | Result of validating equipment data | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `SpawnRandomOptions` | Options for filtering random equipment spawns | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `TreasureHoardResult` | Result of generating treasure hoard | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 
 ### EquipmentEffectApplier
+*Also known as: Equipment effects manager, item bonus applier, equip/unequip handler*
 
-**Location:** `src/core/equipment/EquipmentEffectApplier.ts`
+**Location:** [src/core/equipment/EquipmentEffectApplier.ts](src/core/equipment/EquipmentEffectApplier.ts)
 
-```typescript
-class EquipmentEffectApplier {
-    static equipItem(
-        character: CharacterSheet,
-        equipment: EnhancedEquipment,
-        instanceId?: string
-    ): EffectApplicationResult;
+Static class for applying and removing equipment effects when equipping/unequipping items. All equipment effects stack by default.
 
-    static unequipItem(
-        character: CharacterSheet,
-        equipmentName: string,
-        instanceId?: string
-    ): EffectApplicationResult;
-
-    static reapplyEquipmentEffects(
-        character: CharacterSheet
-    ): EffectApplicationResult;
-
-    static getActiveEffects(
-        character: CharacterSheet
-    ): EquipmentProperty[];
-}
-```
+| Method | Description |
+|--------|-------------|
+| `equipItem(character, equipment, instanceId?)` | Apply all effects from equipping an item (properties, features, skills, spells) |
+| `unequipItem(character, equipmentName, instanceId?)` | Remove all effects from unequipping an item |
+| `reapplyEquipmentEffects(character)` | Re-apply all equipment effects for updates/level-ups |
+| `getActiveEffects(character)` | Get array of all active equipment properties on character |
 
 ### EquipmentValidator
+*Also known as: Equipment validation, equipment data checker, property validator*
 
-**Location:** `src/core/equipment/EquipmentValidator.ts`
+**Location:** [src/core/equipment/EquipmentValidator.ts](src/core/equipment/EquipmentValidator.ts)
 
-```typescript
-class EquipmentValidator {
-    static validateEquipment(
-        equipment: EnhancedEquipment
-    ): EquipmentValidationResult;
+Validates equipment data structures including complete equipment objects, individual properties, feature/skill references, damage info, spawn weights, and modifications.
 
-    static validateProperty(
-        property: EquipmentProperty
-    ): EquipmentValidationResult;
+#### Core Validation
 
-    static validateEquipmentFeatureReference(
-        featureId: string
-    ): boolean;
+| Method | Description |
+|--------|-------------|
+| `validateEquipment(equipment)` | Validate complete equipment object (name, type, rarity, weight, properties, features, skills, spells, damage, AC, weapon properties, spawn weight, template, tags) |
+| `validateProperty(property)` | Validate single equipment property (type, target, value, condition, stackable, description) |
 
-    static validateEquipmentSkillReference(
-        skillId: string
-    ): boolean;
+#### Reference Validation
 
-    static validateDamageInfo(
-        damage: EnhancedEquipment['damage']
-    ): EquipmentValidationResult;
+| Method | Description |
+|--------|-------------|
+| `validateEquipmentFeatureReference(featureId)` | Check if feature ID exists in FeatureQuery (returns boolean) |
+| `validateEquipmentSkillReference(skillId)` | Check if skill ID exists in SkillQuery (returns boolean) |
+| `validateFeatureReference(featureRef, index)` | Validate feature reference (string ID or inline mini-feature object) |
+| `validateSkillReference(skillId, index?)` | Validate skill reference with optional array index for error messages |
 
-    static validateSpawnWeight(
-        weight: number
-    ): EquipmentValidationResult;
+#### Field Validation
 
-    static validateModification(
-        modification: EquipmentModification
-    ): EquipmentValidationResult;
-}
-```
+| Method | Description |
+|--------|-------------|
+| `validateDamageInfo(damage)` | Validate damage info (supports string format "1d8 slashing" or object format with dice, damageType, versatile) |
+| `validateSpawnWeight(weight)` | Validate spawn weight (non-negative number, 0 = never random but still usable) |
+| `validateModification(modification)` | Validate equipment modification (id, name, appliedAt, source, properties, addsFeatures, addsSkills, addsSpells) |
+| `validateCondition(condition)` | Validate equipment condition (type, value, description for custom) |
+| `validateMiniFeature(miniFeature)` | Validate inline equipment mini-feature (id, name, description, effects array, source) |
+| `validateACBonus(acBonus)` | Validate AC bonus value (non-negative finite number) |
+| `validateWeaponProperties(weaponProperties)` | Validate weapon properties array (supports range format "range_MIN_MAX") |
 
 ### EquipmentModifier
+*Also known as: Equipment enchantment system, item modification API, equipment curse/upgrade handler*
 
 **Location:** `src/core/equipment/EquipmentModifier.ts`
 
-```typescript
-class EquipmentModifier {
-    static enchant(
-        equipment: CharacterEquipment,
-        itemName: string,
-        enchantment: EquipmentModification,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+Static class for equipment modification including enchanting (positive effects), cursing (negative effects), upgrading (improving properties), and template application.
 
-    static applyTemplate(
-        equipment: CharacterEquipment,
-        itemName: string,
-        templateId: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+**Modification Operations:**
+| Method | Description |
+|--------|-------------|
+| `enchant(equipment, itemName, enchantment, character?)` | Apply positive modification (adds to `modifications` array) |
+| `applyTemplate(equipment, itemName, templateId, character?)` | Apply predefined template by ID |
+| `curse(equipment, itemName, curse, character?)` | Apply negative modification (adds to `modifications` array) |
+| `upgrade(equipment, itemName, upgrade, character?)` | Improve existing properties (same as enchant, semantic difference) |
+| `removeModification(equipment, itemName, modificationId, character?)` | Remove specific modification by ID |
+| `disenchant(equipment, itemName, character?)` | Remove all enchantments (keep curses) |
+| `liftCurse(equipment, itemName, character?)` | Remove all curses (keep enchantments) |
+| `removeAllModifications(equipment, itemName, character?)` | Remove all modifications (both enchantments and curses) |
 
-    static curse(
-        equipment: CharacterEquipment,
-        itemName: string,
-        curse: EquipmentModification,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+**Query Methods:**
+| Method | Description |
+|--------|-------------|
+| `getCombinedEffects(equipment, itemName, instanceId?)` | Get all properties from base item + modifications |
+| `hasTemplate(equipment, itemName, templateId)` | Check if template is applied |
+| `isCursed(equipment, itemName)` | Check if item has any curse modifications |
+| `isEnchanted(equipment, itemName)` | Check if item has any enchantment modifications |
+| `getAppliedTemplates(equipment, itemName)` | Get list of applied template IDs |
+| `getModificationHistory(equipment, itemName)` | Get all modifications in application order |
+| `getModificationSources(equipment, itemName)` | Get list of unique modification sources |
+| `countModificationsBySource(equipment, itemName)` | Count modifications grouped by source |
+| `getItemSummary(equipment, itemName)` | Get item summary with modifications and flags |
 
-    static upgrade(
-        equipment: CharacterEquipment,
-        itemName: string,
-        upgrade: EquipmentModification,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+**Factory Methods:**
+| Method | Description |
+|--------|-------------|
+| `createModification(id, name, properties, source)` | Create EquipmentModification object |
+| `generateModificationId(prefix?)` | Generate unique modification ID (timestamp-based) |
 
-    static removeModification(
-        equipment: CharacterEquipment,
-        itemName: string,
-        modificationId: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    static disenchant(
-        equipment: CharacterEquipment,
-        itemName: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    static liftCurse(
-        equipment: CharacterEquipment,
-        itemName: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    // Query methods
-    static getCombinedEffects(
-        equipment: CharacterEquipment,
-        itemName: string,
-        instanceId?: string
-    ): EquipmentProperty[];
-
-    static hasTemplate(
-        equipment: CharacterEquipment,
-        itemName: string,
-        templateId: string
-    ): boolean;
-
-    static isCursed(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): boolean;
-
-    static isEnchanted(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): boolean;
-
-    static getAppliedTemplates(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): string[];
-
-    static getModificationHistory(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): EquipmentModification[];
-
-    static removeAllModifications(
-        equipment: CharacterEquipment,
-        itemName: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    static getModificationSources(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): string[];
-
-    static countModificationsBySource(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): Record<string, number>;
-
-    static getItemSummary(
-        equipment: CharacterEquipment,
-        itemName: string
-    ): { name: string; modifications: EquipmentModification[]; isCursed: boolean; isEnchanted: boolean };
-
-    // Factory methods
-    static createModification(
-        id: string,
-        name: string,
-        properties: EquipmentProperty[],
-        source: string
-    ): EquipmentModification;
-
-    static generateModificationId(prefix?: string): string;
-}
-```
+For usage examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md#equipment-modification).
 
 ### EquipmentSpawnHelper
 
-**Location:** `src/core/equipment/EquipmentSpawnHelper.ts`
+*Also known as: Loot spawner, equipment batch generator, treasure hoard system*
 
-Helper class for spawning multiple equipment items at once. Provides batch spawning utilities for spawning from lists, by rarity, by tags, randomly, from templates, and treasure hoards.
+**Location:** [src/core/equipment/EquipmentSpawnHelper.ts](src/core/equipment/EquipmentSpawnHelper.ts)
 
-```typescript
-class EquipmentSpawnHelper {
-    static spawnFromList(
-        itemNames: string[],
-        rng?: SeededRNG
-    ): (EnhancedEquipment | undefined)[];
+Batch spawning utilities for equipment. Spawns from lists, by rarity, by tags, randomly, from templates, and treasure hoards.
 
-    static spawnByRarity(
-        rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary',
-        count: number,
-        rng?: SeededRNG
-    ): EnhancedEquipment[];
+| Method | Description |
+|--------|-------------|
+| `spawnFromList(itemNames: string[], rng?: SeededRNG)` | Spawn multiple items from array of names (undefined for missing) |
+| `spawnByRarity(rarity, count: number, rng?: SeededRNG)` | Spawn items of specific rarity (common/uncommon/rare/very_rare/legendary) |
+| `spawnByTags(tags: string[], count: number, rng?: SeededRNG, options?: SpawnRandomOptions)` | Spawn items with specific tags using weighted selection |
+| `spawnRandom(count: number, rng: SeededRNG, options?: SpawnRandomOptions)` | Spawn random equipment respecting spawn weights |
+| `spawnFromTemplate(templateId: string, baseItemName?: string)` | Spawn item from template ID (null if not found) |
+| `spawnTreasureHoard(cr: number, rng: SeededRNG)` | Spawn treasure hoard based on challenge rating |
+| `addToCharacter(character: CharacterSheet, items: EnhancedEquipment[], equip?: boolean)` | Add spawned equipment to character inventory |
 
-    static spawnByTags(
-        tags: string[],
-        count: number,
-        rng?: SeededRNG,
-        options?: SpawnRandomOptions
-    ): EnhancedEquipment[];
-
-    static spawnRandom(
-        count: number,
-        rng: SeededRNG,
-        options?: SpawnRandomOptions
-    ): EnhancedEquipment[];
-
-    static spawnFromTemplate(
-        templateId: string,
-        baseItemName?: string
-    ): EnhancedEquipment | null;
-
-    static spawnTreasureHoard(
-        cr: number,
-        rng: SeededRNG
-    ): TreasureHoardResult;
-
-    static addToCharacter(
-        character: CharacterSheet,
-        items: EnhancedEquipment[],
-        equip?: boolean
-    ): CharacterSheet;
-}
-```
-
-**Method Reference:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `spawnFromList()` | `itemNames`, `rng?` | `(EnhancedEquipment \| undefined)[]` | Spawn multiple items from array of names (undefined for missing) |
-| `spawnByRarity()` | `rarity`, `count`, `rng?` | `EnhancedEquipment[]` | Spawn items of specific rarity |
-| `spawnByTags()` | `tags`, `count`, `rng`, `options?` | `EnhancedEquipment[]` | Spawn items with specific tags |
-| `spawnRandom()` | `count`, `rng`, `options?` | `EnhancedEquipment[]` | Spawn random equipment with weighted selection |
-| `spawnFromTemplate()` | `templateId`, `baseItemName?` | `EnhancedEquipment \| null` | Spawn item from template ID |
-| `spawnTreasureHoard()` | `cr`, `rng` | `TreasureHoardResult` | Spawn treasure hoard based on challenge rating |
-| `addToCharacter()` | `character`, `items`, `equip?` | `CharacterSheet` | Add spawned equipment to character |
+For usage examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md#batch-spawning).
 
 ### EquipmentGenerator
+*Also known as: Equipment manager, inventory system, gear handler, starting equipment provider*
 
 **Location:** `src/core/generation/EquipmentGenerator.ts`
 
-```typescript
-class EquipmentGenerator {
-    static getStartingEquipment(
-        characterClass: Class
-    ): { weapons: string[]; armor: string[]; items: string[] };
+Manages equipment assignment, inventory, and equipped items for characters. Supports extensibility through ExtensionManager for custom equipment. All equipment lookups check both default and custom equipment databases.
 
-    static initializeEquipment(
-        characterClass: Class
-    ): CharacterEquipment;
+#### Equipment Initialization
 
-    static addItem(
-        equipment: CharacterEquipment,
-        itemName: string,
-        quantity: number = 1
-    ): CharacterEquipment;
+| Method | Description |
+|--------|-------------|
+| `getStartingEquipment(characterClass: Class)` | Get starting equipment for a class (weapons, armor, items arrays) |
+| `initializeEquipment(characterClass: Class)` | Initialize complete equipment with starting gear, auto-equips primary weapon and armor |
 
-    static removeItem(
-        equipment: CharacterEquipment,
-        itemName: string,
-        quantity: number = 1
-    ): CharacterEquipment;
+#### Inventory Management
 
-    static equipItem(
-        equipment: CharacterEquipment,
-        itemName: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+| Method | Description |
+|--------|-------------|
+| `addItem(equipment: CharacterEquipment, itemName: string, quantity?: number)` | Add item to inventory, returns updated equipment state |
+| `removeItem(equipment: CharacterEquipment, itemName: string, quantity?: number)` | Remove item from inventory, returns updated equipment state |
+| `equipItem(equipment: CharacterEquipment, itemName: string, character?: CharacterSheet)` | Equip item and apply equipment effects to character if provided |
+| `unequipItem(equipment: CharacterEquipment, itemName: string, character?: CharacterSheet)` | Unequip item and remove equipment effects from character if provided |
+| `getInventoryList(equipment: CharacterEquipment)` | Get flattened array of all inventory items |
+| `getEquipmentByType(equipment: CharacterEquipment, type: 'weapons' \| 'armor' \| 'items')` | Get items from specific equipment category |
 
-    static unequipItem(
-        equipment: CharacterEquipment,
-        itemName: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
+#### Equipment Modification
 
-    /**
-     * @internal Private method for internal use. Use getEquipmentDataStatic for external access.
-     */
-    private static getEquipmentData(
-        itemName: string
-    ): EnhancedEquipment | undefined;
+| Method | Description |
+|--------|-------------|
+| `addModification(equipment: CharacterEquipment, itemName: string, modification: EquipmentModification, instanceId?: string, character?: CharacterSheet)` | Add enchantment/curse to item, reapply effects if equipped |
+| `removeModification(equipment: CharacterEquipment, itemName: string, modificationId: string, character?: CharacterSheet)` | Remove modification from item, reapply remaining effects if equipped |
+| `getActiveEffects(equipment: CharacterEquipment, itemName: string, instanceId?: string)` | Get all active properties from base equipment and modifications |
 
-    static getEquipmentDataStatic(
-        itemName: string
-    ): EnhancedEquipment | undefined;
+#### Data Lookup
 
-    static getInventoryList(
-        equipment: CharacterEquipment
-    ): EnhancedInventoryItem[];
+| Method | Description |
+|--------|-------------|
+| `getEquipmentDataStatic(itemName: string)` | Get equipment data from extended database (defaults + custom) |
 
-    static getEquipmentByType(
-        equipment: CharacterEquipment,
-        type: 'weapons' | 'armor' | 'items'
-    ): EnhancedInventoryItem[];
-
-    static addModification(
-        equipment: CharacterEquipment,
-        itemName: string,
-        modification: EquipmentModification,
-        instanceId?: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    static removeModification(
-        equipment: CharacterEquipment,
-        itemName: string,
-        modificationId: string,
-        character?: CharacterSheet
-    ): CharacterEquipment;
-
-    static getActiveEffects(
-        equipment: CharacterEquipment,
-        itemName: string,
-        instanceId?: string
-    ): EquipmentProperty[];
-}
-```
+For equipment properties, enchanting, and custom equipment examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md).
 
 ---
 
@@ -3889,15 +3023,15 @@ character.equipment = EquipmentModifier.enchant(
 
 ---
 
-## Magic Item Examples
+## Magic Items and Equipment Templates
 
-**Location:** `src/utils/magicItemExamples.ts`
+**Location:** `src/utils/equipmentConstants.ts`
 
-The Magic Item Examples library provides a comprehensive collection of 38 pre-built magic items that demonstrate all capabilities of the Advanced Equipment System. These examples serve as both reference implementations and test fixtures for the equipment system.
+The equipment library provides a comprehensive collection of 34 pre-built magic items and 9 item creation templates that demonstrate all capabilities of the Advanced Equipment System. These examples serve as both reference implementations and test fixtures for the equipment system.
 
 ### Available Collections
 
-#### Magic Items (`MAGIC_ITEM_EXAMPLES`)
+#### Magic Items (`MAGIC_ITEMS`)
 
 **Weapons (4 items)**
 | Item | Rarity | Description |
@@ -4017,8 +3151,8 @@ function applyTemplate(baseEquipment: EnhancedEquipment, templateId: string): En
 
 ```typescript
 import {
-    MAGIC_ITEM_EXAMPLES,
-    MAGIC_EQUIPMENT_TEMPLATES,
+    MAGIC_ITEMS,
+    ITEM_CREATION_TEMPLATES,
     getMagicItem,
     getMagicItemsByType,
     getCursedItems,
@@ -4059,7 +3193,7 @@ if (flamingLongsword) {
 }
 
 // Access all items directly
-MAGIC_ITEM_EXAMPLES.forEach(item => {
+MAGIC_ITEMS.forEach(item => {
     console.log(`${item.name} (${item.rarity}) - ${item.type}`);
 });
 ```
@@ -4070,14 +3204,14 @@ Magic item examples can be registered as custom equipment for use in procedural 
 
 ```typescript
 import { ExtensionManager } from 'playlist-data-engine';
-import { MAGIC_ITEM_EXAMPLES } from 'playlist-data-engine';
+import { MAGIC_ITEMS } from 'playlist-data-engine';
 
 const manager = ExtensionManager.getInstance();
 
 // Register all magic items as custom equipment
-manager.register('equipment', MAGIC_ITEM_EXAMPLES, {
+manager.register('equipment', MAGIC_ITEMS, {
     mode: 'append',
-    weights: MAGIC_ITEM_EXAMPLES.reduce((acc, item) => {
+    weights: MAGIC_ITEMS.reduce((acc, item) => {
         acc[item.name] = item.spawnWeight ?? 0;
         return acc;
     }, {} as Record<string, number>)
@@ -4103,8 +3237,6 @@ The extensibility system allows runtime customization of ALL procedural generati
 | Category | Description |
 |----------|-------------|
 | `equipment` | Weapons, armor, items |
-| `equipment.properties` | Equipment property templates (enchantments, curses) |
-| `equipment.modifications` | Modification templates |
 | `equipment.templates` | Complete equipment templates |
 | `spells` | Arcane and divine magic |
 | `races` | Character races |
@@ -4117,394 +3249,148 @@ The extensibility system allows runtime customization of ALL procedural generati
 
 ### ExtensionManager
 
+*Also known as: Content registry, customization manager, spawn rate controller, mod registration system*
+
 **Location:** `src/core/extensions/ExtensionManager.ts`
 
 Singleton registry for managing runtime customization of procedural generation lists with spawn rate control.
 
-```typescript
-class ExtensionManager {
-    // Instance Management
-    static getInstance(): ExtensionManager
+**For usage examples and detailed guides:** See [docs/EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)
 
-    // Registration
-    register(category: ExtensionCategory, items: any[], options?: ExtensionOptions): void
-    registerMultiple(registrations: RegistrationEntry[]): void
+---
 
-    // Data Retrieval
-    get(category: ExtensionCategory): any[]
-    getDefaults(category: ExtensionCategory): any[]
-    getCustom(category: ExtensionCategory): any[]
+**Types:**
 
-    // Weight Management
-    setWeights(category: ExtensionCategory, weights: Record<string, number>): void
-    getWeights(category: ExtensionCategory): Record<string, number>
-    getDefaultWeights(category: ExtensionCategory): Record<string, number>
+| Type | Description |
+|------|-------------|
+| `ExtensionCategory` | All extensible category names (equipment, spells, races, classes, skills, appearance, etc.) |
+| `SpawnMode` | Spawn mode: `'relative'` | `'absolute'` | `'default'` | `'replace'` |
+| `ExtensionOptions` | Registration options: mode, weights, validate |
+| `RegistrationEntry` | Batch registration: category, items, options |
+| `ValidationResult` | Validation result: valid, errors, warnings |
 
-    // Spawn Mode Configuration
-    setMode(category: ExtensionCategory, mode: SpawnMode): void
-    getMode(category: ExtensionCategory): SpawnMode
-
-    // State Queries
-    hasCustomData(category: ExtensionCategory): boolean
-    getInfo(category?: ExtensionCategory): Record<string, any>
-    getRegisteredCategories(): ExtensionCategory[]
-
-    // Reset Operations
-    reset(category: ExtensionCategory): void
-    resetAll(): void
-
-    // Validation
-    validate(category: ExtensionCategory, items: any[]): ValidationResult
-
-    // Data Export
-    exportCustomData(): Record<string, any>
-    exportCustomDataForCategory(category: ExtensionCategory): any[]
-}
-
-type ExtensionCategory =
-    | 'equipment'
-    | 'equipment.properties'
-    | 'equipment.modifications'
-    | 'equipment.templates'
-    | 'appearance.bodyTypes'
-    | 'appearance.skinTones'
-    | 'appearance.hairColors'
-    | 'appearance.hairStyles'
-    | 'appearance.eyeColors'
-    | 'appearance.facialFeatures'
-    | 'spells'
-    | 'races'
-    | 'classes'
-    | `spells.${string}`
-    | 'classFeatures'
-    | `classFeatures.${string}`
-    | 'racialTraits'
-    | `racialTraits.${string}`
-    | 'skills'
-    | `skills.${string}`
-    | 'skillLists'
-    | `skillLists.${string}`;
-
-type SpawnMode = 'relative' | 'absolute' | 'default' | 'replace';
-
-interface ExtensionOptions {
-    mode?: SpawnMode;
-    weights?: Record<string, number>;
-    validate?: boolean;
-}
-
-interface RegistrationEntry {
-    category: ExtensionCategory;
-    items: any[];
-    options?: ExtensionOptions;
-}
-
-interface ValidationResult {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-}
-```
+---
 
 **Method Reference:**
 
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `getInstance()` | - | `ExtensionManager` | Returns singleton instance |
-| `register()` | `category`, `items`, `options?` | `void` | Register items for a category with optional weights/mode |
-| `registerMultiple()` | `registrations[]` | `void` | Register multiple categories in a single call |
-| `get()` | `category` | `any[]` | Get combined defaults + custom items |
-| `getDefaults()` | `category` | `any[]` | Get default items only |
-| `getCustom()` | `category` | `any[]` | Get custom items only |
-| `setWeights()` | `category`, `weights` | `void` | Set spawn weights for items |
-| `getWeights()` | `category` | `Record<string, number>` | Get current weights |
-| `getDefaultWeights()` | `category` | `Record<string, number>` | Get default weights only |
-| `setMode()` | `category`, `mode` | `void` | Set spawn mode for category |
-| `getMode()` | `category` | `SpawnMode` | Get current spawn mode |
-| `hasCustomData()` | `category` | `boolean` | Check if category has custom data |
-| `getInfo()` | `category?` | `Record<string, any>` | Get detailed info about one or all categories |
-| `getRegisteredCategories()` | - | `ExtensionCategory[]` | List all categories with custom data |
-| `reset()` | `category` | `void` | Reset category to defaults |
-| `resetAll()` | - | `void` | Reset all categories to defaults |
-| `validate()` | `category`, `items` | `ValidationResult` | Validate items against category schema |
-| `exportCustomData()` | - | `Record<string, any>` | Export all custom data |
-| `exportCustomDataForCategory()` | `category` | `any[]` | Export custom data for single category |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `getInstance()` | `ExtensionManager` | Returns singleton instance |
+| `register(category, items, options?)` | `void` | Register items for a category with optional weights/mode |
+| `registerMultiple(registrations[])` | `void` | Register multiple categories in a single call |
+| `get(category)` | `any[]` | Get combined defaults + custom items |
+| `getDefaults(category)` | `any[]` | Get default items only |
+| `getCustom(category)` | `any[]` | Get custom items only |
+| `setWeights(category, weights)` | `void` | Set spawn weights for items |
+| `getWeights(category)` | `Record<string, number>` | Get current weights |
+| `getDefaultWeights(category)` | `Record<string, number>` | Get default weights only |
+| `setMode(category, mode)` | `void` | Set spawn mode for category |
+| `getMode(category)` | `SpawnMode` | Get current spawn mode |
+| `hasCustomData(category)` | `boolean` | Check if category has custom data |
+| `getInfo(category?)` | `Record<string, any>` | Get detailed info about one or all categories |
+| `getRegisteredCategories()` | `ExtensionCategory[]` | List all categories with custom data |
+| `reset(category)` | `void` | Reset category to defaults |
+| `resetAll()` | `void` | Reset all categories to defaults |
+| `validate(category, items)` | `ValidationResult` | Validate items against category schema |
+| `exportCustomData()` | `Record<string, any>` | Export all custom data |
+| `exportCustomDataForCategory(category)` | `any[]` | Export custom data for single category |
+
+---
 
 **Spawn Modes:**
 
-| Mode | Behavior |
-|------|----------|
-| `relative` | Custom items added to default pool with custom weights |
-| `absolute` | Only custom items can spawn (ignore defaults) |
-| `default` | All items (default + custom) have equal weight |
-| `replace` | Clear previous custom data before registering new items |
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| `relative` | Custom items added to default pool with custom weights | Add custom items to existing pool |
+| `absolute` | Only custom items can spawn (ignore defaults) | Themed content packs, complete replacement |
+| `default` | All items (default + custom) have equal weight | Disable custom spawn weights |
+| `replace` | Clear previous custom data before registering new items | Hot-reload content packs during development |
 
-### FeatureRegistry
+### FeatureQuery
 
-**Location:** `src/core/features/FeatureRegistry.ts`
+*Also known as: Feature registry, class feature system, racial trait system*
 
-Singleton registry for managing class features and racial traits with prerequisite validation and subrace support.
+**Location:** `src/core/features/FeatureQuery.ts`
 
-```typescript
-class FeatureRegistry {
-    // Instance Management
-    static getInstance(): FeatureRegistry
+Query and validation layer for class features and racial traits stored in ExtensionManager.
 
-    // Initialization
-    initializeDefaults(defaultClassFeatures?: ClassFeature[], defaultRacialTraits?: RacialTrait[]): void
-    reset(): void
-    isInitialized(): boolean
+**For usage examples and detailed guides:** See [docs/EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)
 
-    // Class Features
-    registerClassFeature(feature: ClassFeature): void
-    registerClassFeatures(features: ClassFeature[]): void
-    getClassFeatures(characterClass: Class, level?: number): ClassFeature[]
-    getClassFeaturesForLevel(characterClass: Class, level: number): ClassFeature[]
-    getClassFeatureById(featureId: string): ClassFeature | undefined
-    getAllClassFeatures(): Map<string, ClassFeature[]>
+---
 
-    // Racial Traits
-    registerRacialTrait(trait: RacialTrait): void
-    registerRacialTraits(traits: RacialTrait[]): void
-    getRacialTraits(race: Race): RacialTrait[]
-    getRacialTraitsForSubrace(race: Race, subrace: string): RacialTrait[]
-    getBaseRacialTraits(race: Race): RacialTrait[]
-    getSubraceTraits(race: Race, subrace: string): RacialTrait[]
-    getAvailableSubraces(race: Race): string[]
-    getRacialTraitById(traitId: string): RacialTrait | undefined
-    getAllRacialTraits(): Map<string, RacialTrait[]>
+**Types:**
 
-    // Validation
-    validatePrerequisites(feature: ClassFeature | RacialTrait, character: CharacterSheet): ValidationResult
-    validateFeaturePrerequisites(feature: ClassFeature, character: CharacterSheet): ValidationResult
-    validateTraitPrerequisites(trait: RacialTrait, character: CharacterSheet): ValidationResult
-    canGainFeature(feature: ClassFeature | RacialTrait, character: CharacterSheet): boolean
-
-    // Registry Statistics
-    getRegisteredClasses(): Class[]
-    getRegisteredRaces(): Race[]
-    getRegistryStats(): { totalClassFeatures: number; totalRacialTraits: number; classesWithFeatures: number; racesWithTraits: number }
-
-    // Export
-    exportRegistry(): { classFeatures: Record<string, ClassFeature[]>; racialTraits: Record<string, RacialTrait[]> }
-
-    // Equipment Features (static methods)
-    static getEquipmentFeatures(equipmentName: string): ClassFeature[]
-    static isValidEquipmentFeature(featureId: string): boolean
-    static registerEquipmentFeature(feature: ClassFeature): void
-}
-
-interface ClassFeature {
-    id: string;
-    name: string;
-    description: string;
-    type: FeatureType;
-    class: Class;
-    level: number;
-    prerequisites?: FeaturePrerequisite;
-    effects?: FeatureEffect[];
-    source: 'default' | 'custom';
-    tags?: string[];
-    lore?: string;
-}
-
-interface RacialTrait {
-    id: string;
-    name: string;
-    description: string;
-    race: Race;
-    subrace?: string;
-    prerequisites?: FeaturePrerequisite;
-    effects?: FeatureEffect[];
-    source: 'default' | 'custom';
-    tags?: string[];
-    lore?: string;
-}
-
-type FeatureType = 'passive' | 'active' | 'resource' | 'trigger';
-
-type FeatureEffectType =
-    | 'stat_bonus'
-    | 'skill_proficiency'
-    | 'ability_unlock'
-    | 'passive_modifier'
-    | 'resource_grant'
-    | 'spell_slot_bonus';
-
-interface FeatureEffect {
-    type: FeatureEffectType;
-    target: string;
-    value: number | string | boolean;
-    condition?: string;
-    description?: string;
-}
-
-interface FeaturePrerequisite {
-    level?: number;
-    abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
-    class?: Class;
-    race?: Race;
-    subrace?: string;
-    features?: string[];
-    skills?: string[];
-    spells?: string[];
-    custom?: string;
-}
-
-interface ValidationResult {
-    valid: boolean;
-    errors?: string[];
-    unmet?: string[];
-}
-
-// Additional types for character storage
-
-interface CharacterFeature {
-    featureId: string;
-    name: string;
-    gainedAtLevel: number;
-    source: 'default' | 'custom';
-    state?: Record<string, number | boolean | string>;
-    choices?: Record<string, string | number | boolean>;
-}
-
-interface CharacterTrait {
-    traitId: string;
-    name: string;
-    source: 'default' | 'custom';
-}
-```
+| Type | Location | Description |
+|------|----------|-------------|
+| `ClassFeature` | `src/core/features/FeatureQuery.ts` | Class feature with id, name, description, type, class, level, prerequisites, effects, source, tags, lore |
+| `RacialTrait` | `src/core/features/FeatureQuery.ts` | Racial trait with id, name, description, race, optional subrace, prerequisites, effects, source, tags, lore |
+| `FeatureType` | `src/core/types/Character.ts` | Feature type: `'passive'` | `'active'` | `'resource'` | `'trigger'` |
+| `FeatureEffectType` | `src/core/types/Character.ts` | Effect type: `'stat_bonus'` | `'skill_proficiency'` | `'ability_unlock'` | `'passive_modifier'` | `'resource_grant'` | `'spell_slot_bonus'` |
+| `FeatureEffect` | `src/core/types/Character.ts` | Feature effect with type, target, value, optional condition, description |
+| `FeaturePrerequisite` | `src/core/types/Character.ts` | Prerequisite with level, abilities, class, race, subrace, features, skills, spells, custom |
+| `ValidationResult` | `src/core/features/FeatureValidator.ts` | Validation result with valid, errors, unmet |
+| `CharacterFeature` | `src/core/types/Character.ts` | Stored feature on character with featureId, name, gainedAtLevel, source, state, choices |
+| `CharacterTrait` | `src/core/types/Character.ts` | Stored trait on character with traitId, name, source |
 
 **Method Reference:**
 
 | Method | Parameters | Returns | Description |
 |--------|-----------|---------|-------------|
-| `getInstance()` | - | `FeatureRegistry` | Returns singleton instance |
-| `initializeDefaults()` | `defaultClassFeatures?`, `defaultRacialTraits?` | `void` | Load default features and traits |
-| `reset()` | - | `void` | Clear all custom data, reload defaults |
-| `isInitialized()` | - | `boolean` | Check if registry has been initialized |
-| `registerClassFeature()` | `feature` | `void` | Register single class feature |
-| `registerClassFeatures()` | `features[]` | `void` | Register multiple class features |
-| `getClassFeatures()` | `class`, `level?` | `ClassFeature[]` | Get all features for class (filtered by level) |
-| `getClassFeaturesForLevel()` | `class`, `level` | `ClassFeature[]` | Get features for specific class level |
+| `getInstance()` | - | `FeatureQuery` | Returns singleton instance |
+| `getClassFeatures()` | `class`, `level?` | `ClassFeature[]` | Get all features for class (filtered by level, reads from ExtensionManager with caching) |
+| `getClassFeaturesForLevel()` | `class`, `level` | `ClassFeature[]` | Get features for specific class level (reads from ExtensionManager with caching) |
 | `getClassFeatureById()` | `featureId` | `ClassFeature \| undefined` | Find feature by ID |
-| `getAllClassFeatures()` | - | `Map<string, ClassFeature[]>` | Get all class features by class |
-| `registerRacialTrait()` | `trait` | `void` | Register single racial trait |
-| `registerRacialTraits()` | `traits[]` | `void` | Register multiple racial traits |
-| `getRacialTraits()` | `race` | `RacialTrait[]` | Get base traits for race (no subrace) |
-| `getRacialTraitsForSubrace()` | `race`, `subrace` | `RacialTrait[]` | Get base + subrace-specific traits |
-| `getBaseRacialTraits()` | `race` | `RacialTrait[]` | Get only base traits (no subrace) |
-| `getSubraceTraits()` | `race`, `subrace` | `RacialTrait[]` | Get only subrace-specific traits |
-| `getAvailableSubraces()` | `race` | `string[]` | Get sorted list of available subraces |
+| `getAllClassFeatures()` | - | `Map<string, ClassFeature[]>` | Get all class features by class (builds index from EM data with caching) |
+| `getRacialTraits()` | `race` | `RacialTrait[]` | Get traits for race (reads from ExtensionManager with caching) |
+| `getRacialTraitsForSubrace()` | `race`, `subrace` | `RacialTrait[]` | Get base + subrace-specific traits (reads from ExtensionManager with caching) |
+| `getBaseRacialTraits()` | `race` | `RacialTrait[]` | Get only base traits (no subrace, reads from ExtensionManager with caching) |
+| `getSubraceTraits()` | `race`, `subrace` | `RacialTrait[]` | Get only subrace-specific traits (reads from ExtensionManager with caching) |
+| `getAvailableSubraces()` | `race` | `string[]` | Get sorted list of available subraces (checks RACE_DATA, derives from EM data) |
 | `getRacialTraitById()` | `traitId` | `RacialTrait \| undefined` | Find trait by ID |
-| `getAllRacialTraits()` | - | `Map<string, RacialTrait[]>` | Get all racial traits by race |
-| `validatePrerequisites()` | `feature`, `character` | `ValidationResult` | Validate any feature/trait prerequisites |
-| `validateFeaturePrerequisites()` | `feature`, `character` | `ValidationResult` | Validate class feature prerequisites |
-| `validateTraitPrerequisites()` | `trait`, `character` | `ValidationResult` | Validate racial trait prerequisites |
+| `getAllRacialTraits()` | - | `Map<string, RacialTrait[]>` | Get all racial traits by race (builds index from EM data with caching) |
+| `validatePrerequisites()` | `feature`, `character` | `ValidationResult` | Validate any feature/trait prerequisites (delegates to FeatureValidator) |
+| `validateFeaturePrerequisites()` | `feature`, `character` | `ValidationResult` | Validate class feature prerequisites (delegates to FeatureValidator) |
+| `validateTraitPrerequisites()` | `trait`, `character` | `ValidationResult` | Validate racial trait prerequisites (delegates to FeatureValidator) |
 | `canGainFeature()` | `feature`, `character` | `boolean` | Check if character can gain feature |
 | `getRegisteredClasses()` | - | `Class[]` | Get all classes with features |
 | `getRegisteredRaces()` | - | `Race[]` | Get all races with traits |
-| `getRegistryStats()` | - | `{ totalClassFeatures, totalRacialTraits, classesWithFeatures, racesWithTraits }` | Get registry statistics |
-| `exportRegistry()` | - | `{ classFeatures, racialTraits }` | Export all features as JSON |
+| `getQueryStats()` | - | `{ totalClassFeatures, totalRacialTraits, classesWithFeatures, racesWithTraits }` | Get registry statistics (computed from ExtensionManager data) |
+| `exportRacialTraits()` | - | `Record<string, RacialTrait[]>` | Export racial traits (reads from ExtensionManager; for class features, use ExtensionManager.get('classFeatures')) |
 | `getEquipmentFeatures()` | `equipmentName` | `ClassFeature[]` | Get features that can be granted by equipment (static) |
 | `isValidEquipmentFeature()` | `featureId` | `boolean` | Check if feature can be granted by equipment (static) |
-| `registerEquipmentFeature()` | `feature` | `void` | Register equipment-granted feature (static) |
 
 ---
 
 ### FeatureValidator
 
+*Also known as: Feature validation system, class feature validator, racial trait validator*
+
 **Location:** `src/core/features/FeatureValidator.ts`
 
 Utility class for validating class features and racial traits against strict schemas. All methods are static.
 
-```typescript
-class FeatureValidator {
-    // Feature Validation
-    static validateClassFeature(feature: unknown): ValidationResult
-    static validateRacialTrait(trait: unknown): ValidationResult
+**For detailed validation rules and runtime behavior:** See [docs/PREREQUISITES.md#validation-system](docs/PREREQUISITES.md#validation-system)
 
-    // Batch Validation
-    static validateClassFeatures(features: unknown[]): ValidationResult
-    static validateRacialTraits(traits: unknown[]): ValidationResult
+---
 
-    // Component Validation
-    static validateEffect(effect: unknown): ValidationResult
-    static validatePrerequisites(prerequisites: unknown): ValidationResult
-}
+**Types:**
 
-interface ValidationResult {
-    valid: boolean;
-    errors: string[];
-}
+| Type | Location | Description |
+|------|----------|-------------|
+| `ValidationResult` | `src/core/features/FeatureValidator.ts` | Validation result with `valid: boolean` and `errors: string[]` |
 
-// Helper functions (convenience wrappers)
-function validateClassFeature(feature: unknown): ValidationResult
-function validateRacialTrait(trait: unknown): ValidationResult
-function validateClassFeatures(features: unknown[]): ValidationResult
-function validateRacialTraits(traits: unknown[]): ValidationResult
-```
+---
 
 **Method Reference:**
 
 | Method | Parameters | Returns | Description |
 |--------|-----------|---------|-------------|
-| `validateClassFeature()` | `feature: unknown` | `ValidationResult` | Validate class feature schema including required fields, enums, and value ranges |
-| `validateRacialTrait()` | `trait: unknown` | `ValidationResult` | Validate racial trait schema including required fields, enums, and value ranges |
+| `validateClassFeature()` | `feature: unknown` | `ValidationResult` | Validate class feature schema (id, name, description, type, class, level, source, prerequisites, effects) |
+| `validateRacialTrait()` | `trait: unknown` | `ValidationResult` | Validate racial trait schema (id, name, description, race, source, subrace, prerequisites, effects) |
 | `validateClassFeatures()` | `features: unknown[]` | `ValidationResult` | Validate array of class features with index-based error reporting |
 | `validateRacialTraits()` | `traits: unknown[]` | `ValidationResult` | Validate array of racial traits with index-based error reporting |
 | `validateEffect()` | `effect: unknown` | `ValidationResult` | Validate feature effect (type, target, value, condition) |
 | `validatePrerequisites()` | `prerequisites: unknown` | `ValidationResult` | Validate prerequisite object (level, abilities, class, race, subrace, features, skills, spells) |
-
-**Class Feature Validation Rules:**
-
-`validateClassFeature()` checks the following required fields:
-- `id` - Must be a string in `lowercase_with_underscores` format (e.g., `barbarian_rage`, `fighter_action_surge`)
-- `name` - Must be a string
-- `description` - Must be a string
-- `type` - Must be one of: `passive`, `active`, `resource`, `trigger`
-- `class` - Must be a valid default class or custom class registered via ExtensionManager
-- `level` - Must be a number between 1 and 20
-- `source` - Must be `default` or `custom`
-
-Optional fields validated:
-- `prerequisites` - Must pass prerequisite validation
-- `effects` - Array of effects, each must pass effect validation
-- `tags` - Array of strings
-- `lore` - String (flavor text)
-- `subrace` - String (for subrace-specific features)
-
-**Racial Trait Validation Rules:**
-
-`validateRacialTrait()` checks the following required fields:
-- `id` - Must be a string in `lowercase_with_underscores` format
-- `name` - Must be a string
-- `description` - Must be a string
-- `race` - Must be a valid default race or custom race registered via ExtensionManager
-- `source` - Must be `default` or `custom`
-
-Optional fields validated:
-- `subrace` - String (for subrace-specific traits)
-- `prerequisites` - Must pass prerequisite validation
-- `effects` - Array of effects, each must pass effect validation
-- `tags` - Array of strings
-- `lore` - String (flavor text)
-
-**Effect Validation Rules:**
-
-`validateEffect()` checks:
-- `type` - Must be one of: `stat_bonus`, `skill_proficiency`, `ability_unlock`, `passive_modifier`, `resource_grant`, `spell_slot_bonus`
-- `target` - Must be a string (target depends on effect type)
-- `value` - Required (number, string, or boolean depending on type)
-
-For `skill_proficiency` effects:
-- `value` - Must be one of: `none`, `proficient`, `expertise`
-
-**Prerequisite Validation:**
-
-**For detailed validation rules and runtime behavior:** See [docs/PREREQUISITES.md#validation-system](docs/PREREQUISITES.md#validation-system)
-
-`validatePrerequisites()` validates prerequisite objects and their runtime values against a character.
 
 ---
 
@@ -4566,140 +3452,45 @@ interface WeightedSelectionOptions {
 
 ---
 
-### SkillRegistry
+### SkillQuery
 
-**Location:** `src/core/skills/SkillRegistry.ts`
+**Location:** `src/core/skills/SkillQuery.ts`
 
-Singleton registry for managing character skills with prerequisite validation and ability score associations.
+*Also known as: Skill registry, custom skill system, proficiency manager*
 
-```typescript
-class SkillRegistry {
-    // Instance Management
-    static getInstance(): SkillRegistry
+Query and validation layer for character skills stored in ExtensionManager.
 
-    // Initialization
-    initializeDefaults(defaultSkills?: CustomSkill[]): void
-    reset(): void
-    isInitialized(): boolean
+**For comprehensive guide, examples, and best practices:** See [docs/EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)
 
-    // Registration
-    registerSkill(skill: CustomSkill): void
-    registerSkills(skills: CustomSkill[]): void
+#### Types
 
-    // Retrieval
-    getSkill(id: string): CustomSkill | undefined
-    getAllSkills(): CustomSkill[]
-    getSkillsByAbility(ability: Ability): CustomSkill[]
-    getSkillsByCategory(category: string): CustomSkill[]
-    getCategories(): string[]
-    getSkillsBySource(source: 'default' | 'custom'): CustomSkill[]
-    getAvailableSkills(character: CharacterSheet): CustomSkill[]
+| Type | Description | Location |
+|------|-------------|----------|
+| `CustomSkill` | Registered skill with ID, name, ability, source, prerequisites | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
+| `SkillPrerequisite` | Prerequisites for skills (level, abilities, class, race, skills, features, spells) | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
+| `SkillValidationResult` | Validation result with valid flag and errors array | [src/core/skills/SkillValidator.ts](src/core/skills/SkillValidator.ts) |
+| `SkillQueryStats` | Statistics about registered skills (totals, by ability, categories) | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
+| `SkillProficiency` | Character skill proficiency with level and source | [src/core/types/Character.ts](src/core/types/Character.ts) |
+| `SkillListDefinition` | Class skill list with count, available skills, selection weights, and expertise settings. Register via `manager.register('skillLists', [...])` to control skill selection weights per class | [src/core/skills/SkillTypes.ts](src/core/skills/SkillTypes.ts) |
+| `SkillSelectionWeights` | Weighted skill selection with spawn mode (`'relative'`, `'absolute'`, `'default'`) and skill weight multipliers. Higher weight = more likely to be selected. Weight of 0 excludes skill from selection | [src/core/skills/SkillTypes.ts](src/core/skills/SkillTypes.ts) |
 
-    // Validation
-    validatePrerequisites(skill: CustomSkill, character: CharacterSheet): SkillValidationResult
-    validateSkill(skill: CustomSkill): SkillValidationResult
+#### Method Reference
 
-    // Query
-    isValidSkill(id: string): boolean
-    getSkillCount(): number
-    getRegistryStats(): SkillRegistryStats
-
-    // Export/Import
-    exportRegistry(): CustomSkill[]
-
-    // Unregister (primarily for testing)
-    unregisterSkill(id: string): boolean
-}
-
-type Ability = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
-
-interface CustomSkill {
-    id: string;
-    name: string;
-    description?: string;
-    ability: Ability;
-    armorPenalty?: boolean;
-    customProperties?: Record<string, string | number | boolean | string[]>;
-    categories?: string[];
-    source: 'default' | 'custom';
-    tags?: string[];
-    lore?: string;
-    prerequisites?: SkillPrerequisite;
-}
-
-interface SkillPrerequisite {
-    level?: number;
-    abilities?: Partial<Record<Ability, number>>;
-    class?: Class;
-    race?: Race;
-    subrace?: string;
-    skills?: string[];
-    features?: string[];
-    spells?: string[];
-    custom?: string;
-}
-
-interface SkillValidationResult {
-    valid: boolean;
-    errors: string[];
-}
-
-interface SkillRegistryStats {
-    totalSkills: number;
-    defaultSkills: number;
-    customSkills: number;
-    skillsByAbility: Record<Ability, number>;
-    categories: string[];
-}
-
-// Additional types
-
-interface SkillProficiency {
-    skillId: string;
-    level: 'none' | 'proficient' | 'expertise';
-    source: 'class' | 'background' | 'feat' | 'custom' | 'racial' | 'other';
-    grantedBy?: string;
-}
-
-interface SkillListDefinition {
-    class: string;
-    skillCount: number;
-    availableSkills: string[];
-    selectionWeights?: SkillSelectionWeights;
-    hasExpertise?: boolean;
-    expertiseCount?: number;
-}
-
-interface SkillSelectionWeights {
-    weights: Record<string, number>;
-    mode?: 'relative' | 'absolute' | 'default';
-}
-```
-
-**Method Reference:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `getInstance()` | - | `SkillRegistry` | Returns singleton instance |
-| `initializeDefaults()` | `defaultSkills?` | `void` | Load default skills (uses DEFAULT_SKILLS if not provided) |
-| `reset()` | - | `void` | Clear all custom data, reload defaults |
-| `isInitialized()` | - | `boolean` | Check if registry has been initialized |
-| `registerSkill()` | `skill` | `void` | Register single custom skill |
-| `registerSkills()` | `skills[]` | `void` | Register multiple custom skills |
-| `getSkill()` | `id` | `CustomSkill \| undefined` | Get skill by ID |
-| `getAllSkills()` | - | `CustomSkill[]` | Get all registered skills |
-| `getSkillsByAbility()` | `ability` | `CustomSkill[]` | Get skills for specific ability |
-| `getSkillsByCategory()` | `category` | `CustomSkill[]` | Get skills in a specific category |
-| `getCategories()` | - | `string[]` | Get all categories in use |
-| `getSkillsBySource()` | `source` | `CustomSkill[]` | Get skills by source (default or custom) |
-| `getAvailableSkills()` | `character` | `CustomSkill[]` | Get skills character can learn (prerequisites met) |
-| `validatePrerequisites()` | `skill`, `character` | `SkillValidationResult` | Validate skill prerequisites against character |
-| `validateSkill()` | `skill` | `SkillValidationResult` | Validate skill data structure |
-| `isValidSkill()` | `id` | `boolean` | Check if skill ID exists in registry |
-| `getSkillCount()` | - | `number` | Get total skill count |
-| `getRegistryStats()` | - | `SkillRegistryStats` | Get statistics about registered skills |
-| `exportRegistry()` | - | `CustomSkill[]` | Export all registered skills as JSON |
-| `unregisterSkill()` | `id` | `boolean` | Remove skill by ID (primarily for testing) |
+| Method | Description |
+|--------|-------------|
+| `getInstance()` | Returns singleton instance |
+| `getSkill(id)` | Get skill by ID |
+| `getAllSkills()` | Get all registered skills (reads from ExtensionManager with caching) |
+| `getSkillsByAbility(ability)` | Get skills for specific ability (builds index from EM data with caching) |
+| `getSkillsByCategory(category)` | Get skills in a specific category (builds index from EM data with caching) |
+| `getCategories()` | Get all categories in use (derived from EM data) |
+| `getSkillsBySource(source)` | Get skills by source (default or custom) |
+| `getAvailableSkills(character)` | Get skills character can learn (prerequisites met) |
+| `validatePrerequisites(skill, character)` | Validate skill prerequisites (delegates to SkillValidator) |
+| `validateSkill(skill)` | Validate skill data structure (delegates to SkillValidator) |
+| `isValidSkill(id)` | Check if skill ID exists in registry |
+| `getSkillCount()` | Get total skill count |
+| `getQueryStats()` | Get statistics about registered skills |
 
 ---
 
@@ -4707,88 +3498,24 @@ interface SkillSelectionWeights {
 
 **Location:** `src/core/skills/SkillValidator.ts`
 
-Utility class for validating custom skills, skill proficiencies, and skill list definitions. All methods are static and validate against strict schemas.
+*Also known as: Skill validation system, proficiency validator*
 
-```typescript
-class SkillValidator {
-    // Skill Validation
-    static validateSkill(skill: unknown): SkillValidationResult
-    static validateSkills(skills: unknown[]): SkillValidationResult
+Utility class for validating custom skills, skill proficiencies, and skill list definitions. All methods are static.
 
-    // Skill Proficiency Validation
-    static validateSkillProficiency(proficiency: unknown): SkillValidationResult
-    static validateSkillProficiencies(proficiencies: unknown[]): SkillValidationResult
+#### Method Reference
 
-    // Skill List Definition Validation
-    static validateSkillListDefinition(skillList: unknown): SkillValidationResult
+| Method | Description |
+|--------|-------------|
+| `validateSkill(skill: unknown)` | Validate skill schema including required fields, ID format, ability, source |
+| `validateSkills(skills: unknown[])` | Validate multiple skills with index-based error reporting |
+| `validateSkillProficiency(proficiency: unknown)` | Validate skill proficiency (skillId, level, source) |
+| `validateSkillProficiencies(proficiencies: unknown[])` | Validate array of skill proficiencies |
+| `validateSkillListDefinition(skillList: unknown)` | Validate class skill list (class, skillCount, availableSkills, expertiseCount) |
+| `validateSkillPrerequisites(prerequisites, character)` | Validate prerequisites against character |
+| `isValidAbility(ability: string)` | Check if valid ability score (STR, DEX, CON, INT, WIS, CHA) |
+| `isValidSkillId(id: string)` | Check if skill ID follows lowercase_with_underscores format |
 
-    // Prerequisite Validation
-    static validateSkillPrerequisites(prerequisites: SkillPrerequisite | undefined, character: CharacterSheet): SkillValidationResult
-
-    // Type Guards
-    static isValidAbility(ability: string): ability is Ability
-    static isValidSkillId(id: string): boolean
-}
-
-interface SkillValidationResult {
-    valid: boolean;
-    errors: string[];
-}
-
-// Helper functions (convenience wrappers)
-function validateSkill(skill: unknown): SkillValidationResult
-function validateSkills(skills: unknown[]): SkillValidationResult
-function validateSkillProficiency(proficiency: unknown): SkillValidationResult
-function validateSkillProficiencies(proficiencies: unknown[]): SkillValidationResult
-function validateSkillListDefinition(skillList: unknown): SkillValidationResult
-function validateSkillPrerequisites(prerequisites: SkillPrerequisite | undefined, character: CharacterSheet): SkillValidationResult
-```
-
-**Method Reference:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `validateSkill()` | `skill: unknown` | `SkillValidationResult` | Validate skill schema including required fields, ID format, ability, source |
-| `validateSkills()` | `skills: unknown[]` | `SkillValidationResult` | Validate multiple skills with index-based error reporting |
-| `validateSkillProficiency()` | `proficiency: unknown` | `SkillValidationResult` | Validate skill proficiency (skillId, level, source) |
-| `validateSkillProficiencies()` | `proficiencies: unknown[]` | `SkillValidationResult` | Validate array of skill proficiencies |
-| `validateSkillListDefinition()` | `skillList: unknown` | `SkillValidationResult` | Validate class skill list (class, skillCount, availableSkills, expertiseCount) |
-| `validateSkillPrerequisites()` | `prerequisites`, `character` | `SkillValidationResult` | Validate prerequisites against character |
-| `isValidAbility()` | `ability: string` | `boolean` | Check if valid ability score (STR, DEX, CON, INT, WIS, CHA) |
-| `isValidSkillId()` | `id: string` | `boolean` | Check if skill ID follows lowercase_with_underscores format |
-
-**Skill Validation:**
-
-`validateSkill()` checks the following required fields:
-- `id` - Must be a string in lowercase_with_underscores format (e.g., `athletics`, `survival_cold`)
-- `name` - Must be a string
-- `ability` - Must be one of: STR, DEX, CON, INT, WIS, CHA
-- `source` - Must be 'default' or 'custom'
-
-Optional fields validated:
-- `description` - String
-- `armorPenalty` - Boolean (whether armor applies disadvantage)
-- `categories` - String array (skill categories for organization)
-- `tags` - String array (for filtering/searching)
-- `customProperties` - Record with string, number, boolean, or string[] values
-- `lore` - String (flavor text)
-
-**Skill Proficiency Validation:**
-
-`validateSkillProficiency()` checks skill proficiency objects:
-- `skillId` - Must follow lowercase_with_underscores format
-- `level` - Must be 'none', 'proficient', or 'expertise'
-- `source` - Must be 'class', 'background', 'feat', 'custom', 'racial', or 'other'
-- `grantedBy` - Optional string (what granted this proficiency)
-
-**Skill List Definition Validation:**
-
-`validateSkillListDefinition()` validates class skill list definitions:
-- `class` - String (class name)
-- `skillCount` - Non-negative integer (number of skills to choose)
-- `availableSkills` - String array (valid skill IDs to choose from)
-- `hasExpertise` - Optional boolean (whether class can get expertise)
-- `expertiseCount` - Optional non-negative integer (number of expertise choices)
+**Note:** For detailed prerequisite validation rules, see [docs/PREREQUISITES.md](docs/PREREQUISITES.md).
 
 ---
 
@@ -4800,7 +3527,73 @@ Skills can have prerequisites that must be met before a character can gain profi
 
 **Validation:**
 - `SkillValidator.validateSkillPrerequisites(skill, character)` - Validate prerequisites against character
-- `SkillRegistry.validatePrerequisites(skill, character)` - Validate via registry
+- `SkillQuery.validatePrerequisites(skill, character)` - Validate via registry
+
+---
+
+### SpellQuery
+
+**Location:** `src/core/spells/SpellQuery.ts`
+
+*Also known as: Spell registry, magic system, spellcaster manager*
+
+Query and validation layer for spells stored in ExtensionManager.
+
+**For comprehensive guide, examples, and best practices:** See [docs/EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)
+
+#### Types
+
+| Type | Description | Location |
+|------|-------------|----------|
+| `RegisteredSpell` | Registered spell with ID, name, level, school, source, prerequisites | [src/core/spells/SpellQuery.ts](src/core/spells/SpellQuery.ts) |
+| `Spell` | Base spell interface with name, level, school, properties | [src/core/spells/SpellTypes.ts](src/core/spells/SpellTypes.ts) |
+| `SpellPrerequisite` | Prerequisites for spells (level, abilities, class, features, spells, skills) | [src/core/spells/SpellTypes.ts](src/core/spells/SpellTypes.ts) |
+| `ValidationResult` | Validation result with valid flag, errors, and warnings | [src/core/spells/SpellValidator.ts](src/core/spells/SpellValidator.ts) |
+| `SpellSchool` | Magic schools: Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation | [src/core/spells/SpellTypes.ts](src/core/spells/SpellTypes.ts) |
+
+#### Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `getInstance()` | Returns singleton instance |
+| `getSpell(spellId)` | Get spell by ID |
+| `getSpells()` | Get all spells (reads from ExtensionManager with caching) |
+| `getSpellsByLevel(level)` | Get spells of specific level 0-9 (queries ExtensionManager, builds index with caching) |
+| `getSpellsBySchool(school)` | Get spells of specific school (queries ExtensionManager, builds index with caching) |
+| `getSpellsForClass(class)` | Get spells available to a class (filters by classes property) |
+| `getAvailableSpells(character)` | Get spells character can learn (prerequisites met) |
+| `getSpellsBySource(source)` | Get spells by source (default or custom) |
+| `getClassSpellList(class)` | Get spell list for a class (reads from ExtensionManager) |
+| `getSpellSlotsForClass(class, level)` | Get spell slots for class/level (delegates to constants helper) |
+| `validatePrerequisites(spell, character)` | Validate spell prerequisites (delegates to SpellValidator) |
+| `validateSpell(spell)` | Validate spell schema (delegates to SpellValidator) |
+| `hasSpell(spellId)` | Check if spell exists |
+| `getSpellCount()` | Get total spell count |
+| `getQueryStats()` | Get registry statistics (total, by source, by level, by school) |
+
+---
+
+### SpellValidator
+
+**Location:** `src/core/spells/SpellValidator.ts`
+
+*Also known as: Spell validation system, magic validator*
+
+Utility class for validating spells and their prerequisites. All methods are static.
+
+#### Method Reference
+
+| Method | Description |
+|--------|-------------|
+| `validateSpell(spell: unknown)` | Validate spell schema including prerequisites |
+| `validateSpells(spells: unknown[])` | Validate array of spells |
+| `validatePrerequisites(prerequisites: unknown)` | Validate prerequisite object structure |
+| `validateSpellPrerequisites(prerequisites, character)` | Validate prerequisites against character |
+| `isValidAbility(ability: string)` | Check if valid ability score |
+| `isValidSchool(school: string)` | Check if valid spell school |
+| `isValidSpellLevel(level: number)` | Check if valid spell level (0-9) |
+
+**Note:** For detailed prerequisite validation rules, see [docs/PREREQUISITES.md](docs/PREREQUISITES.md).
 
 ---
 
@@ -4816,191 +3609,6 @@ Spells can have prerequisites that must be met before a spellcaster can learn th
 
 ---
 
-### SpellRegistry
-
-**Location:** `src/core/spells/SpellRegistry.ts`
-
-Singleton registry for managing spells with prerequisite validation and school categorization.
-
-```typescript
-class SpellRegistry {
-    // Instance Management
-    static getInstance(): SpellRegistry
-
-    // Initialization
-    initializeDefaults(defaultSpells?: Record<string, Spell>): void
-    reset(): void
-    isInitialized(): boolean
-
-    // Registration
-    registerSpell(spell: RegisteredSpell): void
-    registerSpells(spells: RegisteredSpell[]): void
-
-    // Retrieval
-    getSpell(spellId: string): RegisteredSpell | undefined
-    getSpells(): RegisteredSpell[]
-    getSpellsByLevel(level: number): RegisteredSpell[]
-    getSpellsBySchool(school: SpellSchool): RegisteredSpell[]
-    getSpellsForClass(characterClass: Class): RegisteredSpell[]
-    getAvailableSpells(character: CharacterSheet): RegisteredSpell[]
-    getSpellsBySource(source: 'default' | 'custom'): RegisteredSpell[]
-
-    // Class Spell Lists
-    getClassSpellList(characterClass: Class): string[]
-    registerClassSpellList(characterClass: Class, spellIds: string[]): void
-
-    // Spell Slots
-    getSpellSlotsForClass(characterClass: Class, level: number): number
-
-    // Validation
-    validatePrerequisites(spell: RegisteredSpell, character: CharacterSheet): ValidationResult
-    validateSpell(spell: RegisteredSpell): ValidationResult
-
-    // Query
-    hasSpell(spellId: string): boolean
-    getSpellCount(): number
-    getRegistryStats(): { totalSpells: number; defaultSpells: number; customSpells: number; spellsByLevel: Record<number, number>; spellsBySchool: Record<SpellSchool, number>; classesWithSpells: number }
-
-    // Export/Import
-    exportRegistry(): RegisteredSpell[]
-
-    // Unregister (primarily for testing)
-    unregisterSpell(spellId: string): boolean
-}
-
-type SpellSchool =
-    | 'Abjuration'
-    | 'Conjuration'
-    | 'Divination'
-    | 'Enchantment'
-    | 'Evocation'
-    | 'Illusion'
-    | 'Necromancy'
-    | 'Transmutation';
-
-interface RegisteredSpell extends Spell {
-    id: string;
-    classes?: Class[];
-    source: 'default' | 'custom';
-}
-
-interface Spell {
-    id?: string;
-    name: string;
-    level: number;
-    school: SpellSchool;
-    prerequisites?: SpellPrerequisite;
-    description?: string;
-    casting_time?: string;
-    range?: string;
-    components?: string[];
-    duration?: string;
-    classes?: Class[];
-    source?: 'default' | 'custom';
-}
-
-interface SpellPrerequisite {
-    level?: number;
-    casterLevel?: number;
-    abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
-    class?: string;
-    features?: string[];
-    spells?: string[];
-    skills?: string[];
-    custom?: string;
-}
-
-interface ValidationResult {
-    valid: boolean;
-    errors: string[];
-    warnings?: string[];
-}
-```
-
-**Method Reference:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `getInstance()` | - | `SpellRegistry` | Returns singleton instance |
-| `initializeDefaults()` | `defaultSpells?` | `void` | Load default spells (uses SPELL_DATABASE if not provided) |
-| `reset()` | - | `void` | Clear all custom data, reload defaults |
-| `isInitialized()` | - | `boolean` | Check if registry has been initialized |
-| `registerSpell()` | `spell` | `void` | Register single custom spell |
-| `registerSpells()` | `spells[]` | `void` | Register multiple custom spells |
-| `getSpell()` | `spellId` | `RegisteredSpell \| undefined` | Get spell by ID |
-| `getSpells()` | - | `RegisteredSpell[]` | Get all spells |
-| `getSpellsByLevel()` | `level` | `RegisteredSpell[]` | Get spells of specific level (0-9) |
-| `getSpellsBySchool()` | `school` | `RegisteredSpell[]` | Get spells of specific school |
-| `getSpellsForClass()` | `class` | `RegisteredSpell[]` | Get spells available to a class |
-| `getAvailableSpells()` | `character` | `RegisteredSpell[]` | Get spells character can learn (prerequisites met) |
-| `getSpellsBySource()` | `source` | `RegisteredSpell[]` | Get spells by source (default or custom) |
-| `getClassSpellList()` | `class` | `string[]` | Get spell list for a class |
-| `registerClassSpellList()` | `class`, `spellIds[]` | `void` | Register spell list for a class |
-| `getSpellSlotsForClass()` | `class`, `level` | `number` | Get spell slots for class/level |
-| `validatePrerequisites()` | `spell`, `character` | `ValidationResult` | Validate spell prerequisites |
-| `validateSpell()` | `spell` | `ValidationResult` | Validate spell schema |
-| `hasSpell()` | `spellId` | `boolean` | Check if spell exists |
-| `getSpellCount()` | - | `number` | Get total spell count |
-| `getRegistryStats()` | - | `{ totalSpells, defaultSpells, customSpells, spellsByLevel, spellsBySchool, classesWithSpells }` | Get registry statistics |
-| `exportRegistry()` | - | `RegisteredSpell[]` | Export all registered spells as JSON |
-| `unregisterSpell()` | `spellId` | `boolean` | Remove spell by ID (primarily for testing) |
-
----
-
-### SpellValidator
-
-**Location:** `src/core/spells/SpellValidator.ts`
-
-Utility class for validating spells and their prerequisites. All methods are static and validate against strict schemas.
-
-```typescript
-class SpellValidator {
-    // Spell Validation
-    static validateSpell(spell: unknown): SpellValidationResult
-    static validateSpells(spells: unknown[]): SpellValidationResult
-
-    // Prerequisite Validation
-    static validatePrerequisites(prerequisites: unknown): SpellValidationResult
-    static validateSpellPrerequisites(
-        prerequisites: SpellPrerequisite | undefined,
-        character: CharacterSheet
-    ): SpellValidationResult
-
-    // Type Guards
-    static isValidAbility(ability: string): ability is Ability
-    static isValidSchool(school: string): school is Spell['school']
-    static isValidSpellLevel(level: number): boolean
-}
-
-interface SpellValidationResult {
-    valid: boolean;
-    errors: string[];
-}
-
-// Helper functions (convenience wrappers)
-function validateSpell(spell: unknown): SpellValidationResult
-function validateSpells(spells: unknown[]): SpellValidationResult
-function validateSpellPrerequisitesSchema(prerequisites: unknown): SpellValidationResult
-function validateSpellPrerequisites(
-    prerequisites: SpellPrerequisite | undefined,
-    character: CharacterSheet
-): SpellValidationResult
-```
-
-**Method Reference:**
-
-| Method | Parameters | Returns | Description |
-|--------|-----------|---------|-------------|
-| `validateSpell()` | `spell: unknown` | `SpellValidationResult` | Validate spell schema including prerequisites |
-| `validateSpells()` | `spells: unknown[]` | `SpellValidationResult` | Validate array of spells |
-| `validatePrerequisites()` | `prerequisites: unknown` | `SpellValidationResult` | Validate prerequisite object structure |
-| `validateSpellPrerequisites()` | `prerequisites`, `character` | `SpellValidationResult` | Validate prerequisites against character |
-| `isValidAbility()` | `ability: string` | `boolean` | Check if valid ability score |
-| `isValidSchool()` | `school: string` | `boolean` | Check if valid spell school |
-| `isValidSpellLevel()` | `level: number` | `boolean` | Check if valid spell level (0-9) |
-
----
-
 ### Custom Races
 
 **For comprehensive guide, examples, and best practices:** See [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md)
@@ -5009,14 +3617,16 @@ The engine supports custom races through the ExtensionManager. Custom races can 
 
 #### API Interfaces
 
-```typescript
-interface RaceDataEntry {
-    ability_bonuses: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
-    speed: number;
-    traits: string[];
-    subraces?: string[];
-}
-```
+**Location:** [src/utils/constants.ts](src/utils/constants.ts)
+
+**RaceDataEntry** - Complete interface definition: [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md#racedataentry-interface)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `ability_bonuses` | `Partial<Record<Ability, number>>` | Ability score bonuses (e.g., `{ STR: 2, DEX: 1 }`) |
+| `speed` | number | Base speed in feet |
+| `traits` | string[] | Array of trait IDs for this race |
+| `subraces?` | string[] | Optional: Available subraces for this race |
 
 **Helper Functions:**
 - `getRaceData(race: string)` - Get race data from default or custom races
@@ -5045,7 +3655,7 @@ interface RacialTrait {
 }
 ```
 
-**FeatureRegistry Methods:**
+**FeatureQuery Methods:**
 - `getRacialTraitsForSubrace(race, subrace)` - Get traits for specific subrace
 - `validatePrerequisites(feature, character)` - Validates subrace requirements
 
@@ -5059,21 +3669,23 @@ The engine supports template-based custom classes through the ExtensionManager. 
 
 #### API Interfaces
 
-```typescript
-interface ClassDataEntry {
-    name: string;
-    primary_ability: Ability;
-    hit_die: number;
-    saving_throws: Ability[];
-    is_spellcaster: boolean;
-    skill_count: number;
-    available_skills: string[];
-    has_expertise: boolean;
-    expertise_count?: number;
-    baseClass?: Class;
-    audio_preferences?: { ... };
-}
-```
+**Location:** [src/utils/constants.ts](src/utils/constants.ts)
+
+**ClassDataEntry** - Complete interface definition with JSDoc comments: [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md#classdataentry-interface)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | string | Class name |
+| `primary_ability` | Ability | Primary ability score |
+| `hit_die` | number | Hit die size (e.g., 10 for d10) |
+| `saving_throws` | Ability[] | Saving throw proficiencies |
+| `is_spellcaster` | boolean | Whether class can cast spells |
+| `skill_count` | number | Number of skills to choose |
+| `available_skills` | string[] | Available skills for this class |
+| `has_expertise` | boolean | Whether class has expertise |
+| `expertise_count?` | number | Number of expertise choices |
+| `baseClass?` | Class | For template-based classes: base class to inherit from |
+| `audio_preferences?` | object | Audio trait preferences for class affinity |
 
 **Helper Functions:**
 - `getClassData(className: string)` - Get class data from default or custom classes
@@ -5081,12 +3693,21 @@ interface ClassDataEntry {
 - `getSpellSlotsForClass(className: string, level: number)` - Get spell slots for class
 
 ---
+## Style Guide
+
+Documentation Style Guide for DATA_ENGINE_REFERENCE.md: This API reference prioritizes efficiency over exhaustiveness by organizing content into navigable sections (Quick Export Reference → Data Types → Core Modules → Specialized Systems). Key conventions: (1) Location links using italicized [src/path/file.ts](src/path/file.ts) format for all major definitions; (2) "Also known as" aliases in italics for discoverability under alternate search terms; (3) Structured tables for properties, methods, and options rather than copying raw TypeScript interfaces; (4) Cross-references to related docs (SPEC.md, USAGE_IN_OTHER_PROJECTS.md, specialized guides) rather than duplicating content; (5) Method reference tables with "Returns" and "Description" columns for APIs; (6) Type descriptions focus on purpose and key properties rather than full interface definitions—readers can click the location link for complete source. The goal is a scannable reference that directs readers to source files for complete implementations while providing sufficient context for most queries.
+
+---
 
 ## Cross-References
 
-- For quick overview, see [spec.md](specs/001-core-engine/spec.md)
+- For quick overview, see [specs/001-core-engine/SPEC.md](specs/001-core-engine/SPEC.md)
 - For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](USAGE_IN_OTHER_PROJECTS.md)
 - For equipment system guide, see [docs/EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md)
 - For prerequisites guide, see [docs/PREREQUISITES.md](docs/PREREQUISITES.md)
 - For custom content guide, see [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md)
 - For extensibility guide, see [docs/EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)
+- For XP and stat system guide, see [docs/XP_AND_STATS.md](docs/XP_AND_STATS.md)
+- For combat system guide, see [docs/COMBAT_SYSTEM.md](docs/COMBAT_SYSTEM.md)
+- For IRL sensors guide, see [docs/IRL_SENSORS.md](docs/IRL_SENSORS.md)
+- For rolls and seeds guide, see [docs/ROLLS_AND_SEEDS.md](docs/ROLLS_AND_SEEDS.md)

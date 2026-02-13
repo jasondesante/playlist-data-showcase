@@ -2,10 +2,6 @@
 
 Complete guide to the prerequisite system for skills, spells, and features in the Playlist Data Engine.
 
-**For API details, see [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md)**
-**For custom races/classes, see [CUSTOM_CONTENT.md](CUSTOM_CONTENT.md)**
-**For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](../USAGE_IN_OTHER_PROJECTS.md)**
-
 ---
 
 ## Table of Contents
@@ -45,58 +41,30 @@ The Playlist Data Engine supports a comprehensive prerequisite system that allow
 
 Skills can have prerequisites that must be met before a character can gain proficiency in them.
 
-### SkillPrerequisite Interface
+### SkillPrerequisite
 
-```typescript
-interface SkillPrerequisite {
-    /** Minimum character level required */
-    level?: number;
+*Also known as: skill requirements, skill conditions*
 
-    /** Minimum ability scores required */
-    abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+Defines conditions that must be met before a character can gain proficiency in a skill.
 
-    /** Specific class required */
-    class?: Class;
+**Location:** [`src/core/skills/SkillTypes.ts`](src/core/skills/SkillTypes.ts#L23-L47)
 
-    /** Specific race required */
-    race?: Race;
+| Property | Type | Description |
+|----------|------|-------------|
+| `level` | `number?` | Minimum character level required |
+| `abilities` | `Partial<Record<Ability, number>>?` | Minimum ability scores (STR/DEX/CON/INT/WIS/CHA) |
+| `class` | `Class?` | Specific class required |
+| `race` | `Race?` | Specific race required |
+| `skills` | `string[]?` | Skills that must be proficient first (by skill ID) |
+| `features` | `string[]?` | Features that must be learned first (by feature ID) |
+| `spells` | `string[]?` | Spells that must be known first (by spell name) |
+| `custom` | `string?` | Custom condition description (display only) |
 
-    /** Specific subrace required (e.g., 'High Elf', 'Hill Dwarf') */
-    subrace?: string;
+### CustomSkill.prerequisites
 
-    /** Skills that must be proficient first (by skill ID) */
-    skills?: string[];
+**Location:** [`src/core/skills/SkillTypes.ts`](src/core/skills/SkillTypes.ts#L128)
 
-    /** Features that must be learned first (by feature ID) */
-    features?: string[];
-
-    /** Spells that must be known first (by spell name) */
-    spells?: string[];
-
-    /** Custom condition description */
-    custom?: string;
-}
-```
-
-### CustomSkill with Prerequisites
-
-```typescript
-interface CustomSkill {
-    id: string;
-    name: string;
-    description?: string;
-    ability: Ability;
-    armorPenalty?: boolean;
-    customProperties?: Record<string, string | number | boolean | string[]>;
-    categories?: string[];
-    source: 'default' | 'custom';
-    tags?: string[];
-    lore?: string;
-
-    /** Prerequisites for learning this skill */
-    prerequisites?: SkillPrerequisite;
-}
-```
+The `CustomSkill` interface includes an optional `prerequisites?: SkillPrerequisite` property. When specified, the skill is filtered out during character generation if prerequisites are unmet.
 
 ### Validation
 
@@ -104,89 +72,101 @@ Skill prerequisites are validated automatically during:
 
 1. **Skill Registration**: Schema validation ensures prerequisite structure is valid
 2. **Skill Assignment**: During character generation, skills with unmet prerequisites are filtered out
-3. **Manual Validation**: Use `SkillValidator.validateSkillPrerequisites()` or `SkillRegistry.validatePrerequisites()`
+3. **Manual Validation**: Use `SkillValidator.validateSkillPrerequisites()` or `SkillQuery.validatePrerequisites()`
 
-### Example Skill with Prerequisites
+### Example Skills with Prerequisites
+
+| Skill | Prerequisites Used |
+|-------|-------------------|
+| Dragon Smithing | `features`, `level`, `class` |
+| Advanced Arcana | `abilities`, `skills`, `level` |
+| Spell Mastery | `spells`, `class`, `level` |
+| Dwarven Warfare | `race` |
 
 ```typescript
-import { SkillRegistry } from 'playlist-data-engine';
+import { ExtensionManager } from 'playlist-data-engine';
 
-// Advanced skill requiring a specific feature
-const dragonSmithing = {
-    id: 'dragon_smithing',
-    name: 'Dragon Smithing',
-    description: 'Craft weapons from dragon scales',
-    ability: 'INT' as const,
-    prerequisites: {
-        features: ['draconic_bloodline'],  // Requires Sorcerer feature
-        level: 5,
-        class: 'Sorcerer' as const
+const skills = [
+    {
+        id: 'dragon_smithing',
+        name: 'Dragon Smithing',
+        description: 'Craft weapons from dragon scales',
+        ability: 'INT' as const,
+        prerequisites: {
+            features: ['draconic_bloodline'],
+            level: 5,
+            class: 'Sorcerer' as const
+        },
+        source: 'custom' as const
     },
-    source: 'custom' as const
-};
+    {
+        id: 'advanced_arcana',
+        name: 'Advanced Arcana',
+        description: 'Cast complex spells and understand magical theory',
+        ability: 'INT' as const,
+        prerequisites: {
+            abilities: { INT: 16 },
+            skills: ['arcana'],
+            level: 7
+        },
+        source: 'custom' as const
+    },
+    {
+        id: 'spell_mastery',
+        name: 'Spell Mastery',
+        description: 'Improved control over known spells',
+        ability: 'INT' as const,
+        prerequisites: {
+            spells: ['Fireball', 'Lightning Bolt'],
+            class: 'Wizard' as const,
+            level: 10
+        },
+        source: 'custom' as const
+    },
+    {
+        id: 'dwarven_warfare',
+        name: 'Dwarven Warfare',
+        description: 'Advanced dwarven combat techniques',
+        ability: 'STR' as const,
+        prerequisites: {
+            race: 'Dwarf' as const
+        },
+        source: 'custom' as const
+    }
+];
 
-SkillRegistry.getInstance().registerSkill(dragonSmithing);
+ExtensionManager.getInstance().register('skills', skills);
 ```
-
----
 
 ## Spell Prerequisites
 
 Spells can have prerequisites that must be met before they can be learned.
 
-### SpellPrerequisite Interface
+### SpellPrerequisite
 
-```typescript
-interface SpellPrerequisite {
-    /** Minimum character level */
-    level?: number;
+*Also known as: spell requirements, spell conditions*
 
-    /** Minimum spellcaster level (if different from character level) */
-    casterLevel?: number;
+Defines conditions that must be met before a spellcaster can learn a spell.
 
-    /** Minimum ability scores */
-    abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+**Location:** [`src/core/spells/SpellTypes.ts`](src/core/spells/SpellTypes.ts#L32-L59)
 
-    /** Specific class required */
-    class?: Class;
+| Property | Type | Description |
+|----------|------|-------------|
+| `level` | `number?` | Minimum character level |
+| `casterLevel` | `number?` | Minimum spellcaster level (if different from character level) |
+| `abilities` | `Partial<Record<Ability, number>>?` | Minimum ability scores |
+| `class` | `Class?` | Specific class required |
+| `race` | `Race?` | Specific race required |
+| `features` | `string[]?` | Features that must be learned first (by feature ID) |
+| `spells` | `string[]?` | Spells that must be known first (by spell name) |
+| `skills` | `string[]?` | Skills that must be proficient first (by skill ID) |
+| `custom` | `string?` | Custom condition description (display only) |
 
-    /** Specific race required */
-    race?: Race;
+### Spell.prerequisites
 
-    /** Features that must be learned first (by feature ID) */
-    features?: string[];
+**Location:** [`src/core/spells/SpellTypes.ts`](src/core/spells/SpellTypes.ts#L80)
 
-    /** Spells that must be known first (by spell name) */
-    spells?: string[];
-
-    /** Skills that must be proficient first (by skill ID) */
-    skills?: string[];
-
-    /** Custom condition */
-    custom?: string;
-}
-```
-
-### Spell with Prerequisites
-
-```typescript
-interface Spell {
-    /** Unique identifier (optional for backward compatibility) */
-    id?: string;
-
-    name: string;
-    level: number;           // 0-9 (0 = cantrips)
-    school: 'Abjuration' | 'Conjuration' | 'Divination' | 'Enchantment' | 'Evocation' | 'Illusion' | 'Necromancy' | 'Transmutation';
-    casting_time: string;
-    range: string;
-    components: string[];
-    duration: string;
-    description?: string;
-
-    /** Prerequisites for learning this spell */
-    prerequisites?: SpellPrerequisite;
-}
-```
+The `Spell` interface includes an optional `prerequisites?: SpellPrerequisite` property. `SpellManager` automatically filters spells by prerequisites during character generation.
 
 ### Validation
 
@@ -196,16 +176,17 @@ Spell prerequisites are validated automatically during:
 2. **Spell Assignment**: During character generation, `SpellManager` filters spells by prerequisites
 3. **Manual Validation**: Use `SpellValidator.validateSpellPrerequisites()`
 
-### Example Spell with Prerequisites
+### Example Spells with Prerequisites
 
 ```typescript
-import { ExtensionManager } from 'playlist-data-engine';
+import { ExtensionManager, SpellManager, CharacterGenerator } from 'playlist-data-engine';
 
+// Spell with feature + ability prerequisites
 const dragonBreath = {
     id: 'dragon_breath',
     name: 'Dragon Breath',
     level: 3,
-    school: 'Evocation' as const,
+    school: 'Evocation',
     casting_time: '1 action',
     range: '60 ft cone',
     components: ['V', 'S', 'M'],
@@ -217,7 +198,47 @@ const dragonBreath = {
     }
 };
 
-ExtensionManager.getInstance().register('spells', [dragonBreath]);
+// Spell with level + class + spell prerequisites
+const limitedMeteorSwarm = {
+    id: 'limited_meteor_swarm',
+    name: 'Meteor Swarm',
+    level: 9,
+    school: 'Evocation',
+    casting_time: '1 action',
+    range: '1 mile',
+    components: ['V', 'S'],
+    duration: 'Instantaneous',
+    description: 'Blazing orbs rain down',
+    prerequisites: {
+        level: 17,
+        class: 'Wizard',
+        spells: ['Fireball']
+    }
+};
+
+// Spell with skill prerequisites
+const arcaneSwordSpell = {
+    id: 'arcane_sword',
+    name: 'Arcane Sword',
+    level: 5,
+    school: 'Evocation',
+    casting_time: '1 bonus action',
+    range: '60 ft',
+    components: ['V', 'S', 'M'],
+    duration: 'Concentration, 1 minute',
+    description: 'Summon a sword of pure magic',
+    prerequisites: {
+        skills: ['arcana']
+    }
+};
+
+const manager = ExtensionManager.getInstance();
+manager.register('spells', [dragonBreath, limitedMeteorSwarm, arcaneSwordSpell]);
+
+// SpellManager automatically filters spells by prerequisites during character generation
+const character = CharacterGenerator.generate(seed, audioProfile, track);
+const knownSpells = SpellManager.getKnownSpells(character.class, character.level, character);
+// Only includes spells whose prerequisites are met
 ```
 
 ---
@@ -226,131 +247,109 @@ ExtensionManager.getInstance().register('spells', [dragonBreath]);
 
 Features (class features and racial traits) can have prerequisites that must be met.
 
-### FeaturePrerequisite Interface
+### FeaturePrerequisite
 
-```typescript
-interface FeaturePrerequisite {
-    /** Minimum level required */
-    level?: number;
+*Also known as: feature requirements, trait conditions*
 
-    /** Features that must be learned first (by ID) */
-    features?: string[];
+Defines conditions for class features and racial traits. Note: `SkillPrerequisite` and `SpellPrerequisite` follow the same pattern for consistency.
 
-    /** Minimum ability scores required */
-    abilities?: Partial<Record<Ability, number>>;
+**Location:** [`src/core/features/FeatureTypes.ts`](src/core/features/FeatureTypes.ts#L67-L94)
 
-    /** Specific class required */
-    class?: Class;
-
-    /** Specific race required */
-    race?: Race;
-
-    /** Specific subrace required (e.g., 'High Elf', 'Hill Dwarf') */
-    subrace?: string;
-
-    /** Skills that must be proficient first (by skill ID) */
-    skills?: string[];
-
-    /** Spells that must be known first (by spell name) */
-    spells?: string[];
-
-    /** Custom condition description */
-    custom?: string;
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| `level` | `number?` | Minimum level required |
+| `features` | `string[]?` | Features that must be learned first (by ID) |
+| `abilities` | `Partial<Record<Ability, number>>?` | Minimum ability scores required |
+| `class` | `Class?` | Specific class required |
+| `race` | `Race?` | Specific race required |
+| `subrace` | `string?` | Specific subrace required (e.g., 'High Elf', 'Hill Dwarf') |
+| `skills` | `string[]?` | Skills that must be proficient first (by skill ID) |
+| `spells` | `string[]?` | Spells that must be known first (by spell name) |
+| `custom` | `string?` | Custom condition description (display only) |
 
 ### Validation
 
-Feature prerequisites are validated via `FeatureRegistry.validatePrerequisites()` which checks:
+Feature prerequisites are validated via `FeatureQuery.validatePrerequisites()` which checks level, abilities, class, race, subrace, skills, spells, features, and custom conditions.
 
-- Level requirement
-- Ability scores
-- Class requirement
-- Race requirement
-- **Subrace requirement**
-- **Skill prerequisites** (skills must be proficient or expertise)
-- **Spell prerequisites** (spells must be in known_spells)
-- Feature prerequisites (features must be in class_features)
-- Custom conditions
+### Example Features with Prerequisites
 
-### Example Feature with Skill/Spell Prerequisites
+| Feature | Type | Prerequisites Used |
+|---------|------|-------------------|
+| Arcane Mastery | Class feature | `skills`, `level` |
+| Spellblade | Class feature | `spells`, `features` |
+| Elven Battle Training | Racial trait | `skills`, `level` |
 
 ```typescript
-import { FeatureRegistry } from 'playlist-data-engine';
+import { ExtensionManager } from 'playlist-data-engine';
 
-const arcaneMastery = {
-    id: 'arcane_mastery',
-    name: 'Arcane Mastery',
-    description: 'Bonus to spellcasting based on Arcana skill',
-    type: 'passive' as const,
-    level: 10,
-    class: 'Wizard' as const,
+// Class features
+ExtensionManager.getInstance().register('classFeatures', [
+    {
+        id: 'arcane_mastery',
+        name: 'Arcane Mastery',
+        description: 'Bonus to spellcasting based on Arcana skill',
+        type: 'passive' as const,
+        level: 10,
+        class: 'Wizard' as const,
+        prerequisites: {
+            skills: ['arcana'],
+            level: 10
+        },
+        effects: [
+            { type: 'passive_modifier' as const, target: 'spell_save_dc', value: 1 }
+        ],
+        source: 'custom' as const
+    },
+    {
+        id: 'spellblade',
+        name: 'Spellblade',
+        description: 'Channel spells through your weapon',
+        type: 'active' as const,
+        level: 10,
+        class: 'Eldritch Knight' as const,
+        prerequisites: {
+            spells: ['Green-Flame Blade', 'Booming Blade'],
+            features: ['weapon_bond']
+        },
+        effects: [
+            { type: 'passive_modifier' as const, target: 'spell_strike_damage', value: 4 }
+        ],
+        source: 'custom' as const
+    }
+]);
+
+// Racial traits
+ExtensionManager.getInstance().register('racialTraits', [{
+    id: 'elven_battle_training',
+    name: 'Elven Battle Training',
+    description: 'Advanced elven combat techniques',
+    type: 'active' as const,
+    race: 'Elf' as const,
     prerequisites: {
-        skills: ['arcana'],  // Requires Arcana proficiency
-        level: 10
+        skills: ['athletics', 'perception'],
+        level: 3
     },
     effects: [
-        { type: 'passive_modifier' as const, target: 'spell_save_dc', value: 1 }
+        { type: 'passive_modifier' as const, target: 'initiative', value: 2 }
     ],
     source: 'custom' as const
-};
-
-FeatureRegistry.getInstance().registerClassFeature(arcaneMastery);
+}]);
 ```
-
----
 
 ## Validation System
 
 ### ValidationResult Interfaces
 
-Different validators return slightly different result types:
-
-#### Feature ValidationResult (FeatureRegistry)
-
-```typescript
-interface ValidationResult {
-    /** Whether all prerequisites are met */
-    valid: boolean;
-
-    /** Array of prerequisite descriptions that are not met */
-    unmet?: string[];
-
-    /** Detailed error messages */
-    errors?: string[];
-}
-```
-
-#### Skill ValidationResult (SkillValidator)
-
-```typescript
-interface SkillValidationResult {
-    /** Whether all prerequisites are met */
-    valid: boolean;
-
-    /** Array of error messages (required, empty if valid) */
-    errors: string[];
-}
-```
-
-#### Spell ValidationResult (SpellValidator)
-
-```typescript
-interface SpellValidationResult {
-    /** Whether all prerequisites are met */
-    valid: boolean;
-
-    /** Array of error messages (required, empty if valid) */
-    errors: string[];
-}
-```
-
-**Note**: FeatureRegistry's `ValidationResult` includes both `unmet` and `errors` (optional), while SkillValidator and SpellValidator return `SkillValidationResult` and `SpellValidationResult` with a required `errors` array only.
+| Type | Location | Properties |
+|------|----------|------------|
+| `ValidationResult` | [`src/core/features/FeatureTypes.ts`](src/core/features/FeatureTypes.ts#L238-L247) | `valid: boolean`, `unmet?: string[]`, `errors?: string[]` |
+| `SkillValidationResult` | [`src/core/skills/SkillTypes.ts`](src/core/skills/SkillTypes.ts#L239-L244) | `valid: boolean`, `errors: string[]` (required) |
+| `SpellValidationResult` | Inferred from `SpellValidator` | `valid: boolean`, `errors: string[]` (required) |
 
 ### Skill Validation
 
 ```typescript
-import { SkillValidator, SkillRegistry } from 'playlist-data-engine';
+import { SkillValidator, SkillQuery } from 'playlist-data-engine';
 
 // Direct validation
 const result = SkillValidator.validateSkillPrerequisites(
@@ -359,7 +358,7 @@ const result = SkillValidator.validateSkillPrerequisites(
 );
 
 // Via registry
-const result2 = SkillRegistry.getInstance().validatePrerequisites(skill, character);
+const result2 = SkillQuery.getInstance().validatePrerequisites(skill, character);
 
 if (!result.valid) {
     console.log('Unmet prerequisites:', result.errors);
@@ -388,13 +387,13 @@ if (!result.valid) {
 ### Feature Validation
 
 ```typescript
-import { FeatureRegistry } from 'playlist-data-engine';
+import { FeatureQuery } from 'playlist-data-engine';
 
-const registry = FeatureRegistry.getInstance();
+const registry = FeatureQuery.getInstance();
 
 const result = registry.validatePrerequisites(feature, character);
 
-// Access unmet prerequisites (FeatureRegistry-specific)
+// Access unmet prerequisites (FeatureQuery-specific)
 if (!result.valid) {
     console.log('Unmet prerequisites:', result.unmet || result.errors);
 }
@@ -407,46 +406,31 @@ const canLearn = registry.meetsPrerequisites(feature, character);
 
 ### Prerequisite Validation Rules
 
-When validating prerequisites, the system performs the following checks for each field:
-
-**`validatePrerequisites()` in FeatureValidator checks:**
-
-- **`level`** - Must be a number between 1 and 20
-- **`abilities`** - Must be a record with valid ability keys (STR, DEX, CON, INT, WIS, CHA) and scores between 1-20
-- **`class`** - Must be a valid default D&D 5e class or a custom class registered via ExtensionManager
-- **`race`** - Must be a valid default race or a custom race registered via ExtensionManager
-- **`subrace`** - Must be a non-empty string (for subrace-specific prerequisites)
-- **`features`** - Must be an array of feature ID strings
-- **`skills`** - Must be an array of valid skill IDs (lowercase_with_underscores format)
-- **`spells`** - Must be an array of spell name strings
-- **`custom`** - Must be a string (manual condition description for display purposes only)
-
-**Runtime Validation:**
-
-During runtime validation (when checking if a character meets prerequisites):
-
-- **Level** - Compares character's `level` against required level
-- **Abilities** - Checks if character's ability scores meet minimum values
-- **Class** - Checks if character's `class` matches required class
-- **Race** - Checks if character's `race` matches required race
-- **Subrace** - Checks if character's `subrace` matches required subrace
-- **Features** - Checks if required feature IDs are in character's `class_features` array
-- **Skills** - Checks if required skills are proficient or expertise (based on skill proficiency level)
-- **Spells** - Checks if required spells are in character's `known_spells` or `cantrips` arrays
-- **Custom** - Displayed as an unmet prerequisite but not programmatically validated
+| Field | Schema Validation | Runtime Check |
+|-------|------------------|---------------|
+| `level` | Number between 1-20 | Compares character level against required |
+| `abilities` | Valid ability keys, scores 1-20 | Checks ability scores meet minimum |
+| `class` | Valid D&D 5e class or registered custom class | Matches character's class |
+| `race` | Valid default race or registered custom race | Matches character's race |
+| `subrace` | Non-empty string | Matches character's subrace |
+| `features` | Array of feature ID strings | IDs in `class_features` array |
+| `skills` | Valid skill IDs (lowercase_with_underscores) | Skills proficient or expertise |
+| `spells` | Array of spell name strings | In `known_spells` or `cantrips` |
+| `custom` | String | Displayed only, not validated |
 
 ---
 
 ## Examples
 
-### Complete Example: Dragon-Themed Content
+### Subrace-Specific Prerequisites
+
+Races with subraces can have traits that only apply to specific subraces using the `subrace` prerequisite field:
 
 ```typescript
-import { SkillRegistry, FeatureRegistry, ExtensionManager } from 'playlist-data-engine';
+import { ExtensionManager } from 'playlist-data-engine';
 
-// 1. Register a custom race with subraces
+// Register a custom race with subraces
 const manager = ExtensionManager.getInstance();
-
 manager.register('races.data', [{
     race: 'Dragonkin',
     ability_bonuses: { STR: 2, CON: 1, CHA: 1 },
@@ -454,102 +438,21 @@ manager.register('races.data', [{
     traits: ['Draconic Ancestry', 'Darkvision'],
     subraces: ['Fire Dragonkin', 'Ice Dragonkin', 'Lightning Dragonkin']
 }]);
-
 manager.register('races', ['Dragonkin']);
 
-// 2. Register a subrace-specific trait
-FeatureRegistry.getInstance().registerRacialTrait({
+// Register a subrace-specific trait
+manager.register('racialTraits', [{
     id: 'fire_dragonkin_fire_resistance',
     name: 'Fire Resistance',
     description: 'You have resistance to fire damage.',
     race: 'Dragonkin',
     subrace: 'Fire Dragonkin',
-    prerequisites: { subrace: 'Fire Dragonkin' },
+    prerequisites: { subrace: 'Fire Dragonkin' },  // Only Fire Dragonkin get this
     effects: [
         { type: 'ability_unlock', target: 'fire_resistance', value: true }
     ],
     source: 'custom'
-});
-
-// 3. Register a skill with prerequisites (feature + level + class)
-SkillRegistry.getInstance().registerSkill({
-    id: 'dragon_smithing',
-    name: 'Dragon Smithing',
-    description: 'Craft weapons from dragon scales',
-    ability: 'INT',
-    prerequisites: {
-        features: ['draconic_bloodline'],
-        level: 5,
-        class: 'Sorcerer'
-    },
-    source: 'custom'
-});
-
-// 4. Register a spell with prerequisites
-manager.register('spells', [{
-    id: 'dragon_breath',
-    name: 'Dragon Breath',
-    level: 3,
-    school: 'Evocation',
-    casting_time: '1 action',
-    range: '60 ft cone',
-    components: ['V', 'S', 'M'],
-    duration: 'Instantaneous',
-    prerequisites: {
-        features: ['dragon_bloodline'],
-        abilities: { CHA: 16 }
-    }
 }]);
-
-// 5. Register a feature with skill prerequisite
-FeatureRegistry.getInstance().registerClassFeature({
-    id: 'arcane_smith',
-    name: 'Arcane Smith',
-    description: 'Can enchant magical items',
-    type: 'active',
-    level: 7,
-    class: 'Wizard',
-    prerequisites: {
-        skills: ['arcana'],
-        level: 7
-    },
-    effects: [
-        { type: 'ability_unlock', target: 'item_enchantment', value: true }
-    ],
-    source: 'custom'
-});
-```
-
-### Example: Validation in Character Generation
-
-```typescript
-import { SkillValidator, SpellValidator } from 'playlist-data-engine';
-
-// During character generation, skills/spells are filtered by prerequisites
-
-// Check if a character can learn a skill
-const skillResult = SkillValidator.validateSkillPrerequisites(
-    customSkill.prerequisites,
-    character
-);
-
-if (skillResult.valid) {
-    // Assign the skill
-} else {
-    console.log('Cannot learn skill:', skillResult.unmet);
-}
-
-// Check if a character can learn a spell
-const spellResult = SpellValidator.validateSpellPrerequisites(
-    customSpell.prerequisites,
-    character
-);
-
-if (spellResult.valid) {
-    // Add to known spells
-} else {
-    console.log('Cannot learn spell:', spellResult.unmet);
-}
 ```
 
 ### Example: Prerequisite Chains
@@ -597,26 +500,47 @@ const masterHerbalist = {
 
 ### SkillValidator
 
-- `validateSkillPrerequisites(prerequisites, character)` - Validate skill prerequisites against a character
+**Location:** [`src/core/skills/SkillValidator.ts`](src/core/skills/SkillValidator.ts)
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `validateSkillPrerequisites(prerequisites, character)` | `SkillValidationResult` | Validate skill prerequisites against a character |
+| `validateSkill(skill)` | `SkillValidationResult` | Validate skill schema including prerequisites |
 
 ### SpellValidator
 
-- `validateSpellPrerequisites(prerequisites, character)` - Validate spell prerequisites against a character
-- `validateSpell(spell)` - Validate spell schema including prerequisites
+**Location:** [`src/core/spells/SpellValidator.ts`](src/core/spells/SpellValidator.ts)
 
-### FeatureRegistry
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `validateSpellPrerequisites(prerequisites, character)` | `SpellValidationResult` | Validate spell prerequisites against a character |
+| `validateSpell(spell)` | `boolean` | Validate spell schema including prerequisites |
 
-- `validatePrerequisites(feature, character)` - Validate feature prerequisites
-- `meetsPrerequisites(feature, character)` - Boolean check if prerequisites are met
-- `getRacialTraitsForSubrace(race, subrace)` - Get traits for a specific subrace
+### FeatureQuery
 
-### SkillRegistry
+**Location:** [`src/core/features/FeatureQuery.ts`](src/core/features/FeatureQuery.ts)
 
-- `validatePrerequisites(skill, character)` - Validate skill prerequisites
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `validatePrerequisites(feature, character)` | `ValidationResult` | Validate feature prerequisites against a character |
+| `meetsPrerequisites(feature, character)` | `boolean` | Boolean check if prerequisites are met |
+| `getRacialTraitsForSubrace(race, subrace)` | `RacialTrait[]` | Get traits for a specific subrace |
+
+### SkillQuery
+
+**Location:** [`src/core/skills/SkillQuery.ts`](src/core/skills/SkillQuery.ts)
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `validatePrerequisites(skill, character)` | `SkillValidationResult` | Validate skill prerequisites via SkillQuery |
 
 ### ExtensionManager
 
-- `register(category, items, options)` - Register custom races, spells, or other content
+**Location:** [`src/core/extensions/ExtensionManager.ts`](src/core/extensions/ExtensionManager.ts)
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `register(category, items, options?)` | `void` | Register custom races, spells, skills, features, or other content |
 
 ---
 
@@ -642,3 +566,6 @@ const masterHerbalist = {
 - [DATA_ENGINE_REFERENCE.md](../DATA_ENGINE_REFERENCE.md) - Complete API reference
 - [CUSTOM_CONTENT.md](CUSTOM_CONTENT.md) - Custom races and classes guide
 - [USAGE_IN_OTHER_PROJECTS.md](../USAGE_IN_OTHER_PROJECTS.md) - Usage examples
+- [EXTENSIBILITY_GUIDE.md](EXTENSIBILITY_GUIDE.md) - Custom content registration
+- [XP_AND_STATS.md](XP_AND_STATS.md) - Progression and level requirements
+- [EQUIPMENT_SYSTEM.md](EQUIPMENT_SYSTEM.md) - Equipment with prerequisites
