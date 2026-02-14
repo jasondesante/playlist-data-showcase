@@ -26,7 +26,7 @@ import { useTabContext } from '../../App';
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
   const { playbackState } = useAudioPlayerStore();
-  const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions } = useAudioAnalyzer();
+  const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing } = useAudioAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
@@ -119,11 +119,49 @@ export function AudioAnalysisTab() {
 
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
-    const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url);
-    if (profile) {
-      setAudioProfile(profile);
-      // Trigger bar animation after profile is set
-      setTimeout(() => setAnimateBars(true), 100);
+
+    if (analysisMode === 'timeline') {
+      // Timeline analysis mode - analyze full song with timeline data points
+      const strategy = timelineMode === 'count'
+        ? { type: 'count' as const, count: timelineCount }
+        : { type: 'interval' as const, intervalSeconds: timelineInterval };
+
+      const events = await analyzeTimeline(selectedTrack.audio_url, strategy);
+
+      if (events.length > 0) {
+        // Calculate average values from timeline events for the audio profile
+        const avgBass = events.reduce((sum, e) => sum + e.bass, 0) / events.length;
+        const avgMid = events.reduce((sum, e) => sum + e.mid, 0) / events.length;
+        const avgTreble = events.reduce((sum, e) => sum + e.treble, 0) / events.length;
+        const avgAmplitude = events.reduce((sum, e) => sum + e.amplitude, 0) / events.length;
+
+        // Create a synthetic AudioProfile from timeline data
+        const profile = {
+          bass_dominance: avgBass,
+          mid_dominance: avgMid,
+          treble_dominance: avgTreble,
+          average_amplitude: avgAmplitude,
+          rms_energy: avgAmplitude, // Use average amplitude as RMS approximation
+          dynamic_range: Math.max(...events.map(e => e.amplitude)) - Math.min(...events.map(e => e.amplitude)),
+          analysis_metadata: {
+            duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
+            full_buffer_analyzed: true,
+            sample_positions: events.map(e => e.timestamp / (events[events.length - 1].timestamp + events[events.length - 1].duration)),
+            analyzed_at: new Date().toISOString(),
+          },
+        };
+
+        setAudioProfile(profile);
+        setTimeout(() => setAnimateBars(true), 100);
+      }
+    } else {
+      // Normal analysis mode - 3 samples
+      const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url);
+      if (profile) {
+        setAudioProfile(profile);
+        // Trigger bar animation after profile is set
+        setTimeout(() => setAnimateBars(true), 100);
+      }
     }
   };
 
@@ -141,12 +179,48 @@ export function AudioAnalysisTab() {
     // Update the analyzer options state for future analyses
     setAudioAnalyzerOptions(overrideOptions);
 
-    // Re-analyze with the new multipliers immediately (using override to avoid state delay)
-    const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url, overrideOptions);
-    if (profile) {
-      setAudioProfile(profile);
-      // Trigger bar animation after profile is set
-      setTimeout(() => setAnimateBars(true), 100);
+    if (analysisMode === 'timeline') {
+      // Timeline analysis mode with multipliers - re-run timeline analysis
+      const strategy = timelineMode === 'count'
+        ? { type: 'count' as const, count: timelineCount }
+        : { type: 'interval' as const, intervalSeconds: timelineInterval };
+
+      const events = await analyzeTimeline(selectedTrack.audio_url, strategy);
+
+      if (events.length > 0) {
+        // Calculate average values from timeline events for the audio profile
+        const avgBass = events.reduce((sum, e) => sum + e.bass, 0) / events.length;
+        const avgMid = events.reduce((sum, e) => sum + e.mid, 0) / events.length;
+        const avgTreble = events.reduce((sum, e) => sum + e.treble, 0) / events.length;
+        const avgAmplitude = events.reduce((sum, e) => sum + e.amplitude, 0) / events.length;
+
+        // Create a synthetic AudioProfile from timeline data
+        const profile = {
+          bass_dominance: avgBass,
+          mid_dominance: avgMid,
+          treble_dominance: avgTreble,
+          average_amplitude: avgAmplitude,
+          rms_energy: avgAmplitude,
+          dynamic_range: Math.max(...events.map(e => e.amplitude)) - Math.min(...events.map(e => e.amplitude)),
+          analysis_metadata: {
+            duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
+            full_buffer_analyzed: true,
+            sample_positions: events.map(e => e.timestamp / (events[events.length - 1].timestamp + events[events.length - 1].duration)),
+            analyzed_at: new Date().toISOString(),
+          },
+        };
+
+        setAudioProfile(profile);
+        setTimeout(() => setAnimateBars(true), 100);
+      }
+    } else {
+      // Normal analysis mode - re-analyze with the new multipliers immediately
+      const profile = await analyzeTrackWithPalette(selectedTrack.audio_url, selectedTrack.image_url, overrideOptions);
+      if (profile) {
+        setAudioProfile(profile);
+        // Trigger bar animation after profile is set
+        setTimeout(() => setAnimateBars(true), 100);
+      }
     }
   };
 
@@ -176,13 +250,14 @@ export function AudioAnalysisTab() {
   // Determine status indicator based on current state
   const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
     if (audioProfile) return 'healthy';
-    if (isAnalyzing) return 'degraded';
+    if (isAnalyzing || isTimelineAnalyzing) return 'degraded';
     if (selectedTrack) return 'degraded';
     return 'error';
   };
 
   const getStatusLabel = (): string => {
     if (audioProfile) return 'Analyzed';
+    if (isTimelineAnalyzing) return 'Timeline...';
     if (isAnalyzing) return 'Analyzing...';
     if (selectedTrack) return 'Ready';
     return 'No Track';
@@ -428,19 +503,19 @@ export function AudioAnalysisTab() {
             <div className="audio-analysis-action-integration">
               <Button
                 onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}
-                disabled={isAnalyzing || playbackState !== 'playing'}
-                isLoading={isAnalyzing}
+                disabled={isAnalyzing || isTimelineAnalyzing || playbackState !== 'playing'}
+                isLoading={isAnalyzing || isTimelineAnalyzing}
                 variant="primary"
                 size="lg"
                 className="audio-analysis-primary-action-button"
                 title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
               >
-                {isAnalyzing
+                {isAnalyzing || isTimelineAnalyzing
                   ? `${progress}%`
                   : audioProfile ? 'Re-Analyze' : 'Analyze Audio'}
               </Button>
 
-              {playbackState !== 'playing' && !isAnalyzing && (
+              {playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
                 <div className="audio-analysis-playback-warning">
                   Play audio to enable
                 </div>
