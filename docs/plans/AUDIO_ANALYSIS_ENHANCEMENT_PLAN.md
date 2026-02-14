@@ -75,13 +75,13 @@
 ### Tasks
 
 - [x] Create `src/components/ui/RadarChart.tsx` component
-- [ ] Implement Canvas drawing for radar chart with 4 axes (Bass, Mid, Treble, Energy)
-- [ ] Add background circles and axis lines
-- [ ] Implement data polygon with gradient fill
-- [ ] Add colored data points at each axis
-- [ ] Implement smooth morphing animation between data points using `requestAnimationFrame`
-- [ ] Handle empty state and edge cases
-- [ ] Create `src/components/ui/RadarChart.css` for container styles
+- [x] Implement Canvas drawing for radar chart with 4 axes (Bass, Mid, Treble, Energy)
+- [x] Add background circles and axis lines
+- [x] Implement data polygon with gradient fill
+- [x] Add colored data points at each axis
+- [x] Implement smooth morphing animation between data points using `requestAnimationFrame`
+- [x] Handle empty state and edge cases
+- [x] Create `src/components/ui/RadarChart.css` for container styles
 
 ### Files to Create
 
@@ -102,17 +102,17 @@
 
 ### Tasks
 
-- [ ] Create `src/components/ui/TimelineScrubber.tsx` component
-- [ ] Implement track container with waveform bar visualization
-- [ ] Add playhead indicator with drag handle
-- [ ] Implement mouse drag interaction for scrubbing
-- [ ] Implement touch drag interaction for mobile
-- [ ] Add context window highlighting (surrounding points)
-- [ ] Display current time and total duration
-- [ ] Add point counter (e.g., "Point 15 of 50")
-- [ ] Add audio sync toggle button
-- [ ] Implement auto-follow when audio sync is enabled
-- [ ] Create `src/components/ui/TimelineScrubber.css` for styles
+- [x] Create `src/components/ui/TimelineScrubber.tsx` component
+- [x] Implement track container with waveform bar visualization
+- [x] Add playhead indicator with drag handle
+- [x] Implement mouse drag interaction for scrubbing
+- [x] Implement touch drag interaction for mobile
+- [x] Add context window highlighting (surrounding points)
+- [x] Display current time and total duration
+- [x] Add point counter (e.g., "Point 15 of 50")
+- [x] Add audio sync toggle button
+- [x] Implement auto-follow when audio sync is enabled
+- [x] Create `src/components/ui/TimelineScrubber.css` for styles
 
 ### Files to Create
 

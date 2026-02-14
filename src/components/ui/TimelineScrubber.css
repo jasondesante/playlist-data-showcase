@@ -1,0 +1,359 @@
+/* ============================================
+   TIMELINE SCRUBBER COMPONENT
+   Interactive timeline for audio analysis navigation
+   ============================================ */
+
+.timeline-scrubber {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.8), hsl(var(--surface-1) / 0.9));
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.4);
+  user-select: none;
+}
+
+/* ============================================
+   HEADER - Time display and controls
+   ============================================ */
+.timeline-scrubber-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.timeline-scrubber-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-family: ui-monospace, monospace;
+}
+
+.timeline-scrubber-time-current {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--primary));
+}
+
+.timeline-scrubber-time-separator {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+
+.timeline-scrubber-time-total {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.timeline-scrubber-point-counter {
+  flex: 1;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--surface-3) / 0.5);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Sync toggle button */
+.timeline-scrubber-sync-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2)));
+  border: 1px solid hsl(var(--border) / 0.6);
+  border-radius: 0.375rem;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timeline-scrubber-sync-btn:hover {
+  background: linear-gradient(180deg, hsl(var(--surface-3)), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--foreground));
+  transform: translateY(-1px);
+}
+
+.timeline-scrubber-sync-btn-active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--cute-purple) / 0.15));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+}
+
+.timeline-scrubber-sync-btn-active:hover {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--cute-purple) / 0.2));
+}
+
+/* ============================================
+   TRACK - Waveform visualization and scrubbing
+   ============================================ */
+.timeline-scrubber-track {
+  position: relative;
+  height: 4rem;
+  border-radius: 0.5rem;
+  cursor: grab;
+  overflow: hidden;
+  background: hsl(var(--surface-3) / 0.4);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.timeline-scrubber-track:active {
+  cursor: grabbing;
+}
+
+.timeline-scrubber-track:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+/* Background track */
+.timeline-scrubber-track-bg {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    hsl(var(--border) / 0.1) 0px,
+    hsl(var(--border) / 0.1) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+}
+
+/* ============================================
+   BARS - Waveform visualization
+   ============================================ */
+.timeline-scrubber-bars {
+  position: absolute;
+  inset: 0.5rem 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  gap: 1px;
+  padding: 0 0.25rem;
+  pointer-events: none;
+}
+
+.timeline-scrubber-bar {
+  flex: 1;
+  max-width: 6px;
+  min-height: 4px;
+  background: var(--bar-color, hsl(var(--muted-foreground) / 0.4));
+  border-radius: 2px 2px 0 0;
+  opacity: 0.4;
+  transition: all 0.15s ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.timeline-scrubber-bar:hover,
+.timeline-scrubber-bar-hovered {
+  opacity: 0.7;
+  transform: scaleY(1.1);
+}
+
+.timeline-scrubber-bar-context {
+  opacity: 0.6;
+}
+
+.timeline-scrubber-bar-selected {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--bar-color, hsl(var(--primary)));
+  transform: scaleY(1.15);
+}
+
+/* ============================================
+   PLAYHEAD - Position indicator
+   ============================================ */
+.timeline-scrubber-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.timeline-scrubber-playhead-line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.8) 20%,
+    hsl(var(--primary)) 50%,
+    hsl(var(--primary) / 0.8) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.6);
+}
+
+.timeline-scrubber-playhead-handle {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 8px;
+  background: hsl(var(--primary));
+  border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 6px hsl(var(--primary) / 0.6);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.timeline-scrubber-playhead-handle:active {
+  cursor: grabbing;
+}
+
+.timeline-scrubber-playhead-handle::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid hsl(var(--primary));
+}
+
+/* ============================================
+   CONTEXT WINDOW OVERLAY
+   ============================================ */
+.timeline-scrubber-context-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary) / 0) 0%,
+    hsl(var(--primary) / 0.08) 30%,
+    hsl(var(--primary) / 0.12) 50%,
+    hsl(var(--primary) / 0.08) 70%,
+    hsl(var(--primary) / 0) 100%
+  );
+  pointer-events: none;
+  border-radius: 0.25rem;
+}
+
+/* ============================================
+   FOOTER - Instructions and status
+   ============================================ */
+.timeline-scrubber-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.375rem;
+  min-height: 1rem;
+}
+
+.timeline-scrubber-hint {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timeline-scrubber-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse-sync 2s infinite ease-in-out;
+}
+
+.timeline-scrubber-sync-icon {
+  animation: rotate-sync 2s linear infinite;
+}
+
+@keyframes rotate-sync {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-sync {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 480px) {
+  .timeline-scrubber {
+    padding: 0.5rem;
+  }
+
+  .timeline-scrubber-track {
+    height: 3rem;
+  }
+
+  .timeline-scrubber-time-current {
+    font-size: 0.875rem;
+  }
+
+  .timeline-scrubber-point-counter {
+    font-size: 0.5rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .timeline-scrubber-bar {
+    max-width: 4px;
+  }
+}
+
+/* ============================================
+   DARK THEME ENHANCEMENTS
+   ============================================ */
+.timeline-scrubber {
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.2);
+}
+
+.timeline-scrubber-track {
+  box-shadow: inset 0 2px 8px hsl(0 0% 0% / 0.1);
+}
+
+/* ============================================
+   FOCUS STATES FOR ACCESSIBILITY
+   ============================================ */
+.timeline-scrubber-sync-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary));
+}
+
+.timeline-scrubber-bar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--primary));
+}
