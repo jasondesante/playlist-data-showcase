@@ -157,11 +157,18 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 2.5: Add Effect Display Styles
 
-**File:** [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+**File:** [src/components/ui/EffectDisplay.css](src/components/ui/EffectDisplay.css) (co-located with components)
 
-- [ ] Style effect badges (color-coded by type)
-- [ ] Style effects summary card
-- [ ] Style inline effect indicators
+- [x] Style effect badges (color-coded by type)
+- [x] Style effects summary card
+- [x] Style inline effect indicators
+
+**Completed:** Effect display styles are implemented in EffectDisplay.css (co-located with the EffectDisplay components for better maintainability). Includes:
+- `.effect-badge` - Color-coded badges with gradient backgrounds, borders matching effect type colors (stat_bonus=pink, passive_modifier=teal, ability_unlock=purple, skill_proficiency=yellow, damage_bonus=orange, etc.)
+- `.active-effects-summary` - Summary card with header, stat totals aggregation display, and grouped effects by type
+- `.inline-effect-indicator` - Compact inline indicators for displaying effects next to features/traits/equipment
+- Responsive adjustments for mobile screens
+- Equipment item wrapper styles in CharacterGenTab.css for inline equipment effects
 
 ---
 
