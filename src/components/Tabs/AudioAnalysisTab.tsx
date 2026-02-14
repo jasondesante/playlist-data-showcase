@@ -140,6 +140,8 @@ export function AudioAnalysisTab() {
         const avgMid = events.reduce((sum, e) => sum + e.mid, 0) / events.length;
         const avgTreble = events.reduce((sum, e) => sum + e.treble, 0) / events.length;
         const avgAmplitude = events.reduce((sum, e) => sum + e.amplitude, 0) / events.length;
+        const avgRmsEnergy = events.reduce((sum, e) => sum + e.rms_energy, 0) / events.length;
+        const avgDynamicRange = events.reduce((sum, e) => sum + e.dynamic_range, 0) / events.length;
 
         // Create a synthetic AudioProfile from timeline data
         const profile = {
@@ -147,8 +149,8 @@ export function AudioAnalysisTab() {
           mid_dominance: avgMid,
           treble_dominance: avgTreble,
           average_amplitude: avgAmplitude,
-          rms_energy: avgAmplitude, // Use average amplitude as RMS approximation
-          dynamic_range: Math.max(...events.map(e => e.amplitude)) - Math.min(...events.map(e => e.amplitude)),
+          rms_energy: avgRmsEnergy,
+          dynamic_range: avgDynamicRange,
           analysis_metadata: {
             duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
             full_buffer_analyzed: true,
@@ -199,6 +201,8 @@ export function AudioAnalysisTab() {
         const avgMid = events.reduce((sum, e) => sum + e.mid, 0) / events.length;
         const avgTreble = events.reduce((sum, e) => sum + e.treble, 0) / events.length;
         const avgAmplitude = events.reduce((sum, e) => sum + e.amplitude, 0) / events.length;
+        const avgRmsEnergy = events.reduce((sum, e) => sum + e.rms_energy, 0) / events.length;
+        const avgDynamicRange = events.reduce((sum, e) => sum + e.dynamic_range, 0) / events.length;
 
         // Create a synthetic AudioProfile from timeline data
         const profile = {
@@ -206,8 +210,8 @@ export function AudioAnalysisTab() {
           mid_dominance: avgMid,
           treble_dominance: avgTreble,
           average_amplitude: avgAmplitude,
-          rms_energy: avgAmplitude,
-          dynamic_range: Math.max(...events.map(e => e.amplitude)) - Math.min(...events.map(e => e.amplitude)),
+          rms_energy: avgRmsEnergy,
+          dynamic_range: avgDynamicRange,
           analysis_metadata: {
             duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
             full_buffer_analyzed: true,
@@ -653,19 +657,23 @@ export function AudioAnalysisTab() {
                       <>
                         <div className="audio-analysis-radar-metric">
                           <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(221, 83%, 53%)' }}>Bass</span>
-                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].bass * 100).toFixed(0)}%</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].bass * 100).toFixed(1)}%</span>
                         </div>
                         <div className="audio-analysis-radar-metric">
                           <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(142, 76%, 50%)' }}>Mid</span>
-                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].mid * 100).toFixed(0)}%</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].mid * 100).toFixed(1)}%</span>
                         </div>
                         <div className="audio-analysis-radar-metric">
                           <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(24, 95%, 53%)' }}>Treble</span>
-                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].treble * 100).toFixed(0)}%</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].treble * 100).toFixed(1)}%</span>
                         </div>
                         <div className="audio-analysis-radar-metric">
-                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(280, 75%, 60%)' }}>Energy</span>
-                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].amplitude * 100).toFixed(0)}%</span>
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(280, 75%, 60%)' }}>RMS</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].rms_energy * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="audio-analysis-radar-metric">
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(45, 93%, 47%)' }}>DR</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].dynamic_range * 100).toFixed(1)}%</span>
                         </div>
                       </>
                     )}
