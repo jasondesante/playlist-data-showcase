@@ -111,10 +111,10 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/ui/EffectDisplay.tsx](src/components/ui/EffectDisplay.tsx) (NEW)
 
-- [ ] Create `EffectBadge` component for individual effect display
-- [ ] Create `EffectList` component for grouped effects
-- [ ] Create `ActiveEffectsSummary` component for summary card
-- [ ] Create helper to format effect types:
+- [x] Create `EffectBadge` component for individual effect display
+- [x] Create `EffectList` component for grouped effects
+- [x] Create `ActiveEffectsSummary` component for summary card
+- [x] Create helper to format effect types:
   ```typescript
   const EFFECT_TYPE_LABELS: Record<string, string> = {
     'stat_bonus': 'Stat Bonus',
@@ -124,6 +124,8 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
     'damage_bonus': 'Damage'
   };
   ```
+
+**Completed:** Created EffectDisplay.tsx with EffectBadge, EffectList, ActiveEffectsSummary, and InlineEffectIndicators components. Includes comprehensive type definitions for FeatureEffect, EquipmentProperty, and EquipmentEffect. Created matching EffectDisplay.css with color-coded badges, grouped lists, and summary card styles.
 
 ### Task 2.2: Add Active Effects Summary Card
 
