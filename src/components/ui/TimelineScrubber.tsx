@@ -33,6 +33,10 @@ interface TimelineScrubberProps {
  * Format time in seconds to MM:SS display format
  */
 function formatTime(seconds: number): string {
+  // Handle NaN, Infinity, or negative values
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return '--:--';
+  }
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -191,8 +195,8 @@ export function TimelineScrubber({
    * This effect is skipped while the user is actively dragging to prevent interference
    */
   useEffect(() => {
-    // Don't auto-follow if sync is disabled, no events, no duration, or user is dragging
-    if (!audioSyncEnabled || events.length === 0 || duration === 0 || isDragging) return;
+    // Don't auto-follow if sync is disabled, no events, no valid duration, or user is dragging
+    if (!audioSyncEnabled || events.length === 0 || !Number.isFinite(duration) || duration === 0 || isDragging) return;
 
     // Find the closest event to the current time
     const closestIndex = events.reduce((closestIdx, event, idx) => {
@@ -255,7 +259,7 @@ export function TimelineScrubber({
           </span>
           <span className="timeline-scrubber-time-separator">/</span>
           <span className="timeline-scrubber-time-total">
-            {duration > 0 ? formatTime(duration) : '--:--'}
+            {Number.isFinite(duration) && duration > 0 ? formatTime(duration) : '--:--'}
           </span>
         </div>
 

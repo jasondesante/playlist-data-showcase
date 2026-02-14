@@ -679,7 +679,7 @@ export function AudioAnalysisTab() {
                     selectedIndex={selectedTimelineIndex}
                     onSelectionChange={setSelectedTimelineIndex}
                     currentTime={currentTime}
-                    duration={duration}
+                    duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
                     audioSyncEnabled={audioSyncEnabled}
                     onAudioSyncToggle={() => setAudioSyncEnabled(!audioSyncEnabled)}
                     onSeek={seek}

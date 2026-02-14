@@ -80,7 +80,7 @@ export const useCharacterUpdater = () => {
     const [updater] = useState(() => new CharacterUpdater(statManager));
 
     const processSession = useCallback((character: CharacterSheet, session: ListeningSession) => {
-        logger.info('CharacterUpdater', 'Processing session for character', {
+        logger.debug('CharacterUpdater', 'Processing session for character', {
             charName: character.name,
             duration: session.duration_seconds
         });

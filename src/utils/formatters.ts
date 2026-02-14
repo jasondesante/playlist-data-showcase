@@ -1,9 +1,13 @@
 /**
  * Format time in seconds to MM:SS format
  * @param seconds - Time in seconds
- * @returns Formatted time string (MM:SS)
+ * @returns Formatted time string (MM:SS) or "--:--" for invalid values
  */
 export const formatTime = (seconds: number): string => {
+  // Handle NaN, Infinity, or negative values
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return '--:--';
+  }
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${String(secs).padStart(2, '0')}`;

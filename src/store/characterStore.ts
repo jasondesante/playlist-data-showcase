@@ -254,7 +254,7 @@ export const useCharacterStore = create<CharacterState>()(
              * ```
              */
             updateCharacter: (updatedCharacter) => {
-                logger.info('Store', 'Updating character', {
+                logger.debug('Store', 'Updating character', {
                     seed: updatedCharacter.seed,
                     level: updatedCharacter.level,
                     currentXP: updatedCharacter.xp.current,

@@ -169,7 +169,8 @@ export function RadarChart({
   const drawGrid = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
     const levels = 4;
 
-    ctx.strokeStyle = 'hsl(var(--border) / 0.3)';
+    // Use hardcoded color since Canvas API doesn't support CSS variables
+    ctx.strokeStyle = 'hsla(220, 10%, 40%, 0.3)'; // Border color approximation
     ctx.lineWidth = 1;
 
     for (let i = 1; i <= levels; i++) {
@@ -195,7 +196,8 @@ export function RadarChart({
    * Draw the axis lines
    */
   const drawAxes = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
-    ctx.strokeStyle = 'hsl(var(--border) / 0.4)';
+    // Use hardcoded color since Canvas API doesn't support CSS variables
+    ctx.strokeStyle = 'hsla(220, 10%, 40%, 0.4)'; // Border color approximation
     ctx.lineWidth = 1;
 
     for (let i = 0; i < NUM_AXES; i++) {
@@ -217,10 +219,10 @@ export function RadarChart({
     radius: number,
     dataPoint: RadarDataPoint
   ) => {
-    // Create gradient
+    // Create gradient - use hardcoded color since Canvas API doesn't support CSS variables
     const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-    gradient.addColorStop(0, 'hsla(var(--primary) / 0.4)');
-    gradient.addColorStop(1, 'hsla(var(--primary) / 0.1)');
+    gradient.addColorStop(0, 'hsla(221, 83%, 53%, 0.4)'); // Primary blue with opacity
+    gradient.addColorStop(1, 'hsla(221, 83%, 53%, 0.1)');
 
     // Draw filled polygon
     ctx.beginPath();
@@ -241,8 +243,8 @@ export function RadarChart({
     ctx.fillStyle = gradient;
     ctx.fill();
 
-    // Stroke outline
-    ctx.strokeStyle = 'hsl(var(--primary) / 0.8)';
+    // Stroke outline - use hardcoded color since Canvas API doesn't support CSS variables
+    ctx.strokeStyle = 'hsla(221, 83%, 53%, 0.8)';
     ctx.lineWidth = 2;
     ctx.stroke();
   };
@@ -274,10 +276,10 @@ export function RadarChart({
       ctx.fillStyle = axisColor;
       ctx.fill();
 
-      // Draw white center
+      // Draw white center - use hardcoded color since Canvas API doesn't support CSS variables
       ctx.beginPath();
       ctx.arc(x, y, 2, 0, TWO_PI);
-      ctx.fillStyle = 'hsl(var(--background))';
+      ctx.fillStyle = 'hsl(0, 0%, 8%)'; // Background dark approximation
       ctx.fill();
     }
   };
@@ -294,10 +296,10 @@ export function RadarChart({
       const { x, y } = getPointPosition(centerX, centerY, radius + 18, i, 1);
       const axis = AXES[i];
 
-      // Draw label background
+      // Draw label background - use hardcoded color since Canvas API doesn't support CSS variables
       const metrics = ctx.measureText(axis.label);
       const padding = 4;
-      ctx.fillStyle = 'hsl(var(--surface-2) / 0.9)';
+      ctx.fillStyle = 'hsla(220, 10%, 15%, 0.9)'; // Surface-2 approximation
       ctx.beginPath();
       ctx.roundRect(
         x - metrics.width / 2 - padding,

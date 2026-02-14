@@ -47,7 +47,7 @@ export function AppHeader({
 
   // Log the track state for debugging
   useEffect(() => {
-    logger.info('System', 'AppHeader: Mini player track state', {
+    logger.debug('System', 'AppHeader: Mini player track state', {
       hasActiveSession: !!activeSession,
       hasSelectedTrack: !!selectedTrack,
       selectedTrackId: selectedTrack?.id,
@@ -161,7 +161,7 @@ export function AppHeader({
                       </span>
                       <span className="mini-player-time-separator">/</span>
                       <span className="mini-player-total-time">
-                        {formatTime(Math.floor(duration) || track.duration || 0)}
+                        {formatTime(Number.isFinite(duration) ? Math.floor(duration) : (track.duration || 0))}
                       </span>
                     </div>
                   </>

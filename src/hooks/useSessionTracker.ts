@@ -160,7 +160,7 @@ export const useSessionTracker = () => {
         const freshSelectedTrack = usePlaylistStore.getState().selectedTrack;
         const playlist = usePlaylistStore.getState().currentPlaylist;
 
-        logger.info('SessionTracker', 'Auto-start effect check', {
+        logger.debug('SessionTracker', 'Auto-start effect check', {
             playbackState,
             hasActiveSession: !!activeSession,
             hasSelectedTrack: !!freshSelectedTrack,
@@ -173,7 +173,7 @@ export const useSessionTracker = () => {
 
         if (playbackState === 'playing' && !activeSession) {
             if (!freshSelectedTrack) {
-                logger.warn('SessionTracker', 'CANNOT AUTO-START: selectedTrack is null!', {
+                logger.debug('SessionTracker', 'CANNOT AUTO-START: selectedTrack is null!', {
                     currentUrl,
                     playlist: playlist?.name
                 });
@@ -181,12 +181,12 @@ export const useSessionTracker = () => {
                 if (currentUrl && playlist) {
                     const trackFromPlaylist = playlist.tracks.find(t => t.audio_url === currentUrl);
                     if (trackFromPlaylist) {
-                        logger.info('SessionTracker', 'Found track from playlist via currentUrl', {
+                        logger.debug('SessionTracker', 'Found track from playlist via currentUrl', {
                             trackId: trackFromPlaylist.id,
                             trackTitle: trackFromPlaylist.title
                         });
                         usePlaylistStore.setState({ selectedTrack: trackFromPlaylist });
-                        logger.info('SessionTracker', 'Auto-starting session after setting selectedTrack', {
+                        logger.debug('SessionTracker', 'Auto-starting session after setting selectedTrack', {
                             trackId: trackFromPlaylist.id,
                             currentUrl
                         });
@@ -195,7 +195,7 @@ export const useSessionTracker = () => {
                     }
                 }
             } else {
-                logger.info('SessionTracker', 'Auto-starting session', {
+                logger.debug('SessionTracker', 'Auto-starting session', {
                     trackId: freshSelectedTrack.id,
                     trackTitle: freshSelectedTrack.title,
                     currentUrl
@@ -215,7 +215,7 @@ export const useSessionTracker = () => {
         });
 
         if ((playbackState === 'paused' || playbackState === 'ended') && activeSession) {
-            logger.info('SessionTracker', '✓ Auto-ending session on pause/end', {
+            logger.debug('SessionTracker', '✓ Auto-ending session on pause/end', {
                 playbackState,
                 sessionTrackId: activeSession.trackId,
                 sessionDuration: activeSession.elapsedSeconds
@@ -226,7 +226,7 @@ export const useSessionTracker = () => {
                 try {
                     const session = globalTracker.endSession(currentSessionId);
                     if (session) {
-                        logger.info('SessionTracker', 'Session ended, duration:', {
+                        logger.debug('SessionTracker', 'Session ended, duration:', {
                             duration: session.duration_seconds,
                             xp: session.total_xp_earned
                         });
@@ -262,7 +262,7 @@ export const useSessionTracker = () => {
                 // If currentUrl is null or there's no selected track, don't end the session
                 // The audio is still playing, so the session should continue
                 if (!currentUrl || !freshSelectedTrack || freshSelectedTrack.audio_url === activeSession.track.audio_url) {
-                    logger.warn('SessionTracker', '⚠️ URL mismatch but NOT ending session - no actual track change', {
+                    logger.debug('SessionTracker', 'URL mismatch but NOT ending session - no actual track change', {
                         activeSessionUrl: activeSession.track.audio_url,
                         currentUrl,
                         hasSelectedTrack: !!freshSelectedTrack,
@@ -271,7 +271,7 @@ export const useSessionTracker = () => {
                     return;
                 }
 
-                logger.info('SessionTracker', 'Track changed while playing - ending old session and starting new', {
+                logger.debug('SessionTracker', 'Track changed while playing - ending old session and starting new', {
                     oldUrl: activeSession.track.audio_url,
                     newUrl: currentUrl,
                     oldTrackId: activeSession.trackId,

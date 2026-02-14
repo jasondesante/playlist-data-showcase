@@ -71,7 +71,7 @@ export const useSessionCompletion = () => {
         const activeChar = getActiveCharacter();
 
         if (!activeChar) {
-            logger.info('SessionCompletion', 'Session ended but no active character - XP not saved', {
+            logger.debug('SessionCompletion', 'Session ended but no active character - XP not saved', {
                 sessionKey,
                 xp: latestSession.total_xp_earned
             });
@@ -81,7 +81,7 @@ export const useSessionCompletion = () => {
         }
 
         // Process the session for XP
-        logger.info('SessionCompletion', 'Processing completed session', {
+        logger.debug('SessionCompletion', 'Processing completed session', {
             sessionKey,
             characterName: activeChar.name,
             xp: latestSession.total_xp_earned
