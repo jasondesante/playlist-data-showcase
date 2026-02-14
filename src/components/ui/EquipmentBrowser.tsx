@@ -176,14 +176,14 @@ export function EquipmentBrowser({
   const categoryLabel = category === 'weapon' ? 'Weapons' : category === 'armor' ? 'Armor' : 'Items';
 
   return (
-    <div className={cn('equipment-browser', className)}>
+    <div className={cn('equipment-browser', className)} role="region" aria-label={`${categoryLabel} browser`}>
       {/* Header with category icon and count */}
       <div className="equipment-browser-header">
         <div className="equipment-browser-header-left">
-          <CategoryIcon className="equipment-browser-category-icon" size={16} />
+          <CategoryIcon className="equipment-browser-category-icon" size={16} aria-hidden="true" />
           <span className="equipment-browser-category-label">{categoryLabel}</span>
         </div>
-        <span className="equipment-browser-count">
+        <span className="equipment-browser-count" aria-live="polite">
           {filteredEquipment.length} items
           {selectedItems.filter(s => s.type === category).length > 0 && (
             <span className="equipment-browser-selected-count">
@@ -195,13 +195,14 @@ export function EquipmentBrowser({
 
       {/* Search input */}
       <div className="equipment-browser-search">
-        <Search className="equipment-browser-search-icon" size={14} />
+        <Search className="equipment-browser-search-icon" size={14} aria-hidden="true" />
         <input
-          type="text"
+          type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={`Search ${categoryLabel.toLowerCase()}...`}
           className="equipment-browser-search-input"
+          aria-label={`Search ${categoryLabel.toLowerCase()}`}
         />
         {searchQuery && (
           <button
@@ -210,7 +211,7 @@ export function EquipmentBrowser({
             onClick={() => setSearchQuery('')}
             aria-label="Clear search"
           >
-            <X size={14} />
+            <X size={14} aria-hidden="true" />
           </button>
         )}
       </div>
@@ -289,11 +290,12 @@ export function EquipmentBrowser({
                   )}
                   onClick={() => handleToggle(item)}
                   aria-label={selected ? `Remove ${item.name}` : `Add ${item.name}`}
+                  aria-pressed={selected}
                 >
                   {selected ? (
-                    <X size={14} />
+                    <X size={14} aria-hidden="true" />
                   ) : (
-                    <Plus size={14} />
+                    <Plus size={14} aria-hidden="true" />
                   )}
                 </button>
               </div>

@@ -97,6 +97,13 @@
   box-shadow: var(--shadow-focus);
 }
 
+/* Keyboard focus visible for browsers that support it */
+.equipment-browser-search-input:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
 .equipment-browser-search-clear {
   position: absolute;
   right: 0.5rem;
@@ -118,6 +125,11 @@
 .equipment-browser-search-clear:hover {
   background-color: hsl(var(--surface-3));
   color: hsl(var(--foreground));
+}
+
+.equipment-browser-search-clear:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
 /* Scrollable item list */
@@ -179,10 +191,12 @@
   border-radius: var(--radius);
   transition: transform var(--duration-fast) var(--ease-out-cubic),
               box-shadow var(--duration-fast) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
+  will-change: transform;
 }
 
 .equipment-browser-item:hover {
-  transform: translateX(2px);
+  transform: translateX(2px) var(--gpu-accel);
   box-shadow: 0 2px 4px hsl(var(--foreground) / 0.05);
 }
 
@@ -255,6 +269,8 @@
   flex-shrink: 0;
   transition: background-color var(--duration-fast) var(--ease-out-cubic),
               transform var(--duration-fast) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
+  will-change: transform;
 }
 
 .equipment-browser-item-button-add {
@@ -264,7 +280,7 @@
 
 .equipment-browser-item-button-add:hover {
   background-color: hsl(var(--primary) / 0.2);
-  transform: scale(1.1);
+  transform: scale(1.1) var(--gpu-accel);
 }
 
 .equipment-browser-item-button-remove {
@@ -274,7 +290,13 @@
 
 .equipment-browser-item-button-remove:hover {
   background-color: hsl(var(--destructive) / 0.2);
-  transform: scale(1.1);
+  transform: scale(1.1) var(--gpu-accel);
+}
+
+/* Focus styles for keyboard navigation */
+.equipment-browser-item-button:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
 /* Mobile adjustments */

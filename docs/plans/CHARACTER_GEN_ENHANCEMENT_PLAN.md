@@ -312,10 +312,40 @@ The Equipment Injection section in CharacterGenTab.css includes:
 
 ### Task 4.4: Final Polish
 
-- [ ] Check responsive layout on mobile
-- [ ] Verify all tooltips and helper text are clear
-- [ ] Verify accessibility (labels, ARIA attributes)
-- [ ] Review animation performance
+- [x] Check responsive layout on mobile
+- [x] Verify all tooltips and helper text are clear
+- [x] Verify accessibility (labels, ARIA attributes)
+- [x] Review animation performance
+
+**Completed:** All polish items addressed:
+
+1. **Responsive Layout:**
+   - All components have responsive breakpoints at 480px, 640px, 768px, and 1024px
+   - Equipment injection browsers grid adapts from 3 columns → 2 columns → 1 column
+   - Effect badges and indicators scale down on mobile
+   - Advanced options and equipment injection sections collapse smoothly
+
+2. **Tooltips and Helper Text:**
+   - Deterministic naming checkbox has helper text explaining "same track = same name"
+   - Race/class dropdowns have helper text explaining "Auto (from audio)" behavior
+   - Equipment injection section has hint text explaining items are added to starting equipment
+   - All equipment items have tooltips showing rarity, type, damage/AC, weight, and properties
+
+3. **Accessibility:**
+   - Added `aria-expanded` and `aria-controls` to expandable section headers
+   - Added `aria-describedby` linking inputs to hint text
+   - Added `role="img"` and `aria-label` to effect badges for screen readers
+   - Added `role="region"` with `aria-label` to ActiveEffectsSummary and EquipmentBrowser
+   - Added `aria-pressed` to toggle buttons in EquipmentBrowser
+   - Added `aria-hidden="true"` to decorative icons
+   - Added `aria-live="polite"` to item count displays
+   - Added `:focus-visible` styles for keyboard navigation
+
+4. **Animation Performance:**
+   - Added GPU acceleration (`transform: var(--gpu-accel)`) to animated elements
+   - Added `will-change: transform` to chevrons, badges, and item cards
+   - Optimized hover transitions to use GPU-composited transforms
+   - Smooth expand/collapse animations using CSS grid-template-rows transition
 
 ---
 

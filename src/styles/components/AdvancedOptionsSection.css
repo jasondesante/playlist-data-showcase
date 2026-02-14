@@ -40,6 +40,13 @@
   box-shadow: inset 0 0 0 2px hsl(var(--primary));
 }
 
+/* Keyboard focus visible for browsers that support it */
+.advanced-options-header:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
 /* Header left section */
 .advanced-options-header-left {
   display: flex;
@@ -71,10 +78,12 @@
   color: hsl(var(--muted-foreground));
   transition: transform var(--duration-normal) var(--ease-out-cubic);
   flex-shrink: 0;
+  transform: var(--gpu-accel);
+  will-change: transform;
 }
 
 .advanced-options-chevron-expanded {
-  transform: rotate(180deg);
+  transform: rotate(180deg) var(--gpu-accel);
 }
 
 /* Collapsible content */

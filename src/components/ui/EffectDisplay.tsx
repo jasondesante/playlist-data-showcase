@@ -176,6 +176,15 @@ export function EffectBadge({ effect, source, showTarget = true, compact = false
   const hasTarget = effect.target && showTarget;
   const hasValue = effect.value !== undefined;
 
+  // Build accessible label for screen readers
+  const accessibleLabel = [
+    config.label,
+    hasTarget ? targetStr : '',
+    hasValue ? valueStr : '',
+    source ? `from ${source}` : '',
+    effect.description || ''
+  ].filter(Boolean).join(': ');
+
   return (
     <span
       className={`effect-badge ${compact ? 'effect-badge-compact' : ''}`}
@@ -183,8 +192,10 @@ export function EffectBadge({ effect, source, showTarget = true, compact = false
         '--effect-color': config.color
       } as React.CSSProperties}
       title={effect.description || (effect as FeatureEffect).condition || ''}
+      role="img"
+      aria-label={accessibleLabel}
     >
-      <Icon size={compact ? 12 : 14} className="effect-badge-icon" />
+      <Icon size={compact ? 12 : 14} className="effect-badge-icon" aria-hidden="true" />
       <span className="effect-badge-type">{config.label}</span>
       {hasTarget && (
         <span className="effect-badge-target">{targetStr}</span>
@@ -300,11 +311,11 @@ export function ActiveEffectsSummary({
   }
 
   return (
-    <div className={`active-effects-summary ${className}`}>
+    <div className={`active-effects-summary ${className}`} role="region" aria-label="Active effects summary">
       <div className="active-effects-header">
-        <Zap size={16} className="active-effects-icon" />
+        <Zap size={16} className="active-effects-icon" aria-hidden="true" />
         <h4 className="active-effects-title">Active Effects</h4>
-        <span className="active-effects-count">{allEffects.length}</span>
+        <span className="active-effects-count" aria-label={`${allEffects.length} total effects`}>{allEffects.length}</span>
       </div>
 
       {/* Stat Totals Summary */}
@@ -371,11 +382,14 @@ export function InlineEffectIndicators({ effects, className = '' }: InlineEffect
   }
 
   return (
-    <div className={`inline-effect-indicators ${className}`}>
+    <div className={`inline-effect-indicators ${className}`} role="group" aria-label="Effect indicators">
       {effects.map((effect, idx) => {
         const config = getEffectTypeConfig(effect.type);
         const valueStr = formatEffectValue(effect.value);
         const targetStr = formatTarget(effect.target);
+
+        // Build accessible label
+        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}`;
 
         return (
           <span
@@ -383,6 +397,8 @@ export function InlineEffectIndicators({ effects, className = '' }: InlineEffect
             className="inline-effect-indicator"
             style={{ '--effect-color': config.color } as React.CSSProperties}
             title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}${effect.description ? ` - ${effect.description}` : ''}`}
+            role="img"
+            aria-label={accessibleLabel}
           >
             {valueStr || targetStr || config.label}
           </span>
@@ -411,11 +427,14 @@ export function InlineEquipmentEffectIndicators({ equipmentEffect, className = '
   }
 
   return (
-    <div className={`inline-effect-indicators ${className}`}>
+    <div className={`inline-effect-indicators ${className}`} role="group" aria-label="Equipment effect indicators">
       {equipmentEffect.effects.map((prop, idx) => {
         const config = getEffectTypeConfig(prop.type);
         const valueStr = formatEffectValue(prop.value);
         const targetStr = formatTarget(prop.target);
+
+        // Build accessible label
+        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}`;
 
         return (
           <span
@@ -423,6 +442,8 @@ export function InlineEquipmentEffectIndicators({ equipmentEffect, className = '
             className="inline-effect-indicator"
             style={{ '--effect-color': config.color } as React.CSSProperties}
             title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}${prop.description ? ` - ${prop.description}` : ''}`}
+            role="img"
+            aria-label={accessibleLabel}
           >
             {valueStr || targetStr || config.label}
           </span>

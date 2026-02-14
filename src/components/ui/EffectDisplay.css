@@ -22,12 +22,14 @@
   color: hsl(var(--foreground));
   transition: all var(--duration-fast) var(--ease-out-cubic);
   cursor: default;
+  transform: var(--gpu-accel);
+  will-change: transform;
 }
 
 .effect-badge:hover {
   background: linear-gradient(135deg, color-mix(in srgb, var(--effect-color) 25%, transparent), color-mix(in srgb, var(--effect-color) 12%, transparent));
   border-color: color-mix(in srgb, var(--effect-color) 45%, transparent);
-  transform: translateY(-1px);
+  transform: translateY(-1px) var(--gpu-accel);
 }
 
 /* Compact variant for inline use */
@@ -300,6 +302,8 @@
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   cursor: help;
   transition: background-color var(--duration-fast) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
+  will-change: transform;
 }
 
 .inline-effect-indicator:hover {

@@ -185,11 +185,12 @@ export function AdvancedOptionsSection({ value, onChange, className }: AdvancedO
               type="checkbox"
               checked={value.deterministicName}
               onChange={handleDeterministicToggle}
+              aria-describedby="deterministic-name-hint"
             />
             <span className="advanced-options-checkbox-label">
               Deterministic naming
             </span>
-            <span className="advanced-options-checkbox-hint">
+            <span className="advanced-options-checkbox-hint" id="deterministic-name-hint">
               (same track = same name)
             </span>
           </label>
@@ -209,6 +210,7 @@ export function AdvancedOptionsSection({ value, onChange, className }: AdvancedO
               className="advanced-options-select"
               value={value.forceRace || AUTO_OPTION}
               onChange={handleRaceChange}
+              aria-describedby="race-select-hint"
             >
               <option value={AUTO_OPTION}>{AUTO_OPTION}</option>
               {availableRaces.map((race) => (
@@ -264,7 +266,7 @@ export function AdvancedOptionsSection({ value, onChange, className }: AdvancedO
         </div>
 
         {/* Helper Text */}
-        <div className="advanced-options-hint">
+        <div className="advanced-options-hint" id="race-select-hint">
           Options set to "{AUTO_OPTION}" will be determined by audio analysis.
         </div>
       </div>
