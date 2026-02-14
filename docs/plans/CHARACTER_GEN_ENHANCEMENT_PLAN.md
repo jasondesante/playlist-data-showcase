@@ -149,9 +149,11 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 2.4: Add Inline Equipment Effects
 
-- [ ] Locate Equipment section (~line 954)
-- [ ] Reference [ItemsTab.tsx](src/components/Tabs/ItemsTab.tsx) for equipment effects pattern (lines 533-631)
-- [ ] Show effects per item from `equipment_effects` array
+- [x] Locate Equipment section (~line 954)
+- [x] Reference [ItemsTab.tsx](src/components/Tabs/ItemsTab.tsx) for equipment effects pattern (lines 533-631)
+- [x] Show effects per item from `equipment_effects` array
+
+**Completed:** Added `InlineEquipmentEffectIndicators` component to EffectDisplay.tsx for displaying equipment properties inline. Added `getEquipmentEffectsByName` helper function to CharacterGenTab.tsx to find effects for a specific equipment item by name. Modified weapons, armor, and items sections to wrap each equipment item in a `.character-equipment-item-wrapper` div that includes both the item badge and inline effect indicators. Added CSS styles for the wrapper class.
 
 ### Task 2.5: Add Effect Display Styles
 

@@ -392,4 +392,44 @@ export function InlineEffectIndicators({ effects, className = '' }: InlineEffect
   );
 }
 
+// ===========================================
+// Inline Equipment Effect Indicators
+// ===========================================
+
+export interface InlineEquipmentEffectIndicatorsProps {
+  equipmentEffect?: EquipmentEffect;
+  className?: string;
+}
+
+/**
+ * Compact inline indicators for showing effects next to equipment items
+ * Displays properties from EquipmentEffect.effects array
+ */
+export function InlineEquipmentEffectIndicators({ equipmentEffect, className = '' }: InlineEquipmentEffectIndicatorsProps) {
+  if (!equipmentEffect || !equipmentEffect.effects || equipmentEffect.effects.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={`inline-effect-indicators ${className}`}>
+      {equipmentEffect.effects.map((prop, idx) => {
+        const config = getEffectTypeConfig(prop.type);
+        const valueStr = formatEffectValue(prop.value);
+        const targetStr = formatTarget(prop.target);
+
+        return (
+          <span
+            key={idx}
+            className="inline-effect-indicator"
+            style={{ '--effect-color': config.color } as React.CSSProperties}
+            title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}${prop.description ? ` - ${prop.description}` : ''}`}
+          >
+            {valueStr || targetStr || config.label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export default EffectBadge;

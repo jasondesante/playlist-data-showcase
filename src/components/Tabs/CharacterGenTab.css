@@ -914,6 +914,15 @@
   color: hsl(var(--foreground));
 }
 
+/* Task 2.4: Equipment item wrapper for inline effects */
+.character-equipment-item-wrapper {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0.125rem;
+}
+
 .character-equipment-item {
   display: inline-flex;
   align-items: center;

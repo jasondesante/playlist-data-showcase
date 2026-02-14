@@ -16,7 +16,7 @@ import { GenerationModeToggle } from '../ui/GenerationModeToggle';
 import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
 import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
-import { ActiveEffectsSummary, InlineEffectIndicators } from '../ui/EffectDisplay';
+import { ActiveEffectsSummary, InlineEffectIndicators, InlineEquipmentEffectIndicators, type EquipmentEffect } from '../ui/EffectDisplay';
 import { showToast } from '../ui/Toast';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
@@ -82,6 +82,17 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
  */
 function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
   return DEFAULT_EQUIPMENT[itemName];
+}
+
+/**
+ * Find equipment effects for a specific item by name from character's equipment_effects array
+ * Task 2.4: Inline Equipment Effects
+ */
+function getEquipmentEffectsByName(itemName: string, equipmentEffects?: EquipmentEffect[]): EquipmentEffect | undefined {
+  if (!equipmentEffects || equipmentEffects.length === 0) {
+    return undefined;
+  }
+  return equipmentEffects.find(effect => effect.source === itemName);
 }
 
 /**
@@ -1020,22 +1031,27 @@ export function CharacterGenTab() {
                           const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
                           const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
                           const tooltipContent = getEquipmentTooltip(equipmentData);
+                          // Task 2.4: Get equipment effects for inline display
+                          const weaponEffects = getEquipmentEffectsByName(weapon.name, character.equipment_effects);
 
                           return (
-                            <span
-                              key={idx}
-                              className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}
-                              style={{
-                                backgroundColor: rarityBg,
-                                borderColor: rarityBorder
-                              }}
-                              title={tooltipContent}
-                            >
-                              {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                              <span style={{ color: rarityColor, fontWeight: 500 }}>{weapon.name}</span>
-                              {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
-                              {weapon.equipped && <span className="character-equipment-badge">Equipped</span>}
-                            </span>
+                            <div key={idx} className="character-equipment-item-wrapper">
+                              <span
+                                className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}
+                                style={{
+                                  backgroundColor: rarityBg,
+                                  borderColor: rarityBorder
+                                }}
+                                title={tooltipContent}
+                              >
+                                {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                                <span style={{ color: rarityColor, fontWeight: 500 }}>{weapon.name}</span>
+                                {weapon.quantity > 1 && <span className="character-equipment-quantity"> ×{weapon.quantity}</span>}
+                                {weapon.equipped && <span className="character-equipment-badge">Equipped</span>}
+                              </span>
+                              {/* Task 2.4: Inline Equipment Effects */}
+                              <InlineEquipmentEffectIndicators equipmentEffect={weaponEffects} />
+                            </div>
                           );
                         })}
                       </div>
@@ -1052,22 +1068,27 @@ export function CharacterGenTab() {
                           const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
                           const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
                           const tooltipContent = getEquipmentTooltip(equipmentData);
+                          // Task 2.4: Get equipment effects for inline display
+                          const armorEffects = getEquipmentEffectsByName(armor.name, character.equipment_effects);
 
                           return (
-                            <span
-                              key={idx}
-                              className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}
-                              style={{
-                                backgroundColor: rarityBg,
-                                borderColor: rarityBorder
-                              }}
-                              title={tooltipContent}
-                            >
-                              {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                              <span style={{ color: rarityColor, fontWeight: 500 }}>{armor.name}</span>
-                              {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
-                              {armor.equipped && <span className="character-equipment-badge">Equipped</span>}
-                            </span>
+                            <div key={idx} className="character-equipment-item-wrapper">
+                              <span
+                                className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}
+                                style={{
+                                  backgroundColor: rarityBg,
+                                  borderColor: rarityBorder
+                                }}
+                                title={tooltipContent}
+                              >
+                                {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                                <span style={{ color: rarityColor, fontWeight: 500 }}>{armor.name}</span>
+                                {armor.quantity > 1 && <span className="character-equipment-quantity"> ×{armor.quantity}</span>}
+                                {armor.equipped && <span className="character-equipment-badge">Equipped</span>}
+                              </span>
+                              {/* Task 2.4: Inline Equipment Effects */}
+                              <InlineEquipmentEffectIndicators equipmentEffect={armorEffects} />
+                            </div>
                           );
                         })}
                       </div>
@@ -1097,32 +1118,37 @@ export function CharacterGenTab() {
                             ? 'hsl(var(--cute-orange) / 0.3)'
                             : (RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common);
                           const tooltipContent = getEquipmentTooltip(equipmentData);
+                          // Task 2.4: Get equipment effects for inline display
+                          const itemEffects = getEquipmentEffectsByName(item.name, character.equipment_effects);
 
                           return (
-                            <span
-                              key={idx}
-                              className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}
-                              style={{
-                                backgroundColor: isAmmo ? undefined : rarityBg,
-                                background: isAmmo ? rarityBg : undefined,
-                                borderColor: rarityBorder
-                              }}
-                              title={tooltipContent}
-                            >
-                              {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
-                              {isAmmo && <Target className="character-equipment-ammo-icon" size={14} />}
-                              <span style={{ color: rarityColor, fontWeight: 500 }}>{item.name}</span>
-                              {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
-                              {isAmmo && ammoWeight !== null && (
-                                <span
-                                  className="character-equipment-ammo-weight"
-                                  title={`${ammoWeight} lb each × ${item.quantity} = ${totalAmmoWeight} lb total`}
-                                >
-                                  ({totalAmmoWeight} lb)
-                                </span>
-                              )}
-                              {item.equipped && <span className="character-equipment-badge">Equipped</span>}
-                            </span>
+                            <div key={idx} className="character-equipment-item-wrapper">
+                              <span
+                                className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}
+                                style={{
+                                  backgroundColor: isAmmo ? undefined : rarityBg,
+                                  background: isAmmo ? rarityBg : undefined,
+                                  borderColor: rarityBorder
+                                }}
+                                title={tooltipContent}
+                              >
+                                {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
+                                {isAmmo && <Target className="character-equipment-ammo-icon" size={14} />}
+                                <span style={{ color: rarityColor, fontWeight: 500 }}>{item.name}</span>
+                                {item.quantity > 1 && <span className="character-equipment-quantity"> ×{item.quantity}</span>}
+                                {isAmmo && ammoWeight !== null && (
+                                  <span
+                                    className="character-equipment-ammo-weight"
+                                    title={`${ammoWeight} lb each × ${item.quantity} = ${totalAmmoWeight} lb total`}
+                                  >
+                                    ({totalAmmoWeight} lb)
+                                  </span>
+                                )}
+                                {item.equipped && <span className="character-equipment-badge">Equipped</span>}
+                              </span>
+                              {/* Task 2.4: Inline Equipment Effects */}
+                              <InlineEquipmentEffectIndicators equipmentEffect={itemEffects} />
+                            </div>
                           );
                         })}
                       </div>
