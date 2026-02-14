@@ -41,6 +41,14 @@ export function AudioAnalysisTab() {
   const [bassSliderPos, setBassSliderPos] = useState(50);     // 1.0
   const [midSliderPos, setMidSliderPos] = useState(50);       // 1.0
 
+  // Analysis mode state for Phase 3: Normal vs Timeline analysis
+  // Prefixed with _ to suppress TS6133 unused variable warnings during incremental development
+  // These will be consumed in subsequent Phase 3 tasks (mode selector UI, timeline options)
+  const [_analysisMode, _setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
+  const [_timelineMode, _setTimelineMode] = useState<'count' | 'interval'>('count');
+  const [_timelineCount, _setTimelineCount] = useState(20); // 5-100 data points
+  const [_timelineInterval, _setTimelineInterval] = useState(2); // 1-10 seconds
+
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
    * Scale 1 (0-44): 0.1-0.9 (attenuation zone)

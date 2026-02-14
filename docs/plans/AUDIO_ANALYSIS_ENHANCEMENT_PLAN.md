@@ -51,7 +51,7 @@
 
 ### Tasks
 
-- [ ] Add state variables: `analysisMode`, `timelineMode`, `timelineCount`, `timelineInterval`
+- [x] Add state variables: `analysisMode`, `timelineMode`, `timelineCount`, `timelineInterval`
 - [ ] Create mode selector buttons (Normal vs Timeline)
 - [ ] Create timeline options sub-component with count/interval toggle
 - [ ] Add slider for count mode (5-100 data points)
