@@ -180,20 +180,37 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/ui/EquipmentBrowser.tsx](src/components/ui/EquipmentBrowser.tsx) (NEW)
 
-- [ ] Props: `category: 'weapon' | 'armor' | 'item'`, `onSelect`, `selectedItems`
-- [ ] Include search input with debounced filtering
-- [ ] Include scrollable item list
-- [ ] Include item cards with Add/Remove buttons
+- [x] Props: `category: 'weapon' | 'armor' | 'item'`, `onSelect`, `selectedItems`
+- [x] Include search input with debounced filtering
+- [x] Include scrollable item list
+- [x] Include item cards with Add/Remove buttons
+
+**Completed:** Created `EquipmentBrowser` component with:
+- Category prop (weapon/armor/item) with appropriate icons
+- Search input with 300ms debounce using `useDebounce` hook
+- Scrollable item list with custom scrollbar
+- Item cards with rarity-colored backgrounds, borders, and text
+- Add/Remove toggle buttons for selection
+- Empty state display when no items match search
+- Item count display with selected count indicator
+- CSS styles in dedicated EquipmentBrowser.css file
 
 ### Task 3.2: Get Available Equipment
 
-- [ ] Import from playlist-data-engine:
+- [x] Import from playlist-data-engine:
   ```typescript
   import { ExtensionManager, DEFAULT_EQUIPMENT, type EnhancedEquipment } from 'playlist-data-engine';
   ```
-- [ ] Get all equipment: `ExtensionManager.getInstance().get('equipment')`
-- [ ] Filter by type (weapon/armor/item)
-- [ ] Follow rarity color patterns from CharacterGenTab (RARITY_COLORS)
+- [x] Get all equipment: `ExtensionManager.getInstance().get('equipment')`
+- [x] Filter by type (weapon/armor/item)
+- [x] Follow rarity color patterns from CharacterGenTab (RARITY_COLORS)
+
+**Completed:** Implemented within EquipmentBrowser component using `useMemo` hooks to:
+- Get equipment from ExtensionManager with fallback to DEFAULT_EQUIPMENT
+- Filter by category type
+- Filter by search query (name, rarity, damage type)
+- Sort alphabetically by name
+- RARITY_COLORS, RARITY_BG_COLORS, RARITY_BORDER_COLORS copied from ItemsTab pattern
 
 ### Task 3.3: Track Selected Equipment State
 

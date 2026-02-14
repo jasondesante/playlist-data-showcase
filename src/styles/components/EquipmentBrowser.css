@@ -1,0 +1,298 @@
+/* ============================================
+   EQUIPMENT BROWSER COMPONENT
+   Task 3.1 of CHARACTER_GEN_ENHANCEMENT_PLAN.md
+   ============================================ */
+
+/* Container */
+.equipment-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .equipment-browser {
+    padding: 1rem;
+  }
+}
+
+/* Header */
+.equipment-browser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.equipment-browser-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.equipment-browser-category-icon {
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.equipment-browser-category-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .equipment-browser-category-label {
+    font-size: 0.875rem;
+  }
+}
+
+.equipment-browser-count {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.equipment-browser-selected-count {
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+/* Search input container */
+.equipment-browser-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.equipment-browser-search-icon {
+  position: absolute;
+  left: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+}
+
+.equipment-browser-search-input {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 2rem;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--input));
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.equipment-browser-search-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.equipment-browser-search-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: var(--shadow-focus);
+}
+
+.equipment-browser-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.equipment-browser-search-clear:hover {
+  background-color: hsl(var(--surface-3));
+  color: hsl(var(--foreground));
+}
+
+/* Scrollable item list */
+.equipment-browser-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+/* Custom scrollbar */
+.equipment-browser-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.equipment-browser-list::-webkit-scrollbar-track {
+  background: hsl(var(--surface-2));
+  border-radius: 3px;
+}
+
+.equipment-browser-list::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.equipment-browser-list::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Empty state */
+.equipment-browser-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.equipment-browser-empty-icon {
+  opacity: 0.5;
+}
+
+.equipment-browser-empty-text {
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+/* Item card */
+.equipment-browser-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid;
+  border-radius: var(--radius);
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.equipment-browser-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px hsl(var(--foreground) / 0.05);
+}
+
+.equipment-browser-item-selected {
+  box-shadow: inset 0 0 0 1px var(--rarity-color, hsl(var(--primary)));
+}
+
+/* Item info section */
+.equipment-browser-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0; /* Allow text truncation */
+  flex: 1;
+}
+
+/* Item name */
+.equipment-browser-item-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .equipment-browser-item-name {
+    font-size: 0.875rem;
+  }
+}
+
+/* Item details row */
+.equipment-browser-item-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .equipment-browser-item-details {
+    font-size: 0.75rem;
+  }
+}
+
+.equipment-browser-item-rarity {
+  text-transform: capitalize;
+}
+
+.equipment-browser-item-damage,
+.equipment-browser-item-ac,
+.equipment-browser-item-weight {
+  padding: 0.125rem 0.375rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: calc(var(--radius) / 2);
+}
+
+/* Add/Remove button */
+.equipment-browser-item-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              transform var(--duration-fast) var(--ease-out-cubic);
+}
+
+.equipment-browser-item-button-add {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+.equipment-browser-item-button-add:hover {
+  background-color: hsl(var(--primary) / 0.2);
+  transform: scale(1.1);
+}
+
+.equipment-browser-item-button-remove {
+  background-color: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+}
+
+.equipment-browser-item-button-remove:hover {
+  background-color: hsl(var(--destructive) / 0.2);
+  transform: scale(1.1);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .equipment-browser {
+    padding: 0.625rem;
+  }
+
+  .equipment-browser-item {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .equipment-browser-item-button {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .equipment-browser-item-details {
+    font-size: 0.625rem;
+  }
+}
