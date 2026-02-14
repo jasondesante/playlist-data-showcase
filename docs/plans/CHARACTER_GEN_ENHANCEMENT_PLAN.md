@@ -216,12 +216,14 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
 
-- [ ] Add state:
+- [x] Add state:
   ```typescript
   const [injectionEquipment, setInjectionEquipment] = useState<EnhancedEquipment[]>([]);
   ```
-- [ ] Create `addEquipment` and `removeEquipment` handlers
-- [ ] Create `clearInjectionEquipment` handler
+- [x] Create `addEquipment` and `removeEquipment` handlers
+- [x] Create `clearInjectionEquipment` handler
+
+**Completed:** Added `injectionEquipment` state with `handleAddEquipment`, `handleRemoveEquipment`, and `handleClearInjectionEquipment` handlers. Handlers use `void` statements to suppress unused warnings until Task 3.4 renders the EquipmentBrowser components.
 
 ### Task 3.4: Render Category Browsers
 
@@ -232,13 +234,15 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 3.5: Pass Equipment to Generation
 
-- [ ] Build extensions object:
+- [x] Build extensions object:
   ```typescript
   extensions: injectionEquipment.length > 0
     ? { equipment: injectionEquipment.map(e => ({ equipment: e })) }
     : undefined
   ```
-- [ ] Include in `generateCharacter` call
+- [x] Include in `generateCharacter` call
+
+**Completed:** Added `extensions` property to `generationOptions` object in `handleGenerate` function. Equipment injection is now passed to the character generator when selected items exist.
 
 ### Task 3.6: Add Equipment Browser Styles
 

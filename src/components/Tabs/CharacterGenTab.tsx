@@ -181,6 +181,35 @@ export function CharacterGenTab() {
     subrace: undefined
   });
 
+  // State for equipment injection (Task 3.3: Track Selected Equipment State)
+  const [injectionEquipment, setInjectionEquipment] = useState<EnhancedEquipment[]>([]);
+
+  // Handler to add equipment for injection (used by EquipmentBrowser in Task 3.4)
+  const handleAddEquipment = (item: EnhancedEquipment) => {
+    setInjectionEquipment(prev => {
+      // Avoid duplicates by checking name
+      if (prev.some(e => e.name === item.name)) {
+        return prev;
+      }
+      return [...prev, item];
+    });
+  };
+
+  // Handler to remove equipment from injection (used by EquipmentBrowser in Task 3.4)
+  const handleRemoveEquipment = (item: EnhancedEquipment) => {
+    setInjectionEquipment(prev => prev.filter(e => e.name !== item.name));
+  };
+
+  // Handler to clear all injection equipment (used by Clear All button in Task 3.4)
+  const handleClearInjectionEquipment = () => {
+    setInjectionEquipment([]);
+  };
+
+  // Expose handlers for Task 3.4 (suppress unused warning for now)
+  void handleAddEquipment;
+  void handleRemoveEquipment;
+  void handleClearInjectionEquipment;
+
   // Get the character to display based on priority:
   // 1. Current active character IF it belongs to the selected track (matches seed exactly or as a random variant)
   // 2. The deterministic character for the selected track (seed === track.id)
@@ -261,13 +290,17 @@ export function CharacterGenTab() {
       ? selectedTrack.id
       : `${selectedTrack.id}-${Math.random().toString(36).substring(2, 9)}`;
 
-    // Build advanced options for generation (Task 1.5)
+    // Build advanced options for generation (Task 1.5, Task 3.5)
     const generationOptions = {
       forceName: advancedOptions.forceName || undefined,
       deterministicName: advancedOptions.deterministicName,
       forceRace: advancedOptions.forceRace,
       forceClass: advancedOptions.forceClass,
-      subrace: advancedOptions.subrace
+      subrace: advancedOptions.subrace,
+      // Task 3.5: Pass equipment to generation
+      extensions: injectionEquipment.length > 0
+        ? { equipment: injectionEquipment.map(e => ({ equipment: e })) }
+        : undefined
     };
 
     await generateCharacter(audioProfile, seed, gameMode, selectedTrack, generationOptions);
