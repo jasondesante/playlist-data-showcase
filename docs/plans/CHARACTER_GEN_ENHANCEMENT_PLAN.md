@@ -75,7 +75,7 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
 
-- [ ] Add state for advanced options:
+- [x] Add state for advanced options:
   ```typescript
   const [advancedOptions, setAdvancedOptions] = useState({
     forceName: '',
@@ -86,8 +86,10 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
   });
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   ```
-- [ ] Render `AdvancedOptionsSection` after game mode toggles
-- [ ] Update `handleGenerate` to pass advanced options to hook
+- [x] Render `AdvancedOptionsSection` after game mode toggles
+- [x] Update `handleGenerate` to pass advanced options to hook
+
+**Completed:** Integrated `AdvancedOptionsSection` into CharacterGenTab with state management and generation options passed to the `useCharacterGenerator` hook. The component appears when "New" is clicked, alongside the game mode and generation mode toggles.
 
 ### Task 1.6: Add CSS Styles
 

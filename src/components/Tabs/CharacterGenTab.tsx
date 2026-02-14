@@ -14,6 +14,8 @@ import { GameModeToggle } from '../ui/GameModeToggle';
 import type { GameMode } from '../ui/GameModeToggle';
 import { GenerationModeToggle } from '../ui/GenerationModeToggle';
 import type { GenerationMode } from '../ui/GenerationModeToggle';
+import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
+import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
 import { showToast } from '../ui/Toast';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
@@ -158,6 +160,15 @@ export function CharacterGenTab() {
   const [generationMode, setGenerationMode] = useState<GenerationMode>('deterministic');
   const [showGameModeSelector, setShowGameModeSelector] = useState(false);
 
+  // State for advanced options (Task 1.5: Advanced Options Integration)
+  const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({
+    forceName: '',
+    deterministicName: true,
+    forceRace: undefined,
+    forceClass: undefined,
+    subrace: undefined
+  });
+
   // Get the character to display based on priority:
   // 1. Current active character IF it belongs to the selected track (matches seed exactly or as a random variant)
   // 2. The deterministic character for the selected track (seed === track.id)
@@ -238,7 +249,16 @@ export function CharacterGenTab() {
       ? selectedTrack.id
       : `${selectedTrack.id}-${Math.random().toString(36).substring(2, 9)}`;
 
-    await generateCharacter(audioProfile, seed, gameMode, selectedTrack);
+    // Build advanced options for generation (Task 1.5)
+    const generationOptions = {
+      forceName: advancedOptions.forceName || undefined,
+      deterministicName: advancedOptions.deterministicName,
+      forceRace: advancedOptions.forceRace,
+      forceClass: advancedOptions.forceClass,
+      subrace: advancedOptions.subrace
+    };
+
+    await generateCharacter(audioProfile, seed, gameMode, selectedTrack, generationOptions);
 
     // Hide the game mode selector after generation
     setShowGameModeSelector(false);
@@ -464,6 +484,16 @@ export function CharacterGenTab() {
           <GenerationModeToggle
             value={generationMode}
             onChange={setGenerationMode}
+          />
+        </div>
+      )}
+
+      {/* Advanced Options Section - Task 1.5: Show when "New" was clicked */}
+      {showGameModeSelector && (
+        <div className="fade-in">
+          <AdvancedOptionsSection
+            value={advancedOptions}
+            onChange={setAdvancedOptions}
           />
         </div>
       )}
