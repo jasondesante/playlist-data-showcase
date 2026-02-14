@@ -280,12 +280,14 @@ The Equipment Injection section in CharacterGenTab.css includes:
 
 ### Task 4.1: Test Advanced Options
 
-- [ ] Verify name input overrides character name
-- [ ] Verify deterministic name toggle works
-- [ ] Verify race dropdown populates correctly
-- [ ] Verify class dropdown populates correctly
-- [ ] Verify subrace dropdown updates when race changes
-- [ ] Verify subrace selection requires race selection
+- [x] Verify name input overrides character name
+- [x] Verify deterministic name toggle works
+- [x] Verify race dropdown populates correctly
+- [x] Verify class dropdown populates correctly
+- [x] Verify subrace dropdown updates when race changes
+- [x] Verify subrace selection requires race selection
+
+**Completed:** All 6 test items verified through code review. Test results documented in [TASK_4_1_TEST_RESULTS.md](./TASK_4_1_TEST_RESULTS.md). Automated test file created at `src/components/ui/AdvancedOptionsSection.test.tsx` with 26 test cases.
 
 ### Task 4.2: Test Effects Display
 
