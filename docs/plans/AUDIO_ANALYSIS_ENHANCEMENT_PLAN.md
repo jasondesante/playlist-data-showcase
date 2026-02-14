@@ -154,11 +154,11 @@
 
 ### Tasks
 
-- [ ] Add `onSeek` prop to TimelineScrubber interface
-- [ ] Update handleInteraction to call onSeek when audio sync is enabled
-- [ ] Pass seek function from audioPlayerStore to TimelineScrubber
-- [ ] Update playhead position in real-time during playback
-- [ ] Handle edge cases (seeking beyond available data, paused state)
+- [x] Add `onSeek` prop to TimelineScrubber interface
+- [x] Update handleInteraction to call onSeek when audio sync is enabled
+- [x] Pass seek function from audioPlayerStore to TimelineScrubber
+- [x] Update playhead position in real-time during playback
+- [x] Handle edge cases (seeking beyond available data, paused state)
 
 ### Files to Modify
 

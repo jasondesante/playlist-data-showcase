@@ -188,9 +188,11 @@ export function TimelineScrubber({
 
   /**
    * Auto-follow: Update selection based on current audio time when sync is enabled
+   * This effect is skipped while the user is actively dragging to prevent interference
    */
   useEffect(() => {
-    if (!audioSyncEnabled || events.length === 0 || duration === 0) return;
+    // Don't auto-follow if sync is disabled, no events, no duration, or user is dragging
+    if (!audioSyncEnabled || events.length === 0 || duration === 0 || isDragging) return;
 
     // Find the closest event to the current time
     const closestIndex = events.reduce((closestIdx, event, idx) => {
@@ -202,7 +204,7 @@ export function TimelineScrubber({
     if (closestIndex !== selectedIndex) {
       onSelectionChange(closestIndex);
     }
-  }, [audioSyncEnabled, currentTime, events, selectedIndex, onSelectionChange, duration]);
+  }, [audioSyncEnabled, currentTime, events, selectedIndex, onSelectionChange, duration, isDragging]);
 
   /**
    * Handle hover on event bar
