@@ -9,6 +9,8 @@ import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { useTabContext } from '../../App';
+import { RadarChart } from '../ui/RadarChart';
+import { TimelineScrubber } from '../ui/TimelineScrubber';
 
 /**
  * AudioAnalysisTab Component
@@ -25,11 +27,15 @@ import { useTabContext } from '../../App';
  */
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
-  const { playbackState } = useAudioPlayerStore();
-  const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing } = useAudioAnalyzer();
+  const { playbackState, currentTime, duration, seek } = useAudioPlayerStore();
+  const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing, timelineData } = useAudioAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
+
+  // Timeline visualization state for Phase 6
+  const [selectedTimelineIndex, setSelectedTimelineIndex] = useState(0);
+  const [audioSyncEnabled, setAudioSyncEnabled] = useState(false);
 
   // Local state for multiplier controls (actual values) - all default to 1.0 (neutral)
   const [trebleBoost, setTrebleBoost] = useState(1.0);
@@ -614,6 +620,72 @@ export function AudioAnalysisTab() {
                     <div className="audio-analysis-energy-description">Track "punch"</div>
                   </div>
                 )}
+              </div>
+            </Card>
+          )}
+
+          {/* Timeline Visualization - Radar Chart + Scrubber (only in timeline mode with data) */}
+          {analysisMode === 'timeline' && timelineData.length > 0 && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card audio-analysis-card--timeline-viz full-width">
+              <div className="audio-analysis-card-title">
+                <Activity className="audio-analysis-card-title-icon" />
+                Timeline Visualization
+                <span className="audio-analysis-card-subtitle">(Interactive frequency analysis)</span>
+              </div>
+
+              <div className="audio-analysis-timeline-viz-layout">
+                {/* Left: Radar Chart with live metrics */}
+                <div className="audio-analysis-radar-section">
+                  <RadarChart
+                    data={timelineData[selectedTimelineIndex] ? {
+                      bass: timelineData[selectedTimelineIndex].bass,
+                      mid: timelineData[selectedTimelineIndex].mid,
+                      treble: timelineData[selectedTimelineIndex].treble,
+                      energy: timelineData[selectedTimelineIndex].amplitude,
+                    } : null}
+                    size={200}
+                    animated={true}
+                    animationDuration={300}
+                  />
+                  {/* Live metric values below radar chart */}
+                  <div className="audio-analysis-radar-metrics">
+                    {timelineData[selectedTimelineIndex] && (
+                      <>
+                        <div className="audio-analysis-radar-metric">
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(221, 83%, 53%)' }}>Bass</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].bass * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="audio-analysis-radar-metric">
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(142, 76%, 50%)' }}>Mid</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].mid * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="audio-analysis-radar-metric">
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(24, 95%, 53%)' }}>Treble</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].treble * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="audio-analysis-radar-metric">
+                          <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(280, 75%, 60%)' }}>Energy</span>
+                          <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].amplitude * 100).toFixed(0)}%</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Timeline Scrubber */}
+                <div className="audio-analysis-scrubber-section">
+                  <TimelineScrubber
+                    events={timelineData}
+                    selectedIndex={selectedTimelineIndex}
+                    onSelectionChange={setSelectedTimelineIndex}
+                    currentTime={currentTime}
+                    duration={duration}
+                    audioSyncEnabled={audioSyncEnabled}
+                    onAudioSyncToggle={() => setAudioSyncEnabled(!audioSyncEnabled)}
+                    onSeek={seek}
+                    contextWindow={2}
+                  />
+                </div>
               </div>
             </Card>
           )}

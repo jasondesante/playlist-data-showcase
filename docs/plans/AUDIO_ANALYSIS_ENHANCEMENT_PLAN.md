@@ -129,15 +129,15 @@
 
 ### Tasks
 
-- [ ] Import RadarChart and TimelineScrubber components
-- [ ] Add state: `selectedTimelineIndex`, `audioSyncEnabled`
-- [ ] Get audio player state from `useAudioPlayerStore` (currentTime, playbackState)
-- [ ] Add conditional rendering for Timeline Visualization card (only when `analysisMode === 'timeline' && timelineData.length > 0`)
-- [ ] Create two-column layout: Radar chart on left, Scrubber on right
-- [ ] Add live metric values below radar chart
-- [ ] Connect scrubber `onSelectionChange` to update `selectedTimelineIndex`
-- [ ] Connect radar chart to display data at `selectedTimelineIndex`
-- [ ] Add responsive styles (stack on mobile)
+- [x] Import RadarChart and TimelineScrubber components
+- [x] Add state: `selectedTimelineIndex`, `audioSyncEnabled`
+- [x] Get audio player state from `useAudioPlayerStore` (currentTime, playbackState)
+- [x] Add conditional rendering for Timeline Visualization card (only when `analysisMode === 'timeline' && timelineData.length > 0`)
+- [x] Create two-column layout: Radar chart on left, Scrubber on right
+- [x] Add live metric values below radar chart
+- [x] Connect scrubber `onSelectionChange` to update `selectedTimelineIndex`
+- [x] Connect radar chart to display data at `selectedTimelineIndex`
+- [x] Add responsive styles (stack on mobile)
 
 ### Files to Modify
 
