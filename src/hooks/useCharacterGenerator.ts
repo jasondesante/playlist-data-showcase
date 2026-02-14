@@ -1,8 +1,47 @@
 import { useState, useCallback } from 'react';
-import { CharacterGenerator, AudioProfile, CharacterSheet, GameMode, CharacterGeneratorOptions, PlaylistTrack } from 'playlist-data-engine';
+import {
+    CharacterGenerator,
+    AudioProfile,
+    CharacterSheet,
+    GameMode,
+    CharacterGeneratorOptions,
+    PlaylistTrack,
+    Race,
+    Class
+} from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { logger } from '@/utils/logger';
 import { handleError, AppError } from '@/utils/errorHandling';
+
+/**
+ * Extension data for custom equipment injection.
+ * Matches EquipmentExtension from playlist-data-engine.
+ */
+export interface EquipmentInjection {
+    name: string;
+    type: 'weapon' | 'armor' | 'item';
+    rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
+    weight: number;
+}
+
+/**
+ * Advanced options for character generation.
+ * Used to override automatic selections from audio analysis.
+ */
+export interface AdvancedGenerationOptions {
+    /** Override automatic name generation with custom name */
+    forceName?: string;
+    /** Generate deterministic names (same seed = same name). Default: true */
+    deterministicName?: boolean;
+    /** Override race selection from audio analysis */
+    forceRace?: Race;
+    /** Override class suggestion from audio analysis */
+    forceClass?: Class;
+    /** Subrace selection: 'pure' (no subrace), undefined (random), or specific subrace name */
+    subrace?: string;
+    /** Custom equipment to inject into character's starting equipment */
+    equipmentExtensions?: EquipmentInjection[];
+}
 
 /**
  * React hook for generating D&D 5e characters from audio profiles.
@@ -18,8 +57,20 @@ import { handleError, AppError } from '@/utils/errorHandling';
  * console.log(character.name, character.race, character.class);
  * ```
  *
+ * @example
+ * ```tsx
+ * // With advanced options
+ * const character = await generateCharacter(
+ *   audioProfile,
+ *   'seed-123',
+ *   'uncapped',
+ *   track,
+ *   { forceRace: 'Elf', forceClass: 'Wizard', forceName: 'Gandalf' }
+ * );
+ * ```
+ *
  * @returns {Object} Hook return object
- * @returns {Function} generateCharacter - Generates a character from audio profile, optional seed, optional game mode, and optional track
+ * @returns {Function} generateCharacter - Generates a character from audio profile, optional seed, optional game mode, optional track, and optional advanced options
  * @returns {boolean} isGenerating - Whether character generation is in progress
  */
 export const useCharacterGenerator = () => {
@@ -33,13 +84,15 @@ export const useCharacterGenerator = () => {
      * @param seed - Optional deterministic seed (defaults to timestamp-based)
      * @param gameMode - Game mode: 'standard' (stats cap at 20) or 'uncapped' (unlimited stats, defaults to 'uncapped')
      * @param track - Optional track for custom name generation via NamingEngine
+     * @param advancedOptions - Optional advanced generation options for overriding defaults
      * @returns The generated character sheet or null if generation failed
      */
     const generateCharacter = useCallback(async (
         audioProfile: AudioProfile | null | undefined,
         seed?: string,
         gameMode?: GameMode,
-        track?: PlaylistTrack
+        track?: PlaylistTrack,
+        advancedOptions?: AdvancedGenerationOptions
     ): Promise<CharacterSheet | null> => {
         // Validate audio profile before proceeding
         if (!audioProfile) {
@@ -60,13 +113,21 @@ export const useCharacterGenerator = () => {
             return null;
         }
 
-        logger.info('CharacterGenerator', 'Generating character', { seed });
+        logger.info('CharacterGenerator', 'Generating character', { seed, advancedOptions });
         setIsGenerating(true);
 
         try {
-            // Build options object for character generation
+            // Build options object for character generation, merging advanced options with defaults
             const options: CharacterGeneratorOptions = {
-                gameMode: gameMode || 'uncapped'
+                gameMode: gameMode || 'uncapped',
+                forceName: advancedOptions?.forceName || undefined,
+                deterministicName: advancedOptions?.deterministicName ?? true,
+                forceRace: advancedOptions?.forceRace,
+                forceClass: advancedOptions?.forceClass,
+                subrace: advancedOptions?.subrace,
+                extensions: advancedOptions?.equipmentExtensions && advancedOptions.equipmentExtensions.length > 0
+                    ? { equipment: advancedOptions.equipmentExtensions }
+                    : undefined
             };
 
             // CharacterGenerator now handles name generation internally when track is provided
@@ -112,7 +173,7 @@ export const useCharacterGenerator = () => {
         } finally {
             setIsGenerating(false);
         }
-    }, [addOrUpdateCharacter]);
+    }, [addOrUpdateCharacter, clearTrackCharacters]);
 
     return { generateCharacter, isGenerating };
 };

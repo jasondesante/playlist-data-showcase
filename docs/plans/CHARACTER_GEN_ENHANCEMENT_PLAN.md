@@ -22,9 +22,9 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/hooks/useCharacterGenerator.ts](src/hooks/useCharacterGenerator.ts)
 
-- [ ] Add `CharacterGeneratorOptions` parameter to `generateCharacter` function signature
-- [ ] Merge incoming options with defaults (preserve gameMode fallback)
-- [ ] Pass all options to `CharacterGenerator.generate()`:
+- [x] Add `CharacterGeneratorOptions` parameter to `generateCharacter` function signature
+- [x] Merge incoming options with defaults (preserve gameMode fallback)
+- [x] Pass all options to `CharacterGenerator.generate()`:
   ```typescript
   const options: CharacterGeneratorOptions = {
     gameMode: gameMode || 'uncapped',
@@ -36,6 +36,8 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
     extensions: advancedOptions?.extensions
   };
   ```
+
+**Completed:** Added `AdvancedGenerationOptions` interface and updated `generateCharacter` to accept advanced options for name, race, class, subrace, and equipment injection.
 
 ### Task 1.2: Create AdvancedOptionsSection Component
 
