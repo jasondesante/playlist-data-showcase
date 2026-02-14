@@ -43,27 +43,33 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/ui/AdvancedOptionsSection.tsx](src/components/ui/AdvancedOptionsSection.tsx) (NEW)
 
-- [ ] Create component with expandable header (chevron icon, "Advanced Options" title)
-- [ ] Follow pattern from [GameModeToggle.tsx](src/components/ui/GameModeToggle.tsx) for styling
-- [ ] Include collapsible content area with all controls
+- [x] Create component with expandable header (chevron icon, "Advanced Options" title)
+- [x] Follow pattern from [GameModeToggle.tsx](src/components/ui/GameModeToggle.tsx) for styling
+- [x] Include collapsible content area with all controls
+
+**Completed:** Created `AdvancedOptionsSection` component with expandable header, name controls (custom name input + deterministic toggle), and race/class/subrace dropdowns populated from FeatureQuery. CSS styling follows existing patterns.
 
 ### Task 1.3: Implement Name Controls
 
-- [ ] Add `forceName` text input using [Input.tsx](src/components/ui/Input.tsx) component
-- [ ] Add `deterministicName` toggle (checkbox or switch)
-- [ ] Show helper text explaining deterministic behavior
+- [x] Add `forceName` text input using [Input.tsx](src/components/ui/Input.tsx) component
+- [x] Add `deterministicName` toggle (checkbox or switch)
+- [x] Show helper text explaining deterministic behavior
+
+**Completed:** Implemented as part of Task 1.2. The component includes name controls with custom name input and deterministic naming checkbox with helper text.
 
 ### Task 1.4: Implement Race/Class/Subrace Dropdowns
 
-- [ ] Import `FeatureQuery` and types from `playlist-data-engine`:
+- [x] Import `FeatureQuery` and types from `playlist-data-engine`:
   ```typescript
   import { FeatureQuery, type Race, type Class } from 'playlist-data-engine';
   ```
-- [ ] Create race dropdown using `FeatureQuery.getRegisteredRaces()`
-- [ ] Create class dropdown using `FeatureQuery.getRegisteredClasses()`
-- [ ] Create subrace dropdown using `FeatureQuery.getAvailableSubraces(race)`
-- [ ] Add "Pure" option when subraces available
-- [ ] Add `useEffect` to auto-populate subrace options when race changes
+- [x] Create race dropdown using `FeatureQuery.getRegisteredRaces()`
+- [x] Create class dropdown using `FeatureQuery.getRegisteredClasses()`
+- [x] Create subrace dropdown using `FeatureQuery.getAvailableSubraces(race)`
+- [x] Add "Pure" option when subraces available
+- [x] Add `useEffect` to auto-populate subrace options when race changes
+
+**Completed:** Implemented as part of Task 1.2. The component includes dropdowns with "Auto (from audio)" default option, "Pure" option for subraces, and automatic subrace population when race changes. Uses ALL_RACES and ALL_CLASSES as fallback when FeatureQuery returns empty arrays.
 
 ### Task 1.5: Integrate Advanced Options into CharacterGenTab
 
