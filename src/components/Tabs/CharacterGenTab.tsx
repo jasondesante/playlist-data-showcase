@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import './CharacterGenTab.css';
-import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package, Target } from 'lucide-react';
+import { User, Sparkles, Download, Upload, Wand2, Plus, Check, Package, Target, ChevronDown, Sword, Shield, Trash2 } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterGenerator } from '../../hooks/useCharacterGenerator';
 import { useFeatureNames } from '../../hooks/useFeatureNames';
@@ -17,7 +17,9 @@ import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
 import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
 import { ActiveEffectsSummary, InlineEffectIndicators, InlineEquipmentEffectIndicators, type EquipmentEffect } from '../ui/EffectDisplay';
+import { EquipmentBrowser } from '../ui/EquipmentBrowser';
 import { showToast } from '../ui/Toast';
+import { cn } from '../../utils/cn';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
 
@@ -205,10 +207,23 @@ export function CharacterGenTab() {
     setInjectionEquipment([]);
   };
 
-  // Expose handlers for Task 3.4 (suppress unused warning for now)
-  void handleAddEquipment;
-  void handleRemoveEquipment;
-  void handleClearInjectionEquipment;
+  // State for Equipment Injection section expand/collapse (Task 3.4)
+  const [showEquipmentInjection, setShowEquipmentInjection] = useState(false);
+
+  // Get counts of selected equipment by category (Task 3.4)
+  const selectedWeaponsCount = useMemo(() =>
+    injectionEquipment.filter(e => e.type === 'weapon').length,
+    [injectionEquipment]
+  );
+  const selectedArmorCount = useMemo(() =>
+    injectionEquipment.filter(e => e.type === 'armor').length,
+    [injectionEquipment]
+  );
+  const selectedItemsCount = useMemo(() =>
+    injectionEquipment.filter(e => e.type === 'item').length,
+    [injectionEquipment]
+  );
+  const totalSelectedCount = injectionEquipment.length;
 
   // Get the character to display based on priority:
   // 1. Current active character IF it belongs to the selected track (matches seed exactly or as a random variant)
@@ -540,6 +555,99 @@ export function CharacterGenTab() {
             value={advancedOptions}
             onChange={setAdvancedOptions}
           />
+        </div>
+      )}
+
+      {/* Equipment Injection Section - Task 3.4: Show when "New" was clicked */}
+      {showGameModeSelector && (
+        <div className="equipment-injection-section fade-in">
+          {/* Expandable Header */}
+          <button
+            type="button"
+            className="equipment-injection-header"
+            onClick={() => setShowEquipmentInjection(!showEquipmentInjection)}
+            aria-expanded={showEquipmentInjection}
+            aria-controls="equipment-injection-content"
+          >
+            <div className="equipment-injection-header-left">
+              <Sword className="equipment-injection-header-icon" size={16} />
+              <Shield className="equipment-injection-header-icon" size={16} />
+              <span className="equipment-injection-title">Equipment Injection</span>
+            </div>
+            <div className="equipment-injection-header-right">
+              {totalSelectedCount > 0 && (
+                <span className="equipment-injection-count">
+                  {totalSelectedCount} item{totalSelectedCount !== 1 ? 's' : ''} selected
+                </span>
+              )}
+              <ChevronDown
+                className={cn('equipment-injection-chevron', showEquipmentInjection && 'equipment-injection-chevron-expanded')}
+                size={18}
+              />
+            </div>
+          </button>
+
+          {/* Collapsible Content */}
+          <div
+            id="equipment-injection-content"
+            className={cn('equipment-injection-content', showEquipmentInjection && 'equipment-injection-content-expanded')}
+          >
+            {/* Category counts and Clear All button */}
+            <div className="equipment-injection-controls">
+              <div className="equipment-injection-counts">
+                <span className="equipment-injection-count-item">
+                  <Sword size={12} /> {selectedWeaponsCount} weapon{selectedWeaponsCount !== 1 ? 's' : ''}
+                </span>
+                <span className="equipment-injection-count-item">
+                  <Shield size={12} /> {selectedArmorCount} armor
+                </span>
+                <span className="equipment-injection-count-item">
+                  <Package size={12} /> {selectedItemsCount} item{selectedItemsCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {totalSelectedCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={Trash2}
+                  onClick={handleClearInjectionEquipment}
+                  className="equipment-injection-clear-btn"
+                >
+                  Clear All
+                </Button>
+              )}
+            </div>
+
+            {/* Helper text */}
+            <div className="equipment-injection-hint">
+              Selected items will be added to the character's starting equipment.
+            </div>
+
+            {/* Category browsers grid */}
+            <div className="equipment-injection-browsers-grid">
+              <EquipmentBrowser
+                category="weapon"
+                selectedItems={injectionEquipment}
+                onSelect={handleAddEquipment}
+                onDeselect={handleRemoveEquipment}
+                maxHeight="200px"
+              />
+              <EquipmentBrowser
+                category="armor"
+                selectedItems={injectionEquipment}
+                onSelect={handleAddEquipment}
+                onDeselect={handleRemoveEquipment}
+                maxHeight="200px"
+              />
+              <EquipmentBrowser
+                category="item"
+                selectedItems={injectionEquipment}
+                onSelect={handleAddEquipment}
+                onDeselect={handleRemoveEquipment}
+                maxHeight="200px"
+              />
+            </div>
+          </div>
         </div>
       )}
 

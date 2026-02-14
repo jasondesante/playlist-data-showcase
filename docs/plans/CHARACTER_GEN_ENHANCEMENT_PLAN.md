@@ -227,10 +227,18 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 3.4: Render Category Browsers
 
-- [ ] Add expandable "Equipment Injection" section after Advanced Options
-- [ ] Render three EquipmentBrowser instances (Weapons, Armor, Items)
-- [ ] Show count of selected items per category
-- [ ] Add "Clear All" button
+- [x] Add expandable "Equipment Injection" section after Advanced Options
+- [x] Render three EquipmentBrowser instances (Weapons, Armor, Items)
+- [x] Show count of selected items per category
+- [x] Add "Clear All" button
+
+**Completed:** Added expandable Equipment Injection section to CharacterGenTab with:
+- Expandable header with sword/shield icons and selection count badge
+- Controls row showing counts per category (weapons, armor, items)
+- Clear All button to remove all selected equipment
+- Helper text explaining that items are added to starting equipment
+- Responsive grid layout with three EquipmentBrowser components (one per category)
+- CSS styling following existing patterns from AdvancedOptionsSection
 
 ### Task 3.5: Pass Equipment to Generation
 
@@ -248,10 +256,23 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
 
-- [ ] Style browser container
-- [ ] Style search input
-- [ ] Style item cards (rarity colors)
-- [ ] Style Add/Remove buttons
+- [x] Style browser container
+- [x] Style search input
+- [x] Style item cards (rarity colors)
+- [x] Style Add/Remove buttons
+
+**Completed:** The EquipmentBrowser component has its own dedicated CSS file (EquipmentBrowser.css) with complete styling for:
+- Container with background, border, and padding
+- Search input with icon, focus states, and clear button
+- Scrollable item list with custom scrollbar
+- Item cards with rarity-colored backgrounds, borders, and hover effects
+- Add/Remove buttons with primary/destructive color variants
+
+The Equipment Injection section in CharacterGenTab.css includes:
+- Expandable header with icons and selection count badge
+- Controls row with category counts and Clear All button
+- Responsive grid layout for the three browser instances
+- Smooth expand/collapse animation
 
 ---
 
