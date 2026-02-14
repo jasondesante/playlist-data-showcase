@@ -45,9 +45,9 @@ export function AudioAnalysisTab() {
   const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
   // Timeline mode options - count vs interval toggle
   const [timelineMode, setTimelineMode] = useState<'count' | 'interval'>('count');
-  // These values will be controlled by sliders in a future task
-  const [timelineCount, _setTimelineCount] = useState(20); // 5-100 data points
-  const [timelineInterval, _setTimelineInterval] = useState(2); // 1-10 seconds
+  // Timeline slider values
+  const [timelineCount, setTimelineCount] = useState(20); // 5-100 data points
+  const [timelineInterval, setTimelineInterval] = useState(2); // 1-10 seconds
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -370,6 +370,56 @@ export function AudioAnalysisTab() {
                       <span className="audio-analysis-timeline-toggle-value">{timelineInterval}s</span>
                     </button>
                   </div>
+
+                  {/* Count slider - shown when count mode is selected */}
+                  {timelineMode === 'count' && (
+                    <div className="audio-analysis-timeline-slider-container">
+                      <div className="audio-analysis-timeline-slider-header">
+                        <span className="audio-analysis-timeline-slider-label">Data Points</span>
+                        <span className="audio-analysis-timeline-slider-value">{timelineCount}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="100"
+                        step="1"
+                        value={timelineCount}
+                        onChange={(e) => setTimelineCount(parseInt(e.target.value, 10))}
+                        className="audio-analysis-timeline-slider"
+                        style={{ '--slider-value': `${((timelineCount - 5) / 95) * 100}%` } as React.CSSProperties}
+                        aria-label="Number of data points"
+                      />
+                      <div className="audio-analysis-timeline-slider-marks">
+                        <span className="audio-analysis-timeline-slider-mark">5</span>
+                        <span className="audio-analysis-timeline-slider-mark">100</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interval slider - shown when interval mode is selected */}
+                  {timelineMode === 'interval' && (
+                    <div className="audio-analysis-timeline-slider-container">
+                      <div className="audio-analysis-timeline-slider-header">
+                        <span className="audio-analysis-timeline-slider-label">Interval (seconds)</span>
+                        <span className="audio-analysis-timeline-slider-value">{timelineInterval}s</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        step="1"
+                        value={timelineInterval}
+                        onChange={(e) => setTimelineInterval(parseInt(e.target.value, 10))}
+                        className="audio-analysis-timeline-slider"
+                        style={{ '--slider-value': `${((timelineInterval - 1) / 9) * 100}%` } as React.CSSProperties}
+                        aria-label="Sampling interval in seconds"
+                      />
+                      <div className="audio-analysis-timeline-slider-marks">
+                        <span className="audio-analysis-timeline-slider-mark">1s</span>
+                        <span className="audio-analysis-timeline-slider-mark">10s</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
