@@ -12,6 +12,8 @@ export type {
 
     // Audio
     AudioProfile,
+    AudioTimelineEvent,
+    SamplingStrategy,
     ColorPalette,
     FrequencyBands,
 

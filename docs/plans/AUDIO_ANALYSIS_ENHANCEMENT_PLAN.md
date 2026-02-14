@@ -29,12 +29,12 @@
 
 ### Tasks
 
-- [ ] Import `AudioTimelineEvent` and `SamplingStrategy` types from playlist-data-engine
-- [ ] Add `timelineData` state array to store timeline events
-- [ ] Add `isTimelineAnalyzing` state for loading indicator
-- [ ] Implement `analyzeTimeline` method that calls `analyzer.analyzeTimeline()`
-- [ ] Update hook return object to expose new method and state
-- [ ] Export new types from `src/types/index.ts`
+- [x] Import `AudioTimelineEvent` and `SamplingStrategy` types from playlist-data-engine
+- [x] Add `timelineData` state array to store timeline events
+- [x] Add `isTimelineAnalyzing` state for loading indicator
+- [x] Implement `analyzeTimeline` method that calls `analyzer.analyzeTimeline()`
+- [x] Update hook return object to expose new method and state
+- [x] Export new types from `src/types/index.ts`
 
 ### Files to Modify
 

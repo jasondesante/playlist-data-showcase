@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { AudioAnalyzer, AudioProfile, ColorExtractor, AudioAnalyzerOptions } from 'playlist-data-engine';
+import { AudioAnalyzer, AudioProfile, ColorExtractor, AudioAnalyzerOptions, AudioTimelineEvent, SamplingStrategy } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { useAppStore } from '@/store/appStore';
@@ -25,12 +25,17 @@ import { useAppStore } from '@/store/appStore';
  * @returns {number} progress - Analysis progress percentage (0-100)
  * @returns {AudioAnalyzerOptions} audioAnalyzerOptions - Current audio analyzer options
  * @returns {Function} setAudioAnalyzerOptions - Update audio analyzer options and re-create analyzer
+ * @returns {Function} analyzeTimeline - Perform detailed timeline analysis of the entire song
+ * @returns {AudioTimelineEvent[]} timelineData - Array of timeline events from last analysis
+ * @returns {boolean} isTimelineAnalyzing - Whether timeline analysis is in progress
  */
 export const useAudioAnalyzer = () => {
     const { settings } = useAppStore();
     const [analyzer, setAnalyzer] = useState<AudioAnalyzer | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [timelineData, setTimelineData] = useState<AudioTimelineEvent[]>([]);
+    const [isTimelineAnalyzing, setIsTimelineAnalyzing] = useState(false);
 
     // Audio analyzer options for controlling analysis behavior
     const [audioAnalyzerOptions, setAudioAnalyzerOptionsState] = useState<AudioAnalyzerOptions>({
@@ -214,6 +219,47 @@ export const useAudioAnalyzer = () => {
         } finally {
             setIsAnalyzing(false);
         }
+    }, [analyzer, settings.audioFftSize]);
+
+    /**
+     * Perform detailed timeline analysis of the entire song.
+     * Returns an array of frequency and amplitude data points over time.
+     *
+     * @param audioUrl - URL of the audio file to analyze
+     * @param strategy - Sampling strategy (interval-based or count-based)
+     * @returns Array of AudioTimelineEvent objects, or empty array if failed
+     */
+    const analyzeTimeline = useCallback(async (
+        audioUrl: string,
+        strategy: SamplingStrategy
+    ): Promise<AudioTimelineEvent[]> => {
+        if (!analyzer) return [];
+
+        const startTime = performance.now();
+        logger.info('AudioAnalyzer', 'Starting timeline analysis', { url: audioUrl, strategy });
+        setIsTimelineAnalyzing(true);
+        setTimelineData([]);
+
+        try {
+            const events = await analyzer.analyzeTimeline(audioUrl, strategy);
+
+            const endTime = performance.now();
+            const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+            logger.info('AudioAnalyzer', 'Timeline analysis complete', {
+                eventCount: events.length,
+                analysisTimeSeconds: elapsedSeconds,
+                strategy,
+            });
+
+            setTimelineData(events);
+            return events;
+        } catch (error) {
+            handleError(error, 'AudioAnalyzer');
+            return [];
+        } finally {
+            setIsTimelineAnalyzing(false);
+        }
     }, [analyzer]);
 
     return {
@@ -223,5 +269,8 @@ export const useAudioAnalyzer = () => {
         progress,
         audioAnalyzerOptions,
         setAudioAnalyzerOptions,
+        analyzeTimeline,
+        timelineData,
+        isTimelineAnalyzing,
     };
 };
