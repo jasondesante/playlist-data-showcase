@@ -183,7 +183,15 @@
 
 ## Verification
 
-### Manual Testing
+### Automated Verification (Code Review)
+
+- [x] TypeScript compiles without errors (`tsc --noEmit` passes)
+- [x] CSS lint passes (`npm run lint:css` passes)
+- [x] CSS brackets balanced (`npm run check:css` passes)
+- [x] All component files exist and are properly exported
+- [x] All CSS classes used in components are defined in stylesheets
+
+### Manual Testing (Requires Browser)
 
 1. **RMS Energy/Dynamic Range**:
    - [ ] Analyze a track and verify Energy Metrics card appears
