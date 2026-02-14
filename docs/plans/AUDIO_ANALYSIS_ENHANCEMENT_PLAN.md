@@ -74,7 +74,7 @@
 
 ### Tasks
 
-- [ ] Create `src/components/ui/RadarChart.tsx` component
+- [x] Create `src/components/ui/RadarChart.tsx` component
 - [ ] Implement Canvas drawing for radar chart with 4 axes (Bass, Mid, Treble, Energy)
 - [ ] Add background circles and axis lines
 - [ ] Implement data polygon with gradient fill
