@@ -93,11 +93,13 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 1.6: Add CSS Styles
 
-**File:** [src/components/Tabs/CharacterGenTab.css](src/components/Tabs/CharacterGenTab.css)
+**File:** [src/styles/components/AdvancedOptionsSection.css](src/styles/components/AdvancedOptionsSection.css)
 
-- [ ] Style advanced options container
-- [ ] Style dropdown selects to match existing form controls
-- [ ] Style expand/collapse animation
+- [x] Style advanced options container
+- [x] Style dropdown selects to match existing form controls
+- [x] Style expand/collapse animation
+
+**Completed:** CSS styles implemented in dedicated component file. Container has background, border, and rounded corners. Dropdown selects match form controls with focus ring and hover states. Expand/collapse uses CSS grid-template-rows transition for smooth animation.
 
 ---
 
