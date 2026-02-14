@@ -16,6 +16,7 @@ import { GenerationModeToggle } from '../ui/GenerationModeToggle';
 import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
 import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
+import { ActiveEffectsSummary } from '../ui/EffectDisplay';
 import { showToast } from '../ui/Toast';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
@@ -629,6 +630,16 @@ export function CharacterGenTab() {
               </div>
             </div>
           </div>
+
+          {/* Active Effects Summary Card (Task 2.2) */}
+          {(character.feature_effects?.length || character.equipment_effects?.length) && (
+            <Card variant="default" padding="sm">
+              <ActiveEffectsSummary
+                featureEffects={character.feature_effects}
+                equipmentEffects={character.equipment_effects}
+              />
+            </Card>
+          )}
 
           {/* Audio Trait Mapping */}
           {audioProfile && (

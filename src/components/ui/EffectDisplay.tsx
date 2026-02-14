@@ -55,7 +55,7 @@ export interface FeatureEffect {
 export interface EquipmentProperty {
   type: string;
   target?: string;
-  value?: number | string;
+  value?: number | string | boolean;
   description?: string;
 }
 

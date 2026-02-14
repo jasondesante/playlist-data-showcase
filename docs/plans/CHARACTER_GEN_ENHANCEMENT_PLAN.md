@@ -131,10 +131,12 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 **File:** [src/components/Tabs/CharacterGenTab.tsx](src/components/Tabs/CharacterGenTab.tsx)
 
-- [ ] Add new Card after character header (before Audio Trait Mapping)
-- [ ] Combine `character.feature_effects` and `character.equipment_effects`
-- [ ] Group by effect type
-- [ ] Show totals where applicable (e.g., "+3 STR total")
+- [x] Add new Card after character header (before Audio Trait Mapping)
+- [x] Combine `character.feature_effects` and `character.equipment_effects`
+- [x] Group by effect type
+- [x] Show totals where applicable (e.g., "+3 STR total")
+
+**Completed:** Added `ActiveEffectsSummary` component to CharacterGenTab. The component is conditionally rendered when the character has `feature_effects` or `equipment_effects`. It uses the already-created `ActiveEffectsSummary` component from Task 2.1 which handles grouping by effect type and showing stat totals. Also fixed a type mismatch in `EffectDisplay.tsx` where `EquipmentProperty.value` needed to accept `boolean` in addition to `number | string`.
 
 ### Task 2.3: Add Inline Feature Effects
 
