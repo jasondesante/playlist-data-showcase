@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles, Zap } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -42,9 +42,8 @@ export function AudioAnalysisTab() {
   const [midSliderPos, setMidSliderPos] = useState(50);       // 1.0
 
   // Analysis mode state for Phase 3: Normal vs Timeline analysis
-  // Prefixed with _ to suppress TS6133 unused variable warnings during incremental development
-  // These will be consumed in subsequent Phase 3 tasks (mode selector UI, timeline options)
-  const [_analysisMode, _setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
+  const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
+  // Timeline mode options (for future tasks - count vs interval)
   const [_timelineMode, _setTimelineMode] = useState<'count' | 'interval'>('count');
   const [_timelineCount, _setTimelineCount] = useState(20); // 5-100 data points
   const [_timelineInterval, _setTimelineInterval] = useState(2); // 1-10 seconds
@@ -315,7 +314,38 @@ export function AudioAnalysisTab() {
               </div>
             </div>
 
-            {/* 3. Action Section */}
+            {/* 3. Analysis Mode Selector */}
+            <div className="audio-analysis-mode-card">
+              <div className="audio-analysis-mode-header">
+                <span className="audio-analysis-mode-title">Analysis Mode</span>
+              </div>
+              <div className="audio-analysis-mode-buttons" role="radiogroup" aria-label="Analysis mode selection">
+                <button
+                  type="button"
+                  className={`audio-analysis-mode-btn ${analysisMode === 'normal' ? 'audio-analysis-mode-btn-active' : ''}`}
+                  onClick={() => setAnalysisMode('normal')}
+                  aria-checked={analysisMode === 'normal'}
+                  role="radio"
+                >
+                  <Activity className="audio-analysis-mode-icon" size={16} />
+                  <span className="audio-analysis-mode-label">Normal</span>
+                  <span className="audio-analysis-mode-desc">3 samples</span>
+                </button>
+                <button
+                  type="button"
+                  className={`audio-analysis-mode-btn ${analysisMode === 'timeline' ? 'audio-analysis-mode-btn-active' : ''}`}
+                  onClick={() => setAnalysisMode('timeline')}
+                  aria-checked={analysisMode === 'timeline'}
+                  role="radio"
+                >
+                  <Clock className="audio-analysis-mode-icon" size={16} />
+                  <span className="audio-analysis-mode-label">Timeline</span>
+                  <span className="audio-analysis-mode-desc">Full analysis</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 4. Action Section */}
             <div className="audio-analysis-action-integration">
               <Button
                 onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}

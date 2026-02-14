@@ -184,7 +184,7 @@
 
 .audio-analysis-primary-layout {
   display: grid;
-  grid-template-columns: 1.4fr auto 1fr;
+  grid-template-columns: 1.4fr auto auto 1fr;
   gap: 1.5rem;
   align-items: center;
 }
@@ -194,6 +194,14 @@
     grid-template-columns: 1fr;
     gap: 1.5rem;
     text-align: center;
+  }
+
+  .audio-analysis-mode-card {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    padding: 1rem 0;
   }
 }
 
@@ -1004,4 +1012,96 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ============================================
+   ANALYSIS MODE SELECTOR
+   ============================================ */
+.audio-analysis-mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  border-left: 1px solid hsl(var(--border) / 0.5);
+  border-right: 1px solid hsl(var(--border) / 0.5);
+}
+
+.audio-analysis-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.audio-analysis-mode-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsl(var(--primary));
+  opacity: 0.9;
+}
+
+.audio-analysis-mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.audio-analysis-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--surface-3) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 5rem;
+}
+
+.audio-analysis-mode-btn:hover {
+  background: hsl(var(--surface-3));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.audio-analysis-mode-btn-active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.15));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), inset 0 1px 0 hsl(var(--primary) / 0.1);
+}
+
+.audio-analysis-mode-btn-active .audio-analysis-mode-icon {
+  color: hsl(var(--primary));
+}
+
+.audio-analysis-mode-btn-active .audio-analysis-mode-label {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.audio-analysis-mode-btn-active .audio-analysis-mode-desc {
+  color: hsl(var(--primary));
+}
+
+.audio-analysis-mode-icon {
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.audio-analysis-mode-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.audio-analysis-mode-desc {
+  font-size: 0.5625rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+  transition: color 0.2s ease;
 }
