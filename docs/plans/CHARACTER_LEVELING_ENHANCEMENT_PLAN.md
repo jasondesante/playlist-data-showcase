@@ -1,0 +1,678 @@
+# Character Leveling Tab Enhancement Plan
+
+## Overview
+
+Enhance the CharacterLevelingTab to showcase new playlist-data-engine features including:
+1. **Custom XP Formulas** - Per-character uncapped progression configuration with visual preview
+2. **Enhanced XP Sources** - Expanded source buttons with all available XP types
+3. **StatSelectionModal Enhancements** - Stat cap warnings and effect breakdowns
+
+---
+
+## Goals
+
+1. Showcase the engine's `LevelUpProcessor.setUncappedConfig()` capability with a visual UI
+2. Allow per-character XP formula customization for uncapped mode
+3. Demonstrate all available XP sources (combat, crafting, social, etc.)
+4. Improve StatSelectionModal to show active effects and stat cap warnings
+
+---
+
+## Key Findings
+
+### Already Implemented (No Work Needed)
+
+| Feature | Location | Status |
+|---------|----------|--------|
+| Features Gained display | `LevelUpDetailModal.tsx:179-195` | ✅ Already shows `featuresGained` |
+| Spell Slots display | `LevelUpDetailModal.tsx:197-217` | ✅ Already shows `newSpellSlots` |
+| XP to Next Level breakdown | `CharacterLevelingTab.tsx:472-474` | ✅ Already shown |
+| Level-up celebration modal | `LevelUpDetailModal.tsx` | ✅ Complete |
+
+### New Features to Add
+
+| Feature | Component | Description |
+|---------|-----------|-------------|
+| Custom XP Formulas | CharacterLevelingTab | Preset buttons + visual chart for uncapped mode |
+| All XP Sources | CharacterLevelingTab | Add Combat, Crafting, Social, Boss buttons |
+| Stat Cap Warnings | StatSelectionModal | Show "Capped at 20" warnings for standard mode |
+| Effect Breakdown | StatSelectionModal | List each stat modifier with source |
+
+---
+
+## Implementation Phases
+
+---
+
+## Phase 1: Custom XP Formulas UI
+
+### Overview
+
+Add a collapsible "Uncapped Progression Settings" panel that only appears when the active character has `gameMode: 'uncapped'`. This panel allows per-character XP formula customization with preset options and a visual chart preview.
+
+### 1.1 Types & Constants Setup
+
+#### Tasks
+
+- [ ] **1.1.1 Create XP Formula Types**
+  - [ ] Define `XPFormulaPreset` type with id, name, description, formula functions
+  - [ ] Define `UncappedProgressionSettings` interface for storing per-character config
+  - [ ] File: `src/types/progressionConfig.ts` or add to existing types file
+  ```typescript
+  type XPFormulaPreset = {
+    id: string;
+    name: string;
+    description: string;
+    xpFormula: (level: number) => number;
+    proficiencyFormula: (level: number) => number;
+    chartColor: string; // For chart preview
+  };
+  ```
+
+- [ ] **1.1.2 Create Preset Constants**
+  - [ ] Create `XP_FORMULA_PRESETS` constant array with all presets:
+    - [ ] **D&D 5e (Default)** - Continues naturally beyond level 20
+    - [ ] **Linear** - 50,000 XP per level (consistent progression)
+    - [ ] **Exponential** - Faster at low levels, slower at high levels
+    - [ ] **OSRS-Style** - Old School RuneScape curve (steep at high levels)
+  - [ ] File: `src/constants/xpFormulaPresets.ts`
+  ```typescript
+  export const XP_FORMULA_PRESETS: XPFormulaPreset[] = [
+    {
+      id: 'dnd5e',
+      name: 'D&D 5e (Default)',
+      description: 'Natural continuation of D&D 5e progression',
+      xpFormula: (level) => { /* D&D 5e formula */ },
+      proficiencyFormula: (level) => 2 + Math.floor((level - 1) / 4),
+      chartColor: '#8b5cf6' // Purple
+    },
+    {
+      id: 'linear',
+      name: 'Linear',
+      description: '50,000 XP per level - consistent progression',
+      xpFormula: (level) => (level - 1) * 50000,
+      proficiencyFormula: (level) => 2 + Math.floor((level - 1) / 2),
+      chartColor: '#3b82f6' // Blue
+    },
+    {
+      id: 'exponential',
+      name: 'Exponential',
+      description: 'Faster at low levels, slower at high levels',
+      xpFormula: (level) => Math.floor(1000 * Math.pow(1.5, level - 1)),
+      proficiencyFormula: (level) => 2 + Math.floor(Math.sqrt(level)),
+      chartColor: '#10b981' // Green
+    },
+    {
+      id: 'osrs',
+      name: 'OSRS-Style',
+      description: 'Old School RuneScape - steep curve at high levels',
+      xpFormula: (level) => Math.floor(Math.pow(level, 3) * 100),
+      proficiencyFormula: (level) => 2 + Math.floor(level / 10),
+      chartColor: '#f59e0b' // Amber
+    }
+  ];
+  ```
+
+- [ ] **1.1.3 Update Character Store**
+  - [ ] Add `uncappedConfig: Record<string, string>` to store (maps character seed → preset id)
+  - [ ] Add `setCharacterUncappedConfig(seed: string, presetId: string)` action
+  - [ ] Persist to LocalStorage
+  - [ ] File: `src/store/characterStore.ts`
+
+---
+
+### 1.2 XP Curve Chart Component
+
+#### Tasks
+
+- [ ] **1.2.1 Create XPCurveChart Component**
+  - [ ] Create `src/components/ui/XPCurveChart.tsx`
+  - [ ] Use a simple SVG-based line chart (no external library needed)
+  - [ ] Props: `presets: XPFormulaPreset[]`, `selectedId: string`, `maxLevel?: number`
+  - [ ] Show levels 1-30 on X-axis
+  - [ ] Show XP values (with smart scaling) on Y-axis
+  - [ ] Highlight selected preset line
+  - [ ] Add hover tooltips showing exact XP at each level
+
+- [ ] **1.2.2 Add Chart Styling**
+  - [ ] Create `src/styles/components/XPCurveChart.css`
+  - [ ] Style for dark theme
+  - [ ] Smooth animations when switching presets
+  - [ ] Responsive sizing
+
+- [ ] **1.2.3 Add XP Table Preview (Optional Enhancement)**
+  - [ ] Show small table with XP requirements for levels 1, 5, 10, 20, 30
+  - [ ] Compare selected preset vs current (if different)
+
+---
+
+### 1.3 Uncapped Progression Settings Panel
+
+#### Tasks
+
+- [ ] **1.3.1 Create Settings Panel Component**
+  - [ ] Create `src/components/ui/UncappedProgressionPanel.tsx`
+  - [ ] Collapsible panel (collapsed by default)
+  - [ ] Only render when `character.gameMode === 'uncapped'`
+  - [ ] Props: `character: CharacterSheet`, `onConfigChange: (presetId: string) => void`
+
+- [ ] **1.3.2 Add Preset Selection UI**
+  - [ ] Show preset cards in a 2x2 grid
+  - [ ] Each card shows:
+    - [ ] Preset name
+    - [ ] Short description
+    - [ ] Mini color indicator (matches chart)
+    - [ ] Selected state styling
+  - [ ] Click to select preset
+
+- [ ] **1.3.3 Add Chart Integration**
+  - [ ] Render `XPCurveChart` below preset cards
+  - [ ] Update chart when preset changes
+  - [ ] Show "XP Curve Preview" label
+
+- [ ] **1.3.4 Add Apply Button**
+  - [ ] Show "Apply Changes" button when preset differs from current
+  - [ ] Button triggers `LevelUpProcessor.setUncappedConfig()` from engine
+  - [ ] Show toast notification on success
+  - [ ] Update character store with new preset id
+
+- [ ] **1.3.5 Add Panel Styling**
+  - [ ] Create `src/styles/components/UncappedProgressionPanel.css`
+  - [ ] Match existing CharacterLevelingTab card styling
+  - [ ] Collapsible animation
+  - [ ] Responsive layout
+
+---
+
+### 1.4 Integration with CharacterLevelingTab
+
+#### Tasks
+
+- [ ] **1.4.1 Add Panel to Tab**
+  - [ ] Import `UncappedProgressionPanel` in `CharacterLevelingTab.tsx`
+  - [ ] Add below the Stat Strategy card (after line 515)
+  - [ ] Only show when `activeChar.gameMode === 'uncapped'`
+  - [ ] Add collapsible toggle button
+
+- [ ] **1.4.2 Create Config Change Handler**
+  - [ ] Create `handleUncappedConfigChange(presetId: string)` function
+  - [ ] Call `LevelUpProcessor.setUncappedConfig()` with preset formulas
+  - [ ] Update character store
+  - [ ] Show success toast
+  - [ ] Log change for debugging
+
+- [ ] **1.4.3 Add Hook for Engine Integration**
+  - [ ] Create or update `useUncappedProgression` hook
+  - [ ] Import `LevelUpProcessor` from engine
+  - [ ] Expose `applyPreset(preset: XPFormulaPreset)` method
+  - [ ] File: `src/hooks/useUncappedProgression.ts`
+
+- [ ] **1.4.4 Test Integration**
+  - [ ] Test with standard mode character (panel should NOT appear)
+  - [ ] Test with uncapped mode character (panel should appear)
+  - [ ] Verify preset selection updates chart
+  - [ ] Verify apply button calls engine API
+  - [ ] Verify persistence across page reloads
+
+---
+
+## Phase 2: Enhanced XP Sources
+
+### Overview
+
+Expand the XP Source buttons to include all available sources from the engine, with improved UI showing XP amounts and visual distinction.
+
+### 2.1 Update XP Sources Configuration
+
+#### Tasks
+
+- [ ] **2.1.1 Define Complete XP Sources**
+  - [ ] Create `XP_SOURCES` constant array in `CharacterLevelingTab.tsx` or separate file
+  - [ ] Include all sources with metadata:
+  ```typescript
+  const XP_SOURCES = [
+    { id: 'quest', label: 'Complete Quest', xp: 500, icon: Scroll, color: 'blue' },
+    { id: 'boss_defeat', label: 'Defeat Boss', xp: 5000, icon: Sword, color: 'red' },
+    { id: 'exploration', label: 'Exploration', xp: 250, icon: Compass, color: 'green' },
+    { id: 'combat', label: 'Combat Victory', xp: 300, icon: Swords, color: 'orange' },
+    { id: 'crafting', label: 'Crafting', xp: 150, icon: Hammer, color: 'yellow' },
+    { id: 'social', label: 'Social Encounter', xp: 100, icon: Users, color: 'purple' },
+  ];
+  ```
+
+- [ ] **2.1.2 Add Lucide Icons**
+  - [ ] Import additional icons: `Swords`, `Hammer`, `Users`
+  - [ ] Update icon imports in `CharacterLevelingTab.tsx`
+
+---
+
+### 2.2 Redesign XP Source Buttons
+
+#### Tasks
+
+- [ ] **2.2.1 Update Grid Layout**
+  - [ ] Change from 3-column to 3x2 grid (6 sources)
+  - [ ] Update `leveling-xp-sources-grid` CSS class
+  - [ ] Keep responsive design (2 columns on mobile)
+
+- [ ] **2.2.2 Enhance Button Design**
+  - [ ] Add color coding per source type (using CSS classes)
+  - [ ] Show XP amount more prominently
+  - [ ] Add hover effect showing source description
+  - [ ] Keep existing button structure
+
+- [ ] **2.2.3 Create Generic Handler**
+  - [ ] Refactor existing handlers into single `handleXPSource(source: string, amount: number)` function
+  - [ ] Reduce code duplication
+  - [ ] Pass icon and color for toast notification
+
+- [ ] **2.2.4 Update CSS**
+  - [ ] Add color-specific classes: `leveling-xp-source-combat`, `leveling-xp-source-crafting`, etc.
+  - [ ] Update grid spacing for 6 items
+  - [ ] Ensure buttons are equal height
+
+---
+
+## Phase 3: StatSelectionModal Enhancements
+
+### Overview
+
+Enhance the StatSelectionModal component to show:
+1. **Stat Cap Warnings** - When a stat is at 20 in standard mode
+2. **Effect Breakdown** - List each active stat modifier with source
+
+### 3.1 Add New Props to Modal
+
+#### Tasks
+
+- [ ] **3.1.1 Update Props Interface**
+  - [ ] Add `gameMode?: 'standard' | 'uncapped'` prop
+  - [ ] Add `activeEffects?: StatEffect[]` prop
+  - [ ] Update `StatSelectionModalProps` interface
+  - File: `src/components/StatSelectionModal.tsx`
+
+  ```typescript
+  interface StatEffect {
+    ability: Ability;
+    amount: number;
+    source: string; // e.g., "Ring of Strength", "Curse of Weakness"
+    type: 'buff' | 'debuff';
+  }
+
+  export interface StatSelectionModalProps {
+    isOpen: boolean;
+    pendingCount: number;
+    currentStats?: Partial<Record<Ability, number>>;
+    gameMode?: 'standard' | 'uncapped';
+    activeEffects?: StatEffect[];
+    onApply: (primaryStat: Ability, secondaryStats?: Ability[]) => void;
+    onCancel: () => void;
+  }
+  ```
+
+---
+
+### 3.2 Stat Cap Warning Feature
+
+#### Tasks
+
+- [ ] **3.2.1 Add Cap Warning to Stat Buttons**
+  - [ ] In standard mode, check if `currentStats[ability] >= 20`
+  - [ ] Add "⚠️ Capped at 20" badge below stat value
+  - [ ] Disable button if stat is already at 20
+  - [ ] Add tooltip explaining the cap
+
+- [ ] **3.2.2 Add Approaching Cap Warning**
+  - [ ] Show "⚡ Near Cap" indicator when stat is 18-19
+  - [ ] Visual styling: amber/yellow color
+  - [ ] Inform user that only +1 or +2 is available
+
+- [ ] **3.2.3 Add Global Warning Banner**
+  - [ ] If all selected stats would be capped, show warning banner
+  - [ ] Message: "Some stats are at maximum. Consider choosing different stats."
+  - [ ] Only show in standard mode
+
+- [ ] **3.2.4 Update CSS**
+  - [ ] Add `.statmodal-stat-capped` class
+  - [ ] Add `.statmodal-stat-near-cap` class
+  - [ ] Add `.statmodal-cap-banner` class
+  - [ ] File: `src/styles/components/StatSelectionModal.css`
+
+---
+
+### 3.3 Active Effects Breakdown Feature
+
+#### Tasks
+
+- [ ] **3.3.1 Create Effects Summary Section**
+  - [ ] Add collapsible "Active Effects" section above stat grid
+  - [ ] Only show if `activeEffects` has items
+  - [ ] Header: "Active Stat Modifiers"
+
+- [ ] **3.3.2 Create Effect Item Component**
+  - [ ] Each effect shows:
+    - [ ] Ability icon + name
+    - [ ] Amount with +/- indicator
+    - [ ] Source name (equipment, feature, curse, etc.)
+    - [ ] Color: green for buffs, red for debuffs
+  - [ ] Group by ability for cleaner display
+
+- [ ] **3.3.3 Update Stat Display**
+  - [ ] Show "base + modifiers = total" format
+  - [ ] Example: "STR: 14 (+2 from Ring) = 16"
+  - [ ] Only show breakdown if effects exist
+
+- [ ] **3.3.4 Add Effects CSS**
+  - [ ] Add `.statmodal-effects-section` class
+  - [ ] Add `.statmodal-effect-item` class
+  - [ ] Add `.statmodal-effect-buff` and `.statmodal-effect-debuff` variants
+  - [ ] Add collapse/expand animation
+
+---
+
+### 3.4 Update CharacterLevelingTab to Pass Props
+
+#### Tasks
+
+- [ ] **3.4.1 Extract Active Effects from Character**
+  - [ ] Create helper function to extract effects from `character.equipment_effects` and `character.feature_effects`
+  - [ ] Transform engine format to `StatEffect[]` format
+
+  ```typescript
+  const getActiveStatEffects = (character: CharacterSheet): StatEffect[] => {
+    const effects: StatEffect[] = [];
+
+    // From equipment effects
+    character.equipment_effects?.forEach(effect => {
+      if (effect.stat_bonus) {
+        Object.entries(effect.stat_bonus).forEach(([ability, amount]) => {
+          effects.push({
+            ability: ability as Ability,
+            amount,
+            source: effect.source || 'Equipment',
+            type: amount > 0 ? 'buff' : 'debuff'
+          });
+        });
+      }
+    });
+
+    // From feature effects
+    character.feature_effects?.forEach(effect => {
+      if (effect.stat_bonus) {
+        Object.entries(effect.stat_bonus).forEach(([ability, amount]) => {
+          effects.push({
+            ability: ability as Ability,
+            amount,
+            source: effect.source || 'Feature',
+            type: amount > 0 ? 'buff' : 'debuff'
+          });
+        });
+      }
+    });
+
+    return effects;
+  };
+  ```
+
+- [ ] **3.4.2 Update StatSelectionModal Usage**
+  - [ ] Pass `gameMode={activeChar.gameMode}`
+  - [ ] Pass `activeEffects={getActiveStatEffects(activeChar)}`
+  - [ ] Update modal call in `CharacterLevelingTab.tsx:692-698`
+
+---
+
+### 3.5 Update Other Tabs Using StatSelectionModal
+
+#### Tasks
+
+- [ ] **3.5.1 Find All StatSelectionModal Usages**
+  - [ ] Search for `<StatSelectionModal` across codebase
+  - [ ] Identify all locations using the modal
+
+- [ ] **3.5.2 Update Each Usage**
+  - [ ] Pass `gameMode` prop from character
+  - [ ] Pass `activeEffects` prop (or empty array if not applicable)
+  - [ ] Ensure backward compatibility (props are optional)
+
+- [ ] **3.5.3 Test Each Location**
+  - [ ] Verify modal still opens and closes correctly
+  - [ ] Verify stat selection still works
+  - [ ] Verify new features appear when props are provided
+
+---
+
+## Phase 4: Testing & Polish
+
+### 4.1 Integration Testing
+
+#### Tasks
+
+- [ ] **4.1.1 Test XP Formula Panel**
+  - [ ] Panel only shows for uncapped characters
+  - [ ] Preset selection updates chart
+  - [ ] Apply button calls engine API correctly
+  - [ ] Config persists across page reloads
+  - [ ] Switching between uncapped characters loads their config
+
+- [ ] **4.1.2 Test XP Sources**
+  - [ ] All 6 source buttons work correctly
+  - [ ] XP amounts are accurate
+  - [ ] Toast notifications show correct source name
+  - [ ] Level-up triggers correctly with each source
+
+- [ ] **4.1.3 Test StatSelectionModal**
+  - [ ] Cap warnings show for standard mode characters
+  - [ ] Cap warnings don't show for uncapped mode
+  - [ ] Effects breakdown shows when effects exist
+  - [ ] Modal works without new props (backward compatible)
+
+- [ ] **4.1.4 Cross-Browser Testing**
+  - [ ] Chrome
+  - [ ] Firefox
+  - [ ] Safari
+
+---
+
+### 4.2 Accessibility Testing
+
+#### Tasks
+
+- [ ] **4.2.1 Keyboard Navigation**
+  - [ ] All preset cards are keyboard accessible
+  - [ ] Tab order is logical
+  - [ ] Enter/Space activates preset
+
+- [ ] **4.2.2 Screen Reader Support**
+  - [ ] ARIA labels on chart
+  - [ ] Announce preset changes
+  - [ ] Stat cap warnings are announced
+
+---
+
+### 4.3 Documentation
+
+#### Tasks
+
+- [ ] **4.3.1 Update Component Comments**
+  - [ ] Update CharacterLevelingTab header comment
+  - [ ] Update StatSelectionModal header comment
+  - [ ] Document new props
+
+- [ ] **4.3.2 Add Code Comments**
+  - [ ] Comment complex formula logic
+  - [ ] Document effect extraction helper
+
+---
+
+## File Changes Summary
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/constants/xpFormulaPresets.ts` | XP formula preset definitions |
+| `src/components/ui/XPCurveChart.tsx` | SVG chart for XP curve preview |
+| `src/styles/components/XPCurveChart.css` | Chart styling |
+| `src/components/ui/UncappedProgressionPanel.tsx` | Collapsible panel for uncapped config |
+| `src/styles/components/UncappedProgressionPanel.css` | Panel styling |
+| `src/hooks/useUncappedProgression.ts` | Hook for engine integration |
+
+### Modified Files
+
+| File | Changes |
+|------|---------|
+| `src/components/Tabs/CharacterLevelingTab.tsx` | Add panel, update XP sources, pass new props |
+| `src/components/Tabs/CharacterLevelingTab.css` | Updated grid layout, new source button styles |
+| `src/components/StatSelectionModal.tsx` | Add cap warnings, effects breakdown |
+| `src/styles/components/StatSelectionModal.css` | New warning/effect styles |
+| `src/store/characterStore.ts` | Add uncapped config storage |
+
+---
+
+## UI Mockup: Uncapped Progression Panel
+
+```
+┌─ Character Leveling ──────────────────────────────────────────┐
+│                                                               │
+│  ... existing content ...                                     │
+│                                                               │
+│  ┌─ Uncapped Progression Settings ▼─────────────────────────┐│
+│  │                                                          ││
+│  │  Choose how XP scales beyond Level 20                    ││
+│  │                                                          ││
+│  │  ┌──────────────────┐  ┌──────────────────┐             ││
+│  │  │ ⬤ D&D 5e        │  │ ○ Linear         │             ││
+│  │  │   (Default)     │  │   50K per level  │             ││
+│  │  └──────────────────┘  └──────────────────┘             ││
+│  │                                                          ││
+│  │  ┌──────────────────┐  ┌──────────────────┐             ││
+│  │  │ ○ Exponential    │  │ ○ OSRS-Style     │             ││
+│  │  │   Fast/slow      │  │   Steep curve    │             ││
+│  │  └──────────────────┘  └──────────────────┘             ││
+│  │                                                          ││
+│  │  ┌─ XP Curve Preview ─────────────────────────────────┐ ││
+│  │  │                                                      │ ││
+│  │  │     XP (thousands)                                   │ ││
+│  │  │     800K ┤                        ╭── D&D 5e         │ ││
+│  │  │     600K ┤                   ╭────╯                  │ ││
+│  │  │     400K ┤              ╭────╯                       │ ││
+│  │  │     200K ┤         ╭────╯                           │ ││
+│  │  │       0K ┼────┬────┬────┬────┬────                  │ ││
+│  │  │            L1  L5  L10 L15 L20 L25 L30              │ ││
+│  │  │                                                      │ ││
+│  │  └──────────────────────────────────────────────────────┘ ││
+│  │                                                          ││
+│  │  ┌─ Level XP Requirements ─────────────────────────────┐ ││
+│  │  │ Level 5:  14,000 XP    Level 20: 355,000 XP        │││
+│  │  │ Level 10: 64,000 XP    Level 30: ~1,120,000 XP     │││
+│  │  └──────────────────────────────────────────────────────┘ ││
+│  │                                                          ││
+│  │  [ Apply Changes ]                                       ││
+│  │                                                          ││
+│  └──────────────────────────────────────────────────────────┘│
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## UI Mockup: Enhanced XP Sources
+
+```
+┌─ Add Experience ──────────────────────────────────────────────┐
+│                                                               │
+│  XP Sources (Simulate Activities)                            │
+│                                                               │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────┐│
+│  │ 📜 Complete Quest│  │ ⚔️ Defeat Boss   │  │ 🧭 Exploration││
+│  │    +500 XP       │  │   +5,000 XP      │  │    +250 XP   ││
+│  └──────────────────┘  └──────────────────┘  └─────────────┘│
+│                                                               │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────┐│
+│  │ ⚔️ Combat Victory│  │ 🔨 Crafting     │  │ 👥 Social   ││
+│  │    +300 XP       │  │    +150 XP       │  │    +100 XP  ││
+│  └──────────────────┘  └──────────────────┘  └─────────────┘│
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## UI Mockup: Enhanced StatSelectionModal
+
+```
+┌─ Apply Stat Increases ──────────────────────────────────── ────┐
+│                                                              [X]│
+│                                                                 │
+│  You have 2 pending stat increases to apply.                   │
+│  Choose how to distribute your increases following D&D 5e.     │
+│                                                                 │
+│  ┌─ Active Stat Modifiers ▼──────────────────────────────────┐ │
+│  │  🟢 STR +2  from Ring of Strength                         │ │
+│  │  🔴 DEX -1  from Curse of Clumsiness                      │ │
+│  │  🟢 CON +1  from Amulet of Health                         │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Choose distribution: [+2 to One] | [+1 to Two]           │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐                        │
+│  │ STR     │  │ DEX     │  │ CON     │                        │
+│  │ 16      │  │ 13 (-1) │  │ 14 (+1) │                        │
+│  │Strength │  │Dexterity│  │Constitu│                        │
+│  │  [+2]   │  │         │  │         │                        │
+│  └─────────┘  └─────────┘  └─────────┘                        │
+│                                                                 │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐                        │
+│  │ INT     │  │ WIS     │  │ CHA     │                        │
+│  │ 20 ⚠️   │  │ 12      │  │ 10      │                        │
+│  │Capped!  │  │Wisdom   │  │Charisma │                        │
+│  │ DISABLED│  │         │  │         │                        │
+│  └─────────┘  └─────────┘  └─────────┘                        │
+│                                                                 │
+│  ⚠️ INT is at maximum (20). Select a different stat.          │
+│                                                                 │
+│                     [Cancel]  [Apply Increases]                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Success Criteria
+
+- [ ] Uncapped Progression Panel only shows for uncapped mode characters
+- [ ] All 4 XP formula presets are selectable and show chart preview
+- [ ] Apply button correctly calls `LevelUpProcessor.setUncappedConfig()`
+- [ ] Per-character preset selection persists across page reloads
+- [ ] All 6 XP source buttons work and award correct XP amounts
+- [ ] StatSelectionModal shows cap warnings in standard mode
+- [ ] StatSelectionModal shows effect breakdown when effects exist
+- [ ] All changes are backward compatible
+- [ ] Works on mobile (responsive design)
+- [ ] Keyboard accessible
+
+---
+
+## Estimated Effort
+
+| Phase | Effort | Priority |
+|-------|--------|----------|
+| Phase 1: Custom XP Formulas | Medium | High |
+| Phase 2: Enhanced XP Sources | Small | Medium |
+| Phase 3: StatSelectionModal | Medium | High |
+| Phase 4: Testing & Polish | Small | Medium |
+| **Total** | **Medium** | - |
+
+---
+
+## Notes
+
+- The `LevelUpProcessor.setUncappedConfig()` is a global engine setting. To achieve per-character presets, we store the preset ID per character and re-apply the config when switching characters.
+- The chart uses SVG (no external libraries) to keep bundle size small.
+- StatSelectionModal changes are backward compatible - new props are optional.
+- Features Gained and Spell Slots were already implemented in LevelUpDetailModal - no work needed.
+
+---
+
+*Plan created: 2026-02-13*

@@ -1,0 +1,364 @@
+# SessionTrackingTab Enhancement Plan
+
+Enhancing the SessionTrackingTab to showcase new Playlist Data Engine features: track listen count, mastery levels, mastery badges, and session history.
+
+**Target Features:**
+- Track listen count display
+- Mastery level with thresholds
+- Mastery badges on track cards
+- Session history panel
+
+**NOT included:** Weekly XP summary, favorite/most-played tracks
+
+---
+
+## Research Summary
+
+### Engine APIs Available
+
+| Method | Source | Description |
+|--------|--------|-------------|
+| `SessionTracker.getTrackListenCount(trackUuid)` | SessionTracker | Number of times track has been listened to |
+| `SessionTracker.isTrackMastered(trackUuid, threshold?)` | SessionTracker | Checks if track is mastered (default threshold: 10) |
+| `SessionTracker.getSessionHistory()` | SessionTracker | Returns all completed sessions |
+| `SessionTracker.getTotalXPEarned()` | SessionTracker | Returns total XP earned |
+| `SessionTracker.getTotalListeningTime()` | SessionTracker | Returns total listening time in seconds |
+| `MasterySystem.checkMastery(listenCount)` | MasterySystem | Returns true if listens meet threshold |
+| `MasterySystem.calculateMasteryBonus(isMastered)` | MasterySystem | Returns bonus XP if mastered (+50 XP) |
+
+### Data Structures
+
+**ListeningSession:**
+```typescript
+interface ListeningSession {
+    track_uuid: string;
+    start_time: number;           // Unix timestamp
+    end_time: number;             // Unix timestamp
+    duration_seconds: number;
+    base_xp_earned: number;
+    bonus_xp: number;
+    environmental_context?: EnvironmentalContext;
+    gaming_context?: GamingContext;
+    activity_type?: string;
+    total_xp_earned: number;
+}
+```
+
+### Existing Code Patterns
+
+- **Session Store:** Already has `sessionHistory: ListeningSession[]` persisted
+- **TabBadge Component:** Existing badge component with glow animation
+- **CSS Variables:** `--cute-yellow`, `--cute-green`, `--cute-teal`, `--primary`
+
+---
+
+## Phase 1: Mastery System Hook
+
+Create a new hook to expose mastery-related data from the engine.
+
+### Task 1.1: Create useMastery hook
+
+- [ ] Create `src/hooks/useMastery.ts`
+- [ ] Import `SessionTracker` singleton from `useSessionTracker`
+- [ ] Implement `getTrackListenCount(trackId: string)` function
+- [ ] Implement `getTrackMasteryLevel(listenCount: number)` function
+- [ ] Define mastery thresholds constant:
+  ```typescript
+  const MASTERY_THRESHOLDS = {
+    NONE: 0,       // 0 listens - no badge
+    BASIC: 1,      // 1 listen
+    FAMILIAR: 5,   // 5 listens
+    MASTERED: 10   // 10 listens - engine default
+  };
+  ```
+- [ ] Export hook with memoized calculations
+- [ ] Add TypeScript types for `MasteryLevel` and `MasteryInfo`
+
+**File:** `src/hooks/useMastery.ts`
+
+---
+
+## Phase 2: Mastery Display Components
+
+### Task 2.1: Create MasteryBadge component
+
+- [ ] Create `src/components/ui/MasteryBadge.tsx`
+- [ ] Props: `level: number`, `size?: 'sm' | 'md' | 'lg'`
+- [ ] Display visual badge based on mastery level:
+  - None (0): No badge displayed
+  - Basic (1-4): Bronze circle
+  - Familiar (5-9): Silver star
+  - Mastered (10+): Gold crown with glow
+- [ ] Add tooltip showing mastery level name
+- [ ] Create corresponding CSS in `src/styles/components/MasteryBadge.css`
+
+### Task 2.2: Create MasteryProgressBar component
+
+- [ ] Create `src/components/ui/MasteryProgressBar.tsx`
+- [ ] Props: `currentCount: number`, `nextThreshold: number`, `level: string`
+- [ ] Display progress bar toward next mastery level
+- [ ] Show text like "3/5 listens to Familiar"
+- [ ] Animated fill when progress changes
+- [ ] Create CSS styles inline or in existing SessionTrackingTab.css
+
+---
+
+## Phase 3: Enhance SessionTrackingTab UI
+
+### Task 3.1: Add Mastery Info to Song Card
+
+**File:** `src/components/Tabs/SessionTrackingTab.tsx`
+
+- [ ] Import `useMastery` hook
+- [ ] Get mastery info for `selectedTrack`
+- [ ] Add mastery badge as **bottom overlay** on track image
+- [ ] Add mastery progress section below track info:
+  - Current mastery level with label
+  - Progress bar toward next level
+  - Listen count display
+
+### Task 3.2: Update Song Card Layout
+
+- [ ] Add new CSS class `.session-mastery-section`
+- [ ] Style mastery badge overlay on image
+- [ ] Add mastery progress bar styles
+- [ ] Ensure responsive design for mobile
+
+**Wireframe:**
+```
+┌─────────────────────────────────────┐
+│  [Image]        [Active]            │
+│  ┌─────────────────────────────┐    │
+│  │                             │    │
+│  │     Album Artwork           │    │
+│  │                             │    │
+│  │  ┌───────────────────────┐  │    │
+│  │  │ 🏆 Mastered           │  │    │
+│  │  └───────────────────────┘  │    │
+│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐    │
+│  │ Track Title                 │    │
+│  │ Artist Name                 │    │
+│  │ ─────────────────────────  │    │
+│  │ 🎵 Mastery: Familiar        │    │
+│  │ ●●●○○ 5/10 to Mastered     │    │
+│  │ 👂 Listened 7 times        │    │
+│  └─────────────────────────────┘    │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Phase 4: Session History Panel
+
+### Task 4.0: Extend session storage with track metadata
+
+- [ ] Create `ListeningSessionWithTrack` type extending `ListeningSession`
+- [ ] Update `sessionStore.endSession` to include track info:
+  ```typescript
+  track_title?: string;
+  track_artist?: string;
+  track_image_url?: string;
+  ```
+- [ ] Update `useSessionTracker` to pass track metadata when ending session
+
+**Files:** `src/store/sessionStore.ts`, `src/hooks/useSessionTracker.ts`
+
+### Task 4.1: Create SessionHistoryItem component
+
+- [ ] Create `src/components/ui/SessionHistoryItem.tsx`
+- [ ] Props: `session: ListeningSession`, `track?: PlaylistTrack`
+- [ ] Display:
+  - Track title (from track or track_uuid)
+  - Duration in MM:SS
+  - XP earned
+  - Timestamp (relative or absolute)
+  - Bonuses applied (environmental, gaming icons)
+- [ ] Clickable to expand for full details
+- [ ] Add CSS styles
+
+### Task 4.2: Create SessionHistoryPanel component
+
+- [ ] Create `src/components/ui/SessionHistoryPanel.tsx`
+- [ ] Props: `sessions: ListeningSession[]`, `maxItems?: number`
+- [ ] Display list of recent sessions (default 10)
+- [ ] Show "View All" button if more sessions exist
+- [ ] Collapsible/expandable design
+- [ ] Empty state when no history
+
+### Task 4.3: Integrate SessionHistoryPanel into SessionTrackingTab
+
+- [ ] Import `SessionHistoryPanel`
+- [ ] Add below the "Last Session" card or replace it
+- [ ] Use `sessionHistory` from `useSessionStore`
+- [ ] Show stats summary at top:
+  - Total sessions count
+  - Total XP earned
+  - Total listening time
+
+**Wireframe:**
+```
+┌─────────────────────────────────────┐
+│  📜 Session History                 │
+│  15 sessions • 4,250 XP • 3.5h      │
+├─────────────────────────────────────┤
+│  🎵 Song Title A      +320 XP       │
+│     5:23 • 2 hours ago              │
+│  ─────────────────────────────────  │
+│  🎵 Song Title B      +180 XP       │
+│     3:45 • Yesterday                │
+│  ─────────────────────────────────  │
+│  🎵 Song Title C      +450 XP       │
+│     7:12 • 2 days ago               │
+├─────────────────────────────────────┤
+│  [Show More]                        │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Phase 5: Hook Enhancements
+
+### Task 5.1: Expose SessionTracker methods in useSessionTracker
+
+- [ ] Add `getTrackListenCount(trackId)` to hook return
+- [ ] Add `isTrackMastered(trackId)` to hook return
+- [ ] Add `sessionHistory` from store to hook return
+- [ ] Add `getSessionStats()` helper function
+
+**File:** `src/hooks/useSessionTracker.ts`
+
+---
+
+## Phase 6: CSS Styling
+
+### Task 6.1: Add mastery-related styles
+
+**File:** `src/components/Tabs/SessionTrackingTab.css`
+
+- [ ] Add `.session-mastery-section` styles
+- [ ] Add `.session-mastery-badge-overlay` styles
+- [ ] Add `.session-mastery-progress` styles
+- [ ] Add `.session-listen-count` styles
+- [ ] Add responsive breakpoints
+
+### Task 6.2: Add session history styles
+
+- [ ] Add `.session-history-panel` styles
+- [ ] Add `.session-history-item` styles
+- [ ] Add `.session-history-stats` styles
+- [ ] Add expand/collapse animation
+
+### Task 6.3: Create MasteryBadge styles
+
+**File:** `src/styles/components/MasteryBadge.css` (new file)
+
+- [ ] Base badge styles
+- [ ] Level-specific colors:
+  - None: No badge displayed
+  - Basic: Bronze (#CD7F32)
+  - Familiar: Silver (#C0C0C0)
+  - Mastered: Gold (#FFD700) with glow animation
+- [ ] Size variants (sm, md, lg)
+
+---
+
+## Phase 7: Testing & Polish
+
+### Task 7.1: Manual Testing
+
+- [ ] Test mastery badge displays correctly at each level
+- [ ] Test progress bar updates when session ends
+- [ ] Test session history shows all sessions
+- [ ] Test responsive layout on mobile
+- [ ] Test with no sessions (empty state)
+- [ ] Test with many sessions (scroll/pagination)
+
+### Task 7.2: Accessibility
+
+- [ ] Add ARIA labels to mastery badges
+- [ ] Ensure color contrast for mastery levels
+- [ ] Add keyboard navigation to session history
+- [ ] Add screen reader announcements for mastery changes
+
+### Task 7.3: Performance
+
+- [ ] Memoize mastery calculations
+- [ ] Limit session history render count
+- [ ] Use virtualization if history is large (>100 items)
+
+---
+
+## File Changes Summary
+
+### New Files
+- `src/hooks/useMastery.ts`
+- `src/components/ui/MasteryBadge.tsx`
+- `src/components/ui/MasteryProgressBar.tsx`
+- `src/components/ui/SessionHistoryItem.tsx`
+- `src/components/ui/SessionHistoryPanel.tsx`
+- `src/styles/components/MasteryBadge.css`
+
+### Modified Files
+- `src/components/Tabs/SessionTrackingTab.tsx` - Add mastery display, session history
+- `src/components/Tabs/SessionTrackingTab.css` - Add new styles
+- `src/hooks/useSessionTracker.ts` - Expose additional methods, pass track metadata
+- `src/store/sessionStore.ts` - Add track metadata to session storage
+- `src/types/index.ts` - Add `ListeningSessionWithTrack` type
+
+---
+
+## Implementation Order
+
+1. **Phase 1** - useMastery hook (foundation)
+2. **Phase 2** - MasteryBadge & ProgressBar components
+3. **Phase 3** - Integrate mastery into SessionTrackingTab
+4. **Phase 5** - Enhance useSessionTracker hook
+5. **Phase 4.0** - Extend session storage with track metadata
+6. **Phase 4.1-4.3** - Session history components
+7. **Phase 6** - CSS styling (ongoing with each phase)
+8. **Phase 7** - Testing and polish
+
+---
+
+## Design Decisions (Resolved)
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| **Mastery Threshold** | 10 listens | Uses engine's default `isTrackMastered()` threshold |
+| **Prestige Levels** | Skipped for now | Will be added to engine first |
+| **Track Info in History** | Store in session | Add track title/artist to session when it ends |
+| **Mastery Badge Position** | Bottom overlay | Overlay at bottom of track image |
+| **Session History Limit** | 10 sessions default | With "Show More" button |
+
+---
+
+## Updated Mastery Thresholds
+
+```typescript
+const MASTERY_THRESHOLDS = {
+  NONE: 0,       // 0 listens - no badge
+  BASIC: 1,      // 1 listen
+  FAMILIAR: 5,   // 5 listens
+  MASTERED: 10   // 10 listens - engine default
+};
+```
+
+---
+
+## Updated ListeningSession Storage
+
+When a session ends, we need to store track metadata alongside the session. Update `sessionStore.endSession` to include track info:
+
+```typescript
+interface ListeningSessionWithTrack extends ListeningSession {
+  track_title?: string;
+  track_artist?: string;
+  track_image_url?: string;
+}
+```
+
+---
+
+*Plan created: 2026-02-13*
+*Decisions finalized: 2026-02-13*
