@@ -202,11 +202,63 @@ export const useFeatureNames = () => {
     return traitIds.map(id => resolveTraitName(id));
   }, [resolveTraitName]);
 
+  /**
+   * Get the effects for a class feature
+   *
+   * @param featureId - The class feature ID to look up
+   * @returns The effects array of the feature, or undefined if not found
+   */
+  const getFeatureEffects = useCallback((featureId: string) => {
+    if (!featureId) return undefined;
+
+    // Check cache first
+    const cached = cache.classFeatures.get(featureId);
+    if (cached !== undefined) {
+      return cached?.effects;
+    }
+
+    try {
+      const feature = query.getClassFeatureById(featureId);
+      cache.classFeatures.set(featureId, feature ?? null);
+      return feature?.effects;
+    } catch (error) {
+      logger.warn('FeatureNames', `Failed to get feature effects: ${featureId}`, error);
+      return undefined;
+    }
+  }, [cache.classFeatures, query]);
+
+  /**
+   * Get the effects for a racial trait
+   *
+   * @param traitId - The racial trait ID to look up
+   * @returns The effects array of the trait, or undefined if not found
+   */
+  const getTraitEffects = useCallback((traitId: string) => {
+    if (!traitId) return undefined;
+
+    // Check cache first
+    const cached = cache.racialTraits.get(traitId);
+    if (cached !== undefined) {
+      return cached?.effects;
+    }
+
+    try {
+      const trait = query.getRacialTraitById(traitId);
+      cache.racialTraits.set(traitId, trait ?? null);
+      return trait?.effects;
+    } catch (error) {
+      logger.warn('FeatureNames', `Failed to get trait effects: ${traitId}`, error);
+      return undefined;
+    }
+  }, [cache.racialTraits, query]);
+
   return {
     resolveFeatureName,
     resolveTraitName,
     getFeatureDescription,
     getTraitDescription,
+    getFeatureEffects,
+    getTraitEffects,
     resolveFeatureNames,
     resolveTraitNames,
     formatIdToDisplayName,

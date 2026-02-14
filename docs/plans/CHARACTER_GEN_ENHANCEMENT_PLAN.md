@@ -140,10 +140,12 @@ Enhance the CharacterGenTab component with advanced generation options, effects 
 
 ### Task 2.3: Add Inline Feature Effects
 
-- [ ] Locate Class Features section (~line 814)
-- [ ] After each feature badge, display associated effects from `feature_effects`
-- [ ] Locate Racial Traits section (~line 789)
-- [ ] Display trait effects inline
+- [x] Locate Class Features section (~line 814)
+- [x] After each feature badge, display associated effects from `feature_effects`
+- [x] Locate Racial Traits section (~line 789)
+- [x] Display trait effects inline
+
+**Completed:** Added `getFeatureEffects` and `getTraitEffects` methods to `useFeatureNames` hook. Updated CharacterGenTab to display inline effect indicators using `InlineEffectIndicators` component after each class feature and racial trait badge. Effects are looked up from the FeatureQuery registry and displayed as compact colored badges.
 
 ### Task 2.4: Add Inline Equipment Effects
 

@@ -16,7 +16,7 @@ import { GenerationModeToggle } from '../ui/GenerationModeToggle';
 import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
 import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
-import { ActiveEffectsSummary } from '../ui/EffectDisplay';
+import { ActiveEffectsSummary, InlineEffectIndicators } from '../ui/EffectDisplay';
 import { showToast } from '../ui/Toast';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedEquipment } from 'playlist-data-engine';
@@ -149,7 +149,7 @@ export function CharacterGenTab() {
   const { selectedTrack, audioProfile } = usePlaylistStore();
   const { generateCharacter, isGenerating } = useCharacterGenerator();
   const { addCharacter, getActiveCharacter, setActiveCharacter, characters } = useCharacterStore();
-  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription } = useFeatureNames();
+  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription, getFeatureEffects, getTraitEffects } = useFeatureNames();
 
   // State for import/export
   const [importError, setImportError] = useState<string | null>(null);
@@ -837,6 +837,7 @@ export function CharacterGenTab() {
                 {character.racial_traits.map((trait, idx) => {
                   const displayName = resolveTraitName(trait);
                   const description = getTraitDescription(trait);
+                  const effects = getTraitEffects(trait);
                   return (
                     <span
                       key={idx}
@@ -844,6 +845,9 @@ export function CharacterGenTab() {
                       title={description || trait}
                     >
                       {displayName}
+                      {effects && effects.length > 0 && (
+                        <InlineEffectIndicators effects={effects} />
+                      )}
                     </span>
                   );
                 })}
@@ -862,6 +866,7 @@ export function CharacterGenTab() {
                 {character.class_features.map((feature, idx) => {
                   const displayName = resolveFeatureName(feature);
                   const description = getFeatureDescription(feature);
+                  const effects = getFeatureEffects(feature);
                   return (
                     <span
                       key={idx}
@@ -869,6 +874,9 @@ export function CharacterGenTab() {
                       title={description || feature}
                     >
                       {displayName}
+                      {effects && effects.length > 0 && (
+                        <InlineEffectIndicators effects={effects} />
+                      )}
                     </span>
                   );
                 })}
