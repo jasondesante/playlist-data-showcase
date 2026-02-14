@@ -57,7 +57,7 @@
 - [x] Add slider for count mode (5-100 data points)
 - [x] Add slider for interval mode (1-10 seconds)
 - [x] Update `handleAnalyze` function to use selected mode
-- [ ] Style selector to match existing EQ slider patterns
+- [x] Style selector to match existing EQ slider patterns
 
 ### Files to Modify
 

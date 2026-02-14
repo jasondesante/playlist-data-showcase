@@ -393,7 +393,8 @@ export function AudioAnalysisTab() {
             {/* 3. Analysis Mode Selector */}
             <div className="audio-analysis-mode-card">
               <div className="audio-analysis-mode-header">
-                <span className="audio-analysis-mode-title">Analysis Mode</span>
+                <span className="audio-analysis-mode-title">Mode</span>
+                <span className="audio-analysis-mode-subtitle">Sampling strategy</span>
               </div>
               <div className="audio-analysis-mode-buttons" role="radiogroup" aria-label="Analysis mode selection">
                 <button
