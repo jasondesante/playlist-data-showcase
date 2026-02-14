@@ -663,6 +663,51 @@
   padding: 0.5rem 0;
 }
 
+/* Energy Metrics Grid */
+.audio-analysis-energy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .audio-analysis-energy-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.audio-analysis-energy-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, hsl(var(--surface-3) / 0.8), hsl(var(--surface-2) / 0.9));
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.audio-analysis-energy-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.audio-analysis-energy-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: hsl(var(--primary));
+  font-family: ui-monospace, monospace;
+}
+
+.audio-analysis-energy-description {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+}
+
 /* Metrics list - more compact */
 .audio-analysis-metrics-list {
   display: flex;

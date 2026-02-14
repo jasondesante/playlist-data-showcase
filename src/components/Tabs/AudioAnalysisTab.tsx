@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -397,6 +397,33 @@ export function AudioAnalysisTab() {
             <div className="audio-analysis-card-title">Average Amplitude</div>
             <div className="audio-analysis-amplitude-value">{audioProfile.average_amplitude.toFixed(3)}</div>
           </Card>
+
+          {/* Energy Metrics - RMS Energy and Dynamic Range */}
+          {(audioProfile.rms_energy !== undefined || audioProfile.dynamic_range !== undefined) && (
+            <Card variant="elevated" padding="md" className="audio-analysis-card">
+              <div className="audio-analysis-card-title">
+                <Zap className="audio-analysis-card-title-icon" />
+                Energy Metrics
+                <span className="audio-analysis-card-subtitle">(Loudness & punch)</span>
+              </div>
+              <div className="audio-analysis-energy-grid">
+                {audioProfile.rms_energy !== undefined && (
+                  <div className="audio-analysis-energy-item">
+                    <div className="audio-analysis-energy-label">RMS Energy</div>
+                    <div className="audio-analysis-energy-value">{audioProfile.rms_energy.toFixed(3)}</div>
+                    <div className="audio-analysis-energy-description">Perceived loudness</div>
+                  </div>
+                )}
+                {audioProfile.dynamic_range !== undefined && (
+                  <div className="audio-analysis-energy-item">
+                    <div className="audio-analysis-energy-label">Dynamic Range</div>
+                    <div className="audio-analysis-energy-value">{audioProfile.dynamic_range.toFixed(3)}</div>
+                    <div className="audio-analysis-energy-description">Track "punch"</div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Advanced Metrics - Always shown now */}
           <Card variant="elevated" padding="md" className="audio-analysis-card">

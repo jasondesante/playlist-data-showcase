@@ -10,9 +10,9 @@
 
 ### Tasks
 
-- [ ] Add new "Energy Metrics" card in AudioAnalysisTab.tsx after the Average Amplitude card
-- [ ] Create CSS styles for the energy metrics grid layout
-- [ ] Handle optional fields gracefully with undefined checks
+- [x] Add new "Energy Metrics" card in AudioAnalysisTab.tsx after the Average Amplitude card
+- [x] Create CSS styles for the energy metrics grid layout
+- [x] Handle optional fields gracefully with undefined checks
 
 ### Files to Modify
 
