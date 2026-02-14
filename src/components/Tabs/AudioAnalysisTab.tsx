@@ -43,10 +43,11 @@ export function AudioAnalysisTab() {
 
   // Analysis mode state for Phase 3: Normal vs Timeline analysis
   const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
-  // Timeline mode options (for future tasks - count vs interval)
-  const [_timelineMode, _setTimelineMode] = useState<'count' | 'interval'>('count');
-  const [_timelineCount, _setTimelineCount] = useState(20); // 5-100 data points
-  const [_timelineInterval, _setTimelineInterval] = useState(2); // 1-10 seconds
+  // Timeline mode options - count vs interval toggle
+  const [timelineMode, setTimelineMode] = useState<'count' | 'interval'>('count');
+  // These values will be controlled by sliders in a future task
+  const [timelineCount, _setTimelineCount] = useState(20); // 5-100 data points
+  const [timelineInterval, _setTimelineInterval] = useState(2); // 1-10 seconds
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -343,6 +344,34 @@ export function AudioAnalysisTab() {
                   <span className="audio-analysis-mode-desc">Full analysis</span>
                 </button>
               </div>
+
+              {/* Timeline Options Sub-component - shown when Timeline mode is selected */}
+              {analysisMode === 'timeline' && (
+                <div className="audio-analysis-timeline-options">
+                  <div className="audio-analysis-timeline-toggle" role="radiogroup" aria-label="Timeline sampling mode">
+                    <button
+                      type="button"
+                      className={`audio-analysis-timeline-toggle-btn ${timelineMode === 'count' ? 'audio-analysis-timeline-toggle-btn-active' : ''}`}
+                      onClick={() => setTimelineMode('count')}
+                      aria-checked={timelineMode === 'count'}
+                      role="radio"
+                    >
+                      <span className="audio-analysis-timeline-toggle-label">Count</span>
+                      <span className="audio-analysis-timeline-toggle-value">{timelineCount} pts</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`audio-analysis-timeline-toggle-btn ${timelineMode === 'interval' ? 'audio-analysis-timeline-toggle-btn-active' : ''}`}
+                      onClick={() => setTimelineMode('interval')}
+                      aria-checked={timelineMode === 'interval'}
+                      role="radio"
+                    >
+                      <span className="audio-analysis-timeline-toggle-label">Interval</span>
+                      <span className="audio-analysis-timeline-toggle-value">{timelineInterval}s</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 4. Action Section */}

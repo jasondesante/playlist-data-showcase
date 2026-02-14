@@ -1105,3 +1105,66 @@
   opacity: 0.7;
   transition: color 0.2s ease;
 }
+
+/* ============================================
+   TIMELINE OPTIONS SUB-COMPONENT
+   ============================================ */
+.audio-analysis-timeline-options {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.audio-analysis-timeline-toggle {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.audio-analysis-timeline-toggle-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  background: hsl(var(--surface-3) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.audio-analysis-timeline-toggle-btn:hover {
+  background: hsl(var(--surface-3) / 0.6);
+  border-color: hsl(var(--primary) / 0.4);
+}
+
+.audio-analysis-timeline-toggle-btn-active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary) / 0.7);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.audio-analysis-timeline-toggle-btn-active .audio-analysis-timeline-toggle-label {
+  color: hsl(--foreground);
+  font-weight: 600;
+}
+
+.audio-analysis-timeline-toggle-btn-active .audio-analysis-timeline-toggle-value {
+  color: hsl(var(--primary));
+}
+
+.audio-analysis-timeline-toggle-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+
+.audio-analysis-timeline-toggle-value {
+  font-size: 0.5625rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+  transition: color 0.2s ease;
+}

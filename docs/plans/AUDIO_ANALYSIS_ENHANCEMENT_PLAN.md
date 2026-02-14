@@ -53,7 +53,7 @@
 
 - [x] Add state variables: `analysisMode`, `timelineMode`, `timelineCount`, `timelineInterval`
 - [x] Create mode selector buttons (Normal vs Timeline)
-- [ ] Create timeline options sub-component with count/interval toggle
+- [x] Create timeline options sub-component with count/interval toggle
 - [ ] Add slider for count mode (5-100 data points)
 - [ ] Add slider for interval mode (1-10 seconds)
 - [ ] Update `handleAnalyze` function to use selected mode
