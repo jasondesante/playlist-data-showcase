@@ -4,14 +4,40 @@
  * A comprehensive data browser for all game content from playlist-data-engine.
  * Allows users to explore spells, skills, features, races, classes, and equipment.
  *
- * Features:
- * - Category selector for different data types
+ * ## Core Features
+ * - Category selector for different data types (spells, skills, features, races, classes, equipment)
  * - Search/filter functionality for each category
  * - Spell filtering by level and school
  * - Equipment filtering by type, rarity, and tags
  * - Grouped displays for skills, class features, and racial traits
  * - Rarity and school color coding
  * - Raw JSON dump for detailed data inspection
+ *
+ * ## Enhanced Equipment Display (Phase 1)
+ * - Granted skills display with proficiency level (grantsSkills)
+ * - Granted spells with level, uses, and recharge info (grantsSpells)
+ * - Granted features (both registry references and inline) (grantsFeatures)
+ * - Equipment tags display and filtering
+ * - Spawn weight badges: Game-Only, Rare Spawn, Uncommon
+ *
+ * ## Conditional Properties (Phase 2)
+ * - Inline condition formatting on equipment properties
+ * - Property type icons: stat_bonus, skill_proficiency, ability_unlock, etc.
+ * - Condition types: vs_creature_type, at_time_of_day, wielder_race/class, on_hit, etc.
+ *
+ * ## Subrace Display (Phase 4)
+ * - Full subrace expansion with ability bonuses
+ * - Subrace-specific traits list
+ * - Subrace requirements display (e.g., ability minimums)
+ *
+ * ## Effects Viewer (Phase 5)
+ * - Feature effects display with type, target, value, and condition
+ * - Racial trait effects with prerequisites
+ * - Reusable EffectsList component with stacking indicators
+ *
+ * @see docs/plans/DATAVIEWER_ENHANCEMENT_PLAN.md for implementation details
+ * @see src/hooks/useDataViewer.ts for data fetching and filtering logic
+ * @see src/components/ui/EffectDisplay.tsx for the reusable effects list component
  */
 
 import { useState, useMemo, useEffect } from 'react';
@@ -124,6 +150,21 @@ const PROPERTY_TYPE_CONFIG: Record<string, { icon: typeof TrendingUp; label: str
 
 /**
  * Get property type configuration, with fallback to default
+ *
+ * Task 2.3: Property Icon System
+ *
+ * Returns the icon and label for a given property type, used to visually
+ * identify different equipment property types in the UI.
+ *
+ * @param type - The property type string (e.g., 'stat_bonus', 'skill_proficiency')
+ * @returns Configuration object with icon component and label string
+ *
+ * @example
+ * const config = getPropertyTypeConfig('stat_bonus');
+ * // Returns: { icon: TrendingUp, label: 'Stat Bonus' }
+ *
+ * const config = getPropertyTypeConfig('unknown_type');
+ * // Returns: { icon: Zap, label: 'Property' } (default fallback)
  */
 function getPropertyTypeConfig(type: string) {
   return PROPERTY_TYPE_CONFIG[type] || PROPERTY_TYPE_CONFIG['default'];
@@ -144,6 +185,18 @@ const CATEGORY_CONFIG: Record<DataCategory, { label: string; icon: typeof Databa
 
 /**
  * Format level number to ordinal string
+ *
+ * Converts numeric spell levels to display-friendly ordinal strings.
+ *
+ * @param level - The spell level (0-9)
+ * @returns Ordinal string (e.g., "Cantrip", "1st", "2nd", "3rd", "4th")
+ *
+ * @example
+ * formatLevel(0)  // "Cantrip"
+ * formatLevel(1)  // "1st"
+ * formatLevel(2)  // "2nd"
+ * formatLevel(3)  // "3rd"
+ * formatLevel(4)  // "4th"
  */
 function formatLevel(level: number): string {
   if (level === 0) return 'Cantrip';
@@ -155,6 +208,16 @@ function formatLevel(level: number): string {
 
 /**
  * Format rarity for display
+ *
+ * Converts snake_case rarity strings to Title Case display strings.
+ *
+ * @param rarity - The rarity string in snake_case (e.g., 'very_rare')
+ * @returns Title Case string (e.g., "Very Rare")
+ *
+ * @example
+ * formatRarity('common')     // "Common"
+ * formatRarity('very_rare')  // "Very Rare"
+ * formatRarity('legendary')  // "Legendary"
  */
 function formatRarity(rarity: string): string {
   return rarity
@@ -165,6 +228,16 @@ function formatRarity(rarity: string): string {
 
 /**
  * Format ability bonus for display
+ *
+ * Converts numeric bonus to display string with appropriate sign prefix.
+ *
+ * @param bonus - The numeric bonus value (positive, zero, or negative)
+ * @returns Formatted string with sign prefix (e.g., "+2", "-1", "+0")
+ *
+ * @example
+ * formatAbilityBonus(2)   // "+2"
+ * formatAbilityBonus(0)   // "+0"
+ * formatAbilityBonus(-1)  // "-1"
  */
 function formatAbilityBonus(bonus: number): string {
   return bonus >= 0 ? `+${bonus}` : `${bonus}`;
@@ -841,16 +914,38 @@ export function DataViewerTab() {
 
   /**
    * Render subrace expansion section
+   *
    * Task 4.3: Enhanced Subrace Display
    *
    * Displays full subrace details including:
    * - Subrace name as section header with accent color
-   * - Subrace-specific ability bonuses (color-coded)
+   * - Subrace-specific ability bonuses (color-coded by ability)
    * - Subrace-specific traits list
    * - Requirements if applicable (e.g., ability minimums)
    *
-   * @param subraceName - The name of the subrace
-   * @param subraceData - The subrace data entry with ability bonuses, traits, requirements
+   * @param subraceName - The name of the subrace (e.g., "High Elf", "Wood Elf")
+   * @param subraceData - The subrace data entry containing:
+   *   - ability_bonuses: Map of ability to bonus (e.g., { INT: 1 })
+   *   - traits: Array of trait names specific to this subrace
+   *   - requirements: Optional requirements object with ability minimums
+   * @returns JSX element rendering the subrace section
+   *
+   * @example
+   * // High Elf subrace data
+   * renderSubraceSection("High Elf", {
+   *   ability_bonuses: { INT: 1 },
+   *   traits: ["Elf Weapon Training", "Cantrip"],
+   *   requirements: undefined
+   * })
+   * // Renders: High Elf header with "INT +1" bonus and traits list
+   *
+   * @example
+   * // Dark Elf subrace with requirements
+   * renderSubraceSection("Dark Elf (Drow)", {
+   *   ability_bonuses: { CHA: 1 },
+   *   traits: ["Superior Darkvision", "Drow Magic"],
+   *   requirements: undefined
+   * })
    */
   const renderSubraceSection = (
     subraceName: string,
@@ -1093,7 +1188,20 @@ export function DataViewerTab() {
 
   /**
    * Render granted skills section for enhanced equipment
-   * Displays skills granted by equipment with proficiency level
+   *
+   * Task 1.2: Display grantsSkills on Equipment Cards
+   *
+   * Displays skills granted by equipment with proficiency level.
+ * Uses green tag styling (`.dataviewer-tag-skill`) to distinguish from other grants.
+   *
+   * @param item - The equipment item to render skills for
+   * @returns JSX element with skills section, or null if no granted skills
+   *
+   * @example
+   * // Equipment with granted skills
+   * // Input: item.grantsSkills = [{ skillId: 'Arcana', level: 'expertise' }, { skillId: 'History', level: 'proficient' }]
+   * // Output:
+   * // Skills: Arcana (expertise), History (proficient)
    */
   const renderGrantedSkills = (item: Equipment) => {
     if (!isEnhancedEquipment(item) || !item.grantsSkills || item.grantsSkills.length === 0) {
@@ -1116,8 +1224,17 @@ export function DataViewerTab() {
 
   /**
    * Format spell level for display in grantsSpells section
+   *
+   * Converts numeric spell levels to ordinal strings with appropriate suffixes.
+   *
    * @param level - Spell level (0 for cantrips, 1-9 for spell levels)
-   * @returns Formatted level string (e.g., "Cantrip", "1st level", "3rd level")
+   * @returns Formatted level string (e.g., "Cantrip", "1st", "3rd")
+   *
+   * @example
+   * formatSpellLevelShort(0)  // "Cantrip"
+   * formatSpellLevelShort(1)  // "1st"
+   * formatSpellLevelShort(3)  // "3rd"
+   * formatSpellLevelShort(5)  // "5th"
    */
   const formatSpellLevelShort = (level: number | undefined): string => {
     if (level === undefined || level === null) return '';
@@ -1130,9 +1247,18 @@ export function DataViewerTab() {
 
   /**
    * Format uses and recharge info for display
+   *
+   * Converts uses count and recharge type into a human-readable string.
+   *
    * @param uses - Number of uses, or null for unlimited
    * @param recharge - Recharge type: 'dawn', 'short_rest', 'long_rest', or undefined
    * @returns Formatted uses string (e.g., "1/dawn", "unlimited", "3/short rest")
+   *
+   * @example
+   * formatSpellUses(1, 'dawn')      // "1/dawn"
+   * formatSpellUses(3, 'short_rest') // "3/short rest"
+   * formatSpellUses(null, undefined) // "unlimited"
+   * formatSpellUses(undefined, undefined) // "once"
    */
   const formatSpellUses = (uses: number | null | undefined, recharge: string | undefined): string => {
     if (uses === null) return 'unlimited';
@@ -1143,7 +1269,23 @@ export function DataViewerTab() {
 
   /**
    * Render granted spells section for enhanced equipment
-   * Displays spells granted by equipment with level, uses, and recharge info
+   *
+   * Task 1.3: Display grantsSpells on Equipment Cards
+   *
+   * Displays spells granted by equipment with level, uses, and recharge info.
+   * Uses purple tag styling (`.dataviewer-tag-spell`) to distinguish from other grants.
+   *
+   * @param item - The equipment item to render spells for
+   * @returns JSX element with spells section, or null if no granted spells
+   *
+   * @example
+   * // Equipment with granted spells
+   * // Input: item.grantsSpells = [
+   * //   { spellId: 'Fireball', level: 3, uses: 1, recharge: 'dawn' },
+   * //   { spellId: 'Shield', level: 1, uses: null } // unlimited
+   * // ]
+   * // Output:
+   * // Spells: Fireball 3rd level, 1/dawn | Shield 1st level, unlimited
    */
   const renderGrantedSpells = (item: Equipment) => {
     if (!isEnhancedEquipment(item) || !item.grantsSpells || item.grantsSpells.length === 0) {
@@ -1170,11 +1312,26 @@ export function DataViewerTab() {
 
   /**
    * Render granted features section for enhanced equipment
-   * Displays features granted by equipment
    *
-   * Features can be:
+   * Task 1.4: Display grantsFeatures on Equipment Cards
+   *
+   * Displays features granted by equipment. Features can be:
    * 1. String references to registry features (e.g., 'darkvision')
    * 2. Inline EquipmentMiniFeature objects with name/description/effects
+   *
+   * Uses blue tag styling (`.dataviewer-tag-feature`) to distinguish from other grants.
+   *
+   * @param item - The equipment item to render features for
+   * @returns JSX element with features section, or null if no granted features
+   *
+   * @example
+   * // Equipment with mixed feature types
+   * // Input: item.grantsFeatures = [
+   * //   'darkvision',  // string reference to registry
+   * //   { name: 'Blessed Strike', description: '+1d8 radiant damage' }  // inline
+   * // ]
+   * // Output:
+   * // Features: darkvision | Blessed Strike
    */
   const renderGrantedFeatures = (item: Equipment) => {
     if (!isEnhancedEquipment(item) || !item.grantsFeatures || item.grantsFeatures.length === 0) {
@@ -1215,8 +1372,20 @@ export function DataViewerTab() {
 
   /**
    * Render tags section for enhanced equipment
-   * Displays tags at the bottom of expanded equipment cards
-   * Tags are displayed as a comma-separated list using existing tag styling
+   *
+   * Task 1.5: Display Equipment Tags
+   *
+   * Displays tags at the bottom of expanded equipment cards.
+   * Tags are displayed using existing `.dataviewer-tag` styling.
+   *
+   * @param item - The equipment item to render tags for
+   * @returns JSX element with tags section, or null if no tags
+   *
+   * @example
+   * // Equipment with tags
+   * // Input: item.tags = ['magic', 'fire', 'weapon', 'legendary']
+   * // Output:
+   * // Tags: magic, fire, weapon, legendary
    */
   const renderTags = (item: Equipment) => {
     if (!isEnhancedEquipment(item) || !item.tags || item.tags.length === 0) {
