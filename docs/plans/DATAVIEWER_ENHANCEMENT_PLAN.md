@@ -180,9 +180,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
   - `spell_slot_bonus`
 
 ### Task 5.2: Add Racial Trait Effects Display
-- [ ] Update `renderRacialTraits()` to show trait effects
-- [ ] Include prerequisite info if present
-- [ ] Display effect conditions inline
+- [x] Update `renderRacialTraits()` to show trait effects
+- [x] Include prerequisite info if present
+- [x] Display effect conditions inline
 
 ### Task 5.3: Create Effects Summary Component
 - [ ] Create reusable `EffectsList` component

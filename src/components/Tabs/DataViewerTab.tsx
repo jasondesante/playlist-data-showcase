@@ -40,7 +40,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import './DataViewerTab.css';
-import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeatureEffect } from 'playlist-data-engine';
+import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeatureEffect, FeaturePrerequisite } from 'playlist-data-engine';
 
 /**
  * Spell school color mapping
@@ -697,7 +697,97 @@ export function DataViewerTab() {
     );
   };
 
+  /**
+   * Format prerequisite info for display
+   *
+   * Task 5.2: Racial Trait Effects Display - Prerequisite formatter
+   *
+   * Converts FeaturePrerequisite objects into human-readable strings.
+   * Handles all prerequisite types:
+   * - level: Minimum character level
+   * - features: Required features (by ID)
+   * - abilities: Minimum ability scores
+   * - class/race/subrace: Required class, race, or subrace
+   * - skills: Required proficient skills
+   * - spells: Required known spells
+   * - custom: Custom condition description
+   *
+   * @param prerequisites - The FeaturePrerequisite object to format
+   * @returns Array of formatted prerequisite strings
+   */
+  const formatPrerequisites = (prerequisites: FeaturePrerequisite | undefined): string[] => {
+    if (!prerequisites) return [];
+
+    const result: string[] = [];
+
+    if (prerequisites.level) {
+      result.push(`Level ${prerequisites.level}+`);
+    }
+
+    if (prerequisites.features && prerequisites.features.length > 0) {
+      result.push(`Requires: ${prerequisites.features.join(', ')}`);
+    }
+
+    if (prerequisites.abilities) {
+      Object.entries(prerequisites.abilities).forEach(([ability, min]) => {
+        result.push(`${ability} ${min}+`);
+      });
+    }
+
+    if (prerequisites.class) {
+      result.push(`${prerequisites.class} only`);
+    }
+
+    if (prerequisites.race) {
+      result.push(`${prerequisites.race} only`);
+    }
+
+    if (prerequisites.subrace) {
+      result.push(`${prerequisites.subrace} only`);
+    }
+
+    if (prerequisites.skills && prerequisites.skills.length > 0) {
+      result.push(`Skills: ${prerequisites.skills.join(', ')}`);
+    }
+
+    if (prerequisites.spells && prerequisites.spells.length > 0) {
+      result.push(`Spells: ${prerequisites.spells.join(', ')}`);
+    }
+
+    if (prerequisites.custom) {
+      result.push(prerequisites.custom);
+    }
+
+    return result;
+  };
+
+  /**
+   * Render prerequisites section for racial traits
+   *
+   * Task 5.2: Racial Trait Effects Display
+   *
+   * @param prerequisites - The prerequisites to render
+   */
+  const renderPrerequisites = (prerequisites: FeaturePrerequisite | undefined) => {
+    const prereqStrings = formatPrerequisites(prerequisites);
+    if (prereqStrings.length === 0) return null;
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Prerequisites:</span>
+        <div className="dataviewer-item-tags">
+          {prereqStrings.map((prereq, idx) => (
+            <span key={idx} className="dataviewer-tag dataviewer-tag-condition">
+              {prereq}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Render racial traits grouped by race
+  // Task 5.2: Updated to show trait effects, description, and prerequisites when expanded
   const renderRacialTraits = () => {
     const grouped = groupRacialTraitsByRace(getFilteredData as RacialTrait[]);
     const raceNames = Object.keys(grouped).sort();
@@ -711,18 +801,46 @@ export function DataViewerTab() {
               <span className="dataviewer-group-count">({grouped[raceName].length})</span>
             </div>
             <div className="dataviewer-group-items">
-              {grouped[raceName].map(trait => (
-                <div key={trait.id} className="dataviewer-group-item">
-                  <div className="dataviewer-group-item-header">
-                    <span className="dataviewer-group-item-name">{trait.name}</span>
-                    {trait.subrace && (
-                      <span className="dataviewer-badge dataviewer-badge-small dataviewer-badge-subrace">
-                        {trait.subrace}
-                      </span>
+              {grouped[raceName].map(trait => {
+                const isExpanded = expandedItems.has(trait.id);
+                const hasEffects = trait.effects && trait.effects.length > 0;
+                const hasDescription = trait.description && trait.description.length > 0;
+                const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
+                const isExpandable = hasEffects || hasDescription || hasPrerequisites;
+
+                return (
+                  <div
+                    key={trait.id}
+                    className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
+                    onClick={() => isExpandable && toggleExpanded(trait.id)}
+                  >
+                    <div className="dataviewer-group-item-header">
+                      <span className="dataviewer-group-item-name">{trait.name}</span>
+                      <div className="dataviewer-item-badges">
+                        {trait.subrace && (
+                          <span className="dataviewer-badge dataviewer-badge-small dataviewer-badge-subrace">
+                            {trait.subrace}
+                          </span>
+                        )}
+                        {isExpandable && (
+                          isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                        )}
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="dataviewer-group-item-details">
+                        {trait.description && (
+                          <div className="dataviewer-item-description">
+                            {trait.description}
+                          </div>
+                        )}
+                        {renderPrerequisites(trait.prerequisites)}
+                        {renderFeatureEffects(trait.effects)}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
