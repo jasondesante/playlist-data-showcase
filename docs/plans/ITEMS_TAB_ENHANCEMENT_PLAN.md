@@ -364,9 +364,22 @@ interface EquipmentModification {
 - Documentation link points to docs/engine/docs/EQUIPMENT_SYSTEM.md
 
 ### 6.3 Update Creator Preview
-- [ ] Show which properties will be applied
-- [ ] Show default values for omitted properties
-- [ ] Indicate which fields are advanced/optional
+- [x] Show which properties will be applied
+- [x] Show default values for omitted properties
+- [x] Indicate which fields are advanced/optional
+
+**Completed (2026-02-15):**
+- Added Properties Summary section to preview card
+- Shows three property groups:
+  - "From Form": User-defined values (name, type, rarity, weight, damage, acBonus)
+  - "Defaults": Auto-applied values (source: "custom", spawnWeight: 0, tags: ["custom"])
+  - "Advanced (via API)": Optional fields available through code (properties[], grantsFeatures[], grantsSkills[], grantsSpells[])
+- Added color-coded tags for each property type (blue for user, gray for defaults, yellow for advanced)
+- Added CSS styles with dark mode support
+- Updated form labels to show:
+  - Required indicator (*) for name field
+  - "(optional)" for optional fields like weight
+  - "default: X" for fields with defaults (type, rarity, quantity, damage type)
 
 ---
 

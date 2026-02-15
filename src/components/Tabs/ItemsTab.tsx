@@ -1821,7 +1821,7 @@ export function ItemsTab() {
 
                       {/* Item Type */}
                       <div className="item-creator-field">
-                        <label className="item-creator-label">Item Type</label>
+                        <label className="item-creator-label">Item Type <span className="item-creator-default">default: item</span></label>
                         <div className="item-creator-type-selector">
                           <button
                             type="button"
@@ -1853,7 +1853,7 @@ export function ItemsTab() {
                       {/* Rarity */}
                       <div className="item-creator-field">
                         <label className="item-creator-label" htmlFor="item-rarity">
-                          Rarity
+                          Rarity <span className="item-creator-default">default: common</span>
                         </label>
                         <select
                           id="item-rarity"
@@ -1872,7 +1872,7 @@ export function ItemsTab() {
                       {/* Weight */}
                       <div className="item-creator-field">
                         <label className="item-creator-label" htmlFor="item-weight">
-                          Weight (lb)
+                          Weight (lb) <span className="item-creator-optional">optional</span>
                         </label>
                         <input
                           id="item-weight"
@@ -1889,7 +1889,7 @@ export function ItemsTab() {
                       {/* Quantity */}
                       <div className="item-creator-field">
                         <label className="item-creator-label" htmlFor="item-quantity">
-                          Quantity
+                          Quantity <span className="item-creator-default">default: 1</span>
                         </label>
                         <input
                           id="item-quantity"
@@ -1909,12 +1909,12 @@ export function ItemsTab() {
                     <div className="item-creator-section">
                       <h4 className="item-creator-section-title">
                         <Sword size={16} />
-                        Weapon Properties
+                        Weapon Properties <span className="item-creator-optional">(optional)</span>
                       </h4>
                       <div className="item-creator-grid">
                         <div className="item-creator-field">
                           <label className="item-creator-label" htmlFor="damage-dice">
-                            Damage Dice
+                            Damage Dice <span className="item-creator-optional">optional</span>
                           </label>
                           <input
                             id="damage-dice"
@@ -1929,7 +1929,7 @@ export function ItemsTab() {
 
                         <div className="item-creator-field">
                           <label className="item-creator-label" htmlFor="damage-type">
-                            Damage Type
+                            Damage Type <span className="item-creator-default">default: slashing</span>
                           </label>
                           <select
                             id="damage-type"
@@ -1961,12 +1961,12 @@ export function ItemsTab() {
                     <div className="item-creator-section">
                       <h4 className="item-creator-section-title">
                         <Shield size={16} />
-                        Armor Properties
+                        Armor Properties <span className="item-creator-optional">(optional)</span>
                       </h4>
                       <div className="item-creator-grid">
                         <div className="item-creator-field">
                           <label className="item-creator-label" htmlFor="ac-bonus">
-                            AC Bonus
+                            AC Bonus <span className="item-creator-optional">optional</span>
                           </label>
                           <input
                             id="ac-bonus"
@@ -2171,6 +2171,92 @@ ExtensionManager.getInstance()
                           <span>+{previewItem.acBonus}</span>
                         </div>
                       )}
+                    </div>
+
+                    {/* Properties Summary */}
+                    <div className="item-creator-preview-properties">
+                      <h5 className="item-creator-preview-properties-title">
+                        <Zap size={14} />
+                        Properties Applied
+                      </h5>
+                      <div className="item-creator-preview-properties-list">
+                        {/* User-defined properties */}
+                        <div className="item-creator-preview-property-group">
+                          <span className="item-creator-preview-property-group-label">From Form:</span>
+                          <div className="item-creator-preview-property-tags">
+                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                              name: "{previewItem.name}"
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                              type: {previewItem.type}
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                              rarity: {previewItem.rarity}
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                              weight: {previewItem.weight}
+                            </span>
+                            {previewItem.damage && (
+                              <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                                damage: {previewItem.damage.dice} ({previewItem.damage.damageType})
+                              </span>
+                            )}
+                            {previewItem.acBonus !== undefined && (
+                              <span className="item-creator-preview-tag item-creator-preview-tag-user">
+                                acBonus: +{previewItem.acBonus}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Default values */}
+                        <div className="item-creator-preview-property-group">
+                          <span className="item-creator-preview-property-group-label">Defaults:</span>
+                          <div className="item-creator-preview-property-tags">
+                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
+                              source: "custom"
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
+                              spawnWeight: 0
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
+                              tags: ["custom"]
+                            </span>
+                            {!previewItem.damage && previewItem.type === 'weapon' && (
+                              <span className="item-creator-preview-tag item-creator-preview-tag-default">
+                                damage: (none)
+                              </span>
+                            )}
+                            {previewItem.acBonus === undefined && previewItem.type === 'armor' && (
+                              <span className="item-creator-preview-tag item-creator-preview-tag-default">
+                                acBonus: (none)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Advanced/Optional fields available */}
+                        <div className="item-creator-preview-property-group">
+                          <span className="item-creator-preview-property-group-label">
+                            <Info size={12} />
+                            Advanced (via API):
+                          </span>
+                          <div className="item-creator-preview-property-tags">
+                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
+                              properties[]
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
+                              grantsFeatures[]
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
+                              grantsSkills[]
+                            </span>
+                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
+                              grantsSpells[]
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

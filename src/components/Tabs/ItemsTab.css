@@ -1377,6 +1377,20 @@
   color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
 }
 
+.item-creator-optional {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 0.25rem;
+}
+
+.item-creator-default {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .item-creator-input,
 .item-creator-select {
   padding: 0.625rem 0.875rem;
@@ -1546,6 +1560,107 @@
 
 .item-creator-preview-stat-label {
   color: var(--color-text-secondary);
+}
+
+/* Preview Properties Summary */
+.item-creator-preview-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-top: 0.5rem;
+}
+
+.item-creator-preview-properties-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.item-creator-preview-properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item-creator-preview-property-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item-creator-preview-property-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.item-creator-preview-property-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.item-creator-preview-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.item-creator-preview-tag-user {
+  background: hsl(210 80% 95%);
+  color: hsl(210 80% 30%);
+  border-color: hsl(210 80% 80%);
+}
+
+.item-creator-preview-tag-default {
+  background: hsl(0 0% 95%);
+  color: hsl(0 0% 45%);
+  border-color: hsl(0 0% 85%);
+}
+
+.item-creator-preview-tag-optional {
+  background: hsl(45 100% 95%);
+  color: hsl(45 80% 30%);
+  border-color: hsl(45 100% 80%);
+  font-style: italic;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .item-creator-preview-tag-user {
+  background: hsl(210 50% 20%);
+  color: hsl(210 80% 75%);
+  border-color: hsl(210 50% 35%);
+}
+
+[data-theme="dark"] .item-creator-preview-tag-default {
+  background: hsl(0 0% 18%);
+  color: hsl(0 0% 55%);
+  border-color: hsl(0 0% 28%);
+}
+
+[data-theme="dark"] .item-creator-preview-tag-optional {
+  background: hsl(45 50% 15%);
+  color: hsl(45 80% 65%);
+  border-color: hsl(45 50% 30%);
 }
 
 /* Last Created Section */
