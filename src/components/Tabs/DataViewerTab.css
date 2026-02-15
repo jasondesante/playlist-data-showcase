@@ -1046,4 +1046,73 @@
   .dataviewer-filter-select {
     width: 100%;
   }
+
+  /* Task 6.4: Responsive styles for new sections */
+  .dataviewer-item-tags {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .dataviewer-item-tags-label {
+    margin-bottom: 0.25rem;
+  }
+
+  .dataviewer-tag {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .dataviewer-item-section {
+    padding-top: 0.5rem;
+  }
+
+  .dataviewer-item-section-title {
+    font-size: 0.6875rem;
+  }
+
+  .dataviewer-effects-list {
+    gap: 0.25rem;
+  }
+
+  .dataviewer-subrace-section {
+    padding: 0.5rem;
+  }
+
+  .dataviewer-subrace-header {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .dataviewer-subrace-name {
+    font-size: 0.8125rem;
+  }
+
+  .dataviewer-subrace-bonuses,
+  .dataviewer-subrace-traits-list,
+  .dataviewer-subrace-requirements-list {
+    gap: 0.25rem;
+  }
+
+  .dataviewer-subrace-bonus {
+    font-size: 0.75rem;
+  }
+
+  .dataviewer-card-bonuses {
+    gap: 0.25rem;
+  }
+
+  .dataviewer-card-bonus {
+    font-size: 0.75rem;
+  }
+
+  .dataviewer-item-badges {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .dataviewer-badge {
+    font-size: 0.5625rem;
+    padding: 0.2rem 0.35rem;
+  }
 }

@@ -195,25 +195,25 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 6: CSS Enhancements
 
 ### Task 6.1: Add New Badge Styles
-- [ ] `.dataviewer-badge-gameonly` - Warning style for spawnWeight: 0
-- [ ] `.dataviewer-badge-rare-spawn` - Muted style for low spawn weights
+- [x] `.dataviewer-badge-gameonly` - Warning style for spawnWeight: 0
+- [x] `.dataviewer-badge-rare-spawn` - Muted style for low spawn weights
 
 ### Task 6.2: Add New Tag Styles
-- [ ] `.dataviewer-tag-skill` - Green variant
-- [ ] `.dataviewer-tag-spell` - Purple variant
-- [ ] `.dataviewer-tag-feature` - Blue variant
-- [ ] `.dataviewer-tag-condition` - Orange variant
+- [x] `.dataviewer-tag-skill` - Green variant
+- [x] `.dataviewer-tag-spell` - Purple variant
+- [x] `.dataviewer-tag-feature` - Blue variant
+- [x] `.dataviewer-tag-condition` - Orange variant
 
 ### Task 6.3: Add Section Styles
-- [ ] `.dataviewer-item-section` - Container for new sections
-- [ ] `.dataviewer-item-section-title` - Section headers
-- [ ] `.dataviewer-subrace-section` - Subrace container
-- [ ] `.dataviewer-effects-list` - Effects container
+- [x] `.dataviewer-item-section` - Container for new sections
+- [x] `.dataviewer-item-section-title` - Section headers
+- [x] `.dataviewer-subrace-section` - Subrace container
+- [x] `.dataviewer-effects-list` - Effects container
 
 ### Task 6.4: Update Responsive Styles
-- [ ] Ensure new sections collapse properly on mobile
-- [ ] Adjust tag wrapping for smaller screens
-- [ ] Test all new elements at 480px breakpoint
+- [x] Ensure new sections collapse properly on mobile
+- [x] Adjust tag wrapping for smaller screens
+- [x] Test all new elements at 480px breakpoint
 
 ---
 
