@@ -680,6 +680,96 @@ export function DataViewerTab() {
     );
   };
 
+  /**
+   * Render subrace expansion section
+   * Task 4.3: Enhanced Subrace Display
+   *
+   * Displays full subrace details including:
+   * - Subrace name as section header with accent color
+   * - Subrace-specific ability bonuses (color-coded)
+   * - Subrace-specific traits list
+   * - Requirements if applicable (e.g., ability minimums)
+   *
+   * @param subraceName - The name of the subrace
+   * @param subraceData - The subrace data entry with ability bonuses, traits, requirements
+   */
+  const renderSubraceSection = (
+    subraceName: string,
+    subraceData: {
+      ability_bonuses?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+      traits?: string[];
+      requirements?: {
+        abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+      };
+    } | undefined
+  ) => {
+    if (!subraceData) {
+      // Subrace exists but has no specific data - just show the name
+      return (
+        <div className="dataviewer-subrace-section">
+          <div className="dataviewer-subrace-header">
+            <span className="dataviewer-subrace-name">{subraceName}</span>
+          </div>
+          <div className="dataviewer-subrace-content">
+            <span className="dataviewer-subrace-no-data">No additional data available</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="dataviewer-subrace-section">
+        <div className="dataviewer-subrace-header">
+          <span className="dataviewer-subrace-name">{subraceName}</span>
+        </div>
+        <div className="dataviewer-subrace-content">
+          {/* Subrace-specific ability bonuses */}
+          {subraceData.ability_bonuses && Object.keys(subraceData.ability_bonuses).length > 0 && (
+            <div className="dataviewer-subrace-bonuses">
+              {Object.entries(subraceData.ability_bonuses).map(([ability, bonus]) => (
+                <span
+                  key={ability}
+                  className="dataviewer-subrace-bonus"
+                  style={{ color: ABILITY_COLORS[ability] }}
+                >
+                  {ability} {formatAbilityBonus(bonus as number)}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Subrace-specific traits */}
+          {subraceData.traits && subraceData.traits.length > 0 && (
+            <div className="dataviewer-subrace-traits">
+              <span className="dataviewer-subrace-traits-label">Traits:</span>
+              <div className="dataviewer-subrace-traits-list">
+                {subraceData.traits.map((trait, idx) => (
+                  <span key={idx} className="dataviewer-tag dataviewer-tag-subrace-trait">
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Requirements (if any) */}
+          {subraceData.requirements?.abilities && Object.keys(subraceData.requirements.abilities).length > 0 && (
+            <div className="dataviewer-subrace-requirements">
+              <span className="dataviewer-subrace-requirements-label">Requirements:</span>
+              <div className="dataviewer-subrace-requirements-list">
+                {Object.entries(subraceData.requirements.abilities).map(([ability, minimum]) => (
+                  <span key={ability} className="dataviewer-tag dataviewer-tag-requirement">
+                    {ability} {minimum}+
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Render races
   const renderRaces = () => (
     <div className="dataviewer-grid">
@@ -709,10 +799,17 @@ export function DataViewerTab() {
                 <Sparkles size={14} />
                 {race.traits.length} Traits
               </span>
+              {race.subraces && race.subraces.length > 0 && (
+                <span className="dataviewer-card-stat">
+                  <Users size={14} />
+                  {race.subraces.length} Subraces
+                </span>
+              )}
             </div>
 
             {isExpanded && (
               <div className="dataviewer-card-details">
+                {/* Base race ability bonuses */}
                 {race.ability_bonuses && Object.keys(race.ability_bonuses).length > 0 && (
                   <div className="dataviewer-card-section">
                     <span className="dataviewer-card-section-title">Ability Bonuses:</span>
@@ -730,12 +827,25 @@ export function DataViewerTab() {
                   </div>
                 )}
 
-                {race.subraces && race.subraces.length > 0 && (
+                {/* Base race traits */}
+                {race.traits && race.traits.length > 0 && (
                   <div className="dataviewer-card-section">
-                    <span className="dataviewer-card-section-title">Subraces:</span>
+                    <span className="dataviewer-card-section-title">Traits:</span>
                     <div className="dataviewer-card-tags">
-                      {race.subraces.map(subrace => (
-                        <span key={subrace} className="dataviewer-tag">{subrace}</span>
+                      {race.traits.map(trait => (
+                        <span key={trait} className="dataviewer-tag">{trait}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Task 4.3: Full subrace expansion with details */}
+                {race.subraceData && Object.keys(race.subraceData).length > 0 && (
+                  <div className="dataviewer-card-section">
+                    <span className="dataviewer-card-section-title">Subrace Details:</span>
+                    <div className="dataviewer-subraces-container">
+                      {Object.entries(race.subraceData).map(([subraceName, subraceEntry]) => (
+                        renderSubraceSection(subraceName, subraceEntry)
                       ))}
                     </div>
                   </div>

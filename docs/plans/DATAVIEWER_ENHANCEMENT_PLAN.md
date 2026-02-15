@@ -149,19 +149,19 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Collect subrace-specific traits from FeatureQuery
 
 ### Task 4.3: Update Race Card Rendering
-- [ ] Modify `renderRaces()` to show full subrace expansion
-- [ ] When race has subraces, show:
+- [x] Modify `renderRaces()` to show full subrace expansion
+- [x] When race has subraces, show:
   - Subrace name as section header
   - Subrace-specific ability bonuses
   - Subrace-specific traits list
   - Any requirements (if applicable)
-- [ ] Use color-coded ability bonus display
+- [x] Use color-coded ability bonus display
 
 ### Task 4.4: Add Subrace CSS Styles
-- [ ] Add `.dataviewer-subrace-section` class
-- [ ] Style subrace name with accent color
-- [ ] Add visual separator between subraces
-- [ ] Ensure responsive layout
+- [x] Add `.dataviewer-subrace-section` class
+- [x] Style subrace name with accent color
+- [x] Add visual separator between subraces
+- [x] Ensure responsive layout
 
 ---
 

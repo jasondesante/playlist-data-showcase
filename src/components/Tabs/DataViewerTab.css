@@ -764,6 +764,111 @@
 }
 
 /* ========================================
+   SUBRACE SECTIONS (Task 4.3/4.4)
+   ======================================== */
+
+.dataviewer-subraces-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dataviewer-subrace-section {
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.dataviewer-subrace-section:hover {
+  border-color: hsl(var(--cute-purple) / 0.4);
+  background: hsl(var(--cute-purple) / 0.03);
+}
+
+.dataviewer-subrace-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dataviewer-subrace-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--cute-purple));
+}
+
+.dataviewer-subrace-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dataviewer-subrace-no-data {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.dataviewer-subrace-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dataviewer-subrace-bonus {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.dataviewer-subrace-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dataviewer-subrace-traits-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.dataviewer-subrace-traits-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.dataviewer-tag-subrace-trait {
+  background: hsl(var(--cute-purple) / 0.12);
+  color: hsl(var(--cute-purple));
+  border: 1px solid hsl(var(--cute-purple) / 0.25);
+}
+
+.dataviewer-subrace-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dataviewer-subrace-requirements-label {
+  font-size: 0.75rem;
+  color: hsl(0 70% 50%);
+}
+
+.dataviewer-subrace-requirements-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.dataviewer-tag-requirement {
+  background: hsl(0 70% 50% / 0.12);
+  color: hsl(0 70% 45%);
+  border: 1px solid hsl(0 70% 50% / 0.25);
+}
+
+/* ========================================
    LOADING, ERROR, EMPTY STATES
    ======================================== */
 
