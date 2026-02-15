@@ -699,6 +699,60 @@ export function DataViewerTab() {
     );
   };
 
+  /**
+   * Format spell level for display in grantsSpells section
+   * @param level - Spell level (0 for cantrips, 1-9 for spell levels)
+   * @returns Formatted level string (e.g., "Cantrip", "1st level", "3rd level")
+   */
+  const formatSpellLevelShort = (level: number | undefined): string => {
+    if (level === undefined || level === null) return '';
+    if (level === 0) return 'Cantrip';
+    if (level === 1) return '1st';
+    if (level === 2) return '2nd';
+    if (level === 3) return '3rd';
+    return `${level}th`;
+  };
+
+  /**
+   * Format uses and recharge info for display
+   * @param uses - Number of uses, or null for unlimited
+   * @param recharge - Recharge type: 'dawn', 'short_rest', 'long_rest', or undefined
+   * @returns Formatted uses string (e.g., "1/dawn", "unlimited", "3/short rest")
+   */
+  const formatSpellUses = (uses: number | null | undefined, recharge: string | undefined): string => {
+    if (uses === null) return 'unlimited';
+    if (uses === undefined) return 'once';
+    const rechargeStr = recharge ? `/${recharge.replace('_', ' ')}` : '';
+    return `${uses}${rechargeStr}`;
+  };
+
+  /**
+   * Render granted spells section for enhanced equipment
+   * Displays spells granted by equipment with level, uses, and recharge info
+   */
+  const renderGrantedSpells = (item: Equipment) => {
+    if (!isEnhancedEquipment(item) || !item.grantsSpells || item.grantsSpells.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Spells:</span>
+        <div className="dataviewer-item-tags">
+          {item.grantsSpells.map((spell, idx) => {
+            const levelStr = spell.level !== undefined ? ` ${formatSpellLevelShort(spell.level)} level` : '';
+            const usesStr = formatSpellUses(spell.uses, spell.recharge);
+            return (
+              <span key={idx} className="dataviewer-tag dataviewer-tag-spell">
+                {spell.spellId}{levelStr}, {usesStr}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   // Render equipment
   const renderEquipment = () => (
     <div className="dataviewer-grid">
@@ -766,6 +820,8 @@ export function DataViewerTab() {
                 )}
                 {/* Granted Skills Section */}
                 {renderGrantedSkills(item)}
+                {/* Granted Spells Section */}
+                {renderGrantedSpells(item)}
               </div>
             )}
           </div>

@@ -42,11 +42,11 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ```
 
 ### Task 1.3: Display grantsSpells on Equipment Cards
-- [ ] Add new section in `renderEquipment()` for spells granted by equipment
-- [ ] Create `renderGrantedSpells()` helper function
-- [ ] Display spell name, level, uses, and recharge info
-- [ ] Handle unlimited uses (uses: null) display
-- [ ] Add CSS for `.dataviewer-tag-spell` (purple variant)
+- [x] Add new section in `renderEquipment()` for spells granted by equipment
+- [x] Create `renderGrantedSpells()` helper function
+- [x] Display spell name, level, uses, and recharge info
+- [x] Handle unlimited uses (uses: null) display
+- [x] Add CSS for `.dataviewer-tag-spell` (purple variant)
 
 ```tsx
 // Example output:
