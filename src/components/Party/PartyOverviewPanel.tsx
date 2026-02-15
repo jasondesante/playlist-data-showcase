@@ -21,6 +21,8 @@ export interface PartyOverviewPanelProps {
   totalCount: number;
   /** Show "too few heroes" message (for single-hero parties) */
   showTooFewMessage?: boolean;
+  /** Show loading skeleton state */
+  isLoading?: boolean;
 }
 
 /**
@@ -61,6 +63,22 @@ function StatCard({ label, value, subtitle, icon, tooltip }: StatCardConfig) {
 }
 
 /**
+ * Skeleton stat card for loading state
+ */
+function StatCardSkeleton() {
+  return (
+    <div className="party-stat-card-skeleton">
+      <div className="party-stat-card-skeleton-icon" />
+      <div className="party-stat-card-skeleton-content">
+        <div className="party-stat-card-skeleton-label" />
+        <div className="party-stat-card-skeleton-value" />
+        <div className="party-stat-card-skeleton-subtitle" />
+      </div>
+    </div>
+  );
+}
+
+/**
  * XP budget card for displaying encounter difficulty thresholds
  */
 interface XPBudgetCardProps {
@@ -74,6 +92,18 @@ function XPBudgetCard({ difficulty, xp, colorClass }: XPBudgetCardProps) {
     <div className={`party-xp-card party-xp-card-${colorClass}`}>
       <div className="party-xp-card-difficulty">{difficulty}</div>
       <div className="party-xp-card-value">{formatNumber(xp)} XP</div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton XP card for loading state
+ */
+function XPBudgetCardSkeleton() {
+  return (
+    <div className="party-xp-card-skeleton">
+      <div className="party-xp-card-skeleton-difficulty" />
+      <div className="party-xp-card-skeleton-value" />
     </div>
   );
 }
@@ -109,14 +139,50 @@ function TooFewState({ count }: { count: number }) {
 }
 
 /**
+ * Loading skeleton panel
+ */
+function LoadingSkeleton() {
+  return (
+    <div className="party-overview-panel-loading">
+      {/* Stats Grid Skeleton */}
+      <div className="party-stats-grid">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </div>
+
+      {/* XP Budget Section Skeleton */}
+      <div className="party-xp-section-skeleton">
+        <div className="party-xp-section-skeleton-title" />
+        <div className="party-xp-grid">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <XPBudgetCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Main PartyOverviewPanel component
  */
 export function PartyOverviewPanel({
   analysis,
   selectedCount,
   totalCount,
-  showTooFewMessage = false
+  showTooFewMessage = false,
+  isLoading = false
 }: PartyOverviewPanelProps) {
+  // Show loading skeleton while analysis is calculating
+  if (isLoading) {
+    return (
+      <div className="party-overview-panel party-overview-panel-loading">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
   // Show too few state when explicitly requested (e.g., single-hero party)
   if (showTooFewMessage) {
     return (
@@ -180,7 +246,7 @@ export function PartyOverviewPanel({
   ];
 
   return (
-    <div className="party-overview-panel">
+    <div className="party-overview-panel party-overview-panel-loaded">
       {/* Stats Grid */}
       <div className="party-stats-grid">
         {statCards.map((stat) => (

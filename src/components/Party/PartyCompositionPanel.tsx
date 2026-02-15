@@ -18,6 +18,8 @@ export interface PartyCompositionPanelProps {
   characters: CharacterSheet[];
   /** Set of seeds for characters selected for analysis */
   selectedSeeds: Set<string>;
+  /** Show loading skeleton state */
+  isLoading?: boolean;
 }
 
 /**
@@ -378,12 +380,80 @@ function TooFewState({ count }: { count: number }) {
 }
 
 /**
+ * Loading skeleton for composition panel
+ */
+function LoadingSkeleton() {
+  return (
+    <div className="party-composition-panel-loading">
+      {/* Class Distribution Skeleton */}
+      <div className="composition-section-skeleton">
+        <div className="composition-section-skeleton-title" />
+        <div className="class-distribution-skeleton">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="class-bar-skeleton">
+              <div className="class-bar-skeleton-header">
+                <div className="class-bar-skeleton-name" />
+                <div className="class-bar-skeleton-count" />
+              </div>
+              <div className="class-bar-skeleton-track" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Role Distribution Skeleton */}
+      <div className="composition-section-skeleton">
+        <div className="composition-section-skeleton-title" />
+        <div className="role-distribution-skeleton">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="role-card-skeleton">
+              <div className="role-card-skeleton-icon" />
+              <div className="role-card-skeleton-content">
+                <div className="role-card-skeleton-name" />
+                <div className="role-card-skeleton-count" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="role-balance-skeleton" />
+      </div>
+
+      {/* Quick Stats Skeleton */}
+      <div className="composition-section-skeleton">
+        <div className="composition-section-skeleton-title" />
+        <div className="quick-stats-skeleton">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="quick-stat-skeleton">
+              <div className="quick-stat-skeleton-icon" />
+              <div className="quick-stat-skeleton-content">
+                <div className="quick-stat-skeleton-value" />
+                <div className="quick-stat-skeleton-label" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Main PartyCompositionPanel component
  */
 export function PartyCompositionPanel({
   characters,
-  selectedSeeds
+  selectedSeeds,
+  isLoading = false
 }: PartyCompositionPanelProps) {
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <div className="party-composition-panel party-composition-panel-loading">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
   // Filter characters by selection
   const selectedCharacters = useMemo(() =>
     characters.filter(c => selectedSeeds.has(c.seed)),
@@ -415,7 +485,7 @@ export function PartyCompositionPanel({
   }
 
   return (
-    <div className="party-composition-panel">
+    <div className="party-composition-panel party-composition-panel-loaded">
       {/* Class Distribution */}
       <ClassDistributionBar
         classDistribution={composition.classDistribution}

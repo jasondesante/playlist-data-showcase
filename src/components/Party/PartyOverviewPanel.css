@@ -268,3 +268,170 @@
     font-size: 1.125rem;
   }
 }
+
+/* ========================================
+   LOADING SKELETON STATES
+   ======================================== */
+
+/* Skeleton Card */
+.party-stat-card-skeleton {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.party-stat-card-skeleton-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.party-stat-card-skeleton-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.party-stat-card-skeleton-label {
+  width: 60%;
+  height: 0.6875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.party-stat-card-skeleton-value {
+  width: 40%;
+  height: 1.25rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+.party-stat-card-skeleton-subtitle {
+  width: 50%;
+  height: 0.6875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* Skeleton XP Section */
+.party-xp-section-skeleton {
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.party-xp-section-skeleton-title {
+  width: 40%;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  margin-bottom: 0.875rem;
+}
+
+/* Skeleton XP Card */
+.party-xp-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-dim);
+}
+
+.party-xp-card-skeleton-difficulty {
+  width: 50%;
+  height: 0.6875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  margin-bottom: 0.25rem;
+}
+
+.party-xp-card-skeleton-value {
+  width: 70%;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* Skeleton Animation */
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Loading Panel Wrapper */
+.party-overview-panel-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Data Update Transitions */
+.party-stat-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+}
+
+.party-overview-panel[data-updating="true"] .party-stat-card {
+  opacity: 0.7;
+}
+
+.party-xp-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+}
+
+.party-overview-panel[data-updating="true"] .party-xp-card {
+  opacity: 0.7;
+}
+
+/* Fade-in animation for loaded content */
+@keyframes party-panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.party-overview-panel-loaded .party-stat-card {
+  animation: party-panel-fade-in 0.3s ease forwards;
+}
+
+.party-overview-panel-loaded .party-stat-card:nth-child(1) { animation-delay: 0ms; }
+.party-overview-panel-loaded .party-stat-card:nth-child(2) { animation-delay: 50ms; }
+.party-overview-panel-loaded .party-stat-card:nth-child(3) { animation-delay: 100ms; }
+.party-overview-panel-loaded .party-stat-card:nth-child(4) { animation-delay: 150ms; }
+.party-overview-panel-loaded .party-stat-card:nth-child(5) { animation-delay: 200ms; }
+
+.party-overview-panel-loaded .party-xp-card {
+  animation: party-panel-fade-in 0.3s ease forwards;
+}
+
+.party-overview-panel-loaded .party-xp-card:nth-child(1) { animation-delay: 250ms; }
+.party-overview-panel-loaded .party-xp-card:nth-child(2) { animation-delay: 300ms; }
+.party-overview-panel-loaded .party-xp-card:nth-child(3) { animation-delay: 350ms; }
+.party-overview-panel-loaded .party-xp-card:nth-child(4) { animation-delay: 400ms; }

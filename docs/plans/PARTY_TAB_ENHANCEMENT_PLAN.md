@@ -174,9 +174,9 @@ function usePartyAnalysis(
 - [x] Show message when only 1 hero selected (need 2+ for meaningful analysis)
 
 ### Task 5.4: Loading States
-- [ ] Add loading state while analysis is calculating
-- [ ] Use skeleton components for stat cards
-- [ ] Smooth transitions when data updates
+- [x] Add loading state while analysis is calculating
+- [x] Use skeleton components for stat cards
+- [x] Smooth transitions when data updates
 
 ### Task 5.5: Responsive Design
 - [ ] Test on mobile (375px)

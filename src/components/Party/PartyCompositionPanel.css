@@ -407,3 +407,251 @@
     font-size: 0.5625rem;
   }
 }
+
+/* ========================================
+   LOADING SKELETON STATES
+   ======================================== */
+
+/* Loading Panel Wrapper */
+.party-composition-panel-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Section Skeleton */
+.composition-section-skeleton {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Section Title Skeleton */
+.composition-section-skeleton-title {
+  width: 35%;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+  margin-bottom: 0.875rem;
+}
+
+/* Class Distribution Skeleton */
+.class-distribution-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.class-bar-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.class-bar-skeleton-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.class-bar-skeleton-name {
+  width: 30%;
+  height: 0.8125rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+.class-bar-skeleton-count {
+  width: 15%;
+  height: 0.75rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+.class-bar-skeleton-track {
+  height: 0.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+/* Role Distribution Skeleton */
+.role-distribution-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .role-distribution-skeleton {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.role-card-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-dim);
+}
+
+.role-card-skeleton-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.role-card-skeleton-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.role-card-skeleton-name {
+  width: 50%;
+  height: 0.75rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+.role-card-skeleton-count {
+  width: 70%;
+  height: 0.6875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+/* Balance Indicator Skeleton */
+.role-balance-skeleton {
+  width: 50%;
+  height: 2rem;
+  margin: 0 auto;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+/* Quick Stats Skeleton */
+.quick-stats-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+
+@media (min-width: 480px) {
+  .quick-stats-skeleton {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 640px) {
+  .quick-stats-skeleton {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.quick-stat-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.quick-stat-skeleton-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.quick-stat-skeleton-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quick-stat-skeleton-value {
+  width: 60%;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+.quick-stat-skeleton-label {
+  width: 80%;
+  height: 0.625rem;
+  border-radius: 0.125rem;
+  background: linear-gradient(90deg, var(--color-surface-dim) 0%, var(--color-surface-3) 50%, var(--color-surface-dim) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer-composition 1.5s infinite;
+}
+
+/* Skeleton Animation */
+@keyframes skeleton-shimmer-composition {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Data Update Transitions */
+.party-composition-panel[data-updating="true"] .class-bar-fill {
+  transition: width 0.4s ease;
+}
+
+.party-composition-panel[data-updating="true"] .role-card,
+.party-composition-panel[data-updating="true"] .quick-stat-item {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+/* Fade-in animation for loaded content */
+@keyframes composition-panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.party-composition-panel-loaded .composition-section {
+  animation: composition-panel-fade-in 0.3s ease forwards;
+}
+
+.party-composition-panel-loaded .composition-section:nth-child(1) { animation-delay: 0ms; }
+.party-composition-panel-loaded .composition-section:nth-child(2) { animation-delay: 100ms; }
+.party-composition-panel-loaded .composition-section:nth-child(3) { animation-delay: 200ms; }

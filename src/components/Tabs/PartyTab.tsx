@@ -109,7 +109,7 @@ export function PartyTab() {
   const selectedSeedsSet = useMemo(() => new Set(selectedHeroSeeds), [selectedHeroSeeds]);
 
   // Get party analysis using the hook
-  const partyAnalysis = usePartyAnalysis(characters, selectedSeedsSet);
+  const { analysis: partyAnalysis, isLoading: isAnalysisLoading } = usePartyAnalysis(characters, selectedSeedsSet);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -328,6 +328,7 @@ export function PartyTab() {
               analysis={partyAnalysis}
               selectedCount={selectedCount}
               totalCount={totalCount}
+              isLoading={isAnalysisLoading}
             />
           </CollapsibleSection>
 
@@ -342,6 +343,7 @@ export function PartyTab() {
             <PartyCompositionPanel
               characters={characters}
               selectedSeeds={selectedSeedsSet}
+              isLoading={isAnalysisLoading}
             />
           </CollapsibleSection>
         </div>
