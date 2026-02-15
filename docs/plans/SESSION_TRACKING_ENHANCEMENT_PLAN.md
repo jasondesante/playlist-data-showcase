@@ -180,19 +180,19 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 4.2: Create SessionHistoryPanel component
 
-- [x] Create `src/components/ui/SessionHistoryPanel.tsx`
-- [x] Props: `sessions: ListeningSession[]`, `maxItems?: number`
-- [x] Display list of recent sessions (default 10)
-- [x] Show "View All" button if more sessions exist
-- [x] Collapsible/expandable design
-- [x] Empty state when no history
+- [ ] Create `src/components/ui/SessionHistoryPanel.tsx`
+- [ ] Props: `sessions: ListeningSession[]`, `maxItems?: number`
+- [ ] Display list of recent sessions (default 10)
+- [ ] Show "View All" button if more sessions exist
+- [ ] Collapsible/expandable design
+- [ ] Empty state when no history
 
 ### Task 4.3: Integrate SessionHistoryPanel into SessionTrackingTab
 
-- [x] Import `SessionHistoryPanel`
-- [x] Add below the "Last Session" card or replace it
-- [x] Use `sessionHistory` from `useSessionStore`
-- [x] Show stats summary at top:
+- [ ] Import `SessionHistoryPanel`
+- [ ] Add below the "Last Session" card or replace it
+- [ ] Use `sessionHistory` from `useSessionStore`
+- [ ] Show stats summary at top:
   - Total sessions count
   - Total XP earned
   - Total listening time
@@ -237,30 +237,30 @@ Create a new hook to expose mastery-related data from the engine.
 
 **File:** `src/components/Tabs/SessionTrackingTab.css`
 
-- [x] Add `.session-mastery-section` styles
-- [x] Add `.session-mastery-badge-overlay` styles
-- [x] Add `.session-mastery-progress` styles
-- [x] Add `.session-listen-count` styles
-- [x] Add responsive breakpoints
+- [ ] Add `.session-mastery-section` styles
+- [ ] Add `.session-mastery-badge-overlay` styles
+- [ ] Add `.session-mastery-progress` styles
+- [ ] Add `.session-listen-count` styles
+- [ ] Add responsive breakpoints
 
 ### Task 6.2: Add session history styles
 
-- [x] Add `.session-history-panel` styles
-- [x] Add `.session-history-item` styles
-- [x] Add `.session-history-stats` styles
-- [x] Add expand/collapse animation
+- [ ] Add `.session-history-panel` styles
+- [ ] Add `.session-history-item` styles
+- [ ] Add `.session-history-stats` styles
+- [ ] Add expand/collapse animation
 
 ### Task 6.3: Create MasteryBadge styles
 
 **File:** `src/components/ui/MasteryBadge.css`
 
-- [x] Base badge styles
-- [x] Level-specific colors:
+- [ ] Base badge styles
+- [ ] Level-specific colors:
   - None: No badge displayed
   - Basic: Bronze (#CD7F32)
   - Familiar: Silver (#C0C0C0)
   - Mastered: Gold (#FFD700) with glow animation
-- [x] Size variants (sm, md, lg)
+- [ ] Size variants (sm, md, lg)
 
 ---
 
@@ -268,26 +268,26 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 7.1: Manual Testing
 
-- [x] Test mastery badge displays correctly at each level
+- [ ] Test mastery badge displays correctly at each level
   - Verified: MasteryBadge component handles 'none', 'basic', 'familiar', 'mastered' levels
   - 'none' returns null (no badge displayed)
   - 'basic' shows bronze circle, 'familiar' shows silver star, 'mastered' shows gold crown with glow
   - useMastery hook correctly maps listen counts to levels (0=none, 1-4=basic, 5-9=familiar, 10+=mastered)
-- [x] Test progress bar updates when session ends
+- [ ] Test progress bar updates when session ends
   - Verified: Reactive chain from sessionHistory → useMastery → masteryInfo → MasteryProgressBar
   - Progress animates via useEffect with requestAnimationFrame
   - Session store adds completed sessions to sessionHistory array
-- [x] Test session history shows all sessions
+- [ ] Test session history shows all sessions
   - Verified: SessionHistoryPanel receives sessionHistory from useSessionStore
   - Sessions displayed via SessionHistoryItem components
-- [x] Test responsive layout on mobile
+- [ ] Test responsive layout on mobile
   - Verified: CSS has @media (max-width: 639px) breakpoints
   - Mastery section styles adapt for mobile (centered, smaller padding)
   - Session history panel reduces max-height on mobile (400px vs 500px)
-- [x] Test with no sessions (empty state)
+- [ ] Test with no sessions (empty state)
   - Verified: SessionHistoryPanel shows empty state when sessions.length === 0
   - Displays "No sessions yet" message with hint
-- [x] Test with many sessions (scroll/pagination)
+- [ ] Test with many sessions (scroll/pagination)
   - Verified: max-height: 500px with overflow-y: auto for scrolling
   - "Show More" button for expanding beyond maxItems (default 10)
   - Custom scrollbar styling included
