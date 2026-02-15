@@ -179,6 +179,8 @@ interface CharacterState {
     activeCharacterId: string | null;
     /** Map of character seed to stat strategy selection */
     characterStrategies: Record<string, StatIncreaseStrategyType>;
+    /** Seeds of heroes selected for party analysis (subset of characters) */
+    selectedHeroSeeds: string[];
 
     /** Add a new character to the store and set as active */
     addCharacter: (character: CharacterSheet) => void;
@@ -216,6 +218,16 @@ interface CharacterState {
      * Call this after successful restoration or when giving up
      */
     clearRestorationState: () => void;
+    /** Toggle selection for a single hero by seed */
+    toggleHeroSelection: (seed: string) => void;
+    /** Select all heroes (all characters become selected) */
+    selectAllHeroes: () => void;
+    /** Deselect all heroes (no characters selected) */
+    deselectAllHeroes: () => void;
+    /** Check if a hero is selected */
+    isHeroSelected: (seed: string) => boolean;
+    /** Get count of selected heroes */
+    getSelectedHeroCount: () => number;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -224,6 +236,7 @@ export const useCharacterStore = create<CharacterState>()(
             characters: [],
             activeCharacterId: null,
             characterStrategies: {},
+            selectedHeroSeeds: [],
 
             /**
              * Add a new character to the store and set as active
@@ -239,7 +252,8 @@ export const useCharacterStore = create<CharacterState>()(
                 logger.info('Store', 'Adding character', { name: character.name, class: character.class });
                 set((state) => ({
                     characters: [...state.characters, character],
-                    activeCharacterId: character.seed // Use seed as unique identifier
+                    activeCharacterId: character.seed, // Use seed as unique identifier
+                    selectedHeroSeeds: [...state.selectedHeroSeeds, character.seed] // Auto-select new character
                 }));
             },
 
@@ -291,6 +305,7 @@ export const useCharacterStore = create<CharacterState>()(
                             ),
                             activeCharacterId: character.seed,
                             characterStrategies: remainingStrategies
+                            // Don't change selectedHeroSeeds - character already exists and keeps its selection state
                         };
                     });
                 } else {
@@ -301,7 +316,8 @@ export const useCharacterStore = create<CharacterState>()(
                         return {
                             characters: [...state.characters, character],
                             activeCharacterId: character.seed,
-                            characterStrategies: remainingStrategies
+                            characterStrategies: remainingStrategies,
+                            selectedHeroSeeds: [...state.selectedHeroSeeds, character.seed] // Auto-select new character
                         };
                     });
                 }
@@ -330,7 +346,8 @@ export const useCharacterStore = create<CharacterState>()(
                     return {
                         characters: state.characters.filter((c) => c.seed !== id),
                         activeCharacterId: state.activeCharacterId === id ? null : state.activeCharacterId,
-                        characterStrategies: remainingStrategies
+                        characterStrategies: remainingStrategies,
+                        selectedHeroSeeds: state.selectedHeroSeeds.filter(s => s !== id) // Remove from selection
                     };
                 });
             },
@@ -374,7 +391,8 @@ export const useCharacterStore = create<CharacterState>()(
                         activeCharacterId: affectedSeeds.includes(state.activeCharacterId || '')
                             ? null
                             : state.activeCharacterId,
-                        characterStrategies: remainingStrategies
+                        characterStrategies: remainingStrategies,
+                        selectedHeroSeeds: state.selectedHeroSeeds.filter(s => !affectedSeeds.includes(s)) // Remove from selection
                     };
                 });
             },
@@ -389,7 +407,8 @@ export const useCharacterStore = create<CharacterState>()(
                 set({
                     characters: [],
                     activeCharacterId: null,
-                    characterStrategies: {}
+                    characterStrategies: {},
+                    selectedHeroSeeds: [] // Clear selection when characters are cleared
                 });
             },
 
@@ -534,6 +553,64 @@ export const useCharacterStore = create<CharacterState>()(
             clearRestorationState: () => {
                 restorationState = { needsRetry: false, attemptTime: 0, retryCount: 0 };
                 logger.debug('Store', 'Restoration state cleared');
+            },
+
+            /**
+             * Toggle selection for a single hero by seed.
+             * Part of party analysis feature - allows selecting which heroes to include in analysis.
+             *
+             * @param seed - The seed (unique ID) of the character to toggle
+             * @example
+             * ```ts
+             * toggleHeroSelection('seed-123'); // Toggles selection state
+             * ```
+             */
+            toggleHeroSelection: (seed) => {
+                set((state) => {
+                    const isSelected = state.selectedHeroSeeds.includes(seed);
+                    return {
+                        selectedHeroSeeds: isSelected
+                            ? state.selectedHeroSeeds.filter(s => s !== seed)
+                            : [...state.selectedHeroSeeds, seed]
+                    };
+                });
+            },
+
+            /**
+             * Select all heroes for party analysis.
+             * Sets selectedHeroSeeds to include all character seeds.
+             */
+            selectAllHeroes: () => {
+                set((state) => ({
+                    selectedHeroSeeds: state.characters.map(c => c.seed)
+                }));
+            },
+
+            /**
+             * Deselect all heroes for party analysis.
+             * Clears selectedHeroSeeds to an empty array.
+             */
+            deselectAllHeroes: () => {
+                set({ selectedHeroSeeds: [] });
+            },
+
+            /**
+             * Check if a hero is selected for party analysis.
+             *
+             * @param seed - The seed (unique ID) of the character
+             * @returns true if the hero is selected
+             */
+            isHeroSelected: (seed) => {
+                return get().selectedHeroSeeds.includes(seed);
+            },
+
+            /**
+             * Get the count of selected heroes for party analysis.
+             *
+             * @returns Number of selected heroes
+             */
+            getSelectedHeroCount: () => {
+                return get().selectedHeroSeeds.length;
             }
         }),
         {
@@ -544,6 +621,29 @@ export const useCharacterStore = create<CharacterState>()(
             // the selected track from the active character
             onRehydrateStorage: () => {
                 return (state) => {
+                    // Initialize selectedHeroSeeds if missing (backwards compatibility)
+                    // and clean up any stale seeds
+                    if (state) {
+                        const characterSeeds = new Set(state.characters.map(c => c.seed));
+
+                        // If selectedHeroSeeds is undefined or not an array, initialize with all characters
+                        if (!state.selectedHeroSeeds || !Array.isArray(state.selectedHeroSeeds)) {
+                            state.selectedHeroSeeds = state.characters.map(c => c.seed);
+                            logger.info('Store', 'Initialized selectedHeroSeeds with all characters', {
+                                count: state.selectedHeroSeeds.length
+                            });
+                        } else {
+                            // Clean up stale seeds (seeds that no longer exist in characters)
+                            const validSeeds = state.selectedHeroSeeds.filter(s => characterSeeds.has(s));
+                            if (validSeeds.length !== state.selectedHeroSeeds.length) {
+                                logger.info('Store', 'Cleaned up stale hero seeds from selection', {
+                                    removed: state.selectedHeroSeeds.length - validSeeds.length
+                                });
+                                state.selectedHeroSeeds = validSeeds;
+                            }
+                        }
+                    }
+
                     if (state?.activeCharacterId && state.characters.length > 0) {
                         logger.info('Store', 'Character store rehydrated from storage, triggering track restoration', {
                             activeCharacterId: state.activeCharacterId,

@@ -5,7 +5,7 @@
  * Features: search, sort, detail modal, empty state.
  */
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -84,7 +84,7 @@ function getAmmunitionWeight(itemName: string): number | null {
 }
 
 export function PartyTab() {
-  const { characters, resetCharacters, activeCharacterId, setActiveCharacter } = useCharacterStore();
+  const { characters, resetCharacters, activeCharacterId, setActiveCharacter, selectedHeroSeeds, toggleHeroSelection, selectAllHeroes, deselectAllHeroes } = useCharacterStore();
   const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription } = useFeatureNames();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
@@ -97,58 +97,8 @@ export function PartyTab() {
   const [settingActiveSeed, setSettingActiveSeed] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
 
-  // Hero selection state for party analysis
-  // All heroes are selected by default
-  const [selectedHeroSeeds, setSelectedHeroSeeds] = useState<Set<string>>(() => {
-    return new Set(characters.map(c => c.seed));
-  });
-
-  // Sync selectedHeroSeeds when characters change (new characters added/removed)
-  useEffect(() => {
-    setSelectedHeroSeeds(prevSeeds => {
-      const characterSeeds = new Set(characters.map(c => c.seed));
-      // Add new characters (auto-select new additions)
-      const newSeeds = new Set(prevSeeds);
-      characters.forEach(c => {
-        if (!prevSeeds.has(c.seed)) {
-          newSeeds.add(c.seed);
-        }
-      });
-      // Remove seeds for characters that no longer exist
-      newSeeds.forEach(seed => {
-        if (!characterSeeds.has(seed)) {
-          newSeeds.delete(seed);
-        }
-      });
-      return newSeeds;
-    });
-  }, [characters]);
-
-  // Toggle selection for a single hero
-  const toggleHeroSelection = useCallback((seed: string) => {
-    setSelectedHeroSeeds(prevSeeds => {
-      const newSeeds = new Set(prevSeeds);
-      if (newSeeds.has(seed)) {
-        newSeeds.delete(seed);
-      } else {
-        newSeeds.add(seed);
-      }
-      return newSeeds;
-    });
-  }, []);
-
-  // Select all heroes
-  const selectAllHeroes = useCallback(() => {
-    setSelectedHeroSeeds(new Set(characters.map(c => c.seed)));
-  }, [characters]);
-
-  // Deselect all heroes
-  const deselectAllHeroes = useCallback(() => {
-    setSelectedHeroSeeds(new Set());
-  }, []);
-
   // Count of selected heroes for display
-  const selectedCount = selectedHeroSeeds.size;
+  const selectedCount = selectedHeroSeeds.length;
   const totalCount = characters.length;
 
   // Close dropdown when clicking outside
@@ -443,7 +393,7 @@ export function PartyTab() {
             onSetActive={() => handleSetActiveCharacter(character.seed)}
             isLoading={isSettingActive && settingActiveSeed === character.seed}
             selectionMode={characters.length >= 2}
-            isSelected={selectedHeroSeeds.has(character.seed)}
+            isSelected={selectedHeroSeeds.includes(character.seed)}
             onToggleSelection={() => toggleHeroSelection(character.seed)}
           />
         ))}

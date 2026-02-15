@@ -111,9 +111,9 @@ function usePartyAnalysis(
 - [x] Only show when there are 2+ characters
 
 ### Task 3.3: Selection State Persistence
-- [ ] Consider if selection should persist across tab changes (optional)
-- [ ] Reset selection when characters are cleared
-- [ ] Auto-select new characters when added to party (default behavior)
+- [x] Consider if selection should persist across tab changes (optional)
+- [x] Reset selection when characters are cleared
+- [x] Auto-select new characters when added to party (default behavior)
 
 ---
 
