@@ -120,37 +120,37 @@ function usePartyAnalysis(
 ## Phase 4: Party Composition Visualization
 
 ### Task 4.1: Create PartyCompositionPanel Component
-- [ ] Create `src/components/Party/PartyCompositionPanel.tsx`
-- [ ] Accept `characters` and `selectedSeeds` props
-- [ ] Calculate composition data from selected characters
+- [x] Create `src/components/Party/PartyCompositionPanel.tsx`
+- [x] Accept `characters` and `selectedSeeds` props
+- [x] Calculate composition data from selected characters
 
 ### Task 4.2: Class Distribution
-- [ ] Count characters by class (Fighter, Wizard, Rogue, etc.)
-- [ ] Display as horizontal bar chart or donut chart
-- [ ] Show class icons/emojis if available
-- [ ] Show percentage for each class
+- [x] Count characters by class (Fighter, Wizard, Rogue, etc.)
+- [x] Display as horizontal bar chart or donut chart
+- [x] Show class icons/emojis if available
+- [x] Show percentage for each class
 
 ### Task 4.3: Role Distribution
-- [ ] Determine character roles based on class:
-  - [ ] **Tank** - Fighter, Paladin, Barbarian (high AC/HP)
-  - [ ] **DPS** - Rogue, Ranger, Monk (high damage)
-  - [ ] **Caster** - Wizard, Sorcerer, Warlock (spell-focused)
-  - [ ] **Support** - Cleric, Bard, Druid (healing/utility)
-- [ ] Display role breakdown with icons
-- [ ] Show role balance indicator (balanced vs unbalanced)
+- [x] Determine character roles based on class:
+  - [x] **Tank** - Fighter, Paladin, Barbarian (high AC/HP)
+  - [x] **DPS** - Rogue, Ranger, Monk (high damage)
+  - [x] **Caster** - Wizard, Sorcerer, Warlock (spell-focused)
+  - [x] **Support** - Cleric, Bard, Druid (healing/utility)
+- [x] Display role breakdown with icons
+- [x] Show role balance indicator (balanced vs unbalanced)
 
 ### Task 4.4: Quick Stats Row
-- [ ] Total HP pool
-- [ ] Highest AC in party
-- [ ] Lowest AC in party
-- [ ] Spellcaster count
-- [ ] Average speed
+- [x] Total HP pool
+- [x] Highest AC in party
+- [x] Lowest AC in party
+- [x] Spellcaster count
+- [x] Average speed
 
 ### Task 4.5: Composition CSS
-- [ ] Add CSS styles for composition panel
-- [ ] Style class/role distribution charts
-- [ ] Use consistent color palette with existing design
-- [ ] Add smooth animations for data changes
+- [x] Add CSS styles for composition panel
+- [x] Style class/role distribution charts
+- [x] Use consistent color palette with existing design
+- [x] Add smooth animations for data changes
 
 ---
 

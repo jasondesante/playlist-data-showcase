@@ -1,0 +1,409 @@
+/**
+ * PartyCompositionPanel Styles
+ *
+ * Displays party composition visualization including class distribution,
+ * role breakdown, and quick stats.
+ *
+ * Part of Phase 4: Party Composition Visualization
+ */
+
+/* Main Panel Container */
+.party-composition-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Empty State Variant */
+.party-composition-panel-empty {
+  padding: 1.5rem;
+}
+
+/* Empty State */
+.composition-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.composition-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.composition-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.375rem 0;
+}
+
+.composition-empty-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+}
+
+/* Section Styles */
+.composition-section {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.composition-section:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.composition-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.875rem 0;
+}
+
+/* Class Distribution Bars */
+.class-distribution-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.class-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.class-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.class-bar-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.class-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.class-bar-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.class-bar-track {
+  height: 0.5rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.class-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width 0.4s ease;
+}
+
+/* Role Distribution Grid */
+.role-distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .role-distribution-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Role Card */
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.role-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.role-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-card-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.role-card-count {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.role-card-percentage {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.125rem;
+}
+
+/* Tank Role - Blue */
+.role-card-tank {
+  background: linear-gradient(135deg, hsl(210 70% 45% / 0.1), hsl(210 70% 45% / 0.05));
+  border-color: hsl(210 70% 45% / 0.3);
+}
+
+.role-card-tank .role-card-icon {
+  background: linear-gradient(135deg, hsl(210 70% 45%), hsl(210 70% 35%));
+  color: white;
+}
+
+.role-card-tank .role-card-percentage {
+  color: hsl(210 70% 45%);
+}
+
+/* DPS Role - Red */
+.role-card-dps {
+  background: linear-gradient(135deg, hsl(0 70% 45% / 0.1), hsl(0 70% 45% / 0.05));
+  border-color: hsl(0 70% 45% / 0.3);
+}
+
+.role-card-dps .role-card-icon {
+  background: linear-gradient(135deg, hsl(0 70% 45%), hsl(0 70% 35%));
+  color: white;
+}
+
+.role-card-dps .role-card-percentage {
+  color: hsl(0 70% 45%);
+}
+
+/* Caster Role - Purple */
+.role-card-caster {
+  background: linear-gradient(135deg, hsl(280 60% 50% / 0.1), hsl(280 60% 50% / 0.05));
+  border-color: hsl(280 60% 50% / 0.3);
+}
+
+.role-card-caster .role-card-icon {
+  background: linear-gradient(135deg, hsl(280 60% 50%), hsl(280 60% 40%));
+  color: white;
+}
+
+.role-card-caster .role-card-percentage {
+  color: hsl(280 60% 50%);
+}
+
+/* Support Role - Green */
+.role-card-support {
+  background: linear-gradient(135deg, hsl(142 70% 40% / 0.1), hsl(142 70% 40% / 0.05));
+  border-color: hsl(142 70% 40% / 0.3);
+}
+
+.role-card-support .role-card-icon {
+  background: linear-gradient(135deg, hsl(142 70% 40%), hsl(142 70% 30%));
+  color: white;
+}
+
+.role-card-support .role-card-percentage {
+  color: hsl(142 70% 40%);
+}
+
+/* Role Balance Indicator */
+.role-balance-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.role-balance-indicator.balanced {
+  background: linear-gradient(135deg, hsl(142 70% 40% / 0.1), hsl(142 70% 40% / 0.05));
+  color: hsl(142 70% 35%);
+  border: 1px solid hsl(142 70% 40% / 0.3);
+}
+
+.role-balance-indicator.unbalanced {
+  background: linear-gradient(135deg, hsl(45 90% 45% / 0.1), hsl(45 90% 45% / 0.05));
+  color: hsl(45 90% 35%);
+  border: 1px solid hsl(45 90% 45% / 0.3);
+}
+
+.balance-icon.balanced {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  background: hsl(142 70% 40%);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.balance-icon.unbalanced {
+  font-size: 0.875rem;
+}
+
+/* Quick Stats Grid */
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+
+@media (min-width: 480px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 640px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Quick Stat Item */
+.quick-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.quick-stat-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-primary);
+}
+
+.quick-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.quick-stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.quick-stat-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.quick-stat-label {
+  font-size: 0.625rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Quick Stat Colors */
+.quick-stat-hp .quick-stat-icon {
+  background: linear-gradient(135deg, hsl(0 70% 50%), hsl(0 70% 40%));
+  color: white;
+}
+
+.quick-stat-ac-high .quick-stat-icon {
+  background: linear-gradient(135deg, hsl(142 70% 40%), hsl(142 70% 30%));
+  color: white;
+}
+
+.quick-stat-ac-low .quick-stat-icon {
+  background: linear-gradient(135deg, hsl(45 90% 45%), hsl(45 90% 35%));
+  color: white;
+}
+
+.quick-stat-caster .quick-stat-icon {
+  background: linear-gradient(135deg, hsl(280 60% 50%), hsl(280 60% 40%));
+  color: white;
+}
+
+.quick-stat-speed .quick-stat-icon {
+  background: linear-gradient(135deg, hsl(195 70% 45%), hsl(195 70% 35%));
+  color: white;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .composition-section-title {
+    font-size: 0.8125rem;
+  }
+
+  .class-bar-name {
+    font-size: 0.75rem;
+  }
+
+  .role-card {
+    padding: 0.625rem;
+  }
+
+  .role-card-name {
+    font-size: 0.6875rem;
+  }
+
+  .role-card-count {
+    font-size: 0.625rem;
+  }
+
+  .quick-stat-value {
+    font-size: 0.75rem;
+  }
+
+  .quick-stat-label {
+    font-size: 0.5625rem;
+  }
+}
