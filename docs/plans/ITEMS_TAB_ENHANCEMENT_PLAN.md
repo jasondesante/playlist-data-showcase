@@ -141,47 +141,57 @@ interface EquipmentModification {
 ## Phase 3: Enchantment Modal UI
 
 ### 3.1 Create EnchantmentModal Component
-- [ ] Create `src/components/modals/EnchantmentModal.tsx`
-- [ ] Modal receives: `item`, `itemType`, `onEnchant`, `onCurse`, `onClose`
-- [ ] Use existing Card/Button UI components
-- [ ] Implement modal overlay with close on backdrop click
+- [x] Create `src/components/modals/EnchantmentModal.tsx`
+- [x] Modal receives: `item`, `itemType`, `onEnchant`, `onCurse`, `onClose`
+- [x] Use existing Card/Button UI components
+- [x] Implement modal overlay with close on backdrop click
+
+**Completed (2026-02-15):**
+- Created `src/components/modals/EnchantmentModal.tsx` with full tabbed UI
+- Created `src/components/modals/EnchantmentModal.css` with styling
+- Modal includes Enchant and Curse tabs
+- Supports stat boost enchantments (+1 through +4 for all 6 stats)
+- Shows already-applied badges
+- Close on backdrop click and escape key
+- Includes rarity-based card styling
+- Shows curse warnings
 
 ### 3.2 Enchantment Selection UI
-- [ ] Create tabbed interface for enchantment categories:
+- [x] Create tabbed interface for enchantment categories:
   - Tab 1: "Enchant" (positive modifications)
   - Tab 2: "Curse" (negative modifications) - only show if item not already cursed
-- [ ] **Stacking Support:**
-  - [ ] Allow multiple enchantments on same item (e.g., +1 AND Flaming)
-  - [ ] Show "Already Applied" badge on enchantments item already has
-  - [ ] Allow re-applying same enchantment (upgrades stack)
-- [ ] Group enchantments by type:
+- [x] **Stacking Support:**
+  - [x] Allow multiple enchantments on same item (e.g., +1 AND Flaming)
+  - [x] Show "Already Applied" badge on enchantments item already has
+  - [x] Allow re-applying same enchantment (upgrades stack)
+- [x] Group enchantments by type:
   - **Weapon**: Enhancement (+1/+2/+3), Elemental (Flaming/Frost/Shock), Special (Vampiric, Vorpal)
   - **Armor**: Enhancement (+1/+2), Resistances
   - **Items**: Stat bonuses, Skills, Movement
-- [ ] Display enchantment cards with:
+- [x] Display enchantment cards with:
   - Name and icon
   - Description
   - Rarity indicator
   - "Apply" button
 
 ### 3.3 Curse Application Flow
-- [ ] Show warning confirmation before applying curse
-- [ ] Warning message: "⚠️ This will curse the item! Cursed items may have negative effects."
-- [ ] After curse is applied, show "Lift Curse" button
-- [ ] Show attunement warning for `CURSES.attunement`
-- [ ] **Attunement Lock Implementation:**
-  - [ ] Track attunement curse state on item (check `modifications[]` for attunement curse)
-  - [ ] Disable "Unequip" button when attunement curse is active
-  - [ ] Show locked indicator (🔒 icon) on attunement-cursed items
-  - [ ] Add tooltip: "This item is cursed with attunement. Lift the curse to unequip."
-  - [ ] "Lift Curse" button remains enabled to allow removal
+- [x] Show warning confirmation before applying curse
+- [x] Warning message: "⚠️ This will curse the item! Cursed items may have negative effects."
+- [ ] After curse is applied, show "Lift Curse" button (needs integration in ItemsTab)
+- [x] Show attunement warning for `CURSES.attunement`
+- [x] **Attunement Lock Implementation:**
+  - [x] Track attunement curse state on item (check `modifications[]` for attunement curse)
+  - [x] Disable "Unequip" button when attunement curse is active (done in ItemsTab)
+  - [x] Show locked indicator (🔒 icon) on attunement-cursed items (done in ItemsTab)
+  - [x] Add tooltip: "This item is cursed with attunement. Lift the curse to unequip." (done in ItemsTab)
+  - [ ] "Lift Curse" button remains enabled to allow removal (needs integration)
 
 ### 3.4 Stat Boost Enchantment UI
-- [ ] Create stat boost section in enchantment modal
-- [ ] Stat type dropdown: STR, DEX, CON, INT, WIS, CHA
-- [ ] Bonus level dropdown: +1, +2, +3, +4
-- [ ] Show preview of stat boost before applying
-- [ ] Call appropriate `create*Enchantment(bonus)` function
+- [x] Create stat boost section in enchantment modal
+- [x] Stat type dropdown: STR, DEX, CON, INT, WIS, CHA (displayed as grouped buttons)
+- [x] Bonus level dropdown: +1, +2, +3, +4 (displayed as buttons)
+- [x] Show preview of stat boost before applying (shown via button labels)
+- [x] Call appropriate `create*Enchantment(bonus)` function
 
 ### 3.5 Post-Enchantment Actions
 - [ ] Show "Remove Enchantment" button for enchanted items
@@ -190,11 +200,19 @@ interface EquipmentModification {
 - [ ] Confirmation dialog before removing modifications
 
 ### 3.6 Create Modal CSS
-- [ ] Create `src/components/modals/EnchantmentModal.css`
-- [ ] Style modal overlay and content
-- [ ] Style enchantment category tabs
-- [ ] Style enchantment cards
-- [ ] Style curse warning states
+- [x] Create `src/components/modals/EnchantmentModal.css`
+- [x] Style modal overlay and content
+- [x] Style enchantment category tabs
+- [x] Style enchantment cards
+- [x] Style curse warning states
+
+**Completed (2026-02-15):**
+- Created comprehensive CSS following StatSelectionModal patterns
+- Includes responsive design for mobile
+- Rarity-based card styling (common, uncommon, rare, very_rare, legendary)
+- Curse-specific styling with red theme
+- Stat boost section styling
+- Accessibility: reduced motion support
 
 ---
 

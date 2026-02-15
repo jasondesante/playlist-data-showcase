@@ -1,0 +1,632 @@
+/**
+ * EnchantmentModal Component Styles
+ *
+ * Styles for the enchantment and curse application modal.
+ * Follows the same patterns as StatSelectionModal.css
+ */
+
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+.enchantment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: hsl(0 0% 0% / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: enchantmentOverlayFadeIn 0.3s ease-out;
+}
+
+@keyframes enchantmentOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   MODAL CONTAINER
+   ============================================ */
+
+.enchantment-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    hsl(260 30% 15%),
+    hsl(270 40% 12%)
+  );
+  border: 2px solid hsl(260 60% 50% / 0.5);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px hsl(260 80% 60% / 0.2),
+    0 25px 50px -12px hsl(0 0% 0% / 0.5),
+    0 0 100px -20px hsl(260 80% 60% / 0.3);
+  animation: enchantmentModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes enchantmentModalSlideIn {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .enchantment-modal-container {
+    max-width: 48rem;
+  }
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
+.enchantment-modal-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(
+    135deg,
+    hsl(260 60% 25% / 0.5),
+    hsl(270 60% 20% / 0.5)
+  );
+  border-bottom: 1px solid hsl(260 60% 40% / 0.3);
+}
+
+.enchantment-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.enchantment-modal-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, hsl(260 70% 50%), hsl(270 70% 40%));
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.enchantment-modal-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.enchantment-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: hsl(260 20% 95%);
+  letter-spacing: 0.02em;
+}
+
+.enchantment-modal-item-name {
+  font-size: 0.875rem;
+  color: hsl(260 20% 70%);
+}
+
+.enchantment-modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: hsl(260 20% 70%);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.enchantment-modal-close-btn:hover {
+  background: hsl(0 0% 0% / 0.2);
+  color: hsl(260 20% 90%);
+}
+
+.enchantment-modal-close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(260 80% 60% / 0.5);
+}
+
+/* ============================================
+   TAB SELECTOR
+   ============================================ */
+
+.enchantment-modal-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: hsl(260 20% 15%);
+  border-bottom: 1px solid hsl(260 60% 40% / 0.3);
+}
+
+.enchantment-modal-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: hsl(260 20% 18%);
+  border: 1px solid hsl(260 50% 35% / 0.4);
+  border-radius: 0.5rem;
+  color: hsl(260 20% 70%);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enchantment-modal-tab:hover:not(:disabled) {
+  background: hsl(260 20% 22%);
+  border-color: hsl(260 50% 45% / 0.5);
+  color: hsl(260 20% 90%);
+}
+
+.enchantment-modal-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.enchantment-modal-tab-active {
+  background: linear-gradient(135deg, hsl(260 70% 45%), hsl(270 70% 40%));
+  border-color: hsl(260 70% 55%);
+  color: white;
+}
+
+.enchantment-modal-tab-active:hover {
+  background: linear-gradient(135deg, hsl(260 70% 50%), hsl(270 70% 45%));
+}
+
+/* Tab badge */
+.enchantment-modal-tab-badge {
+  padding: 0.125rem 0.375rem;
+  background: hsl(0 70% 50% / 0.3);
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(0 70% 80%);
+}
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
+
+.enchantment-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Custom scrollbar */
+.enchantment-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.enchantment-modal-content::-webkit-scrollbar-track {
+  background: hsl(260 30% 15%);
+  border-radius: 3px;
+}
+
+.enchantment-modal-content::-webkit-scrollbar-thumb {
+  background: hsl(260 60% 40%);
+  border-radius: 3px;
+}
+
+.enchantment-modal-content::-webkit-scrollbar-thumb:hover {
+  background: hsl(260 60% 50%);
+}
+
+/* ============================================
+   INFO AND WARNING TEXT
+   ============================================ */
+
+.enchantment-info-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: hsl(210 70% 25% / 0.2);
+  border: 1px solid hsl(210 70% 40% / 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: hsl(210 70% 80%);
+}
+
+.enchantment-info-text svg {
+  flex-shrink: 0;
+  color: hsl(210 70% 60%);
+}
+
+.enchantment-warning-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: hsl(0 70% 25% / 0.2);
+  border: 1px solid hsl(0 70% 40% / 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: hsl(0 70% 80%);
+}
+
+.enchantment-warning-text svg {
+  flex-shrink: 0;
+  color: hsl(0 70% 60%);
+}
+
+/* ============================================
+   ENCHANTMENT LIST AND GRID
+   ============================================ */
+
+.enchantment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.enchantment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ============================================
+   ENCHANTMENT CARDS
+   ============================================ */
+
+.enchantment-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: hsl(260 20% 18%);
+  border: 1px solid hsl(260 50% 35% / 0.4);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.enchantment-card:hover {
+  border-color: hsl(260 50% 50% / 0.6);
+  background: hsl(260 20% 22%);
+  transform: translateY(-2px);
+}
+
+.enchantment-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.enchantment-card-icon {
+  font-size: 1.25rem;
+}
+
+.enchantment-card-name {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(260 20% 95%);
+}
+
+.enchantment-card-applied-badge {
+  padding: 0.125rem 0.375rem;
+  background: hsl(120 60% 35% / 0.3);
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(120 60% 70%);
+}
+
+.enchantment-card-locks-badge {
+  font-size: 0.875rem;
+}
+
+.enchantment-card-description {
+  margin: 0;
+  font-size: 0.75rem;
+  color: hsl(260 20% 70%);
+  line-height: 1.4;
+}
+
+.enchantment-card-warning {
+  margin: 0;
+  padding: 0.375rem;
+  background: hsl(0 70% 25% / 0.2);
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  color: hsl(0 70% 80%);
+  font-style: italic;
+}
+
+.enchantment-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+/* Rarity badges */
+.enchantment-card-rarity {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.enchantment-rarity-common {
+  background: hsl(0 0% 30% / 0.3);
+  color: hsl(0 0% 70%);
+}
+
+.enchantment-rarity-uncommon {
+  background: hsl(120 60% 25% / 0.3);
+  color: hsl(120 60% 70%);
+}
+
+.enchantment-rarity-rare {
+  background: hsl(210 80% 30% / 0.3);
+  color: hsl(210 80% 75%);
+}
+
+.enchantment-rarity-very-rare {
+  background: hsl(270 60% 30% / 0.3);
+  color: hsl(270 70% 75%);
+}
+
+.enchantment-rarity-legendary {
+  background: hsl(45 90% 30% / 0.3);
+  color: hsl(45 90% 70%);
+}
+
+.enchantment-rarity-curse {
+  background: hsl(0 70% 30% / 0.3);
+  color: hsl(0 70% 75%);
+}
+
+/* Card applied state */
+.enchantment-card-applied {
+  border-color: hsl(120 60% 40% / 0.5);
+  background: hsl(120 30% 15% / 0.3);
+}
+
+/* Card curse variant */
+.enchantment-card-curse {
+  border-color: hsl(0 50% 35% / 0.4);
+  background: hsl(0 20% 18%);
+}
+
+.enchantment-card-curse:hover {
+  border-color: hsl(0 50% 50% / 0.6);
+  background: hsl(0 20% 22%);
+}
+
+/* Card rarity border variants */
+.enchantment-card.enchantment-rarity-uncommon {
+  border-left: 3px solid hsl(120 60% 45%);
+}
+
+.enchantment-card.enchantment-rarity-rare {
+  border-left: 3px solid hsl(210 80% 50%);
+}
+
+.enchantment-card.enchantment-rarity-very-rare {
+  border-left: 3px solid hsl(270 60% 55%);
+}
+
+.enchantment-card.enchantment-rarity-legendary {
+  border-left: 3px solid hsl(45 90% 50%);
+}
+
+/* ============================================
+   ENCHANTMENT SECTIONS
+   ============================================ */
+
+.enchantment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(260 40% 30% / 0.3);
+}
+
+.enchantment-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(260 20% 90%);
+}
+
+.enchantment-section-title svg {
+  color: hsl(45 90% 60%);
+}
+
+/* ============================================
+   STAT BOOSTS SECTION
+   ============================================ */
+
+.enchantment-stat-boosts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.enchantment-stat-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: hsl(260 20% 18%);
+  border: 1px solid hsl(260 50% 35% / 0.3);
+  border-radius: 0.5rem;
+}
+
+.enchantment-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.enchantment-stat-icon {
+  font-size: 1rem;
+}
+
+.enchantment-stat-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(260 20% 90%);
+}
+
+.enchantment-stat-buttons {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.enchantment-stat-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================
+   MODAL FOOTER
+   ============================================ */
+
+.enchantment-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: hsl(260 20% 15%);
+  border-top: 1px solid hsl(260 60% 40% / 0.3);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 640px) {
+  .enchantment-modal-container {
+    max-height: 95vh;
+  }
+
+  .enchantment-modal-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .enchantment-modal-title {
+    font-size: 1rem;
+  }
+
+  .enchantment-modal-item-name {
+    font-size: 0.75rem;
+  }
+
+  .enchantment-modal-tabs {
+    padding: 0.5rem 1rem;
+  }
+
+  .enchantment-modal-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .enchantment-modal-content {
+    padding: 0.875rem 1rem;
+    gap: 0.875rem;
+  }
+
+  .enchantment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .enchantment-stat-boosts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .enchantment-modal-footer {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .enchantment-modal-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .enchantment-modal-item-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .enchantment-modal-item-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .enchantment-modal-tabs {
+    flex-direction: column;
+  }
+
+  .enchantment-modal-tab {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .enchantment-stat-boosts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .enchantment-modal-overlay,
+  .enchantment-modal-container {
+    animation: none;
+  }
+
+  .enchantment-card,
+  .enchantment-modal-tab,
+  .enchantment-modal-close-btn {
+    transition: none;
+  }
+}
