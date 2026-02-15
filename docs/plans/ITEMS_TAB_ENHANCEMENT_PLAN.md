@@ -482,11 +482,21 @@ interface EquipmentModification {
 - Test results: 144 tests total (141 passed, 3 skipped for upstream bugs)
 
 ### 7.4 Visual Polish
-- [ ] Review badge placement on items
+- [x] Review badge placement on items
 - [ ] Review modal responsiveness
 - [ ] Review toast messages
 - [ ] Review empty states
 - [ ] Review error states
+
+**Badge Placement Review Completed (2026-02-15):**
+- Added `MAX_VISIBLE_BADGES` constant (3) to prevent badge crowding
+- Curse badges now display first (they're important) before enchantments
+- Added overflow indicator ("+N more") when there are more badges than visible limit
+- Added CSS separator (border-left) between equipped badge and modification badges
+- Improved badge container with max-width constraint (300px) to prevent overflow
+- Added text-overflow handling for long badge names
+- Added mobile-responsive badge styles: badges wrap to new line on narrow screens
+- Fixed duplicate/broken media query in CSS
 
 ### 7.5 Documentation
 - [ ] Update inline comments in code

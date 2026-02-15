@@ -58,6 +58,11 @@ const AMMUNITION_TYPES: Record<string, number> = {
 };
 
 /**
+ * Maximum number of modification badges to show before showing overflow indicator
+ */
+const MAX_VISIBLE_BADGES = 3;
+
+/**
  * Rarity color mapping for equipment display
  */
 const RARITY_COLORS: Record<string, string> = {
@@ -657,32 +662,50 @@ export function ItemsTab() {
           {/* Modification badges */}
           {modifications.length > 0 && (
             <div className="items-modification-badges" title={buildModificationTooltip()}>
-              {modifications.map(mod => {
-                const isCurseMod = mod.source === 'curse';
-                const badgeInfo = getEnchantmentBadgeInfo(mod);
-
-                if (isCurseMod) {
+              {/* Always show curse badges first (they're important) */}
+              {modifications.filter(mod => mod.source === 'curse').map(mod => (
+                <span
+                  key={mod.id}
+                  className="items-modification-badge items-modification-curse"
+                  title={`${mod.name}: ${mod.description || 'Cursed'}`}
+                >
+                  🔮 {mod.name}
+                </span>
+              ))}
+              {/* Then show enchantment badges, limited to maintain space */}
+              {modifications
+                .filter(mod => mod.source !== 'curse')
+                .slice(0, Math.max(0, MAX_VISIBLE_BADGES - modifications.filter(mod => mod.source === 'curse').length))
+                .map(mod => {
+                  const badgeInfo = getEnchantmentBadgeInfo(mod);
                   return (
                     <span
                       key={mod.id}
-                      className="items-modification-badge items-modification-curse"
-                      title={`${mod.name}: ${mod.description || 'Cursed'}`}
+                      className="items-modification-badge items-modification-enchantment"
+                      title={`${mod.name}: ${mod.description || badgeInfo.label}`}
                     >
-                      🔮 {mod.name}
+                      {badgeInfo.icon} {badgeInfo.label}
+                    </span>
+                  );
+                })}
+              {/* Show overflow indicator if there are more badges */}
+              {(() => {
+                const curseCount = modifications.filter(mod => mod.source === 'curse').length;
+                const enchantments = modifications.filter(mod => mod.source !== 'curse');
+                const visibleEnchantments = Math.max(0, MAX_VISIBLE_BADGES - curseCount);
+                const remainingCount = enchantments.length - visibleEnchantments;
+                if (remainingCount > 0) {
+                  return (
+                    <span
+                      className="items-modification-badge items-modification-overflow"
+                      title={`${remainingCount} more modification${remainingCount > 1 ? 's' : ''}: ${enchantments.slice(visibleEnchantments).map(m => m.name).join(', ')}`}
+                    >
+                      +{remainingCount} more
                     </span>
                   );
                 }
-
-                return (
-                  <span
-                    key={mod.id}
-                    className="items-modification-badge items-modification-enchantment"
-                    title={`${mod.name}: ${mod.description || badgeInfo.label}`}
-                  >
-                    {badgeInfo.icon} {badgeInfo.label}
-                  </span>
-                );
-              })}
+                return null;
+              })()}
             </div>
           )}
         </div>
