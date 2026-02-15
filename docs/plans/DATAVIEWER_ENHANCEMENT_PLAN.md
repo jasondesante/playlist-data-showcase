@@ -238,9 +238,21 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - Integration tests for example equipment properties
 
 ### Task 7.3: Test Subrace Display
-- [ ] Verify subrace ability bonuses show correctly
-- [ ] Verify subrace-specific traits display
-- [ ] Test races without subraces still work
+- [x] Verify subrace ability bonuses show correctly
+- [x] Verify subrace-specific traits display
+- [x] Test races without subraces still work
+
+**Test Results:** Created `src/__tests__/subraceDisplay.test.ts` with 40 tests covering:
+- Ability bonus formatting (positive, zero, negative)
+- Ability color mapping for all stats
+- Subrace ability bonus extraction for High Elf, Wood Elf, Dark Elf (Drow)
+- Subrace traits extraction for all Elf subraces
+- Subrace requirements extraction and formatting
+- Races without subraces (Half-Elf) handling
+- `hasSubraceData` helper function edge cases
+- Complete section output formatting
+- Edge cases (multiple bonuses, many traits, special characters, zero bonus)
+- Integration with RACE_DATA validation
 
 ### Task 7.4: Update Component Documentation
 - [ ] Update DataViewerTab.tsx header comment
@@ -272,6 +284,7 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 
 ### New Test Files
 - [src/__tests__/conditionalProperties.test.ts](src/__tests__/conditionalProperties.test.ts) - Task 7.2: Conditional properties tests
+- [src/__tests__/subraceDisplay.test.ts](src/__tests__/subraceDisplay.test.ts) - Task 7.3: Subrace display tests
 
 ### No Other New Files Required
 All other enhancements are made within existing files.
