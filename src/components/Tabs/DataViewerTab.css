@@ -459,6 +459,54 @@
 }
 
 /* ========================================
+   GRANTED SKILL/SPELL/FEATURE TAGS
+   ======================================== */
+
+.dataviewer-tag-skill {
+  background: hsl(120 60% 40% / 0.15);
+  color: hsl(120 60% 40%);
+  border: 1px solid hsl(120 60% 40% / 0.3);
+}
+
+.dataviewer-tag-spell {
+  background: hsl(270 60% 50% / 0.15);
+  color: hsl(270 60% 50%);
+  border: 1px solid hsl(270 60% 50% / 0.3);
+}
+
+.dataviewer-tag-feature {
+  background: hsl(210 80% 50% / 0.15);
+  color: hsl(210 80% 50%);
+  border: 1px solid hsl(210 80% 50% / 0.3);
+}
+
+/* ========================================
+   ITEM SECTIONS (Skills, Spells, Features)
+   ======================================== */
+
+.dataviewer-item-section {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.5rem;
+}
+
+.dataviewer-item-section:first-child {
+  padding-top: 0;
+  border-top: none;
+  margin-top: 0;
+}
+
+.dataviewer-item-section-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+/* ========================================
    GROUPED LISTS
    ======================================== */
 

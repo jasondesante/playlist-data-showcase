@@ -30,11 +30,11 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Add type guard function `isEnhancedEquipment(item)` to check for enhanced properties
 
 ### Task 1.2: Display grantsSkills on Equipment Cards
-- [ ] Add new section in `renderEquipment()` for skills granted by equipment
-- [ ] Create `renderGrantedSkills()` helper function
-- [ ] Display skill name and proficiency level (proficient/expertise)
-- [ ] Style using existing `.dataviewer-tag` with skill-specific color
-- [ ] Add CSS for `.dataviewer-tag-skill` (green variant)
+- [x] Add new section in `renderEquipment()` for skills granted by equipment
+- [x] Create `renderGrantedSkills()` helper function
+- [x] Display skill name and proficiency level (proficient/expertise)
+- [x] Style using existing `.dataviewer-tag` with skill-specific color
+- [x] Add CSS for `.dataviewer-tag-skill` (green variant)
 
 ```tsx
 // Example output:

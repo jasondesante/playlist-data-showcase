@@ -30,7 +30,7 @@ import {
   Target,
   RefreshCw
 } from 'lucide-react';
-import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry } from '../../hooks/useDataViewer';
+import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, isEnhancedEquipment } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
@@ -676,6 +676,29 @@ export function DataViewerTab() {
     </div>
   );
 
+  /**
+   * Render granted skills section for enhanced equipment
+   * Displays skills granted by equipment with proficiency level
+   */
+  const renderGrantedSkills = (item: Equipment) => {
+    if (!isEnhancedEquipment(item) || !item.grantsSkills || item.grantsSkills.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Skills:</span>
+        <div className="dataviewer-item-tags">
+          {item.grantsSkills.map((skill, idx) => (
+            <span key={idx} className="dataviewer-tag dataviewer-tag-skill">
+              {skill.skillId} ({skill.level})
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Render equipment
   const renderEquipment = () => (
     <div className="dataviewer-grid">
@@ -741,6 +764,8 @@ export function DataViewerTab() {
                     ))}
                   </div>
                 )}
+                {/* Granted Skills Section */}
+                {renderGrantedSkills(item)}
               </div>
             )}
           </div>
