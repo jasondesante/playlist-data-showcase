@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star, User, TrendingUp } from 'lucide-react';
+import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star, User, TrendingUp, Headphones } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
@@ -7,10 +7,13 @@ import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useSensorStore } from '../../store/sensorStore';
+import { useMastery } from '../../hooks/useMastery';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
+import { MasteryBadge } from '../ui/MasteryBadge';
+import { MasteryProgressBar } from '../ui/MasteryProgressBar';
 import type { ListeningSession, Ability } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
@@ -122,6 +125,7 @@ export function SessionTrackingTab() {
   const { calculateXP } = useXPCalculator();
   const { getActiveCharacter } = useCharacterStore();
   const { applyPendingStatIncrease } = useCharacterUpdater();
+  const { getMasteryInfo } = useMastery();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [showStatModal, setShowStatModal] = useState(false);
 
@@ -129,6 +133,12 @@ export function SessionTrackingTab() {
   const activeCharacter = getActiveCharacter();
 
   const { environmentalContext, gamingContext } = useSensorStore();
+
+  // Get mastery info for the selected track
+  const masteryInfo = useMemo(() => {
+    if (!selectedTrack) return null;
+    return getMasteryInfo(selectedTrack.id);
+  }, [selectedTrack, getMasteryInfo]);
 
   // Calculate real-time XP based on elapsed time
   // Update whenever elapsedTime changes (every second when session is active)
@@ -415,6 +425,12 @@ export function SessionTrackingTab() {
                     <span className={`session-song-status-badge ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
                       {isActive ? 'Active' : 'Inactive'}
                     </span>
+                    {/* Mastery Badge Overlay */}
+                    {masteryInfo && masteryInfo.level !== 'none' && (
+                      <div className="session-mastery-badge-overlay">
+                        <MasteryBadge level={masteryInfo.level} size="sm" />
+                      </div>
+                    )}
                   </div>
                   <div className="session-song-info">
                     <h3 className="session-song-title">{selectedTrack.title}</h3>
@@ -424,6 +440,28 @@ export function SessionTrackingTab() {
                     </div>
                   </div>
                 </div>
+
+                {/* Mastery Progress Section */}
+                {masteryInfo && masteryInfo.listenCount > 0 && (
+                  <div className="session-mastery-section">
+                    <div className="session-mastery-header">
+                      <Star className="session-mastery-icon" size={14} />
+                      <span className="session-mastery-label">Mastery</span>
+                    </div>
+                    <MasteryProgressBar
+                      level={masteryInfo.level}
+                      listenCount={masteryInfo.listenCount}
+                      compact={true}
+                      className="session-mastery-progress"
+                    />
+                    <div className="session-listen-count">
+                      <Headphones className="session-listen-icon" size={12} />
+                      <span className="session-listen-text">
+                        Listened {masteryInfo.listenCount} time{masteryInfo.listenCount !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Real-time XP Display */}
                 {isActive && displayedXP > 0 && (

@@ -110,20 +110,20 @@ Create a new hook to expose mastery-related data from the engine.
 
 **File:** `src/components/Tabs/SessionTrackingTab.tsx`
 
-- [ ] Import `useMastery` hook
-- [ ] Get mastery info for `selectedTrack`
-- [ ] Add mastery badge as **bottom overlay** on track image
-- [ ] Add mastery progress section below track info:
+- [x] Import `useMastery` hook
+- [x] Get mastery info for `selectedTrack`
+- [x] Add mastery badge as **bottom overlay** on track image
+- [x] Add mastery progress section below track info:
   - Current mastery level with label
   - Progress bar toward next level
   - Listen count display
 
 ### Task 3.2: Update Song Card Layout
 
-- [ ] Add new CSS class `.session-mastery-section`
-- [ ] Style mastery badge overlay on image
-- [ ] Add mastery progress bar styles
-- [ ] Ensure responsive design for mobile
+- [x] Add new CSS class `.session-mastery-section`
+- [x] Style mastery badge overlay on image
+- [x] Add mastery progress bar styles
+- [x] Ensure responsive design for mobile
 
 **Wireframe:**
 ```
