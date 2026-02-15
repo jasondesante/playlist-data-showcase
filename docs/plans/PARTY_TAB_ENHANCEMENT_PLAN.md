@@ -181,7 +181,7 @@ function usePartyAnalysis(
 ### Task 5.5: Responsive Design
 - [x] Test on mobile (375px)
 - [x] Test on tablet (768px)
-- [ ] Test on desktop (1024px+)
+- [x] Test on desktop (1024px+)
 - [ ] Adjust grid layouts for each breakpoint
 - [ ] Consider hiding composition panel on mobile
 
