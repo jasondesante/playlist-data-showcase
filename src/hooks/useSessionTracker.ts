@@ -1,14 +1,31 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
+import { MASTERY_THRESHOLDS } from './useMastery';
 
 interface SessionStartOptions {
     environmental_context?: EnvironmentalContext;
     gaming_context?: GamingContext;
+}
+
+/**
+ * Aggregate statistics from session history
+ */
+export interface SessionStats {
+    /** Total number of completed sessions */
+    totalSessions: number;
+    /** Total XP earned across all sessions */
+    totalXP: number;
+    /** Total listening time in seconds */
+    totalListeningTime: number;
+    /** Average XP per session */
+    averageXPPerSession: number;
+    /** Average session duration in seconds */
+    averageSessionDuration: number;
 }
 
 // Global singleton timer manager - persists across component unmounts
@@ -58,10 +75,30 @@ let hasRunZombieCleanup = false;
  *
  * @example
  * ```tsx
- * const { startSession, endSession, isActive, elapsedTime } = useSessionTracker();
+ * const {
+ *   startSession,
+ *   endSession,
+ *   isActive,
+ *   elapsedTime,
+ *   sessionHistory,
+ *   getTrackListenCount,
+ *   isTrackMastered,
+ *   getSessionStats
+ * } = useSessionTracker();
+ *
  * const sessionId = startSession(trackId, track, { environmental_context, gaming_context });
  * // ... user listens ...
  * const session = endSession();
+ *
+ * // Get track listen count
+ * const listenCount = getTrackListenCount('track-uuid');
+ *
+ * // Check if track is mastered
+ * const mastered = isTrackMastered('track-uuid');
+ *
+ * // Get aggregate stats
+ * const stats = getSessionStats();
+ * console.log(`Total XP: ${stats.totalXP}, Sessions: ${stats.totalSessions}`);
  * ```
  *
  * @returns {Object} Hook return object
@@ -69,9 +106,14 @@ let hasRunZombieCleanup = false;
  * @returns {Function} endSession - Ends the current session (returns ListeningSession or null)
  * @returns {boolean} isActive - Whether a session is currently active
  * @returns {number} elapsedTime - Elapsed time in seconds for the current session
+ * @returns {string|null} sessionId - Current session ID or null
+ * @returns {Array} sessionHistory - Array of completed ListeningSession objects
+ * @returns {Function} getTrackListenCount - Get listen count for a track by UUID
+ * @returns {Function} isTrackMastered - Check if track has reached mastery threshold
+ * @returns {Function} getSessionStats - Get aggregate statistics from session history
  */
 export const useSessionTracker = () => {
-    const { startSession: storeStartSession, endSession: storeEndSession, activeSession } = useSessionStore();
+    const { startSession: storeStartSession, endSession: storeEndSession, activeSession, sessionHistory } = useSessionStore();
     const { playbackState, currentUrl } = useAudioPlayerStore();
     // Use global singleton tracker instead of per-component instance
     const tracker = globalTracker;
@@ -79,6 +121,43 @@ export const useSessionTracker = () => {
     // Derive state directly from store - no local state sync issues
     const isActive = !!activeSession;
     const elapsedTime = activeSession?.elapsedSeconds ?? 0;
+
+    /**
+     * Get the number of times a track has been listened to
+     * by counting sessions in the history for that track UUID
+     */
+    const getTrackListenCount = useCallback((trackId: string): number => {
+        return sessionHistory.filter(session => session.track_uuid === trackId).length;
+    }, [sessionHistory]);
+
+    /**
+     * Check if a track is mastered (has reached the mastery threshold)
+     * @param trackId - The track UUID to check
+     * @param threshold - Optional custom threshold (defaults to 10 listens)
+     */
+    const isTrackMastered = useCallback((trackId: string, threshold: number = MASTERY_THRESHOLDS.MASTERED): boolean => {
+        const listenCount = getTrackListenCount(trackId);
+        return listenCount >= threshold;
+    }, [getTrackListenCount]);
+
+    /**
+     * Calculate aggregate statistics from all sessions in history
+     */
+    const getSessionStats = useCallback((): SessionStats => {
+        const totalSessions = sessionHistory.length;
+        const totalXP = sessionHistory.reduce((sum, s) => sum + (s.total_xp_earned || 0), 0);
+        const totalListeningTime = sessionHistory.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+        const averageXPPerSession = totalSessions > 0 ? Math.round(totalXP / totalSessions) : 0;
+        const averageSessionDuration = totalSessions > 0 ? Math.round(totalListeningTime / totalSessions) : 0;
+
+        return {
+            totalSessions,
+            totalXP,
+            totalListeningTime,
+            averageXPPerSession,
+            averageSessionDuration
+        };
+    }, [sessionHistory]);
 
     // Session cleanup on page load: ALWAYS clear any persisted session
     // The SessionTracker engine instance is fresh on page load and can't restore previous sessions
@@ -329,5 +408,26 @@ export const useSessionTracker = () => {
         }
     }, [tracker, storeEndSession, activeSession]);
 
-    return { startSession, endSession, isActive, elapsedTime, sessionId: activeSession?.sessionId ?? null };
+    return useMemo(() => ({
+        startSession,
+        endSession,
+        isActive,
+        elapsedTime,
+        sessionId: activeSession?.sessionId ?? null,
+        // New methods for Phase 5
+        sessionHistory,
+        getTrackListenCount,
+        isTrackMastered,
+        getSessionStats
+    }), [
+        startSession,
+        endSession,
+        isActive,
+        elapsedTime,
+        activeSession?.sessionId,
+        sessionHistory,
+        getTrackListenCount,
+        isTrackMastered,
+        getSessionStats
+    ]);
 };

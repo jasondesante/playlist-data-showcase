@@ -222,10 +222,10 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 5.1: Expose SessionTracker methods in useSessionTracker
 
-- [ ] Add `getTrackListenCount(trackId)` to hook return
-- [ ] Add `isTrackMastered(trackId)` to hook return
-- [ ] Add `sessionHistory` from store to hook return
-- [ ] Add `getSessionStats()` helper function
+- [x] Add `getTrackListenCount(trackId)` to hook return
+- [x] Add `isTrackMastered(trackId)` to hook return
+- [x] Add `sessionHistory` from store to hook return
+- [x] Add `getSessionStats()` helper function
 
 **File:** `src/hooks/useSessionTracker.ts`
 
