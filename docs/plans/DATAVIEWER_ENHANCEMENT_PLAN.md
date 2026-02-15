@@ -227,9 +227,15 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Verify spawnWeight badges appear appropriately
 
 ### Task 7.2: Test Conditional Properties
-- [ ] Test all condition types display correctly
-- [ ] Verify inline formatting is readable
-- [ ] Check condition icons render properly
+- [x] Test all condition types display correctly
+- [x] Verify inline formatting is readable
+- [x] Check condition icons render properly
+
+**Test Results:** Created `src/__tests__/conditionalProperties.test.ts` with 54 tests covering:
+- All 8 condition types (vs_creature_type, at_time_of_day, wielder_race, wielder_class, while_equipped, on_hit, on_damage_taken, custom)
+- Inline formatting with property + condition
+- Property type configuration for icons
+- Integration tests for example equipment properties
 
 ### Task 7.3: Test Subrace Display
 - [ ] Verify subrace ability bonuses show correctly
@@ -264,8 +270,11 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [src/components/Tabs/DataViewerTab.css](src/components/Tabs/DataViewerTab.css) - Styling changes
 - [src/hooks/useDataViewer.ts](src/hooks/useDataViewer.ts) - Hook enhancements
 
-### No New Files Required
-All enhancements will be made within existing files.
+### New Test Files
+- [src/__tests__/conditionalProperties.test.ts](src/__tests__/conditionalProperties.test.ts) - Task 7.2: Conditional properties tests
+
+### No Other New Files Required
+All other enhancements are made within existing files.
 
 ---
 
