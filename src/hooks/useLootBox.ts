@@ -1,5 +1,11 @@
 import { useState, useCallback } from 'react';
-import { EquipmentSpawnHelper, EnhancedEquipment, SeededRNG } from 'playlist-data-engine';
+import {
+    EquipmentSpawnHelper,
+    EnhancedEquipment,
+    SeededRNG,
+    MAGIC_ITEMS,
+    getMagicItemsByRarity
+} from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
 /**
@@ -32,6 +38,10 @@ export interface UseLootBoxReturn {
     spawnTreasureHoard: (cr: number, seed?: string) => Promise<LootBoxResult>;
     /** Spawn specific items by name */
     spawnFromList: (itemNames: string[], seed?: string) => Promise<LootBoxResult>;
+    /** Spawn magic items, optionally filtered by rarity */
+    spawnMagicItems: (count: number, rarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary', seed?: string) => Promise<LootBoxResult>;
+    /** Get total count of magic items available */
+    getMagicItemCount: () => number;
     /** Clear the spawned items */
     clearSpawnedItems: () => void;
 }
@@ -225,6 +235,66 @@ export const useLootBox = (): UseLootBoxReturn => {
     }, [createRNG]);
 
     /**
+     * Spawn magic items, optionally filtered by rarity
+     *
+     * Uses the MAGIC_ITEMS collection from playlist-data-engine.
+     * If rarity is specified, only items of that rarity are considered.
+     * Uses SeededRNG for deterministic random selection.
+     */
+    const spawnMagicItems = useCallback(async (
+        count: number,
+        rarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary',
+        seed?: string
+    ): Promise<LootBoxResult> => {
+        setIsLoading(true);
+
+        try {
+            const rng = createRNG(seed);
+
+            // Get items filtered by rarity if specified
+            const availableItems = rarity
+                ? getMagicItemsByRarity(rarity)
+                : [...MAGIC_ITEMS];
+
+            if (availableItems.length === 0) {
+                logger.warn('LootBox', 'No magic items available', { rarity, count });
+                return { items: [] };
+            }
+
+            // Shuffle and select items using seeded RNG
+            const shuffled = [...availableItems].sort(() => rng.random() - 0.5);
+            const selectedItems = shuffled.slice(0, Math.min(count, shuffled.length));
+
+            const result: LootBoxResult = { items: selectedItems };
+
+            setSpawnedItems(selectedItems);
+            setLastHoardResult(result);
+
+            logger.info('LootBox', `Spawned ${selectedItems.length} magic items`, {
+                count,
+                rarity: rarity || 'any',
+                seed: seed || 'random',
+                items: selectedItems.map(i => ({ name: i.name, rarity: i.rarity }))
+            });
+
+            return result;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('LootBox', 'Failed to spawn magic items', { count, rarity, error: errorMessage });
+            return { items: [] };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [createRNG]);
+
+    /**
+     * Get the total count of magic items available
+     */
+    const getMagicItemCount = useCallback((): number => {
+        return MAGIC_ITEMS.length;
+    }, []);
+
+    /**
      * Clear the spawned items
      */
     const clearSpawnedItems = useCallback(() => {
@@ -241,6 +311,8 @@ export const useLootBox = (): UseLootBoxReturn => {
         spawnByRarity,
         spawnTreasureHoard,
         spawnFromList,
+        spawnMagicItems,
+        getMagicItemCount,
         clearSpawnedItems
     };
 };

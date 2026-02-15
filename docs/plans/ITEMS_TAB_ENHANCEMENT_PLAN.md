@@ -282,22 +282,33 @@ interface EquipmentModification {
 ## Phase 5: Magic Items Loot Option
 
 ### 5.1 Add Magic Items Spawn Mode
-- [ ] Add "magic" option to `SpawnMode` type
-- [ ] Add "Magic Items" button to loot box mode selector
-- [ ] Import `MAGIC_ITEMS` and `getMagicItemsByRarity()` from data engine
-- [ ] Create `spawnMagicItems()` function in useLootBox hook
+- [x] Add "magic" option to `SpawnMode` type
+- [x] Add "Magic Items" button to loot box mode selector
+- [x] Import `MAGIC_ITEMS` and `getMagicItemsByRarity()` from data engine
+- [x] Create `spawnMagicItems()` function in useLootBox hook
+
+**Completed (2026-02-15):**
+- Added `'magic'` to `SpawnMode` type in ItemsTab.tsx
+- Added "Magic Items" button with Sparkles icon to mode selector
+- Imported `MAGIC_ITEMS` and `getMagicItemsByRarity` from playlist-data-engine in useLootBox hook
+- Created `spawnMagicItems(count, rarity?, seed?)` function with SeededRNG for deterministic selection
+- Added `getMagicItemCount()` helper function
+- Added magic items controls: rarity filter dropdown (optional), item count slider
+- Added magic item count display with sparkle icon
+- Updated spawn button to include "Open Magic Items" text
+- Added CSS styling for `.lootbox-magic-items-info` display
 
 ### 5.2 Magic Items Loot UI
-- [ ] Add rarity filter for magic items
-- [ ] Show magic item count in database
+- [x] Add rarity filter for magic items
+- [x] Show magic item count in database
 - [ ] Display magic items with special styling (sparkle icon)
 - [ ] Show item properties (grantsFeatures, grantsSkills, etc.)
 
 ### 5.3 Update useLootBox Hook
-- [ ] Add `spawnMagicItems(count, rarity?, seed?)` function
-- [ ] Filter `MAGIC_ITEMS` by rarity if specified
-- [ ] Use SeededRNG for deterministic selection
-- [ ] Return `LootBoxResult` with magic items
+- [x] Add `spawnMagicItems(count, rarity?, seed?)` function
+- [x] Filter `MAGIC_ITEMS` by rarity if specified
+- [x] Use SeededRNG for deterministic selection
+- [x] Return `LootBoxResult` with magic items
 
 ---
 

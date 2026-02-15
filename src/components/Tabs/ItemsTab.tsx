@@ -88,7 +88,7 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
   'legendary': 'hsl(30 90% 50% / 0.5)'
 };
 
-type SpawnMode = 'random' | 'rarity' | 'hoard';
+type SpawnMode = 'random' | 'rarity' | 'hoard' | 'magic';
 type RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
 type ItemTypeOption = 'weapon' | 'armor' | 'item';
 
@@ -174,6 +174,8 @@ export function ItemsTab() {
     spawnRandomItems,
     spawnByRarity,
     spawnTreasureHoard,
+    spawnMagicItems,
+    getMagicItemCount,
     clearSpawnedItems
   } = useLootBox();
 
@@ -209,6 +211,8 @@ export function ItemsTab() {
   const [selectedRarity, setSelectedRarity] = useState<RarityOption>('rare');
   const [rarityCount, setRarityCount] = useState(3);
   const [hoardCR, setHoardCR] = useState(5);
+  const [magicItemCount, setMagicItemCount] = useState(3);
+  const [magicItemRarity, setMagicItemRarity] = useState<RarityOption | ''>('');
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Item Creator form state
@@ -402,6 +406,23 @@ export function ItemsTab() {
       showToast(`Spawned treasure hoard worth ${result.totalValue} gp!`, 'success');
     } else {
       showToast('Failed to spawn treasure hoard', 'error');
+    }
+  };
+
+  // Handle spawning magic items
+  const handleSpawnMagicItems = async () => {
+    setIsAnimating(true);
+    const result = await spawnMagicItems(
+      magicItemCount,
+      magicItemRarity || undefined
+    );
+    setIsAnimating(false);
+
+    if (result.items.length > 0) {
+      const rarityText = magicItemRarity ? ` ${formatRarity(magicItemRarity)}` : '';
+      showToast(`Spawned ${result.items.length}${rarityText} magic items!`, 'success');
+    } else {
+      showToast('No magic items found', 'error');
     }
   };
 
@@ -1400,6 +1421,13 @@ export function ItemsTab() {
                     <Crown size={16} />
                     <span>Treasure Hoard</span>
                   </button>
+                  <button
+                    className={`lootbox-mode-btn ${spawnMode === 'magic' ? 'lootbox-mode-btn-active' : ''}`}
+                    onClick={() => setSpawnMode('magic')}
+                  >
+                    <Sparkles size={16} />
+                    <span>Magic Items</span>
+                  </button>
                 </div>
 
                 {/* Spawn Controls */}
@@ -1470,6 +1498,44 @@ export function ItemsTab() {
                       </div>
                     </div>
                   )}
+
+                  {spawnMode === 'magic' && (
+                    <>
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Filter by Rarity (Optional)</label>
+                        <select
+                          value={magicItemRarity}
+                          onChange={(e) => setMagicItemRarity(e.target.value as RarityOption | '')}
+                          className="lootbox-select"
+                        >
+                          <option value="">All Rarities</option>
+                          <option value="common">Common</option>
+                          <option value="uncommon">Uncommon</option>
+                          <option value="rare">Rare</option>
+                          <option value="very_rare">Very Rare</option>
+                          <option value="legendary">Legendary</option>
+                        </select>
+                      </div>
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Number of Items</label>
+                        <div className="lootbox-control-inputs">
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            value={magicItemCount}
+                            onChange={(e) => setMagicItemCount(parseInt(e.target.value))}
+                            className="lootbox-slider"
+                          />
+                          <span className="lootbox-control-value">{magicItemCount}</span>
+                        </div>
+                      </div>
+                      <div className="lootbox-magic-items-info">
+                        <Sparkles size={14} />
+                        <span>{getMagicItemCount()} magic items available</span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Spawn Button */}
@@ -1482,7 +1548,9 @@ export function ItemsTab() {
                         ? handleSpawnRandom
                         : spawnMode === 'rarity'
                         ? handleSpawnByRarity
-                        : handleSpawnTreasureHoard
+                        : spawnMode === 'hoard'
+                        ? handleSpawnTreasureHoard
+                        : handleSpawnMagicItems
                     }
                     isLoading={isLootBoxLoading || isAnimating}
                     leftIcon={isLootBoxLoading || isAnimating ? Loader2 : Sparkles}
@@ -1492,6 +1560,8 @@ export function ItemsTab() {
                       ? 'Opening...'
                       : spawnMode === 'hoard'
                       ? 'Open Treasure Hoard'
+                      : spawnMode === 'magic'
+                      ? 'Open Magic Items'
                       : 'Open Loot Box'}
                   </Button>
 
