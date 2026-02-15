@@ -58,11 +58,11 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 1.1: Create useMastery hook
 
-- [ ] Create `src/hooks/useMastery.ts`
-- [ ] Import `SessionTracker` singleton from `useSessionTracker`
-- [ ] Implement `getTrackListenCount(trackId: string)` function
-- [ ] Implement `getTrackMasteryLevel(listenCount: number)` function
-- [ ] Define mastery thresholds constant:
+- [x] Create `src/hooks/useMastery.ts`
+- [x] Import `SessionTracker` singleton from `useSessionTracker`
+- [x] Implement `getTrackListenCount(trackId: string)` function
+- [x] Implement `getTrackMasteryLevel(listenCount: number)` function
+- [x] Define mastery thresholds constant:
   ```typescript
   const MASTERY_THRESHOLDS = {
     NONE: 0,       // 0 listens - no badge
@@ -71,8 +71,9 @@ Create a new hook to expose mastery-related data from the engine.
     MASTERED: 10   // 10 listens - engine default
   };
   ```
-- [ ] Export hook with memoized calculations
-- [ ] Add TypeScript types for `MasteryLevel` and `MasteryInfo`
+- [x] Export hook with memoized calculations
+- [x] Add TypeScript types for `MasteryLevel` and `MasteryInfo`
+- [x] Export from `src/hooks/index.ts`
 
 **File:** `src/hooks/useMastery.ts`
 
