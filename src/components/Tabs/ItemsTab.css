@@ -1125,6 +1125,68 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Magic item card styling */
+.lootbox-item-card-magic {
+  background: linear-gradient(135deg,
+    var(--color-surface) 0%,
+    hsl(280 60% 50% / 0.08) 50%,
+    hsl(320 60% 50% / 0.05) 100%
+  );
+  border-color: hsl(280 50% 50% / 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.lootbox-item-card-magic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    hsl(280 70% 60%),
+    hsl(320 70% 60%),
+    hsl(280 70% 60%)
+  );
+  animation: magic-shimmer 3s ease-in-out infinite;
+}
+
+.lootbox-item-card-magic:hover {
+  border-color: hsl(280 60% 60% / 0.6);
+  box-shadow: 0 4px 16px hsl(280 60% 50% / 0.25);
+  transform: translateY(-3px);
+}
+
+@keyframes magic-shimmer {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scaleX(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Magic sparkle icon */
+.lootbox-magic-sparkle-icon {
+  color: hsl(280 70% 60%);
+  animation: sparkle-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes sparkle-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
 .lootbox-item-header {
   display: flex;
   align-items: center;

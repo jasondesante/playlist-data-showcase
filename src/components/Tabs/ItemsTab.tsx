@@ -214,6 +214,8 @@ export function ItemsTab() {
   const [magicItemCount, setMagicItemCount] = useState(3);
   const [magicItemRarity, setMagicItemRarity] = useState<RarityOption | ''>('');
   const [isAnimating, setIsAnimating] = useState(false);
+  // Track which spawn mode was used for the current items
+  const [lastSpawnMode, setLastSpawnMode] = useState<SpawnMode | null>(null);
 
   // Item Creator form state
   const [itemName, setItemName] = useState('');
@@ -373,6 +375,7 @@ export function ItemsTab() {
   // Handle spawning random items
   const handleSpawnRandom = async () => {
     setIsAnimating(true);
+    setLastSpawnMode('random');
     const result = await spawnRandomItems(randomCount);
     setIsAnimating(false);
 
@@ -386,6 +389,7 @@ export function ItemsTab() {
   // Handle spawning by rarity
   const handleSpawnByRarity = async () => {
     setIsAnimating(true);
+    setLastSpawnMode('rarity');
     const result = await spawnByRarity(selectedRarity, rarityCount);
     setIsAnimating(false);
 
@@ -399,6 +403,7 @@ export function ItemsTab() {
   // Handle spawning treasure hoard
   const handleSpawnTreasureHoard = async () => {
     setIsAnimating(true);
+    setLastSpawnMode('hoard');
     const result = await spawnTreasureHoard(hoardCR);
     setIsAnimating(false);
 
@@ -412,6 +417,7 @@ export function ItemsTab() {
   // Handle spawning magic items
   const handleSpawnMagicItems = async () => {
     setIsAnimating(true);
+    setLastSpawnMode('magic');
     const result = await spawnMagicItems(
       magicItemCount,
       magicItemRarity || undefined
@@ -1596,11 +1602,12 @@ export function ItemsTab() {
                         const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
                         const bgColor = RARITY_BG_COLORS[item.rarity] || RARITY_BG_COLORS.common;
                         const borderColor = RARITY_BORDER_COLORS[item.rarity] || RARITY_BORDER_COLORS.common;
+                        const isMagicItem = lastSpawnMode === 'magic';
 
                         return (
                           <div
                             key={`${item.name}-${index}`}
-                            className="lootbox-item-card"
+                            className={`lootbox-item-card ${isMagicItem ? 'lootbox-item-card-magic' : ''}`}
                             style={{
                               backgroundColor: bgColor,
                               borderColor: borderColor,
@@ -1608,6 +1615,9 @@ export function ItemsTab() {
                             }}
                           >
                             <div className="lootbox-item-header">
+                              {isMagicItem && (
+                                <Sparkles size={14} className="lootbox-magic-sparkle-icon" />
+                              )}
                               <TypeIcon size={16} style={{ color: rarityColor }} />
                               <span
                                 className="lootbox-item-name"

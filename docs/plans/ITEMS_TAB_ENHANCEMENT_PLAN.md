@@ -301,7 +301,7 @@ interface EquipmentModification {
 ### 5.2 Magic Items Loot UI
 - [x] Add rarity filter for magic items
 - [x] Show magic item count in database
-- [ ] Display magic items with special styling (sparkle icon)
+- [x] Display magic items with special styling (sparkle icon)
 - [ ] Show item properties (grantsFeatures, grantsSkills, etc.)
 
 ### 5.3 Update useLootBox Hook
