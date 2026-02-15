@@ -120,9 +120,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Type: `string | 'all'` with default `'all'`
 
 ### Task 3.2: Create getEquipmentTags Helper
-- [ ] Add `getEquipmentTags()` function to useDataViewer hook
-- [ ] Collect all unique tags from equipment items
-- [ ] Return sorted array of tag strings
+- [x] Add `getEquipmentTags()` function to useDataViewer hook
+- [x] Collect all unique tags from equipment items
+- [x] Return sorted array of tag strings
 
 ### Task 3.3: Add Tags Filter Dropdown
 - [ ] Create `renderEquipmentTagFilter()` function

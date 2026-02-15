@@ -150,6 +150,8 @@ export interface UseDataViewerReturn {
     getEquipmentTypes: () => string[];
     /** Get equipment rarities for filtering */
     getEquipmentRarities: () => string[];
+    /** Get all unique equipment tags for filtering */
+    getEquipmentTags: () => string[];
 }
 
 /**
@@ -503,6 +505,29 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, [equipment]);
 
     /**
+     * Get all unique equipment tags for filtering
+     *
+     * Collects all tags from enhanced equipment items and returns
+     * a sorted array of unique tag strings.
+     *
+     * Task 3.2: Equipment Tags Helper
+     *
+     * @returns Sorted array of unique tag strings
+     */
+    const getEquipmentTags = useCallback((): string[] => {
+        const tags = new Set<string>();
+        equipment.forEach(item => {
+            // Check if item has tags (from EnhancedEquipment)
+            if (isEnhancedEquipment(item) && item.tags) {
+                item.tags.forEach(tag => {
+                    tags.add(tag);
+                });
+            }
+        });
+        return Array.from(tags).sort();
+    }, [equipment]);
+
+    /**
      * Refresh all data from queries (invalidate caches)
      *
      * Note: Equipment data is automatically refreshed when custom items are added
@@ -552,6 +577,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
         refreshData,
         getSpellSchools,
         getEquipmentTypes,
-        getEquipmentRarities
+        getEquipmentRarities,
+        getEquipmentTags
     };
 };
