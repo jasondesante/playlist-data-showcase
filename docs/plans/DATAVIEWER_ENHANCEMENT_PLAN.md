@@ -140,8 +140,8 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 4: Enhanced Subrace Display
 
 ### Task 4.1: Extend RaceDataEntry Interface
-- [ ] Add `subraceData` field to `RaceDataEntry` interface in useDataViewer.ts
-- [ ] Type: `Record<string, { ability_bonuses, traits, requirements? }>`
+- [x] Add `subraceData` field to `RaceDataEntry` interface in useDataViewer.ts
+- [x] Type: `Record<string, { ability_bonuses, traits, requirements? }>`
 
 ### Task 4.2: Load Subrace Data
 - [ ] Update `races` useMemo to include subrace-specific data

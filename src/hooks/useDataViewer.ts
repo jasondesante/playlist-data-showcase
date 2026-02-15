@@ -12,7 +12,8 @@ import {
     type ClassFeature,
     type RacialTrait,
     type Equipment,
-    type EnhancedEquipment
+    type EnhancedEquipment,
+    type Race
 } from 'playlist-data-engine';
 
 /**
@@ -77,7 +78,30 @@ export interface ClassDataEntry {
 }
 
 /**
+ * Subrace-specific data structure
+ *
+ * Task 4.1: Enhanced Subrace Display - SubraceDataEntry interface
+ *
+ * Contains data specific to a subrace variant of a race:
+ * - ability_bonuses: Additional/substituted ability score bonuses for this subrace
+ * - traits: Trait IDs/names specific to this subrace
+ * - requirements: Optional prerequisites (e.g., ability score minimums)
+ */
+export interface SubraceDataEntry {
+    ability_bonuses?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+    traits?: string[];
+    requirements?: {
+        abilities?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+    };
+}
+
+/**
  * Interface for race data with additional computed fields
+ *
+ * Task 4.1: Enhanced Subrace Display - Added subraceData field
+ *
+ * @property subraceData - Map of subrace name to its specific data
+ *                         (ability bonuses, traits, requirements)
  */
 export interface RaceDataEntry {
     name: string;
@@ -85,6 +109,8 @@ export interface RaceDataEntry {
     speed: number;
     traits: string[];
     subraces?: string[];
+    /** Subrace-specific data indexed by subrace name */
+    subraceData?: Record<string, SubraceDataEntry>;
 }
 
 /**
@@ -265,18 +291,63 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     /**
      * Load all races from RACE_DATA
+     *
+     * Task 4.1/4.2: Enhanced Subrace Display
+     * Also loads subrace-specific data by querying FeatureQuery for each subrace's traits.
      */
     const races = useMemo(() => {
         try {
             const raceEntries: RaceDataEntry[] = [];
             Object.entries(RACE_DATA).forEach(([name, data]) => {
-                raceEntries.push({
+                const entry: RaceDataEntry = {
                     name,
                     ability_bonuses: data.ability_bonuses || {},
                     speed: data.speed || 30,
                     traits: data.traits || [],
                     subraces: data.subraces
-                });
+                };
+
+                // Task 4.2: Load subrace-specific data
+                if (data.subraces && data.subraces.length > 0) {
+                    const subraceData: Record<string, SubraceDataEntry> = {};
+
+                    data.subraces.forEach(subraceName => {
+                        try {
+                            // Get subrace-specific traits from FeatureQuery
+                            const subraceTraits = featureQuery.getSubraceTraits(name as Race, subraceName);
+
+                            // Extract trait names for display
+                            const traitNames = subraceTraits.map(trait => trait.name);
+
+                            // Look for ability bonuses from trait effects
+                            const abilityBonuses: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>> = {};
+                            subraceTraits.forEach(trait => {
+                                if (trait.effects) {
+                                    trait.effects.forEach(effect => {
+                                        if (effect.type === 'stat_bonus' && effect.target) {
+                                            const ability = effect.target.toUpperCase() as 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
+                                            if (typeof effect.value === 'number') {
+                                                abilityBonuses[ability] = effect.value;
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+
+                            subraceData[subraceName] = {
+                                ability_bonuses: Object.keys(abilityBonuses).length > 0 ? abilityBonuses : undefined,
+                                traits: traitNames.length > 0 ? traitNames : undefined
+                            };
+                        } catch {
+                            // If we can't load subrace traits, create empty entry
+                            subraceData[subraceName] = {};
+                        }
+                    });
+
+                    entry.subraceData = subraceData;
+                }
+
+                raceEntries.push(entry);
             });
             return raceEntries;
         } catch (err) {
@@ -284,7 +355,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load races', errorMessage);
             return [];
         }
-    }, []);
+    }, [featureQuery]);
 
     /**
      * Load all classes from CLASS_DATA
