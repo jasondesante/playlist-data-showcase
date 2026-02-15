@@ -606,86 +606,813 @@ describe('EquipmentModifier - Combo Enchantments', () => {
   });
 });
 
-describe('EquipmentModifier - Curse Operations', () => {
-  it('should apply a curse to an item', () => {
-    const equipment = createTestEquipment();
-    const weakness = CURSES.weakness;
+describe('EquipmentModifier - Curse Operations (Task 7.2)', () => {
+  describe('Applying Penalty Curses', () => {
+    it('should apply -1 Penalty curse to a weapon', () => {
+      const equipment = createTestEquipment();
+      const minusOne = CURSES.minusOne;
 
-    const result = EquipmentModifier.curse(equipment, 'Longsword', weakness);
+      const result = EquipmentModifier.curse(equipment, 'Longsword', minusOne);
 
-    const longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(1);
-    expect(longsword?.modifications?.[0].source).toBe('curse');
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications).toBeDefined();
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('minus_one');
+      expect(longsword?.modifications?.[0].name).toBe('Cursed: -1 Penalty');
+      expect(longsword?.modifications?.[0].source).toBe('curse');
+    });
+
+    it('should apply -2 Penalty curse to a weapon', () => {
+      const equipment = createTestEquipment();
+      const minusTwo = CURSES.minusTwo;
+
+      const result = EquipmentModifier.curse(equipment, 'Longsword', minusTwo);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('minus_two');
+      expect(longsword?.modifications?.[0].name).toBe('Cursed: -2 Penalty');
+    });
+
+    it('should have negative attack_roll modifier in penalty curses', () => {
+      const minusOne = CURSES.minusOne;
+      expect(minusOne.properties).toBeDefined();
+      expect(minusOne.properties?.[0].type).toBe('passive_modifier');
+      expect(minusOne.properties?.[0].target).toBe('attack_roll');
+      expect(minusOne.properties?.[0].value).toBe(-1);
+    });
   });
 
-  it('should correctly identify cursed items', () => {
-    const equipment = createTestEquipment();
+  describe('Applying Stat Curses', () => {
+    it('should apply Weakness curse (-4 STR) to a weapon', () => {
+      const equipment = createTestEquipment();
+      const weakness = CURSES.weakness;
 
-    // Before curse
-    expect(EquipmentModifier.isCursed(equipment, 'Longsword')).toBe(false);
+      const result = EquipmentModifier.curse(equipment, 'Longsword', weakness);
 
-    // After curse
-    const result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
-    expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('weakness');
+      expect(longsword?.modifications?.[0].source).toBe('curse');
+      expect(longsword?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'stat_bonus',
+          target: 'STR',
+          value: -4
+        })
+      );
+    });
+
+    it('should apply Feeblemind curse (-4 INT) to a weapon', () => {
+      const equipment = createTestEquipment();
+      const feeblemind = CURSES.feeblemind;
+
+      const result = EquipmentModifier.curse(equipment, 'Longsword', feeblemind);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.[0].id).toBe('feeblemind');
+      expect(longsword?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'stat_bonus',
+          target: 'INT',
+          value: -4
+        })
+      );
+    });
+
+    it('should apply Clumsiness curse (-4 DEX) to armor', () => {
+      const equipment = createTestEquipment();
+      const clumsiness = CURSES.clumsiness;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', clumsiness);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('clumsiness');
+      expect(armor?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'stat_bonus',
+          target: 'DEX',
+          value: -4
+        })
+      );
+    });
+
+    it('should apply Frailty curse (-4 CON) to armor', () => {
+      const equipment = createTestEquipment();
+      const frailty = CURSES.frailty;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', frailty);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].id).toBe('frailty');
+      expect(armor?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'stat_bonus',
+          target: 'CON',
+          value: -4
+        })
+      );
+    });
+
+    it('should apply Foolishness curse (-4 WIS) to armor', () => {
+      const equipment = createTestEquipment();
+      const foolishness = CURSES.foolishness;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', foolishness);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].id).toBe('foolishness');
+    });
+
+    it('should apply Repulsiveness curse (-4 CHA) to armor', () => {
+      const equipment = createTestEquipment();
+      const repulsiveness = CURSES.repulsiveness;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', repulsiveness);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].id).toBe('repulsiveness');
+    });
   });
 
-  it('should apply attunement curse (locks item)', () => {
-    const equipment = createTestEquipment();
-    const attunement = CURSES.attunement;
+  /**
+   * KNOWN ISSUE: Vulnerability curses in playlist-data-engine have a validation bug.
+   * They use `value: true` (boolean) but the validator requires `passive_modifier`
+   * values to be numbers. These tests are skipped until the upstream bug is fixed.
+   *
+   * Bug location: playlist-data-engine/src/constants/DefaultEnchantments.ts
+   * Vulnerability curses should use `value: 1` instead of `value: true`.
+   */
+  describe('Vulnerability Curses Structure', () => {
+    it('should have fireVulnerability curse available', () => {
+      expect(CURSES.fireVulnerability).toBeDefined();
+      expect(CURSES.fireVulnerability.id).toBe('fire_vulnerability');
+      expect(CURSES.fireVulnerability.name).toBe('Cursed: Fire Vulnerability');
+      expect(CURSES.fireVulnerability.source).toBe('curse');
+    });
 
-    const result = EquipmentModifier.curse(equipment, 'Longsword', attunement);
+    it('should have coldVulnerability curse available', () => {
+      expect(CURSES.coldVulnerability).toBeDefined();
+      expect(CURSES.coldVulnerability.id).toBe('cold_vulnerability');
+      expect(CURSES.coldVulnerability.name).toBe('Cursed: Cold Vulnerability');
+    });
 
-    const longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.some(m => m.id.includes('attunement'))).toBe(true);
+    it('should have correct property structure for fire vulnerability', () => {
+      const fireVuln = CURSES.fireVulnerability;
+      expect(fireVuln.properties).toBeDefined();
+      expect(fireVuln.properties?.length).toBeGreaterThan(0);
+      expect(fireVuln.properties?.[0].type).toBe('passive_modifier');
+      expect(fireVuln.properties?.[0].target).toBe('vulnerability_fire');
+    });
+  });
+
+  // SKIPPED: The following tests are skipped due to upstream bug in playlist-data-engine
+  // where vulnerability curses use `value: true` instead of `value: 1`
+  // causing validation to fail. Once fixed, these tests should pass.
+  describe.skip('Applying Vulnerability Curses (SKIPPED - Upstream Bug)', () => {
+    it.skip('should apply Fire Vulnerability curse to armor', () => {
+      const equipment = createTestEquipment();
+      const fireVuln = CURSES.fireVulnerability;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', fireVuln);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('fire_vulnerability');
+      expect(armor?.modifications?.[0].name).toBe('Cursed: Fire Vulnerability');
+      expect(armor?.modifications?.[0].source).toBe('curse');
+    });
+
+    it.skip('should apply Cold Vulnerability curse to armor', () => {
+      const equipment = createTestEquipment();
+      const coldVuln = CURSES.coldVulnerability;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', coldVuln);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].id).toBe('cold_vulnerability');
+      expect(armor?.modifications?.[0].name).toBe('Cursed: Cold Vulnerability');
+    });
+  });
+
+  describe('Applying Special Curses', () => {
+    it('should apply Lifesteal curse (damages wielder on hit)', () => {
+      const equipment = createTestEquipment();
+      const lifesteal = CURSES.lifesteal;
+
+      const result = EquipmentModifier.curse(equipment, 'Longsword', lifesteal);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('lifesteal');
+      expect(longsword?.modifications?.[0].name).toBe('Cursed: Bloodthirst');
+      expect(longsword?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'special_property',
+          target: 'life_drain'
+        })
+      );
+    });
+
+    it('should apply Attunement Lock curse (cannot unequip)', () => {
+      const equipment = createTestEquipment();
+      const attunement = CURSES.attunement;
+
+      const result = EquipmentModifier.curse(equipment, 'Longsword', attunement);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('attunement');
+      expect(longsword?.modifications?.[0].name).toBe('Cursed: Attunement Lock');
+      expect(longsword?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'special_property',
+          target: 'curse_attunement',
+          value: true
+        })
+      );
+    });
+
+    it('should apply Berserker Rage curse (must attack each round)', () => {
+      const equipment = createTestEquipment();
+      const berserker = CURSES.berserker;
+
+      const result = EquipmentModifier.curse(equipment, 'Longsword', berserker);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('berserker');
+      expect(longsword?.modifications?.[0].name).toBe('Cursed: Berserker Rage');
+      // Berserker also gives +1 attack roll while berserking
+      expect(longsword?.modifications?.[0].properties?.length).toBeGreaterThan(0);
+    });
+
+    it('should apply Heavy Burden curse (doubles weight)', () => {
+      const equipment = createTestEquipment();
+      const heavyBurden = CURSES.heavyBurden;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', heavyBurden);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('heavy_burden');
+      expect(armor?.modifications?.[0].name).toBe('Cursed: Heavy Burden');
+      expect(armor?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'special_property',
+          target: 'weight_multiplier',
+          value: 2
+        })
+      );
+    });
+
+    it('should apply Light Sensitivity curse', () => {
+      const equipment = createTestEquipment();
+      const lightSensitivity = CURSES.lightSensitivity;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', lightSensitivity);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('light_sensitivity');
+      expect(armor?.modifications?.[0].name).toBe('Cursed: Light Sensitivity');
+    });
+  });
+
+  describe('Curse Stacking', () => {
+    it('should allow multiple curses on the same item', () => {
+      const equipment = createTestEquipment();
+
+      // Apply weakness curse
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+
+      // Apply attunement curse on top
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(longsword?.modifications?.map(m => m.id)).toContain('weakness');
+      expect(longsword?.modifications?.map(m => m.id)).toContain('attunement');
+    });
+
+    it('should allow re-applying the same curse (stacking)', () => {
+      const equipment = createTestEquipment();
+
+      // Apply weakness curse twice
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+    });
+  });
+
+  describe('Curse + Enchantment Combinations', () => {
+    it('should allow enchantment and curse on same item', () => {
+      const equipment = createTestEquipment();
+
+      // Apply enchantment first
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+
+      // Apply curse second
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+
+    it('should allow curse first, then enchantment', () => {
+      const equipment = createTestEquipment();
+
+      // Apply curse first
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+
+      // Apply enchantment second
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+  });
+
+  describe('Query Methods for Curses', () => {
+    it('should correctly identify cursed items', () => {
+      const equipment = createTestEquipment();
+
+      // Before curse
+      expect(EquipmentModifier.isCursed(equipment, 'Longsword')).toBe(false);
+
+      // After curse
+      const result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+
+    it('should correctly get item summary for cursed items', () => {
+      const equipment = createTestEquipment();
+      const result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+
+      const summary = EquipmentModifier.getItemSummary(result, 'Longsword');
+      expect(summary).not.toBeNull();
+      expect(summary?.isEnchanted).toBe(false);
+      expect(summary?.isCursed).toBe(true);
+      expect(summary?.modificationCount).toBe(1);
+    });
+
+    it('should correctly identify both enchanted and cursed state', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      const summary = EquipmentModifier.getItemSummary(result, 'Longsword');
+      expect(summary?.isEnchanted).toBe(true);
+      expect(summary?.isCursed).toBe(true);
+      expect(summary?.modificationCount).toBe(2);
+    });
   });
 });
 
-describe('EquipmentModifier - Remove Operations', () => {
-  it('should remove a specific modification', () => {
-    const equipment = createTestEquipment();
-    let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
-    result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+describe('EquipmentModifier - Remove Operations (Task 7.2)', () => {
+  describe('Remove Specific Modification', () => {
+    it('should remove a specific modification', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
 
-    // Verify two modifications
-    let longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(2);
+      // Verify two modifications
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
 
-    // Remove one
-    result = EquipmentModifier.removeModification(result, 'Longsword', 'flaming');
-    longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(1);
-    expect(longsword?.modifications?.[0].id).toBe('plus_one');
+      // Remove one
+      result = EquipmentModifier.removeModification(result, 'Longsword', 'flaming');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('plus_one');
+    });
+
+    it('should remove a specific curse while keeping other curses', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      // Verify two curses
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+
+      // Remove one curse
+      result = EquipmentModifier.removeModification(result, 'Longsword', 'weakness');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(longsword?.modifications?.[0].id).toBe('attunement');
+    });
   });
 
-  it('should disenchant (remove all enchantments, keep curses)', () => {
-    const equipment = createTestEquipment();
-    let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
-    result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+  describe('Disenchant (Remove Enchantments, Keep Curses)', () => {
+    it('should disenchant item with single enchantment and single curse', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
 
-    // Verify one enchantment and one curse
-    let longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(2);
-    expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
-    expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+      // Verify one enchantment and one curse
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
 
-    // Disenchant
-    result = EquipmentModifier.disenchant(result, 'Longsword');
-    longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(1);
-    expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(false);
-    expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+      // Disenchant
+      result = EquipmentModifier.disenchant(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(false);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+
+    it('should disenchant item with multiple enchantments, keeping all curses', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.vampiric);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      // Verify 3 enchantments and 2 curses
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(5);
+
+      // Disenchant
+      result = EquipmentModifier.disenchant(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(false);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+      expect(longsword?.modifications?.map(m => m.id)).toContain('weakness');
+      expect(longsword?.modifications?.map(m => m.id)).toContain('attunement');
+    });
+
+    it('should disenchant cursed-only item (no changes)', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+
+      // Verify curse only
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(false);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+
+      // Disenchant (should not remove curse)
+      result = EquipmentModifier.disenchant(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+
+    it('should disenchant armor correctly', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Leather Armor', CURSES.heavyBurden);
+
+      // Disenchant
+      result = EquipmentModifier.disenchant(result, 'Leather Armor');
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(false);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(true);
+    });
   });
 
-  it('should lift curse (remove all curses, keep enchantments)', () => {
-    const equipment = createTestEquipment();
-    let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
-    result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+  describe('Lift Curse (Remove Curses, Keep Enchantments)', () => {
+    it('should lift curse from item with single enchantment and single curse', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
 
-    // Lift curse
-    result = EquipmentModifier.liftCurse(result, 'Longsword');
-    const longsword = result.weapons.find(w => w.name === 'Longsword');
-    expect(longsword?.modifications?.length).toBe(1);
-    expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
-    expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+      // Lift curse
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+    });
+
+    it('should lift all curses, keeping all enchantments', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.vampiric);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.berserker);
+
+      // Verify 3 enchantments and 3 curses
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(6);
+
+      // Lift all curses
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(3);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+      expect(longsword?.modifications?.map(m => m.id)).toContain('plus_one');
+      expect(longsword?.modifications?.map(m => m.id)).toContain('flaming');
+      expect(longsword?.modifications?.map(m => m.id)).toContain('vampiric');
+    });
+
+    it('should lift curse from enchanted-only item (no changes)', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+
+      // Verify enchantment only
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+
+      // Lift curse (should not remove enchantment)
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+    });
+
+    it('should lift attunement curse specifically', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      // Verify attunement lock is active
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.some(m => m.id === 'attunement')).toBe(true);
+
+      // Lift curse
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.some(m => m.id === 'attunement')).toBe(false);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+    });
+
+    it('should lift curse from armor correctly', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Leather Armor', CURSES.clumsiness);
+
+      // Lift curse
+      result = EquipmentModifier.liftCurse(result, 'Leather Armor');
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(false);
+    });
+
+    it('should lift multiple stacked curses of same type', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.weakness);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      // Verify two curses
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+
+      // Lift all curses
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(0);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+    });
+  });
+
+  describe('Combined Remove Operations', () => {
+    it('should remove specific enchantment, then lift curse, then disenchant remaining', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      // Step 1: Remove specific enchantment
+      result = EquipmentModifier.removeModification(result, 'Longsword', 'flaming');
+      let longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+
+      // Step 2: Lift curse
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+
+      // Step 3: Disenchant remaining
+      result = EquipmentModifier.disenchant(result, 'Longsword');
+      longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(0);
+    });
+  });
+});
+
+describe('EquipmentModifier - Attunement Curse Behavior (Task 7.2)', () => {
+  describe('Attunement Curse Detection', () => {
+    it('should have attunement curse available in CURSES', () => {
+      expect(CURSES.attunement).toBeDefined();
+      expect(CURSES.attunement.id).toBe('attunement');
+      expect(CURSES.attunement.name).toBe('Cursed: Attunement Lock');
+      expect(CURSES.attunement.source).toBe('curse');
+    });
+
+    it('should apply attunement curse with correct property', () => {
+      const attunement = CURSES.attunement;
+      expect(attunement.properties).toBeDefined();
+      expect(attunement.properties?.length).toBeGreaterThan(0);
+      expect(attunement.properties?.[0].type).toBe('special_property');
+      expect(attunement.properties?.[0].target).toBe('curse_attunement');
+      expect(attunement.properties?.[0].value).toBe(true);
+    });
+  });
+
+  describe('Attunement Curse Application', () => {
+    it('should apply attunement curse to weapon', () => {
+      const equipment = createTestEquipment();
+      const result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.attunement);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.some(m => m.id === 'attunement')).toBe(true);
+    });
+
+    it('should apply attunement curse to armor', () => {
+      const equipment = createTestEquipment();
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', CURSES.attunement);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.some(m => m.id === 'attunement')).toBe(true);
+    });
+
+    it('should identify attunement-cursed items as cursed', () => {
+      const equipment = createTestEquipment();
+      const result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.attunement);
+
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+  });
+
+  describe('Attunement Curse Removal', () => {
+    it('should lift attunement curse with liftCurse()', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.attunement);
+
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+
+      result = EquipmentModifier.liftCurse(result, 'Longsword');
+
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(false);
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(0);
+    });
+
+    it('should remove attunement curse with removeModification()', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.attunement);
+
+      result = EquipmentModifier.removeModification(result, 'Longsword', 'attunement');
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(0);
+    });
+
+    it('should keep attunement curse when disenchanting', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      result = EquipmentModifier.disenchant(result, 'Longsword');
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.some(m => m.id === 'attunement')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+  });
+
+  describe('Attunement Curse with Other Modifications', () => {
+    it('should allow attunement curse with other curses', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.curse(equipment, 'Longsword', CURSES.attunement);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.weakness);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(longsword?.modifications?.map(m => m.id)).toContain('attunement');
+      expect(longsword?.modifications?.map(m => m.id)).toContain('weakness');
+    });
+
+    it('should allow attunement curse with enchantments', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Longsword', WEAPON_ENCHANTMENTS.flaming);
+      result = EquipmentModifier.curse(result, 'Longsword', CURSES.attunement);
+
+      const longsword = result.weapons.find(w => w.name === 'Longsword');
+      expect(longsword?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Longsword')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Longsword')).toBe(true);
+    });
+  });
+});
+
+describe('EquipmentModifier - All Curses Availability (Task 7.2)', () => {
+  describe('Penalty Curses', () => {
+    it('should have minusOne curse available', () => {
+      expect(CURSES.minusOne).toBeDefined();
+      expect(CURSES.minusOne.id).toBe('minus_one');
+    });
+
+    it('should have minusTwo curse available', () => {
+      expect(CURSES.minusTwo).toBeDefined();
+      expect(CURSES.minusTwo.id).toBe('minus_two');
+    });
+  });
+
+  describe('Stat Curses', () => {
+    it('should have weakness curse (STR) available', () => {
+      expect(CURSES.weakness).toBeDefined();
+      expect(CURSES.weakness.id).toBe('weakness');
+    });
+
+    it('should have feeblemind curse (INT) available', () => {
+      expect(CURSES.feeblemind).toBeDefined();
+      expect(CURSES.feeblemind.id).toBe('feeblemind');
+    });
+
+    it('should have clumsiness curse (DEX) available', () => {
+      expect(CURSES.clumsiness).toBeDefined();
+      expect(CURSES.clumsiness.id).toBe('clumsiness');
+    });
+
+    it('should have frailty curse (CON) available', () => {
+      expect(CURSES.frailty).toBeDefined();
+      expect(CURSES.frailty.id).toBe('frailty');
+    });
+
+    it('should have foolishness curse (WIS) available', () => {
+      expect(CURSES.foolishness).toBeDefined();
+      expect(CURSES.foolishness.id).toBe('foolishness');
+    });
+
+    it('should have repulsiveness curse (CHA) available', () => {
+      expect(CURSES.repulsiveness).toBeDefined();
+      expect(CURSES.repulsiveness.id).toBe('repulsiveness');
+    });
+  });
+
+  describe('Vulnerability Curses', () => {
+    it('should have fireVulnerability curse available', () => {
+      expect(CURSES.fireVulnerability).toBeDefined();
+      expect(CURSES.fireVulnerability.id).toBe('fire_vulnerability');
+    });
+
+    it('should have coldVulnerability curse available', () => {
+      expect(CURSES.coldVulnerability).toBeDefined();
+      expect(CURSES.coldVulnerability.id).toBe('cold_vulnerability');
+    });
+  });
+
+  describe('Special Curses', () => {
+    it('should have lifesteal curse available', () => {
+      expect(CURSES.lifesteal).toBeDefined();
+      expect(CURSES.lifesteal.id).toBe('lifesteal');
+    });
+
+    it('should have attunement curse available', () => {
+      expect(CURSES.attunement).toBeDefined();
+      expect(CURSES.attunement.id).toBe('attunement');
+    });
+
+    it('should have berserker curse available', () => {
+      expect(CURSES.berserker).toBeDefined();
+      expect(CURSES.berserker.id).toBe('berserker');
+    });
+
+    it('should have heavyBurden curse available', () => {
+      expect(CURSES.heavyBurden).toBeDefined();
+      expect(CURSES.heavyBurden.id).toBe('heavy_burden');
+    });
+
+    it('should have lightSensitivity curse available', () => {
+      expect(CURSES.lightSensitivity).toBeDefined();
+      expect(CURSES.lightSensitivity.id).toBe('light_sensitivity');
+    });
+  });
+
+  describe('Curse Count', () => {
+    it('should have all expected curses available', () => {
+      const expectedCurses = [
+        'minusOne', 'minusTwo',
+        'weakness', 'feeblemind', 'clumsiness', 'frailty', 'foolishness', 'repulsiveness',
+        'fireVulnerability', 'coldVulnerability',
+        'lifesteal', 'attunement', 'berserker', 'heavyBurden', 'lightSensitivity'
+      ];
+
+      expectedCurses.forEach(curseName => {
+        expect(CURSES[curseName as keyof typeof CURSES]).toBeDefined();
+      });
+    });
   });
 });

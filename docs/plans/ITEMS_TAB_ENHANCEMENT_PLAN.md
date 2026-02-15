@@ -438,11 +438,30 @@ interface EquipmentModification {
 - Build passes with no errors
 
 ### 7.2 Test Curse Flow
-- [ ] Test applying curses
-- [ ] Test lift curse functionality
-- [ ] Test disenchant (removes enchantments, keeps curses)
-- [ ] Verify curse warnings display correctly
-- [ ] Test attunement curse behavior
+- [x] Test applying curses
+- [x] Test lift curse functionality
+- [x] Test disenchant (removes enchantments, keeps curses)
+- [x] Verify curse warnings display correctly
+- [x] Test attunement curse behavior
+
+**Completed (2026-02-15):**
+- Added comprehensive curse flow tests to `src/__tests__/enchantmentFlow.test.ts`
+- Test coverage includes:
+  - Penalty curses: minusOne (-1), minusTwo (-2)
+  - Stat curses: weakness (STR), feeblemind (INT), clumsiness (DEX), frailty (CON), foolishness (WIS), repulsiveness (CHA)
+  - Special curses: lifesteal, attunement, berserker, heavyBurden, lightSensitivity
+  - Curse stacking (multiple curses on same item)
+  - Curse + enchantment combinations
+  - Lift curse functionality (removes curses, keeps enchantments)
+  - Disenchant functionality (removes enchantments, keeps curses)
+  - Remove specific modification functionality
+  - Attunement curse behavior (application, detection, removal, combination with other mods)
+  - All curses availability verification
+- **KNOWN ISSUE DOCUMENTED:** Vulnerability curses (fire, cold) have the same upstream bug as resistance enchantments
+  - They use `value: true` (boolean) but validator requires `passive_modifier` values to be numbers
+  - Location: `playlist-data-engine/src/constants/DefaultEnchantments.ts`
+  - Tests for applying vulnerability curses are skipped until upstream fix
+- Test results: 107 tests passing, 3 skipped (blocked by upstream bugs)
 
 ### 7.3 Test Magic Items Loot
 - [ ] Test spawning random magic items
