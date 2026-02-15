@@ -484,9 +484,33 @@ interface EquipmentModification {
 ### 7.4 Visual Polish
 - [x] Review badge placement on items
 - [x] Review modal responsiveness
-- [ ] Review toast messages
+- [x] Review toast messages
 - [ ] Review empty states
 - [ ] Review error states
+
+**Toast Messages Review Completed (2026-02-15):**
+- Reviewed all toast messages in ItemsTab for consistency with other tabs
+- Added emojis to all toast messages for visual consistency:
+  - ✨ for enchantment-related successes
+  - 🔮 for curse application
+  - 💨 for disenchanting
+  - ➖ for modification removal
+  - ✅ for equipping/unequipping and item additions
+  - 🗑️ for item removal
+  - 📦 for item spawning
+  - 💰 for treasure hoard
+  - ⚠️ for warnings (no character selected, no items, etc.)
+  - ❌ for all errors
+- Improved message clarity:
+  - Added plural/singular handling ("1 item" vs "2 items")
+  - Added `.toLocaleString()` for large gold values (treasure hoard)
+  - Used more descriptive error messages including item names
+  - Changed generic messages like "Success" and "Operation failed" to include specific action details
+- Added proper use of 'warning' type for partial failures and soft errors:
+  - No character selected scenarios
+  - Empty item scenarios
+  - Partial success in bulk operations (e.g., "Added 3 items (1 failed)")
+- Fixed TypeScript error with optional chaining for `totalValue`
 
 **Badge Placement Review Completed (2026-02-15):**
 - Added `MAX_VISIBLE_BADGES` constant (3) to prevent badge crowding

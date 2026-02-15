@@ -290,9 +290,9 @@ export function ItemsTab() {
     const result: EnchantmentOperationResult = await enchantItem(itemName, enchantment);
 
     if (result.success) {
-      showToast(result.message || `Applied ${enchantment.name} to ${itemName}`, 'success');
+      showToast(result.message || `✨ Applied ${enchantment.name} to ${itemName}`, 'success');
     } else {
-      showToast(result.error || 'Failed to apply enchantment', 'error');
+      showToast(result.error || `❌ Failed to apply ${enchantment.name} to ${itemName}`, 'error');
     }
   };
 
@@ -301,9 +301,9 @@ export function ItemsTab() {
     const result: EnchantmentOperationResult = await curseItem(itemName, curse);
 
     if (result.success) {
-      showToast(result.message || `Applied ${curse.name} curse to ${itemName}`, 'success');
+      showToast(result.message || `🔮 Applied ${curse.name} curse to ${itemName}`, 'success');
     } else {
-      showToast(result.error || 'Failed to apply curse', 'error');
+      showToast(result.error || `❌ Failed to apply ${curse.name} curse to ${itemName}`, 'error');
     }
   };
 
@@ -316,9 +316,9 @@ export function ItemsTab() {
     const result: EnchantmentOperationResult = await liftCurse(itemName);
 
     if (result.success) {
-      showToast(result.message || `Lifted curses from ${itemName}`, 'success');
+      showToast(result.message || `✨ Lifted curses from ${itemName}`, 'success');
     } else {
-      showToast(result.error || 'Failed to lift curse', 'error');
+      showToast(result.error || `❌ Failed to lift curses from ${itemName}`, 'error');
     }
   };
 
@@ -331,9 +331,9 @@ export function ItemsTab() {
     const result: EnchantmentOperationResult = await disenchantItem(itemName);
 
     if (result.success) {
-      showToast(result.message || `Disenchanted ${itemName}`, 'success');
+      showToast(result.message || `💨 Disenchanted ${itemName}`, 'success');
     } else {
-      showToast(result.error || 'Failed to disenchant item', 'error');
+      showToast(result.error || `❌ Failed to disenchant ${itemName}`, 'error');
     }
   };
 
@@ -346,9 +346,9 @@ export function ItemsTab() {
     const result: EnchantmentOperationResult = await removeModification(itemName, modificationId);
 
     if (result.success) {
-      showToast(result.message || `Removed ${modificationName} from ${itemName}`, 'success');
+      showToast(result.message || `➖ Removed ${modificationName} from ${itemName}`, 'success');
     } else {
-      showToast(result.error || 'Failed to remove modification', 'error');
+      showToast(result.error || `❌ Failed to remove ${modificationName} from ${itemName}`, 'error');
     }
   };
 
@@ -361,12 +361,12 @@ export function ItemsTab() {
   // Handle equip/unequip toggle
   const handleEquipToggle = async (item: EnhancedInventoryItem) => {
     if (!activeCharacter) {
-      showToast('No character selected', 'error');
+      showToast('⚠️ No character selected', 'warning');
       return;
     }
 
     if (!item.instanceId) {
-      showToast('Item has no instance ID', 'error');
+      showToast('⚠️ Item has no instance ID', 'warning');
       return;
     }
 
@@ -375,9 +375,10 @@ export function ItemsTab() {
       : await equipItem(item.instanceId);
 
     if (result.success) {
-      showToast(result.message || 'Success', 'success');
+      const action = item.equipped ? 'Unequipped' : 'Equipped';
+      showToast(result.message || `✅ ${action} ${item.name}`, 'success');
     } else {
-      showToast(result.error || 'Operation failed', 'error');
+      showToast(result.error || `❌ Failed to ${item.equipped ? 'unequip' : 'equip'} ${item.name}`, 'error');
     }
   };
 
@@ -388,9 +389,9 @@ export function ItemsTab() {
     const result = await removeItem(item.instanceId, category);
 
     if (result.success) {
-      showToast(result.message || 'Item removed', 'success');
+      showToast(result.message || `🗑️ Removed ${item.name}`, 'success');
     } else {
-      showToast(result.error || 'Failed to remove item', 'error');
+      showToast(result.error || `❌ Failed to remove ${item.name}`, 'error');
     }
   };
 
@@ -402,9 +403,9 @@ export function ItemsTab() {
     setIsAnimating(false);
 
     if (result.items.length > 0) {
-      showToast(`Spawned ${result.items.length} random items!`, 'success');
+      showToast(`📦 Spawned ${result.items.length} random item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
-      showToast('Failed to spawn items', 'error');
+      showToast('❌ Failed to spawn items', 'error');
     }
   };
 
@@ -416,9 +417,9 @@ export function ItemsTab() {
     setIsAnimating(false);
 
     if (result.items.length > 0) {
-      showToast(`Spawned ${result.items.length} ${formatRarity(selectedRarity)} items!`, 'success');
+      showToast(`📦 Spawned ${result.items.length} ${formatRarity(selectedRarity)} item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
-      showToast('Failed to spawn items', 'error');
+      showToast('❌ Failed to spawn items', 'error');
     }
   };
 
@@ -430,9 +431,9 @@ export function ItemsTab() {
     setIsAnimating(false);
 
     if (result.items.length > 0) {
-      showToast(`Spawned treasure hoard worth ${result.totalValue} gp!`, 'success');
+      showToast(`💰 Spawned treasure hoard worth ${(result.totalValue ?? 0).toLocaleString()} gp!`, 'success');
     } else {
-      showToast('Failed to spawn treasure hoard', 'error');
+      showToast('❌ Failed to spawn treasure hoard', 'error');
     }
   };
 
@@ -448,16 +449,16 @@ export function ItemsTab() {
 
     if (result.items.length > 0) {
       const rarityText = magicItemRarity ? ` ${formatRarity(magicItemRarity)}` : '';
-      showToast(`Spawned ${result.items.length}${rarityText} magic items!`, 'success');
+      showToast(`✨ Spawned ${result.items.length}${rarityText} magic item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
-      showToast('No magic items found', 'error');
+      showToast('❌ No magic items found', 'error');
     }
   };
 
   // Handle adding a spawned item to the hero
   const handleAddToHero = async (item: EnhancedEquipment) => {
     if (!activeCharacter) {
-      showToast('No character selected', 'error');
+      showToast('⚠️ No character selected', 'warning');
       return;
     }
 
@@ -471,21 +472,21 @@ export function ItemsTab() {
     const result = await addItemToInventory(inventoryItem, item, false);
 
     if (result.success) {
-      showToast(`Added ${item.name} to ${activeCharacter.name}`, 'success');
+      showToast(`✅ Added ${item.name} to ${activeCharacter.name}`, 'success');
     } else {
-      showToast(result.error || 'Failed to add item', 'error');
+      showToast(result.error || `❌ Failed to add ${item.name}`, 'error');
     }
   };
 
   // Handle adding all spawned items to the hero
   const handleAddAllToHero = async () => {
     if (!activeCharacter) {
-      showToast('No character selected', 'error');
+      showToast('⚠️ No character selected', 'warning');
       return;
     }
 
     if (spawnedItems.length === 0) {
-      showToast('No items to add', 'error');
+      showToast('⚠️ No items to add', 'warning');
       return;
     }
 
@@ -509,9 +510,10 @@ export function ItemsTab() {
     }
 
     if (successCount > 0) {
-      showToast(`Added ${successCount} items to ${activeCharacter.name}${failCount > 0 ? ` (${failCount} failed)` : ''}`, 'success');
+      const failMessage = failCount > 0 ? ` (${failCount} failed)` : '';
+      showToast(`✅ Added ${successCount} item${successCount !== 1 ? 's' : ''} to ${activeCharacter.name}${failMessage}`, failCount > 0 ? 'warning' : 'success');
     } else {
-      showToast('Failed to add items', 'error');
+      showToast('❌ Failed to add items', 'error');
     }
   };
 
@@ -966,7 +968,7 @@ export function ItemsTab() {
   // Handle item creation
   const handleCreateItem = async () => {
     if (!activeCharacter) {
-      showToast('No character selected', 'error');
+      showToast('⚠️ No character selected', 'warning');
       return;
     }
 
@@ -1000,13 +1002,13 @@ export function ItemsTab() {
     const result = await createAndAddItem(formData, autoEquip);
 
     if (result.success) {
-      showToast(result.message || 'Item created and added!', 'success');
+      showToast(result.message || `✅ Created and added ${itemName}!`, 'success');
       // Clear form
       setItemName('');
       setDamageDice('');
       setAcBonus('');
     } else {
-      showToast(result.error || 'Failed to create item', 'error');
+      showToast(result.error || `❌ Failed to create ${itemName || 'item'}`, 'error');
     }
   };
 
