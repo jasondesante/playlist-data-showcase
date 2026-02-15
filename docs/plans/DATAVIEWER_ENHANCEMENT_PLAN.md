@@ -144,9 +144,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Type: `Record<string, { ability_bonuses, traits, requirements? }>`
 
 ### Task 4.2: Load Subrace Data
-- [ ] Update `races` useMemo to include subrace-specific data
-- [ ] Extract subrace ability bonuses from RACE_DATA
-- [ ] Collect subrace-specific traits from FeatureQuery
+- [x] Update `races` useMemo to include subrace-specific data
+- [x] Extract subrace ability bonuses from RACE_DATA
+- [x] Collect subrace-specific traits from FeatureQuery
 
 ### Task 4.3: Update Race Card Rendering
 - [ ] Modify `renderRaces()` to show full subrace expansion
