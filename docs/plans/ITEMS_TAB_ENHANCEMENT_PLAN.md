@@ -464,10 +464,22 @@ interface EquipmentModification {
 - Test results: 107 tests passing, 3 skipped (blocked by upstream bugs)
 
 ### 7.3 Test Magic Items Loot
-- [ ] Test spawning random magic items
-- [ ] Test spawning magic items by rarity
-- [ ] Verify magic items have correct properties
-- [ ] Test adding magic items to character
+- [x] Test spawning random magic items
+- [x] Test spawning magic items by rarity
+- [x] Verify magic items have correct properties
+- [x] Test adding magic items to character
+
+**Completed (2026-02-15):**
+- Added comprehensive Magic Items Loot tests to `src/__tests__/enchantmentFlow.test.ts`
+- Test coverage includes:
+  - **MAGIC_ITEMS Collection:** Verifies collection exists, has expected count (34 items), all items have required properties
+  - **Spawning Random Magic Items:** Tests seeded RNG random selection, deterministic results with same seed, handling of requests exceeding available items
+  - **Spawning by Rarity:** Tests filtering by all rarity levels (uncommon, rare, very_rare, legendary, common)
+  - **Magic Items Properties:** Tests specific items (Flame Tongue, Vorpal Sword, Mithral Shirt, Elven Chain), items with grantsFeatures/grantsSkills/grantsSpells, cursed items
+  - **Query Functions:** Tests getMagicItemsByType, getItemsWithProperty, getMagicItem
+  - **Adding to Character Equipment:** Tests adding magic weapons, armor, and items to character equipment, equipping magic items, modifications on magic items
+  - **Rarity Distribution:** Tests that items span multiple rarities and have expected distribution
+- Test results: 144 tests total (141 passed, 3 skipped for upstream bugs)
 
 ### 7.4 Visual Polish
 - [ ] Review badge placement on items

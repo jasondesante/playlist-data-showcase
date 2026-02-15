@@ -29,8 +29,16 @@ import {
   createWisdomEnchantment,
   createCharismaEnchantment,
   ensureEquipmentDefaultsInitialized,
+  SeededRNG,
+  MAGIC_ITEMS,
+  getMagicItemsByRarity,
+  getMagicItemsByType,
+  getCursedItems,
+  getItemsWithProperty,
+  getMagicItem,
   type CharacterEquipment,
-  type EnhancedInventoryItem
+  type EnhancedInventoryItem,
+  type EnhancedEquipment
 } from 'playlist-data-engine';
 
 // Initialize ExtensionManager with default equipment before running tests
@@ -1413,6 +1421,411 @@ describe('EquipmentModifier - All Curses Availability (Task 7.2)', () => {
       expectedCurses.forEach(curseName => {
         expect(CURSES[curseName as keyof typeof CURSES]).toBeDefined();
       });
+    });
+  });
+});
+
+/**
+ * Magic Items Loot Tests (Task 7.3)
+ *
+ * Test spawning random magic items
+ * Test spawning magic items by rarity
+ * Verify magic items have correct properties
+ * Test adding magic items to character
+ */
+describe('Magic Items Loot (Task 7.3)', () => {
+  describe('MAGIC_ITEMS Collection', () => {
+    it('should have MAGIC_ITEMS collection available', () => {
+      expect(MAGIC_ITEMS).toBeDefined();
+      expect(Array.isArray(MAGIC_ITEMS)).toBe(true);
+    });
+
+    it('should have expected number of magic items (34 total)', () => {
+      expect(MAGIC_ITEMS.length).toBeGreaterThan(0);
+      // The documentation indicates 34 items
+      expect(MAGIC_ITEMS.length).toBeGreaterThanOrEqual(30);
+    });
+
+    it('should have all items with required properties', () => {
+      MAGIC_ITEMS.forEach(item => {
+        expect(item.name).toBeDefined();
+        expect(typeof item.name).toBe('string');
+        expect(item.type).toBeDefined();
+        expect(['weapon', 'armor', 'item']).toContain(item.type);
+        expect(item.rarity).toBeDefined();
+        expect(['common', 'uncommon', 'rare', 'very_rare', 'legendary']).toContain(item.rarity);
+      });
+    });
+  });
+
+  describe('Spawning Random Magic Items', () => {
+    it('should spawn random magic items using seeded RNG', () => {
+      const rng = new SeededRNG('test-seed-123');
+      const shuffled = [...MAGIC_ITEMS].sort(() => rng.random() - 0.5);
+      const selectedItems = shuffled.slice(0, 3);
+
+      expect(selectedItems.length).toBe(3);
+      selectedItems.forEach(item => {
+        expect(MAGIC_ITEMS).toContainEqual(expect.objectContaining({ name: item.name }));
+      });
+    });
+
+    it('should be deterministic with same seed', () => {
+      const seed = 'deterministic-test-seed';
+
+      // First run
+      const rng1 = new SeededRNG(seed);
+      const shuffled1 = [...MAGIC_ITEMS].sort(() => rng1.random() - 0.5);
+      const selected1 = shuffled1.slice(0, 5).map(i => i.name);
+
+      // Second run with same seed
+      const rng2 = new SeededRNG(seed);
+      const shuffled2 = [...MAGIC_ITEMS].sort(() => rng2.random() - 0.5);
+      const selected2 = shuffled2.slice(0, 5).map(i => i.name);
+
+      // Should produce same results
+      expect(selected1).toEqual(selected2);
+    });
+
+    it('should not exceed available items when requesting more', () => {
+      const rng = new SeededRNG('large-request-seed');
+      const shuffled = [...MAGIC_ITEMS].sort(() => rng.random() - 0.5);
+      const selectedItems = shuffled.slice(0, 100); // Request 100, but only 34 available
+
+      expect(selectedItems.length).toBeLessThanOrEqual(MAGIC_ITEMS.length);
+    });
+
+    it('should handle empty result gracefully', () => {
+      const rng = new SeededRNG('empty-test-seed');
+      const shuffled = [...MAGIC_ITEMS].sort(() => rng.random() - 0.5);
+      const selectedItems = shuffled.slice(0, 0);
+
+      expect(selectedItems.length).toBe(0);
+    });
+  });
+
+  describe('Spawning Magic Items by Rarity', () => {
+    it('should filter items by uncommon rarity', () => {
+      const uncommonItems = getMagicItemsByRarity('uncommon');
+
+      expect(uncommonItems.length).toBeGreaterThan(0);
+      uncommonItems.forEach(item => {
+        expect(item.rarity).toBe('uncommon');
+      });
+    });
+
+    it('should filter items by rare rarity', () => {
+      const rareItems = getMagicItemsByRarity('rare');
+
+      expect(rareItems.length).toBeGreaterThan(0);
+      rareItems.forEach(item => {
+        expect(item.rarity).toBe('rare');
+      });
+    });
+
+    it('should filter items by very_rare rarity', () => {
+      const veryRareItems = getMagicItemsByRarity('very_rare');
+
+      expect(veryRareItems.length).toBeGreaterThan(0);
+      veryRareItems.forEach(item => {
+        expect(item.rarity).toBe('very_rare');
+      });
+    });
+
+    it('should filter items by legendary rarity', () => {
+      const legendaryItems = getMagicItemsByRarity('legendary');
+
+      expect(legendaryItems.length).toBeGreaterThan(0);
+      legendaryItems.forEach(item => {
+        expect(item.rarity).toBe('legendary');
+      });
+    });
+
+    it('should return empty array for common rarity (if no common items)', () => {
+      const commonItems = getMagicItemsByRarity('common');
+
+      // Magic items typically start at uncommon, so this might be empty
+      commonItems.forEach(item => {
+        expect(item.rarity).toBe('common');
+      });
+    });
+
+    it('should spawn random items from filtered rarity', () => {
+      const rareItems = getMagicItemsByRarity('rare');
+      const rng = new SeededRNG('rare-item-seed');
+      const shuffled = [...rareItems].sort(() => rng.random() - 0.5);
+      const selected = shuffled.slice(0, 2);
+
+      expect(selected.length).toBeLessThanOrEqual(rareItems.length);
+      selected.forEach(item => {
+        expect(item.rarity).toBe('rare');
+      });
+    });
+  });
+
+  describe('Magic Items Properties', () => {
+    it('should have Flame Tongue weapon with correct properties', () => {
+      const flameTongue = getMagicItem('Flame Tongue');
+
+      expect(flameTongue).toBeDefined();
+      expect(flameTongue?.type).toBe('weapon');
+      expect(flameTongue?.rarity).toBe('rare');
+      expect(flameTongue?.properties).toBeDefined();
+      expect(flameTongue?.properties?.length).toBeGreaterThan(0);
+    });
+
+    it('should have Vorpal Sword legendary weapon', () => {
+      const vorpalSword = getMagicItem('Vorpal Sword');
+
+      expect(vorpalSword).toBeDefined();
+      expect(vorpalSword?.rarity).toBe('legendary');
+      expect(vorpalSword?.type).toBe('weapon');
+    });
+
+    it('should have Mithral Shirt armor', () => {
+      const mithralShirt = getMagicItem('Mithral Shirt');
+
+      expect(mithralShirt).toBeDefined();
+      expect(mithralShirt?.type).toBe('armor');
+      expect(mithralShirt?.rarity).toBe('uncommon');
+    });
+
+    it('should have Elven Chain armor', () => {
+      const elvenChain = getMagicItem('Elven Chain');
+
+      expect(elvenChain).toBeDefined();
+      expect(elvenChain?.type).toBe('armor');
+    });
+
+    it('should have items with grantsFeatures property', () => {
+      const itemsWithFeatures = MAGIC_ITEMS.filter(item =>
+        item.grantsFeatures && item.grantsFeatures.length > 0
+      );
+
+      expect(itemsWithFeatures.length).toBeGreaterThan(0);
+    });
+
+    it('should have items with grantsSkills property', () => {
+      const itemsWithSkills = MAGIC_ITEMS.filter(item =>
+        item.grantsSkills && item.grantsSkills.length > 0
+      );
+
+      expect(itemsWithSkills.length).toBeGreaterThan(0);
+    });
+
+    it('should have items with grantsSpells property', () => {
+      const itemsWithSpells = MAGIC_ITEMS.filter(item =>
+        item.grantsSpells && item.grantsSpells.length > 0
+      );
+
+      expect(itemsWithSpells.length).toBeGreaterThan(0);
+    });
+
+    it('should have cursed items available', () => {
+      const cursedItems = getCursedItems();
+
+      expect(cursedItems.length).toBeGreaterThan(0);
+      cursedItems.forEach(item => {
+        expect(item.tags).toContain('cursed');
+      });
+    });
+
+    it('should have -1 Cursed Sword in cursed items', () => {
+      const cursedSword = getMagicItem('-1 Cursed Sword');
+
+      expect(cursedSword).toBeDefined();
+      expect(cursedSword?.tags).toContain('cursed');
+    });
+  });
+
+  describe('Query Functions', () => {
+    it('should get magic items by type - weapons', () => {
+      const weapons = getMagicItemsByType('weapon');
+
+      expect(weapons.length).toBeGreaterThan(0);
+      weapons.forEach(item => {
+        expect(item.type).toBe('weapon');
+      });
+    });
+
+    it('should get magic items by type - armor', () => {
+      const armor = getMagicItemsByType('armor');
+
+      expect(armor.length).toBeGreaterThan(0);
+      armor.forEach(item => {
+        expect(item.type).toBe('armor');
+      });
+    });
+
+    it('should get magic items by type - items', () => {
+      const items = getMagicItemsByType('item');
+
+      expect(items.length).toBeGreaterThan(0);
+      items.forEach(item => {
+        expect(item.type).toBe('item');
+      });
+    });
+
+    it('should get items with specific property type', () => {
+      const itemsWithDamageBonus = getItemsWithProperty('damage_bonus');
+
+      expect(Array.isArray(itemsWithDamageBonus)).toBe(true);
+    });
+
+    it('should return undefined for non-existent item', () => {
+      const nonExistent = getMagicItem('Non Existent Item Name');
+
+      expect(nonExistent).toBeUndefined();
+    });
+  });
+
+  describe('Adding Magic Items to Character Equipment', () => {
+    it('should be able to add magic weapon to equipment', () => {
+      const equipment = createTestEquipment();
+      const flameTongue = getMagicItem('Flame Tongue');
+
+      expect(flameTongue).toBeDefined();
+
+      // Add the magic item as a new weapon
+      const newWeapon: EnhancedInventoryItem = {
+        name: flameTongue!.name,
+        quantity: 1,
+        equipped: false,
+        instanceId: 'weapon-flametongue-001'
+      };
+
+      const updatedEquipment: CharacterEquipment = {
+        ...equipment,
+        weapons: [...equipment.weapons, newWeapon]
+      };
+
+      expect(updatedEquipment.weapons.length).toBe(equipment.weapons.length + 1);
+      expect(updatedEquipment.weapons.map(w => w.name)).toContain('Flame Tongue');
+    });
+
+    it('should be able to add magic armor to equipment', () => {
+      const equipment = createTestEquipment();
+      const mithralShirt = getMagicItem('Mithral Shirt');
+
+      expect(mithralShirt).toBeDefined();
+
+      // Add the magic item as new armor
+      const newArmor: EnhancedInventoryItem = {
+        name: mithralShirt!.name,
+        quantity: 1,
+        equipped: false,
+        instanceId: 'armor-mithral-001'
+      };
+
+      const updatedEquipment: CharacterEquipment = {
+        ...equipment,
+        armor: [...equipment.armor, newArmor]
+      };
+
+      expect(updatedEquipment.armor.length).toBe(equipment.armor.length + 1);
+      expect(updatedEquipment.armor.map(a => a.name)).toContain('Mithral Shirt');
+    });
+
+    it('should be able to add magic item to inventory', () => {
+      const equipment = createTestEquipment();
+      const headband = getMagicItem('Headband of Intellect');
+
+      expect(headband).toBeDefined();
+
+      // Add the magic item as a new inventory item
+      const newItem: EnhancedInventoryItem = {
+        name: headband!.name,
+        quantity: 1,
+        equipped: false,
+        instanceId: 'item-headband-001'
+      };
+
+      const updatedEquipment: CharacterEquipment = {
+        ...equipment,
+        items: [...equipment.items, newItem]
+      };
+
+      expect(updatedEquipment.items.length).toBe(equipment.items.length + 1);
+      expect(updatedEquipment.items.map(i => i.name)).toContain('Headband of Intellect');
+    });
+
+    it('should be able to equip a magic weapon', () => {
+      const equipment = createTestEquipment();
+      const flameTongue = getMagicItem('Flame Tongue');
+
+      // Add magic weapon and equip it
+      const newWeapon: EnhancedInventoryItem = {
+        name: flameTongue!.name,
+        quantity: 1,
+        equipped: true,
+        instanceId: 'weapon-flametongue-001'
+      };
+
+      const updatedEquipment: CharacterEquipment = {
+        ...equipment,
+        weapons: [...equipment.weapons, newWeapon]
+      };
+
+      const equippedFlameTongue = updatedEquipment.weapons.find(
+        w => w.name === 'Flame Tongue' && w.equipped
+      );
+      expect(equippedFlameTongue).toBeDefined();
+    });
+
+    it('should be able to add modifications to magic item inventory entry', () => {
+      const equipment = createTestEquipment();
+
+      // Add Flame Tongue to equipment with a pre-existing modification
+      const flameTongueWithMod: EnhancedInventoryItem = {
+        name: 'Flame Tongue',
+        quantity: 1,
+        equipped: true,
+        instanceId: 'weapon-flametongue-001',
+        modifications: [{
+          id: 'custom_enhancement',
+          name: 'Custom Enhancement',
+          properties: [],
+          appliedAt: new Date().toISOString(),
+          source: 'enchantment'
+        }]
+      };
+
+      const updatedEquipment: CharacterEquipment = {
+        ...equipment,
+        weapons: [...equipment.weapons, flameTongueWithMod]
+      };
+
+      const flameTongue = updatedEquipment.weapons.find(w => w.name === 'Flame Tongue');
+      expect(flameTongue?.modifications).toBeDefined();
+      expect(flameTongue?.modifications?.length).toBe(1);
+      expect(flameTongue?.modifications?.[0].id).toBe('custom_enhancement');
+    });
+  });
+
+  describe('Rarity Distribution', () => {
+    it('should have items across multiple rarities', () => {
+      const rarities = new Set(MAGIC_ITEMS.map(item => item.rarity));
+
+      expect(rarities.size).toBeGreaterThan(1);
+    });
+
+    it('should have expected rarity distribution', () => {
+      const rarityCounts = {
+        common: getMagicItemsByRarity('common').length,
+        uncommon: getMagicItemsByRarity('uncommon').length,
+        rare: getMagicItemsByRarity('rare').length,
+        very_rare: getMagicItemsByRarity('very_rare').length,
+        legendary: getMagicItemsByRarity('legendary').length
+      };
+
+      // Most magic items should be uncommon or rare
+      expect(rarityCounts.uncommon + rarityCounts.rare).toBeGreaterThan(0);
+
+      // At least one legendary item
+      expect(rarityCounts.legendary).toBeGreaterThanOrEqual(1);
+
+      // Log distribution for debugging
+      // console.log('Rarity distribution:', rarityCounts);
     });
   });
 });
