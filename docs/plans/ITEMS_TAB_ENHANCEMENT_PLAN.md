@@ -194,10 +194,19 @@ interface EquipmentModification {
 - [x] Call appropriate `create*Enchantment(bonus)` function
 
 ### 3.5 Post-Enchantment Actions
-- [ ] Show "Remove Enchantment" button for enchanted items
-- [ ] Show "Lift Curse" button for cursed items
-- [ ] Show "Disenchant" button (removes enchantments, keeps curses)
-- [ ] Confirmation dialog before removing modifications
+- [x] Show "Remove Enchantment" button for enchanted items
+- [x] Show "Lift Curse" button for cursed items
+- [x] Show "Disenchant" button (removes enchantments, keeps curses)
+- [x] Confirmation dialog before removing modifications
+
+**Completed (2026-02-15):**
+- Added `handleLiftCurse`, `handleDisenchantItem`, `handleRemoveModification` handler functions
+- Wired up `liftCurse`, `disenchantItem`, `removeModification` from useItemEnchantment hook
+- Added "Remove" button to each modification entry in expanded details
+- Added "Lift Curse" button (appears when item is cursed)
+- Added "Disenchant" button (appears when item has enchantments)
+- Added confirmation dialogs using `window.confirm()` for all removal actions
+- Added CSS styling for modification action buttons
 
 ### 3.6 Create Modal CSS
 - [x] Create `src/components/modals/EnchantmentModal.css`
@@ -238,12 +247,20 @@ interface EquipmentModification {
 - Toast notifications on success/failure
 
 ### 4.2 Wire up useItemEnchantment Hook
-- [ ] Import hook in ItemsTab.tsx
-- [ ] Connect `enchantItem()` to modal callback
-- [ ] Connect `curseItem()` to modal callback
-- [ ] Connect `liftCurse()` to modal callback
-- [ ] Connect `disenchantItem()` to modal callback
-- [ ] Handle success/error states with toasts
+- [x] Import hook in ItemsTab.tsx
+- [x] Connect `enchantItem()` to modal callback
+- [x] Connect `curseItem()` to modal callback
+- [x] Connect `liftCurse()` to modal callback
+- [x] Connect `disenchantItem()` to modal callback
+- [x] Handle success/error states with toasts
+
+**Completed (2026-02-15):**
+- Hook imported and all functions wired up
+- `enchantItem` and `curseItem` connected via handleEnchantItem/handleCurseItem handlers
+- `liftCurse` connected via handleLiftCurse with confirmation dialog
+- `disenchantItem` connected via handleDisenchantItem with confirmation dialog
+- `removeModification` connected via handleRemoveModification with confirmation dialog
+- All handlers include toast notifications for success/failure
 
 ### 4.3 Update Equipment Effects Display
 - [ ] Show modifications in `renderEquipmentEffects()`

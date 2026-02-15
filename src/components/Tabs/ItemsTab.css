@@ -681,6 +681,63 @@
   margin-left: auto;
 }
 
+/* Modification entry actions */
+.items-modification-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.items-modification-remove-btn {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.8);
+  border-color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.3);
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.05);
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.items-modification-remove-btn:hover {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+  border-color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.5);
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+}
+
+/* Modification management actions (at bottom of expanded section) */
+.items-modification-management {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.items-modification-lift-curse-btn {
+  color: hsl(120 60% 40%);
+  border-color: hsl(120 60% 40% / 0.4);
+  background: hsl(120 60% 40% / 0.05);
+}
+
+.items-modification-lift-curse-btn:hover {
+  color: hsl(120 60% 35%);
+  border-color: hsl(120 60% 40% / 0.6);
+  background: hsl(120 60% 40% / 0.1);
+}
+
+.items-modification-disenchant-btn {
+  color: hsl(270 60% 50% / 0.8);
+  border-color: hsl(270 60% 50% / 0.4);
+  background: hsl(270 60% 50% / 0.05);
+}
+
+.items-modification-disenchant-btn:hover {
+  color: hsl(270 60% 50%);
+  border-color: hsl(270 60% 50% / 0.6);
+  background: hsl(270 60% 50% / 0.1);
+}
+
 /* ========================================
    WEIGHT FOOTER
    ======================================== */

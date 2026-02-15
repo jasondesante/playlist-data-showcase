@@ -192,6 +192,9 @@ export function ItemsTab() {
     getItemModificationInfo,
     enchantItem,
     curseItem,
+    disenchantItem,
+    liftCurse,
+    removeModification,
     isLoading: isEnchantmentLoading
   } = useItemEnchantment();
 
@@ -273,6 +276,51 @@ export function ItemsTab() {
       showToast(result.message || `Applied ${curse.name} curse to ${itemName}`, 'success');
     } else {
       showToast(result.error || 'Failed to apply curse', 'error');
+    }
+  };
+
+  // Handle lifting curse from item
+  const handleLiftCurse = async (itemName: string): Promise<void> => {
+    if (!window.confirm(`Are you sure you want to lift all curses from ${itemName}?\n\nThis will remove all curse effects from the item.`)) {
+      return;
+    }
+
+    const result: EnchantmentOperationResult = await liftCurse(itemName);
+
+    if (result.success) {
+      showToast(result.message || `Lifted curses from ${itemName}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to lift curse', 'error');
+    }
+  };
+
+  // Handle disenchanting item (removes enchantments, keeps curses)
+  const handleDisenchantItem = async (itemName: string): Promise<void> => {
+    if (!window.confirm(`Are you sure you want to disenchant ${itemName}?\n\nThis will remove all enchantments but keep any curses.`)) {
+      return;
+    }
+
+    const result: EnchantmentOperationResult = await disenchantItem(itemName);
+
+    if (result.success) {
+      showToast(result.message || `Disenchanted ${itemName}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to disenchant item', 'error');
+    }
+  };
+
+  // Handle removing a specific modification
+  const handleRemoveModification = async (itemName: string, modificationId: string, modificationName: string): Promise<void> => {
+    if (!window.confirm(`Remove "${modificationName}" from ${itemName}?\n\nThis cannot be undone.`)) {
+      return;
+    }
+
+    const result: EnchantmentOperationResult = await removeModification(itemName, modificationId);
+
+    if (result.success) {
+      showToast(result.message || `Removed ${modificationName} from ${itemName}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to remove modification', 'error');
     }
   };
 
@@ -730,6 +778,21 @@ export function ItemsTab() {
                       ))}
                     </div>
                   )}
+
+                  {/* Remove modification button */}
+                  <div className="items-modification-actions">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveModification(item.name, mod.id, mod.name)}
+                      isLoading={isEnchantmentLoading}
+                      leftIcon={X}
+                      className="items-modification-remove-btn"
+                      title={`Remove ${mod.name} from this item`}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -756,6 +819,39 @@ export function ItemsTab() {
                 </div>
               </div>
             )}
+
+            {/* Modification management actions */}
+            <div className="items-modification-management">
+              {/* Lift Curse button - only show if item is cursed */}
+              {itemIsCursed && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleLiftCurse(item.name)}
+                  isLoading={isEnchantmentLoading}
+                  leftIcon={Sparkles}
+                  className="items-modification-lift-curse-btn"
+                  title="Remove all curses from this item"
+                >
+                  Lift Curse
+                </Button>
+              )}
+
+              {/* Disenchant button - only show if item has enchantments */}
+              {modificationInfo?.isEnchanted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDisenchantItem(item.name)}
+                  isLoading={isEnchantmentLoading}
+                  leftIcon={X}
+                  className="items-modification-disenchant-btn"
+                  title="Remove all enchantments (keeps curses)"
+                >
+                  Disenchant
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>
