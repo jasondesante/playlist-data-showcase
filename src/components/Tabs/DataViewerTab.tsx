@@ -274,6 +274,7 @@ export function DataViewerTab() {
     filterSpellsBySchool,
     filterEquipmentByType,
     filterEquipmentByRarity,
+    filterEquipmentByTag,
     groupSkillsByAbility,
     groupClassFeaturesByClass,
     groupRacialTraitsByRace,
@@ -358,6 +359,10 @@ export function DataViewerTab() {
         if (equipmentRarityFilter !== 'all') {
           filtered = filterEquipmentByRarity(filtered, equipmentRarityFilter);
         }
+        // Task 3.4: Tag filtering logic
+        if (equipmentTagFilter !== 'all') {
+          filtered = filterEquipmentByTag(filtered, equipmentTagFilter);
+        }
         return filterByName(filtered, searchTerm);
       }
       default:
@@ -377,11 +382,13 @@ export function DataViewerTab() {
     spellSchoolFilter,
     equipmentTypeFilter,
     equipmentRarityFilter,
+    equipmentTagFilter,
     filterByName,
     filterSpellsByLevel,
     filterSpellsBySchool,
     filterEquipmentByType,
-    filterEquipmentByRarity
+    filterEquipmentByRarity,
+    filterEquipmentByTag
   ]);
 
   // Render category selector

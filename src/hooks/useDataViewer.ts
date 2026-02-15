@@ -136,6 +136,8 @@ export interface UseDataViewerReturn {
     filterEquipmentByType: (equipment: Equipment[], type: 'weapon' | 'armor' | 'item' | 'all') => Equipment[];
     /** Filter equipment by rarity */
     filterEquipmentByRarity: (equipment: Equipment[], rarity: string | 'all') => Equipment[];
+    /** Filter equipment by tag */
+    filterEquipmentByTag: (equipment: Equipment[], tag: string | 'all') => Equipment[];
     /** Group skills by ability score */
     groupSkillsByAbility: (skills: CustomSkill[]) => Record<string, CustomSkill[]>;
     /** Group class features by class */
@@ -421,6 +423,29 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, []);
 
     /**
+     * Filter equipment by tag
+     *
+     * Filters equipment items that have the specified tag in their tags array.
+     * Only returns items that are enhanced equipment with the tag.
+     *
+     * Task 3.4: Tag Filtering Logic
+     *
+     * @param equipment - Array of equipment items to filter
+     * @param tag - Tag to filter by, or 'all' to return all items
+     * @returns Filtered array of equipment items
+     */
+    const filterEquipmentByTag = useCallback((equipment: Equipment[], tag: string | 'all'): Equipment[] => {
+        if (tag === 'all') return equipment;
+        return equipment.filter(item => {
+            // Check if item has enhanced properties with tags
+            if (isEnhancedEquipment(item) && item.tags) {
+                return item.tags.includes(tag);
+            }
+            return false;
+        });
+    }, []);
+
+    /**
      * Group skills by ability score
      */
     const groupSkillsByAbility = useCallback((skills: CustomSkill[]): Record<string, CustomSkill[]> => {
@@ -571,6 +596,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
         filterSpellsBySchool,
         filterEquipmentByType,
         filterEquipmentByRarity,
+        filterEquipmentByTag,
         groupSkillsByAbility,
         groupClassFeaturesByClass,
         groupRacialTraitsByRace,

@@ -131,9 +131,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Match existing filter styling
 
 ### Task 3.4: Implement Tag Filtering Logic
-- [ ] Add `filterEquipmentByTag()` function to useDataViewer
-- [ ] Filter equipment where `item.tags?.includes(selectedTag)`
-- [ ] Integrate into existing `getFilteredData` useMemo
+- [x] Add `filterEquipmentByTag()` function to useDataViewer
+- [x] Filter equipment where `item.tags?.includes(selectedTag)`
+- [x] Integrate into existing `getFilteredData` useMemo
 
 ---
 
