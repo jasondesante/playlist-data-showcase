@@ -29,8 +29,8 @@ This plan enhances the ItemsTab to showcase the full capabilities of the playlis
 ## Phase 1: Foundation & Research
 
 ### 1.1 Create useItemEnchantment Hook
-- [ ] Create `src/hooks/useItemEnchantment.ts`
-- [ ] Import `EquipmentModifier`, enchantment/curse libraries from data engine:
+- [x] Create `src/hooks/useItemEnchantment.ts`
+- [x] Import `EquipmentModifier`, enchantment/curse libraries from data engine:
   ```typescript
   import {
     EquipmentModifier,
@@ -47,12 +47,12 @@ This plan enhances the ItemsTab to showcase the full capabilities of the playlis
     createCharismaEnchantment
   } from 'playlist-data-engine';
   ```
-- [ ] Implement `enchantItem()` function
-- [ ] Implement `curseItem()` function
-- [ ] Implement `disenchantItem()` function (removes enchantments, keeps curses)
-- [ ] Implement `liftCurse()` function (removes curses, keeps enchantments)
-- [ ] Implement `getItemModifications()` function (get all active modifications)
-- [ ] Implement `isEnchanted()` and `isCursed()` helper functions
+- [x] Implement `enchantItem()` function
+- [x] Implement `curseItem()` function
+- [x] Implement `disenchantItem()` function (removes enchantments, keeps curses)
+- [x] Implement `liftCurse()` function (removes curses, keeps enchantments)
+- [x] Implement `getItemModifications()` function (get all active modifications)
+- [x] Implement `isEnchanted()` and `isCursed()` helper functions
 
 ### 1.2 Create Enchantment Type Definitions
 - [ ] Create `src/types/enchantment.ts` if needed

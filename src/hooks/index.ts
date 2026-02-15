@@ -16,3 +16,4 @@ export * from './useLootBox';
 export * from './useItemCreator';
 export * from './useDataViewer';
 export * from './usePartyAnalysis';
+export * from './useItemEnchantment';

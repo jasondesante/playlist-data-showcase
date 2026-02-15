@@ -25,7 +25,8 @@ type LogCategory =
     | 'LootBox'
     | 'ItemCreator'
     | 'DataViewer'
-    | 'PartyAnalysis';
+    | 'PartyAnalysis'
+    | 'ItemEnchantment';
 
 
 
