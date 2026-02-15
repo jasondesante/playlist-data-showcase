@@ -3,6 +3,42 @@
  *
  * Styles for the enchantment and curse application modal.
  * Follows the same patterns as StatSelectionModal.css
+ *
+ * Part of ItemsTab Enhancement Plan - Phase 3: Enchantment Modal UI - Task 3.6
+ *
+ * CSS Class Structure:
+ *
+ * **Layout:**
+ * - `.enchantment-modal-overlay` - Full-screen backdrop with blur
+ * - `.enchantment-modal-container` - Main modal container
+ * - `.enchantment-modal-header` - Header with item info and close button
+ * - `.enchantment-modal-tabs` - Tab selector for Enchant/Curse
+ * - `.enchantment-modal-content` - Scrollable content area
+ * - `.enchantment-modal-footer` - Action buttons area
+ *
+ * **Enchantment Cards:**
+ * - `.enchantment-card` - Base card styling
+ * - `.enchantment-card-curse` - Curse-specific red styling
+ * - `.enchantment-card-applied` - Already applied styling
+ * - `.enchantment-rarity-*` - Rarity color variants
+ *   (common, uncommon, rare, very-rare, legendary)
+ *
+ * **Stat Boosts:**
+ * - `.enchantment-stat-boosts` - Stat boost section container
+ * - `.enchantment-stat-group` - Individual stat row
+ * - `.enchantment-stat-btn` - Bonus level buttons
+ *
+ * **Responsive Breakpoints:**
+ * - 640px: Tablet/small screen adjustments
+ * - 480px: Mobile phone layout
+ * - 360px: Very small screens/landscape
+ *
+ * **Accessibility:**
+ * - Reduced motion support for animations
+ * - Focus states for keyboard navigation
+ * - Touch device optimizations
+ *
+ * @see EnchantmentModal.tsx - Component using these styles
  */
 
 /* ============================================

@@ -1,12 +1,59 @@
 /**
  * Items Tab Styles
  *
- * Styles for the ItemsTab component including:
- * - Equipment display and management
- * - Section layouts
- * - Item cards and actions
- * - Weight summaries
- * - Empty states
+ * Comprehensive styles for the ItemsTab component.
+ *
+ * Part of ItemsTab Enhancement Plan - Phase 4: Integration
+ *
+ * CSS Class Categories:
+ *
+ * **Layout:**
+ * - `.items-tab` - Main container with flex column layout
+ * - `.items-header` - Header section with icon and title
+ * - `.items-section` - Collapsible section container
+ * - `.items-section-header` - Section header with expand/collapse
+ *
+ * **Equipment Display:**
+ * - `.items-equipment-list` - Equipment items grid
+ * - `.items-equipment-item` - Individual item card
+ * - `.items-equipment-item-header` - Item name and badges
+ * - `.items-equipment-item-actions` - Action buttons (equip, enchant, remove)
+ * - `.items-equipment-item-details` - Expandable modification details
+ * - `.items-equipment-lift-curse-btn` - Lift curse button styling
+ *
+ * **Modification Badges:**
+ * - `.items-modification-badge` - Base badge styling
+ * - `.items-modification-enchantment` - Blue/purple for enchantments
+ * - `.items-modification-curse` - Red/orange for curses
+ * - `.items-modification-combo` - Special combo enchantment styling
+ * - `.items-modification-overflow` - "+N more" indicator
+ *
+ * **Loot Box:**
+ * - `.lootbox-container` - Loot box section container
+ * - `.lootbox-modes` - Spawn mode selector buttons
+ * - `.lootbox-controls` - Spawn controls (count, rarity, etc.)
+ * - `.lootbox-items` - Spawned items grid
+ * - `.lootbox-item-card` - Individual spawned item card
+ * - `.lootbox-magic-items-info` - Magic items count display
+ *
+ * **Item Creator:**
+ * - `.items-creator-container` - Creator section container
+ * - `.items-creator-form` - Form grid layout
+ * - `.items-creator-preview` - Item preview card
+ * - `.items-creator-advanced` - Collapsible advanced options
+ * - `.items-creator-code-block` - Code example styling
+ *
+ * **Empty/Error States:**
+ * - `.items-empty-equipment` - No equipment state
+ * - `.items-empty-lootbox` - No spawned items state
+ * - `.items-error-state` - Full error display
+ * - `.items-error-compact` - Inline error indicator
+ *
+ * **Responsive Breakpoints:**
+ * - 768px: Tablet adjustments
+ * - 640px: Mobile layout
+ *
+ * @see ItemsTab.tsx - Component using these styles
  */
 
 /* ========================================

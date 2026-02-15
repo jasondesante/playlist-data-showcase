@@ -2,14 +2,47 @@
  * EnchantmentModal Component
  *
  * Modal component for applying enchantments and curses to equipment items.
- * Part of Phase 3: Enchantment Modal UI - Task 3.1
+ * Provides a tabbed interface for browsing and applying modifications.
+ *
+ * Part of ItemsTab Enhancement Plan - Phase 3: Enchantment Modal UI
  *
  * Features:
- * - Tabbed interface: Enchant tab and Curse tab
- * - Grouped enchantment cards by category
- * - Apply buttons for each enchantment
+ *
+ * **Tabbed Interface:**
+ * - Enchant tab: Apply positive modifications to items
+ * - Curse tab: Apply negative modifications (disabled if item already cursed)
+ * - Tab badge shows "Applied" when curse already exists
+ *
+ * **Enchant Tab:**
+ * - Enhancement enchantments: +1/+2/+3 for weapons, +1/+2 for armor
+ * - Elemental enchantments: Flaming, Frost, Shock, Thunder, Acid, Poison, Holy
+ * - Special enchantments: Vampiric, Vorpal Edge, Keen Edge, Mighty, Returning
+ * - Resistance enchantments: Fire, Cold, Lightning, Acid, Poison, Necrotic, Radiant, Thunder, Universal
+ * - Legendary combo enchantments: Holy Avenger, Dragonslayer, Demon Hunter, Undead Bane
+ * - Stat boosts: STR/DEX/CON/INT/WIS/CHA with +1 through +4 options
+ * - "Already Applied" badge for existing modifications
+ * - "Apply Again" for stacking enchantments
+ *
+ * **Curse Tab:**
+ * - Penalty curses: -1, -2 to attack/damage
+ * - Stat reduction curses: Weakness, Feeblemind, Clumsiness, Frailty, Foolishness, Repulsiveness
+ * - Vulnerability curses: Fire Vulnerability, Cold Vulnerability
+ * - Special curses: Lifesteal, Attunement Lock, Berserker, Heavy Burden, Light Sensitivity, etc.
+ * - Warning messages displayed before applying
+ * - Lock icon (🔒) for attunement curses
+ * - "Applied" badge prevents re-application of same curse
+ *
+ * **UI/UX:**
  * - Close on backdrop click and escape key
+ * - Loading state per enchantment during application
+ * - Rarity-based card styling (common through legendary)
+ * - Responsive design for mobile devices
  * - Pure CSS (no Tailwind utility classes)
+ *
+ * @see EnchantmentModalProps - Props interface
+ * @see WEAPON_ENCHANTMENT_DEFINITIONS - Weapon enchantment display info
+ * @see CURSE_DEFINITIONS - Curse display info
+ * @see STAT_BOOST_INFO - Stat boost display info
  */
 
 import React, { useState, useMemo } from 'react';

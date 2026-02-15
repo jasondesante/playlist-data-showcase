@@ -1,11 +1,62 @@
 /**
  * ItemsTab Component
  *
- * Displays and manages the current hero's equipment.
- * Features three main sections:
- * 1. Current Hero's Equipment - View and manage equipped items
- * 2. Loot Box Demo - Spawn random items via different methods
- * 3. Custom Item Creator - Create and add custom items to the hero
+ * Main equipment management interface for the character sheet.
+ * Provides comprehensive item management including viewing, equipping,
+ * modifying, and creating equipment items.
+ *
+ * Part of ItemsTab Enhancement Plan - Phase 4: Integration
+ *
+ * Features:
+ *
+ * **Equipment Management:**
+ * - View all weapons, armor, and items in character's inventory
+ * - Equip/unequip items with visual feedback (badges, icons)
+ * - Remove items from inventory
+ * - Expandable item details showing modification properties
+ * - Modification badges showing enchantments and curses
+ * - Attunement lock indicator for cursed items
+ *
+ * **Enchantment System:**
+ * - Enchant button opens EnchantmentModal for equipment modification
+ * - Apply enchantments: weapon (+1/+2/+3, elemental, special), armor, resistance
+ * - Apply stat boosts (+1 through +4 for all 6 stats)
+ * - Apply curses with warning confirmations
+ * - Lift curse functionality for cursed items
+ * - Disenchant to remove enchantments (keeps curses)
+ * - Remove individual modifications
+ * - Stacking support: multiple enchantments on same item
+ *
+ * **Loot Box System:**
+ * - Spawn modes: Random, By Rarity, Treasure Hoard, Magic Items
+ * - Rarity filtering (common through legendary)
+ * - Magic item spawning with rarity filter
+ * - Add spawned items to character inventory
+ * - Visual spawn error states
+ *
+ * **Item Creator:**
+ * - Create custom items with name, type, rarity, weight
+ * - Weapon-specific fields: damage dice, damage type
+ * - Armor-specific fields: AC bonus
+ * - Auto-equip option
+ * - Properties preview showing form values and defaults
+ * - Advanced options documentation (properties[], grantsFeatures[], etc.)
+ * - API usage example with code block
+ *
+ * **Visual Polish:**
+ * - Empty states for equipment and loot box
+ * - Error states with dismiss functionality
+ * - Toast notifications with consistent emoji usage
+ * - Modification badges with overflow indicator
+ * - Rarity-colored item cards
+ * - Responsive design for all screen sizes
+ * - Collapse/expand sections for better navigation
+ *
+ * @see useHeroEquipment - Hook for equipment operations
+ * @see useLootBox - Hook for item spawning
+ * @see useItemCreator - Hook for custom item creation
+ * @see useItemEnchantment - Hook for enchantment operations
+ * @see EnchantmentModal - Modal for applying enchantments/curses
  */
 
 import { useState, useMemo } from 'react';
