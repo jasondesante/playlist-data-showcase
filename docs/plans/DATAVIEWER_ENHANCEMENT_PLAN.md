@@ -73,12 +73,12 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ```
 
 ### Task 1.6: Display Spawn Weight Indicator
-- [ ] Add spawn weight badge/indicator to equipment card header
-- [ ] Create `formatSpawnWeight(weight)` helper function
-- [ ] Display "Game-Only" badge for `spawnWeight: 0`
-- [ ] Display "Rare Spawn" for weights < 0.1
-- [ ] Display "Uncommon" for weights < 0.5
-- [ ] Add CSS for `.dataviewer-badge-gameonly` (warning style)
+- [x] Add spawn weight badge/indicator to equipment card header
+- [x] Create `formatSpawnWeight(weight)` helper function
+- [x] Display "Game-Only" badge for `spawnWeight: 0`
+- [x] Display "Rare Spawn" for weights < 0.1
+- [x] Display "Uncommon" for weights < 0.5
+- [x] Add CSS for `.dataviewer-badge-gameonly` (warning style)
 
 ---
 

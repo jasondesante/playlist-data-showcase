@@ -141,6 +141,26 @@ function formatAbilityBonus(bonus: number): string {
   return bonus >= 0 ? `+${bonus}` : `${bonus}`;
 }
 
+/**
+ * Format spawn weight for display with category labels
+ *
+ * Spawn weight categories:
+ * - spawnWeight === 0: "Game-Only" - never spawns randomly, used by game logic only
+ * - spawnWeight < 0.1: "Rare Spawn" - very low probability
+ * - spawnWeight < 0.5: "Uncommon" - lower than average probability
+ * - spawnWeight >= 0.5: no badge (normal/common spawn)
+ *
+ * @param weight - The spawn weight value (0-1 typically)
+ * @returns Object with label and CSS class, or null for normal items
+ */
+function formatSpawnWeight(weight: number | undefined): { label: string; className: string } | null {
+  if (weight === undefined) return null;
+  if (weight === 0) return { label: 'Game-Only', className: 'dataviewer-badge-gameonly' };
+  if (weight < 0.1) return { label: 'Rare Spawn', className: 'dataviewer-badge-rare-spawn' };
+  if (weight < 0.5) return { label: 'Uncommon', className: 'dataviewer-badge-uncommon-spawn' };
+  return null;
+}
+
 export function DataViewerTab() {
   const {
     isLoading,
@@ -829,6 +849,7 @@ export function DataViewerTab() {
         const isExpanded = expandedItems.has(item.name);
         const rarityColor = RARITY_COLORS[item.rarity || 'common'] || RARITY_COLORS.common;
         const rarityBg = RARITY_BG_COLORS[item.rarity || 'common'] || RARITY_BG_COLORS.common;
+        const spawnWeightBadge = formatSpawnWeight(item.spawnWeight);
 
         return (
           <div
@@ -845,6 +866,11 @@ export function DataViewerTab() {
                   {item.name}
                 </span>
                 <div className="dataviewer-item-badges">
+                  {spawnWeightBadge && (
+                    <span className={`dataviewer-badge ${spawnWeightBadge.className}`}>
+                      {spawnWeightBadge.label}
+                    </span>
+                  )}
                   {item.rarity && (
                     <span className="dataviewer-badge" style={{ backgroundColor: rarityColor }}>
                       {formatRarity(item.rarity)}
