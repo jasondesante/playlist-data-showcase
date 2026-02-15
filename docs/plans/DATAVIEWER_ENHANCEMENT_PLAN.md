@@ -101,15 +101,15 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Example: "+3d6 fire damage (vs Dragons)"
 
 ### Task 2.3: Create Property Icon System
-- [ ] Add icons for different property types:
+- [x] Add icons for different property types:
   - `stat_bonus` → TrendingUp icon
   - `skill_proficiency` → Award icon
   - `ability_unlock` → Unlock icon
   - `passive_modifier` → Shield icon
   - `damage_bonus` → Flame icon
   - `special_property` → Star icon
-- [ ] Import icons from lucide-react
-- [ ] Update property display to include icon
+- [x] Import icons from lucide-react
+- [x] Update property display to include icon
 
 ---
 

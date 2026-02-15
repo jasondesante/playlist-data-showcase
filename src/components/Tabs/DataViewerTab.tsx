@@ -28,7 +28,11 @@ import {
   ChevronUp,
   Zap,
   Target,
-  RefreshCw
+  RefreshCw,
+  TrendingUp,
+  Award,
+  Flame,
+  Star
 } from 'lucide-react';
 import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, isEnhancedEquipment } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -99,6 +103,30 @@ const ABILITY_COLORS: Record<string, string> = {
   'WIS': 'hsl(270 60% 50%)',    // Purple
   'CHA': 'hsl(300 60% 50%)',    // Magenta
 };
+
+/**
+ * Equipment property type configuration with icons
+ * Maps property types to appropriate icons for visual identification
+ *
+ * Task 2.3: Property Icon System
+ */
+const PROPERTY_TYPE_CONFIG: Record<string, { icon: typeof TrendingUp; label: string }> = {
+  'stat_bonus': { icon: TrendingUp, label: 'Stat Bonus' },
+  'skill_proficiency': { icon: Award, label: 'Skill' },
+  'ability_unlock': { icon: Sparkles, label: 'Ability' },
+  'passive_modifier': { icon: Shield, label: 'Passive' },
+  'damage_bonus': { icon: Flame, label: 'Damage' },
+  'special_property': { icon: Star, label: 'Special' },
+  // Fallback for unknown types
+  'default': { icon: Zap, label: 'Property' }
+};
+
+/**
+ * Get property type configuration, with fallback to default
+ */
+function getPropertyTypeConfig(type: string) {
+  return PROPERTY_TYPE_CONFIG[type] || PROPERTY_TYPE_CONFIG['default'];
+}
 
 /**
  * Category configuration with icons and labels
@@ -981,8 +1009,11 @@ export function DataViewerTab() {
                       {item.properties.map((prop, idx) => {
                         const conditionStr = formatCondition(prop.condition);
                         const displayText = prop.description || `${prop.type}: ${prop.target}`;
+                        const propConfig = getPropertyTypeConfig(prop.type);
+                        const PropIcon = propConfig.icon;
                         return (
-                          <span key={idx} className="dataviewer-tag dataviewer-tag-property">
+                          <span key={idx} className="dataviewer-tag dataviewer-tag-property dataviewer-tag-with-icon">
+                            <PropIcon size={12} className="dataviewer-tag-icon" />
                             {displayText}{conditionStr ? ` (${conditionStr})` : ''}
                           </span>
                         );
