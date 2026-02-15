@@ -1257,6 +1257,13 @@
    HERO SELECTION STYLES (Phase 3)
    ======================================== */
 
+/* Party Analysis Section - Contains collapsible panels */
+.party-analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 /* Selection mode active on card */
 .party-card-selection-mode {
   position: relative;

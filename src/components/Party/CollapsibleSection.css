@@ -1,0 +1,150 @@
+/**
+ * CollapsibleSection Component Styles
+ *
+ * Provides animated collapsible panels with header toggles.
+ */
+
+.collapsible-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.collapsible-section:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.collapsible-section.collapsed {
+  box-shadow: none;
+}
+
+/* Header button */
+.collapsible-section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.collapsible-section-header:hover {
+  background: var(--color-surface-dim);
+}
+
+.collapsible-section-header:focus-visible {
+  outline: none;
+  background: var(--color-surface-dim);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* Header left side (icon, title, subtitle, badge) */
+.collapsible-section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Icon */
+.collapsible-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-md);
+  color: var(--color-on-primary);
+  flex-shrink: 0;
+}
+
+/* Title and subtitle group */
+.collapsible-section-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.collapsible-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.collapsible-section-subtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: left;
+}
+
+/* Badge */
+.collapsible-section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Chevron */
+.collapsible-section-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  transition: transform 0.25s ease;
+}
+
+.collapsible-section-chevron.rotated {
+  transform: rotate(-90deg);
+}
+
+/* Content area with animation */
+.collapsible-section-content {
+  transition: max-height 0.3s ease-out;
+}
+
+/* Inner content padding */
+.collapsible-section-inner {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+}
+
+/* When collapsed, remove inner padding for cleaner animation */
+.collapsible-section.collapsed .collapsible-section-inner {
+  padding-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .collapsible-section-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .collapsible-section-inner {
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  .collapsible-section-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .collapsible-section-title {
+    font-size: 0.9375rem;
+  }
+}

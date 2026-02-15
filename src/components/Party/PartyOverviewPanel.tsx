@@ -9,7 +9,6 @@
 
 import { Users, Shield, Heart, Zap, Crosshair } from 'lucide-react';
 import { PartyAnalysis } from 'playlist-data-engine';
-import { Card } from '../ui/Card';
 import { Tooltip } from '../ui/Tooltip';
 import './PartyOverviewPanel.css';
 
@@ -103,9 +102,9 @@ export function PartyOverviewPanel({
   // Show empty state when no heroes are selected
   if (!analysis || selectedCount === 0) {
     return (
-      <Card variant="default" className="party-overview-panel party-overview-panel-empty">
+      <div className="party-overview-panel party-overview-panel-empty">
         <EmptyState />
-      </Card>
+      </div>
     );
   }
 
@@ -145,7 +144,7 @@ export function PartyOverviewPanel({
   ];
 
   return (
-    <Card variant="default" className="party-overview-panel">
+    <div className="party-overview-panel">
       {/* Stats Grid */}
       <div className="party-stats-grid">
         {statCards.map((stat) => (
@@ -169,7 +168,7 @@ export function PartyOverviewPanel({
           <XPBudgetCard difficulty="Deadly" xp={analysis.deadlyXP} colorClass="deadly" />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 

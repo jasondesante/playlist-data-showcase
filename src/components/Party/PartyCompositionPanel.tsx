@@ -9,7 +9,6 @@
 
 import { useMemo } from 'react';
 import { CharacterSheet, SpellManager } from 'playlist-data-engine';
-import { Card } from '../ui/Card';
 import { Tooltip } from '../ui/Tooltip';
 import { Swords, Shield, Wand2, Heart, Footprints, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import './PartyCompositionPanel.css';
@@ -400,23 +399,23 @@ export function PartyCompositionPanel({
   // Show empty state when no heroes selected
   if (selectedCharacters.length === 0) {
     return (
-      <Card variant="default" className="party-composition-panel party-composition-panel-empty">
+      <div className="party-composition-panel party-composition-panel-empty">
         <EmptyState />
-      </Card>
+      </div>
     );
   }
 
   // Show too few state when only 1 hero selected
   if (selectedCharacters.length === 1 || !composition) {
     return (
-      <Card variant="default" className="party-composition-panel party-composition-panel-empty">
+      <div className="party-composition-panel party-composition-panel-empty">
         <TooFewState count={selectedCharacters.length} />
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card variant="default" className="party-composition-panel">
+    <div className="party-composition-panel">
       {/* Class Distribution */}
       <ClassDistributionBar
         classDistribution={composition.classDistribution}
@@ -429,7 +428,7 @@ export function PartyCompositionPanel({
 
       {/* Quick Stats */}
       <QuickStatsRow quickStats={composition.quickStats} />
-    </Card>
+    </div>
   );
 }
 

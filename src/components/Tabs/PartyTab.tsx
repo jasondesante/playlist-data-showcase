@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target } from 'lucide-react';
+import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target, BarChart3, PieChart } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -15,6 +15,7 @@ import { usePartyAnalysis } from '../../hooks/usePartyAnalysis';
 import { CharacterCard } from '../ui/CharacterCard';
 import { PartyOverviewPanel } from '../Party/PartyOverviewPanel';
 import { PartyCompositionPanel } from '../Party/PartyCompositionPanel';
+import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
 import { logger } from '../../utils/logger';
 import { Card } from '../ui/Card';
@@ -311,21 +312,39 @@ export function PartyTab() {
         </Button>
       </header>
 
-      {/* Party Overview Panel - Show analysis and XP budgets */}
+      {/* Party Analysis Section - Collapsible panels for Overview and Composition */}
       {characters.length >= 2 && (
-        <PartyOverviewPanel
-          analysis={partyAnalysis}
-          selectedCount={selectedCount}
-          totalCount={totalCount}
-        />
-      )}
+        <div className="party-analysis-section">
+          {/* Party Overview Panel - Show analysis and XP budgets */}
+          <CollapsibleSection
+            title="Party Overview"
+            subtitle={`${selectedCount} of ${totalCount} heroes selected`}
+            icon={<BarChart3 size={16} />}
+            badge={selectedCount}
+            persistKey="party-overview"
+            defaultCollapsed={false}
+          >
+            <PartyOverviewPanel
+              analysis={partyAnalysis}
+              selectedCount={selectedCount}
+              totalCount={totalCount}
+            />
+          </CollapsibleSection>
 
-      {/* Party Composition Panel - Show class/role distribution */}
-      {characters.length >= 2 && (
-        <PartyCompositionPanel
-          characters={characters}
-          selectedSeeds={selectedSeedsSet}
-        />
+          {/* Party Composition Panel - Show class/role distribution */}
+          <CollapsibleSection
+            title="Party Composition"
+            subtitle="Class and role distribution"
+            icon={<PieChart size={16} />}
+            persistKey="party-composition"
+            defaultCollapsed={true}
+          >
+            <PartyCompositionPanel
+              characters={characters}
+              selectedSeeds={selectedSeedsSet}
+            />
+          </CollapsibleSection>
+        </div>
       )}
 
       {/* Controls: Search and Sort */}
