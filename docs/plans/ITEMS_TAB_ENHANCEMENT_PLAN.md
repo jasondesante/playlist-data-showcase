@@ -485,7 +485,7 @@ interface EquipmentModification {
 - [x] Review badge placement on items
 - [x] Review modal responsiveness
 - [x] Review toast messages
-- [ ] Review empty states
+- [x] Review empty states
 - [ ] Review error states
 
 **Toast Messages Review Completed (2026-02-15):**
@@ -542,6 +542,26 @@ interface EquipmentModification {
   - Removed hover transforms (confusing on touch)
   - Added active states for tactile feedback
   - Improved tap targets
+
+**Empty States Review Completed (2026-02-15):**
+- Reviewed all empty states in ItemsTab and related components
+- **Existing Empty States:**
+  - `renderNoCharacterState()` - Well designed with icon, title, and description (unchanged)
+  - `renderEmptyEquipmentState()` - Was minimal (icon + text), now enhanced
+- **New Empty States Added:**
+  - `renderEmptyLootBoxState()` - Shows when no items have been spawned yet
+    - Icon with wrapper, title, and helpful description
+    - Guides users to select a spawn mode and open loot boxes
+    - Dashed border style to distinguish from content areas
+- **Enhanced Empty Equipment State:**
+  - Added icon wrapper with dashed border (visual consistency)
+  - Added proper title ("No Equipment")
+  - Added helpful description pointing to Loot Box and Item Creator
+  - Improved CSS styling with proper spacing and typography
+- **CSS Changes:**
+  - Added `.items-empty-lootbox` styles with gradient icon background
+  - Enhanced `.items-empty-equipment` with icon wrapper, title, and description
+  - Consistent styling with other empty states in the app
 
 ### 7.5 Documentation
 - [ ] Update inline comments in code

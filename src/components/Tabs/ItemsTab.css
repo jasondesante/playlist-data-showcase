@@ -877,17 +877,84 @@
   justify-content: center;
   padding: 2rem;
   text-align: center;
-  color: var(--color-text-secondary);
   gap: 0.5rem;
 }
 
+.items-empty-equipment-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-full);
+  margin-bottom: 0.25rem;
+}
+
 .items-empty-equipment-icon {
+  color: var(--color-text-secondary);
   opacity: 0.5;
 }
 
-.items-empty-equipment-text {
-  font-size: 0.875rem;
+.items-empty-equipment-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
   margin: 0;
+}
+
+.items-empty-equipment-description {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* Empty Loot Box State */
+.items-empty-lootbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  gap: 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-top: 1rem;
+  background: var(--color-surface);
+}
+
+.items-empty-lootbox-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.15), hsl(var(--cute-pink) / 0.1));
+  border-radius: var(--radius-full);
+}
+
+.items-empty-lootbox-icon {
+  color: hsl(var(--cute-purple));
+  opacity: 0.7;
+}
+
+.items-empty-lootbox-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.items-empty-lootbox-description {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
 }
 
 /* ========================================

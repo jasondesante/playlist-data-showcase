@@ -1051,8 +1051,26 @@ export function ItemsTab() {
   // Render empty equipment state
   const renderEmptyEquipmentState = () => (
     <div className="items-empty-equipment">
-      <Package className="items-empty-equipment-icon" size={32} />
-      <p className="items-empty-equipment-text">No equipment</p>
+      <div className="items-empty-equipment-icon-wrapper">
+        <Package className="items-empty-equipment-icon" size={28} />
+      </div>
+      <h4 className="items-empty-equipment-title">No Equipment</h4>
+      <p className="items-empty-equipment-description">
+        Use the Loot Box Demo below to spawn items, or create custom items with the Item Creator.
+      </p>
+    </div>
+  );
+
+  // Render empty loot box state
+  const renderEmptyLootBoxState = () => (
+    <div className="items-empty-lootbox">
+      <div className="items-empty-lootbox-icon-wrapper">
+        <Sparkles className="items-empty-lootbox-icon" size={32} />
+      </div>
+      <h4 className="items-empty-lootbox-title">No Items Spawned</h4>
+      <p className="items-empty-lootbox-description">
+        Select a spawn mode and click the button to generate random items, treasure hoards, or magic items.
+      </p>
     </div>
   );
 
@@ -1808,6 +1826,11 @@ export function ItemsTab() {
                       defaultOpen={false}
                     />
                   </div>
+                )}
+
+                {/* Empty State - No spawned items */}
+                {spawnedItems.length === 0 && !isLootBoxLoading && !isAnimating && (
+                  renderEmptyLootBoxState()
                 )}
               </div>
             )}
