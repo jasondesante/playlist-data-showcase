@@ -28,6 +28,9 @@ export type {
     Spell,
     Equipment,
 
+    // Combat
+    PartyAnalysis,
+
     // Progression & Sensors
     GeolocationData,
     MotionData,

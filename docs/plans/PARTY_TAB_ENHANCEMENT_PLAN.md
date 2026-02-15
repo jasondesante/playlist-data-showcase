@@ -19,9 +19,9 @@ This plan enhances the PartyTab with:
 ## Phase 1: Core Infrastructure
 
 ### Task 1.1: Import PartyAnalyzer from Engine
-- [ ] Add `PartyAnalyzer` import from `playlist-data-engine`
-- [ ] Create TypeScript interface for `PartyAnalysis` result type
-- [ ] Verify `PartyAnalyzer.analyzeParty()` returns expected data structure
+- [x] Add `PartyAnalyzer` import from `playlist-data-engine`
+- [x] Create TypeScript interface for `PartyAnalysis` result type
+- [x] Verify `PartyAnalyzer.analyzeParty()` returns expected data structure
 
 ### Task 1.2: Create Hero Selection State
 - [ ] Add `selectedHeroSeeds: Set<string>` state to PartyTab
