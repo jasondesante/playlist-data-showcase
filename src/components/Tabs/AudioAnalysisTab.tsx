@@ -11,6 +11,7 @@ import { Card } from '../ui/Card';
 import { useTabContext } from '../../App';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
+import { ColorExtractor } from 'playlist-data-engine';
 
 /**
  * AudioAnalysisTab Component
@@ -132,7 +133,13 @@ export function AudioAnalysisTab() {
         ? { type: 'count' as const, count: timelineCount }
         : { type: 'interval' as const, intervalSeconds: timelineInterval };
 
-      const events = await analyzeTimeline(selectedTrack.audio_url, strategy);
+      // Run timeline analysis and color extraction in parallel
+      const [events, colorPalette] = await Promise.all([
+        analyzeTimeline(selectedTrack.audio_url, strategy),
+        selectedTrack.image_url
+          ? new ColorExtractor().extractPalette(selectedTrack.image_url).catch(() => undefined)
+          : Promise.resolve(undefined)
+      ]);
 
       if (events.length > 0) {
         // Calculate average values from timeline events for the audio profile
@@ -143,6 +150,21 @@ export function AudioAnalysisTab() {
         const avgRmsEnergy = events.reduce((sum, e) => sum + e.rms_energy, 0) / events.length;
         const avgDynamicRange = events.reduce((sum, e) => sum + e.dynamic_range, 0) / events.length;
 
+        // Calculate advanced metrics if available
+        const eventsWithCentroid = events.filter(e => e.spectral_centroid !== undefined);
+        const eventsWithRolloff = events.filter(e => e.spectral_rolloff !== undefined);
+        const eventsWithZcr = events.filter(e => e.zero_crossing_rate !== undefined);
+
+        const avgSpectralCentroid = eventsWithCentroid.length > 0
+          ? eventsWithCentroid.reduce((sum, e) => sum + e.spectral_centroid!, 0) / eventsWithCentroid.length
+          : undefined;
+        const avgSpectralRolloff = eventsWithRolloff.length > 0
+          ? eventsWithRolloff.reduce((sum, e) => sum + e.spectral_rolloff!, 0) / eventsWithRolloff.length
+          : undefined;
+        const avgZeroCrossingRate = eventsWithZcr.length > 0
+          ? eventsWithZcr.reduce((sum, e) => sum + e.zero_crossing_rate!, 0) / eventsWithZcr.length
+          : undefined;
+
         // Create a synthetic AudioProfile from timeline data
         const profile = {
           bass_dominance: avgBass,
@@ -151,6 +173,10 @@ export function AudioAnalysisTab() {
           average_amplitude: avgAmplitude,
           rms_energy: avgRmsEnergy,
           dynamic_range: avgDynamicRange,
+          spectral_centroid: avgSpectralCentroid,
+          spectral_rolloff: avgSpectralRolloff,
+          zero_crossing_rate: avgZeroCrossingRate,
+          color_palette: colorPalette,
           analysis_metadata: {
             duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
             full_buffer_analyzed: true,
@@ -204,7 +230,22 @@ export function AudioAnalysisTab() {
         const avgRmsEnergy = events.reduce((sum, e) => sum + e.rms_energy, 0) / events.length;
         const avgDynamicRange = events.reduce((sum, e) => sum + e.dynamic_range, 0) / events.length;
 
-        // Create a synthetic AudioProfile from timeline data
+        // Calculate advanced metrics if available
+        const eventsWithCentroid = events.filter(e => e.spectral_centroid !== undefined);
+        const eventsWithRolloff = events.filter(e => e.spectral_rolloff !== undefined);
+        const eventsWithZcr = events.filter(e => e.zero_crossing_rate !== undefined);
+
+        const avgSpectralCentroid = eventsWithCentroid.length > 0
+          ? eventsWithCentroid.reduce((sum, e) => sum + e.spectral_centroid!, 0) / eventsWithCentroid.length
+          : undefined;
+        const avgSpectralRolloff = eventsWithRolloff.length > 0
+          ? eventsWithRolloff.reduce((sum, e) => sum + e.spectral_rolloff!, 0) / eventsWithRolloff.length
+          : undefined;
+        const avgZeroCrossingRate = eventsWithZcr.length > 0
+          ? eventsWithZcr.reduce((sum, e) => sum + e.zero_crossing_rate!, 0) / eventsWithZcr.length
+          : undefined;
+
+        // Create a synthetic AudioProfile from timeline data (preserve existing color_palette)
         const profile = {
           bass_dominance: avgBass,
           mid_dominance: avgMid,
@@ -212,6 +253,10 @@ export function AudioAnalysisTab() {
           average_amplitude: avgAmplitude,
           rms_energy: avgRmsEnergy,
           dynamic_range: avgDynamicRange,
+          spectral_centroid: avgSpectralCentroid,
+          spectral_rolloff: avgSpectralRolloff,
+          zero_crossing_rate: avgZeroCrossingRate,
+          color_palette: audioProfile?.color_palette,
           analysis_metadata: {
             duration_analyzed: events[events.length - 1].timestamp + events[events.length - 1].duration,
             full_buffer_analyzed: true,
@@ -675,6 +720,18 @@ export function AudioAnalysisTab() {
                           <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(45, 93%, 47%)' }}>DR</span>
                           <span className="audio-analysis-radar-metric-value">{(timelineData[selectedTimelineIndex].dynamic_range * 100).toFixed(1)}%</span>
                         </div>
+                        {timelineData[selectedTimelineIndex].spectral_centroid !== undefined && (
+                          <div className="audio-analysis-radar-metric">
+                            <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(180, 70%, 45%)' }}>Centroid</span>
+                            <span className="audio-analysis-radar-metric-value">{Math.round(timelineData[selectedTimelineIndex].spectral_centroid!)} Hz</span>
+                          </div>
+                        )}
+                        {timelineData[selectedTimelineIndex].zero_crossing_rate !== undefined && (
+                          <div className="audio-analysis-radar-metric">
+                            <span className="audio-analysis-radar-metric-label" style={{ color: 'hsl(330, 70%, 50%)' }}>ZCR</span>
+                            <span className="audio-analysis-radar-metric-value">{timelineData[selectedTimelineIndex].zero_crossing_rate!.toFixed(3)}</span>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
