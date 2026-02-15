@@ -41,7 +41,7 @@ docker stop claude-pds
 #   echo "=== Starting iteration ==="
   
 #   docker start claude-pds 2>/dev/null || true
-#   docker exec -it -w /workspace claude-pds claude --dangerously-skip-permissions "$(cat PROMPT2.md)" | tee .log
+#   docker exec -it -w /workspace claude-pds claude --dangerously-skip-permissions "$(cat PROMPT.md)" | tee .log
   
 #   grep -qi "done" .log || break
 #   sleep 2

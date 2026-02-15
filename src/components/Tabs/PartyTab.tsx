@@ -15,7 +15,7 @@ import { usePartyAnalysis } from '../../hooks/usePartyAnalysis';
 import { CharacterCard } from '../ui/CharacterCard';
 import { PartyOverviewPanel } from '../Party/PartyOverviewPanel';
 import { PartyCompositionPanel } from '../Party/PartyCompositionPanel';
-import { CollapsibleSection } from '../Party/CollapsibleSection';
+// CollapsibleSection removed in Phase 6 - using dropdown popovers instead
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
 import { logger } from '../../utils/logger';
 import { Card } from '../ui/Card';
@@ -201,6 +201,10 @@ export function PartyTab() {
   } | null>(null);
   const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
 
+  // Phase 6 Task 6.2: Analysis panel dropdown state
+  const [activeAnalysisPanel, setActiveAnalysisPanel] = useState<'overview' | 'composition' | null>(null);
+  const analysisPopoverRef = useRef<HTMLDivElement>(null);
+
   // Phase 1 Task 1.2: Selection handlers that clear other selections (exclusive selection)
   const handleSelectTrait = (traitId: string) => {
     setSelectedTraitId(traitId);
@@ -240,7 +244,7 @@ export function PartyTab() {
   // Get party analysis using the hook
   const { analysis: partyAnalysis, isLoading: isAnalysisLoading } = usePartyAnalysis(characters, selectedSeedsSet);
 
-  // Close dropdown when clicking outside
+  // Close sort dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
@@ -256,6 +260,36 @@ export function PartyTab() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isSortDropdownOpen]);
+
+  // Phase 6 Task 6.2: Close analysis popover when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (analysisPopoverRef.current && !analysisPopoverRef.current.contains(event.target as Node)) {
+        setActiveAnalysisPanel(null);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveAnalysisPanel(null);
+      }
+    };
+
+    if (activeAnalysisPanel) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [activeAnalysisPanel]);
+
+  // Phase 6 Task 6.2: Toggle analysis panel (only one open at a time)
+  const handleToggleAnalysisPanel = (panel: 'overview' | 'composition') => {
+    setActiveAnalysisPanel(current => current === panel ? null : panel);
+  };
 
   const handleSortSelect = (value: SortOption) => {
     setSortBy(value);
@@ -428,73 +462,79 @@ export function PartyTab() {
             {characters.length} {characters.length === 1 ? 'character' : 'characters'}
           </h2>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleClearAll}
-          leftIcon={Trash2}
-          disabled={isClearing}
-          isLoading={isClearing}
-          title={`Delete all ${characters.length} character(s)`}
-        >
-          {isClearing ? 'Clearing...' : 'Clear All'}
-        </Button>
+        <div className="party-header-actions">
+          {/* Phase 6 Task 6.1: Analysis icon buttons */}
+          {characters.length >= 1 && (
+            <>
+              <button
+                className={cn('party-analysis-btn', activeAnalysisPanel === 'overview' && 'party-analysis-btn-active')}
+                onClick={() => handleToggleAnalysisPanel('overview')}
+                aria-label="Party Overview"
+                aria-expanded={activeAnalysisPanel === 'overview'}
+                title="Party Overview - XP budgets and analysis"
+              >
+                <BarChart3 size={18} />
+              </button>
+              <button
+                className={cn('party-analysis-btn', activeAnalysisPanel === 'composition' && 'party-analysis-btn-active')}
+                onClick={() => handleToggleAnalysisPanel('composition')}
+                disabled={characters.length < 2}
+                aria-label="Party Composition"
+                aria-expanded={activeAnalysisPanel === 'composition'}
+                title={characters.length >= 2 ? 'Party Composition - Class and role distribution' : 'Need 2+ heroes for composition'}
+              >
+                <PieChart size={18} />
+              </button>
+            </>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearAll}
+            leftIcon={Trash2}
+            disabled={isClearing}
+            isLoading={isClearing}
+            title={`Delete all ${characters.length} character(s)`}
+          >
+            {isClearing ? 'Clearing...' : 'Clear All'}
+          </Button>
+        </div>
       </header>
 
-      {/* Party Analysis Section - Collapsible panels for Overview and Composition */}
-      {characters.length >= 2 ? (
-        <div className="party-analysis-section">
-          {/* Party Overview Panel - Show analysis and XP budgets */}
-          <CollapsibleSection
-            title="Party Overview"
-            subtitle={`${selectedCount} of ${totalCount} heroes selected`}
-            icon={<BarChart3 size={16} />}
-            badge={selectedCount}
-            persistKey="party-overview"
-            defaultCollapsed={false}
-          >
-            <PartyOverviewPanel
-              analysis={partyAnalysis}
-              selectedCount={selectedCount}
-              totalCount={totalCount}
-              isLoading={isAnalysisLoading}
-            />
-          </CollapsibleSection>
-
-          {/* Party Composition Panel - Show class/role distribution */}
-          <CollapsibleSection
-            title="Party Composition"
-            subtitle="Class and role distribution"
-            icon={<PieChart size={16} />}
-            persistKey="party-composition"
-            defaultCollapsed={true}
-          >
-            <PartyCompositionPanel
-              characters={characters}
-              selectedSeeds={selectedSeedsSet}
-              isLoading={isAnalysisLoading}
-            />
-          </CollapsibleSection>
+      {/* Phase 6 Task 6.2: Analysis Panel Dropdown Popover */}
+      {activeAnalysisPanel && (
+        <div className="party-analysis-popover" ref={analysisPopoverRef}>
+          <div className="party-analysis-popover-header">
+            <h3 className="party-analysis-popover-title">
+              {activeAnalysisPanel === 'overview' ? 'Party Overview' : 'Party Composition'}
+            </h3>
+            <button
+              className="party-analysis-popover-close"
+              onClick={() => setActiveAnalysisPanel(null)}
+              aria-label="Close panel"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="party-analysis-popover-content">
+            {activeAnalysisPanel === 'overview' ? (
+              <PartyOverviewPanel
+                analysis={partyAnalysis}
+                selectedCount={selectedCount}
+                totalCount={totalCount}
+                isLoading={isAnalysisLoading}
+                showTooFewMessage={characters.length < 2}
+              />
+            ) : (
+              <PartyCompositionPanel
+                characters={characters}
+                selectedSeeds={selectedSeedsSet}
+                isLoading={isAnalysisLoading}
+              />
+            )}
+          </div>
         </div>
-      ) : characters.length === 1 ? (
-        /* Single-hero party - show message about needing more heroes */
-        <div className="party-analysis-section">
-          <CollapsibleSection
-            title="Party Overview"
-            subtitle="1 hero in party"
-            icon={<BarChart3 size={16} />}
-            persistKey="party-overview-single"
-            defaultCollapsed={false}
-          >
-            <PartyOverviewPanel
-              analysis={null}
-              selectedCount={1}
-              totalCount={1}
-              showTooFewMessage={true}
-            />
-          </CollapsibleSection>
-        </div>
-      ) : null}
+      )}
 
       {/* Controls: Search and Sort */}
       <div className="party-controls">

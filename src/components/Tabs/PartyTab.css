@@ -10,6 +10,55 @@
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
+
+  /* Phase 7 Task 7.2: Rarity color CSS variables */
+  --rarity-common: hsl(0 0% 50%);
+  --rarity-common-bg: hsl(0 0% 50% / 0.08);
+  --rarity-common-border: hsl(0 0% 50% / 0.25);
+  --rarity-uncommon: hsl(120 60% 40%);
+  --rarity-uncommon-bg: hsl(120 60% 40% / 0.08);
+  --rarity-uncommon-border: hsl(120 60% 40% / 0.3);
+  --rarity-rare: hsl(210 80% 50%);
+  --rarity-rare-bg: hsl(210 80% 50% / 0.08);
+  --rarity-rare-border: hsl(210 80% 50% / 0.3);
+  --rarity-very-rare: hsl(270 60% 50%);
+  --rarity-very-rare-bg: hsl(270 60% 50% / 0.08);
+  --rarity-very-rare-border: hsl(270 60% 50% / 0.3);
+  --rarity-legendary: hsl(30 90% 50%);
+  --rarity-legendary-bg: hsl(30 90% 50% / 0.12);
+  --rarity-legendary-border: hsl(30 90% 50% / 0.4);
+
+  /* Phase 7 Task 7.3: Spell level color CSS variables */
+  --spell-level-0-bg: hsl(var(--cute-teal) / 0.15);
+  --spell-level-0-border: hsl(var(--cute-teal) / 0.4);
+  --spell-level-0-text: hsl(var(--cute-teal));
+  --spell-level-1-bg: hsl(var(--cute-purple) / 0.1);
+  --spell-level-1-border: hsl(var(--cute-purple) / 0.3);
+  --spell-level-1-text: hsl(var(--cute-purple));
+  --spell-level-2-bg: hsl(var(--cute-purple) / 0.12);
+  --spell-level-2-border: hsl(var(--cute-purple) / 0.35);
+  --spell-level-2-text: hsl(var(--cute-purple));
+  --spell-level-3-bg: hsl(var(--cute-purple) / 0.15);
+  --spell-level-3-border: hsl(var(--cute-purple) / 0.4);
+  --spell-level-3-text: hsl(var(--cute-purple));
+  --spell-level-4-bg: hsl(var(--cute-purple) / 0.18);
+  --spell-level-4-border: hsl(var(--cute-purple) / 0.45);
+  --spell-level-4-text: hsl(var(--cute-purple));
+  --spell-level-5-bg: hsl(var(--cute-purple) / 0.2);
+  --spell-level-5-border: hsl(var(--cute-purple) / 0.5);
+  --spell-level-5-text: hsl(var(--cute-purple));
+  --spell-level-6-bg: hsl(var(--cute-purple) / 0.22);
+  --spell-level-6-border: hsl(var(--cute-purple) / 0.55);
+  --spell-level-6-text: hsl(var(--cute-purple));
+  --spell-level-7-bg: hsl(var(--cute-purple) / 0.25);
+  --spell-level-7-border: hsl(var(--cute-purple) / 0.6);
+  --spell-level-7-text: hsl(var(--cute-purple));
+  --spell-level-8-bg: hsl(var(--cute-purple) / 0.28);
+  --spell-level-8-border: hsl(var(--cute-purple) / 0.65);
+  --spell-level-8-text: hsl(var(--cute-purple));
+  --spell-level-9-bg: hsl(var(--cute-purple) / 0.3);
+  --spell-level-9-border: hsl(var(--cute-purple) / 0.7);
+  --spell-level-9-text: hsl(var(--cute-purple));
 }
 
 /* Header Section */
@@ -1385,6 +1434,19 @@
   border-color: hsl(var(--cute-teal) / 0.5);
 }
 
+/* Phase 4 Task 4.2: Equipment item selection styling */
+.party-detail-equipment-item-selected {
+  box-shadow: 0 0 0 2px hsl(var(--cute-purple) / 0.3),
+              0 0 12px hsl(var(--cute-purple) / 0.25);
+  transform: translateY(-1px);
+  border-color: hsl(var(--cute-purple) / 0.5) !important;
+}
+
+.party-detail-equipment-item:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
 /* Checkmark icon for equipped items */
 .party-detail-equipment-checkmark {
   color: hsl(var(--cute-teal));
@@ -1475,11 +1537,34 @@
 }
 
 .party-detail-spell-tag {
+  display: inline-flex;
+  align-items: center;
   padding: 0.25rem 0.5rem;
   background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.party-detail-spell-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Phase 5 Task 5.2: Selected state for spell tags */
+.party-detail-spell-tag-selected {
+  box-shadow: 0 0 0 2px hsl(var(--cute-purple) / 0.3),
+              0 0 12px hsl(var(--cute-purple) / 0.25);
+  transform: translateY(-1px);
+  border-color: hsl(var(--cute-purple) / 0.5) !important;
+}
+
+.party-detail-spell-tag:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
 /* Spells empty state in modal */
@@ -1696,6 +1781,20 @@
   transform: translateY(-1px);
 }
 
+/* Phase 2 Task 2.1: Selected state for trait badges */
+.party-detail-trait-badge-selected {
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.35), hsl(var(--cute-pink) / 0.25));
+  border-color: hsl(var(--cute-purple) / 0.6);
+  box-shadow: 0 0 0 2px hsl(var(--cute-purple) / 0.2),
+              0 0 12px hsl(var(--cute-purple) / 0.3);
+  transform: translateY(-1px);
+}
+
+.party-detail-trait-badge:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
 /* Appearance Section */
 .party-detail-appearance-section {
   display: flex;
@@ -1839,6 +1938,143 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* ========================================
+   PHASE 6: ANALYSIS BUTTONS & POPOVER
+   ======================================== */
+
+/* Header actions container - right-aligned buttons */
+.party-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* Analysis icon button - subtle style */
+.party-analysis-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.party-analysis-btn:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.party-analysis-btn:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.party-analysis-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Active state for analysis button */
+.party-analysis-btn-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.party-analysis-btn-active:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Analysis panel dropdown popover */
+.party-analysis-popover {
+  position: relative;
+  margin-bottom: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: popoverFadeIn 0.2s ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Popover header */
+.party-analysis-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-dim);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.party-analysis-popover-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.party-analysis-popover-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.party-analysis-popover-close:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+/* Popover content */
+.party-analysis-popover-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Mobile responsive for popover */
+@media (max-width: 480px) {
+  .party-analysis-popover {
+    border-radius: var(--radius-md);
+  }
+
+  .party-analysis-popover-content {
+    max-height: 300px;
+    padding: 0.75rem;
+  }
 }
 
 /* Selection mode active on card */

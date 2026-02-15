@@ -21,8 +21,8 @@ import { DetailRow } from '../ui/DetailRow';
 import { EquipmentBrowser } from '../ui/EquipmentBrowser';
 import { showToast } from '../ui/Toast';
 import { cn } from '../../utils/cn';
-import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
-import type { EnhancedEquipment } from 'playlist-data-engine';
+import { DEFAULT_EQUIPMENT, SpellQuery } from 'playlist-data-engine';
+import type { EnhancedEquipment, RegisteredSpell } from 'playlist-data-engine';
 
 /**
  * Ammunition types and their per-item weights (in pounds)
@@ -81,6 +81,23 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
 };
 
 /**
+ * Spell level color mapping for Phase 6
+ * Cantrips (level 0) are teal, leveled spells (1-9) use progressively deeper purple
+ */
+const SPELL_LEVEL_COLORS: Record<number, { bg: string; border: string; text: string }> = {
+  0: { bg: 'hsl(var(--cute-teal) / 0.15)', border: 'hsl(var(--cute-teal) / 0.4)', text: 'hsl(var(--cute-teal))' },
+  1: { bg: 'hsl(var(--cute-purple) / 0.1)', border: 'hsl(var(--cute-purple) / 0.3)', text: 'hsl(var(--cute-purple))' },
+  2: { bg: 'hsl(var(--cute-purple) / 0.12)', border: 'hsl(var(--cute-purple) / 0.35)', text: 'hsl(var(--cute-purple))' },
+  3: { bg: 'hsl(var(--cute-purple) / 0.15)', border: 'hsl(var(--cute-purple) / 0.4)', text: 'hsl(var(--cute-purple))' },
+  4: { bg: 'hsl(var(--cute-purple) / 0.18)', border: 'hsl(var(--cute-purple) / 0.45)', text: 'hsl(var(--cute-purple))' },
+  5: { bg: 'hsl(var(--cute-purple) / 0.2)', border: 'hsl(var(--cute-purple) / 0.5)', text: 'hsl(var(--cute-purple))' },
+  6: { bg: 'hsl(var(--cute-purple) / 0.22)', border: 'hsl(var(--cute-purple) / 0.55)', text: 'hsl(var(--cute-purple))' },
+  7: { bg: 'hsl(var(--cute-purple) / 0.25)', border: 'hsl(var(--cute-purple) / 0.6)', text: 'hsl(var(--cute-purple))' },
+  8: { bg: 'hsl(var(--cute-purple) / 0.28)', border: 'hsl(var(--cute-purple) / 0.65)', text: 'hsl(var(--cute-purple))' },
+  9: { bg: 'hsl(var(--cute-purple) / 0.3)', border: 'hsl(var(--cute-purple) / 0.7)', text: 'hsl(var(--cute-purple))' }
+};
+
+/**
  * Get equipment data from database by name
  */
 function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
@@ -99,6 +116,20 @@ function getEquipmentEffectsByName(itemName: string, equipmentEffects?: Equipmen
 }
 
 /**
+ * Get spell data from SpellQuery by name
+ * Phase 6 Task 6.5: Helper for spell detail row
+ */
+function getSpellData(spellName: string): RegisteredSpell | undefined {
+  try {
+    const spellQuery = SpellQuery.getInstance();
+    const spells = spellQuery.getSpells();
+    return spells.find(spell => spell.name === spellName);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Format rarity for display (snake_case to Title Case)
  */
 function formatRarity(rarity: string): string {
@@ -106,46 +137,6 @@ function formatRarity(rarity: string): string {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-}
-
-/**
- * Get tooltip content for equipment item showing properties
- */
-function getEquipmentTooltip(equipmentData?: EnhancedEquipment): string {
-  const parts: string[] = [];
-
-  // Add rarity
-  if (equipmentData?.rarity) {
-    parts.push(`Rarity: ${formatRarity(equipmentData.rarity)}`);
-  }
-
-  // Add type
-  if (equipmentData?.type) {
-    parts.push(`Type: ${equipmentData.type.charAt(0).toUpperCase() + equipmentData.type.slice(1)}`);
-  }
-
-  // Add weight
-  if (equipmentData?.weight !== undefined) {
-    parts.push(`Weight: ${equipmentData.weight} lb`);
-  }
-
-  // Add damage for weapons
-  if (equipmentData?.type === 'weapon' && equipmentData.damage) {
-    parts.push(`Damage: ${equipmentData.damage.dice} ${equipmentData.damage.damageType}`);
-  }
-
-  // Add AC for armor
-  if (equipmentData?.type === 'armor' && equipmentData.acBonus !== undefined) {
-    parts.push(`AC Bonus: +${equipmentData.acBonus}`);
-  }
-
-  // Add properties
-  if (equipmentData?.properties && equipmentData.properties.length > 0) {
-    const propNames = equipmentData.properties.map(p => p.type).join(', ');
-    parts.push(`Properties: ${propNames}`);
-  }
-
-  return parts.join('\n');
 }
 
 /**
@@ -189,6 +180,50 @@ export function CharacterGenTab() {
 
   // Phase 3: Selection state for racial traits (Task 3.1)
   const [selectedTraitId, setSelectedTraitId] = useState<string | null>(null);
+
+  // Phase 4: Selection state for class features (Task 4.1)
+  const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
+
+  // Phase 5: Selection state for equipment (Task 5.1)
+  const [selectedEquipment, setSelectedEquipment] = useState<{
+    name: string;
+    type: 'weapon' | 'armor' | 'item';
+  } | null>(null);
+
+  // Phase 6: Selection state for spells (Task 6.1)
+  const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
+
+  // Phase 6 Task 6.6: Handler to select a spell and clear all other selections
+  const handleSelectSpell = (spellName: string) => {
+    setSelectedSpellId(spellName);
+    setSelectedTraitId(null); // Auto-clear trait selection
+    setSelectedFeatureId(null); // Auto-clear feature selection
+    setSelectedEquipment(null); // Auto-clear equipment selection
+  };
+
+  // Phase 5 Task 5.4: Handler to select equipment and clear trait/feature/spell selections
+  const handleSelectEquipment = (name: string, type: 'weapon' | 'armor' | 'item') => {
+    setSelectedEquipment({ name, type });
+    setSelectedTraitId(null); // Auto-clear trait selection
+    setSelectedFeatureId(null); // Auto-clear feature selection
+    setSelectedSpellId(null); // Auto-clear spell selection
+  };
+
+  // Phase 4 Task 4.4: Handler to select a feature and clear trait/equipment/spell selection
+  const handleSelectFeature = (featureId: string) => {
+    setSelectedFeatureId(featureId);
+    setSelectedTraitId(null); // Auto-clear trait selection when selecting a feature
+    setSelectedEquipment(null); // Auto-clear equipment selection
+    setSelectedSpellId(null); // Auto-clear spell selection
+  };
+
+  // Phase 3 Task 3.4: Handler to select a trait and clear feature/equipment/spell selection
+  const handleSelectTrait = (traitId: string) => {
+    setSelectedTraitId(traitId);
+    setSelectedFeatureId(null); // Auto-clear feature selection when selecting a trait
+    setSelectedEquipment(null); // Auto-clear equipment selection
+    setSelectedSpellId(null); // Auto-clear spell selection
+  };
 
   // Handler to add equipment for injection (used by EquipmentBrowser in Task 3.4)
   const handleAddEquipment = (item: EnhancedEquipment) => {
@@ -531,7 +566,7 @@ export function CharacterGenTab() {
                 type="file"
                 accept=".json"
                 onChange={handleImportCharacter}
-                className="hidden"
+                style={{ display: 'none' }}
               />
             </>
           )}
@@ -998,13 +1033,13 @@ export function CharacterGenTab() {
                     <span
                       key={idx}
                       className={cn('character-trait-badge', isSelected && 'character-trait-badge-selected')}
-                      onClick={() => setSelectedTraitId(trait)}
+                      onClick={() => handleSelectTrait(trait)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setSelectedTraitId(trait);
+                          handleSelectTrait(trait);
                         }
                       }}
                     >
@@ -1039,13 +1074,21 @@ export function CharacterGenTab() {
               <div className="character-traits-grid">
                 {character.class_features.map((feature, idx) => {
                   const displayName = resolveFeatureName(feature);
-                  const description = getFeatureDescription(feature);
                   const effects = getFeatureEffects(feature);
+                  const isSelected = selectedFeatureId === feature;
                   return (
                     <span
                       key={idx}
-                      className="character-trait-badge"
-                      title={description || feature}
+                      className={cn('character-trait-badge', isSelected && 'character-trait-badge-selected')}
+                      onClick={() => handleSelectFeature(feature)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleSelectFeature(feature);
+                        }
+                      }}
                     >
                       {displayName}
                       {effects && effects.length > 0 && (
@@ -1055,6 +1098,16 @@ export function CharacterGenTab() {
                   );
                 })}
               </div>
+              {/* Task 4.3: Feature Detail Row */}
+              <DetailRow
+                isVisible={selectedFeatureId !== null}
+                title={selectedFeatureId ? resolveFeatureName(selectedFeatureId) : ''}
+                description={selectedFeatureId ? getFeatureDescription(selectedFeatureId) : undefined}
+                properties={selectedFeatureId ? [
+                  { label: 'Source', value: character.class || 'Class Feature' }
+                ] : undefined}
+                effects={selectedFeatureId ? getFeatureEffects(selectedFeatureId) : undefined}
+              />
             </Card>
           )}
 
@@ -1193,19 +1246,32 @@ export function CharacterGenTab() {
                           const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
                           const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
                           const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
-                          const tooltipContent = getEquipmentTooltip(equipmentData);
                           // Task 2.4: Get equipment effects for inline display
                           const weaponEffects = getEquipmentEffectsByName(weapon.name, character.equipment_effects);
+                          // Phase 5 Task 5.2: Selection state
+                          const isSelected = selectedEquipment?.name === weapon.name && selectedEquipment?.type === 'weapon';
 
                           return (
                             <div key={idx} className="character-equipment-item-wrapper">
                               <span
-                                className={`character-equipment-item ${weapon.equipped ? 'character-equipment-item-equipped' : ''}`}
+                                className={cn(
+                                  'character-equipment-item',
+                                  weapon.equipped && 'character-equipment-item-equipped',
+                                  isSelected && 'character-equipment-item-selected'
+                                )}
                                 style={{
                                   backgroundColor: rarityBg,
                                   borderColor: rarityBorder
                                 }}
-                                title={tooltipContent}
+                                onClick={() => handleSelectEquipment(weapon.name, 'weapon')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(weapon.name, 'weapon');
+                                  }
+                                }}
                               >
                                 {weapon.equipped && <Check className="character-equipment-checkmark" size={14} />}
                                 <span style={{ color: rarityColor, fontWeight: 500 }}>{weapon.name}</span>
@@ -1230,19 +1296,32 @@ export function CharacterGenTab() {
                           const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
                           const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
                           const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
-                          const tooltipContent = getEquipmentTooltip(equipmentData);
                           // Task 2.4: Get equipment effects for inline display
                           const armorEffects = getEquipmentEffectsByName(armor.name, character.equipment_effects);
+                          // Phase 5 Task 5.2: Selection state
+                          const isSelected = selectedEquipment?.name === armor.name && selectedEquipment?.type === 'armor';
 
                           return (
                             <div key={idx} className="character-equipment-item-wrapper">
                               <span
-                                className={`character-equipment-item ${armor.equipped ? 'character-equipment-item-equipped' : ''}`}
+                                className={cn(
+                                  'character-equipment-item',
+                                  armor.equipped && 'character-equipment-item-equipped',
+                                  isSelected && 'character-equipment-item-selected'
+                                )}
                                 style={{
                                   backgroundColor: rarityBg,
                                   borderColor: rarityBorder
                                 }}
-                                title={tooltipContent}
+                                onClick={() => handleSelectEquipment(armor.name, 'armor')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(armor.name, 'armor');
+                                  }
+                                }}
                               >
                                 {armor.equipped && <Check className="character-equipment-checkmark" size={14} />}
                                 <span style={{ color: rarityColor, fontWeight: 500 }}>{armor.name}</span>
@@ -1280,20 +1359,34 @@ export function CharacterGenTab() {
                           const rarityBorder = isAmmo
                             ? 'hsl(var(--cute-orange) / 0.3)'
                             : (RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common);
-                          const tooltipContent = getEquipmentTooltip(equipmentData);
                           // Task 2.4: Get equipment effects for inline display
                           const itemEffects = getEquipmentEffectsByName(item.name, character.equipment_effects);
+                          // Phase 5 Task 5.2: Selection state
+                          const isSelected = selectedEquipment?.name === item.name && selectedEquipment?.type === 'item';
 
                           return (
                             <div key={idx} className="character-equipment-item-wrapper">
                               <span
-                                className={`character-equipment-item ${item.equipped ? 'character-equipment-item-equipped' : ''} ${isAmmo ? 'character-equipment-item-ammunition' : ''}`}
+                                className={cn(
+                                  'character-equipment-item',
+                                  item.equipped && 'character-equipment-item-equipped',
+                                  isAmmo && 'character-equipment-item-ammunition',
+                                  isSelected && 'character-equipment-item-selected'
+                                )}
                                 style={{
                                   backgroundColor: isAmmo ? undefined : rarityBg,
                                   background: isAmmo ? rarityBg : undefined,
                                   borderColor: rarityBorder
                                 }}
-                                title={tooltipContent}
+                                onClick={() => handleSelectEquipment(item.name, 'item')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(item.name, 'item');
+                                  }
+                                }}
                               >
                                 {item.equipped && <Check className="character-equipment-checkmark" size={14} />}
                                 {isAmmo && <Target className="character-equipment-ammo-icon" size={14} />}
@@ -1323,6 +1416,59 @@ export function CharacterGenTab() {
                     <span className="character-equipment-weight-separator">|</span>
                     <span className="character-equipment-weight-label">Total: <strong>{equipment.totalWeight} lbs</strong></span>
                   </div>
+                  {/* Phase 5 Task 5.3: Equipment Detail Row */}
+                  {selectedEquipment && (() => {
+                    const equipmentData = getEquipmentData(selectedEquipment.name);
+                    if (!equipmentData) return null;
+
+                    // Build properties based on equipment type
+                    const properties: { label: string; value: string | number }[] = [];
+
+                    // Add rarity
+                    if (equipmentData.rarity) {
+                      properties.push({ label: 'Rarity', value: formatRarity(equipmentData.rarity) });
+                    }
+
+                    // Add type
+                    properties.push({ label: 'Type', value: equipmentData.type.charAt(0).toUpperCase() + equipmentData.type.slice(1) });
+
+                    // Add weight
+                    if (equipmentData.weight !== undefined) {
+                      properties.push({ label: 'Weight', value: `${equipmentData.weight} lb` });
+                    }
+
+                    // Add damage for weapons
+                    if (equipmentData.type === 'weapon' && equipmentData.damage) {
+                      properties.push({ label: 'Damage', value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}` });
+                    }
+
+                    // Add AC for armor
+                    if (equipmentData.type === 'armor' && equipmentData.acBonus !== undefined) {
+                      properties.push({ label: 'AC Bonus', value: `+${equipmentData.acBonus}` });
+                    }
+
+                    // Get appropriate icon based on type
+                    const EquipmentIcon = equipmentData.type === 'weapon' ? Sword : equipmentData.type === 'armor' ? Shield : Package;
+
+                    // Convert equipment properties to effects format for display
+                    const effects = equipmentData.properties?.map(p => ({
+                      type: p.type,
+                      target: p.target,
+                      value: p.value,
+                      description: p.description
+                    }));
+
+                    return (
+                      <DetailRow
+                        isVisible={true}
+                        title={equipmentData.name}
+                        icon={EquipmentIcon}
+                        description={equipmentData.description}
+                        properties={properties}
+                        effects={effects}
+                      />
+                    );
+                  })()}
                 </div>
               </Card>
             );
@@ -1336,22 +1482,137 @@ export function CharacterGenTab() {
                 <Tooltip content="Spells are magical abilities that spellcasters can use. Cantrips are weak spells you can cast endlessly, while leveled spells consume spell slots (a limited resource that refreshes after a long rest). Each spell has a casting time, range, duration, and effects—spells can deal damage, heal allies, create magical effects, or manipulate the battlefield." />
               </div>
               <div className="character-equipment-section">
+                {/* Task 6.3: Cantrips as styled badges */}
                 {character.spells.cantrips.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">
                     <div className="character-equipment-label">Cantrips</div>
-                    <div className="character-equipment-items">{character.spells.cantrips.join(', ')}</div>
+                    <div className="character-spells-grid">
+                      {character.spells.cantrips.map((spellName, idx) => {
+                        const levelColors = SPELL_LEVEL_COLORS[0];
+                        const isSelected = selectedSpellId === spellName;
+                        return (
+                          <span
+                            key={idx}
+                            className={cn('character-spell-badge', isSelected && 'character-spell-badge-selected')}
+                            style={{
+                              backgroundColor: levelColors.bg,
+                              borderColor: levelColors.border,
+                              color: levelColors.text
+                            }}
+                            onClick={() => handleSelectSpell(spellName)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleSelectSpell(spellName);
+                              }
+                            }}
+                          >
+                            {spellName}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </Card>
                 )}
+                {/* Task 6.3: Known Spells as styled badges with level-based colors */}
                 {character.spells.known_spells.length > 0 && (
                   <Card variant="flat" padding="sm" className="character-equipment-card">
                     <div className="character-equipment-label">Known Spells</div>
-                    <div className="character-equipment-items">{character.spells.known_spells.join(', ')}</div>
+                    <div className="character-spells-grid">
+                      {character.spells.known_spells.map((spellName, idx) => {
+                        const spellData = getSpellData(spellName);
+                        const level = spellData?.level ?? 1;
+                        const levelColors = SPELL_LEVEL_COLORS[level] || SPELL_LEVEL_COLORS[1];
+                        const isSelected = selectedSpellId === spellName;
+                        return (
+                          <span
+                            key={idx}
+                            className={cn('character-spell-badge', isSelected && 'character-spell-badge-selected')}
+                            style={{
+                              backgroundColor: levelColors.bg,
+                              borderColor: levelColors.border,
+                              color: levelColors.text
+                            }}
+                            onClick={() => handleSelectSpell(spellName)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleSelectSpell(spellName);
+                              }
+                            }}
+                          >
+                            {spellName}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </Card>
                 )}
                 {character.spells.cantrips.length === 0 && character.spells.known_spells.length === 0 && (
                   <div className="character-spells-empty">No spells learned yet</div>
                 )}
               </div>
+              {/* Task 6.5: Spell Detail Row */}
+              {selectedSpellId && (() => {
+                const spellData = getSpellData(selectedSpellId);
+                if (!spellData) return null;
+
+                // Build properties array
+                const properties: { label: string; value: string | number }[] = [];
+
+                // School of magic
+                if (spellData.school) {
+                  properties.push({ label: 'School', value: spellData.school });
+                }
+
+                // Level
+                properties.push({
+                  label: 'Level',
+                  value: spellData.level === 0 ? 'Cantrip' : `Level ${spellData.level}`
+                });
+
+                // Casting time
+                if (spellData.casting_time) {
+                  properties.push({ label: 'Casting Time', value: spellData.casting_time });
+                }
+
+                // Range
+                if (spellData.range) {
+                  properties.push({ label: 'Range', value: spellData.range });
+                }
+
+                // Duration
+                if (spellData.duration) {
+                  properties.push({ label: 'Duration', value: spellData.duration });
+                }
+
+                // Components
+                if (spellData.components) {
+                  const componentsStr = Array.isArray(spellData.components)
+                    ? spellData.components.join(', ')
+                    : String(spellData.components);
+                  properties.push({ label: 'Components', value: componentsStr });
+                }
+
+                // Classes
+                if (spellData.classes && spellData.classes.length > 0) {
+                  properties.push({ label: 'Classes', value: spellData.classes.join(', ') });
+                }
+
+                return (
+                  <DetailRow
+                    isVisible={true}
+                    title={spellData.name}
+                    icon={Wand2}
+                    description={spellData.description}
+                    properties={properties}
+                  />
+                );
+              })()}
             </Card>
           )}
 

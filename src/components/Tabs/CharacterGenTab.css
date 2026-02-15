@@ -784,6 +784,49 @@
   outline-offset: 2px;
 }
 
+/* ========================================
+   Phase 6: Spells Styling
+   ======================================== */
+
+/* Spells grid container */
+.character-spells-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Individual spell badge */
+.character-spell-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.625rem;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic),
+              border-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.character-spell-badge:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* Selected spell badge */
+.character-spell-badge-selected {
+  box-shadow: 0 0 0 2px hsl(var(--cute-purple) / 0.4),
+              0 0 12px hsl(var(--cute-purple) / 0.3);
+  transform: translateY(-1px);
+}
+
+.character-spell-badge:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.5);
+  outline-offset: 2px;
+}
+
 /* Appearance section */
 .character-appearance-section {
   display: flex;
@@ -965,13 +1008,26 @@
   border-radius: calc(var(--radius) - 2px);
   background: hsl(var(--surface-2));
   border: 1px solid hsl(var(--border));
+  cursor: pointer;
   transition: background-color var(--duration-fast) var(--ease-out-cubic),
-              border-color var(--duration-fast) var(--ease-out-cubic);
+              border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.character-equipment-item:hover {
+  border-color: hsl(var(--primary) / 0.5);
 }
 
 .character-equipment-item-equipped {
   background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.15), hsl(var(--cute-teal) / 0.05));
   border-color: hsl(var(--cute-teal) / 0.4);
+}
+
+/* Phase 5 Task 5.2: Selected equipment item styling */
+.character-equipment-item-selected {
+  cursor: pointer;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5), 0 0 12px 2px hsl(var(--primary) / 0.3);
+  border-color: hsl(var(--primary));
 }
 
 /* Checkmark icon for equipped items */

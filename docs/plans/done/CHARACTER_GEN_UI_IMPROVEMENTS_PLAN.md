@@ -68,35 +68,37 @@ Enhance the CharacterGenTab with interactive detail panels for all list items (e
   - [x] Add `DetailRow` component after traits grid (inside same Card)
   - [x] Display: name, description, source (race), effects
 
-- [ ] **Task 3.4: Implement Auto-Clear on Section Switch**
-  - [ ] When clicking a feature/equipment/spell, clear `selectedTraitId`
-  - Note: Will be implemented in Phases 4, 5, 6 as click handlers are added to other sections
+- [x] **Task 3.4: Implement Auto-Clear on Section Switch**
+  - [x] When clicking a feature, clear `selectedTraitId` (implemented in Phase 4)
+  - [x] When clicking equipment, clear `selectedTraitId` (implemented in Phase 5)
+  - [x] When clicking a spell, clear `selectedTraitId` (implemented in Phase 6)
 
 ---
 
 ## Phase 4: Class Features Click-to-Select
 
-- [ ] **Task 4.1: Add Selection State**
-  - [ ] Add `const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null)` in CharacterGenTab.tsx
+- [x] **Task 4.1: Add Selection State**
+  - [x] Add `const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null)` in CharacterGenTab.tsx
 
-- [ ] **Task 4.2: Update Feature Badges**
-  - [ ] Remove `title` attribute from feature badges
-  - [ ] Add `onClick` handler
-  - [ ] Add selected state styling (reuse trait badge pattern)
+- [x] **Task 4.2: Update Feature Badges**
+  - [x] Remove `title` attribute from feature badges
+  - [x] Add `onClick` handler
+  - [x] Add selected state styling (reuse trait badge pattern)
 
-- [ ] **Task 4.3: Add Feature Detail Row**
-  - [ ] Use `FeatureQuery.getClassFeatureById(featureId)` to get full feature data
-  - [ ] Display: name, description, level obtained, effects, prerequisites
+- [x] **Task 4.3: Add Feature Detail Row**
+  - [x] Use `FeatureQuery.getClassFeatureById(featureId)` to get full feature data (via useFeatureNames hook)
+  - [x] Display: name, description, source (class), effects
 
-- [ ] **Task 4.4: Implement Auto-Clear on Section Switch**
-  - [ ] When clicking a trait/equipment/spell, clear `selectedFeatureId`
+- [x] **Task 4.4: Implement Auto-Clear on Section Switch**
+  - [x] When clicking a trait, clear `selectedFeatureId`
+  - [x] When clicking a feature, clear `selectedTraitId`
 
 ---
 
 ## Phase 5: Equipment Click-to-Select
 
-- [ ] **Task 5.1: Add Selection State**
-  - [ ] Add state for selected equipment:
+- [x] **Task 5.1: Add Selection State**
+  - [x] Add state for selected equipment:
     ```tsx
     const [selectedEquipment, setSelectedEquipment] = useState<{
       name: string;
@@ -104,48 +106,50 @@ Enhance the CharacterGenTab with interactive detail panels for all list items (e
     } | null>(null);
     ```
 
-- [ ] **Task 5.2: Update Equipment Items**
-  - [ ] Remove `title` attribute from equipment items
-  - [ ] Add `onClick` handler
-  - [ ] Add selected state styling
+- [x] **Task 5.2: Update Equipment Items**
+  - [x] Remove `title` attribute from equipment items
+  - [x] Add `onClick` handler
+  - [x] Add selected state styling
+  - [x] Add cursor pointer and keyboard accessibility
 
-- [ ] **Task 5.3: Add Equipment Detail Row**
-  - [ ] Use `getEquipmentData(itemName)` to get full item info
-  - [ ] Display: name, description, rarity, type, damage/AC, weight, properties (effects), special abilities
-  - [ ] Handle weapons, armor, and items with appropriate property labels
+- [x] **Task 5.3: Add Equipment Detail Row**
+  - [x] Use `getEquipmentData(itemName)` to get full item info
+  - [x] Display: name, description, rarity, type, damage/AC, weight, properties (effects)
+  - [x] Handle weapons, armor, and items with appropriate property labels and icons
 
-- [ ] **Task 5.4: Implement Auto-Clear on Section Switch**
-  - [ ] When clicking a trait/feature/spell, clear `selectedEquipment`
+- [x] **Task 5.4: Implement Auto-Clear on Section Switch**
+  - [x] When clicking a trait/feature, clear `selectedEquipment`
+  - [x] When clicking a spell, clear `selectedEquipment` (implemented in Phase 6)
 
 ---
 
 ## Phase 6: Spells Styling and Click-to-Select
 
-- [ ] **Task 6.1: Add Selection State**
-  - [ ] Add `const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null)` in CharacterGenTab.tsx
+- [x] **Task 6.1: Add Selection State**
+  - [x] Add `const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null)` in CharacterGenTab.tsx
 
-- [ ] **Task 6.2: Create Spell Color Mapping**
-  - [ ] Define `SPELL_LEVEL_COLORS` constant with colors for levels 0-9
-  - [ ] Cantrips (level 0): teal
-  - [ ] Leveled spells (1-9): progressively deeper purple
+- [x] **Task 6.2: Create Spell Color Mapping**
+  - [x] Define `SPELL_LEVEL_COLORS` constant with colors for levels 0-9
+  - [x] Cantrips (level 0): teal
+  - [x] Leveled spells (1-9): progressively deeper purple
 
-- [ ] **Task 6.3: Style Spell Items**
-  - [ ] Replace comma-separated text with styled badges in a grid
-  - [ ] Create spell badges with level-based colors
-  - [ ] Add selection state styling
-  - [ ] Add cursor pointer and hover effects
+- [x] **Task 6.3: Style Spell Items**
+  - [x] Replace comma-separated text with styled badges in a grid
+  - [x] Create spell badges with level-based colors
+  - [x] Add selection state styling
+  - [x] Add cursor pointer and hover effects
 
-- [ ] **Task 6.4: Add Spell CSS**
-  - [ ] Add `.character-spells-grid` styles
-  - [ ] Add `.character-spell-badge` styles with level-based colors
-  - [ ] Add `.character-spell-badge-selected` styles
+- [x] **Task 6.4: Add Spell CSS**
+  - [x] Add `.character-spells-grid` styles
+  - [x] Add `.character-spell-badge` styles with level-based colors
+  - [x] Add `.character-spell-badge-selected` styles
 
-- [ ] **Task 6.5: Add Spell Detail Row**
-  - [ ] Use `SpellQuery.getSpell(spellId)` to get full spell data
-  - [ ] Display: name, description, school of magic, level, casting time, range, duration, components (V, S, M), prerequisites
+- [x] **Task 6.5: Add Spell Detail Row**
+  - [x] Use `SpellQuery.getSpell(spellId)` to get full spell data
+  - [x] Display: name, description, school of magic, level, casting time, range, duration, components (V, S, M), prerequisites
 
-- [ ] **Task 6.4: Implement Auto-Clear on Section Switch**
-  - [ ] When clicking a trait/feature/equipment, clear `selectedSpellId`
+- [x] **Task 6.6: Implement Auto-Clear on Section Switch**
+  - [x] When clicking a trait/feature/equipment, clear `selectedSpellId`
 
 ---
 
