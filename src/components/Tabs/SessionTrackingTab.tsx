@@ -8,12 +8,14 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useSensorStore } from '../../store/sensorStore';
 import { useMastery } from '../../hooks/useMastery';
+import { useSessionStore } from '../../store/sessionStore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
 import { MasteryBadge } from '../ui/MasteryBadge';
 import { MasteryProgressBar } from '../ui/MasteryProgressBar';
+import { SessionHistoryPanel } from '../ui/SessionHistoryPanel';
 import type { ListeningSession, Ability } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
@@ -126,6 +128,7 @@ export function SessionTrackingTab() {
   const { getActiveCharacter } = useCharacterStore();
   const { applyPendingStatIncrease } = useCharacterUpdater();
   const { getMasteryInfo } = useMastery();
+  const { sessionHistory } = useSessionStore();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [showStatModal, setShowStatModal] = useState(false);
 
@@ -750,6 +753,13 @@ export function SessionTrackingTab() {
               </CardContent>
             </Card>
           )}
+
+          {/* Session History Panel */}
+          <SessionHistoryPanel
+            sessions={sessionHistory}
+            maxItems={10}
+            initiallyCollapsed={false}
+          />
         </div>
       )}
 
