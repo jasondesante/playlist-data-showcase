@@ -5,7 +5,7 @@
  * Features: search, sort, detail modal, empty state.
  */
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -96,6 +96,67 @@ export function PartyTab() {
   const [isSettingActive, setIsSettingActive] = useState(false);
   const [settingActiveSeed, setSettingActiveSeed] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+
+  // Hero selection state for party analysis
+  // All heroes are selected by default
+  const [selectedHeroSeeds, setSelectedHeroSeeds] = useState<Set<string>>(() => {
+    return new Set(characters.map(c => c.seed));
+  });
+
+  // Sync selectedHeroSeeds when characters change (new characters added/removed)
+  useEffect(() => {
+    setSelectedHeroSeeds(prevSeeds => {
+      const characterSeeds = new Set(characters.map(c => c.seed));
+      // Add new characters (auto-select new additions)
+      const newSeeds = new Set(prevSeeds);
+      characters.forEach(c => {
+        if (!prevSeeds.has(c.seed)) {
+          newSeeds.add(c.seed);
+        }
+      });
+      // Remove seeds for characters that no longer exist
+      newSeeds.forEach(seed => {
+        if (!characterSeeds.has(seed)) {
+          newSeeds.delete(seed);
+        }
+      });
+      return newSeeds;
+    });
+  }, [characters]);
+
+  // Toggle selection for a single hero
+  const toggleHeroSelection = useCallback((seed: string) => {
+    setSelectedHeroSeeds(prevSeeds => {
+      const newSeeds = new Set(prevSeeds);
+      if (newSeeds.has(seed)) {
+        newSeeds.delete(seed);
+      } else {
+        newSeeds.add(seed);
+      }
+      return newSeeds;
+    });
+  }, []);
+
+  // Select all heroes
+  const selectAllHeroes = useCallback(() => {
+    setSelectedHeroSeeds(new Set(characters.map(c => c.seed)));
+  }, [characters]);
+
+  // Deselect all heroes
+  const deselectAllHeroes = useCallback(() => {
+    setSelectedHeroSeeds(new Set());
+  }, []);
+
+  // Hero selection state is ready for Phase 2/3 integration:
+  // - selectedHeroSeeds: Set of seeds for heroes included in party analysis
+  // - toggleHeroSelection(seed): Toggle a single hero's selection
+  // - selectAllHeroes(): Select all heroes
+  // - deselectAllHeroes(): Deselect all heroes
+  // These will be passed to PartyOverviewPanel and used in Selection Controls Bar
+  void selectedHeroSeeds;
+  void toggleHeroSelection;
+  void selectAllHeroes;
+  void deselectAllHeroes;
 
   // Close dropdown when clicking outside
   useEffect(() => {

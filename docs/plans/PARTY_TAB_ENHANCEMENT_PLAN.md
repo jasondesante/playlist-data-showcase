@@ -24,11 +24,11 @@ This plan enhances the PartyTab with:
 - [x] Verify `PartyAnalyzer.analyzeParty()` returns expected data structure
 
 ### Task 1.2: Create Hero Selection State
-- [ ] Add `selectedHeroSeeds: Set<string>` state to PartyTab
-- [ ] Initialize with all character seeds (all selected by default)
-- [ ] Create `toggleHeroSelection(seed: string)` function
-- [ ] Create `selectAllHeroes()` function
-- [ ] Create `deselectAllHeroes()` function
+- [x] Add `selectedHeroSeeds: Set<string>` state to PartyTab
+- [x] Initialize with all character seeds (all selected by default)
+- [x] Create `toggleHeroSelection(seed: string)` function
+- [x] Create `selectAllHeroes()` function
+- [x] Create `deselectAllHeroes()` function
 
 ### Task 1.3: Create Party Analysis Hook
 - [ ] Create `usePartyAnalysis.ts` hook in `src/hooks/`
