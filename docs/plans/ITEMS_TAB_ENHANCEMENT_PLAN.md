@@ -263,10 +263,19 @@ interface EquipmentModification {
 - All handlers include toast notifications for success/failure
 
 ### 4.3 Update Equipment Effects Display
-- [ ] Show modifications in `renderEquipmentEffects()`
-- [ ] Group effects by source (base item vs modification)
-- [ ] Highlight enchantment effects with different styling
-- [ ] Highlight curse effects with warning styling
+- [x] Show modifications in `renderEquipmentEffects()`
+- [x] Group effects by source (base item vs modification)
+- [x] Highlight enchantment effects with different styling
+- [x] Highlight curse effects with warning styling
+
+**Completed (2026-02-15):**
+- Enhanced `renderEquipmentEffects()` to group effects by source item
+- Added categorization of effects into base, enchantment, and curse groups
+- Added visual badges for enchanted/cursed items in effects display
+- Added CSS classes for enchanted and cursed effect card styling
+- Added gradient backgrounds and colored borders for visual distinction
+- Added group labels: "Base Item", "✨ Enchantment Effects", "🔮 Curse Effects"
+- Effect properties from modifications now have distinct left-border styling
 
 ---
 

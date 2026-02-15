@@ -979,6 +979,96 @@ export function ItemsTab() {
       return null;
     }
 
+    // Types for grouped effects
+    type EffectProperty = { type: string; value?: unknown; target?: string; description?: string };
+    type EffectFeature = { featureId?: string; name?: string; description?: string };
+    type EffectSkill = { skillId?: string; name?: string; level?: string; proficiency?: string };
+    type EffectSpell = { spellId?: string; name?: string; level?: number; uses?: number; recharge?: string };
+
+    // Group effects by source item
+    const effectsBySource: Record<string, {
+      source: string;
+      instanceId?: string;
+      baseEffects: EffectProperty[];
+      enchantmentEffects: EffectProperty[];
+      curseEffects: EffectProperty[];
+      features: EffectFeature[];
+      skills: EffectSkill[];
+      spells: EffectSpell[];
+      isEnchanted: boolean;
+      isCursed: boolean;
+    }> = {};
+
+    equipmentEffects.forEach(effect => {
+      const sourceName = effect.source;
+      if (!effectsBySource[sourceName]) {
+        effectsBySource[sourceName] = {
+          source: sourceName,
+          instanceId: effect.instanceId,
+          baseEffects: [],
+          enchantmentEffects: [],
+          curseEffects: [],
+          features: [],
+          skills: [],
+          spells: [],
+          isEnchanted: false,
+          isCursed: false
+        };
+      }
+
+      const entry = effectsBySource[sourceName];
+      entry.instanceId = effect.instanceId;
+
+      // Get modification info for this source to determine effect types
+      const modInfo = getItemModificationInfo(sourceName);
+      const modifications = modInfo?.modifications || [];
+      entry.isEnchanted = modInfo?.isEnchanted ?? false;
+      entry.isCursed = modInfo?.isCursed ?? false;
+
+      // Categorize effects by their source type
+      if (effect.effects) {
+        effect.effects.forEach(prop => {
+          // Check if this effect comes from a modification
+          const isModificationEffect = modifications.some(mod =>
+            mod.properties?.some(p => p.type === prop.type && p.target === prop.target)
+          );
+
+          // Check if it's from a curse
+          const isCurseEffect = modifications.some(mod =>
+            mod.source === 'curse' && mod.properties?.some(p => p.type === prop.type && p.target === prop.target)
+          );
+
+          const effectProp = prop as EffectProperty;
+          if (isCurseEffect) {
+            entry.curseEffects.push(effectProp);
+          } else if (isModificationEffect) {
+            entry.enchantmentEffects.push(effectProp);
+          } else {
+            entry.baseEffects.push(effectProp);
+          }
+        });
+      }
+
+      // Merge features, skills, and spells
+      if (effect.features) {
+        entry.features = [...entry.features, ...(effect.features as EffectFeature[])];
+      }
+      if (effect.skills) {
+        entry.skills = [...entry.skills, ...(effect.skills as EffectSkill[])];
+      }
+      if (effect.spells) {
+        entry.spells = [...entry.spells, ...(effect.spells as EffectSpell[])];
+      }
+    });
+
+    // Format property value for display
+    const formatEffectValue = (value: unknown): string => {
+      if (typeof value === 'number') {
+        return value >= 0 ? `+${value}` : String(value);
+      }
+      return String(value);
+    };
+
     return (
       <div className="items-effects-section">
         <div className="items-effects-header">
@@ -986,43 +1076,105 @@ export function ItemsTab() {
           <h4 className="items-effects-title">Active Equipment Effects</h4>
         </div>
         <div className="items-effects-list">
-          {equipmentEffects.map((effect, idx) => (
-            <div key={idx} className="items-effect-card">
+          {Object.values(effectsBySource).map((entry, idx) => (
+            <div
+              key={idx}
+              className={`items-effect-card ${entry.isEnchanted ? 'items-effect-card-enchanted' : ''} ${entry.isCursed ? 'items-effect-card-cursed' : ''}`}
+            >
+              {/* Source header with modification badges */}
               <div className="items-effect-source">
-                <Sparkles size={14} className="items-effect-source-icon" />
-                <span className="items-effect-source-name">{effect.source}</span>
-                {effect.instanceId && (
-                  <span className="items-effect-instance-id" title={`Instance: ${effect.instanceId}`}>
-                    #{effect.instanceId.slice(-6)}
+                <Sparkles size={14} className={`items-effect-source-icon ${entry.isEnchanted ? 'items-effect-source-icon-enchanted' : ''} ${entry.isCursed ? 'items-effect-source-icon-cursed' : ''}`} />
+                <span className="items-effect-source-name">{entry.source}</span>
+                {entry.isEnchanted && (
+                  <span className="items-effect-mod-badge items-effect-mod-badge-enchantment">✨ Enchanted</span>
+                )}
+                {entry.isCursed && (
+                  <span className="items-effect-mod-badge items-effect-mod-badge-curse">🔮 Cursed</span>
+                )}
+                {entry.instanceId && (
+                  <span className="items-effect-instance-id" title={`Instance: ${entry.instanceId}`}>
+                    #{entry.instanceId.slice(-6)}
                   </span>
                 )}
               </div>
 
-              {/* Properties */}
-              {effect.effects && effect.effects.length > 0 && (
-                <div className="items-effect-properties">
-                  {effect.effects.map((prop, propIdx) => (
-                    <div key={propIdx} className="items-effect-property">
-                      <span className="items-effect-property-type">{prop.type}</span>
-                      <span className="items-effect-property-target">{prop.target}</span>
-                      <span className="items-effect-property-value">{String(prop.value)}</span>
-                      {prop.description && (
-                        <span className="items-effect-property-description" title={prop.description}>
-                          {prop.description}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+              {/* Base Effects */}
+              {entry.baseEffects.length > 0 && (
+                <div className="items-effect-group items-effect-group-base">
+                  <span className="items-effect-group-label">Base Item</span>
+                  <div className="items-effect-properties">
+                    {entry.baseEffects.map((prop, propIdx) => (
+                      <div key={propIdx} className="items-effect-property">
+                        <span className="items-effect-property-type">{prop.type}</span>
+                        {prop.target && (
+                          <span className="items-effect-property-target">{prop.target}</span>
+                        )}
+                        <span className="items-effect-property-value">{formatEffectValue(prop.value)}</span>
+                        {prop.description && (
+                          <span className="items-effect-property-description" title={prop.description}>
+                            {prop.description}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Enchantment Effects */}
+              {entry.enchantmentEffects.length > 0 && (
+                <div className="items-effect-group items-effect-group-enchantment">
+                  <span className="items-effect-group-label items-effect-group-label-enchantment">✨ Enchantment Effects</span>
+                  <div className="items-effect-properties">
+                    {entry.enchantmentEffects.map((prop, propIdx) => (
+                      <div key={propIdx} className="items-effect-property items-effect-property-enchantment">
+                        <span className="items-effect-property-type">{prop.type}</span>
+                        {prop.target && (
+                          <span className="items-effect-property-target">{prop.target}</span>
+                        )}
+                        <span className="items-effect-property-value">{formatEffectValue(prop.value)}</span>
+                        {prop.description && (
+                          <span className="items-effect-property-description" title={prop.description}>
+                            {prop.description}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Curse Effects */}
+              {entry.curseEffects.length > 0 && (
+                <div className="items-effect-group items-effect-group-curse">
+                  <span className="items-effect-group-label items-effect-group-label-curse">🔮 Curse Effects</span>
+                  <div className="items-effect-properties">
+                    {entry.curseEffects.map((prop, propIdx) => (
+                      <div key={propIdx} className="items-effect-property items-effect-property-curse">
+                        <span className="items-effect-property-type">{prop.type}</span>
+                        {prop.target && (
+                          <span className="items-effect-property-target">{prop.target}</span>
+                        )}
+                        <span className="items-effect-property-value">{formatEffectValue(prop.value)}</span>
+                        {prop.description && (
+                          <span className="items-effect-property-description" title={prop.description}>
+                            {prop.description}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Features */}
-              {effect.features && effect.features.length > 0 && (
+              {entry.features && entry.features.length > 0 && (
                 <div className="items-effect-features">
-                  {effect.features.map((feature, featureIdx) => (
+                  <span className="items-effect-features-label">Grants Features:</span>
+                  {entry.features.map((feature, featureIdx) => (
                     <div key={featureIdx} className="items-effect-feature">
                       <span className="items-effect-feature-name">
-                        {feature.featureId}
+                        {feature.featureId || feature.name || 'Unknown'}
                       </span>
                     </div>
                   ))}
@@ -1030,14 +1182,15 @@ export function ItemsTab() {
               )}
 
               {/* Skills */}
-              {effect.skills && effect.skills.length > 0 && (
+              {entry.skills && entry.skills.length > 0 && (
                 <div className="items-effect-skills">
-                  {effect.skills.map((skill, skillIdx) => (
+                  <span className="items-effect-skills-label">Grants Skills:</span>
+                  {entry.skills.map((skill, skillIdx) => (
                     <div key={skillIdx} className="items-effect-skill">
                       <Target size={12} className="items-effect-skill-icon" />
-                      <span className="items-effect-skill-name">{skill.skillId}</span>
-                      <span className={`items-effect-skill-level items-effect-skill-level-${skill.level}`}>
-                        {skill.level}
+                      <span className="items-effect-skill-name">{skill.skillId || skill.name || 'Unknown'}</span>
+                      <span className={`items-effect-skill-level items-effect-skill-level-${skill.level || skill.proficiency || 'proficient'}`}>
+                        {skill.level || skill.proficiency || 'proficient'}
                       </span>
                     </div>
                   ))}
@@ -1045,12 +1198,13 @@ export function ItemsTab() {
               )}
 
               {/* Spells */}
-              {effect.spells && effect.spells.length > 0 && (
+              {entry.spells && entry.spells.length > 0 && (
                 <div className="items-effect-spells">
-                  {effect.spells.map((spell, spellIdx) => (
+                  <span className="items-effect-spells-label">Grants Spells:</span>
+                  {entry.spells.map((spell, spellIdx) => (
                     <div key={spellIdx} className="items-effect-spell">
                       <Wand2 size={12} className="items-effect-spell-icon" />
-                      <span className="items-effect-spell-name">{spell.spellId}</span>
+                      <span className="items-effect-spell-name">{spell.spellId || spell.name || 'Unknown'}</span>
                       {spell.level && (
                         <span className="items-effect-spell-level">Level {spell.level}</span>
                       )}

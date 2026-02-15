@@ -1598,6 +1598,35 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   box-shadow: 0 1px 2px hsl(0 0% 0% / 0.2);
+  transition: all 0.2s ease;
+}
+
+/* Enchanted item card styling */
+.items-effect-card-enchanted {
+  background: linear-gradient(135deg, var(--color-surface-elevated), hsl(260 70% 50% / 0.05));
+  border-color: hsl(260 70% 50% / 0.3);
+}
+
+.items-effect-card-enchanted:hover {
+  border-color: hsl(260 70% 50% / 0.5);
+  box-shadow: 0 2px 8px hsl(260 70% 50% / 0.15);
+}
+
+/* Cursed item card styling */
+.items-effect-card-cursed {
+  background: linear-gradient(135deg, var(--color-surface-elevated), hsl(var(--cute-red) / 0.05));
+  border-color: hsl(var(--cute-red) / 0.3);
+}
+
+.items-effect-card-cursed:hover {
+  border-color: hsl(var(--cute-red) / 0.5);
+  box-shadow: 0 2px 8px hsl(var(--cute-red) / 0.15);
+}
+
+/* Both enchanted and cursed */
+.items-effect-card-enchanted.items-effect-card-cursed {
+  background: linear-gradient(135deg, var(--color-surface-elevated), hsl(260 70% 50% / 0.03), hsl(var(--cute-red) / 0.03));
+  border-color: hsl(270 40% 40% / 0.4);
 }
 
 .items-effect-source {
@@ -1607,6 +1636,7 @@
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px dashed var(--color-border);
+  flex-wrap: wrap;
 }
 
 .items-effect-source-icon {
@@ -1614,10 +1644,43 @@
   flex-shrink: 0;
 }
 
+.items-effect-source-icon-enchanted {
+  color: hsl(260 80% 65%);
+}
+
+.items-effect-source-icon-cursed {
+  color: hsl(var(--cute-red));
+}
+
 .items-effect-source-name {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+/* Modification badges in effect source */
+.items-effect-mod-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.items-effect-mod-badge-enchantment {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.2), hsl(220 70% 55% / 0.15));
+  color: hsl(260 80% 70%);
+  border: 1px solid hsl(260 70% 55% / 0.3);
+}
+
+.items-effect-mod-badge-curse {
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.15), hsl(20 70% 50% / 0.1));
+  color: hsl(var(--cute-red));
+  border: 1px solid hsl(var(--cute-red) / 0.3);
 }
 
 .items-effect-instance-id {
@@ -1630,6 +1693,34 @@
   border-radius: var(--radius-sm);
 }
 
+/* Effect groups for source separation */
+.items-effect-group {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.items-effect-group + .items-effect-group {
+  border-top: 1px dashed var(--color-border);
+}
+
+.items-effect-group-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.items-effect-group-label-enchantment {
+  color: hsl(260 80% 70%);
+}
+
+.items-effect-group-label-curse {
+  color: hsl(var(--cute-red));
+}
+
 .items-effect-properties,
 .items-effect-features,
 .items-effect-skills,
@@ -1637,7 +1728,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
-  margin-top: 0.5rem;
 }
 
 .items-effect-property,
@@ -1651,6 +1741,26 @@
   background: var(--color-surface-dim);
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
+}
+
+/* Enchantment property styling */
+.items-effect-property-enchantment {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.1), hsl(220 70% 55% / 0.08));
+  border-left: 2px solid hsl(260 70% 55% / 0.5);
+}
+
+.items-effect-property-enchantment .items-effect-property-type {
+  color: hsl(260 80% 60%);
+}
+
+/* Curse property styling */
+.items-effect-property-curse {
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.1), hsl(20 70% 50% / 0.05));
+  border-left: 2px solid hsl(var(--cute-red) / 0.5);
+}
+
+.items-effect-property-curse .items-effect-property-type {
+  color: hsl(var(--cute-red));
 }
 
 .items-effect-property-type {
@@ -1677,6 +1787,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Features, Skills, Spells labels */
+.items-effect-features-label,
+.items-effect-skills-label,
+.items-effect-spells-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
 }
 
 .items-effect-feature-name {
