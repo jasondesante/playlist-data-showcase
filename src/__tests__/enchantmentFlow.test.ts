@@ -243,26 +243,223 @@ describe('EquipmentModifier - Weapon Enchantments (Task 7.1)', () => {
   });
 });
 
-describe('EquipmentModifier - Armor Enchantments', () => {
-  it('should apply +1 Armor enchantment', () => {
-    const equipment = createTestEquipment();
-    const plusOne = ARMOR_ENCHANTMENTS.plusOne;
+describe('EquipmentModifier - Armor Enchantments (Task 7.1)', () => {
+  describe('Applying Enhancement Enchantments', () => {
+    it('should apply +1 Armor Enhancement enchantment', () => {
+      const equipment = createTestEquipment();
+      const plusOne = ARMOR_ENCHANTMENTS.plusOne;
 
-    const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusOne);
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusOne);
 
-    const armor = result.armor.find(a => a.name === 'Leather Armor');
-    expect(armor?.modifications?.length).toBe(1);
-    expect(armor?.modifications?.[0].id).toBe('plus_one');
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor).toBeDefined();
+      expect(armor?.modifications).toBeDefined();
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('plus_one_armor');
+      expect(armor?.modifications?.[0].name).toBe('+1 Armor Enhancement');
+      expect(armor?.modifications?.[0].source).toBe('enchantment');
+    });
+
+    it('should apply +2 Armor Enhancement enchantment', () => {
+      const equipment = createTestEquipment();
+      const plusTwo = ARMOR_ENCHANTMENTS.plusTwo;
+
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusTwo);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('plus_two_armor');
+      expect(armor?.modifications?.[0].name).toBe('+2 Armor Enhancement');
+    });
+
+    it('should add AC bonus property to armor', () => {
+      const equipment = createTestEquipment();
+      const plusOne = ARMOR_ENCHANTMENTS.plusOne;
+
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusOne);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'passive_modifier',
+          target: 'ac',
+          value: 1
+        })
+      );
+    });
+
+    it('should add +2 AC bonus property to armor', () => {
+      const equipment = createTestEquipment();
+      const plusTwo = ARMOR_ENCHANTMENTS.plusTwo;
+
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusTwo);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.[0].properties).toContainEqual(
+        expect.objectContaining({
+          type: 'passive_modifier',
+          target: 'ac',
+          value: 2
+        })
+      );
+    });
   });
 
-  it('should apply +2 Armor enchantment', () => {
-    const equipment = createTestEquipment();
-    const plusTwo = ARMOR_ENCHANTMENTS.plusTwo;
+  describe('Enchantment Stacking on Armor', () => {
+    it('should allow multiple enchantments on the same armor', () => {
+      const equipment = createTestEquipment();
 
-    const result = EquipmentModifier.enchant(equipment, 'Leather Armor', plusTwo);
+      // Apply +1 enhancement
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
 
-    const armor = result.armor.find(a => a.name === 'Leather Armor');
-    expect(armor?.modifications?.[0].id).toBe('plus_two');
+      // Apply a resistance on top
+      result = EquipmentModifier.enchant(result, 'Leather Armor', RESISTANCE_ENCHANTMENTS.fire);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(2);
+      expect(armor?.modifications?.map(m => m.id)).toContain('plus_one_armor');
+      expect(armor?.modifications?.map(m => m.id)).toContain('fire_resistance');
+    });
+
+    it('should allow re-applying the same armor enchantment (stacking)', () => {
+      const equipment = createTestEquipment();
+
+      // Apply +1 enhancement twice
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(2);
+    });
+  });
+
+  describe('Query Methods for Armor', () => {
+    it('should correctly identify enchanted armor', () => {
+      const equipment = createTestEquipment();
+
+      // Before enchantment
+      expect(EquipmentModifier.isEnchanted(equipment, 'Leather Armor')).toBe(false);
+
+      // After enchantment
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(true);
+    });
+
+    it('should correctly get modification history for armor', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Leather Armor', RESISTANCE_ENCHANTMENTS.fire);
+
+      const history = EquipmentModifier.getModificationHistory(result, 'Leather Armor');
+      expect(history.length).toBe(2);
+      expect(history[0].id).toBe('plus_one_armor');
+      expect(history[1].id).toBe('fire_resistance');
+    });
+
+    it('should correctly get combined effects for enchanted armor', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Leather Armor', RESISTANCE_ENCHANTMENTS.fire);
+
+      const effects = EquipmentModifier.getCombinedEffects(result, 'Leather Armor');
+      expect(effects.length).toBeGreaterThan(0);
+    });
+
+    it('should correctly get item summary for enchanted armor', () => {
+      const equipment = createTestEquipment();
+      const result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+
+      const summary = EquipmentModifier.getItemSummary(result, 'Leather Armor');
+      expect(summary).not.toBeNull();
+      expect(summary?.isEnchanted).toBe(true);
+      expect(summary?.isCursed).toBe(false);
+      expect(summary?.modificationCount).toBe(1);
+    });
+  });
+
+  describe('Applying Curses to Armor', () => {
+    it('should apply weakness curse to armor', () => {
+      const equipment = createTestEquipment();
+      const weakness = CURSES.weakness;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', weakness);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].source).toBe('curse');
+      expect(armor?.modifications?.[0].id).toBe('weakness');
+    });
+
+    it('should correctly identify cursed armor', () => {
+      const equipment = createTestEquipment();
+
+      // Before curse
+      expect(EquipmentModifier.isCursed(equipment, 'Leather Armor')).toBe(false);
+
+      // After curse
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', CURSES.weakness);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(true);
+    });
+
+    it('should apply attunement curse to armor (locks item)', () => {
+      const equipment = createTestEquipment();
+      const attunement = CURSES.attunement;
+
+      const result = EquipmentModifier.curse(equipment, 'Leather Armor', attunement);
+
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.some(m => m.id.includes('attunement'))).toBe(true);
+    });
+  });
+
+  describe('Remove Operations on Armor', () => {
+    it('should remove a specific modification from armor', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.enchant(result, 'Leather Armor', RESISTANCE_ENCHANTMENTS.fire);
+
+      // Verify two modifications
+      let armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(2);
+
+      // Remove one
+      result = EquipmentModifier.removeModification(result, 'Leather Armor', 'fire_resistance');
+      armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(armor?.modifications?.[0].id).toBe('plus_one_armor');
+    });
+
+    it('should disenchant armor (remove all enchantments, keep curses)', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Leather Armor', CURSES.weakness);
+
+      // Verify one enchantment and one curse
+      let armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(2);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(true);
+
+      // Disenchant
+      result = EquipmentModifier.disenchant(result, 'Leather Armor');
+      armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(false);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(true);
+    });
+
+    it('should lift curse from armor (remove all curses, keep enchantments)', () => {
+      const equipment = createTestEquipment();
+      let result = EquipmentModifier.enchant(equipment, 'Leather Armor', ARMOR_ENCHANTMENTS.plusOne);
+      result = EquipmentModifier.curse(result, 'Leather Armor', CURSES.weakness);
+
+      // Lift curse
+      result = EquipmentModifier.liftCurse(result, 'Leather Armor');
+      const armor = result.armor.find(a => a.name === 'Leather Armor');
+      expect(armor?.modifications?.length).toBe(1);
+      expect(EquipmentModifier.isEnchanted(result, 'Leather Armor')).toBe(true);
+      expect(EquipmentModifier.isCursed(result, 'Leather Armor')).toBe(false);
+    });
   });
 });
 

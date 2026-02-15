@@ -387,7 +387,7 @@ interface EquipmentModification {
 
 ### 7.1 Test Enchantment Flow
 - [x] Test applying weapon enchantments
-- [ ] Test applying armor enchantments
+- [x] Test applying armor enchantments
 - [ ] Test applying resistance enchantments
 - [ ] Test applying stat boost enchantments
 - [ ] Test applying combo enchantments
@@ -401,6 +401,16 @@ interface EquipmentModification {
 - Fixed issue where `appliedModificationIds` was using stale item snapshot - now derives from live character state
 - Verified enchantment stacking works (multiple enchantments on same item)
 - Created test file `src/__tests__/enchantmentFlow.test.ts` with comprehensive test cases
+- Build passes with no new errors
+
+**Armor Enchantments Completed (2026-02-15):**
+- Expanded armor enchantment tests to match weapon test coverage
+- Fixed ID assertions: armor enchantments use `plus_one_armor` and `plus_two_armor` IDs (not `plus_one`/`plus_two`)
+- Added tests for AC bonus properties verification
+- Added tests for armor enchantment stacking (+1 + resistance)
+- Added tests for query methods (isEnchanted, getModificationHistory, getCombinedEffects, getItemSummary)
+- Added tests for curses on armor (weakness, attunement lock)
+- Added tests for remove operations (removeModification, disenchant, liftCurse)
 - Build passes with no new errors
 
 ### 7.2 Test Curse Flow
