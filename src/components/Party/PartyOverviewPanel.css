@@ -60,6 +60,84 @@
   }
 }
 
+/* Tablet (768px - 1023px) Responsive Design */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .party-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .party-stat-card {
+    padding: 0.8125rem 0.9375rem;
+    gap: 0.6875rem;
+  }
+
+  .party-stat-card-icon {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+  .party-stat-card-label {
+    font-size: 0.6563rem;
+  }
+
+  .party-stat-card-value {
+    font-size: 1.1875rem;
+  }
+
+  .party-stat-card-subtitle {
+    font-size: 0.6563rem;
+  }
+
+  .party-xp-section {
+    padding-top: 0.875rem;
+  }
+
+  .party-xp-section-title {
+    font-size: 0.8438rem;
+    margin-bottom: 0.8125rem;
+  }
+
+  .party-xp-section-subtitle {
+    font-size: 0.7188rem;
+  }
+
+  .party-xp-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5625rem;
+  }
+
+  .party-xp-card {
+    padding: 0.6875rem 0.4375rem;
+  }
+
+  .party-xp-card-difficulty {
+    font-size: 0.6563rem;
+  }
+
+  .party-xp-card-value {
+    font-size: 0.8438rem;
+  }
+
+  /* Empty state for tablet */
+  .party-overview-empty {
+    padding: 1.75rem 0.875rem;
+  }
+
+  .party-overview-empty-icon {
+    font-size: 2.25rem;
+    margin-bottom: 0.6875rem;
+  }
+
+  .party-overview-empty-title {
+    font-size: 0.9688rem;
+  }
+
+  .party-overview-empty-text {
+    font-size: 0.8438rem;
+    max-width: 260px;
+  }
+}
+
 @media (min-width: 1024px) {
   .party-stats-grid {
     grid-template-columns: repeat(5, 1fr);

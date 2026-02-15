@@ -196,9 +196,294 @@
   }
 }
 
+/* Tablet (768px - 1023px) Responsive Design */
 @media (min-width: 769px) and (max-width: 1024px) {
   .party-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Header adjustments for tablet */
+  .party-header {
+    gap: 0.875rem;
+  }
+
+  .party-header-icon {
+    width: 2.375rem;
+    height: 2.375rem;
+  }
+
+  .party-header-title {
+    font-size: 1.1875rem;
+  }
+
+  .party-header-subtitle {
+    font-size: 0.8438rem;
+  }
+
+  /* Controls section for tablet */
+  .party-controls {
+    gap: 0.875rem;
+  }
+
+  .party-search {
+    min-width: 180px;
+  }
+
+  .party-sort {
+    min-width: 140px;
+  }
+
+  /* Selection controls for tablet */
+  .party-selection-controls {
+    padding: 0.6875rem 0.875rem;
+    gap: 0.875rem;
+  }
+
+  .party-selection-count {
+    font-size: 0.8438rem;
+  }
+
+  /* Party Analysis Section */
+  .party-analysis-section {
+    gap: 0.875rem;
+  }
+
+  /* Empty state for tablet */
+  .party-empty-state {
+    padding: 3.5rem 1.75rem;
+  }
+
+  .party-empty-icon {
+    font-size: 3.5rem;
+  }
+
+  .party-empty-title {
+    font-size: 1.1875rem;
+  }
+
+  .party-empty-description {
+    font-size: 0.875rem;
+    max-width: 380px;
+  }
+
+  /* No results for tablet */
+  .party-no-results {
+    padding: 2.5rem 1.75rem;
+  }
+
+  .party-no-results-icon {
+    font-size: 2.75rem;
+  }
+
+  .party-no-results-title {
+    font-size: 1.0625rem;
+  }
+
+  .party-no-results-text {
+    font-size: 0.875rem;
+  }
+
+  /* Character card adjustments for tablet */
+  .party-card {
+    padding: 0.875rem;
+    padding-bottom: 2.375rem;
+  }
+
+  .party-card-avatar {
+    font-size: 1.875rem;
+  }
+
+  .party-card-name {
+    font-size: 0.9688rem;
+  }
+
+  .party-card-subtitle {
+    font-size: 0.7188rem;
+  }
+
+  .party-card-level {
+    padding: 0.0938rem 0.4375rem;
+    font-size: 0.5938rem;
+  }
+
+  /* Selection checkbox for tablet */
+  .party-card-selection-checkbox {
+    width: 1.625rem;
+    height: 1.625rem;
+  }
+
+  /* Game mode badge for tablet */
+  .party-card-game-mode-badge {
+    padding: 0.2188rem 0.4375rem;
+    font-size: 0.5938rem;
+  }
+
+  /* Detail modal adjustments for tablet */
+  .party-detail-content {
+    max-width: 700px;
+    max-height: 88vh;
+  }
+
+  .party-detail-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .party-detail-avatar {
+    font-size: 2.25rem;
+  }
+
+  .party-detail-info h2 {
+    font-size: 1.1875rem;
+  }
+
+  .party-detail-info p {
+    font-size: 0.8438rem;
+  }
+
+  .party-detail-body {
+    padding: 0.875rem;
+    gap: 0.875rem;
+  }
+
+  .party-detail-section {
+    padding: 1.125rem;
+  }
+
+  .party-detail-section-title {
+    font-size: 0.9688rem;
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.6875rem;
+  }
+
+  .party-detail-stats-grid {
+    gap: 0.875rem;
+  }
+
+  .party-detail-stat-item {
+    padding: 0.6875rem;
+  }
+
+  .party-detail-stat-label {
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-stat-value {
+    font-size: 0.9688rem;
+  }
+
+  .party-detail-abilities-grid {
+    gap: 0.625rem;
+  }
+
+  .party-detail-ability-item {
+    padding: 0.6875rem;
+  }
+
+  .party-detail-ability-name {
+    font-size: 0.5938rem;
+  }
+
+  .party-detail-ability-score {
+    font-size: 1.1875rem;
+  }
+
+  .party-detail-ability-modifier {
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-skills-list {
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 0.4375rem;
+  }
+
+  .party-detail-skill-item {
+    padding: 0.4375rem 0.6875rem;
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-equipment-weight {
+    padding: 0.5625rem;
+  }
+
+  .party-detail-equipment-weight-label {
+    font-size: 0.7813rem;
+  }
+
+  .party-detail-spells-group-title {
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-spell-tag {
+    padding: 0.2188rem 0.4375rem;
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-xp-section {
+    padding: 0.875rem;
+  }
+
+  .party-detail-xp-label {
+    font-size: 0.8438rem;
+  }
+
+  .party-detail-xp-values {
+    font-size: 0.8438rem;
+  }
+
+  .party-detail-xp-bar {
+    height: 0.6875rem;
+  }
+
+  .party-detail-xp-hint {
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-saving-throws-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.4375rem;
+  }
+
+  .party-detail-saving-throw-item {
+    padding: 0.4375rem 0.5625rem;
+  }
+
+  .party-detail-saving-throw-ability {
+    font-size: 0.7813rem;
+  }
+
+  .party-detail-traits-grid {
+    gap: 0.4375rem;
+  }
+
+  .party-detail-trait-badge {
+    padding: 0.3438rem 0.5625rem;
+    font-size: 0.7188rem;
+  }
+
+  .party-detail-appearance-section {
+    gap: 0.5625rem;
+  }
+
+  .party-detail-appearance-row {
+    gap: 0.6875rem;
+  }
+
+  .party-detail-appearance-label {
+    font-size: 0.8438rem;
+    min-width: 5.5rem;
+  }
+
+  .party-detail-appearance-value {
+    font-size: 0.9375rem;
+  }
+
+  .party-detail-appearance-color-swatch {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .party-detail-appearance-color-label {
+    font-size: 0.7188rem;
   }
 }
 

@@ -149,6 +149,45 @@
   }
 }
 
+/* Tablet (768px - 1023px) Responsive Design */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .collapsible-section-header {
+    padding: 0.9375rem 1.125rem;
+    gap: 0.6875rem;
+  }
+
+  .collapsible-section-header-left {
+    gap: 0.6875rem;
+  }
+
+  .collapsible-section-icon {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+  .collapsible-section-title-group {
+    gap: 0.0938rem;
+  }
+
+  .collapsible-section-title {
+    font-size: 0.9688rem;
+  }
+
+  .collapsible-section-subtitle {
+    font-size: 0.7188rem;
+  }
+
+  .collapsible-section-badge {
+    padding: 0.0938rem 0.4375rem;
+    font-size: 0.7188rem;
+    min-width: 1.375rem;
+  }
+
+  .collapsible-section-inner {
+    padding: 0 1.125rem 1.125rem 1.125rem;
+  }
+}
+
 /* Extra Small Mobile (375px) */
 @media (max-width: 400px) {
   .collapsible-section {
