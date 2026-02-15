@@ -83,12 +83,28 @@ export interface EffectBadgeProps {
 
 /**
  * Props for EffectList component
+ *
+ * Task 5.3: Effects Summary Component
+ * Added showStacking option to display stacking indicators
  */
 export interface EffectListProps {
   effects: (FeatureEffect | EquipmentProperty)[];
   source?: string;
   compact?: boolean;
   groupByType?: boolean;
+  /** Show stacking indicators when multiple effects of the same type/target exist */
+  showStacking?: boolean;
+  /** Optional title to display above the effects list */
+  title?: string;
+}
+
+/**
+ * Stacking group information for an effect
+ * Used to display count and aggregate totals when multiple effects stack
+ */
+export interface StackingInfo {
+  count: number;
+  aggregatedValue?: number;
 }
 
 /**
@@ -212,13 +228,103 @@ export function EffectBadge({ effect, source, showTarget = true, compact = false
 }
 
 // ===========================================
+// Helper Functions for Stacking
+// ===========================================
+
+/**
+ * Calculate stacking groups for effects
+ * Groups effects by type and target to detect stacking
+ *
+ * Task 5.3: Effects Summary Component - Stacking Detection
+ */
+function calculateStackingGroups(
+  effects: (FeatureEffect | EquipmentProperty)[]
+): Map<string, { effects: (FeatureEffect | EquipmentProperty)[]; aggregatedValue?: number }> {
+  const groups = new Map<string, { effects: (FeatureEffect | EquipmentProperty)[]; aggregatedValue?: number }>();
+
+  for (const effect of effects) {
+    // Create a key based on type and target for stacking detection
+    const key = `${effect.type}:${effect.target || 'none'}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, { effects: [] });
+    }
+
+    const group = groups.get(key)!;
+    group.effects.push(effect);
+
+    // Aggregate numeric values for stat_bonus and similar types
+    if (typeof effect.value === 'number' && effect.type === 'stat_bonus') {
+      group.aggregatedValue = (group.aggregatedValue || 0) + effect.value;
+    }
+  }
+
+  return groups;
+}
+
+/**
+ * Get stacking info for a specific effect
+ * Returns count of effects in the same stack and aggregated value
+ */
+function getStackingInfo(
+  effect: FeatureEffect | EquipmentProperty,
+  stackingGroups: Map<string, { effects: (FeatureEffect | EquipmentProperty)[]; aggregatedValue?: number }>
+): StackingInfo | null {
+  const key = `${effect.type}:${effect.target || 'none'}`;
+  const group = stackingGroups.get(key);
+
+  if (!group || group.effects.length <= 1) {
+    return null;
+  }
+
+  return {
+    count: group.effects.length,
+    aggregatedValue: group.aggregatedValue
+  };
+}
+
+// ===========================================
 // EffectList Component
 // ===========================================
 
-export function EffectList({ effects, source, compact = false, groupByType = false }: EffectListProps) {
+/**
+ * Reusable EffectsList component for displaying feature and equipment effects
+ *
+ * Task 5.3: Effects Summary Component
+ *
+ * Features:
+ * - Accepts effects array as prop
+ * - Renders each effect with icon and description
+ * - Optional stacking indicators when showStacking is true
+ * - Supports grouping by type
+ * - Compact mode for inline display
+ *
+ * @example
+ * ```tsx
+ * <EffectList
+ *   effects={feature.effects}
+ *   showStacking={true}
+ *   title="Effects"
+ * />
+ * ```
+ */
+export function EffectList({
+  effects,
+  source,
+  compact = false,
+  groupByType = false,
+  showStacking = false,
+  title
+}: EffectListProps) {
   if (!effects || effects.length === 0) {
     return null;
   }
+
+  // Calculate stacking groups if stacking is enabled
+  const stackingGroups = showStacking ? calculateStackingGroups(effects) : null;
+
+  // Track which effects have been rendered in stacking mode to avoid duplicates
+  const renderedStackKeys = new Set<string>();
 
   if (groupByType) {
     const groups = groupEffectsByType(effects);
@@ -235,14 +341,46 @@ export function EffectList({ effects, source, compact = false, groupByType = fal
                 <span className="effect-type-count">{typeEffects.length}</span>
               </div>
               <div className="effect-type-items">
-                {typeEffects.map((effect, idx) => (
-                  <EffectBadge
-                    key={idx}
-                    effect={effect}
-                    source={source}
-                    compact={compact}
-                  />
-                ))}
+                {typeEffects.map((effect, idx) => {
+                  // In stacking mode, check if we've already rendered this stack
+                  if (showStacking && stackingGroups) {
+                    const stackKey = `${effect.type}:${effect.target || 'none'}`;
+                    if (renderedStackKeys.has(stackKey)) {
+                      return null;
+                    }
+                    renderedStackKeys.add(stackKey);
+
+                    const stackInfo = getStackingInfo(effect, stackingGroups);
+                    if (stackInfo) {
+                      // Render stacked effect with indicator
+                      return (
+                        <span
+                          key={idx}
+                          className="effect-badge effect-stacked"
+                          style={{ '--effect-color': config.color } as React.CSSProperties}
+                          title={`${stackInfo.count} effects stacked. Total: ${stackInfo.aggregatedValue !== undefined ? formatEffectValue(stackInfo.aggregatedValue) : 'see individual effects'}`}
+                        >
+                          <Icon size={compact ? 12 : 14} className="effect-badge-icon" />
+                          <span className="effect-badge-type">{config.label}</span>
+                          <span className="effect-badge-target">{formatTarget(effect.target)}</span>
+                          {stackInfo.aggregatedValue !== undefined && (
+                            <span className="effect-badge-value">{formatEffectValue(stackInfo.aggregatedValue)}</span>
+                          )}
+                          <span className="effect-stacking-indicator">×{stackInfo.count}</span>
+                        </span>
+                      );
+                    }
+                  }
+
+                  return (
+                    <EffectBadge
+                      key={idx}
+                      effect={effect}
+                      source={source}
+                      compact={compact}
+                    />
+                  );
+                })}
               </div>
             </div>
           );
@@ -253,14 +391,49 @@ export function EffectList({ effects, source, compact = false, groupByType = fal
 
   return (
     <div className="effect-list">
-      {effects.map((effect, idx) => (
-        <EffectBadge
-          key={idx}
-          effect={effect}
-          source={source}
-          compact={compact}
-        />
-      ))}
+      {title && <span className="effect-list-title">{title}</span>}
+      {effects.map((effect, idx) => {
+        // In stacking mode, check if we've already rendered this stack
+        if (showStacking && stackingGroups) {
+          const stackKey = `${effect.type}:${effect.target || 'none'}`;
+          if (renderedStackKeys.has(stackKey)) {
+            return null;
+          }
+          renderedStackKeys.add(stackKey);
+
+          const stackInfo = getStackingInfo(effect, stackingGroups);
+          if (stackInfo) {
+            // Render stacked effect with indicator
+            const config = getEffectTypeConfig(effect.type);
+            const Icon = config.icon;
+            return (
+              <span
+                key={idx}
+                className={`effect-badge effect-stacked ${compact ? 'effect-badge-compact' : ''}`}
+                style={{ '--effect-color': config.color } as React.CSSProperties}
+                title={`${stackInfo.count} effects stacked. Total: ${stackInfo.aggregatedValue !== undefined ? formatEffectValue(stackInfo.aggregatedValue) : 'see individual effects'}`}
+              >
+                <Icon size={compact ? 12 : 14} className="effect-badge-icon" />
+                <span className="effect-badge-type">{config.label}</span>
+                <span className="effect-badge-target">{formatTarget(effect.target)}</span>
+                {stackInfo.aggregatedValue !== undefined && (
+                  <span className="effect-badge-value">{formatEffectValue(stackInfo.aggregatedValue)}</span>
+                )}
+                <span className="effect-stacking-indicator">×{stackInfo.count}</span>
+              </span>
+            );
+          }
+        }
+
+        return (
+          <EffectBadge
+            key={idx}
+            effect={effect}
+            source={source}
+            compact={compact}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -185,10 +185,10 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Display effect conditions inline
 
 ### Task 5.3: Create Effects Summary Component
-- [ ] Create reusable `EffectsList` component
-- [ ] Accept effects array as prop
-- [ ] Render each effect with icon, description
-- [ ] Handle stacking indicators
+- [x] Create reusable `EffectsList` component
+- [x] Accept effects array as prop
+- [x] Render each effect with icon, description
+- [x] Handle stacking indicators
 
 ---
 

@@ -91,6 +91,18 @@
   gap: 0.375rem;
 }
 
+/* Title for the effects list */
+.effect-list-title {
+  display: block;
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
 /* Grouped effect list */
 .effect-list-grouped {
   display: flex;
@@ -138,6 +150,35 @@
   flex-wrap: wrap;
   gap: 0.375rem;
   padding-left: 0.5rem;
+}
+
+/* ========================================
+   STACKING INDICATORS (Task 5.3)
+   ======================================== */
+
+/* Stacked effect badge with stacking indicator */
+.effect-stacked {
+  position: relative;
+}
+
+/* Stacking indicator badge - shows count of stacked effects */
+.effect-stacking-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
+  padding: 0.0625rem 0.25rem;
+  background: color-mix(in srgb, var(--effect-color) 30%, transparent);
+  border-radius: calc(var(--radius) - 4px);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: var(--effect-color);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* Hover state for stacked effects - show tooltip with details */
+.effect-stacked:hover .effect-stacking-indicator {
+  background: color-mix(in srgb, var(--effect-color) 50%, transparent);
 }
 
 /* ========================================
