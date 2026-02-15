@@ -11,7 +11,10 @@ import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useFeatureNames } from '../../hooks/useFeatureNames';
+import { usePartyAnalysis } from '../../hooks/usePartyAnalysis';
 import { CharacterCard } from '../ui/CharacterCard';
+import { PartyOverviewPanel } from '../Party/PartyOverviewPanel';
+import { PartyCompositionPanel } from '../Party/PartyCompositionPanel';
 import { getCharacterAvatar, getStatIcon } from '../../utils/characterIcons';
 import { logger } from '../../utils/logger';
 import { Card } from '../ui/Card';
@@ -100,6 +103,12 @@ export function PartyTab() {
   // Count of selected heroes for display
   const selectedCount = selectedHeroSeeds.length;
   const totalCount = characters.length;
+
+  // Convert selectedHeroSeeds array to Set for hooks and components
+  const selectedSeedsSet = useMemo(() => new Set(selectedHeroSeeds), [selectedHeroSeeds]);
+
+  // Get party analysis using the hook
+  const partyAnalysis = usePartyAnalysis(characters, selectedSeedsSet);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -301,6 +310,23 @@ export function PartyTab() {
           {isClearing ? 'Clearing...' : 'Clear All'}
         </Button>
       </header>
+
+      {/* Party Overview Panel - Show analysis and XP budgets */}
+      {characters.length >= 2 && (
+        <PartyOverviewPanel
+          analysis={partyAnalysis}
+          selectedCount={selectedCount}
+          totalCount={totalCount}
+        />
+      )}
+
+      {/* Party Composition Panel - Show class/role distribution */}
+      {characters.length >= 2 && (
+        <PartyCompositionPanel
+          characters={characters}
+          selectedSeeds={selectedSeedsSet}
+        />
+      )}
 
       {/* Controls: Search and Sort */}
       <div className="party-controls">
