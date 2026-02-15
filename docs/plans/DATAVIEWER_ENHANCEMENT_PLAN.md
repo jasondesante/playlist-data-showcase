@@ -25,9 +25,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 1: Equipment Enhanced Properties Display
 
 ### Task 1.1: Update Equipment Type Handling
-- [ ] Import `EnhancedEquipment` type from playlist-data-engine in [useDataViewer.ts](src/hooks/useDataViewer.ts)
-- [ ] Update equipment type references to support both `Equipment` and `EnhancedEquipment`
-- [ ] Add type guard function `isEnhancedEquipment(item)` to check for enhanced properties
+- [x] Import `EnhancedEquipment` type from playlist-data-engine in [useDataViewer.ts](src/hooks/useDataViewer.ts)
+- [x] Update equipment type references to support both `Equipment` and `EnhancedEquipment`
+- [x] Add type guard function `isEnhancedEquipment(item)` to check for enhanced properties
 
 ### Task 1.2: Display grantsSkills on Equipment Cards
 - [ ] Add new section in `renderEquipment()` for skills granted by equipment

@@ -14,6 +14,47 @@ import {
     type Equipment,
     type EnhancedEquipment
 } from 'playlist-data-engine';
+
+/**
+ * Type guard to check if an equipment item has enhanced properties.
+ *
+ * Enhanced properties include:
+ * - grantsFeatures: Features granted when equipped
+ * - grantsSkills: Skills granted when equipped
+ * - grantsSpells: Spells granted when equipped
+ * - tags: Equipment tags for filtering
+ * - spawnWeight: Spawn probability for random generation
+ * - properties: Advanced equipment properties (stat bonuses, abilities, etc.)
+ *
+ * @param item - The equipment item to check
+ * @returns True if the item has any enhanced properties defined
+ *
+ * @example
+ * ```tsx
+ * const item = equipment[0];
+ * if (isEnhancedEquipment(item)) {
+ *   // Safe to access item.grantsSkills, item.grantsSpells, etc.
+ *   console.log('Tags:', item.tags);
+ * }
+ * ```
+ */
+export function isEnhancedEquipment(item: Equipment | EnhancedEquipment): item is EnhancedEquipment & {
+    grantsFeatures?: NonNullable<Equipment['grantsFeatures']>;
+    grantsSkills?: NonNullable<Equipment['grantsSkills']>;
+    grantsSpells?: NonNullable<Equipment['grantsSpells']>;
+    tags?: NonNullable<Equipment['tags']>;
+    spawnWeight?: NonNullable<Equipment['spawnWeight']>;
+    properties?: NonNullable<Equipment['properties']>;
+} {
+    return (
+        item.grantsFeatures !== undefined ||
+        item.grantsSkills !== undefined ||
+        item.grantsSpells !== undefined ||
+        item.tags !== undefined ||
+        item.spawnWeight !== undefined ||
+        (item.properties !== undefined && item.properties.length > 0)
+    );
+}
 import { logger } from '@/utils/logger';
 import { useDataViewerStore } from '@/store/dataViewerStore';
 
