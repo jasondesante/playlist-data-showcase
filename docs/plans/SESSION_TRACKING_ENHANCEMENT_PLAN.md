@@ -95,12 +95,12 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 2.2: Create MasteryProgressBar component
 
-- [ ] Create `src/components/ui/MasteryProgressBar.tsx`
-- [ ] Props: `currentCount: number`, `nextThreshold: number`, `level: string`
-- [ ] Display progress bar toward next mastery level
-- [ ] Show text like "3/5 listens to Familiar"
-- [ ] Animated fill when progress changes
-- [ ] Create CSS styles inline or in existing SessionTrackingTab.css
+- [x] Create `src/components/ui/MasteryProgressBar.tsx`
+- [x] Props: `level: MasteryLevel`, `listenCount: number`, `compact?: boolean`, `className?: string`
+- [x] Display progress bar toward next mastery level
+- [x] Show text like "3/5 listens to Familiar"
+- [x] Animated fill when progress changes
+- [x] Create CSS styles in `src/components/ui/MasteryProgressBar.css`
 
 ---
 
