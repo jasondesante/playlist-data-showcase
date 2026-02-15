@@ -104,11 +104,11 @@ function usePartyAnalysis(
 - [x] Ensure selection doesn't interfere with click-to-view-details
 
 ### Task 3.2: Selection Controls Bar
-- [ ] Add selection controls bar above the character grid
-- [ ] Include "Select All" button
-- [ ] Include "Deselect All" button
-- [ ] Show count: "X of Y heroes selected for analysis"
-- [ ] Only show when there are 2+ characters
+- [x] Add selection controls bar above the character grid
+- [x] Include "Select All" button
+- [x] Include "Deselect All" button
+- [x] Show count: "X of Y heroes selected for analysis"
+- [x] Only show when there are 2+ characters
 
 ### Task 3.3: Selection State Persistence
 - [ ] Consider if selection should persist across tab changes (optional)

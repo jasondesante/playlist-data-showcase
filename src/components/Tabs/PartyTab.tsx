@@ -147,14 +147,9 @@ export function PartyTab() {
     setSelectedHeroSeeds(new Set());
   }, []);
 
-  // Hero selection state is ready for Phase 2/3 integration:
-  // - selectedHeroSeeds: Set of seeds for heroes included in party analysis
-  // - toggleHeroSelection(seed): Toggle a single hero's selection (now used by CharacterCard)
-  // - selectAllHeroes(): Select all heroes (will be used in Task 3.2)
-  // - deselectAllHeroes(): Deselect all heroes (will be used in Task 3.2)
-  // Used by CharacterCard for selection mode:
-  void selectAllHeroes;
-  void deselectAllHeroes;
+  // Count of selected heroes for display
+  const selectedCount = selectedHeroSeeds.size;
+  const totalCount = characters.length;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -407,6 +402,33 @@ export function PartyTab() {
             Try adjusting your search or sort criteria.
           </div>
         </Card>
+      )}
+
+      {/* Selection Controls Bar - Only show when 2+ characters */}
+      {characters.length >= 2 && (
+        <div className="party-selection-controls">
+          <div className="party-selection-buttons">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={selectAllHeroes}
+              disabled={selectedCount === totalCount}
+            >
+              Select All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={deselectAllHeroes}
+              disabled={selectedCount === 0}
+            >
+              Deselect All
+            </Button>
+          </div>
+          <div className="party-selection-count">
+            <strong>{selectedCount}</strong> of <strong>{totalCount}</strong> {totalCount === 1 ? 'hero' : 'heroes'} selected for analysis
+          </div>
+        </div>
       )}
 
       {/* Character Grid */}
