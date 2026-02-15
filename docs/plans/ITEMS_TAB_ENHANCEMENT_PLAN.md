@@ -587,7 +587,7 @@ interface EquipmentModification {
 
 ### 7.5 Documentation
 - [x] Update inline comments in code
-- [ ] Update hook documentation
+- [x] Update hook documentation
 - [ ] Update component documentation
 
 **Inline Comments Review Completed (2026-02-15):**
@@ -604,6 +604,21 @@ interface EquipmentModification {
   - `src/components/Tabs/ItemsTab.tsx` - File header and inline comments for key logic
   - `src/types/enchantment.ts` - Comprehensive type documentation
 - No additional inline comments needed; existing documentation is thorough and follows project conventions
+
+**Hook Documentation Completed (2026-02-15):**
+- Enhanced `src/hooks/useItemEnchantment.ts` JSDoc header with:
+  - Feature overview section
+  - Enchantment stacking behavior documentation
+  - Attunement curse explanation
+  - Error handling patterns
+  - Comprehensive examples for all functions
+  - Link to Equipment System documentation
+- Enhanced `src/hooks/useLootBox.ts` JSDoc header with:
+  - Spawn methods overview
+  - Seeded RNG explanation
+  - Magic items feature documentation
+  - Examples for all spawn methods including spawnMagicItems and getMagicItemCount
+  - Link to Equipment System documentation
 
 ---
 

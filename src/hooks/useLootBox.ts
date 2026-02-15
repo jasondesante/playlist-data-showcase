@@ -51,29 +51,75 @@ export interface UseLootBoxReturn {
  *
  * This hook provides functionality to spawn equipment items using various methods
  * from the playlist-data-engine's EquipmentSpawnHelper. It supports random spawning,
- * rarity-based spawning, treasure hoards, and spawning specific items by name.
+ * rarity-based spawning, treasure hoards, spawning specific items by name, and
+ * spawning magic items from the predefined MAGIC_ITEMS collection.
+ *
+ * ## Spawn Methods
+ *
+ * - **Random**: Weighted random selection from all equipment
+ * - **By Rarity**: Filter by rarity level (common, uncommon, rare, very_rare, legendary)
+ * - **Treasure Hoard**: Generate a complete hoard based on challenge rating
+ * - **From List**: Spawn specific items by name
+ * - **Magic Items**: Spawn from predefined magic items with special properties
+ *
+ * ## Seeded RNG
+ *
+ * All spawn methods support an optional seed parameter for deterministic results.
+ * Using the same seed will always produce the same items, which is useful for:
+ * - Reproducible loot generation
+ * - Sharing loot configurations
+ * - Testing
+ *
+ * ## Magic Items
+ *
+ * The `spawnMagicItems()` function spawns from a curated collection of magic items
+ * that include legendary weapons, armor with special properties, and items that
+ * grant features, skills, or spells. Use `getMagicItemCount()` to see how many
+ * magic items are available.
  *
  * @example
  * ```tsx
  * const {
  *   isLoading,
  *   spawnedItems,
+ *   lastHoardResult,
  *   spawnRandomItems,
  *   spawnTreasureHoard,
- *   spawnByRarity
+ *   spawnByRarity,
+ *   spawnFromList,
+ *   spawnMagicItems,
+ *   getMagicItemCount,
+ *   clearSpawnedItems
  * } = useLootBox();
  *
  * // Spawn 5 random items
  * const result = await spawnRandomItems(5, 'my_seed');
+ * console.log(result.items); // Array of EnhancedEquipment
  *
  * // Spawn a treasure hoard for CR 10
  * const hoard = await spawnTreasureHoard(10);
+ * console.log(hoard.totalValue); // Gold piece value
+ * console.log(hoard.cr); // Challenge rating used
  *
  * // Spawn 3 rare items
  * const rareItems = await spawnByRarity('rare', 3);
+ *
+ * // Spawn specific items by name
+ * const specificItems = await spawnFromList(['Longsword', 'Plate Armor']);
+ *
+ * // Spawn magic items
+ * const magicCount = getMagicItemCount(); // Check available count
+ * const magicItems = await spawnMagicItems(3); // Spawn 3 random magic items
+ *
+ * // Spawn only legendary magic items
+ * const legendaryItems = await spawnMagicItems(2, 'legendary');
+ *
+ * // Clear spawned items to reset state
+ * clearSpawnedItems();
  * ```
  *
  * @returns {UseLootBoxReturn} Hook return object with spawn functions and state
+ * @see {@link https://github.com/playlist-data-engine/docs/EQUIPMENT_SYSTEM.md Equipment System Documentation}
  */
 export const useLootBox = (): UseLootBoxReturn => {
     const [isLoading, setIsLoading] = useState(false);

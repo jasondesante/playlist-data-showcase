@@ -102,6 +102,37 @@ export interface UseItemEnchantmentReturn {
  * from items in the active character's inventory. It uses the EquipmentModifier
  * from playlist-data-engine to handle modification operations.
  *
+ * ## Features
+ *
+ * - **Enchanting**: Apply positive modifications (enhancements, elemental damage, stat boosts)
+ * - **Cursing**: Apply negative modifications (penalties, stat reductions, special curses)
+ * - **Modification Management**: Remove specific modifications or all of a type
+ * - **Query Methods**: Check item state, get modification info, detect attunement curses
+ *
+ * ## Enchantment Stacking
+ *
+ * Multiple enchantments can be applied to a single item. For example, a weapon can have
+ * both a +1 enhancement AND a Flaming enchantment. The same enchantment can also be
+ * reapplied to stack effects (e.g., two +1 enhancements for a +2 total).
+ *
+ * ## Attunement Curse
+ *
+ * The attunement curse (`CURSES.attunement`) is a special curse that locks an item.
+ * Once equipped, the item cannot be unequipped until the curse is lifted. Use
+ * `hasAttunementCurse()` to check if an item has this curse before allowing unequip.
+ *
+ * ## Error Handling
+ *
+ * All operations return an `EnchantmentOperationResult` object with:
+ * - `success`: boolean indicating if the operation succeeded
+ * - `message`: success message (if successful)
+ * - `error`: error message (if failed)
+ *
+ * Common error cases:
+ * - No active character selected
+ * - Item not found in equipment
+ * - Invalid modification object
+ *
  * @example
  * ```tsx
  * const {
@@ -110,24 +141,48 @@ export interface UseItemEnchantmentReturn {
  *   curseItem,
  *   disenchantItem,
  *   liftCurse,
+ *   removeModification,
  *   getItemModificationInfo,
  *   isCursed,
  *   hasAttunementCurse
  * } = useItemEnchantment();
  *
- * // Enchant a weapon
+ * // Enchant a weapon with +1 enhancement
  * const plusOne = EnchantmentLibrary.getEnchantment('plus_one');
  * if (plusOne) {
- *   await enchantItem('Longsword', plusOne);
+ *   const result = await enchantItem('Longsword', plusOne);
+ *   if (result.success) {
+ *     console.log(result.message); // "Applied +1 Enhancement to Longsword"
+ *   }
  * }
  *
- * // Check if item is cursed
+ * // Apply a stat boost enchantment
+ * const strBoost = createStrengthEnchantment(2); // +2 STR
+ * await enchantItem('Longsword', strBoost);
+ *
+ * // Check if item has attunement curse before allowing unequip
+ * if (hasAttunementCurse('Longsword')) {
+ *   alert('Cannot unequip - item is locked by attunement curse!');
+ * }
+ *
+ * // Curse an item
+ * const weaknessCurse = EnchantmentLibrary.getCurse('weakness');
+ * await curseItem('Longsword', weaknessCurse);
+ *
+ * // Remove a specific modification
+ * await removeModification('Longsword', 'plus_one');
+ *
+ * // Disenchant (remove all enchantments, keep curses)
+ * await disenchantItem('Longsword');
+ *
+ * // Lift curse (remove all curses, keep enchantments)
  * if (isCursed('Longsword')) {
  *   await liftCurse('Longsword');
  * }
  * ```
  *
  * @returns {UseItemEnchantmentReturn} Hook return object with enchantment management functions
+ * @see {@link https://github.com/playlist-data-engine/docs/EQUIPMENT_SYSTEM.md Equipment System Documentation}
  */
 export const useItemEnchantment = (): UseItemEnchantmentReturn => {
     const { characters, activeCharacterId, updateCharacter } = useCharacterStore();
