@@ -85,8 +85,8 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 2: Equipment Conditional Properties
 
 ### Task 2.1: Create Condition Formatter
-- [ ] Create `formatCondition(condition: EquipmentCondition)` helper function
-- [ ] Handle all condition types:
+- [x] Create `formatCondition(condition: EquipmentCondition)` helper function
+- [x] Handle all condition types:
   - `vs_creature_type` → "vs Dragons"
   - `at_time_of_day` → "at Night"
   - `wielder_race` → "Elf only"
@@ -96,9 +96,9 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
   - `custom` → custom description
 
 ### Task 2.2: Update Properties Display
-- [ ] Modify existing property rendering to include conditions inline
-- [ ] Format: `{property description} ({condition})`
-- [ ] Example: "+3d6 fire damage (vs Dragons)"
+- [x] Modify existing property rendering to include conditions inline
+- [x] Format: `{property description} ({condition})`
+- [x] Example: "+3d6 fire damage (vs Dragons)"
 
 ### Task 2.3: Create Property Icon System
 - [ ] Add icons for different property types:

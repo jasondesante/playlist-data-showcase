@@ -36,7 +36,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import './DataViewerTab.css';
-import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
+import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition } from 'playlist-data-engine';
 
 /**
  * Spell school color mapping
@@ -159,6 +159,74 @@ function formatSpawnWeight(weight: number | undefined): { label: string; classNa
   if (weight < 0.1) return { label: 'Rare Spawn', className: 'dataviewer-badge-rare-spawn' };
   if (weight < 0.5) return { label: 'Uncommon', className: 'dataviewer-badge-uncommon-spawn' };
   return null;
+}
+
+/**
+ * Format equipment condition for display
+ *
+ * Converts EquipmentCondition objects into human-readable strings.
+ *
+ * Condition formats:
+ * - vs_creature_type: "vs Dragons", "vs Undead"
+ * - at_time_of_day: "at Night", "at Dawn"
+ * - wielder_race: "Elf only", "Dwarf only"
+ * - wielder_class: "Paladin only", "Rogue only"
+ * - while_equipped: "(implicit - always active when equipped)"
+ * - on_hit: "on hit"
+ * - on_damage_taken: "when hit"
+ * - custom: uses the custom description
+ *
+ * @param condition - The EquipmentCondition object to format
+ * @returns Human-readable condition string, or empty string if no condition
+ *
+ * @example
+ * ```tsx
+ * formatCondition({ type: 'vs_creature_type', value: 'dragon' }) // "vs Dragon"
+ * formatCondition({ type: 'at_time_of_day', value: 'night' }) // "at Night"
+ * formatCondition({ type: 'wielder_race', value: 'Elf' }) // "Elf only"
+ * ```
+ */
+function formatCondition(condition: EquipmentCondition | undefined): string {
+  if (!condition) return '';
+
+  switch (condition.type) {
+    case 'vs_creature_type':
+      // Capitalize the creature type (e.g., "dragon" → "Dragon")
+      return `vs ${condition.value.charAt(0).toUpperCase() + condition.value.slice(1)}`;
+
+    case 'at_time_of_day':
+      // Format time of day (e.g., "night" → "at Night")
+      return `at ${condition.value.charAt(0).toUpperCase() + condition.value.slice(1)}`;
+
+    case 'wielder_race':
+      // Format race restriction (e.g., "elf" → "Elf only")
+      return `${condition.value.charAt(0).toUpperCase() + condition.value.slice(1)} only`;
+
+    case 'wielder_class':
+      // Format class restriction (e.g., "paladin" → "Paladin only")
+      return `${condition.value.charAt(0).toUpperCase() + condition.value.slice(1)} only`;
+
+    case 'while_equipped':
+      // Implicit condition - property is always active when equipped
+      // Return empty string since this is the default behavior
+      return '';
+
+    case 'on_hit':
+      // Trigger condition for weapon hits
+      return 'on hit';
+
+    case 'on_damage_taken':
+      // Trigger condition when wearer takes damage
+      return 'when hit';
+
+    case 'custom':
+      // Use the custom description if provided, otherwise the value
+      return condition.description || condition.value;
+
+    default:
+      // Exhaustiveness check - this should never happen
+      return '';
+  }
 }
 
 export function DataViewerTab() {
@@ -907,10 +975,19 @@ export function DataViewerTab() {
                   )}
                 </div>
                 {item.properties && item.properties.length > 0 && (
-                  <div className="dataviewer-item-tags">
-                    {item.properties.map((prop, idx) => (
-                      <span key={idx} className="dataviewer-tag">{prop.type}</span>
-                    ))}
+                  <div className="dataviewer-item-section">
+                    <span className="dataviewer-item-section-title">Properties:</span>
+                    <div className="dataviewer-item-tags">
+                      {item.properties.map((prop, idx) => {
+                        const conditionStr = formatCondition(prop.condition);
+                        const displayText = prop.description || `${prop.type}: ${prop.target}`;
+                        return (
+                          <span key={idx} className="dataviewer-tag dataviewer-tag-property">
+                            {displayText}{conditionStr ? ` (${conditionStr})` : ''}
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 {/* Granted Skills Section */}
