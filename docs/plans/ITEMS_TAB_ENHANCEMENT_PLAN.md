@@ -324,8 +324,8 @@ interface EquipmentModification {
 ## Phase 6: Enhanced Item Creator Info
 
 ### 6.1 Add Informational Text to Creator
-- [ ] Add collapsible "Advanced Options" info section
-- [ ] List available properties not in UI:
+- [x] Add collapsible "Advanced Options" info section
+- [x] List available properties not in UI:
   - `properties[]` - Stat bonuses, skill proficiencies, passive modifiers
   - `grantsFeatures[]` - Feature IDs granted when equipped
   - `grantsSkills[]` - Skill proficiencies granted when equipped
@@ -333,10 +333,35 @@ interface EquipmentModification {
   - `tags[]` - Search/filter tags
   - `spawnWeight` - Weight for random loot generation
 
+**Completed (2026-02-15):**
+- Added `Info` and `Code` icons to imports
+- Added `isAdvancedOptionsExpanded` state for collapsible section
+- Created collapsible "Advanced Options" toggle with expand/collapse functionality
+- Listed all 6 advanced property options with descriptions:
+  - properties[] with all type options listed
+  - grantsFeatures[]
+  - grantsSkills[] with format example
+  - grantsSpells[] with format example
+  - tags[]
+  - spawnWeight with default behavior explanation
+- Added code example showing how to create items programmatically using ExtensionManager
+- Added documentation reference to EQUIPMENT_SYSTEM.md
+- Added comprehensive CSS styling including:
+  - Toggle button with icon
+  - Property cards in grid layout
+  - Code block with syntax highlighting
+  - Documentation link with styling
+  - Responsive design for mobile
+
 ### 6.2 Add API Example Section
-- [ ] Show code example for creating advanced items programmatically
-- [ ] Link to EQUIPMENT_SYSTEM.md documentation
-- [ ] Mention that full API is available via `playlist-data-engine`
+- [x] Show code example for creating advanced items programmatically
+- [x] Link to EQUIPMENT_SYSTEM.md documentation
+- [x] Mention that full API is available via `playlist-data-engine`
+
+**Completed (2026-02-15):**
+- Integrated into Task 6.1 - the API example section is included in the Advanced Options panel
+- Code example demonstrates ExtensionManager.register() pattern
+- Documentation link points to docs/engine/docs/EQUIPMENT_SYSTEM.md
 
 ### 6.3 Update Creator Preview
 - [ ] Show which properties will be applied

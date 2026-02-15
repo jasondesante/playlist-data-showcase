@@ -32,7 +32,9 @@ import {
   Wand2,
   Hammer,
   Save,
-  Zap
+  Zap,
+  Info,
+  Code
 } from 'lucide-react';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
@@ -228,6 +230,7 @@ export function ItemsTab() {
   const [acBonus, setAcBonus] = useState<number | ''>('');
   const [autoEquip, setAutoEquip] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [isAdvancedOptionsExpanded, setIsAdvancedOptionsExpanded] = useState(false);
 
   // Expanded item details state (for modification display)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -1980,6 +1983,96 @@ export function ItemsTab() {
                       </div>
                     </div>
                   )}
+
+                  {/* Advanced Options Info */}
+                  <div className="item-creator-section item-creator-advanced-options">
+                    <button
+                      type="button"
+                      className="item-creator-advanced-options-toggle"
+                      onClick={() => setIsAdvancedOptionsExpanded(!isAdvancedOptionsExpanded)}
+                    >
+                      <Info size={16} />
+                      <span>Advanced Options</span>
+                      {isAdvancedOptionsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+
+                    {isAdvancedOptionsExpanded && (
+                      <div className="item-creator-advanced-options-content">
+                        <p className="item-creator-advanced-options-intro">
+                          The UI above covers basic item creation. The <code>playlist-data-engine</code> API
+                          supports additional properties for more advanced items:
+                        </p>
+
+                        <div className="item-creator-advanced-options-list">
+                          <div className="item-creator-advanced-option">
+                            <h5>properties[]</h5>
+                            <p>Equipment properties like stat bonuses, skill proficiencies, damage bonuses, and passive modifiers.</p>
+                            <span className="item-creator-advanced-option-types">
+                              Types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, special_property, damage_bonus, stat_requirement
+                            </span>
+                          </div>
+
+                          <div className="item-creator-advanced-option">
+                            <h5>grantsFeatures[]</h5>
+                            <p>Feature IDs or inline feature definitions granted when the item is equipped.</p>
+                          </div>
+
+                          <div className="item-creator-advanced-option">
+                            <h5>grantsSkills[]</h5>
+                            <p>Skill proficiencies granted when equipped. Format: {'{ skillId, level: "proficient" | "expertise" }'}</p>
+                          </div>
+
+                          <div className="item-creator-advanced-option">
+                            <h5>grantsSpells[]</h5>
+                            <p>Spells granted when equipped. Format: {'{ spellId, level?, uses?, recharge? }'}</p>
+                          </div>
+
+                          <div className="item-creator-advanced-option">
+                            <h5>tags[]</h5>
+                            <p>Search and filter tags for categorization (e.g., ["magic", "dwarven", "cursed"]).</p>
+                          </div>
+
+                          <div className="item-creator-advanced-option">
+                            <h5>spawnWeight</h5>
+                            <p>Weight for random loot generation. Default is 0 (won&apos;t spawn randomly). Set higher for common items.</p>
+                          </div>
+                        </div>
+
+                        <div className="item-creator-advanced-options-code">
+                          <h5>
+                            <Code size={14} />
+                            Programmatic Example
+                          </h5>
+                          <pre className="item-creator-code-block">
+{`import { ExtensionManager } from 'playlist-data-engine';
+
+const flamingSword = {
+  name: 'Flaming Sword',
+  type: 'weapon',
+  rarity: 'rare',
+  weight: 3,
+  damage: { dice: '1d8', damageType: 'slashing' },
+  properties: [{
+    type: 'damage_bonus',
+    target: 'fire',
+    value: '1d6',
+    description: '+1d6 fire damage'
+  }],
+  grantsFeatures: ['fire_resistance'],
+  tags: ['magic', 'fire']
+};
+
+ExtensionManager.getInstance()
+  .register('equipment', [flamingSword]);`}
+                          </pre>
+                        </div>
+
+                        <p className="item-creator-advanced-options-docs">
+                          See <code>docs/engine/docs/EQUIPMENT_SYSTEM.md</code> for full API documentation.
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Options */}
                   <div className="item-creator-section">
