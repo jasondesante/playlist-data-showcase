@@ -169,9 +169,9 @@ function usePartyAnalysis(
 - [x] Maintain existing functionality (search, sort, detail modal)
 
 ### Task 5.3: Empty States
-- [ ] Show appropriate message when no characters
-- [ ] Show message when no heroes selected for analysis
-- [ ] Show message when only 1 hero selected (need 2+ for meaningful analysis)
+- [x] Show appropriate message when no characters
+- [x] Show message when no heroes selected for analysis
+- [x] Show message when only 1 hero selected (need 2+ for meaningful analysis)
 
 ### Task 5.4: Loading States
 - [ ] Add loading state while analysis is calculating

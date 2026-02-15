@@ -19,6 +19,8 @@ export interface PartyOverviewPanelProps {
   selectedCount: number;
   /** Total number of heroes in the party */
   totalCount: number;
+  /** Show "too few heroes" message (for single-hero parties) */
+  showTooFewMessage?: boolean;
 }
 
 /**
@@ -92,18 +94,52 @@ function EmptyState() {
 }
 
 /**
+ * Too few heroes state - need at least 2 for meaningful analysis
+ */
+function TooFewState({ count }: { count: number }) {
+  return (
+    <div className="party-overview-empty">
+      <div className="party-overview-empty-icon">📊</div>
+      <h3 className="party-overview-empty-title">Add More Heroes</h3>
+      <div className="party-overview-empty-text">
+        Select at least 2 heroes for meaningful party analysis. Currently selected: {count}.
+      </div>
+    </div>
+  );
+}
+
+/**
  * Main PartyOverviewPanel component
  */
 export function PartyOverviewPanel({
   analysis,
   selectedCount,
-  totalCount
+  totalCount,
+  showTooFewMessage = false
 }: PartyOverviewPanelProps) {
+  // Show too few state when explicitly requested (e.g., single-hero party)
+  if (showTooFewMessage) {
+    return (
+      <div className="party-overview-panel party-overview-panel-empty">
+        <TooFewState count={selectedCount} />
+      </div>
+    );
+  }
+
   // Show empty state when no heroes are selected
   if (!analysis || selectedCount === 0) {
     return (
       <div className="party-overview-panel party-overview-panel-empty">
         <EmptyState />
+      </div>
+    );
+  }
+
+  // Show too few state when only 1 hero selected (need 2+ for meaningful analysis)
+  if (selectedCount === 1) {
+    return (
+      <div className="party-overview-panel party-overview-panel-empty">
+        <TooFewState count={selectedCount} />
       </div>
     );
   }

@@ -313,7 +313,7 @@ export function PartyTab() {
       </header>
 
       {/* Party Analysis Section - Collapsible panels for Overview and Composition */}
-      {characters.length >= 2 && (
+      {characters.length >= 2 ? (
         <div className="party-analysis-section">
           {/* Party Overview Panel - Show analysis and XP budgets */}
           <CollapsibleSection
@@ -345,7 +345,25 @@ export function PartyTab() {
             />
           </CollapsibleSection>
         </div>
-      )}
+      ) : characters.length === 1 ? (
+        /* Single-hero party - show message about needing more heroes */
+        <div className="party-analysis-section">
+          <CollapsibleSection
+            title="Party Overview"
+            subtitle="1 hero in party"
+            icon={<BarChart3 size={16} />}
+            persistKey="party-overview-single"
+            defaultCollapsed={false}
+          >
+            <PartyOverviewPanel
+              analysis={null}
+              selectedCount={1}
+              totalCount={1}
+              showTooFewMessage={true}
+            />
+          </CollapsibleSection>
+        </div>
+      ) : null}
 
       {/* Controls: Search and Sort */}
       <div className="party-controls">
