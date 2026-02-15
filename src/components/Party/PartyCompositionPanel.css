@@ -408,6 +408,136 @@
   }
 }
 
+/* Extra Small Mobile (375px) */
+@media (max-width: 400px) {
+  .party-composition-panel {
+    gap: 1rem;
+  }
+
+  .party-composition-panel-empty {
+    padding: 1rem;
+  }
+
+  .composition-empty {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .composition-empty-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .composition-empty-title {
+    font-size: 0.9375rem;
+  }
+
+  .composition-empty-text {
+    font-size: 0.8125rem;
+    max-width: 220px;
+  }
+
+  /* Sections */
+  .composition-section {
+    padding-bottom: 0.75rem;
+  }
+
+  .composition-section-title {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Class distribution */
+  .class-distribution-bars {
+    gap: 0.5rem;
+  }
+
+  .class-bar-name {
+    font-size: 0.6875rem;
+  }
+
+  .class-icon {
+    font-size: 0.875rem;
+  }
+
+  .class-bar-count {
+    font-size: 0.6875rem;
+  }
+
+  .class-bar-track {
+    height: 0.375rem;
+  }
+
+  /* Role distribution - 2 columns on very small screens */
+  .role-distribution-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .role-card {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .role-card-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .role-card-name {
+    font-size: 0.625rem;
+  }
+
+  .role-card-count {
+    font-size: 0.5625rem;
+  }
+
+  .role-card-percentage {
+    font-size: 0.6875rem;
+  }
+
+  /* Role balance indicator */
+  .role-balance-indicator {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.375rem;
+  }
+
+  .balance-icon.balanced {
+    width: 0.875rem;
+    height: 0.875rem;
+    font-size: 0.5625rem;
+  }
+
+  .balance-icon.unbalanced {
+    font-size: 0.75rem;
+  }
+
+  /* Quick stats grid - 2 columns on very small screens */
+  .quick-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .quick-stat-item {
+    padding: 0.5rem 0.625rem;
+    gap: 0.375rem;
+  }
+
+  .quick-stat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .quick-stat-value {
+    font-size: 0.6875rem;
+  }
+
+  .quick-stat-label {
+    font-size: 0.5rem;
+  }
+}
+
 /* ========================================
    LOADING SKELETON STATES
    ======================================== */

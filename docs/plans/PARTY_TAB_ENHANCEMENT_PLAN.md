@@ -179,7 +179,7 @@ function usePartyAnalysis(
 - [x] Smooth transitions when data updates
 
 ### Task 5.5: Responsive Design
-- [ ] Test on mobile (375px)
+- [x] Test on mobile (375px)
 - [ ] Test on tablet (768px)
 - [ ] Test on desktop (1024px+)
 - [ ] Adjust grid layouts for each breakpoint
