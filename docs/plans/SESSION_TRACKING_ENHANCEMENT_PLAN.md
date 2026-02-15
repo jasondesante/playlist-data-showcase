@@ -167,16 +167,16 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 4.1: Create SessionHistoryItem component
 
-- [ ] Create `src/components/ui/SessionHistoryItem.tsx`
-- [ ] Props: `session: ListeningSession`, `track?: PlaylistTrack`
-- [ ] Display:
+- [x] Create `src/components/ui/SessionHistoryItem.tsx`
+- [x] Props: `session: ListeningSession`, `track?: PlaylistTrack`
+- [x] Display:
   - Track title (from track or track_uuid)
   - Duration in MM:SS
   - XP earned
   - Timestamp (relative or absolute)
   - Bonuses applied (environmental, gaming icons)
-- [ ] Clickable to expand for full details
-- [ ] Add CSS styles
+- [x] Clickable to expand for full details
+- [x] Add CSS styles
 
 ### Task 4.2: Create SessionHistoryPanel component
 

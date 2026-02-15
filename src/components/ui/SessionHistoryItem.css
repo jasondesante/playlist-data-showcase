@@ -1,0 +1,406 @@
+/* ============================================
+   SESSION HISTORY ITEM COMPONENT
+   ============================================ */
+
+/**
+ * Session History Item - Display a single session from history
+ *
+ * Specifications:
+ * - Layout: Horizontal row with expandable details
+ * - Display: Track title, duration, XP, timestamp, bonus indicators
+ * - Interaction: Click to expand for full details
+ * - Responsive: Adapts to mobile screens
+ */
+
+/* ============================================
+   BASE CONTAINER STYLES
+   ============================================ */
+
+.session-history-item {
+  display: flex;
+  flex-direction: column;
+  background-color: hsl(var(--card));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.session-history-item:hover {
+  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / 0.08);
+}
+
+.session-history-item-expanded {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.1);
+}
+
+/* ============================================
+   MAIN ROW - Always Visible
+   ============================================ */
+
+.session-history-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.session-history-item-main:hover {
+  background-color: hsl(var(--muted) / 0.2);
+}
+
+.session-history-item-main:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+/* ============================================
+   TRACK ICON/IMAGE
+   ============================================ */
+
+.session-history-item-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+.session-history-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.session-history-item-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--muted) / 0.2));
+  color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   TRACK INFO SECTION
+   ============================================ */
+
+.session-history-item-info {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.session-history-item-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.session-history-item-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-history-item-artist {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-history-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.session-history-item-duration {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-history-item-time {
+  opacity: 0.8;
+}
+
+/* ============================================
+   XP SECTION
+   ============================================ */
+
+.session-history-item-xp-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.session-history-item-xp {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--cute-green));
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-history-item-bonus-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.session-history-item-bonus-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  padding: 3px;
+}
+
+.session-history-item-bonus-environmental {
+  background-color: hsl(var(--cute-teal) / 0.15);
+  color: hsl(var(--cute-teal));
+}
+
+.session-history-item-bonus-gaming {
+  background-color: hsl(var(--cute-yellow) / 0.15);
+  color: hsl(var(--cute-yellow));
+}
+
+/* ============================================
+   EXPAND/TOGGLE BUTTON
+   ============================================ */
+
+.session-history-item-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease;
+}
+
+.session-history-item-toggle-icon {
+  transition: transform 0.2s ease;
+}
+
+.session-history-item-expanded .session-history-item-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* ============================================
+   EXPANDED DETAILS SECTION
+   ============================================ */
+
+.session-history-item-details {
+  padding: 0 1rem 1rem 1rem;
+  animation: sessionDetailsSlideIn 0.2s ease-out;
+}
+
+@keyframes sessionDetailsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   DETAILS GRID
+   ============================================ */
+
+.session-history-item-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--muted) / 0.2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+}
+
+.session-history-item-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.session-history-item-detail-label {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.session-history-item-detail-value {
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.session-history-item-detail-bonus .session-history-item-detail-value {
+  color: hsl(var(--cute-green));
+}
+
+/* ============================================
+   CONTEXT SECTIONS
+   ============================================ */
+
+.session-history-item-context {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+.session-history-item-context:first-of-type {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+.session-history-item-context-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.5rem;
+}
+
+.session-history-item-context-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.session-history-item-context-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  background-color: hsl(var(--muted) / 0.15);
+  border-radius: var(--radius-sm);
+}
+
+.session-history-item-context-icon {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.session-history-item-context-label {
+  font-size: 0.688rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.session-history-item-context-value {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 639px) {
+  .session-history-item-main {
+    padding: 0.625rem 0.75rem;
+    gap: 0.625rem;
+  }
+
+  .session-history-item-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .session-history-item-title {
+    font-size: 0.813rem;
+  }
+
+  .session-history-item-meta {
+    font-size: 0.688rem;
+  }
+
+  .session-history-item-xp {
+    font-size: 0.813rem;
+  }
+
+  .session-history-item-toggle {
+    width: 20px;
+    height: 20px;
+  }
+
+  .session-history-item-details {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+
+  .session-history-item-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .session-history-item-context-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY: REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .session-history-item {
+    transition: none;
+  }
+
+  .session-history-item-details {
+    animation: none;
+  }
+
+  .session-history-item-toggle-icon {
+    transition: none;
+  }
+}
+
+/* ============================================
+   DARK MODE COMPATIBILITY
+   (Already dark theme by default)
+   ============================================ */
+
+/* Additional contrast for expanded state in dark mode */
+.session-history-item-expanded {
+  background-color: hsl(var(--card) / 1);
+}
