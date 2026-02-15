@@ -203,8 +203,8 @@ export function EffectBadge({ effect, source, showTarget = true, compact = false
       {hasValue && (
         <span className="effect-badge-value">{valueStr}</span>
       )}
-      {source && !compact && (
-        <span className="effect-badge-source">{source}</span>
+      {source && (
+        <span className="effect-badge-source">from {source}</span>
       )}
     </span>
   );

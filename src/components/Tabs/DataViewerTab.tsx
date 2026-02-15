@@ -753,6 +753,75 @@ export function DataViewerTab() {
     );
   };
 
+  /**
+   * Render granted features section for enhanced equipment
+   * Displays features granted by equipment
+   *
+   * Features can be:
+   * 1. String references to registry features (e.g., 'darkvision')
+   * 2. Inline EquipmentMiniFeature objects with name/description/effects
+   */
+  const renderGrantedFeatures = (item: Equipment) => {
+    if (!isEnhancedEquipment(item) || !item.grantsFeatures || item.grantsFeatures.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Features:</span>
+        <div className="dataviewer-item-tags">
+          {item.grantsFeatures.map((feature, idx) => {
+            // Check if feature is a string (registry reference) or inline object
+            if (typeof feature === 'string') {
+              // Registry feature reference - show the feature ID
+              return (
+                <span key={idx} className="dataviewer-tag dataviewer-tag-feature">
+                  {feature}
+                </span>
+              );
+            } else {
+              // Inline feature object - show name and optional description
+              const inlineFeature = feature;
+              return (
+                <span
+                  key={idx}
+                  className="dataviewer-tag dataviewer-tag-feature"
+                  title={inlineFeature.description || inlineFeature.name}
+                >
+                  {inlineFeature.name}
+                </span>
+              );
+            }
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Render tags section for enhanced equipment
+   * Displays tags at the bottom of expanded equipment cards
+   * Tags are displayed as a comma-separated list using existing tag styling
+   */
+  const renderTags = (item: Equipment) => {
+    if (!isEnhancedEquipment(item) || !item.tags || item.tags.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Tags:</span>
+        <div className="dataviewer-item-tags">
+          {item.tags.map((tag, idx) => (
+            <span key={idx} className="dataviewer-tag dataviewer-tag-label">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Render equipment
   const renderEquipment = () => (
     <div className="dataviewer-grid">
@@ -822,6 +891,10 @@ export function DataViewerTab() {
                 {renderGrantedSkills(item)}
                 {/* Granted Spells Section */}
                 {renderGrantedSpells(item)}
+                {/* Granted Features Section */}
+                {renderGrantedFeatures(item)}
+                {/* Tags Section */}
+                {renderTags(item)}
               </div>
             )}
           </div>

@@ -480,6 +480,12 @@
   border: 1px solid hsl(210 80% 50% / 0.3);
 }
 
+.dataviewer-tag-label {
+  background: hsl(30 90% 50% / 0.12);
+  color: hsl(30 80% 40%);
+  border: 1px solid hsl(30 90% 50% / 0.25);
+}
+
 /* ========================================
    ITEM SECTIONS (Skills, Spells, Features)
    ======================================== */

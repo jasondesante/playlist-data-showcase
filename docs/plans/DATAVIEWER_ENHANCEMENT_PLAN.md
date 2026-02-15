@@ -54,18 +54,18 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ```
 
 ### Task 1.4: Display grantsFeatures on Equipment Cards
-- [ ] Add new section in `renderEquipment()` for features granted by equipment
-- [ ] Handle both string references (registry features) and inline features
-- [ ] Create `renderGrantedFeatures()` helper function
-- [ ] For inline features, show name and description
-- [ ] For registry references, show feature ID
-- [ ] Add CSS for `.dataviewer-tag-feature` (blue variant)
+- [x] Add new section in `renderEquipment()` for features granted by equipment
+- [x] Handle both string references (registry features) and inline features
+- [x] Create `renderGrantedFeatures()` helper function
+- [x] For inline features, show name and description
+- [x] For registry references, show feature ID
+- [x] Add CSS for `.dataviewer-tag-feature` (blue variant)
 
 ### Task 1.5: Display Equipment Tags
-- [ ] Add tags section at bottom of expanded equipment card
-- [ ] Create `renderTags()` helper function
-- [ ] Use existing `.dataviewer-tag` styling
-- [ ] Show tags as comma-separated list with tag icons
+- [x] Add tags section at bottom of expanded equipment card
+- [x] Create `renderTags()` helper function
+- [x] Use existing `.dataviewer-tag` styling
+- [x] Show tags as comma-separated list with tag icons
 
 ```tsx
 // Example output:
