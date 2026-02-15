@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ListeningSession, PlaylistTrack } from '@/types';
+import { ListeningSession, PlaylistTrack, ListeningSessionWithTrack } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
@@ -15,11 +15,11 @@ interface ActiveSessionData {
 
 interface SessionState {
     currentSessionId: string | null;
-    sessionHistory: ListeningSession[];
+    sessionHistory: ListeningSessionWithTrack[];
     activeSession: ActiveSessionData | null;
 
     startSession: (sessionId: string, trackId: string, track: PlaylistTrack) => void;
-    endSession: (session: ListeningSession) => void;
+    endSession: (session: ListeningSession, track?: PlaylistTrack) => void;
     pauseSession: () => void;
     resumeSession: () => void;
     updateElapsedTime: (elapsedSeconds: number) => void;
@@ -48,12 +48,21 @@ export const useSessionStore = create<SessionState>()(
                 });
             },
 
-            endSession: (session) => {
+            endSession: (session, track) => {
                 logger.info('Store', 'Ending session', { track: session.track_uuid, xp: session.total_xp_earned });
+
+                // Create extended session with track metadata
+                const sessionWithTrack: ListeningSessionWithTrack = {
+                    ...session,
+                    track_title: track?.title,
+                    track_artist: track?.artist,
+                    track_image_url: track?.image_url
+                };
+
                 set((state) => ({
                     currentSessionId: null,
                     activeSession: null,
-                    sessionHistory: [session, ...state.sessionHistory] // Newest first
+                    sessionHistory: [sessionWithTrack, ...state.sessionHistory] // Newest first
                 }));
             },
 

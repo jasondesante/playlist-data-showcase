@@ -222,6 +222,7 @@ export const useSessionTracker = () => {
             });
             // Get the endSession function directly to avoid dependency issues
             const currentSessionId = activeSession.sessionId;
+            const track = activeSession.track;
             if (currentSessionId) {
                 try {
                     const session = globalTracker.endSession(currentSessionId);
@@ -230,7 +231,7 @@ export const useSessionTracker = () => {
                             duration: session.duration_seconds,
                             xp: session.total_xp_earned
                         });
-                        storeEndSession(session);
+                        storeEndSession(session, track);
                     }
                     timerManager.stop();
                 } catch (error) {
@@ -280,11 +281,12 @@ export const useSessionTracker = () => {
 
                 // End the current session
                 const currentSessionId = activeSession.sessionId;
+                const track = activeSession.track;
                 if (currentSessionId) {
                     try {
                         const session = globalTracker.endSession(currentSessionId);
                         if (session) {
-                            storeEndSession(session);
+                            storeEndSession(session, track);
                         }
                         timerManager.stop();
                     } catch (error) {
@@ -306,6 +308,7 @@ export const useSessionTracker = () => {
 
         try {
             const currentSessionId = activeSession.sessionId;
+            const track = activeSession.track;
             if (!currentSessionId) {
                 logger.warn('SessionTracker', 'Attempted to end session but no active sessionId found.');
                 return null;
@@ -315,7 +318,7 @@ export const useSessionTracker = () => {
             const session = tracker.endSession(currentSessionId);
 
             if (session) {
-                storeEndSession(session);
+                storeEndSession(session, track);
             }
             timerManager.stop();
 

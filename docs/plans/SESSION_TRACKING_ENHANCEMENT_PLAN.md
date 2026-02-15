@@ -154,14 +154,14 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 4.0: Extend session storage with track metadata
 
-- [ ] Create `ListeningSessionWithTrack` type extending `ListeningSession`
-- [ ] Update `sessionStore.endSession` to include track info:
+- [x] Create `ListeningSessionWithTrack` type extending `ListeningSession`
+- [x] Update `sessionStore.endSession` to include track info:
   ```typescript
   track_title?: string;
   track_artist?: string;
   track_image_url?: string;
   ```
-- [ ] Update `useSessionTracker` to pass track metadata when ending session
+- [x] Update `useSessionTracker` to pass track metadata when ending session
 
 **Files:** `src/store/sessionStore.ts`, `src/hooks/useSessionTracker.ts`
 
