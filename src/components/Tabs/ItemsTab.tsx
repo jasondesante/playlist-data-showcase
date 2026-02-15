@@ -223,6 +223,8 @@ export function ItemsTab() {
   const [isAnimating, setIsAnimating] = useState(false);
   // Track which spawn mode was used for the current items
   const [lastSpawnMode, setLastSpawnMode] = useState<SpawnMode | null>(null);
+  // Track spawn errors for visual display
+  const [spawnError, setSpawnError] = useState<string | null>(null);
 
   // Item Creator form state
   const [itemName, setItemName] = useState('');
@@ -398,6 +400,7 @@ export function ItemsTab() {
   // Handle spawning random items
   const handleSpawnRandom = async () => {
     setIsAnimating(true);
+    setSpawnError(null); // Clear previous error
     setLastSpawnMode('random');
     const result = await spawnRandomItems(randomCount);
     setIsAnimating(false);
@@ -405,6 +408,8 @@ export function ItemsTab() {
     if (result.items.length > 0) {
       showToast(`📦 Spawned ${result.items.length} random item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
+      const errorMsg = 'No items could be spawned. The equipment database may be empty.';
+      setSpawnError(errorMsg);
       showToast('❌ Failed to spawn items', 'error');
     }
   };
@@ -412,6 +417,7 @@ export function ItemsTab() {
   // Handle spawning by rarity
   const handleSpawnByRarity = async () => {
     setIsAnimating(true);
+    setSpawnError(null); // Clear previous error
     setLastSpawnMode('rarity');
     const result = await spawnByRarity(selectedRarity, rarityCount);
     setIsAnimating(false);
@@ -419,6 +425,8 @@ export function ItemsTab() {
     if (result.items.length > 0) {
       showToast(`📦 Spawned ${result.items.length} ${formatRarity(selectedRarity)} item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
+      const errorMsg = `No ${formatRarity(selectedRarity)} items found in the database.`;
+      setSpawnError(errorMsg);
       showToast('❌ Failed to spawn items', 'error');
     }
   };
@@ -426,6 +434,7 @@ export function ItemsTab() {
   // Handle spawning treasure hoard
   const handleSpawnTreasureHoard = async () => {
     setIsAnimating(true);
+    setSpawnError(null); // Clear previous error
     setLastSpawnMode('hoard');
     const result = await spawnTreasureHoard(hoardCR);
     setIsAnimating(false);
@@ -433,6 +442,8 @@ export function ItemsTab() {
     if (result.items.length > 0) {
       showToast(`💰 Spawned treasure hoard worth ${(result.totalValue ?? 0).toLocaleString()} gp!`, 'success');
     } else {
+      const errorMsg = `Treasure hoard generation failed for CR ${hoardCR}. Try a different challenge rating.`;
+      setSpawnError(errorMsg);
       showToast('❌ Failed to spawn treasure hoard', 'error');
     }
   };
@@ -440,6 +451,7 @@ export function ItemsTab() {
   // Handle spawning magic items
   const handleSpawnMagicItems = async () => {
     setIsAnimating(true);
+    setSpawnError(null); // Clear previous error
     setLastSpawnMode('magic');
     const result = await spawnMagicItems(
       magicItemCount,
@@ -451,6 +463,9 @@ export function ItemsTab() {
       const rarityText = magicItemRarity ? ` ${formatRarity(magicItemRarity)}` : '';
       showToast(`✨ Spawned ${result.items.length}${rarityText} magic item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
+      const rarityText = magicItemRarity ? ` ${formatRarity(magicItemRarity)}` : '';
+      const errorMsg = `No${rarityText} magic items found in the database.`;
+      setSpawnError(errorMsg);
       showToast('❌ No magic items found', 'error');
     }
   };
@@ -1071,6 +1086,26 @@ export function ItemsTab() {
       <p className="items-empty-lootbox-description">
         Select a spawn mode and click the button to generate random items, treasure hoards, or magic items.
       </p>
+    </div>
+  );
+
+  // Render error state for spawn failures
+  const renderSpawnErrorState = (message: string) => (
+    <div className="items-error-state">
+      <div className="items-error-state-icon-wrapper">
+        <X className="items-error-state-icon" size={24} />
+      </div>
+      <h4 className="items-error-state-title">Spawn Failed</h4>
+      <p className="items-error-state-message">{message}</p>
+      <div className="items-error-state-action">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSpawnError(null)}
+        >
+          Dismiss
+        </Button>
+      </div>
     </div>
   );
 
@@ -1828,8 +1863,13 @@ export function ItemsTab() {
                   </div>
                 )}
 
+                {/* Error State - Spawn failed */}
+                {spawnError && !isLootBoxLoading && !isAnimating && (
+                  renderSpawnErrorState(spawnError)
+                )}
+
                 {/* Empty State - No spawned items */}
-                {spawnedItems.length === 0 && !isLootBoxLoading && !isAnimating && (
+                {spawnedItems.length === 0 && !spawnError && !isLootBoxLoading && !isAnimating && (
                   renderEmptyLootBoxState()
                 )}
               </div>

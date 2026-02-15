@@ -486,7 +486,7 @@ interface EquipmentModification {
 - [x] Review modal responsiveness
 - [x] Review toast messages
 - [x] Review empty states
-- [ ] Review error states
+- [x] Review error states
 
 **Toast Messages Review Completed (2026-02-15):**
 - Reviewed all toast messages in ItemsTab for consistency with other tabs
@@ -562,6 +562,28 @@ interface EquipmentModification {
   - Added `.items-empty-lootbox` styles with gradient icon background
   - Enhanced `.items-empty-equipment` with icon wrapper, title, and description
   - Consistent styling with other empty states in the app
+
+**Error States Review Completed (2026-02-15):**
+- Reviewed all error handling patterns in ItemsTab and related components
+- **Existing Error Handling:**
+  - Toast notifications with consistent emojis for all error states
+  - Form validation errors displayed inline in Item Creator
+  - Try/catch blocks in all hooks with proper error logging
+  - Error messages include item names and operation context
+- **Error State Improvements Added:**
+  - Added `spawnError` state to track spawn operation failures
+  - Created `renderSpawnErrorState()` function for visual error display
+  - Added CSS styles for error states:
+    - `.items-error-state` - Full error display with icon, title, message, and dismiss button
+    - `.items-error-compact` - Inline compact error display
+    - `.items-equipment-error` - Equipment-specific error styling
+  - Spawn handlers now set descriptive error messages for visual feedback
+  - Error state includes dismiss button to clear the error
+- **CSS Changes:**
+  - Added comprehensive error state styles following the empty state pattern
+  - Red/destructive color theme for error states
+  - Dismiss button styling for error recovery
+  - Responsive design for all screen sizes
 
 ### 7.5 Documentation
 - [ ] Update inline comments in code

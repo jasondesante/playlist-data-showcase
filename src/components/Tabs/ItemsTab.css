@@ -958,6 +958,108 @@
 }
 
 /* ========================================
+   ERROR STATES
+   ======================================== */
+
+/* Error state container - matches empty state pattern */
+.items-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  gap: 0.75rem;
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.3);
+  border-radius: var(--radius-lg);
+  margin-top: 1rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.05);
+}
+
+.items-error-state-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.15), hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1));
+  border-radius: var(--radius-full);
+}
+
+.items-error-state-icon {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.items-error-state-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+  margin: 0;
+}
+
+.items-error-state-message {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.items-error-state-action {
+  margin-top: 0.5rem;
+}
+
+/* Compact inline error - for use within sections */
+.items-error-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.items-error-compact-icon {
+  flex-shrink: 0;
+}
+
+/* Equipment error state - inline version */
+.items-equipment-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  gap: 0.5rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.05);
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.2);
+  border-radius: var(--radius-md);
+}
+
+.items-equipment-error-icon {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+  opacity: 0.7;
+}
+
+.items-equipment-error-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+  margin: 0;
+}
+
+.items-equipment-error-message {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 240px;
+}
+
+/* ========================================
    PLACEHOLDER SECTIONS (Loot Box / Creator)
    ======================================== */
 
