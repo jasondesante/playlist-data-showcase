@@ -55,10 +55,10 @@ This plan enhances the ItemsTab to showcase the full capabilities of the playlis
 - [x] Implement `isEnchanted()` and `isCursed()` helper functions
 
 ### 1.2 Create Enchantment Type Definitions
-- [ ] Create `src/types/enchantment.ts` if needed
-- [ ] Define `EnchantmentCategory` type ('weapon' | 'armor' | 'resistance' | 'stat' | 'combo')
-- [ ] Define `EnchantmentInfo` interface for UI display
-- [ ] Export enchantment groupings for UI:
+- [x] Create `src/types/enchantment.ts` if needed
+- [x] Define `EnchantmentCategory` type ('weapon' | 'armor' | 'resistance' | 'stat' | 'combo')
+- [x] Define `EnchantmentInfo` interface for UI display
+- [x] Export enchantment groupings for UI:
   - Weapon enchantments: plusOne/Two/Three, flaming, frost, shock, etc.
   - Armor enchantments: plusOne/Two
   - Resistance enchantments: fire, cold, lightning, etc.
