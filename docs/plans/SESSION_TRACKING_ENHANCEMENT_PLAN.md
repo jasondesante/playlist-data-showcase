@@ -180,12 +180,12 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 4.2: Create SessionHistoryPanel component
 
-- [ ] Create `src/components/ui/SessionHistoryPanel.tsx`
-- [ ] Props: `sessions: ListeningSession[]`, `maxItems?: number`
-- [ ] Display list of recent sessions (default 10)
-- [ ] Show "View All" button if more sessions exist
-- [ ] Collapsible/expandable design
-- [ ] Empty state when no history
+- [x] Create `src/components/ui/SessionHistoryPanel.tsx`
+- [x] Props: `sessions: ListeningSession[]`, `maxItems?: number`
+- [x] Display list of recent sessions (default 10)
+- [x] Show "View All" button if more sessions exist
+- [x] Collapsible/expandable design
+- [x] Empty state when no history
 
 ### Task 4.3: Integrate SessionHistoryPanel into SessionTrackingTab
 
