@@ -15,3 +15,4 @@ export * from './useHeroEquipment';
 export * from './useLootBox';
 export * from './useItemCreator';
 export * from './useDataViewer';
+export * from './usePartyAnalysis';

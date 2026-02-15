@@ -24,7 +24,8 @@ type LogCategory =
     | 'HeroEquipment'
     | 'LootBox'
     | 'ItemCreator'
-    | 'DataViewer';
+    | 'DataViewer'
+    | 'PartyAnalysis';
 
 
 

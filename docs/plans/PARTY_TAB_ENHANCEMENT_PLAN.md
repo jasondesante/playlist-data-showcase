@@ -31,12 +31,12 @@ This plan enhances the PartyTab with:
 - [x] Create `deselectAllHeroes()` function
 
 ### Task 1.3: Create Party Analysis Hook
-- [ ] Create `usePartyAnalysis.ts` hook in `src/hooks/`
-- [ ] Accept `characters` and `selectedHeroSeeds` as parameters
-- [ ] Filter characters by selection
-- [ ] Call `PartyAnalyzer.analyzeParty()` with selected characters
-- [ ] Memoize the result to prevent unnecessary recalculations
-- [ ] Return analysis object or null if no characters selected
+- [x] Create `usePartyAnalysis.ts` hook in `src/hooks/`
+- [x] Accept `characters` and `selectedHeroSeeds` as parameters
+- [x] Filter characters by selection
+- [x] Call `PartyAnalyzer.analyzeParty()` with selected characters
+- [x] Memoize the result to prevent unnecessary recalculations
+- [x] Return analysis object or null if no characters selected
 
 ```typescript
 // usePartyAnalysis.ts
