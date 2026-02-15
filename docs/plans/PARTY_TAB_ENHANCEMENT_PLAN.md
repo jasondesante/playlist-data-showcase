@@ -70,38 +70,38 @@ function usePartyAnalysis(
 - [x] Show empty state when no heroes selected
 
 ### Task 2.2: Quick Stats Cards
-- [ ] Create stat card grid layout (responsive)
-- [ ] Implement individual stat cards:
-  - [ ] **Average Level** - with party size subtitle
-  - [ ] **Average AC** - armor class
-  - [ ] **Average HP** - hit points
-  - [ ] **Total Strength** - abstract power score
-  - [ ] **Est. Damage** - average damage output
+- [x] Create stat card grid layout (responsive)
+- [x] Implement individual stat cards:
+  - [x] **Average Level** - with party size subtitle
+  - [x] **Average AC** - armor class
+  - [x] **Average HP** - hit points
+  - [x] **Total Strength** - abstract power score
+  - [x] **Est. Damage** - average damage output
 
 ### Task 2.3: XP Budget Display
-- [ ] Create XP budget section showing encounter difficulty thresholds
-- [ ] Display Easy/Medium/Hard/Deadly XP values
-- [ ] Add tooltips explaining what XP budgets mean
-- [ ] Use color coding for difficulty levels (green → red)
+- [x] Create XP budget section showing encounter difficulty thresholds
+- [x] Display Easy/Medium/Hard/Deadly XP values
+- [x] Add tooltips explaining what XP budgets mean
+- [x] Use color coding for difficulty levels (green → red)
 
 ### Task 2.4: Party Overview CSS
-- [ ] Add CSS styles for overview panel in `PartyTab.css`
-- [ ] Style stat cards with hover effects
-- [ ] Style XP budget section with difficulty colors
-- [ ] Ensure responsive layout for mobile/tablet/desktop
+- [x] Add CSS styles for overview panel in `PartyOverviewPanel.css` (component-based CSS)
+- [x] Style stat cards with hover effects
+- [x] Style XP budget section with difficulty colors
+- [x] Ensure responsive layout for mobile/tablet/desktop
 
 ---
 
 ## Phase 3: Hero Selection UI
 
 ### Task 3.1: Selection Checkbox on Character Cards
-- [ ] Modify `CharacterCard` component to accept selection props:
-  - [ ] `isSelected: boolean`
-  - [ ] `onToggleSelection: () => void`
-  - [ ] `selectionMode: boolean` (show/hide checkbox)
-- [ ] Add checkbox overlay to card (top-left corner)
-- [ ] Style selected vs unselected cards differently
-- [ ] Ensure selection doesn't interfere with click-to-view-details
+- [x] Modify `CharacterCard` component to accept selection props:
+  - [x] `isSelected: boolean`
+  - [x] `onToggleSelection: () => void`
+  - [x] `selectionMode: boolean` (show/hide checkbox)
+- [x] Add checkbox overlay to card (top-left corner)
+- [x] Style selected vs unselected cards differently
+- [x] Ensure selection doesn't interfere with click-to-view-details
 
 ### Task 3.2: Selection Controls Bar
 - [ ] Add selection controls bar above the character grid

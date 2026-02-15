@@ -3,16 +3,17 @@
  *
  * Displays a character with minimal information in a card format.
  * Used in the Party tab to show all characters in a grid.
+ * Supports selection mode for party analysis.
  */
 
 import { CharacterSheet } from '@/types';
 import { getCharacterAvatar } from '@/utils/characterIcons';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2, Square, CheckSquare } from 'lucide-react';
 
 interface CharacterCardProps {
   /** The character to display */
   character: CharacterSheet;
-  /** Optional click handler */
+  /** Optional click handler (for viewing details) */
   onClick?: () => void;
   /** Visual variant of the card */
   variant?: 'default' | 'selectable' | 'selected';
@@ -22,6 +23,12 @@ interface CharacterCardProps {
   onSetActive?: () => void;
   /** Whether the card is in a loading state (e.g., setting as active) */
   isLoading?: boolean;
+  /** Whether selection mode is enabled (shows checkbox) */
+  selectionMode?: boolean;
+  /** Whether this character is selected for party analysis */
+  isSelected?: boolean;
+  /** Handler for toggling selection state */
+  onToggleSelection?: () => void;
 }
 
 /**
@@ -43,7 +50,17 @@ function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
-export function CharacterCard({ character, onClick, variant = 'default', isActive, onSetActive, isLoading = false }: CharacterCardProps) {
+export function CharacterCard({
+  character,
+  onClick,
+  variant = 'default',
+  isActive,
+  onSetActive,
+  isLoading = false,
+  selectionMode = false,
+  isSelected = true,
+  onToggleSelection,
+}: CharacterCardProps) {
   const progressPercent = calculateXPProgress(character);
   const avatar = getCharacterAvatar(character.class);
 
@@ -54,6 +71,8 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
     isActive && 'party-card-active',
     onClick && 'party-card-clickable',
     isLoading && 'party-card-loading',
+    selectionMode && 'party-card-selection-mode',
+    !isSelected && selectionMode && 'party-card-unselected',
   ]
     .filter(Boolean)
     .join(' ');
@@ -65,10 +84,33 @@ export function CharacterCard({ character, onClick, variant = 'default', isActiv
     }
   };
 
+  const handleSelectionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSelection?.();
+  };
+
   return (
     <div className={cardClasses} onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}>
-      {/* Active Character Badge (top-left corner) */}
-      {isActive && (
+      {/* Selection Checkbox (top-left corner) - shown when selectionMode is enabled */}
+      {selectionMode && (
+        <button
+          className={`party-card-selection-checkbox ${isSelected ? 'party-card-selection-checked' : ''}`}
+          onClick={handleSelectionClick}
+          type="button"
+          title={isSelected ? 'Deselect for analysis' : 'Select for analysis'}
+          aria-label={isSelected ? `Deselect ${character.name} for analysis` : `Select ${character.name} for analysis`}
+          aria-pressed={isSelected}
+        >
+          {isSelected ? (
+            <CheckSquare size={18} />
+          ) : (
+            <Square size={18} />
+          )}
+        </button>
+      )}
+
+      {/* Active Character Badge (top-left corner) - only show if not in selection mode */}
+      {isActive && !selectionMode && (
         <div className="party-card-active-badge" title="Active Character">
           <Check size={14} />
           <span>Active</span>

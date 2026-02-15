@@ -149,12 +149,10 @@ export function PartyTab() {
 
   // Hero selection state is ready for Phase 2/3 integration:
   // - selectedHeroSeeds: Set of seeds for heroes included in party analysis
-  // - toggleHeroSelection(seed): Toggle a single hero's selection
-  // - selectAllHeroes(): Select all heroes
-  // - deselectAllHeroes(): Deselect all heroes
-  // These will be passed to PartyOverviewPanel and used in Selection Controls Bar
-  void selectedHeroSeeds;
-  void toggleHeroSelection;
+  // - toggleHeroSelection(seed): Toggle a single hero's selection (now used by CharacterCard)
+  // - selectAllHeroes(): Select all heroes (will be used in Task 3.2)
+  // - deselectAllHeroes(): Deselect all heroes (will be used in Task 3.2)
+  // Used by CharacterCard for selection mode:
   void selectAllHeroes;
   void deselectAllHeroes;
 
@@ -422,6 +420,9 @@ export function PartyTab() {
             isActive={character.seed === activeCharacterId}
             onSetActive={() => handleSetActiveCharacter(character.seed)}
             isLoading={isSettingActive && settingActiveSeed === character.seed}
+            selectionMode={characters.length >= 2}
+            isSelected={selectedHeroSeeds.has(character.seed)}
+            onToggleSelection={() => toggleHeroSelection(character.seed)}
           />
         ))}
       </div>

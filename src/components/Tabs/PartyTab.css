@@ -1252,3 +1252,124 @@
   background: linear-gradient(135deg, hsl(var(--cute-teal) / 0.15), hsl(var(--cute-orange) / 0.1));
   border-color: hsl(var(--cute-teal) / 0.4);
 }
+
+/* ========================================
+   HERO SELECTION STYLES (Phase 3)
+   ======================================== */
+
+/* Selection mode active on card */
+.party-card-selection-mode {
+  position: relative;
+}
+
+/* Selection checkbox button - top-left corner */
+.party-card-selection-checkbox {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.party-card-selection-checkbox:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-dim);
+  color: var(--color-primary);
+}
+
+.party-card-selection-checkbox:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* Checked state */
+.party-card-selection-checked {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.party-card-selection-checked:hover {
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Unselected card styling (dimmed appearance) */
+.party-card-unselected {
+  opacity: 0.6;
+  border-color: var(--color-border);
+}
+
+.party-card-unselected:hover {
+  opacity: 0.8;
+  /* Don't change border color on hover for unselected cards */
+  border-color: var(--color-border);
+}
+
+/* When selection mode is active, adjust the game mode badge position */
+.party-card-selection-mode .party-card-game-mode-badge {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* Selection Controls Bar */
+.party-selection-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.party-selection-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.party-selection-count {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.party-selection-count strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .party-selection-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .party-selection-buttons {
+    justify-content: center;
+  }
+
+  .party-selection-count {
+    justify-content: center;
+    text-align: center;
+  }
+}
