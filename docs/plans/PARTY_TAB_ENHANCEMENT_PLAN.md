@@ -64,10 +64,10 @@ function usePartyAnalysis(
 ## Phase 2: Party Overview Panel Component
 
 ### Task 2.1: Create PartyOverviewPanel Component
-- [ ] Create `src/components/Party/PartyOverviewPanel.tsx`
-- [ ] Accept `analysis` prop (PartyAnalysisResult | null)
-- [ ] Accept `selectedCount` and `totalCount` props
-- [ ] Show empty state when no heroes selected
+- [x] Create `src/components/Party/PartyOverviewPanel.tsx`
+- [x] Accept `analysis` prop (PartyAnalysisResult | null)
+- [x] Accept `selectedCount` and `totalCount` props
+- [x] Show empty state when no heroes selected
 
 ### Task 2.2: Quick Stats Cards
 - [ ] Create stat card grid layout (responsive)

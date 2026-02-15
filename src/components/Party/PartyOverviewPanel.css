@@ -1,0 +1,270 @@
+/**
+ * PartyOverviewPanel Styles
+ *
+ * Displays party statistics and XP budget information.
+ * Part of Phase 2: Party Overview Panel Component
+ */
+
+/* Main Panel Container */
+.party-overview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Empty State Variant */
+.party-overview-panel-empty {
+  padding: 1.5rem;
+}
+
+/* Empty State */
+.party-overview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.party-overview-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.party-overview-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.375rem 0;
+}
+
+.party-overview-empty-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+}
+
+/* Stats Grid */
+.party-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .party-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .party-stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Individual Stat Card */
+.party-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.party-stat-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.party-stat-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-sm);
+  color: var(--color-on-primary);
+  flex-shrink: 0;
+}
+
+.party-stat-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.party-stat-card-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.party-stat-card-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.party-stat-card-subtitle {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.125rem;
+}
+
+/* XP Budget Section */
+.party-xp-section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.party-xp-section-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.875rem 0;
+}
+
+.party-xp-section-subtitle {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+/* XP Budget Grid */
+.party-xp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .party-xp-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Individual XP Card */
+.party-xp-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.party-xp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.party-xp-card-difficulty {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.party-xp-card-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Difficulty Colors */
+/* Easy - Green */
+.party-xp-card-easy {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05));
+  border-color: hsl(142 76% 36% / 0.4);
+}
+
+.party-xp-card-easy .party-xp-card-difficulty {
+  color: hsl(142 76% 36%);
+}
+
+.party-xp-card-easy:hover {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.2), hsl(142 76% 36% / 0.1));
+  border-color: hsl(142 76% 36% / 0.5);
+}
+
+/* Medium - Yellow/Amber */
+.party-xp-card-medium {
+  background: linear-gradient(135deg, hsl(45 93% 47% / 0.15), hsl(45 93% 47% / 0.05));
+  border-color: hsl(45 93% 47% / 0.4);
+}
+
+.party-xp-card-medium .party-xp-card-difficulty {
+  color: hsl(45 93% 47%);
+}
+
+.party-xp-card-medium:hover {
+  background: linear-gradient(135deg, hsl(45 93% 47% / 0.2), hsl(45 93% 47% / 0.1));
+  border-color: hsl(45 93% 47% / 0.5);
+}
+
+/* Hard - Orange */
+.party-xp-card-hard {
+  background: linear-gradient(135deg, hsl(25 95% 53% / 0.15), hsl(25 95% 53% / 0.05));
+  border-color: hsl(25 95% 53% / 0.4);
+}
+
+.party-xp-card-hard .party-xp-card-difficulty {
+  color: hsl(25 95% 53%);
+}
+
+.party-xp-card-hard:hover {
+  background: linear-gradient(135deg, hsl(25 95% 53% / 0.2), hsl(25 95% 53% / 0.1));
+  border-color: hsl(25 95% 53% / 0.5);
+}
+
+/* Deadly - Red */
+.party-xp-card-deadly {
+  background: linear-gradient(135deg, hsl(0 72% 51% / 0.15), hsl(0 72% 51% / 0.05));
+  border-color: hsl(0 72% 51% / 0.4);
+}
+
+.party-xp-card-deadly .party-xp-card-difficulty {
+  color: hsl(0 72% 51%);
+}
+
+.party-xp-card-deadly:hover {
+  background: linear-gradient(135deg, hsl(0 72% 51% / 0.2), hsl(0 72% 51% / 0.1));
+  border-color: hsl(0 72% 51% / 0.5);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .party-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .party-stat-card {
+    padding: 0.75rem;
+  }
+
+  .party-stat-card-value {
+    font-size: 1.125rem;
+  }
+}
