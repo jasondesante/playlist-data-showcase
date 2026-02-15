@@ -216,6 +216,22 @@ export function ItemsTab() {
   const [autoEquip, setAutoEquip] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
+  // Expanded item details state (for modification display)
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Toggle item expansion
+  const toggleItemExpansion = (instanceId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(instanceId)) {
+        newSet.delete(instanceId);
+      } else {
+        newSet.add(instanceId);
+      }
+      return newSet;
+    });
+  };
+
 
   // Get equipment grouped by category
   const equipment = useMemo(() => {
@@ -435,10 +451,50 @@ export function ItemsTab() {
       return { icon: '✨', label: mod.name };
     };
 
+    // Check if item has modifications (for expand button)
+    const hasModifications = modifications.length > 0;
+    const isExpanded = item.instanceId ? expandedItems.has(item.instanceId) : false;
+
+    // Format property value for display
+    const formatPropertyValue = (value: unknown): string => {
+      if (typeof value === 'number') {
+        return value >= 0 ? `+${value}` : String(value);
+      }
+      return String(value);
+    };
+
+    // Get source badge styling
+    const getSourceBadgeClass = (source: string): string => {
+      switch (source) {
+        case 'enchantment':
+          return 'items-modification-source-enchantment';
+        case 'curse':
+          return 'items-modification-source-curse';
+        case 'upgrade':
+          return 'items-modification-source-upgrade';
+        default:
+          return 'items-modification-source-template';
+      }
+    };
+
+    // Format source for display
+    const formatSource = (source: string): string => {
+      switch (source) {
+        case 'enchantment':
+          return '✨ Enchantment';
+        case 'curse':
+          return '🔮 Curse';
+        case 'upgrade':
+          return '⬆️ Upgrade';
+        default:
+          return '📋 Template';
+      }
+    };
+
     return (
       <div
         key={item.instanceId}
-        className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''} ${itemIsCursed ? 'items-equipment-item-cursed' : ''}`}
+        className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''} ${itemIsCursed ? 'items-equipment-item-cursed' : ''} ${isExpanded ? 'items-equipment-item-expanded' : ''}`}
       >
         <div className="items-equipment-item-content">
           {isAmmo && <Target className="items-equipment-ammo-icon" size={16} />}
@@ -518,7 +574,133 @@ export function ItemsTab() {
           >
             Drop
           </Button>
+
+          {/* Expand/Collapse button for modifications */}
+          {hasModifications && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => item.instanceId && toggleItemExpansion(item.instanceId)}
+              leftIcon={isExpanded ? ChevronUp : ChevronDown}
+              title={isExpanded ? 'Hide modification details' : 'Show modification details'}
+              className="items-equipment-expand-btn"
+            >
+              {isExpanded ? 'Less' : 'Details'}
+            </Button>
+          )}
         </div>
+
+        {/* Expanded modification details */}
+        {isExpanded && hasModifications && (
+          <div className="items-modification-details">
+            <div className="items-modification-details-header">
+              <Sparkles size={14} />
+              <span>Modifications ({modifications.length})</span>
+            </div>
+            <div className="items-modification-list">
+              {modifications.map(mod => (
+                <div key={mod.id} className="items-modification-entry">
+                  <div className="items-modification-entry-header">
+                    <span className={`items-modification-source ${getSourceBadgeClass(mod.source)}`}>
+                      {formatSource(mod.source)}
+                    </span>
+                    <span className="items-modification-name">{mod.name}</span>
+                    {mod.appliedAt && (
+                      <span className="items-modification-timestamp">
+                        {new Date(mod.appliedAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Properties */}
+                  {mod.properties && mod.properties.length > 0 && (
+                    <div className="items-modification-properties">
+                      {mod.properties.map((prop, idx) => (
+                        <div key={idx} className="items-modification-property">
+                          <span className="items-modification-property-type">{prop.type}</span>
+                          {prop.target && (
+                            <span className="items-modification-property-target">{prop.target}</span>
+                          )}
+                          <span className="items-modification-property-value">
+                            {formatPropertyValue(prop.value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  {mod.description && (
+                    <div className="items-modification-description">
+                      {mod.description}
+                    </div>
+                  )}
+
+                  {/* Features */}
+                  {mod.addsFeatures && mod.addsFeatures.length > 0 && (
+                    <div className="items-modification-features">
+                      <span className="items-modification-features-label">Grants Features:</span>
+                      {mod.addsFeatures.map((feature, idx) => (
+                        <span key={idx} className="items-modification-feature-tag">
+                          {typeof feature === 'string' ? feature : feature.name || feature.id || 'Unknown'}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {mod.addsSkills && mod.addsSkills.length > 0 && (
+                    <div className="items-modification-skills">
+                      <span className="items-modification-skills-label">Grants Skills:</span>
+                      {mod.addsSkills.map((skill, idx) => (
+                        <span key={idx} className="items-modification-skill-tag">
+                          {skill.skillId} ({skill.level})
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Spells */}
+                  {mod.addsSpells && mod.addsSpells.length > 0 && (
+                    <div className="items-modification-spells">
+                      <span className="items-modification-spells-label">Grants Spells:</span>
+                      {mod.addsSpells.map((spell, idx) => (
+                        <span key={idx} className="items-modification-spell-tag">
+                          {spell.spellId}
+                          {spell.level && ` (Lvl ${spell.level})`}
+                          {spell.uses && ` - ${spell.uses} uses`}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Combined effects summary */}
+            {modificationInfo?.combinedEffects && modificationInfo.combinedEffects.length > 0 && (
+              <div className="items-modification-effects-summary">
+                <div className="items-modification-effects-summary-header">
+                  <Zap size={12} />
+                  <span>Combined Effects</span>
+                </div>
+                <div className="items-modification-effects-list">
+                  {modificationInfo.combinedEffects.map((effect, idx) => (
+                    <div key={idx} className="items-modification-effect-item">
+                      <span className="items-modification-effect-type">{effect.type}</span>
+                      {effect.target && (
+                        <span className="items-modification-effect-target">{effect.target}</span>
+                      )}
+                      <span className="items-modification-effect-value">
+                        {formatPropertyValue(effect.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };

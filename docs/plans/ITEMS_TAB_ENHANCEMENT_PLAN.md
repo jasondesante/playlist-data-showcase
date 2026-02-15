@@ -132,9 +132,9 @@ interface EquipmentModification {
 - [x] Ensure badges wrap properly on narrow screens
 
 ### 2.3 Display Modifications in Item Details
-- [ ] Show modification list in equipment item expand/collapse
-- [ ] Display modification source (enchantment/curse/upgrade)
-- [ ] Show modification properties (stat bonuses, damage bonuses, etc.)
+- [x] Show modification list in equipment item expand/collapse
+- [x] Display modification source (enchantment/curse/upgrade)
+- [x] Show modification properties (stat bonuses, damage bonuses, etc.)
 
 ---
 

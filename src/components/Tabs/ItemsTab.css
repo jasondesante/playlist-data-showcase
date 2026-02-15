@@ -400,6 +400,276 @@
 }
 
 /* ========================================
+   MODIFICATION DETAILS (EXPANDED)
+   ======================================== */
+
+/* Item with expanded details */
+.items-equipment-item-expanded {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.items-equipment-item-expanded .items-equipment-item-content {
+  flex: 1;
+}
+
+/* Expand button */
+.items-equipment-expand-btn {
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.items-equipment-expand-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-elevated);
+}
+
+/* Modification details panel */
+.items-modification-details {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--color-border);
+  width: 100%;
+}
+
+.items-modification-details-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.items-modification-details-header svg {
+  color: hsl(260 80% 70%);
+}
+
+/* Modification list */
+.items-modification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual modification entry */
+.items-modification-entry {
+  padding: 0.625rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.items-modification-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+/* Source badge styles */
+.items-modification-source {
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.items-modification-source-enchantment {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.2), hsl(220 70% 55% / 0.15));
+  color: hsl(260 80% 70%);
+  border: 1px solid hsl(260 70% 55% / 0.3);
+}
+
+.items-modification-source-curse {
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.15), hsl(20 70% 50% / 0.1));
+  color: hsl(var(--cute-red));
+  border: 1px solid hsl(var(--cute-red) / 0.3);
+}
+
+.items-modification-source-upgrade {
+  background: linear-gradient(135deg, hsl(120 60% 40% / 0.15), hsl(140 60% 40% / 0.1));
+  color: hsl(120 60% 45%);
+  border: 1px solid hsl(120 60% 40% / 0.3);
+}
+
+.items-modification-source-template {
+  background: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* Modification name */
+.items-modification-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Timestamp */
+.items-modification-timestamp {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Properties */
+.items-modification-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+.items-modification-property {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.375rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.items-modification-property-type {
+  font-weight: 600;
+  color: hsl(210 80% 50%);
+  text-transform: capitalize;
+}
+
+.items-modification-property-target {
+  color: hsl(270 60% 50%);
+  font-weight: 500;
+}
+
+.items-modification-property-value {
+  color: var(--color-text-primary);
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Description */
+.items-modification-description {
+  margin-top: 0.375rem;
+  padding: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--color-border);
+}
+
+/* Features */
+.items-modification-features,
+.items-modification-skills,
+.items-modification-spells {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.items-modification-features-label,
+.items-modification-skills-label,
+.items-modification-spells-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.items-modification-feature-tag,
+.items-modification-skill-tag,
+.items-modification-spell-tag {
+  padding: 0.125rem 0.375rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  color: var(--color-text-primary);
+}
+
+.items-modification-feature-tag {
+  border-color: hsl(45 90% 50% / 0.3);
+  background: hsl(45 90% 50% / 0.1);
+}
+
+.items-modification-skill-tag {
+  border-color: hsl(120 60% 40% / 0.3);
+  background: hsl(120 60% 40% / 0.1);
+}
+
+.items-modification-spell-tag {
+  border-color: hsl(270 60% 50% / 0.3);
+  background: hsl(270 60% 50% / 0.1);
+}
+
+/* Combined effects summary */
+.items-modification-effects-summary {
+  margin-top: 0.75rem;
+  padding-top: 0.625rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.items-modification-effects-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.items-modification-effects-summary-header svg {
+  color: hsl(45 90% 50%);
+}
+
+.items-modification-effects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.items-modification-effect-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.375rem;
+  background: linear-gradient(135deg, hsl(45 90% 50% / 0.05), hsl(30 90% 50% / 0.03));
+  border: 1px solid hsl(45 90% 50% / 0.15);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.items-modification-effect-type {
+  font-weight: 600;
+  color: hsl(210 80% 50%);
+  text-transform: capitalize;
+}
+
+.items-modification-effect-target {
+  color: hsl(270 60% 50%);
+  font-weight: 500;
+}
+
+.items-modification-effect-value {
+  color: var(--color-text-primary);
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* ========================================
    WEIGHT FOOTER
    ======================================== */
 
