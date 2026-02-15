@@ -189,10 +189,10 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 4.3: Integrate SessionHistoryPanel into SessionTrackingTab
 
-- [ ] Import `SessionHistoryPanel`
-- [ ] Add below the "Last Session" card or replace it
-- [ ] Use `sessionHistory` from `useSessionStore`
-- [ ] Show stats summary at top:
+- [x] Import `SessionHistoryPanel`
+- [x] Add below the "Last Session" card or replace it
+- [x] Use `sessionHistory` from `useSessionStore`
+- [x] Show stats summary at top:
   - Total sessions count
   - Total XP earned
   - Total listening time
