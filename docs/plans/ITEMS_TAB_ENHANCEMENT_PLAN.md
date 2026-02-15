@@ -483,7 +483,7 @@ interface EquipmentModification {
 
 ### 7.4 Visual Polish
 - [x] Review badge placement on items
-- [ ] Review modal responsiveness
+- [x] Review modal responsiveness
 - [ ] Review toast messages
 - [ ] Review empty states
 - [ ] Review error states
@@ -497,6 +497,27 @@ interface EquipmentModification {
 - Added text-overflow handling for long badge names
 - Added mobile-responsive badge styles: badges wrap to new line on narrow screens
 - Fixed duplicate/broken media query in CSS
+
+**Modal Responsiveness Review Completed (2026-02-15):**
+- Enhanced responsive breakpoints with 4 tiers: 640px, 480px, 360px, and touch devices
+- **640px (small tablets):**
+  - Modal aligns to bottom of screen (better mobile UX)
+  - Reduced padding and font sizes throughout
+  - Tab bar supports horizontal scroll with hidden scrollbar
+  - Grid switches to single column
+- **480px (mobile phones):**
+  - Further reduced padding and font sizes
+  - Stat boosts switch to horizontal row layout
+  - Card name and badge sizes reduced
+  - Footer buttons expand to full width
+- **360px (very small screens/landscape):**
+  - Modal fills entire screen (no border radius)
+  - Minimal padding to maximize content area
+  - Even smaller text for readability
+- **Touch device improvements:**
+  - Removed hover transforms (confusing on touch)
+  - Added active states for tactile feedback
+  - Improved tap targets
 
 ### 7.5 Documentation
 - [ ] Update inline comments in code
