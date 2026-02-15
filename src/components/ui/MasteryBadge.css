@@ -1,0 +1,232 @@
+/* ============================================
+   MASTERY BADGE COMPONENT
+   ============================================ */
+
+/**
+ * Mastery Badge - Visual indicator for track mastery level
+ *
+ * Specifications:
+ * - Shape: Icon-based badges (circle, star, crown) based on level
+ * - Colors: Level-specific colors (Bronze, Silver, Gold)
+ * - Animation: Glow animation for mastered tracks
+ * - Tooltip: Shows mastery level name on hover
+ * - Sizes: sm, md, lg variants
+ */
+
+/* ============================================
+   BASE BADGE STYLES
+   ============================================ */
+
+.mastery-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+  transform: var(--gpu-accel);
+  backface-visibility: hidden;
+}
+
+.mastery-badge:hover {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+
+.mastery-badge-sm {
+  width: 18px;
+  height: 18px;
+}
+
+.mastery-badge-sm .mastery-badge-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mastery-badge-md {
+  width: 24px;
+  height: 24px;
+}
+
+.mastery-badge-md .mastery-badge-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.mastery-badge-lg {
+  width: 32px;
+  height: 32px;
+}
+
+.mastery-badge-lg .mastery-badge-icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* ============================================
+   LEVEL-SPECIFIC COLORS
+   ============================================ */
+
+/**
+ * Basic Level - Bronze (#CD7F32)
+ * 1-4 listens
+ */
+.mastery-badge-basic {
+  background-color: hsl(var(--surface-2));
+  color: hsl(28 60% 52%); /* Bronze: #CD7F32 */
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(28 60% 65% / 0.3);
+}
+
+.mastery-badge-basic:hover {
+  box-shadow: 0 2px 6px hsl(28 60% 52% / 0.4),
+              inset 0 1px 0 hsl(28 60% 65% / 0.3);
+}
+
+/**
+ * Familiar Level - Silver (#C0C0C0)
+ * 5-9 listens
+ */
+.mastery-badge-familiar {
+  background-color: hsl(var(--surface-2));
+  color: hsl(0 0% 75%); /* Silver: #C0C0C0 */
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(0 0% 90% / 0.3);
+}
+
+.mastery-badge-familiar:hover {
+  box-shadow: 0 2px 6px hsl(0 0% 75% / 0.4),
+              inset 0 1px 0 hsl(0 0% 90% / 0.3);
+}
+
+/**
+ * Mastered Level - Gold (#FFD700) with glow
+ * 10+ listens
+ */
+.mastery-badge-mastered {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(45 100% 85% / 0.15) 100%
+  );
+  color: hsl(51 100% 50%); /* Gold: #FFD700 */
+  box-shadow: 0 0 10px 2px hsl(51 100% 50% / 0.5),
+              0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(51 100% 80% / 0.4);
+  animation: masteryBadgeGlowPulse 2s ease-in-out infinite;
+}
+
+.mastery-badge-mastered:hover {
+  box-shadow: 0 0 16px 4px hsl(51 100% 50% / 0.7),
+              0 2px 6px rgb(0 0 0 / 0.4),
+              inset 0 1px 0 hsl(51 100% 80% / 0.4);
+}
+
+/**
+ * Crown icon special styling for mastered level
+ */
+.mastery-badge-crown {
+  filter: drop-shadow(0 0 2px hsl(51 100% 50% / 0.6));
+}
+
+/* ============================================
+   GLOW ANIMATION
+   ============================================ */
+
+@keyframes masteryBadgeGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px 2px hsl(51 100% 50% / 0.5),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(51 100% 80% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px hsl(51 100% 50% / 0.7),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(51 100% 80% / 0.4);
+  }
+}
+
+/* ============================================
+   TOOLTIP STYLES
+   ============================================ */
+
+.mastery-badge-tooltip {
+  position: fixed;
+  z-index: 10000;
+  padding: 4px 8px;
+  background-color: hsl(var(--surface-3));
+  color: hsl(var(--foreground));
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  border: 1px solid hsl(var(--border));
+  white-space: nowrap;
+  pointer-events: none;
+  animation: masteryTooltipFadeIn 150ms var(--ease-out-cubic);
+}
+
+@keyframes masteryTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 4px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY: REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .mastery-badge {
+    transition: none;
+  }
+
+  .mastery-badge:hover {
+    transform: none;
+  }
+
+  .mastery-badge-mastered {
+    animation: none;
+    box-shadow: 0 0 10px 2px hsl(51 100% 50% / 0.5),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(51 100% 80% / 0.4);
+  }
+
+  .mastery-badge-tooltip {
+    animation: none;
+  }
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   (Already dark theme by default, but these
+    ensure consistent appearance)
+   ============================================ */
+
+/* Bronze adjustments for dark theme */
+.mastery-badge-basic {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(28 60% 52% / 0.1) 100%
+  );
+}
+
+/* Silver adjustments for dark theme */
+.mastery-badge-familiar {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(0 0% 75% / 0.1) 100%
+  );
+}

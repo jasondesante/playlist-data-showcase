@@ -83,15 +83,15 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 2.1: Create MasteryBadge component
 
-- [ ] Create `src/components/ui/MasteryBadge.tsx`
-- [ ] Props: `level: number`, `size?: 'sm' | 'md' | 'lg'`
-- [ ] Display visual badge based on mastery level:
+- [x] Create `src/components/ui/MasteryBadge.tsx`
+- [x] Props: `level: MasteryLevel`, `size?: 'sm' | 'md' | 'lg'`
+- [x] Display visual badge based on mastery level:
   - None (0): No badge displayed
   - Basic (1-4): Bronze circle
   - Familiar (5-9): Silver star
   - Mastered (10+): Gold crown with glow
-- [ ] Add tooltip showing mastery level name
-- [ ] Create corresponding CSS in `src/styles/components/MasteryBadge.css`
+- [x] Add tooltip showing mastery level name
+- [x] Create corresponding CSS in `src/components/ui/MasteryBadge.css`
 
 ### Task 2.2: Create MasteryProgressBar component
 
