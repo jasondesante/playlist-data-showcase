@@ -116,8 +116,8 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 3: Equipment Tags Filter
 
 ### Task 3.1: Add Tags Filter State
-- [ ] Add `equipmentTagFilter` state in DataViewerTab.tsx
-- [ ] Type: `string | 'all'` with default `'all'`
+- [x] Add `equipmentTagFilter` state in DataViewerTab.tsx
+- [x] Type: `string | 'all'` with default `'all'`
 
 ### Task 3.2: Create getEquipmentTags Helper
 - [ ] Add `getEquipmentTags()` function to useDataViewer hook

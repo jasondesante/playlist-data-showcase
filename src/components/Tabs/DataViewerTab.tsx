@@ -312,6 +312,10 @@ export function DataViewerTab() {
   // Equipment filters
   const [equipmentTypeFilter, setEquipmentTypeFilter] = useState<'weapon' | 'armor' | 'item' | 'all'>('all');
   const [equipmentRarityFilter, setEquipmentRarityFilter] = useState<string | 'all'>('all');
+  // Task 3.1: Tags filter state (will be integrated in Tasks 3.2-3.4)
+  const [equipmentTagFilter, setEquipmentTagFilter] = useState<string | 'all'>('all');
+  void equipmentTagFilter; // Suppress TS6133 - will be used in Task 3.4
+  void setEquipmentTagFilter; // Suppress TS6133 - will be used in Task 3.3
 
   // Toggle expanded state for an item
   const toggleExpanded = (id: string) => {
