@@ -237,8 +237,22 @@ export function ItemsTab() {
 
   // Enchantment modal state
   const [isEnchantmentModalOpen, setIsEnchantmentModalOpen] = useState(false);
-  const [selectedEnchantItem, setSelectedEnchantItem] = useState<EnhancedInventoryItem | null>(null);
+  const [selectedEnchantItemName, setSelectedEnchantItemName] = useState<string | null>(null);
   const [selectedEnchantItemType, setSelectedEnchantItemType] = useState<ItemEquipmentType>('weapon');
+
+  // Derive the current selected enchant item from character state (to get live updates)
+  const selectedEnchantItem = useMemo(() => {
+    if (!selectedEnchantItemName || !activeCharacter?.equipment) return null;
+
+    // Find the item by name in the equipment
+    const allItems = [
+      ...activeCharacter.equipment.weapons,
+      ...activeCharacter.equipment.armor,
+      ...activeCharacter.equipment.items
+    ];
+
+    return allItems.find(item => item.name === selectedEnchantItemName) || null;
+  }, [selectedEnchantItemName, activeCharacter?.equipment]);
 
   // Toggle item expansion
   const toggleItemExpansion = (instanceId: string) => {
@@ -255,7 +269,7 @@ export function ItemsTab() {
 
   // Open enchantment modal for an item
   const handleOpenEnchantmentModal = (item: EnhancedInventoryItem, itemType: ItemEquipmentType) => {
-    setSelectedEnchantItem(item);
+    setSelectedEnchantItemName(item.name);
     setSelectedEnchantItemType(itemType);
     setIsEnchantmentModalOpen(true);
   };
@@ -263,7 +277,7 @@ export function ItemsTab() {
   // Close enchantment modal
   const handleCloseEnchantmentModal = () => {
     setIsEnchantmentModalOpen(false);
-    setSelectedEnchantItem(null);
+    setSelectedEnchantItemName(null);
   };
 
   // Handle enchantment application from modal

@@ -386,13 +386,22 @@ interface EquipmentModification {
 ## Phase 7: Testing & Polish
 
 ### 7.1 Test Enchantment Flow
-- [ ] Test applying weapon enchantments
+- [x] Test applying weapon enchantments
 - [ ] Test applying armor enchantments
 - [ ] Test applying resistance enchantments
 - [ ] Test applying stat boost enchantments
 - [ ] Test applying combo enchantments
 - [ ] Verify modifications appear in equipment_effects
 - [ ] Verify stat changes are applied correctly
+
+**Completed (2026-02-15):**
+- Verified the EnchantmentModal correctly passes enchantments to the hook
+- Verified EquipmentModifier.enchant() from playlist-data-engine works correctly
+- Verified weapon enchantment types: +1/+2/+3 Enhancement, Flaming, Frost, Shocking, Vampiric, Vorpal Edge
+- Fixed issue where `appliedModificationIds` was using stale item snapshot - now derives from live character state
+- Verified enchantment stacking works (multiple enchantments on same item)
+- Created test file `src/__tests__/enchantmentFlow.test.ts` with comprehensive test cases
+- Build passes with no new errors
 
 ### 7.2 Test Curse Flow
 - [ ] Test applying curses
