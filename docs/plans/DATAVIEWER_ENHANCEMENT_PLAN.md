@@ -220,11 +220,11 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 7: Testing & Documentation
 
 ### Task 7.1: Test Equipment Enhancements
-- [ ] Verify grantsSkills displays correctly
-- [ ] Verify grantsSpells shows uses/recharge properly
-- [ ] Verify grantsFeatures handles both string and inline
-- [ ] Verify tags display and filter correctly
-- [ ] Verify spawnWeight badges appear appropriately
+- [x] Verify grantsSkills displays correctly
+- [x] Verify grantsSpells shows uses/recharge properly
+- [x] Verify grantsFeatures handles both string and inline
+- [x] Verify tags display and filter correctly
+- [x] Verify spawnWeight badges appear appropriately
 
 ### Task 7.2: Test Conditional Properties
 - [ ] Test all condition types display correctly

@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target, BarChart3, PieChart } from 'lucide-react';
+import { Users, Search, X, Trash2, ChevronDown, Check, Star, Circle, Target, BarChart3, PieChart, Sword, Shield, Package, Wand2 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -23,6 +23,10 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { showToast } from '../ui/Toast';
 import { Tooltip } from '../ui/Tooltip';
+import { DetailRow } from '../ui/DetailRow';
+import { cn } from '../../utils/cn';
+import { DEFAULT_EQUIPMENT, SpellQuery } from 'playlist-data-engine';
+import type { EnhancedEquipment, RegisteredSpell } from 'playlist-data-engine';
 import './PartyTab.css';
 
 type SortOption = 'date-added' | 'level' | 'name' | 'xp' | 'class';
@@ -87,9 +91,96 @@ function getAmmunitionWeight(itemName: string): number | null {
   return AMMUNITION_TYPES[itemName] ?? null;
 }
 
+/**
+ * Rarity color mapping for equipment display
+ * Phase 1 Task 1.3: Copied from CharacterGenTab
+ */
+const RARITY_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50%)',
+  'uncommon': 'hsl(120 60% 40%)',
+  'rare': 'hsl(210 80% 50%)',
+  'very_rare': 'hsl(270 60% 50%)',
+  'legendary': 'hsl(30 90% 50%)'
+};
+
+/**
+ * Rarity background colors for item cards
+ * Phase 1 Task 1.3: Copied from CharacterGenTab
+ */
+const RARITY_BG_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.08)',
+  'uncommon': 'hsl(120 60% 40% / 0.08)',
+  'rare': 'hsl(210 80% 50% / 0.08)',
+  'very_rare': 'hsl(270 60% 50% / 0.08)',
+  'legendary': 'hsl(30 90% 50% / 0.12)'
+};
+
+/**
+ * Rarity border colors for item cards
+ * Phase 1 Task 1.3: Copied from CharacterGenTab
+ */
+const RARITY_BORDER_COLORS: Record<string, string> = {
+  'common': 'hsl(0 0% 50% / 0.25)',
+  'uncommon': 'hsl(120 60% 40% / 0.3)',
+  'rare': 'hsl(210 80% 50% / 0.3)',
+  'very_rare': 'hsl(270 60% 50% / 0.3)',
+  'legendary': 'hsl(30 90% 50% / 0.4)'
+};
+
+/**
+ * Get equipment data from database by name
+ * Phase 1 Task 1.3: Helper function for equipment detail display
+ */
+function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
+  return DEFAULT_EQUIPMENT[itemName];
+}
+
+/**
+ * Spell level color mapping
+ * Cantrips (level 0) are teal, leveled spells (1-9) use progressively deeper purple
+ * Phase 1 Task 1.3: Copied from CharacterGenTab
+ */
+const SPELL_LEVEL_COLORS: Record<number, { bg: string; border: string; text: string }> = {
+  0: { bg: 'hsl(var(--cute-teal) / 0.15)', border: 'hsl(var(--cute-teal) / 0.4)', text: 'hsl(var(--cute-teal))' },
+  1: { bg: 'hsl(var(--cute-purple) / 0.1)', border: 'hsl(var(--cute-purple) / 0.3)', text: 'hsl(var(--cute-purple))' },
+  2: { bg: 'hsl(var(--cute-purple) / 0.12)', border: 'hsl(var(--cute-purple) / 0.35)', text: 'hsl(var(--cute-purple))' },
+  3: { bg: 'hsl(var(--cute-purple) / 0.15)', border: 'hsl(var(--cute-purple) / 0.4)', text: 'hsl(var(--cute-purple))' },
+  4: { bg: 'hsl(var(--cute-purple) / 0.18)', border: 'hsl(var(--cute-purple) / 0.45)', text: 'hsl(var(--cute-purple))' },
+  5: { bg: 'hsl(var(--cute-purple) / 0.2)', border: 'hsl(var(--cute-purple) / 0.5)', text: 'hsl(var(--cute-purple))' },
+  6: { bg: 'hsl(var(--cute-purple) / 0.22)', border: 'hsl(var(--cute-purple) / 0.55)', text: 'hsl(var(--cute-purple))' },
+  7: { bg: 'hsl(var(--cute-purple) / 0.25)', border: 'hsl(var(--cute-purple) / 0.6)', text: 'hsl(var(--cute-purple))' },
+  8: { bg: 'hsl(var(--cute-purple) / 0.28)', border: 'hsl(var(--cute-purple) / 0.65)', text: 'hsl(var(--cute-purple))' },
+  9: { bg: 'hsl(var(--cute-purple) / 0.3)', border: 'hsl(var(--cute-purple) / 0.7)', text: 'hsl(var(--cute-purple))' }
+};
+
+/**
+ * Get spell data from SpellQuery by name
+ * Phase 1 Task 1.3: Helper function for spell detail display
+ */
+function getSpellData(spellName: string): RegisteredSpell | undefined {
+  try {
+    const spellQuery = SpellQuery.getInstance();
+    const spells = spellQuery.getSpells();
+    return spells.find(spell => spell.name === spellName);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Format rarity for display (snake_case to Title Case)
+ * Phase 1 Task 1.3: Helper function for equipment display
+ */
+function formatRarity(rarity: string): string {
+  return rarity
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export function PartyTab() {
   const { characters, resetCharacters, activeCharacterId, setActiveCharacter, selectedHeroSeeds, toggleHeroSelection, selectAllHeroes, deselectAllHeroes } = useCharacterStore();
-  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription } = useFeatureNames();
+  const { resolveFeatureName, resolveTraitName, getFeatureDescription, getTraitDescription, getFeatureEffects, getTraitEffects } = useFeatureNames();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-added');
   const [selectedCharacter, setSelectedCharacter] = useState<typeof characters[number] | null>(null);
@@ -100,6 +191,44 @@ export function PartyTab() {
   const [isSettingActive, setIsSettingActive] = useState(false);
   const [settingActiveSeed, setSettingActiveSeed] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+
+  // Phase 1 Task 1.1: Selection state for click-to-select detail panels
+  const [selectedTraitId, setSelectedTraitId] = useState<string | null>(null);
+  const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<{
+    name: string;
+    type: 'weapon' | 'armor' | 'item';
+  } | null>(null);
+  const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
+
+  // Phase 1 Task 1.2: Selection handlers that clear other selections (exclusive selection)
+  const handleSelectTrait = (traitId: string) => {
+    setSelectedTraitId(traitId);
+    setSelectedFeatureId(null);
+    setSelectedEquipment(null);
+    setSelectedSpellId(null);
+  };
+
+  const handleSelectFeature = (featureId: string) => {
+    setSelectedFeatureId(featureId);
+    setSelectedTraitId(null);
+    setSelectedEquipment(null);
+    setSelectedSpellId(null);
+  };
+
+  const handleSelectEquipment = (name: string, type: 'weapon' | 'armor' | 'item') => {
+    setSelectedEquipment({ name, type });
+    setSelectedTraitId(null);
+    setSelectedFeatureId(null);
+    setSelectedSpellId(null);
+  };
+
+  const handleSelectSpell = (spellName: string) => {
+    setSelectedSpellId(spellName);
+    setSelectedTraitId(null);
+    setSelectedFeatureId(null);
+    setSelectedEquipment(null);
+  };
 
   // Count of selected heroes for display
   const selectedCount = selectedHeroSeeds.length;
@@ -645,18 +774,36 @@ export function PartyTab() {
                   <div className="party-detail-traits-grid">
                     {selectedCharacter.racial_traits.map((trait, idx) => {
                       const displayName = resolveTraitName(trait);
-                      const description = getTraitDescription(trait);
+                      const isSelected = selectedTraitId === trait;
                       return (
                         <span
                           key={idx}
-                          className="party-detail-trait-badge"
-                          title={description || trait}
+                          className={cn('party-detail-trait-badge', isSelected && 'party-detail-trait-badge-selected')}
+                          onClick={() => handleSelectTrait(trait)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelectTrait(trait);
+                            }
+                          }}
                         >
                           {displayName}
                         </span>
                       );
                     })}
                   </div>
+                  {/* Phase 2 Task 2.2: Trait DetailRow */}
+                  <DetailRow
+                    isVisible={selectedTraitId !== null}
+                    title={selectedTraitId ? resolveTraitName(selectedTraitId) : ''}
+                    description={selectedTraitId ? getTraitDescription(selectedTraitId) : undefined}
+                    properties={selectedTraitId ? [
+                      { label: 'Source', value: selectedCharacter.race || 'Racial Trait' }
+                    ] : undefined}
+                    effects={selectedTraitId ? getTraitEffects(selectedTraitId) : undefined}
+                  />
                 </div>
               )}
 
@@ -670,18 +817,36 @@ export function PartyTab() {
                   <div className="party-detail-traits-grid">
                     {selectedCharacter.class_features.map((feature, idx) => {
                       const displayName = resolveFeatureName(feature);
-                      const description = getFeatureDescription(feature);
+                      const isSelected = selectedFeatureId === feature;
                       return (
                         <span
                           key={idx}
-                          className="party-detail-trait-badge"
-                          title={description || feature}
+                          className={cn('party-detail-trait-badge', isSelected && 'party-detail-trait-badge-selected')}
+                          onClick={() => handleSelectFeature(feature)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelectFeature(feature);
+                            }
+                          }}
                         >
                           {displayName}
                         </span>
                       );
                     })}
                   </div>
+                  {/* Phase 3 Task 3.2: Feature DetailRow */}
+                  <DetailRow
+                    isVisible={selectedFeatureId !== null}
+                    title={selectedFeatureId ? resolveFeatureName(selectedFeatureId) : ''}
+                    description={selectedFeatureId ? getFeatureDescription(selectedFeatureId) : undefined}
+                    properties={selectedFeatureId ? [
+                      { label: 'Source', value: selectedCharacter.class || 'Class Feature' }
+                    ] : undefined}
+                    effects={selectedFeatureId ? getFeatureEffects(selectedFeatureId) : undefined}
+                  />
                 </div>
               )}
 
@@ -812,14 +977,45 @@ export function PartyTab() {
                       <div className="party-detail-equipment-category">
                         <div className="party-detail-equipment-category-label">Weapons</div>
                         <div className="party-detail-equipment-items">
-                          {selectedCharacter.equipment.weapons.map((weapon, idx) => (
-                            <div key={idx} className={`party-detail-equipment-item ${weapon.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
-                              {weapon.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
-                              <span className="party-detail-equipment-name">{weapon.name}</span>
-                              {weapon.quantity > 1 && <span className="party-detail-equipment-quantity">×{weapon.quantity}</span>}
-                              {weapon.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
-                            </div>
-                          ))}
+                          {selectedCharacter.equipment.weapons.map((weapon, idx) => {
+                            // Phase 4 Task 4.1: Get rarity-based styling
+                            const equipmentData = getEquipmentData(weapon.name);
+                            const rarity = equipmentData?.rarity || 'common';
+                            const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                            const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
+                            const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
+                            // Phase 4 Task 4.2: Selection state
+                            const isSelected = selectedEquipment?.name === weapon.name && selectedEquipment?.type === 'weapon';
+
+                            return (
+                              <div
+                                key={idx}
+                                className={cn(
+                                  'party-detail-equipment-item',
+                                  weapon.equipped && 'party-detail-equipment-item-equipped',
+                                  isSelected && 'party-detail-equipment-item-selected'
+                                )}
+                                style={{
+                                  backgroundColor: rarityBg,
+                                  borderColor: rarityBorder
+                                }}
+                                onClick={() => handleSelectEquipment(weapon.name, 'weapon')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(weapon.name, 'weapon');
+                                  }
+                                }}
+                              >
+                                {weapon.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                                <span className="party-detail-equipment-name" style={{ color: rarityColor, fontWeight: 500 }}>{weapon.name}</span>
+                                {weapon.quantity > 1 && <span className="party-detail-equipment-quantity">×{weapon.quantity}</span>}
+                                {weapon.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -827,14 +1023,45 @@ export function PartyTab() {
                       <div className="party-detail-equipment-category">
                         <div className="party-detail-equipment-category-label">Armor</div>
                         <div className="party-detail-equipment-items">
-                          {selectedCharacter.equipment.armor.map((armor, idx) => (
-                            <div key={idx} className={`party-detail-equipment-item ${armor.equipped ? 'party-detail-equipment-item-equipped' : ''}`}>
-                              {armor.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
-                              <span className="party-detail-equipment-name">{armor.name}</span>
-                              {armor.quantity > 1 && <span className="party-detail-equipment-quantity">×{armor.quantity}</span>}
-                              {armor.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
-                            </div>
-                          ))}
+                          {selectedCharacter.equipment.armor.map((armor, idx) => {
+                            // Phase 4 Task 4.1: Get rarity-based styling
+                            const equipmentData = getEquipmentData(armor.name);
+                            const rarity = equipmentData?.rarity || 'common';
+                            const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                            const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common;
+                            const rarityBorder = RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common;
+                            // Phase 4 Task 4.2: Selection state
+                            const isSelected = selectedEquipment?.name === armor.name && selectedEquipment?.type === 'armor';
+
+                            return (
+                              <div
+                                key={idx}
+                                className={cn(
+                                  'party-detail-equipment-item',
+                                  armor.equipped && 'party-detail-equipment-item-equipped',
+                                  isSelected && 'party-detail-equipment-item-selected'
+                                )}
+                                style={{
+                                  backgroundColor: rarityBg,
+                                  borderColor: rarityBorder
+                                }}
+                                onClick={() => handleSelectEquipment(armor.name, 'armor')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(armor.name, 'armor');
+                                  }
+                                }}
+                              >
+                                {armor.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
+                                <span className="party-detail-equipment-name" style={{ color: rarityColor, fontWeight: 500 }}>{armor.name}</span>
+                                {armor.quantity > 1 && <span className="party-detail-equipment-quantity">×{armor.quantity}</span>}
+                                {armor.equipped && <span className="party-detail-equipment-badge">Equipped</span>}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -849,11 +1076,46 @@ export function PartyTab() {
                               ? Math.round(ammoWeight * item.quantity * 100) / 100
                               : null;
 
+                            // Phase 4 Task 4.1: Get rarity-based styling
+                            const equipmentData = getEquipmentData(item.name);
+                            const rarity = equipmentData?.rarity || 'common';
+                            const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                            const rarityBg = isAmmo
+                              ? 'linear-gradient(135deg, hsl(var(--cute-orange) / 0.1), hsl(var(--cute-yellow) / 0.05))'
+                              : (RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.common);
+                            const rarityBorder = isAmmo
+                              ? 'hsl(var(--cute-orange) / 0.3)'
+                              : (RARITY_BORDER_COLORS[rarity] || RARITY_BORDER_COLORS.common);
+                            // Phase 4 Task 4.2: Selection state
+                            const isSelected = selectedEquipment?.name === item.name && selectedEquipment?.type === 'item';
+
                             return (
-                              <div key={idx} className={`party-detail-equipment-item ${item.equipped ? 'party-detail-equipment-item-equipped' : ''} ${isAmmo ? 'party-detail-equipment-item-ammunition' : ''}`}>
+                              <div
+                                key={idx}
+                                className={cn(
+                                  'party-detail-equipment-item',
+                                  item.equipped && 'party-detail-equipment-item-equipped',
+                                  isAmmo && 'party-detail-equipment-item-ammunition',
+                                  isSelected && 'party-detail-equipment-item-selected'
+                                )}
+                                style={{
+                                  backgroundColor: isAmmo ? undefined : rarityBg,
+                                  background: isAmmo ? rarityBg : undefined,
+                                  borderColor: rarityBorder
+                                }}
+                                onClick={() => handleSelectEquipment(item.name, 'item')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectEquipment(item.name, 'item');
+                                  }
+                                }}
+                              >
                                 {item.equipped && <Check className="party-detail-equipment-checkmark" size={14} />}
                                 {isAmmo && <Target className="party-detail-equipment-ammo-icon" size={14} />}
-                                <span className="party-detail-equipment-name">{item.name}</span>
+                                <span className="party-detail-equipment-name" style={{ color: rarityColor, fontWeight: 500 }}>{item.name}</span>
                                 {item.quantity > 1 && <span className="party-detail-equipment-quantity">×{item.quantity}</span>}
                                 {isAmmo && ammoWeight !== null && (
                                   <span
@@ -877,6 +1139,59 @@ export function PartyTab() {
                       <span className="party-detail-equipment-weight-label">Total: <strong>{selectedCharacter.equipment.totalWeight} lbs</strong></span>
                     </div>
                   </div>
+                  {/* Phase 4 Task 4.3: Equipment DetailRow */}
+                  {selectedEquipment && (() => {
+                    const equipmentData = getEquipmentData(selectedEquipment.name);
+                    if (!equipmentData) return null;
+
+                    // Build properties based on equipment type
+                    const properties: { label: string; value: string | number; icon?: typeof Sword }[] = [];
+
+                    // Add rarity
+                    if (equipmentData.rarity) {
+                      properties.push({ label: 'Rarity', value: formatRarity(equipmentData.rarity) });
+                    }
+
+                    // Add type
+                    properties.push({ label: 'Type', value: equipmentData.type.charAt(0).toUpperCase() + equipmentData.type.slice(1) });
+
+                    // Add weight
+                    if (equipmentData.weight !== undefined) {
+                      properties.push({ label: 'Weight', value: `${equipmentData.weight} lb` });
+                    }
+
+                    // Add damage for weapons
+                    if (equipmentData.type === 'weapon' && equipmentData.damage) {
+                      properties.push({ label: 'Damage', value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}` });
+                    }
+
+                    // Add AC for armor
+                    if (equipmentData.type === 'armor' && equipmentData.acBonus !== undefined) {
+                      properties.push({ label: 'AC Bonus', value: `+${equipmentData.acBonus}` });
+                    }
+
+                    // Get appropriate icon based on type
+                    const EquipmentIcon = equipmentData.type === 'weapon' ? Sword : equipmentData.type === 'armor' ? Shield : Package;
+
+                    // Convert equipment properties to effects format for display
+                    const effects = equipmentData.properties?.map(p => ({
+                      type: p.type,
+                      target: p.target,
+                      value: p.value,
+                      description: p.description
+                    }));
+
+                    return (
+                      <DetailRow
+                        isVisible={true}
+                        title={equipmentData.name}
+                        icon={EquipmentIcon}
+                        description={equipmentData.description}
+                        properties={properties}
+                        effects={effects}
+                      />
+                    );
+                  })()}
                 </div>
               )}
 
@@ -892,11 +1207,34 @@ export function PartyTab() {
                       <div className="party-detail-spells-group">
                         <div className="party-detail-spells-group-title">Cantrips</div>
                         <div className="party-detail-spells-list">
-                          {selectedCharacter.spells.cantrips.map((spell) => (
-                            <span key={spell} className="party-detail-spell-tag">
-                              {spell}
-                            </span>
-                          ))}
+                          {selectedCharacter.spells.cantrips.map((spell) => {
+                            // Phase 5 Task 5.1: Get level-based styling (cantrips are level 0)
+                            const levelColors = SPELL_LEVEL_COLORS[0];
+                            // Phase 5 Task 5.2: Selection state
+                            const isSelected = selectedSpellId === spell;
+                            return (
+                              <span
+                                key={spell}
+                                className={cn('party-detail-spell-tag', isSelected && 'party-detail-spell-tag-selected')}
+                                style={{
+                                  backgroundColor: levelColors.bg,
+                                  borderColor: levelColors.border,
+                                  color: levelColors.text
+                                }}
+                                onClick={() => handleSelectSpell(spell)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectSpell(spell);
+                                  }
+                                }}
+                              >
+                                {spell}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -904,11 +1242,36 @@ export function PartyTab() {
                       <div className="party-detail-spells-group">
                         <div className="party-detail-spells-group-title">Known Spells</div>
                         <div className="party-detail-spells-list">
-                          {selectedCharacter.spells.known_spells.map((spell) => (
-                            <span key={spell} className="party-detail-spell-tag">
-                              {spell}
-                            </span>
-                          ))}
+                          {selectedCharacter.spells.known_spells.map((spell) => {
+                            // Phase 5 Task 5.1: Get level-based styling
+                            const spellData = getSpellData(spell);
+                            const level = spellData?.level ?? 1;
+                            const levelColors = SPELL_LEVEL_COLORS[level] || SPELL_LEVEL_COLORS[1];
+                            // Phase 5 Task 5.2: Selection state
+                            const isSelected = selectedSpellId === spell;
+                            return (
+                              <span
+                                key={spell}
+                                className={cn('party-detail-spell-tag', isSelected && 'party-detail-spell-tag-selected')}
+                                style={{
+                                  backgroundColor: levelColors.bg,
+                                  borderColor: levelColors.border,
+                                  color: levelColors.text
+                                }}
+                                onClick={() => handleSelectSpell(spell)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectSpell(spell);
+                                  }
+                                }}
+                              >
+                                {spell}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -931,6 +1294,63 @@ export function PartyTab() {
                       <div className="party-detail-spells-empty">No spells learned yet</div>
                     )}
                   </div>
+                  {/* Phase 5 Task 5.3: Spell DetailRow */}
+                  {selectedSpellId && (() => {
+                    const spellData = getSpellData(selectedSpellId);
+                    if (!spellData) return null;
+
+                    // Build properties array
+                    const properties: { label: string; value: string | number }[] = [];
+
+                    // School of magic
+                    if (spellData.school) {
+                      properties.push({ label: 'School', value: spellData.school });
+                    }
+
+                    // Level
+                    properties.push({
+                      label: 'Level',
+                      value: spellData.level === 0 ? 'Cantrip' : `Level ${spellData.level}`
+                    });
+
+                    // Casting time
+                    if (spellData.casting_time) {
+                      properties.push({ label: 'Casting Time', value: spellData.casting_time });
+                    }
+
+                    // Range
+                    if (spellData.range) {
+                      properties.push({ label: 'Range', value: spellData.range });
+                    }
+
+                    // Duration
+                    if (spellData.duration) {
+                      properties.push({ label: 'Duration', value: spellData.duration });
+                    }
+
+                    // Components
+                    if (spellData.components) {
+                      const componentsStr = Array.isArray(spellData.components)
+                        ? spellData.components.join(', ')
+                        : String(spellData.components);
+                      properties.push({ label: 'Components', value: componentsStr });
+                    }
+
+                    // Classes
+                    if (spellData.classes && spellData.classes.length > 0) {
+                      properties.push({ label: 'Classes', value: spellData.classes.join(', ') });
+                    }
+
+                    return (
+                      <DetailRow
+                        isVisible={true}
+                        title={spellData.name}
+                        icon={Wand2}
+                        description={spellData.description}
+                        properties={properties}
+                      />
+                    );
+                  })()}
                 </div>
               )}
 
