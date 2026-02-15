@@ -307,6 +307,18 @@
   background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
 }
 
+/* Enchant button styling */
+.items-equipment-enchant-btn {
+  color: hsl(260 80% 60%);
+  border-color: hsl(260 60% 60% / 0.3);
+}
+
+.items-equipment-enchant-btn:hover {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.15), hsl(220 70% 55% / 0.1));
+  border-color: hsl(260 70% 55% / 0.5);
+  color: hsl(260 80% 70%);
+}
+
 /* ========================================
    MODIFICATION BADGES
    ======================================== */

@@ -219,14 +219,23 @@ interface EquipmentModification {
 ## Phase 4: Integrate Enchantment into ItemsTab
 
 ### 4.1 Add Enchant Button to Equipment Items
-- [ ] Add "Enchant" button to equipped items in `renderEquipmentItem()`
-- [ ] Button opens EnchantmentModal with selected item
-- [ ] Pass item type to modal for appropriate enchantment filtering
-- [ ] Update equipment state after enchantment applied
-- [ ] **Attunement Lock Check:**
-  - [ ] Check if item has attunement curse before showing unequip button
-  - [ ] If attunement curse active, show locked state (🔒 icon, disabled unequip)
-  - [ ] Allow "Lift Curse" action even when locked
+- [x] Add "Enchant" button to equipped items in `renderEquipmentItem()`
+- [x] Button opens EnchantmentModal with selected item
+- [x] Pass item type to modal for appropriate enchantment filtering
+- [x] Update equipment state after enchantment applied
+- [x] **Attunement Lock Check:**
+  - [x] Check if item has attunement curse before showing unequip button
+  - [x] If attunement curse active, show locked state (🔒 icon, disabled unequip)
+  - [x] Allow "Lift Curse" action even when locked
+
+**Completed (2026-02-15):**
+- Added EnchantmentModal import to ItemsTab
+- Added modal state (isOpen, selectedItem, selectedItemType)
+- Added handler functions (handleOpenEnchantmentModal, handleCloseEnchantmentModal, handleEnchantItem, handleCurseItem)
+- Added "Enchant" button to equipment items with purple magical styling
+- Wired up enchantItem and curseItem from useItemEnchantment hook
+- Modal receives appliedModificationIds for badge display
+- Toast notifications on success/failure
 
 ### 4.2 Wire up useItemEnchantment Hook
 - [ ] Import hook in ItemsTab.tsx

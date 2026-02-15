@@ -37,12 +37,13 @@ import {
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
 import { useItemCreator, type CustomItemFormData } from '../../hooks/useItemCreator';
-import { useItemEnchantment } from '../../hooks/useItemEnchantment';
+import { useItemEnchantment, type EnchantmentOperationResult } from '../../hooks/useItemEnchantment';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { showToast } from '../ui/Toast';
-import type { EnhancedInventoryItem, EnhancedEquipment } from 'playlist-data-engine';
+import { EnchantmentModal, type ItemEquipmentType } from '../modals/EnchantmentModal';
+import type { EnhancedInventoryItem, EnhancedEquipment, EquipmentModification } from 'playlist-data-engine';
 import './ItemsTab.css';
 
 /**
@@ -188,7 +189,10 @@ export function ItemsTab() {
 
   // Use the item enchantment hook
   const {
-    getItemModificationInfo
+    getItemModificationInfo,
+    enchantItem,
+    curseItem,
+    isLoading: isEnchantmentLoading
   } = useItemEnchantment();
 
   // Section collapse states
@@ -219,6 +223,11 @@ export function ItemsTab() {
   // Expanded item details state (for modification display)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
+  // Enchantment modal state
+  const [isEnchantmentModalOpen, setIsEnchantmentModalOpen] = useState(false);
+  const [selectedEnchantItem, setSelectedEnchantItem] = useState<EnhancedInventoryItem | null>(null);
+  const [selectedEnchantItemType, setSelectedEnchantItemType] = useState<ItemEquipmentType>('weapon');
+
   // Toggle item expansion
   const toggleItemExpansion = (instanceId: string) => {
     setExpandedItems(prev => {
@@ -230,6 +239,41 @@ export function ItemsTab() {
       }
       return newSet;
     });
+  };
+
+  // Open enchantment modal for an item
+  const handleOpenEnchantmentModal = (item: EnhancedInventoryItem, itemType: ItemEquipmentType) => {
+    setSelectedEnchantItem(item);
+    setSelectedEnchantItemType(itemType);
+    setIsEnchantmentModalOpen(true);
+  };
+
+  // Close enchantment modal
+  const handleCloseEnchantmentModal = () => {
+    setIsEnchantmentModalOpen(false);
+    setSelectedEnchantItem(null);
+  };
+
+  // Handle enchantment application from modal
+  const handleEnchantItem = async (itemName: string, enchantment: EquipmentModification): Promise<void> => {
+    const result: EnchantmentOperationResult = await enchantItem(itemName, enchantment);
+
+    if (result.success) {
+      showToast(result.message || `Applied ${enchantment.name} to ${itemName}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to apply enchantment', 'error');
+    }
+  };
+
+  // Handle curse application from modal
+  const handleCurseItem = async (itemName: string, curse: EquipmentModification): Promise<void> => {
+    const result: EnchantmentOperationResult = await curseItem(itemName, curse);
+
+    if (result.success) {
+      showToast(result.message || `Applied ${curse.name} curse to ${itemName}`, 'success');
+    } else {
+      showToast(result.error || 'Failed to apply curse', 'error');
+    }
   };
 
 
@@ -573,6 +617,19 @@ export function ItemsTab() {
             className="items-equipment-remove-btn"
           >
             Drop
+          </Button>
+
+          {/* Enchant button - opens EnchantmentModal */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleOpenEnchantmentModal(item, category === 'weapons' ? 'weapon' : category === 'armor' ? 'armor' : 'item')}
+            isLoading={isEnchantmentLoading}
+            leftIcon={Sparkles}
+            className="items-equipment-enchant-btn"
+            title="Apply enchantments or curses to this item"
+          >
+            Enchant
           </Button>
 
           {/* Expand/Collapse button for modifications */}
@@ -1653,6 +1710,18 @@ export function ItemsTab() {
           </Card>
         </>
       )}
+
+      {/* Enchantment Modal */}
+      <EnchantmentModal
+        isOpen={isEnchantmentModalOpen}
+        item={selectedEnchantItem}
+        itemType={selectedEnchantItemType}
+        onEnchant={handleEnchantItem}
+        onCurse={handleCurseItem}
+        onClose={handleCloseEnchantmentModal}
+        appliedModificationIds={selectedEnchantItem?.modifications?.map(m => m.id) || []}
+        isLoading={isEnchantmentLoading}
+      />
     </div>
   );
 }
