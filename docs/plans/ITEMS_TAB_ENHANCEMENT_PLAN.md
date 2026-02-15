@@ -66,9 +66,50 @@ This plan enhances the ItemsTab to showcase the full capabilities of the playlis
   - Combo enchantments: holyAvenger, dragonSlayer, etc.
 
 ### 1.3 Research Existing Equipment Effects Flow
-- [ ] Document how `EnhancedInventoryItem.modifications[]` is structured
-- [ ] Verify `EquipmentEffectApplier` integration for modified items
-- [ ] Test that modifications persist through equip/unequip cycles
+- [x] Document how `EnhancedInventoryItem.modifications[]` is structured
+- [x] Verify `EquipmentEffectApplier` integration for modified items
+- [x] Test that modifications persist through equip/unequip cycles
+
+**Research Complete (2026-02-15):**
+
+#### EnhancedInventoryItem.modifications[] Structure
+```typescript
+interface EnhancedInventoryItem {
+    name: string;
+    quantity: number;
+    equipped: boolean;
+    modifications?: EquipmentModification[];  // Per-instance modifications
+    templateId?: string;                      // Template ID if created from template
+    instanceId?: string;                      // Unique instance ID for tracking
+}
+
+interface EquipmentModification {
+    id: string;                    // Unique modification ID
+    name: string;                  // Display name
+    properties: EquipmentProperty[];  // Properties added by modification
+    addsFeatures?: Array<string | EquipmentMiniFeature>;  // Features granted
+    addsSkills?: Array<{ skillId: string; level: 'proficient' | 'expertise'; }>;
+    addsSpells?: Array<{ spellId: string; level?: number; uses?: number; recharge?: string; }>;
+    appliedAt: string;             // ISO timestamp
+    source: string;                // 'enchantment' | 'curse' | 'upgrade' | 'template'
+    description?: string;          // User-facing description
+}
+```
+
+#### EquipmentEffectApplier Integration
+- EquipmentEffectApplier does NOT directly read `modifications[]`
+- Instead, `EquipmentModifier.enchant/curse/upgrade` handles the integration:
+  1. If item is equipped: unequip first (removes old effects)
+  2. Add modification to `item.modifications[]`
+  3. If was equipped: re-equip with all modifications applied
+- Effects are stored in `character.equipment_effects[]` with `instanceId` for per-instance tracking
+
+#### Modification Persistence
+- Modifications persist automatically through equip/unequip cycles
+- They are stored on the item itself in `character.equipment.weapons/armor/items[].modifications[]`
+- When unequipping: only `equipment_effects[]` entry is removed, modifications stay on item
+- When re-equipping: effects are recalculated from base properties + all modifications
+- `instanceId` links equipment_effects entries to specific item instances
 
 ---
 
