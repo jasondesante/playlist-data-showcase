@@ -5,7 +5,7 @@
  * Includes EffectBadge for individual effects, EffectList for grouped effects,
  * and ActiveEffectsSummary for a combined summary card.
  *
- * Task 2.1: Effect Display Components (Phase 2)
+ * Phase 2: Active Effects Enhancement - Tasks 2.1, 2.2, 2.3
  */
 
 import { useMemo } from 'react';
@@ -203,6 +203,7 @@ export function EffectBadge({ effect, source, showTarget = true, compact = false
       {hasValue && (
         <span className="effect-badge-value">{valueStr}</span>
       )}
+      {/* Task 2.1: Show "from [source]" attribution */}
       {source && (
         <span className="effect-badge-source">from {source}</span>
       )}
@@ -312,6 +313,7 @@ export function ActiveEffectsSummary({
 
   return (
     <div className={`active-effects-summary ${className}`} role="region" aria-label="Active effects summary">
+      {/* Header */}
       <div className="active-effects-header">
         <Zap size={16} className="active-effects-icon" aria-hidden="true" />
         <h4 className="active-effects-title">Active Effects</h4>
@@ -335,7 +337,7 @@ export function ActiveEffectsSummary({
         </div>
       )}
 
-      {/* Grouped Effects by Type */}
+      {/* Grouped Effects by Type (compact badges) */}
       <div className="active-effects-groups">
         {Array.from(groupedEffects.entries()).map(([type, effects]) => {
           const config = getEffectTypeConfig(type);
@@ -387,20 +389,27 @@ export function InlineEffectIndicators({ effects, className = '' }: InlineEffect
         const config = getEffectTypeConfig(effect.type);
         const valueStr = formatEffectValue(effect.value);
         const targetStr = formatTarget(effect.target);
+        const isBooleanValue = typeof effect.value === 'boolean';
+
+        // For boolean values (like proficient: true), show the target instead of "Yes"
+        // For numeric/string values, show both target and value
+        const displayText = isBooleanValue
+          ? (targetStr || config.label)
+          : (targetStr && valueStr ? `${targetStr} ${valueStr}` : (valueStr || targetStr || config.label));
 
         // Build accessible label
-        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}`;
+        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr && !isBooleanValue ? ` ${valueStr}` : ''}`;
 
         return (
           <span
             key={idx}
             className="inline-effect-indicator"
             style={{ '--effect-color': config.color } as React.CSSProperties}
-            title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}${effect.description ? ` - ${effect.description}` : ''}`}
+            title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr && !isBooleanValue ? ` ${valueStr}` : ''}${effect.description ? ` - ${effect.description}` : ''}`}
             role="img"
             aria-label={accessibleLabel}
           >
-            {valueStr || targetStr || config.label}
+            {displayText}
           </span>
         );
       })}
@@ -432,20 +441,27 @@ export function InlineEquipmentEffectIndicators({ equipmentEffect, className = '
         const config = getEffectTypeConfig(prop.type);
         const valueStr = formatEffectValue(prop.value);
         const targetStr = formatTarget(prop.target);
+        const isBooleanValue = typeof prop.value === 'boolean';
+
+        // For boolean values (like proficient: true), show the target instead of "Yes"
+        // For numeric/string values, show both target and value
+        const displayText = isBooleanValue
+          ? (targetStr || config.label)
+          : (targetStr && valueStr ? `${targetStr} ${valueStr}` : (valueStr || targetStr || config.label));
 
         // Build accessible label
-        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}`;
+        const accessibleLabel = `${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr && !isBooleanValue ? ` ${valueStr}` : ''}`;
 
         return (
           <span
             key={idx}
             className="inline-effect-indicator"
             style={{ '--effect-color': config.color } as React.CSSProperties}
-            title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr ? ` ${valueStr}` : ''}${prop.description ? ` - ${prop.description}` : ''}`}
+            title={`${config.label}${targetStr ? `: ${targetStr}` : ''}${valueStr && !isBooleanValue ? ` ${valueStr}` : ''}${prop.description ? ` - ${prop.description}` : ''}`}
             role="img"
             aria-label={accessibleLabel}
           >
-            {valueStr || targetStr || config.label}
+            {displayText}
           </span>
         );
       })}

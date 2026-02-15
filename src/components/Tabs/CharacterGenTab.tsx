@@ -17,6 +17,7 @@ import type { GenerationMode } from '../ui/GenerationModeToggle';
 import { AdvancedOptionsSection } from '../ui/AdvancedOptionsSection';
 import type { AdvancedOptions } from '../ui/AdvancedOptionsSection';
 import { ActiveEffectsSummary, InlineEffectIndicators, InlineEquipmentEffectIndicators, type EquipmentEffect } from '../ui/EffectDisplay';
+import { DetailRow } from '../ui/DetailRow';
 import { EquipmentBrowser } from '../ui/EquipmentBrowser';
 import { showToast } from '../ui/Toast';
 import { cn } from '../../utils/cn';
@@ -185,6 +186,9 @@ export function CharacterGenTab() {
 
   // State for equipment injection (Task 3.3: Track Selected Equipment State)
   const [injectionEquipment, setInjectionEquipment] = useState<EnhancedEquipment[]>([]);
+
+  // Phase 3: Selection state for racial traits (Task 3.1)
+  const [selectedTraitId, setSelectedTraitId] = useState<string | null>(null);
 
   // Handler to add equipment for injection (used by EquipmentBrowser in Task 3.4)
   const handleAddEquipment = (item: EnhancedEquipment) => {
@@ -988,13 +992,21 @@ export function CharacterGenTab() {
               <div className="character-traits-grid">
                 {character.racial_traits.map((trait, idx) => {
                   const displayName = resolveTraitName(trait);
-                  const description = getTraitDescription(trait);
                   const effects = getTraitEffects(trait);
+                  const isSelected = selectedTraitId === trait;
                   return (
                     <span
                       key={idx}
-                      className="character-trait-badge"
-                      title={description || trait}
+                      className={cn('character-trait-badge', isSelected && 'character-trait-badge-selected')}
+                      onClick={() => setSelectedTraitId(trait)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedTraitId(trait);
+                        }
+                      }}
                     >
                       {displayName}
                       {effects && effects.length > 0 && (
@@ -1004,6 +1016,16 @@ export function CharacterGenTab() {
                   );
                 })}
               </div>
+              {/* Task 3.3: Trait Detail Row */}
+              <DetailRow
+                isVisible={selectedTraitId !== null}
+                title={selectedTraitId ? resolveTraitName(selectedTraitId) : ''}
+                description={selectedTraitId ? getTraitDescription(selectedTraitId) : undefined}
+                properties={selectedTraitId ? [
+                  { label: 'Source', value: character.race || 'Racial Trait' }
+                ] : undefined}
+                effects={selectedTraitId ? getTraitEffects(selectedTraitId) : undefined}
+              />
             </Card>
           )}
 
