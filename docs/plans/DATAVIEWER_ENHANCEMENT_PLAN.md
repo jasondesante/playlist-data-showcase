@@ -168,10 +168,10 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 ## Phase 5: Feature & Equipment Effects Viewer
 
 ### Task 5.1: Add Feature Effects Display
-- [ ] Create `renderFeatureEffects()` helper function
-- [ ] Display effects for class features when expanded
-- [ ] Show effect type, target, value, and condition
-- [ ] Support all effect types from EQUIPMENT_SYSTEM.md:
+- [x] Create `renderFeatureEffects()` helper function
+- [x] Display effects for class features when expanded
+- [x] Show effect type, target, value, and condition
+- [x] Support all effect types from EQUIPMENT_SYSTEM.md:
   - `stat_bonus`
   - `skill_proficiency`
   - `ability_unlock`

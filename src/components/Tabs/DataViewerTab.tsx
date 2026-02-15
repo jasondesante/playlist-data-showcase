@@ -40,7 +40,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import './DataViewerTab.css';
-import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition } from 'playlist-data-engine';
+import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeatureEffect } from 'playlist-data-engine';
 
 /**
  * Spell school color mapping
@@ -126,6 +126,30 @@ const PROPERTY_TYPE_CONFIG: Record<string, { icon: typeof TrendingUp; label: str
  */
 function getPropertyTypeConfig(type: string) {
   return PROPERTY_TYPE_CONFIG[type] || PROPERTY_TYPE_CONFIG['default'];
+}
+
+/**
+ * Feature effect type configuration with icons
+ * Maps effect types to appropriate icons for visual identification
+ *
+ * Task 5.1: Feature Effects Display
+ */
+const EFFECT_TYPE_CONFIG: Record<string, { icon: typeof TrendingUp; label: string }> = {
+  'stat_bonus': { icon: TrendingUp, label: 'Stat Bonus' },
+  'skill_proficiency': { icon: Award, label: 'Skill' },
+  'ability_unlock': { icon: Sparkles, label: 'Ability' },
+  'passive_modifier': { icon: Shield, label: 'Passive' },
+  'resource_grant': { icon: RefreshCw, label: 'Resource' },
+  'spell_slot_bonus': { icon: Scroll, label: 'Spell Slot' },
+  // Fallback for unknown types
+  'default': { icon: Zap, label: 'Effect' }
+};
+
+/**
+ * Get effect type configuration, with fallback to default
+ */
+function getEffectTypeConfig(type: string) {
+  return EFFECT_TYPE_CONFIG[type] || EFFECT_TYPE_CONFIG['default'];
 }
 
 /**
@@ -614,6 +638,7 @@ export function DataViewerTab() {
   };
 
   // Render class features grouped by class
+  // Task 5.1: Updated to show feature effects when expanded
   const renderClassFeatures = () => {
     const grouped = groupClassFeaturesByClass(getFilteredData as ClassFeature[]);
     const classNames = Object.keys(grouped).sort();
@@ -629,17 +654,42 @@ export function DataViewerTab() {
             <div className="dataviewer-group-items">
               {grouped[className]
                 .sort((a, b) => a.level - b.level)
-                .map(feature => (
-                  <div key={feature.id} className="dataviewer-group-item">
-                    <div className="dataviewer-group-item-header">
-                      <span className="dataviewer-group-item-name">{feature.name}</span>
-                      <span className="dataviewer-badge dataviewer-badge-small">Level {feature.level}</span>
+                .map(feature => {
+                  const isExpanded = expandedItems.has(feature.id);
+                  const hasEffects = feature.effects && feature.effects.length > 0;
+                  const hasDescription = feature.description && feature.description.length > 0;
+
+                  return (
+                    <div
+                      key={feature.id}
+                      className={`dataviewer-group-item ${hasEffects || hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => (hasEffects || hasDescription) && toggleExpanded(feature.id)}
+                    >
+                      <div className="dataviewer-group-item-header">
+                        <span className="dataviewer-group-item-name">{feature.name}</span>
+                        <div className="dataviewer-item-badges">
+                          <span className="dataviewer-badge dataviewer-badge-small">Level {feature.level}</span>
+                          {(hasEffects || hasDescription) && (
+                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                          )}
+                        </div>
+                      </div>
+                      {feature.type && (
+                        <span className="dataviewer-group-item-type">{feature.type}</span>
+                      )}
+                      {isExpanded && (
+                        <div className="dataviewer-group-item-details">
+                          {feature.description && (
+                            <div className="dataviewer-item-description">
+                              {feature.description}
+                            </div>
+                          )}
+                          {renderFeatureEffects(feature.effects)}
+                        </div>
+                      )}
                     </div>
-                    {feature.type && (
-                      <span className="dataviewer-group-item-type">{feature.type}</span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
         ))}
@@ -1048,6 +1098,89 @@ export function DataViewerTab() {
                 </span>
               );
             }
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Render feature effects section for class features and racial traits
+   * Displays effects when a feature has them
+   *
+   * Task 5.1: Feature Effects Display
+   *
+   * Shows effect type, target, value, and condition inline.
+   * Supports all effect types from EQUIPMENT_SYSTEM.md:
+   * - stat_bonus: Ability score increases
+   * - skill_proficiency: Skill grants
+   * - ability_unlock: Special abilities
+   * - passive_modifier: Passive bonuses
+   * - resource_grant: Resource pools
+   * - spell_slot_bonus: Extra spell slots
+   *
+   * @param effects - Array of FeatureEffect objects to render
+   */
+  const renderFeatureEffects = (effects: FeatureEffect[] | undefined) => {
+    if (!effects || effects.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="dataviewer-item-section">
+        <span className="dataviewer-item-section-title">Effects:</span>
+        <div className="dataviewer-effects-list">
+          {effects.map((effect, idx) => {
+            const effectConfig = getEffectTypeConfig(effect.type);
+            const EffectIcon = effectConfig.icon;
+
+            // Format condition if present (string or object)
+            let conditionStr = '';
+            if (effect.condition) {
+              if (typeof effect.condition === 'string') {
+                conditionStr = ` (${effect.condition})`;
+              } else if (typeof effect.condition === 'object' && 'type' in effect.condition) {
+                conditionStr = ` (${formatCondition(effect.condition as EquipmentCondition)})`;
+              }
+            }
+
+            // Format the effect display text based on type
+            let displayText = '';
+            if (effect.description) {
+              displayText = effect.description;
+            } else {
+              // Build a display text from type, target, and value
+              const valueNum = typeof effect.value === 'number' ? effect.value : 0;
+              switch (effect.type) {
+                case 'stat_bonus':
+                  displayText = `${effect.target} ${valueNum >= 0 ? '+' : ''}${effect.value}`;
+                  break;
+                case 'skill_proficiency':
+                  displayText = `${effect.target} (${effect.value})`;
+                  break;
+                case 'ability_unlock':
+                  displayText = `${effect.target}`;
+                  break;
+                case 'passive_modifier':
+                  displayText = `${effect.target} ${valueNum >= 0 ? '+' : ''}${effect.value}`;
+                  break;
+                case 'resource_grant':
+                  displayText = `${effect.value} ${effect.target}`;
+                  break;
+                case 'spell_slot_bonus':
+                  displayText = `+${effect.value} ${effect.target} spell slots`;
+                  break;
+                default:
+                  displayText = `${effect.type}: ${effect.target}`;
+              }
+            }
+
+            return (
+              <span key={idx} className="dataviewer-tag dataviewer-tag-property dataviewer-tag-with-icon">
+                <EffectIcon size={12} className="dataviewer-tag-icon" />
+                {displayText}{conditionStr}
+              </span>
+            );
           })}
         </div>
       </div>
