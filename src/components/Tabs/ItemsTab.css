@@ -1248,6 +1248,59 @@
   font-weight: 500;
 }
 
+/* Granted Properties (Features, Skills, Spells) for magic items */
+.lootbox-item-grants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.lootbox-item-grants-label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lootbox-item-grants-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.lootbox-item-grant-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Feature tags - golden/amber styling */
+.lootbox-item-grant-tag-feature {
+  background: linear-gradient(135deg, hsl(45 90% 50% / 0.15), hsl(38 90% 50% / 0.1));
+  border: 1px solid hsl(45 90% 50% / 0.3);
+  color: hsl(40 90% 45%);
+}
+
+/* Skill tags - green styling */
+.lootbox-item-grant-tag-skill {
+  background: linear-gradient(135deg, hsl(120 60% 40% / 0.15), hsl(140 60% 40% / 0.1));
+  border: 1px solid hsl(120 60% 40% / 0.3);
+  color: hsl(120 60% 35%);
+}
+
+/* Spell tags - purple/mystic styling */
+.lootbox-item-grant-tag-spell {
+  background: linear-gradient(135deg, hsl(270 60% 50% / 0.15), hsl(280 60% 50% / 0.1));
+  border: 1px solid hsl(270 60% 50% / 0.3);
+  color: hsl(270 60% 55%);
+}
+
 .lootbox-add-item-btn {
   margin-top: 0.25rem;
   width: 100%;

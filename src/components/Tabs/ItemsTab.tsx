@@ -1676,6 +1676,54 @@ export function ItemsTab() {
                               <span className="lootbox-item-stat-value">{item.weight} lb</span>
                             </div>
 
+                            {/* Granted Features - for magic items */}
+                            {item.grantsFeatures && item.grantsFeatures.length > 0 && (
+                              <div className="lootbox-item-grants">
+                                <span className="lootbox-item-grants-label">Features:</span>
+                                <div className="lootbox-item-grants-list">
+                                  {item.grantsFeatures.map((feature, idx) => {
+                                    const isInline = typeof feature === 'object' && 'id' in feature;
+                                    const featureName = isInline ? (feature as any).name || (feature as any).id : feature;
+                                    return (
+                                      <span key={idx} className="lootbox-item-grant-tag lootbox-item-grant-tag-feature">
+                                        {featureName}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Granted Skills - for magic items */}
+                            {item.grantsSkills && item.grantsSkills.length > 0 && (
+                              <div className="lootbox-item-grants">
+                                <span className="lootbox-item-grants-label">Skills:</span>
+                                <div className="lootbox-item-grants-list">
+                                  {item.grantsSkills.map((skill, idx) => (
+                                    <span key={idx} className="lootbox-item-grant-tag lootbox-item-grant-tag-skill">
+                                      {skill.skillId} ({skill.level})
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Granted Spells - for magic items */}
+                            {item.grantsSpells && item.grantsSpells.length > 0 && (
+                              <div className="lootbox-item-grants">
+                                <span className="lootbox-item-grants-label">Spells:</span>
+                                <div className="lootbox-item-grants-list">
+                                  {item.grantsSpells.map((spell, idx) => (
+                                    <span key={idx} className="lootbox-item-grant-tag lootbox-item-grant-tag-spell">
+                                      {spell.spellId}
+                                      {spell.level !== undefined && ` (L${spell.level})`}
+                                      {spell.uses && ` - ${spell.uses} uses`}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
                             {activeCharacter && (
                               <Button
                                 variant="outline"

@@ -306,7 +306,12 @@ interface EquipmentModification {
 - [x] Add rarity filter for magic items
 - [x] Show magic item count in database
 - [x] Display magic items with special styling (sparkle icon)
-- [ ] Show item properties (grantsFeatures, grantsSkills, etc.)
+- [x] Show item properties (grantsFeatures, grantsSkills, etc.)
+
+**Completed (2026-02-15):**
+- Added display of `grantsFeatures`, `grantsSkills`, and `grantsSpells` to lootbox item cards
+- Added CSS styling for `.lootbox-item-grants`, `.lootbox-item-grant-tag-feature`, `.lootbox-item-grant-tag-skill`, `.lootbox-item-grant-tag-spell`
+- Features show with golden/amber styling, Skills with green, Spells with purple
 
 ### 5.3 Update useLootBox Hook
 - [x] Add `spawnMagicItems(count, rarity?, seed?)` function
