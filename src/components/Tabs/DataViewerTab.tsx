@@ -8,7 +8,7 @@
  * - Category selector for different data types
  * - Search/filter functionality for each category
  * - Spell filtering by level and school
- * - Equipment filtering by type and rarity
+ * - Equipment filtering by type, rarity, and tags
  * - Grouped displays for skills, class features, and racial traits
  * - Rarity and school color coding
  * - Raw JSON dump for detailed data inspection
@@ -279,7 +279,8 @@ export function DataViewerTab() {
     groupRacialTraitsByRace,
     refreshData,
     getSpellSchools,
-    getEquipmentRarities
+    getEquipmentRarities,
+    getEquipmentTags
   } = useDataViewer();
 
   // Get Data Viewer store actions
@@ -312,10 +313,8 @@ export function DataViewerTab() {
   // Equipment filters
   const [equipmentTypeFilter, setEquipmentTypeFilter] = useState<'weapon' | 'armor' | 'item' | 'all'>('all');
   const [equipmentRarityFilter, setEquipmentRarityFilter] = useState<string | 'all'>('all');
-  // Task 3.1: Tags filter state (will be integrated in Tasks 3.2-3.4)
+  // Task 3.1: Tags filter state
   const [equipmentTagFilter, setEquipmentTagFilter] = useState<string | 'all'>('all');
-  void equipmentTagFilter; // Suppress TS6133 - will be used in Task 3.4
-  void setEquipmentTagFilter; // Suppress TS6133 - will be used in Task 3.3
 
   // Toggle expanded state for an item
   const toggleExpanded = (id: string) => {
@@ -447,36 +446,56 @@ export function DataViewerTab() {
   );
 
   // Render equipment filters
-  const renderEquipmentFilters = () => (
-    <div className="dataviewer-filters">
-      <div className="dataviewer-filter-group">
-        <label className="dataviewer-filter-label">Type</label>
-        <select
-          value={equipmentTypeFilter}
-          onChange={(e) => setEquipmentTypeFilter(e.target.value as 'weapon' | 'armor' | 'item' | 'all')}
-          className="dataviewer-filter-select"
-        >
-          <option value="all">All Types</option>
-          <option value="weapon">Weapon</option>
-          <option value="armor">Armor</option>
-          <option value="item">Item</option>
-        </select>
+  const renderEquipmentFilters = () => {
+    const availableTags = getEquipmentTags();
+
+    return (
+      <div className="dataviewer-filters">
+        <div className="dataviewer-filter-group">
+          <label className="dataviewer-filter-label">Type</label>
+          <select
+            value={equipmentTypeFilter}
+            onChange={(e) => setEquipmentTypeFilter(e.target.value as 'weapon' | 'armor' | 'item' | 'all')}
+            className="dataviewer-filter-select"
+          >
+            <option value="all">All Types</option>
+            <option value="weapon">Weapon</option>
+            <option value="armor">Armor</option>
+            <option value="item">Item</option>
+          </select>
+        </div>
+        <div className="dataviewer-filter-group">
+          <label className="dataviewer-filter-label">Rarity</label>
+          <select
+            value={equipmentRarityFilter}
+            onChange={(e) => setEquipmentRarityFilter(e.target.value)}
+            className="dataviewer-filter-select"
+          >
+            <option value="all">All Rarities</option>
+            {getEquipmentRarities().map(rarity => (
+              <option key={rarity} value={rarity}>{formatRarity(rarity)}</option>
+            ))}
+          </select>
+        </div>
+        {/* Task 3.3: Tags Filter Dropdown */}
+        {availableTags.length > 0 && (
+          <div className="dataviewer-filter-group">
+            <label className="dataviewer-filter-label">Tag</label>
+            <select
+              value={equipmentTagFilter}
+              onChange={(e) => setEquipmentTagFilter(e.target.value)}
+              className="dataviewer-filter-select"
+            >
+              <option value="all">All Tags</option>
+              {availableTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
-      <div className="dataviewer-filter-group">
-        <label className="dataviewer-filter-label">Rarity</label>
-        <select
-          value={equipmentRarityFilter}
-          onChange={(e) => setEquipmentRarityFilter(e.target.value)}
-          className="dataviewer-filter-select"
-        >
-          <option value="all">All Rarities</option>
-          {getEquipmentRarities().map(rarity => (
-            <option key={rarity} value={rarity}>{formatRarity(rarity)}</option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Render a spell card
   const renderSpellCard = (spell: RegisteredSpell) => {

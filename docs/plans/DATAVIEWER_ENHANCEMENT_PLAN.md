@@ -125,10 +125,10 @@ This plan outlines enhancements to the DataViewerTab component to showcase new f
 - [x] Return sorted array of tag strings
 
 ### Task 3.3: Add Tags Filter Dropdown
-- [ ] Create `renderEquipmentTagFilter()` function
-- [ ] Add dropdown with "All Tags" option
-- [ ] Populate with tags from `getEquipmentTags()`
-- [ ] Match existing filter styling
+- [x] Create `renderEquipmentTagFilter()` function
+- [x] Add dropdown with "All Tags" option
+- [x] Populate with tags from `getEquipmentTags()`
+- [x] Match existing filter styling
 
 ### Task 3.4: Implement Tag Filtering Logic
 - [ ] Add `filterEquipmentByTag()` function to useDataViewer
