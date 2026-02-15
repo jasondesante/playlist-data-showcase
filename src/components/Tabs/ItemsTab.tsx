@@ -707,6 +707,21 @@ export function ItemsTab() {
             Enchant
           </Button>
 
+          {/* Lift Curse button - visible in main actions when item is cursed */}
+          {itemIsCursed && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleLiftCurse(item.name)}
+              isLoading={isEnchantmentLoading}
+              leftIcon={Sparkles}
+              className="items-equipment-lift-curse-btn"
+              title="Remove all curses from this item"
+            >
+              Lift Curse
+            </Button>
+          )}
+
           {/* Expand/Collapse button for modifications */}
           {hasModifications && (
             <Button

@@ -177,14 +177,18 @@ interface EquipmentModification {
 ### 3.3 Curse Application Flow
 - [x] Show warning confirmation before applying curse
 - [x] Warning message: "⚠️ This will curse the item! Cursed items may have negative effects."
-- [ ] After curse is applied, show "Lift Curse" button (needs integration in ItemsTab)
+- [x] After curse is applied, show "Lift Curse" button (needs integration in ItemsTab)
 - [x] Show attunement warning for `CURSES.attunement`
 - [x] **Attunement Lock Implementation:**
   - [x] Track attunement curse state on item (check `modifications[]` for attunement curse)
   - [x] Disable "Unequip" button when attunement curse is active (done in ItemsTab)
   - [x] Show locked indicator (🔒 icon) on attunement-cursed items (done in ItemsTab)
   - [x] Add tooltip: "This item is cursed with attunement. Lift the curse to unequip." (done in ItemsTab)
-  - [ ] "Lift Curse" button remains enabled to allow removal (needs integration)
+  - [x] "Lift Curse" button remains enabled to allow removal (needs integration)
+
+**Completed (2026-02-15):**
+- Added "Lift Curse" button to main actions area for cursed items (visible without expanding)
+- Added CSS styling for `.items-equipment-lift-curse-btn` class
 
 ### 3.4 Stat Boost Enchantment UI
 - [x] Create stat boost section in enchantment modal

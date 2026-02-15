@@ -319,6 +319,19 @@
   color: hsl(260 80% 70%);
 }
 
+/* Lift Curse button styling - visible in main actions for cursed items */
+.items-equipment-lift-curse-btn {
+  color: hsl(120 60% 40%);
+  border-color: hsl(120 60% 40% / 0.4);
+  background: hsl(120 60% 40% / 0.05);
+}
+
+.items-equipment-lift-curse-btn:hover {
+  color: hsl(120 60% 35%);
+  border-color: hsl(120 60% 40% / 0.6);
+  background: hsl(120 60% 40% / 0.12);
+}
+
 /* ========================================
    MODIFICATION BADGES
    ======================================== */
