@@ -116,20 +116,20 @@ interface EquipmentModification {
 ## Phase 2: Modification Display UI
 
 ### 2.1 Add Modification Badges to Equipment Items
-- [ ] Update `renderEquipmentItem()` in ItemsTab.tsx
-- [ ] Show enchantment badges (e.g., "+1", "🔥 Flaming", "❄️ Frost")
-- [ ] Show curse indicators (e.g., "🔮 Cursed", "⚠️ Attunement")
-- [ ] Style badges with appropriate colors:
+- [x] Update `renderEquipmentItem()` in ItemsTab.tsx
+- [x] Show enchantment badges (e.g., "+1", "🔥 Flaming", "❄️ Frost")
+- [x] Show curse indicators (e.g., "🔮 Cursed", "⚠️ Attunement")
+- [x] Style badges with appropriate colors:
   - Enchantments: Blue/purple gradient
   - Curses: Red/orange warning colors
-- [ ] Add tooltip showing modification details on hover
+- [x] Add tooltip showing modification details on hover
 
 ### 2.2 Update CSS for Modification Display
-- [ ] Add `.items-modification-badge` class
-- [ ] Add `.items-modification-enchantment` variant
-- [ ] Add `.items-modification-curse` variant
-- [ ] Add `.items-modification-combo` variant for combo enchantments
-- [ ] Ensure badges wrap properly on narrow screens
+- [x] Add `.items-modification-badge` class
+- [x] Add `.items-modification-enchantment` variant
+- [x] Add `.items-modification-curse` variant
+- [x] Add `.items-modification-combo` variant for combo enchantments
+- [x] Ensure badges wrap properly on narrow screens
 
 ### 2.3 Display Modifications in Item Details
 - [ ] Show modification list in equipment item expand/collapse

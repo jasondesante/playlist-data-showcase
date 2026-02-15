@@ -37,6 +37,7 @@ import {
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
 import { useItemCreator, type CustomItemFormData } from '../../hooks/useItemCreator';
+import { useItemEnchantment } from '../../hooks/useItemEnchantment';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
@@ -184,6 +185,11 @@ export function ItemsTab() {
     createAndAddItem,
     clearLastCreated
   } = useItemCreator();
+
+  // Use the item enchantment hook
+  const {
+    getItemModificationInfo
+  } = useItemEnchantment();
 
   // Section collapse states
   const [isEquipmentExpanded, setIsEquipmentExpanded] = useState(true);
@@ -362,14 +368,82 @@ export function ItemsTab() {
       ? getAmmunitionWeightDisplay(item)
       : null;
 
+    // Get modification info for badges
+    const modificationInfo = item.name ? getItemModificationInfo(item.name) : null;
+    const itemIsCursed = modificationInfo?.isCursed ?? false;
+    const itemHasAttunementCurse = modificationInfo?.hasAttunementCurse ?? false;
+    const modifications = modificationInfo?.modifications ?? [];
+
+    // Build tooltip content for modifications
+    const buildModificationTooltip = (): string => {
+      if (modifications.length === 0) return '';
+
+      const lines = modifications.map(mod => {
+        const properties = mod.properties?.map(p => {
+          const value = typeof p.value === 'number' ? (p.value >= 0 ? `+${p.value}` : p.value) : p.value;
+          return `${p.type} ${value}`;
+        }).join(', ') || '';
+
+        return `${mod.name}: ${properties}${mod.description ? ` (${mod.description})` : ''}`;
+      });
+
+      return lines.join('\n');
+    };
+
+    // Get badge icon and label for an enchantment
+    const getEnchantmentBadgeInfo = (mod: typeof modifications[0]): { icon: string; label: string } => {
+      const id = mod.id.toLowerCase();
+
+      // Enhancement bonuses
+      if (id.includes('plus_one') || id.includes('+1')) return { icon: '⚔️', label: '+1' };
+      if (id.includes('plus_two') || id.includes('+2')) return { icon: '⚔️', label: '+2' };
+      if (id.includes('plus_three') || id.includes('+3')) return { icon: '⚔️', label: '+3' };
+
+      // Elemental damage
+      if (id.includes('flaming') || id.includes('fire')) return { icon: '🔥', label: 'Flaming' };
+      if (id.includes('frost') || id.includes('cold')) return { icon: '❄️', label: 'Frost' };
+      if (id.includes('shock') || id.includes('lightning')) return { icon: '⚡', label: 'Shock' };
+      if (id.includes('thunder')) return { icon: '🔊', label: 'Thunder' };
+      if (id.includes('acid')) return { icon: '🧪', label: 'Acid' };
+      if (id.includes('poison')) return { icon: '☠️', label: 'Poison' };
+      if (id.includes('holy') || id.includes('radiant')) return { icon: '✨', label: 'Holy' };
+
+      // Special
+      if (id.includes('vampiric') || id.includes('lifesteal')) return { icon: '🩸', label: 'Vampiric' };
+      if (id.includes('vorpal')) return { icon: '🗡️', label: 'Vorpal' };
+      if (id.includes('keen')) return { icon: '🔪', label: 'Keen' };
+      if (id.includes('mighty')) return { icon: '💪', label: 'Mighty' };
+      if (id.includes('returning')) return { icon: '🔄', label: 'Returning' };
+
+      // Resistance
+      if (id.includes('resistance')) return { icon: '🛡️', label: mod.name };
+
+      // Stat boosts
+      if (id.includes('strength') || id.includes('str')) return { icon: '💪', label: mod.name };
+      if (id.includes('dexterity') || id.includes('dex')) return { icon: '🤸', label: mod.name };
+      if (id.includes('constitution') || id.includes('con')) return { icon: '❤️', label: mod.name };
+      if (id.includes('intelligence') || id.includes('int')) return { icon: '🧠', label: mod.name };
+      if (id.includes('wisdom') || id.includes('wis')) return { icon: '👁️', label: mod.name };
+      if (id.includes('charisma') || id.includes('cha')) return { icon: '😊', label: mod.name };
+
+      // Combo enchantments
+      if (id.includes('holy_avenger')) return { icon: '⚔️✨', label: 'Holy Avenger' };
+      if (id.includes('dragon')) return { icon: '🐉', label: 'Dragonslayer' };
+      if (id.includes('demon')) return { icon: '😈', label: 'Demon Hunter' };
+      if (id.includes('undead')) return { icon: '👻', label: 'Undead Bane' };
+
+      return { icon: '✨', label: mod.name };
+    };
+
     return (
       <div
         key={item.instanceId}
-        className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''}`}
+        className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''} ${itemIsCursed ? 'items-equipment-item-cursed' : ''}`}
       >
         <div className="items-equipment-item-content">
           {isAmmo && <Target className="items-equipment-ammo-icon" size={16} />}
           {item.equipped && !isAmmo && <Check className="items-equipment-checkmark" size={16} />}
+          {itemHasAttunementCurse && <span className="items-equipment-attunement-lock" title="Attunement Lock: Cannot unequip until curse is lifted">🔒</span>}
 
           <span className="items-equipment-name">
             {formatItemDisplay(item)}
@@ -387,6 +461,38 @@ export function ItemsTab() {
           {item.equipped && (
             <span className="items-equipment-badge">Equipped</span>
           )}
+
+          {/* Modification badges */}
+          {modifications.length > 0 && (
+            <div className="items-modification-badges" title={buildModificationTooltip()}>
+              {modifications.map(mod => {
+                const isCurseMod = mod.source === 'curse';
+                const badgeInfo = getEnchantmentBadgeInfo(mod);
+
+                if (isCurseMod) {
+                  return (
+                    <span
+                      key={mod.id}
+                      className="items-modification-badge items-modification-curse"
+                      title={`${mod.name}: ${mod.description || 'Cursed'}`}
+                    >
+                      🔮 {mod.name}
+                    </span>
+                  );
+                }
+
+                return (
+                  <span
+                    key={mod.id}
+                    className="items-modification-badge items-modification-enchantment"
+                    title={`${mod.name}: ${mod.description || badgeInfo.label}`}
+                  >
+                    {badgeInfo.icon} {badgeInfo.label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="items-equipment-actions">
@@ -396,6 +502,8 @@ export function ItemsTab() {
             onClick={() => handleEquipToggle(item)}
             isLoading={isLoading}
             leftIcon={item.equipped ? X : Check}
+            disabled={itemHasAttunementCurse && item.equipped}
+            title={itemHasAttunementCurse && item.equipped ? 'Cannot unequip - Attunement Curse active' : undefined}
           >
             {item.equipped ? 'Unequip' : 'Equip'}
           </Button>

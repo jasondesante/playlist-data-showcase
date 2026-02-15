@@ -308,6 +308,102 @@
 }
 
 /* ========================================
+   MODIFICATION BADGES
+   ======================================== */
+
+/* Cursed item styling */
+.items-equipment-item-cursed {
+  border-color: hsl(var(--cute-red) / 0.4);
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.08), hsl(var(--cute-red) / 0.03));
+}
+
+.items-equipment-item-cursed:hover {
+  border-color: hsl(var(--cute-red) / 0.5);
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.12), hsl(var(--cute-red) / 0.05));
+}
+
+/* Attunement lock icon */
+.items-equipment-attunement-lock {
+  color: hsl(var(--cute-red));
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  animation: pulse-attunement 2s ease-in-out infinite;
+}
+
+@keyframes pulse-attunement {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Modification badges container */
+.items-modification-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-left: 0.25rem;
+}
+
+/* Base modification badge styles */
+.items-modification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.items-modification-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Enchantment badges - blue/purple gradient */
+.items-modification-enchantment {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.2), hsl(220 70% 55% / 0.15));
+  color: hsl(260 80% 70%);
+  border: 1px solid hsl(260 70% 55% / 0.3);
+}
+
+.items-modification-enchantment:hover {
+  background: linear-gradient(135deg, hsl(260 70% 55% / 0.25), hsl(220 70% 55% / 0.2));
+  color: hsl(260 80% 75%);
+}
+
+/* Curse badges - red/orange warning colors */
+.items-modification-curse {
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.15), hsl(20 70% 50% / 0.1));
+  color: hsl(var(--cute-red));
+  border: 1px solid hsl(var(--cute-red) / 0.3);
+}
+
+.items-modification-curse:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-red) / 0.2), hsl(20 70% 50% / 0.15));
+}
+
+/* Combo enchantment badges - legendary gold styling */
+.items-modification-combo {
+  background: linear-gradient(135deg, hsl(45 90% 50% / 0.2), hsl(30 90% 50% / 0.15));
+  color: hsl(45 90% 55%);
+  border: 1px solid hsl(45 90% 50% / 0.4);
+}
+
+.items-modification-combo:hover {
+  background: linear-gradient(135deg, hsl(45 90% 50% / 0.25), hsl(30 90% 50% / 0.2));
+}
+
+/* ========================================
+   WEIGHT FOOTER
+   ======================================== */
+
+/* ========================================
    WEIGHT FOOTER
    ======================================== */
 
