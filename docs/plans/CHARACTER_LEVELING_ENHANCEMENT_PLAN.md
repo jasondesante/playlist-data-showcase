@@ -114,11 +114,14 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   ];
   ```
 
-- [ ] **1.1.3 Update Character Store**
-  - [ ] Add `uncappedConfig: Record<string, string>` to store (maps character seed → preset id)
-  - [ ] Add `setCharacterUncappedConfig(seed: string, presetId: string)` action
-  - [ ] Persist to LocalStorage
-  - [ ] File: `src/store/characterStore.ts`
+- [x] **1.1.3 Update Character Store**
+  - [x] Add `uncappedConfig: Record<string, string>` to store (maps character seed → preset id)
+  - [x] Add `setCharacterUncappedConfig(seed: string, presetId: string)` action
+  - [x] Add `getCharacterUncappedConfig(seed: string)` getter
+  - [x] Persist to LocalStorage via zustand persist middleware
+  - [x] Clean up uncappedConfig on character deletion and reset
+  - [x] Backward compatibility handling on rehydration
+  - [x] File: `src/store/characterStore.ts`
 
 ---
 

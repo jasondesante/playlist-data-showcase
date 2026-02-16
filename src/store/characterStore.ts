@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CharacterSheet, AudioProfile, PlaylistTrack } from '@/types';
-import type { PrestigeLevel, PrestigeInfo, PrestigeResult } from '@/types';
+import type { PrestigeInfo, PrestigeResult } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 import type { StatIncreaseStrategyType } from '@/components/ui/StatStrategySelector';
-import { CharacterGenerator, PrestigeSystem } from 'playlist-data-engine';
+import { CharacterUpdater, PrestigeSystem, type ISessionTracker } from 'playlist-data-engine';
+import { DEFAULT_XP_FORMULA_PRESET_ID } from '@/constants/xpFormulaPresets';
 
 // Internal state for track restoration retry logic (module-scoped, not persisted)
 let restorationState: RestorationState = {
@@ -183,6 +184,8 @@ interface CharacterState {
     characterStrategies: Record<string, StatIncreaseStrategyType>;
     /** Seeds of heroes selected for party analysis (subset of characters) */
     selectedHeroSeeds: string[];
+    /** Map of character seed to uncapped progression preset ID */
+    uncappedConfig: Record<string, string>;
 
     /** Add a new character to the store and set as active */
     addCharacter: (character: CharacterSheet) => void;
@@ -233,42 +236,63 @@ interface CharacterState {
     /**
      * Prestige a character after mastering a track.
      * Resets character to level 1 while preserving equipment and incrementing prestige level.
+     * Uses the engine's CharacterUpdater.resetCharacterForPrestige() via ISessionTracker adapter.
      * @param characterId - The seed of the character to prestige
      * @param audioProfile - Audio profile for character regeneration
      * @param track - Track metadata for character regeneration
-     * @param clearTrackSessions - Callback to clear track sessions (from sessionStore)
-     * @returns PrestigeResult indicating success/failure
+     * @param sessionTracker - ISessionTracker adapter (from sessionStore)
+     * @returns PrestigeResult indicating success/failure (includes regenerated character)
      */
     prestigeCharacter: (
         characterId: string,
         audioProfile: AudioProfile,
         track: PlaylistTrack,
-        clearTrackSessions: (trackUuid: string) => number
+        sessionTracker: ISessionTracker
     ) => PrestigeResult;
     /**
      * Check if a character can prestige.
      * @param characterId - The seed of the character to check
-     * @param getTrackListenCount - Callback to get track listen count
-     * @param getTrackXPTotal - Callback to get track XP total
+     * @param sessionTracker - ISessionTracker adapter (from sessionStore)
      * @returns True if the character can prestige
      */
     canPrestige: (
         characterId: string,
-        getTrackListenCount: (trackUuid: string) => number,
-        getTrackXPTotal: (trackUuid: string) => number
+        sessionTracker: ISessionTracker
     ) => boolean;
     /**
      * Get prestige info for a character.
      * @param characterId - The seed of the character
-     * @param getTrackListenCount - Callback to get track listen count
-     * @param getTrackXPTotal - Callback to get track XP total
+     * @param sessionTracker - ISessionTracker adapter (from sessionStore)
      * @returns PrestigeInfo object with current progress
      */
     getPrestigeInfo: (
         characterId: string,
-        getTrackListenCount: (trackUuid: string) => number,
-        getTrackXPTotal: (trackUuid: string) => number
+        sessionTracker: ISessionTracker
     ) => PrestigeInfo | null;
+    /**
+     * Set the uncapped progression preset for a character by seed.
+     * Persists to localStorage via zustand persist middleware.
+     *
+     * @param seed - The seed (unique ID) of the character
+     * @param presetId - The XP formula preset ID (e.g., 'dnd5e', 'linear')
+     * @example
+     * ```ts
+     * setCharacterUncappedConfig('seed-123', 'osrs');
+     * ```
+     */
+    setCharacterUncappedConfig: (seed: string, presetId: string) => void;
+    /**
+     * Get the uncapped progression preset for a character by seed.
+     * Returns the default preset ('dnd5e') if not set.
+     *
+     * @param seed - The seed (unique ID) of the character
+     * @returns The preset ID (defaults to 'dnd5e' if not set)
+     * @example
+     * ```ts
+     * const presetId = getCharacterUncappedConfig('seed-123'); // 'dnd5e' | 'linear' | etc.
+     * ```
+     */
+    getCharacterUncappedConfig: (seed: string) => string;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -278,6 +302,7 @@ export const useCharacterStore = create<CharacterState>()(
             activeCharacterId: null,
             characterStrategies: {},
             selectedHeroSeeds: [],
+            uncappedConfig: {},
 
             /**
              * Add a new character to the store and set as active
@@ -376,18 +401,21 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Delete a character by seed ID
              * If the deleted character was active, clears activeCharacterId
-             * Also cleans up the character's stat strategy preference
+             * Also cleans up the character's stat strategy preference and uncapped config
              * @param id - The seed of the character to delete
              */
             deleteCharacter: (id) => {
                 logger.info('Store', 'Deleting character', id);
                 set((state) => {
                     // Clean up the strategy for the deleted character
-                    const { [id]: _removed, ...remainingStrategies } = state.characterStrategies;
+                    const { [id]: _removedStrategy, ...remainingStrategies } = state.characterStrategies;
+                    // Clean up the uncapped config for the deleted character
+                    const { [id]: _removedConfig, ...remainingConfig } = state.uncappedConfig;
                     return {
                         characters: state.characters.filter((c) => c.seed !== id),
                         activeCharacterId: state.activeCharacterId === id ? null : state.activeCharacterId,
                         characterStrategies: remainingStrategies,
+                        uncappedConfig: remainingConfig,
                         selectedHeroSeeds: state.selectedHeroSeeds.filter(s => s !== id) // Remove from selection
                     };
                 });
@@ -427,12 +455,19 @@ export const useCharacterStore = create<CharacterState>()(
                         delete remainingStrategies[seed];
                     });
 
+                    // Clean up uncapped configs for all affected seeds
+                    const remainingConfig = { ...state.uncappedConfig };
+                    affectedSeeds.forEach(seed => {
+                        delete remainingConfig[seed];
+                    });
+
                     return {
                         characters: state.characters.filter(c => !affectedSeeds.includes(c.seed)),
                         activeCharacterId: affectedSeeds.includes(state.activeCharacterId || '')
                             ? null
                             : state.activeCharacterId,
                         characterStrategies: remainingStrategies,
+                        uncappedConfig: remainingConfig,
                         selectedHeroSeeds: state.selectedHeroSeeds.filter(s => !affectedSeeds.includes(s)) // Remove from selection
                     };
                 });
@@ -441,7 +476,7 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Clear all characters and reset state
              * Useful for resetting the app or clearing all data
-             * Also clears all saved stat strategy preferences
+             * Also clears all saved stat strategy preferences and uncapped configs
              */
             resetCharacters: () => {
                 logger.warn('Store', 'Resetting all characters');
@@ -449,6 +484,7 @@ export const useCharacterStore = create<CharacterState>()(
                     characters: [],
                     activeCharacterId: null,
                     characterStrategies: {},
+                    uncappedConfig: {},
                     selectedHeroSeeds: [] // Clear selection when characters are cleared
                 });
             },
@@ -657,21 +693,24 @@ export const useCharacterStore = create<CharacterState>()(
             /**
              * Prestige a character after mastering a track.
              * Resets character to level 1 while preserving equipment and incrementing prestige level.
+             * Uses the engine's CharacterUpdater.resetCharacterForPrestige() for consistency.
              *
              * @param characterId - The seed of the character to prestige
              * @param audioProfile - Audio profile for character regeneration
              * @param track - Track metadata for character regeneration
-             * @param clearTrackSessions - Callback to clear track sessions (from sessionStore)
-             * @returns PrestigeResult indicating success/failure
+             * @param sessionTracker - ISessionTracker adapter (from sessionStore)
+             * @returns PrestigeResult indicating success/failure (includes regenerated character)
              *
              * @example
              * ```ts
-             * const result = prestigeCharacter(
-             *   character.seed,
-             *   audioProfile,
-             *   track,
-             *   useSessionStore.getState().clearTrackSessions
-             * );
+             * // Create ISessionTracker adapter from sessionStore
+             * const sessionTracker: ISessionTracker = {
+             *   getTrackListenCount: (id) => useSessionStore.getState().getTrackListenCount(id),
+             *   getTrackXPTotal: (id) => useSessionStore.getState().getTrackXPTotal(id),
+             *   clearTrackSessions: (id) => useSessionStore.getState().clearTrackSessions(id),
+             * };
+             *
+             * const result = prestigeCharacter(character.seed, audioProfile, track, sessionTracker);
              * if (result.success) {
              *   console.log(`Prestiged to level ${PrestigeSystem.toRomanNumeral(result.newPrestigeLevel)}!`);
              * }
@@ -681,7 +720,7 @@ export const useCharacterStore = create<CharacterState>()(
                 characterId: string,
                 audioProfile: AudioProfile,
                 track: PlaylistTrack,
-                clearTrackSessions: (trackUuid: string) => number
+                sessionTracker: ISessionTracker
             ): PrestigeResult => {
                 const character = get().characters.find((c) => c.seed === characterId);
                 if (!character) {
@@ -691,118 +730,114 @@ export const useCharacterStore = create<CharacterState>()(
                     );
                 }
 
-                const currentPrestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
-
-                // Check if already at max prestige
-                if (currentPrestigeLevel >= 10) {
-                    return PrestigeSystem.createFailureResult(
-                        'Already at maximum prestige level',
-                        currentPrestigeLevel
-                    );
-                }
-
-                // Get next prestige level
-                const newPrestigeLevel = PrestigeSystem.getNextPrestigeLevel(currentPrestigeLevel);
-                if (newPrestigeLevel === null) {
-                    return PrestigeSystem.createFailureResult(
-                        'Cannot prestige beyond maximum level',
-                        currentPrestigeLevel
-                    );
-                }
-
-                // Preserve equipment
-                const preservedEquipment = character.equipment ? {
-                    weapons: [...character.equipment.weapons],
-                    armor: [...character.equipment.armor],
-                    items: [...character.equipment.items],
-                    totalWeight: character.equipment.totalWeight,
-                    equippedWeight: character.equipment.equippedWeight,
-                } : null;
-
-                // Clear track sessions
-                clearTrackSessions(character.seed);
-
-                // Regenerate character using original seed
-                const regeneratedCharacter = CharacterGenerator.generate(
-                    character.seed,
+                // Use engine's CharacterUpdater for prestige logic
+                const updater = new CharacterUpdater();
+                const result = updater.resetCharacterForPrestige(
+                    character,
+                    sessionTracker,
+                    characterId, // trackUuid is the character's seed
                     audioProfile,
-                    track,
-                    {
-                        level: 1,
-                        gameMode: character.gameMode,
-                        forceName: character.name, // Keep the same name
-                    }
+                    track
                 );
 
-                // Restore equipment
-                if (preservedEquipment) {
-                    regeneratedCharacter.equipment = preservedEquipment;
+                if (result.success) {
+                    // Extract regenerated character from result
+                    const regeneratedCharacter = (result as PrestigeResult & { character: CharacterSheet }).character;
+
+                    // Update the store with the regenerated character
+                    set((state) => ({
+                        characters: state.characters.map((c) =>
+                            c.seed === characterId ? regeneratedCharacter : c
+                        )
+                    }));
+
+                    logger.info('Store', 'Character prestiged', {
+                        characterName: character.name,
+                        previousLevel: result.previousPrestigeLevel,
+                        newLevel: result.newPrestigeLevel,
+                        romanNumeral: PrestigeSystem.toRomanNumeral(result.newPrestigeLevel)
+                    });
+                } else {
+                    logger.warn('Store', 'Prestige failed', {
+                        characterName: character.name,
+                        reason: result.message
+                    });
                 }
 
-                // Set new prestige level
-                regeneratedCharacter.prestige_level = newPrestigeLevel;
-
-                // Update the store
-                set((state) => ({
-                    characters: state.characters.map((c) =>
-                        c.seed === characterId ? regeneratedCharacter : c
-                    )
-                }));
-
-                logger.info('Store', 'Character prestiged', {
-                    characterName: character.name,
-                    previousLevel: currentPrestigeLevel,
-                    newLevel: newPrestigeLevel,
-                    romanNumeral: PrestigeSystem.toRomanNumeral(newPrestigeLevel)
-                });
-
-                return PrestigeSystem.createSuccessResult(currentPrestigeLevel, newPrestigeLevel);
+                return result;
             },
 
             /**
              * Check if a character can prestige.
              *
              * @param characterId - The seed of the character to check
-             * @param getTrackListenCount - Callback to get track listen count
-             * @param getTrackXPTotal - Callback to get track XP total
+             * @param sessionTracker - ISessionTracker adapter (from sessionStore)
              * @returns True if the character can prestige
              */
             canPrestige: (
                 characterId: string,
-                getTrackListenCount: (trackUuid: string) => number,
-                getTrackXPTotal: (trackUuid: string) => number
+                sessionTracker: ISessionTracker
             ): boolean => {
                 const character = get().characters.find((c) => c.seed === characterId);
                 if (!character) return false;
 
-                const prestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
-                const listenCount = getTrackListenCount(characterId);
-                const totalXP = getTrackXPTotal(characterId);
-
-                return PrestigeSystem.canPrestige(prestigeLevel, listenCount, totalXP);
+                const updater = new CharacterUpdater();
+                return updater.canPrestige(character, sessionTracker, characterId);
             },
 
             /**
              * Get prestige info for a character.
              *
              * @param characterId - The seed of the character
-             * @param getTrackListenCount - Callback to get track listen count
-             * @param getTrackXPTotal - Callback to get track XP total
+             * @param sessionTracker - ISessionTracker adapter (from sessionStore)
              * @returns PrestigeInfo object with current progress, or null if character not found
              */
             getPrestigeInfo: (
                 characterId: string,
-                getTrackListenCount: (trackUuid: string) => number,
-                getTrackXPTotal: (trackUuid: string) => number
+                sessionTracker: ISessionTracker
             ): PrestigeInfo | null => {
                 const character = get().characters.find((c) => c.seed === characterId);
                 if (!character) return null;
 
-                const prestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
-                const listenCount = getTrackListenCount(characterId);
-                const totalXP = getTrackXPTotal(characterId);
+                const updater = new CharacterUpdater();
+                return updater.getPrestigeInfo(character, sessionTracker, characterId);
+            },
 
-                return PrestigeSystem.getPrestigeInfo(prestigeLevel, listenCount, totalXP);
+            /**
+             * Set the uncapped progression preset for a character by seed.
+             * Persists to localStorage via zustand persist middleware.
+             *
+             * @param seed - The seed (unique ID) of the character
+             * @param presetId - The XP formula preset ID (e.g., 'dnd5e', 'linear')
+             * @example
+             * ```ts
+             * setCharacterUncappedConfig('seed-123', 'osrs');
+             * ```
+             */
+            setCharacterUncappedConfig: (seed: string, presetId: string) => {
+                logger.debug('Store', 'Setting character uncapped config', { seed, presetId });
+                set((state) => ({
+                    uncappedConfig: {
+                        ...state.uncappedConfig,
+                        [seed]: presetId
+                    }
+                }));
+            },
+
+            /**
+             * Get the uncapped progression preset for a character by seed.
+             * Returns the default preset ('dnd5e') if not set.
+             *
+             * @param seed - The seed (unique ID) of the character
+             * @returns The preset ID (defaults to 'dnd5e' if not set)
+             * @example
+             * ```ts
+             * const presetId = getCharacterUncappedConfig('seed-123'); // 'dnd5e' | 'linear' | etc.
+             * ```
+             */
+            getCharacterUncappedConfig: (seed: string): string => {
+                const { uncappedConfig } = get();
+                return uncappedConfig[seed] ?? DEFAULT_XP_FORMULA_PRESET_ID;
             }
         }),
         {
@@ -813,7 +848,7 @@ export const useCharacterStore = create<CharacterState>()(
             // the selected track from the active character
             onRehydrateStorage: () => {
                 return (state) => {
-                    // Initialize selectedHeroSeeds if missing (backwards compatibility)
+                    // Initialize selectedHeroSeeds and uncappedConfig if missing (backwards compatibility)
                     // and clean up any stale seeds
                     if (state) {
                         const characterSeeds = new Set(state.characters.map(c => c.seed));
@@ -832,6 +867,24 @@ export const useCharacterStore = create<CharacterState>()(
                                     removed: state.selectedHeroSeeds.length - validSeeds.length
                                 });
                                 state.selectedHeroSeeds = validSeeds;
+                            }
+                        }
+
+                        // Initialize uncappedConfig if missing (backwards compatibility)
+                        if (!state.uncappedConfig || typeof state.uncappedConfig !== 'object') {
+                            state.uncappedConfig = {};
+                            logger.info('Store', 'Initialized uncappedConfig for backwards compatibility');
+                        } else {
+                            // Clean up stale config entries (seeds that no longer exist in characters)
+                            const validConfigEntries = Object.keys(state.uncappedConfig).filter(s => characterSeeds.has(s));
+                            if (validConfigEntries.length !== Object.keys(state.uncappedConfig).length) {
+                                const removed = Object.keys(state.uncappedConfig).length - validConfigEntries.length;
+                                const cleanedConfig: Record<string, string> = {};
+                                validConfigEntries.forEach(seed => {
+                                    cleanedConfig[seed] = state.uncappedConfig![seed];
+                                });
+                                state.uncappedConfig = cleanedConfig;
+                                logger.info('Store', 'Cleaned up stale uncapped config entries', { removed });
                             }
                         }
                     }
