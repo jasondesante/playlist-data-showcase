@@ -99,6 +99,27 @@
 }
 
 /* ============================================
+   EXPAND/COLLAPSE ANIMATION
+   ============================================ */
+
+.session-history-panel > [role="region"] {
+  animation: sessionPanelSlideIn 0.25s ease-out;
+}
+
+@keyframes sessionPanelSlideIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
    STATS SUMMARY BAR
    ============================================ */
 
@@ -315,6 +336,10 @@
 
   .session-history-panel-show-more {
     transition: none;
+  }
+
+  .session-history-panel > [role="region"] {
+    animation: none;
   }
 }
 
