@@ -119,21 +119,21 @@ Update the `useXPCalculator` hook to use progression config values instead of ha
   - [x] Log when engine config is updated (for debugging)
   - **Note:** Gaming bonuses (`gaming_base`, `rpg_game`, `action_fps`, `multiplayer`, `max_multiplier`) are NOT in the engine's `ProgressionConfig`. They are in `SensorConfig.xpModifier` instead. For now, these remain app-only. Future task could add `mergeConfig()` for sensor config integration.
 
-- [ ] **2.2 Refactor useXPCalculator Hook**
-  - [ ] Import progression config store
-  - [ ] Replace `settings.baseXpRate` with `config.xp_per_second`
-  - [ ] Replace hardcoded multiplier values with config values:
-    - [ ] Replace `1.5` running multiplier with `config.running`
-    - [ ] Replace `1.2` walking multiplier with `config.walking`
-    - [ ] Replace `1.25` night time multiplier with `config.night_time`
-    - [ ] Replace `1.4` weather multiplier with `config.storm`
-    - [ ] Replace `1.3` altitude multiplier with `config.altitude`
-    - [ ] Replace gaming base `1.25` with `config.gaming_base`
-    - [ ] Replace RPG `0.20` with `config.rpg_game`
-    - [ ] Replace Action/FPS `0.15` with `config.action_fps`
-    - [ ] Replace multiplayer `0.15` with `config.multiplayer`
-    - [ ] Replace max multiplier `3.0` with `config.max_multiplier`
-  - [ ] Ensure hook re-renders when config changes
+- [x] **2.2 Refactor useXPCalculator Hook** ✓ 2026-02-16
+  - [x] Import progression config store (already imported in Task 2.1)
+  - [x] Replace `settings.baseXpRate` with `config.xp_per_second` (already done in Task 2.1)
+  - [x] Replace hardcoded multiplier values with config values:
+    - [x] Replace `1.5` running multiplier with `config.activity_bonuses.running`
+    - [x] Replace `1.2` walking multiplier with `config.activity_bonuses.walking`
+    - [x] Replace `1.25` night time multiplier with `config.activity_bonuses.night_time`
+    - [x] Replace `1.4` weather multiplier with `config.activity_bonuses.storm`
+    - [x] Replace `1.3` altitude multiplier with `config.activity_bonuses.altitude`
+    - [x] Replace gaming base `1.25` with `config.activity_bonuses.gaming_base`
+    - [x] Replace RPG `0.20` with `config.activity_bonuses.rpg_game`
+    - [x] Replace Action/FPS `0.15` with `config.activity_bonuses.action_fps`
+    - [x] Replace multiplayer `0.15` with `config.activity_bonuses.multiplayer`
+    - [x] Replace max multiplier `3.0` with `config.activity_bonuses.max_multiplier`
+  - [x] Ensure hook re-renders when config changes (updated useCallback dependency to full config)
 
 - [ ] **2.3 Update Hook Dependencies**
   - [ ] Add progression config to useMemo/useCallback dependencies

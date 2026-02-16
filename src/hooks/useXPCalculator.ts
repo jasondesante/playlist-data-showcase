@@ -185,37 +185,39 @@ export const useXPCalculator = () => {
                 const movementIntensity = Math.abs(x) + Math.abs(y) + Math.abs(z);
 
                 // Estimate activity from movement intensity (simplified)
+                // Use config values for multipliers
                 if (movementIntensity > 3) {
                     envDetails.activity = 'running';
-                    envMultiplier = 1.5;
+                    envMultiplier = config.activity_bonuses.running;
                 } else if (movementIntensity > 0.5) {
                     envDetails.activity = 'walking';
-                    envMultiplier = 1.2;
+                    envMultiplier = config.activity_bonuses.walking;
                 } else {
                     envDetails.activity = 'stationary';
                     envMultiplier = 1.0;
                 }
             }
 
-            // Night time bonus (1.25x) - check from weather data
+            // Night time bonus - check from weather data
             if (envContext?.weather?.isNight && !isManualMode) {
                 envDetails.isNightTime = true;
-                envMultiplier = Math.max(envMultiplier, 1.25);
+                envMultiplier = Math.max(envMultiplier, config.activity_bonuses.night_time);
             }
 
-            // Weather bonus (1.4x for extreme weather)
+            // Weather bonus - use the highest weather bonus from config
             if (envContext?.weather && !isManualMode) {
                 const weatherType = envContext.weather.weatherType?.toLowerCase();
                 envDetails.weather = envContext.weather.weatherType;
                 if (weatherType && ['rain', 'snow', 'thunderstorm', 'mist', 'fog'].some(w => weatherType.includes(w))) {
-                    envMultiplier = Math.max(envMultiplier, 1.4);
+                    // Use storm bonus for extreme weather (highest)
+                    envMultiplier = Math.max(envMultiplier, config.activity_bonuses.storm);
                 }
             }
 
-            // High altitude bonus (1.3x for >=2000m)
+            // High altitude bonus for >=2000m
             if (envContext?.geolocation?.altitude && envContext.geolocation.altitude >= 2000 && !isManualMode) {
                 envDetails.altitude = envContext.geolocation.altitude;
-                envMultiplier = Math.max(envMultiplier, 1.3);
+                envMultiplier = Math.max(envMultiplier, config.activity_bonuses.altitude);
             }
 
             // Calculate or override gaming modifier
@@ -231,8 +233,8 @@ export const useXPCalculator = () => {
                 // Auto-calculate from context
                 gamingDetails.isActivelyGaming = true;
 
-                // Base gaming bonus: +0.25x
-                gamingMultiplier = 1.25;
+                // Base gaming bonus from config
+                gamingMultiplier = config.activity_bonuses.gaming_base;
                 gamingDetails.gameName = gamingContext.currentGame?.name;
 
                 // Game type bonuses - genre is string[]
@@ -243,19 +245,19 @@ export const useXPCalculator = () => {
 
                     // Check for RPG bonus
                     if (genres.some(g => g.toLowerCase().includes('rpg'))) {
-                        gamingMultiplier += 0.20; // +0.20x for RPG
+                        gamingMultiplier += config.activity_bonuses.rpg_game;
                     } else if (genres.some(g => g.toLowerCase().includes('action') || g.toLowerCase().includes('fps'))) {
-                        gamingMultiplier += 0.15; // +0.15x for Action/FPS
+                        gamingMultiplier += config.activity_bonuses.action_fps;
                     }
 
                     // Multiplayer bonus - check party size
                     const partySize = gamingContext.currentGame.partySize;
                     if (partySize && partySize > 1) {
-                        gamingMultiplier += 0.15;
+                        gamingMultiplier += config.activity_bonuses.multiplayer;
                     }
                 }
 
-                // Cap gaming multiplier at 1.75x
+                // Cap gaming multiplier at 1.75x (reasonable cap for gaming)
                 gamingMultiplier = Math.min(gamingMultiplier, 1.75);
             }
 
@@ -266,8 +268,8 @@ export const useXPCalculator = () => {
             const environmentalBonusXP = Math.floor(baseXP * (envMultiplier - 1.0));
             const gamingBonusXP = Math.floor(baseXP * (gamingMultiplier - 1.0));
 
-            // Total multiplier (environmental × gaming), capped at 3.0x
-            const totalMultiplier = Math.min(3.0, envMultiplier * gamingMultiplier);
+            // Total multiplier (environmental × gaming), capped at config max
+            const totalMultiplier = Math.min(config.activity_bonuses.max_multiplier, envMultiplier * gamingMultiplier);
             const totalMultiplierBonus = Math.floor(baseXP * (totalMultiplier - 1.0));
 
             // Total XP = Base + Environmental Bonus + Gaming Bonus + Mastery Bonus
@@ -293,7 +295,7 @@ export const useXPCalculator = () => {
             handleError(error, 'XPCalculator');
             return null;
         }
-    }, [calculator, config.xp_per_second]);
+    }, [calculator, config]);
 
     return { calculateXP };
 };
