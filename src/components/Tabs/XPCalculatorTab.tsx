@@ -66,6 +66,31 @@ interface ConfigSliderProps {
  * Demonstrates the XPCalculator from playlist-data-engine.
  * Allows users to calculate XP earned based on listening duration.
  *
+ * ## Tabs
+ *
+ * 1. **Calculator Tab**: Main interface for calculating XP
+ *    - Duration input (in seconds)
+ *    - Environmental and gaming context display
+ *    - Manual override mode for testing
+ *    - Real-time estimated XP preview
+ *
+ * 2. **Results Tab**: Detailed XP breakdown after calculation
+ *    - Total XP with multiplier breakdown
+ *    - Environmental and gaming bonus details
+ *    - Animated donut chart visualization
+ *    - Raw JSON dump for debugging
+ *
+ * 3. **Config Tab**: Progression configuration panel
+ *    - Customize XP multiplier values
+ *    - Changes persist to LocalStorage
+ *    - Syncs with engine via mergeProgressionConfig()
+ *    - Reset to defaults button
+ *
+ * ## Progression Config vs Manual Mode
+ *
+ * - **Progression Config** (Config tab): Changes default multipliers for ALL calculations
+ * - **Manual Mode** (Calculator tab): One-time override for a SINGLE calculation
+ *
  * Features:
  * - Duration input (in seconds)
  * - XP calculation button
@@ -76,6 +101,7 @@ interface ConfigSliderProps {
  * - Manual override mode for testing (Task 4.5.5)
  * - Animated donut chart for XP breakdown
  * - Celebration animation when leveling up
+ * - Progression config panel (Phase 3)
  */
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
@@ -83,8 +109,7 @@ export function XPCalculatorTab() {
   const { getActiveCharacter, characters, setActiveCharacter } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
 
-  // Progression config store - read-only for Task 3.2
-  // Actions (updateActivityBonus, etc.) will be added in Task 3.3
+  // Progression config store - for reading and modifying XP multiplier values
   const config = useProgressionConfig();
   const { updateProgressionConfig, updateActivityBonus, resetProgressionConfig, isActivityBonusModified } = useProgressionConfigActions();
 

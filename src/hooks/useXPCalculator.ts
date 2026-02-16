@@ -44,6 +44,22 @@ export interface XPBreakdown {
  * - Gaming session length and genre
  * - Track mastery (+50 XP flat)
  *
+ * ## Progression Config vs Manual Mode
+ *
+ * There are two ways to customize XP calculations:
+ *
+ * 1. **Progression Config** (affects all calculations):
+ *    - Uses values from `useProgressionConfig()` store
+ *    - Persisted to LocalStorage
+ *    - Synced with engine via `mergeProgressionConfig()`
+ *    - Best for permanent customization
+ *
+ * 2. **Manual Mode** (one-time override):
+ *    - Pass `manualOverrides` parameter to `calculateXP()`
+ *    - Takes precedence over config values
+ *    - Not persisted
+ *    - Best for testing or temporary adjustments
+ *
  * @example
  * ```tsx
  * const { calculateXP } = useXPCalculator();
