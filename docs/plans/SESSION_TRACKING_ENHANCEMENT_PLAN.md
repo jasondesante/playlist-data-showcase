@@ -315,10 +315,17 @@ Create a new hook to expose mastery-related data from the engine.
   - Verified: SessionHistoryPanel shows empty state when sessions.length === 0
   - Displays "No sessions yet" message with hint
   - Build: clean, no errors
-- [ ] Test with many sessions (scroll/pagination)
-  - Verified: max-height: 500px with overflow-y: auto for scrolling
-  - "Show More" button for expanding beyond maxItems (default 10)
-  - Custom scrollbar styling included
+- [x] Test with many sessions (scroll/pagination)
+  - Verified: `max-height: 500px` with `overflow-y: auto` in SessionHistoryPanel.css:174-175
+  - "Show More" button implemented in SessionHistoryPanel.tsx:203-218, shows when `sessions.length > maxItems` (default 10)
+  - Custom scrollbar styling in SessionHistoryPanel.css:177-196:
+    - Firefox: `scrollbar-width: thin` + `scrollbar-color`
+    - WebKit: `::-webkit-scrollbar` with 6px width, rounded thumb, hover effects
+  - `visibleSessions` useMemo correctly slices to maxItems when showAll=false
+  - `hasMoreSessions` shows button only when more sessions exist than maxItems
+  - `remainingCount` displays correct number in "Show X More" button text
+  - Button toggles showAll state, correctly showing all sessions or limited set
+  - Build: clean, no TypeScript errors
 
 ### Task 7.2: Accessibility
 
