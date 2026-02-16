@@ -287,10 +287,12 @@ Create a new hook to expose mastery-related data from the engine.
   - Accessibility: `role="img"`, `aria-label`, `tabIndex={0}`, focus-visible outline present
   - Reduced motion: animation disabled, hover transform disabled via `prefers-reduced-motion`
   - TypeScript compilation: clean, no errors. Build: clean, no errors.
-- [ ] Test progress bar updates when session ends
-  - Verified: Reactive chain from sessionHistory → useMastery → masteryInfo → MasteryProgressBar
-  - Progress animates via useEffect with requestAnimationFrame
-  - Session store adds completed sessions to sessionHistory array
+- [x] Test progress bar updates when session ends
+  - Verified: Full reactive chain traced end-to-end: sessionStore.endSession → sessionHistory update → useMastery hook re-evaluates (getTrackListenCount depends on sessionHistory) → getMasteryInfo returns new MasteryInfo → SessionTrackingTab useMemo recomputes masteryInfo → MasteryProgressBar receives new props → progressPercent useMemo recalculates → useEffect fires requestAnimationFrame → displayProgress state updates → CSS transition (width 0.4s cubic-bezier) animates the fill smoothly
+  - First-mount animation works correctly: component mounts when listenCount goes from 0→1 (guarded by `masteryInfo.listenCount > 0`), displayProgress starts at 0, rAF sets it to progressPercent, CSS transition animates from 0% to target width
+  - Level transitions verified: progress correctly resets when crossing thresholds (e.g., basic→familiar resets progress range to FAMILIAR→MASTERED)
+  - Zustand subscription chain verified: useSessionStore selector in useMastery correctly triggers re-render on sessionHistory reference change
+  - Build: clean, no TypeScript errors
 - [ ] Test session history shows all sessions
   - Verified: SessionHistoryPanel receives sessionHistory from useSessionStore
   - Sessions displayed via SessionHistoryItem components
