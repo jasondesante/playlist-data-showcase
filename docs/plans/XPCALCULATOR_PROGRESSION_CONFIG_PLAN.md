@@ -78,14 +78,14 @@ Create a new store to manage progression configuration state with LocalStorage p
   - [x] Create type for the full config state including metadata (version, last modified)
   - [x] File: Added to `src/types/index.ts`
 
-- [ ] **1.2 Create Progression Config Store**
-  - [ ] Create `src/store/progressionConfigStore.ts`
-  - [ ] Define default values (import from engine or define constants)
-  - [ ] Include `altitude: 1.3` as app-specific extension
-  - [ ] Implement `updateProgressionConfig()` action
-  - [ ] Implement `resetProgressionConfig()` action
-  - [ ] Add Zustand persist middleware for LocalStorage
-  - [ ] Add versioning for future migrations
+- [x] **1.2 Create Progression Config Store** ✓ 2026-02-16
+  - [x] Create `src/store/progressionConfigStore.ts`
+  - [x] Define default values (import from engine or define constants)
+  - [x] Include `altitude: 1.3` as app-specific extension
+  - [x] Implement `updateProgressionConfig()` action
+  - [x] Implement `resetProgressionConfig()` action
+  - [x] Add Zustand persist middleware for LocalStorage
+  - [x] Add versioning for future migrations
 
 - [ ] **1.3 Migrate baseXpRate from appStore**
   - [ ] Add `xp_per_second` to new progressionConfigStore (replaces `baseXpRate`)
