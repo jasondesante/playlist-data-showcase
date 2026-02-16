@@ -70,13 +70,13 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   }
   ```
 
-- [ ] **1.1.2 Create Preset Constants**
-  - [ ] Create `XP_FORMULA_PRESETS` constant array with all presets:
-    - [ ] **D&D 5e (Default)** - Continues naturally beyond level 20
-    - [ ] **Linear** - 50,000 XP per level (consistent progression)
-    - [ ] **Exponential** - Faster at low levels, slower at high levels
-    - [ ] **OSRS-Style** - Old School RuneScape curve (steep at high levels)
-  - [ ] File: `src/constants/xpFormulaPresets.ts`
+- [x] **1.1.2 Create Preset Constants**
+  - [x] Create `XP_FORMULA_PRESETS` constant array with all presets:
+    - [x] **D&D 5e (Default)** - Continues naturally beyond level 20
+    - [x] **Linear** - 50,000 XP per level (consistent progression)
+    - [x] **Exponential** - Faster at low levels, slower at high levels
+    - [x] **OSRS-Style** - Old School RuneScape curve (steep at high levels)
+  - [x] File: `src/constants/xpFormulaPresets.ts`
   ```typescript
   export const XP_FORMULA_PRESETS: XPFormulaPreset[] = [
     {
