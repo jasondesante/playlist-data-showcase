@@ -258,13 +258,15 @@ Create a new hook to expose mastery-related data from the engine.
 
 **File:** `src/components/ui/MasteryBadge.css`
 
-- [ ] Base badge styles
-- [ ] Level-specific colors:
+- [x] Base badge styles
+- [x] Level-specific colors:
   - None: No badge displayed
   - Basic: Bronze (#CD7F32)
   - Familiar: Silver (#C0C0C0)
   - Mastered: Gold (#FFD700) with glow animation
-- [ ] Size variants (sm, md, lg)
+- [x] Size variants (sm, md, lg)
+
+**Status:** Already implemented. `MasteryBadge.css` has comprehensive styling: base badge with flexbox centering and hover/focus transitions (lines 20-44), size variants sm/md/lg (lines 50-78), level-specific colors with Bronze gradient for basic, Silver gradient for familiar, Gold with glow animation for mastered (lines 88-146), tooltip styles with fade-in animation (lines 169-195), reduced motion support (lines 201-220), and dark mode gradient adjustments (lines 229-244).
 
 ---
 
