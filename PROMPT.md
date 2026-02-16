@@ -10,6 +10,8 @@ I might add new stuff to the docs/plans/SESSION_TRACKING_ENHANCEMENT_PLAN.md fil
 
 Take your time doing the tasks, be thorough and do your research. You have all the time in the world.
 
+REMEMBER to say "done" when you're done. And then stop. Always remember to say "done" when you're done. This is the most essential final thing to do after every task.
+
 When you're done, say "done". When there's no tasks left for you to do then say "ITS TIME TO EAT"
 
 IMPORTANT:
@@ -17,6 +19,7 @@ IMPORTANT:
 - DO NOT DELETE package-lock.json. 
 - DO NOT USE TAILWIND. USE PURE CSS LIKE A REAL MAN.
 - DO NOT DO MORE THAN ONE TASK/BOX AT A TIME
+- SAY DONE WHEN YOURE DONE! YOU KEEP FORGETTING TO DO THIS BUT ITS THE MOST IMPORTANT THING!!
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
 - ALWAYS verify that there aren't any random errors in the build.
 - update docs/plans/SESSION_TRACKING_ENHANCEMENT_PLAN.md when the task is completed

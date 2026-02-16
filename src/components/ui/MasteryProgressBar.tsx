@@ -1,26 +1,41 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import type { MasteryLevel } from '@/hooks/useMastery';
-import { MASTERY_THRESHOLDS } from '@/hooks/useMastery';
+import type { PrestigeLevel } from '@/types';
 import './MasteryProgressBar.css';
 
 /**
  * MasteryProgressBar Component
  *
- * Displays a progress bar showing progress toward the next mastery level.
- * Shows current listen count and how many more listens are needed.
+ * Displays a dual progress bar showing progress toward mastery.
+ * Shows progress for both plays AND XP requirements.
  *
  * Features:
+ * - Dual progress bars (plays and XP)
  * - Animated fill when progress changes
- * - Level-specific coloring
- * - Text showing "X/Y listens to [Next Level]"
- * - Special display when already mastered
+ * - Prestige-aware thresholds
+ * - Special display when mastered
  */
 
 export interface MasteryProgressBarProps {
-  /** Current mastery level name */
-  level: MasteryLevel;
   /** Number of times the track has been listened to */
   listenCount: number;
+  /** Total XP earned for this track */
+  totalXP: number;
+  /** Plays threshold for current prestige level */
+  playsThreshold: number;
+  /** XP threshold for current prestige level */
+  xpThreshold: number;
+  /** Progress toward plays threshold (0-1) */
+  playsProgress?: number;
+  /** Progress toward XP threshold (0-1) */
+  xpProgress?: number;
+  /** Whether the track is mastered */
+  isMastered: boolean;
+  /** Current prestige level */
+  prestigeLevel?: PrestigeLevel;
+  /** Roman numeral for prestige level */
+  prestigeRoman?: string;
+  /** Whether at max prestige level */
+  isMaxPrestige?: boolean;
   /** Optional additional CSS class name */
   className?: string;
   /** Whether to show compact mode */
@@ -28,155 +43,86 @@ export interface MasteryProgressBarProps {
 }
 
 /**
- * Get the label for a mastery level
- */
-function getMasteryLabel(level: MasteryLevel): string {
-  switch (level) {
-    case 'mastered':
-      return 'Mastered';
-    case 'familiar':
-      return 'Familiar';
-    case 'basic':
-      return 'Basic';
-    case 'none':
-    default:
-      return 'Not Started';
-  }
-}
-
-/**
- * Get the next level's threshold and name
- */
-function getNextLevelInfo(currentLevel: MasteryLevel): { threshold: number; label: string } | null {
-  switch (currentLevel) {
-    case 'none':
-      return { threshold: MASTERY_THRESHOLDS.BASIC, label: 'Basic' };
-    case 'basic':
-      return { threshold: MASTERY_THRESHOLDS.FAMILIAR, label: 'Familiar' };
-    case 'familiar':
-      return { threshold: MASTERY_THRESHOLDS.MASTERED, label: 'Mastered' };
-    case 'mastered':
-    default:
-      return null; // Already at max level
-  }
-}
-
-/**
- * Get the current level's threshold
- */
-function getCurrentThreshold(level: MasteryLevel): number {
-  switch (level) {
-    case 'mastered':
-      return MASTERY_THRESHOLDS.MASTERED;
-    case 'familiar':
-      return MASTERY_THRESHOLDS.FAMILIAR;
-    case 'basic':
-      return MASTERY_THRESHOLDS.BASIC;
-    case 'none':
-    default:
-      return MASTERY_THRESHOLDS.NONE;
-  }
-}
-
-/**
  * MasteryProgressBar component for displaying track mastery progress.
  *
  * @example
  * ```tsx
- * // Basic usage
- * <MasteryProgressBar level="basic" listenCount={3} />
- *
- * // With all props
  * <MasteryProgressBar
- *   level="familiar"
- *   listenCount={7}
- *   className="my-custom-class"
- *   compact={true}
+ *   listenCount={5}
+ *   totalXP={500}
+ *   playsThreshold={10}
+ *   xpThreshold={1000}
+ *   isMastered={false}
  * />
  * ```
  */
 export function MasteryProgressBar({
-  level,
   listenCount,
+  totalXP,
+  playsThreshold,
+  xpThreshold,
+  isMastered,
+  prestigeRoman = '',
+  isMaxPrestige = false,
   className = '',
   compact = false
 }: MasteryProgressBarProps) {
-  // Animate the progress value
-  const [displayProgress, setDisplayProgress] = useState(0);
-
-  // Track previous level for announcements
-  const prevLevelRef = useRef<MasteryLevel>(level);
+  // Animate the progress values
+  const [displayPlaysProgress, setDisplayPlaysProgress] = useState(0);
+  const [displayXPProgress, setDisplayXPProgress] = useState(0);
 
   // Screen reader announcement state
   const [announcement, setAnnouncement] = useState<string | null>(null);
+  const prevMasteredRef = useRef(isMastered);
 
-  const nextLevelInfo = getNextLevelInfo(level);
-  const currentThreshold = getCurrentThreshold(level);
-  const isMastered = level === 'mastered';
+  // Calculate progress percentages
+  const playsProgressPercent = useMemo(() => {
+    return Math.min(100, Math.round((listenCount / playsThreshold) * 100));
+  }, [listenCount, playsThreshold]);
 
-  // Calculate progress percentage
-  const progressPercent = useMemo(() => {
-    if (isMastered || !nextLevelInfo) {
-      return 100;
-    }
+  const xpProgressPercent = useMemo(() => {
+    return Math.min(100, Math.round((totalXP / xpThreshold) * 100));
+  }, [totalXP, xpThreshold]);
 
-    const rangeSize = nextLevelInfo.threshold - currentThreshold;
-    const progressInRange = listenCount - currentThreshold;
-    return Math.min(100, Math.round((progressInRange / rangeSize) * 100));
-  }, [isMastered, nextLevelInfo, currentThreshold, listenCount]);
-
-  // Calculate listens needed
-  const listensNeeded = useMemo(() => {
-    if (isMastered || !nextLevelInfo) {
-      return 0;
-    }
-    return nextLevelInfo.threshold - listenCount;
-  }, [isMastered, nextLevelInfo, listenCount]);
+  // Calculate remaining needs
+  const playsNeeded = Math.max(0, playsThreshold - listenCount);
+  const xpNeeded = Math.max(0, xpThreshold - totalXP);
 
   // Animate progress changes
   useEffect(() => {
-    // Skip animation on initial mount
-    if (displayProgress === 0 && progressPercent === 0) {
-      return;
-    }
-
     const animationFrame = requestAnimationFrame(() => {
-      setDisplayProgress(progressPercent);
+      setDisplayPlaysProgress(playsProgressPercent);
+      setDisplayXPProgress(xpProgressPercent);
     });
-
     return () => cancelAnimationFrame(animationFrame);
-  }, [progressPercent]);
+  }, [playsProgressPercent, xpProgressPercent]);
 
-  // Announce mastery level changes to screen readers
+  // Announce mastery changes to screen readers
   useEffect(() => {
-    if (prevLevelRef.current !== level && prevLevelRef.current !== 'none') {
-      // Level has changed, announce it
-      const newLabel = getMasteryLabel(level);
-      const message = level === 'mastered'
-        ? `Congratulations! Track ${newLabel}!`
-        : `Mastery level increased to ${newLabel}`;
+    if (!prevMasteredRef.current && isMastered) {
+      const message = isMaxPrestige
+        ? 'Congratulations! Track fully mastered at max prestige!'
+        : prestigeRoman
+          ? `Congratulations! Track mastered at Prestige ${prestigeRoman}!`
+          : 'Congratulations! Track mastered!';
 
-      // Set announcement with a slight delay to ensure live region picks it up
       setAnnouncement(message);
-
-      // Clear announcement after it's been read
-      const timeout = setTimeout(() => {
-        setAnnouncement(null);
-      }, 1000);
-
+      const timeout = setTimeout(() => setAnnouncement(null), 1000);
       return () => clearTimeout(timeout);
     }
-    prevLevelRef.current = level;
-  }, [level]);
+    prevMasteredRef.current = isMastered;
+  }, [isMastered, isMaxPrestige, prestigeRoman]);
 
-  // Don't render for 'none' level with 0 listens (no progress to show)
-  if (level === 'none' && listenCount === 0) {
-    return null;
-  }
+  // Get status label
+  const getStatusLabel = () => {
+    if (isMaxPrestige) return 'MAX PRESTIGE';
+    if (isMastered) return prestigeRoman ? `Mastered (${prestigeRoman})` : 'Mastered';
+    return 'In Progress';
+  };
 
   return (
     <>
-      {/* Screen reader announcements for mastery level changes */}
+      {/* Screen reader announcements */}
       <div
         role="status"
         aria-live="polite"
@@ -198,51 +144,64 @@ export function MasteryProgressBar({
       </div>
 
       <div
-        className={`mastery-progress-bar ${compact ? 'mastery-progress-compact' : ''} ${className}`.trim()}
+        className={`mastery-progress-bar ${compact ? 'mastery-progress-compact' : ''} ${isMastered ? 'mastery-progress-mastered' : ''} ${className}`.trim()}
         role="progressbar"
-        aria-valuenow={progressPercent}
+        aria-valuenow={Math.min(playsProgressPercent, xpProgressPercent)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`Mastery progress: ${progressPercent}% toward ${nextLevelInfo?.label || 'Mastered'}`}
+        aria-label={`Mastery progress: ${playsProgressPercent}% plays, ${xpProgressPercent}% XP`}
       >
-      {/* Header with level info */}
-      <div className="mastery-progress-header">
-        <span className={`mastery-progress-level-indicator mastery-level-${level}`}>
-          {getMasteryLabel(level)}
-        </span>
-        {!isMastered && nextLevelInfo && (
-          <span className="mastery-progress-target">
-            {listenCount}/{nextLevelInfo.threshold} to {nextLevelInfo.label}
+        {/* Header with status */}
+        <div className="mastery-progress-header">
+          <span className={`mastery-progress-level-indicator ${isMastered ? 'mastered' : ''}`}>
+            {getStatusLabel()}
           </span>
-        )}
-        {isMastered && (
-          <span className="mastery-progress-complete">
-            {listenCount} listens
-          </span>
-        )}
-      </div>
-
-      {/* Progress bar track and fill */}
-      <div className="mastery-progress-track">
-        <div
-          className={`mastery-progress-fill mastery-level-fill-${level}`}
-          style={{ width: `${displayProgress}%` }}
-        />
-      </div>
-
-      {/* Footer hint (non-compact only) */}
-      {!compact && !isMastered && nextLevelInfo && (
-        <div className="mastery-progress-hint">
-          {listensNeeded} more listen{listensNeeded !== 1 ? 's' : ''} to {nextLevelInfo.label}
         </div>
-      )}
 
-      {/* Footer for mastered */}
-      {!compact && isMastered && (
-        <div className="mastery-progress-hint mastery-progress-mastered-hint">
-          Track fully mastered!
+        {/* Plays Progress */}
+        <div className="mastery-progress-section">
+          <div className="mastery-progress-label">
+            <span>Plays</span>
+            <span className="mastery-progress-count">
+              {listenCount}/{playsThreshold}
+            </span>
+          </div>
+          <div className="mastery-progress-track">
+            <div
+              className={`mastery-progress-fill ${isMastered ? 'mastered' : ''}`}
+              style={{ width: `${displayPlaysProgress}%` }}
+            />
+          </div>
         </div>
-      )}
+
+        {/* XP Progress */}
+        <div className="mastery-progress-section">
+          <div className="mastery-progress-label">
+            <span>XP</span>
+            <span className="mastery-progress-count">
+              {totalXP.toLocaleString()}/{xpThreshold.toLocaleString()}
+            </span>
+          </div>
+          <div className="mastery-progress-track">
+            <div
+              className={`mastery-progress-fill xp ${isMastered ? 'mastered' : ''}`}
+              style={{ width: `${displayXPProgress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Footer hint */}
+        {!compact && !isMastered && (
+          <div className="mastery-progress-hint">
+            Need {playsNeeded} more play{playsNeeded !== 1 ? 's' : ''} and {xpNeeded.toLocaleString()} more XP
+          </div>
+        )}
+
+        {!compact && isMastered && (
+          <div className="mastery-progress-hint mastery-progress-mastered-hint">
+            {isMaxPrestige ? 'Maximum prestige achieved!' : 'Track mastered - ready to prestige!'}
+          </div>
+        )}
       </div>
     </>
   );

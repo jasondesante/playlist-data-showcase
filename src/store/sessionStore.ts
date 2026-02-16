@@ -24,11 +24,15 @@ interface SessionState {
     resumeSession: () => void;
     updateElapsedTime: (elapsedSeconds: number) => void;
     clearHistory: () => void;
+    /** Clear all sessions for a specific track (used by prestige system) */
+    clearTrackSessions: (trackUuid: string) => number;
+    /** Get total XP earned for a specific track */
+    getTrackXPTotal: (trackUuid: string) => number;
 }
 
 export const useSessionStore = create<SessionState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             currentSessionId: null,
             sessionHistory: [],
             activeSession: null,
@@ -89,6 +93,41 @@ export const useSessionStore = create<SessionState>()(
             clearHistory: () => {
                 logger.warn('Store', 'Clearing session history');
                 set({ sessionHistory: [] });
+            },
+
+            /**
+             * Clear all sessions for a specific track.
+             * Used by the prestige system to reset track progress after prestiging.
+             * @param trackUuid - The track UUID to clear sessions for
+             * @returns Number of sessions that were removed
+             */
+            clearTrackSessions: (trackUuid: string): number => {
+                const state = get();
+                const initialLength = state.sessionHistory.length;
+                const newHistory = state.sessionHistory.filter(
+                    (session) => session.track_uuid !== trackUuid
+                );
+                const removedCount = initialLength - newHistory.length;
+
+                if (removedCount > 0) {
+                    logger.info('Store', 'Cleared track sessions', { trackUuid, removedCount });
+                    set({ sessionHistory: newHistory });
+                }
+
+                return removedCount;
+            },
+
+            /**
+             * Get total XP earned for a specific track.
+             * Used by the prestige system to calculate track-level XP.
+             * @param trackUuid - The track UUID
+             * @returns Total XP earned from sessions for this track
+             */
+            getTrackXPTotal: (trackUuid: string): number => {
+                const state = get();
+                return state.sessionHistory
+                    .filter((session) => session.track_uuid === trackUuid)
+                    .reduce((total, session) => total + (session.total_xp_earned || 0), 0);
             }
         }),
         {

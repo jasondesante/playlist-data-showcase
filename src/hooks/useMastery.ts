@@ -1,104 +1,38 @@
 import { useMemo, useCallback, useRef } from 'react';
 import { useSessionStore } from '@/store/sessionStore';
+import { PrestigeSystem, type PrestigeLevel, type PrestigeInfo } from '@/types';
 
 /**
- * Mastery level thresholds
- * Based on listen counts, determines the mastery badge displayed
- */
-export const MASTERY_THRESHOLDS = {
-    NONE: 0,       // 0 listens - no badge
-    BASIC: 1,      // 1 listen
-    FAMILIAR: 5,   // 5 listens
-    MASTERED: 10   // 10 listens - engine default
-} as const;
-
-/**
- * Mastery level names matching the thresholds
- */
-export type MasteryLevel = 'none' | 'basic' | 'familiar' | 'mastered';
-
-/**
- * Information about a track's mastery status
+ * Information about a track's mastery status.
+ * Uses dual requirements (plays AND XP) for mastery determination.
  */
 export interface MasteryInfo {
-    /** Current mastery level name */
-    level: MasteryLevel;
     /** Number of times the track has been listened to */
     listenCount: number;
-    /** Whether the track has reached mastered status (10+ listens) */
+    /** Current prestige level (0-10) */
+    prestigeLevel: PrestigeLevel;
+    /** Total XP earned for this track */
+    totalXP: number;
+    /** Plays threshold for current prestige level */
+    playsThreshold: number;
+    /** XP threshold for current prestige level */
+    xpThreshold: number;
+    /** Progress toward plays threshold (0-1) */
+    playsProgress: number;
+    /** Progress toward XP threshold (0-1) */
+    xpProgress: number;
+    /** Whether BOTH thresholds are met (true mastery status) */
     isMastered: boolean;
-    /** Progress toward the next mastery level (0-100) */
-    progressPercent: number;
-    /** Number of listens needed to reach the next level */
-    listensToNextLevel: number;
-    /** The next mastery level name, or null if already mastered */
-    nextLevel: MasteryLevel | null;
-}
-
-/**
- * Determine mastery level name from listen count
- */
-function getMasteryLevelFromCount(listenCount: number): MasteryLevel {
-    if (listenCount >= MASTERY_THRESHOLDS.MASTERED) {
-        return 'mastered';
-    } else if (listenCount >= MASTERY_THRESHOLDS.FAMILIAR) {
-        return 'familiar';
-    } else if (listenCount >= MASTERY_THRESHOLDS.BASIC) {
-        return 'basic';
-    }
-    return 'none';
-}
-
-/**
- * Calculate progress percentage toward the next mastery level
- */
-function calculateProgressPercent(listenCount: number): number {
-    if (listenCount >= MASTERY_THRESHOLDS.MASTERED) {
-        return 100; // Already mastered
-    }
-
-    let currentThreshold: number;
-    let nextThreshold: number;
-
-    if (listenCount >= MASTERY_THRESHOLDS.FAMILIAR) {
-        // Progress from FAMILIAR (5) to MASTERED (10)
-        currentThreshold = MASTERY_THRESHOLDS.FAMILIAR;
-        nextThreshold = MASTERY_THRESHOLDS.MASTERED;
-    } else if (listenCount >= MASTERY_THRESHOLDS.BASIC) {
-        // Progress from BASIC (1) to FAMILIAR (5)
-        currentThreshold = MASTERY_THRESHOLDS.BASIC;
-        nextThreshold = MASTERY_THRESHOLDS.FAMILIAR;
-    } else {
-        // Progress from NONE (0) to BASIC (1)
-        currentThreshold = MASTERY_THRESHOLDS.NONE;
-        nextThreshold = MASTERY_THRESHOLDS.BASIC;
-    }
-
-    const rangeSize = nextThreshold - currentThreshold;
-    const progressInRange = listenCount - currentThreshold;
-    return Math.min(100, Math.round((progressInRange / rangeSize) * 100));
-}
-
-/**
- * Get the next mastery level name
- */
-function getNextLevel(currentLevel: MasteryLevel): MasteryLevel | null {
-    switch (currentLevel) {
-        case 'none':
-            return 'basic';
-        case 'basic':
-            return 'familiar';
-        case 'familiar':
-            return 'mastered';
-        case 'mastered':
-        default:
-            return null; // Already at max level
-    }
+    /** Whether character can prestige (mastered + not at max) */
+    canPrestige: boolean;
+    /** Roman numeral for prestige level */
+    prestigeRoman: string;
+    /** Whether at max prestige level */
+    isMaxPrestige: boolean;
 }
 
 /**
  * Build a map of track UUID to listen count from session history.
- * This is extracted as a pure function for testability and performance.
  */
 function buildListenCountMap(
     sessions: Array<{ track_uuid: string }>
@@ -112,41 +46,59 @@ function buildListenCountMap(
 }
 
 /**
- * Build complete mastery info from a listen count.
- * This is a pure function for memoization purposes.
+ * Build a map of track UUID to total XP from session history.
  */
-function buildMasteryInfo(listenCount: number): MasteryInfo {
-    const level = getMasteryLevelFromCount(listenCount);
-    const isMastered = listenCount >= MASTERY_THRESHOLDS.MASTERED;
-    const progressPercent = calculateProgressPercent(listenCount);
-    const nextLevel = getNextLevel(level);
-
-    // Calculate listens needed to reach next level
-    let listensToNextLevel = 0;
-    if (nextLevel === 'basic') {
-        listensToNextLevel = MASTERY_THRESHOLDS.BASIC - listenCount;
-    } else if (nextLevel === 'familiar') {
-        listensToNextLevel = MASTERY_THRESHOLDS.FAMILIAR - listenCount;
-    } else if (nextLevel === 'mastered') {
-        listensToNextLevel = MASTERY_THRESHOLDS.MASTERED - listenCount;
+function buildXPMap(
+    sessions: Array<{ track_uuid: string; total_xp_earned: number }>
+): Map<string, number> {
+    const xpMap = new Map<string, number>();
+    for (const session of sessions) {
+        const currentXP = xpMap.get(session.track_uuid) ?? 0;
+        xpMap.set(session.track_uuid, currentXP + (session.total_xp_earned || 0));
     }
+    return xpMap;
+}
+
+/**
+ * Build mastery info.
+ * Uses dual requirements (plays AND XP) for mastery determination.
+ */
+function buildMasteryInfo(
+    listenCount: number,
+    totalXP: number,
+    prestigeLevel: PrestigeLevel
+): MasteryInfo {
+    const playsThreshold = PrestigeSystem.getPlaysThreshold(prestigeLevel);
+    const xpThreshold = PrestigeSystem.getXPThreshold(prestigeLevel);
+    const isMastered = PrestigeSystem.isMastered(listenCount, totalXP, prestigeLevel);
+    const canPrestige = PrestigeSystem.canPrestige(prestigeLevel, listenCount, totalXP);
+    const isMaxPrestige = prestigeLevel >= 10;
+    const prestigeRoman = PrestigeSystem.toRomanNumeral(prestigeLevel);
+
+    // Calculate progress (0-1) toward each threshold
+    const playsProgress = Math.min(1, listenCount / playsThreshold);
+    const xpProgress = Math.min(1, totalXP / xpThreshold);
 
     return {
-        level,
         listenCount,
+        prestigeLevel,
+        totalXP,
+        playsThreshold,
+        xpThreshold,
+        playsProgress,
+        xpProgress,
         isMastered,
-        progressPercent,
-        listensToNextLevel,
-        nextLevel
+        canPrestige,
+        prestigeRoman,
+        isMaxPrestige
     };
 }
 
 /**
  * React hook for accessing track mastery information.
  *
- * Provides mastery level calculations based on listen counts from the
- * session store. This hook uses the session history to determine how
- * many times a track has been listened to.
+ * Provides mastery level calculations based on dual requirements (plays AND XP)
+ * from the session store. True mastery requires meeting BOTH thresholds.
  *
  * Performance optimizations:
  * - Memoized listen count map for O(1) lookups instead of O(n) filtering
@@ -155,25 +107,21 @@ function buildMasteryInfo(listenCount: number): MasteryInfo {
  *
  * @example
  * ```tsx
- * const { getMasteryInfo, getTrackListenCount, getTrackMasteryLevel } = useMastery();
+ * const { getMasteryInfo, getTrackListenCount } = useMastery();
  *
- * const masteryInfo = getMasteryInfo('track-uuid-123');
- * console.log(`Level: ${masteryInfo.level}, Progress: ${masteryInfo.progressPercent}%`);
+ * // Get mastery info for a character with prestige level 2
+ * const masteryInfo = getMasteryInfo('track-uuid-123', 2);
+ * console.log(`Plays: ${masteryInfo.listenCount}, Mastered: ${masteryInfo.isMastered}`);
+ * if (masteryInfo.canPrestige) {
+ *   console.log(`Can prestige! Roman numeral: ${masteryInfo.prestigeRoman}`);
+ * }
  * ```
- *
- * @returns {Object} Hook return object
- * @returns {Function} getMasteryInfo - Get complete mastery info for a track
- * @returns {Function} getTrackListenCount - Get listen count for a track
- * @returns {Function} getTrackMasteryLevel - Get mastery level name from listen count
- * @returns {Function} isTrackMastered - Check if a track is mastered (10+ listens)
  */
 export const useMastery = () => {
     const sessionHistory = useSessionStore((state) => state.sessionHistory);
 
     /**
      * Memoized map of track UUID -> listen count.
-     * Rebuilt only when session history reference changes.
-     * Provides O(1) lookup instead of O(n) filter for each call.
      */
     const listenCountMap = useMemo(
         () => buildListenCountMap(sessionHistory),
@@ -181,77 +129,108 @@ export const useMastery = () => {
     );
 
     /**
-     * Cache for mastery info to avoid recalculating for the same track.
-     * Uses a ref to persist across renders without triggering re-renders.
+     * Memoized map of track UUID -> total XP.
+     */
+    const xpMap = useMemo(
+        () => buildXPMap(sessionHistory),
+        [sessionHistory]
+    );
+
+    /**
+     * Cache for mastery info (keyed by trackId + prestigeLevel).
      */
     const masteryInfoCacheRef = useRef<Map<string, MasteryInfo>>(new Map());
     const prevListenCountMapRef = useRef<Map<string, number> | null>(null);
+    const prevXPMapRef = useRef<Map<string, number> | null>(null);
 
     /**
-     * Clear cache when the listen count map changes (new sessions added).
-     * We compare by reference since the map is recreated when sessionHistory changes.
+     * Clear cache when maps change.
      */
-    if (listenCountMap !== prevListenCountMapRef.current) {
+    if (listenCountMap !== prevListenCountMapRef.current || xpMap !== prevXPMapRef.current) {
         masteryInfoCacheRef.current.clear();
         prevListenCountMapRef.current = listenCountMap;
+        prevXPMapRef.current = xpMap;
     }
 
     /**
      * Get the number of times a track has been listened to.
-     * Uses the memoized map for O(1) lookup.
      */
     const getTrackListenCount = useCallback((trackId: string): number => {
         return listenCountMap.get(trackId) ?? 0;
     }, [listenCountMap]);
 
     /**
-     * Get mastery level name from a listen count.
-     * This is a pure function, wrapped in useCallback for stable reference.
+     * Get total XP earned for a track.
      */
-    const getTrackMasteryLevel = useCallback((listenCount: number): MasteryLevel => {
-        return getMasteryLevelFromCount(listenCount);
-    }, []);
+    const getTrackXP = useCallback((trackId: string): number => {
+        return xpMap.get(trackId) ?? 0;
+    }, [xpMap]);
 
     /**
-     * Check if a track is mastered (10+ listens by default).
-     * Uses the memoized listen count map for O(1) lookup.
+     * Check if a track is mastered (dual requirements: plays AND XP).
      */
     const isTrackMastered = useCallback(
-        (trackId: string, threshold: number = MASTERY_THRESHOLDS.MASTERED): boolean => {
+        (trackId: string, prestigeLevel: PrestigeLevel = 0): boolean => {
             const listenCount = listenCountMap.get(trackId) ?? 0;
-            return listenCount >= threshold;
+            const totalXP = xpMap.get(trackId) ?? 0;
+            return PrestigeSystem.isMastered(listenCount, totalXP, prestigeLevel);
         },
-        [listenCountMap]
+        [listenCountMap, xpMap]
     );
 
     /**
      * Get complete mastery information for a track.
-     * Uses caching to avoid recalculating mastery info for the same track.
+     * Uses dual requirements (plays AND XP) for mastery determination.
+     *
+     * @param trackId - The track UUID
+     * @param prestigeLevel - Current prestige level (0-10), defaults to 0
+     * @returns MasteryInfo with complete mastery and prestige data
      */
-    const getMasteryInfo = useCallback((trackId: string): MasteryInfo => {
-        // Check cache first
-        const cached = masteryInfoCacheRef.current.get(trackId);
-        if (cached) {
-            return cached;
-        }
+    const getMasteryInfo = useCallback(
+        (trackId: string, prestigeLevel: PrestigeLevel = 0): MasteryInfo => {
+            const cacheKey = `${trackId}-${prestigeLevel}`;
 
-        // Calculate and cache
-        const listenCount = listenCountMap.get(trackId) ?? 0;
-        const info = buildMasteryInfo(listenCount);
-        masteryInfoCacheRef.current.set(trackId, info);
+            const cached = masteryInfoCacheRef.current.get(cacheKey);
+            if (cached) {
+                return cached;
+            }
 
-        return info;
-    }, [listenCountMap]);
+            const listenCount = listenCountMap.get(trackId) ?? 0;
+            const totalXP = xpMap.get(trackId) ?? 0;
+            const info = buildMasteryInfo(listenCount, totalXP, prestigeLevel);
+            masteryInfoCacheRef.current.set(cacheKey, info);
 
-    // Memoize the return object to prevent unnecessary re-renders
+            return info;
+        },
+        [listenCountMap, xpMap]
+    );
+
+    /**
+     * Get engine's PrestigeInfo for a track.
+     */
+    const getEnginePrestigeInfo = useCallback(
+        (trackId: string, prestigeLevel: PrestigeLevel = 0): PrestigeInfo => {
+            const listenCount = listenCountMap.get(trackId) ?? 0;
+            const totalXP = xpMap.get(trackId) ?? 0;
+            return PrestigeSystem.getPrestigeInfo(prestigeLevel, listenCount, totalXP);
+        },
+        [listenCountMap, xpMap]
+    );
+
     return useMemo(
         () => ({
             getMasteryInfo,
             getTrackListenCount,
-            getTrackMasteryLevel,
+            getTrackXP,
             isTrackMastered,
-            MASTERY_THRESHOLDS
+            getEnginePrestigeInfo
         }),
-        [getMasteryInfo, getTrackListenCount, getTrackMasteryLevel, isTrackMastered]
+        [
+            getMasteryInfo,
+            getTrackListenCount,
+            getTrackXP,
+            isTrackMastered,
+            getEnginePrestigeInfo
+        ]
     );
 };

@@ -41,7 +41,25 @@ export type {
     ListeningSession,
     ExperienceSystem,
     LevelUpBenefits,
-    CharacterUpdateResult
+    CharacterUpdateResult,
+
+    // Prestige System
+    PrestigeLevel,
+    PrestigeInfo,
+    PrestigeResult,
+    CustomThresholds
+} from 'playlist-data-engine';
+
+// Re-export prestige system class, constants and helper functions
+export {
+    PrestigeSystem,
+    PRESTIGE_ROMAN_NUMERALS,
+    MAX_PRESTIGE_LEVEL,
+    BASE_PLAYS_THRESHOLD,
+    BASE_XP_THRESHOLD,
+    PRESTIGE_SCALING_FACTOR,
+    isPrestigeLevel,
+    toPrestigeLevel
 } from 'playlist-data-engine';
 
 import type { ListeningSession } from 'playlist-data-engine';

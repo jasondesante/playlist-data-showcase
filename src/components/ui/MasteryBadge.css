@@ -317,3 +317,382 @@
     border: 2px solid currentColor;
   }
 }
+
+/* ============================================
+   PRESTIGE LEVEL STYLES
+   ============================================ */
+
+/**
+ * Prestige I-III: Low Prestige - Purple Glow
+ * Elegant purple tones with subtle glow effect
+ */
+.mastery-badge-low-prestige {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(270 60% 60% / 0.15) 100%
+  );
+  color: hsl(270 70% 65%); /* Purple */
+  box-shadow: 0 0 12px 2px hsl(270 70% 60% / 0.5),
+              0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(270 70% 80% / 0.4);
+  animation: masteryBadgePurpleGlow 2.5s ease-in-out infinite;
+}
+
+.mastery-badge-low-prestige:hover {
+  box-shadow: 0 0 18px 4px hsl(270 70% 60% / 0.7),
+              0 2px 6px rgb(0 0 0 / 0.4),
+              inset 0 1px 0 hsl(270 70% 80% / 0.4);
+}
+
+.mastery-badge-low-prestige .mastery-badge-crown {
+  filter: drop-shadow(0 0 3px hsl(270 70% 60% / 0.7));
+}
+
+/**
+ * Prestige IV-VI: Mid Prestige - Enhanced Purple Pulse
+ * Deeper purple with more pronounced pulsing animation
+ */
+.mastery-badge-mid-prestige {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(280 70% 55% / 0.2) 50%,
+    hsl(260 65% 50% / 0.15) 100%
+  );
+  color: hsl(280 75% 70%); /* Deeper purple */
+  box-shadow: 0 0 16px 3px hsl(280 70% 55% / 0.6),
+              0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(280 70% 85% / 0.5);
+  animation: masteryBadgePurplePulse 1.8s ease-in-out infinite;
+}
+
+.mastery-badge-mid-prestige:hover {
+  box-shadow: 0 0 24px 6px hsl(280 70% 55% / 0.8),
+              0 2px 6px rgb(0 0 0 / 0.4),
+              inset 0 1px 0 hsl(280 70% 85% / 0.5);
+}
+
+.mastery-badge-mid-prestige .mastery-badge-crown {
+  filter: drop-shadow(0 0 4px hsl(280 70% 60% / 0.8));
+}
+
+/**
+ * Prestige VII-IX: High Prestige - Pink/Purple Gradient
+ * Vibrant gradient with animated shimmer effect
+ */
+.mastery-badge-high-prestige {
+  background: linear-gradient(
+    135deg,
+    hsl(280 70% 55% / 0.2) 0%,
+    hsl(320 70% 60% / 0.25) 50%,
+    hsl(280 65% 50% / 0.2) 100%
+  );
+  color: hsl(310 80% 75%); /* Pink-ish purple */
+  box-shadow: 0 0 20px 4px hsl(300 70% 60% / 0.6),
+              0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(310 70% 90% / 0.5);
+  animation: masteryBadgeShimmer 3s ease-in-out infinite;
+}
+
+.mastery-badge-high-prestige:hover {
+  box-shadow: 0 0 28px 8px hsl(300 70% 60% / 0.8),
+              0 2px 6px rgb(0 0 0 / 0.4),
+              inset 0 1px 0 hsl(310 70% 90% / 0.5);
+}
+
+.mastery-badge-high-prestige .mastery-badge-crown {
+  filter: drop-shadow(0 0 5px hsl(310 80% 70% / 0.9));
+}
+
+/**
+ * Prestige X: Max Prestige - Rainbow Legendary Effect
+ * Full rainbow animation with intense glow - the ultimate badge
+ */
+.mastery-badge-max-prestige {
+  background: linear-gradient(
+    135deg,
+    hsl(0 80% 60% / 0.2) 0%,
+    hsl(60 80% 60% / 0.2) 20%,
+    hsl(120 80% 60% / 0.2) 40%,
+    hsl(180 80% 60% / 0.2) 60%,
+    hsl(240 80% 60% / 0.2) 80%,
+    hsl(300 80% 60% / 0.2) 100%
+  );
+  background-size: 300% 300%;
+  color: hsl(45 100% 70%); /* Golden tint */
+  box-shadow: 0 0 24px 5px hsl(0 80% 60% / 0.5),
+              0 1px 3px rgb(0 0 0 / 0.3),
+              inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  animation: masteryBadgeRainbow 4s linear infinite, masteryBadgeRainbowGlow 2s ease-in-out infinite;
+}
+
+.mastery-badge-max-prestige:hover {
+  box-shadow: 0 0 32px 10px hsl(0 80% 60% / 0.7),
+              0 2px 6px rgb(0 0 0 / 0.4),
+              inset 0 1px 0 hsl(0 0% 100% / 0.5);
+}
+
+.mastery-badge-max-prestige .mastery-badge-crown {
+  filter: drop-shadow(0 0 6px hsl(45 100% 70% / 1));
+  animation: masteryBadgeCrownShine 2s ease-in-out infinite;
+}
+
+/* ============================================
+   PRESTIGE ANIMATIONS
+   ============================================ */
+
+@keyframes masteryBadgePurpleGlow {
+  0%, 100% {
+    box-shadow: 0 0 12px 2px hsl(270 70% 60% / 0.5),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(270 70% 80% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 18px 4px hsl(270 70% 60% / 0.7),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(270 70% 80% / 0.4);
+  }
+}
+
+@keyframes masteryBadgePurplePulse {
+  0%, 100% {
+    box-shadow: 0 0 16px 3px hsl(280 70% 55% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(280 70% 85% / 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 24px 6px hsl(280 70% 55% / 0.8),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(280 70% 85% / 0.5);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes masteryBadgeShimmer {
+  0%, 100% {
+    box-shadow: 0 0 20px 4px hsl(280 70% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(310 70% 90% / 0.5);
+  }
+  33% {
+    box-shadow: 0 0 24px 5px hsl(300 70% 60% / 0.7),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(320 70% 90% / 0.5);
+  }
+  66% {
+    box-shadow: 0 0 24px 5px hsl(320 70% 60% / 0.7),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(280 70% 90% / 0.5);
+  }
+}
+
+@keyframes masteryBadgeRainbow {
+  0% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 24px 5px hsl(0 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  16.67% {
+    box-shadow: 0 0 24px 5px hsl(60 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  33.33% {
+    box-shadow: 0 0 24px 5px hsl(120 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 24px 5px hsl(180 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  66.67% {
+    box-shadow: 0 0 24px 5px hsl(240 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  83.33% {
+    box-shadow: 0 0 24px 5px hsl(300 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 24px 5px hsl(360 80% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+}
+
+@keyframes masteryBadgeRainbowGlow {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes masteryBadgeCrownShine {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px hsl(45 100% 70% / 1));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px hsl(60 100% 80% / 1));
+  }
+}
+
+/* ============================================
+   PRESTIGE ROMAN NUMERAL DISPLAY
+   ============================================ */
+
+.mastery-badge-prestige {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 0.55em;
+  font-weight: 700;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: var(--radius-sm);
+  background: inherit;
+  box-shadow: inherit;
+}
+
+.mastery-badge-low-prestige .mastery-badge-prestige {
+  background: hsl(270 70% 50% / 0.9);
+  color: hsl(0 0% 100%);
+}
+
+.mastery-badge-mid-prestige .mastery-badge-prestige {
+  background: hsl(280 70% 45% / 0.9);
+  color: hsl(0 0% 100%);
+}
+
+.mastery-badge-high-prestige .mastery-badge-prestige {
+  background: linear-gradient(135deg, hsl(280 70% 50% / 0.9), hsl(320 70% 50% / 0.9));
+  color: hsl(0 0% 100%);
+}
+
+.mastery-badge-max-prestige .mastery-badge-prestige {
+  background: linear-gradient(135deg, hsl(45 100% 50% / 0.9), hsl(60 100% 50% / 0.9));
+  color: hsl(0 0% 10%);
+  animation: masteryBadgeRomanRainbow 4s linear infinite;
+}
+
+@keyframes masteryBadgeRomanRainbow {
+  0% { background: linear-gradient(135deg, hsl(0 80% 50% / 0.9), hsl(30 80% 50% / 0.9)); }
+  16.67% { background: linear-gradient(135deg, hsl(60 80% 50% / 0.9), hsl(90 80% 50% / 0.9)); }
+  33.33% { background: linear-gradient(135deg, hsl(120 80% 50% / 0.9), hsl(150 80% 50% / 0.9)); }
+  50% { background: linear-gradient(135deg, hsl(180 80% 50% / 0.9), hsl(210 80% 50% / 0.9)); }
+  66.67% { background: linear-gradient(135deg, hsl(240 80% 50% / 0.9), hsl(270 80% 50% / 0.9)); }
+  83.33% { background: linear-gradient(135deg, hsl(300 80% 50% / 0.9), hsl(330 80% 50% / 0.9)); }
+  100% { background: linear-gradient(135deg, hsl(360 80% 50% / 0.9), hsl(30 80% 50% / 0.9)); }
+}
+
+/* ============================================
+   ACCESSIBILITY: REDUCED MOTION FOR PRESTIGE
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .mastery-badge-low-prestige,
+  .mastery-badge-mid-prestige,
+  .mastery-badge-high-prestige,
+  .mastery-badge-max-prestige {
+    animation: none;
+  }
+
+  .mastery-badge-mid-prestige {
+    transform: none;
+  }
+
+  .mastery-badge-low-prestige {
+    box-shadow: 0 0 12px 2px hsl(270 70% 60% / 0.5),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(270 70% 80% / 0.4);
+  }
+
+  .mastery-badge-mid-prestige {
+    box-shadow: 0 0 16px 3px hsl(280 70% 55% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(280 70% 85% / 0.5);
+  }
+
+  .mastery-badge-high-prestige {
+    box-shadow: 0 0 20px 4px hsl(300 70% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(310 70% 90% / 0.5);
+  }
+
+  .mastery-badge-max-prestige {
+    background: linear-gradient(
+      135deg,
+      hsl(45 100% 60% / 0.3) 0%,
+      hsl(60 100% 60% / 0.3) 50%,
+      hsl(45 100% 60% / 0.3) 100%
+    );
+    box-shadow: 0 0 24px 5px hsl(45 100% 60% / 0.6),
+                0 1px 3px rgb(0 0 0 / 0.3),
+                inset 0 1px 0 hsl(0 0% 100% / 0.5);
+  }
+
+  .mastery-badge-crown {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE FOR PRESTIGE
+   ============================================ */
+
+@media (forced-colors: active) {
+  .mastery-badge-low-prestige,
+  .mastery-badge-mid-prestige,
+  .mastery-badge-high-prestige,
+  .mastery-badge-max-prestige {
+    color: Highlight;
+    border-color: Highlight;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .mastery-badge-crown {
+    filter: none;
+  }
+
+  .mastery-badge-prestige {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CurrentColor;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .mastery-badge-low-prestige {
+    color: hsl(270 80% 75%); /* Brighter purple */
+  }
+
+  .mastery-badge-mid-prestige {
+    color: hsl(280 80% 78%);
+  }
+
+  .mastery-badge-high-prestige {
+    color: hsl(310 85% 80%);
+  }
+
+  .mastery-badge-max-prestige {
+    color: hsl(45 100% 80%);
+  }
+
+  .mastery-badge-low-prestige,
+  .mastery-badge-mid-prestige,
+  .mastery-badge-high-prestige,
+  .mastery-badge-max-prestige {
+    border: 2px solid currentColor;
+  }
+}

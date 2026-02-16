@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
+import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, GamingContext, BASE_PLAYS_THRESHOLD } from 'playlist-data-engine';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
-import { MASTERY_THRESHOLDS } from './useMastery';
 
 interface SessionStartOptions {
     environmental_context?: EnvironmentalContext;
@@ -132,10 +131,12 @@ export const useSessionTracker = () => {
 
     /**
      * Check if a track is mastered (has reached the mastery threshold)
+     * Note: This is a simple listen-count check. For prestige-aware mastery,
+     * use useMastery().isTrackMastered() instead.
      * @param trackId - The track UUID to check
-     * @param threshold - Optional custom threshold (defaults to 10 listens)
+     * @param threshold - Optional custom threshold (defaults to base threshold)
      */
-    const isTrackMastered = useCallback((trackId: string, threshold: number = MASTERY_THRESHOLDS.MASTERED): boolean => {
+    const isTrackMastered = useCallback((trackId: string, threshold: number = BASE_PLAYS_THRESHOLD): boolean => {
         const listenCount = getTrackListenCount(trackId);
         return listenCount >= threshold;
     }, [getTrackListenCount]);

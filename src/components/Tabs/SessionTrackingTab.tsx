@@ -2,19 +2,20 @@ import { useState, useEffect, useMemo } from 'react';
 import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star, User, TrendingUp, Headphones } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { useSessionStore } from '../../store/sessionStore';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useSensorStore } from '../../store/sensorStore';
 import { useMastery } from '../../hooks/useMastery';
-import { useSessionStore } from '../../store/sessionStore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
 import { MasteryBadge } from '../ui/MasteryBadge';
 import { MasteryProgressBar } from '../ui/MasteryProgressBar';
+import { PrestigeButton } from '../ui/PrestigeButton';
 import { SessionHistoryPanel } from '../ui/SessionHistoryPanel';
 import type { ListeningSession, Ability } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
@@ -121,14 +122,14 @@ function TimerRing({ progress, size, strokeWidth, isActive, isCompact = false }:
 }
 
 export function SessionTrackingTab() {
-  const { selectedTrack } = usePlaylistStore();
+  const { selectedTrack, audioProfile } = usePlaylistStore();
   const { play, stop } = useAudioPlayerStore();
   const { startSession, endSession: hookEndSession, isActive, elapsedTime, sessionId } = useSessionTracker();
   const { calculateXP } = useXPCalculator();
-  const { getActiveCharacter } = useCharacterStore();
+  const { getActiveCharacter, getPrestigeInfo, canPrestige, prestigeCharacter } = useCharacterStore();
   const { applyPendingStatIncrease } = useCharacterUpdater();
-  const { getMasteryInfo } = useMastery();
-  const { sessionHistory } = useSessionStore();
+  const { getMasteryInfo, getTrackListenCount } = useMastery();
+  const { sessionHistory, clearTrackSessions, getTrackXPTotal } = useSessionStore();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [showStatModal, setShowStatModal] = useState(false);
 
@@ -137,11 +138,32 @@ export function SessionTrackingTab() {
 
   const { environmentalContext, gamingContext } = useSensorStore();
 
-  // Get mastery info for the selected track
+  // Get mastery info for the selected track (uses character's prestige level)
   const masteryInfo = useMemo(() => {
     if (!selectedTrack) return null;
-    return getMasteryInfo(selectedTrack.id);
-  }, [selectedTrack, getMasteryInfo]);
+    const prestigeLevel = activeCharacter?.prestige_level ?? 0;
+    return getMasteryInfo(selectedTrack.id, prestigeLevel);
+  }, [selectedTrack, getMasteryInfo, activeCharacter?.prestige_level]);
+
+  // Get prestige info for the active character (for PrestigeButton)
+  const prestigeInfo = useMemo(() => {
+    if (!activeCharacter) return null;
+    return getPrestigeInfo(
+      activeCharacter.seed,
+      (trackUuid) => getTrackListenCount(trackUuid),
+      (trackUuid) => getTrackXPTotal(trackUuid)
+    );
+  }, [activeCharacter, getPrestigeInfo, getTrackListenCount, getTrackXPTotal]);
+
+  // Check if character can prestige
+  const canPrestigeState = useMemo(() => {
+    if (!activeCharacter) return false;
+    return canPrestige(
+      activeCharacter.seed,
+      (trackUuid) => getTrackListenCount(trackUuid),
+      (trackUuid) => getTrackXPTotal(trackUuid)
+    );
+  }, [activeCharacter, canPrestige, getTrackListenCount, getTrackXPTotal]);
 
   // Calculate real-time XP based on elapsed time
   // Update whenever elapsedTime changes (every second when session is active)
@@ -274,6 +296,38 @@ export function SessionTrackingTab() {
 
     // Close the modal
     setShowStatModal(false);
+  };
+
+  // Handler for prestiging the character
+  const handlePrestige = () => {
+    if (!activeCharacter || !selectedTrack) return;
+
+    // Use audioProfile from store, or create a default one
+    const profile = audioProfile || {
+      bass_dominance: 0.5,
+      mid_dominance: 0.5,
+      treble_dominance: 0.5,
+      average_amplitude: 0.5,
+      analysis_metadata: {
+        duration_analyzed: 0,
+        full_buffer_analyzed: true,
+        sample_positions: [0],
+        analyzed_at: new Date().toISOString()
+      }
+    };
+
+    const result = prestigeCharacter(
+      activeCharacter.seed,
+      profile,
+      selectedTrack,
+      clearTrackSessions
+    );
+
+    if (result.success) {
+      showToast(`👑 Prestiged to level ${result.newPrestigeLevel > 0 ? ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][result.newPrestigeLevel - 1] : ''}!`, 'success');
+    } else {
+      showToast(`❌ ${result.message}`, 'error');
+    }
   };
 
   // Calculate progress percentage
@@ -429,9 +483,15 @@ export function SessionTrackingTab() {
                       {isActive ? 'Active' : 'Inactive'}
                     </span>
                     {/* Mastery Badge Overlay */}
-                    {masteryInfo && masteryInfo.level !== 'none' && (
+                    {masteryInfo && masteryInfo.isMastered && (
                       <div className="session-mastery-badge-overlay">
-                        <MasteryBadge level={masteryInfo.level} size="sm" />
+                        <MasteryBadge
+                          isMastered={masteryInfo.isMastered}
+                          prestigeLevel={masteryInfo.prestigeLevel}
+                          prestigeRoman={masteryInfo.prestigeRoman}
+                          isMaxPrestige={masteryInfo.isMaxPrestige}
+                          size="sm"
+                        />
                       </div>
                     )}
                   </div>
@@ -452,8 +512,14 @@ export function SessionTrackingTab() {
                       <span className="session-mastery-label">Mastery</span>
                     </div>
                     <MasteryProgressBar
-                      level={masteryInfo.level}
                       listenCount={masteryInfo.listenCount}
+                      totalXP={masteryInfo.totalXP}
+                      playsThreshold={masteryInfo.playsThreshold}
+                      xpThreshold={masteryInfo.xpThreshold}
+                      isMastered={masteryInfo.isMastered}
+                      prestigeLevel={masteryInfo.prestigeLevel}
+                      prestigeRoman={masteryInfo.prestigeRoman}
+                      isMaxPrestige={masteryInfo.isMaxPrestige}
                       compact={true}
                       className="session-mastery-progress"
                     />
@@ -463,6 +529,16 @@ export function SessionTrackingTab() {
                         Listened {masteryInfo.listenCount} time{masteryInfo.listenCount !== 1 ? 's' : ''}
                       </span>
                     </div>
+
+                    {/* Prestige Button - shows when character can prestige */}
+                    {canPrestigeState && prestigeInfo && activeCharacter && (
+                      <PrestigeButton
+                        canPrestige={canPrestigeState}
+                        prestigeInfo={prestigeInfo}
+                        character={activeCharacter}
+                        onPrestige={handlePrestige}
+                      />
+                    )}
                   </div>
                 )}
 

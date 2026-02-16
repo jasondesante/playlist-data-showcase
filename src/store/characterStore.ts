@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { CharacterSheet } from '@/types';
+import { CharacterSheet, AudioProfile, PlaylistTrack } from '@/types';
+import type { PrestigeLevel, PrestigeInfo, PrestigeResult } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 import type { StatIncreaseStrategyType } from '@/components/ui/StatStrategySelector';
+import { CharacterGenerator, PrestigeSystem } from 'playlist-data-engine';
 
 // Internal state for track restoration retry logic (module-scoped, not persisted)
 let restorationState: RestorationState = {
@@ -228,6 +230,45 @@ interface CharacterState {
     isHeroSelected: (seed: string) => boolean;
     /** Get count of selected heroes */
     getSelectedHeroCount: () => number;
+    /**
+     * Prestige a character after mastering a track.
+     * Resets character to level 1 while preserving equipment and incrementing prestige level.
+     * @param characterId - The seed of the character to prestige
+     * @param audioProfile - Audio profile for character regeneration
+     * @param track - Track metadata for character regeneration
+     * @param clearTrackSessions - Callback to clear track sessions (from sessionStore)
+     * @returns PrestigeResult indicating success/failure
+     */
+    prestigeCharacter: (
+        characterId: string,
+        audioProfile: AudioProfile,
+        track: PlaylistTrack,
+        clearTrackSessions: (trackUuid: string) => number
+    ) => PrestigeResult;
+    /**
+     * Check if a character can prestige.
+     * @param characterId - The seed of the character to check
+     * @param getTrackListenCount - Callback to get track listen count
+     * @param getTrackXPTotal - Callback to get track XP total
+     * @returns True if the character can prestige
+     */
+    canPrestige: (
+        characterId: string,
+        getTrackListenCount: (trackUuid: string) => number,
+        getTrackXPTotal: (trackUuid: string) => number
+    ) => boolean;
+    /**
+     * Get prestige info for a character.
+     * @param characterId - The seed of the character
+     * @param getTrackListenCount - Callback to get track listen count
+     * @param getTrackXPTotal - Callback to get track XP total
+     * @returns PrestigeInfo object with current progress
+     */
+    getPrestigeInfo: (
+        characterId: string,
+        getTrackListenCount: (trackUuid: string) => number,
+        getTrackXPTotal: (trackUuid: string) => number
+    ) => PrestigeInfo | null;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -611,6 +652,157 @@ export const useCharacterStore = create<CharacterState>()(
              */
             getSelectedHeroCount: () => {
                 return get().selectedHeroSeeds.length;
+            },
+
+            /**
+             * Prestige a character after mastering a track.
+             * Resets character to level 1 while preserving equipment and incrementing prestige level.
+             *
+             * @param characterId - The seed of the character to prestige
+             * @param audioProfile - Audio profile for character regeneration
+             * @param track - Track metadata for character regeneration
+             * @param clearTrackSessions - Callback to clear track sessions (from sessionStore)
+             * @returns PrestigeResult indicating success/failure
+             *
+             * @example
+             * ```ts
+             * const result = prestigeCharacter(
+             *   character.seed,
+             *   audioProfile,
+             *   track,
+             *   useSessionStore.getState().clearTrackSessions
+             * );
+             * if (result.success) {
+             *   console.log(`Prestiged to level ${PrestigeSystem.toRomanNumeral(result.newPrestigeLevel)}!`);
+             * }
+             * ```
+             */
+            prestigeCharacter: (
+                characterId: string,
+                audioProfile: AudioProfile,
+                track: PlaylistTrack,
+                clearTrackSessions: (trackUuid: string) => number
+            ): PrestigeResult => {
+                const character = get().characters.find((c) => c.seed === characterId);
+                if (!character) {
+                    return PrestigeSystem.createFailureResult(
+                        'Character not found',
+                        0
+                    );
+                }
+
+                const currentPrestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
+
+                // Check if already at max prestige
+                if (currentPrestigeLevel >= 10) {
+                    return PrestigeSystem.createFailureResult(
+                        'Already at maximum prestige level',
+                        currentPrestigeLevel
+                    );
+                }
+
+                // Get next prestige level
+                const newPrestigeLevel = PrestigeSystem.getNextPrestigeLevel(currentPrestigeLevel);
+                if (newPrestigeLevel === null) {
+                    return PrestigeSystem.createFailureResult(
+                        'Cannot prestige beyond maximum level',
+                        currentPrestigeLevel
+                    );
+                }
+
+                // Preserve equipment
+                const preservedEquipment = character.equipment ? {
+                    weapons: [...character.equipment.weapons],
+                    armor: [...character.equipment.armor],
+                    items: [...character.equipment.items],
+                    totalWeight: character.equipment.totalWeight,
+                    equippedWeight: character.equipment.equippedWeight,
+                } : null;
+
+                // Clear track sessions
+                clearTrackSessions(character.seed);
+
+                // Regenerate character using original seed
+                const regeneratedCharacter = CharacterGenerator.generate(
+                    character.seed,
+                    audioProfile,
+                    track,
+                    {
+                        level: 1,
+                        gameMode: character.gameMode,
+                        forceName: character.name, // Keep the same name
+                    }
+                );
+
+                // Restore equipment
+                if (preservedEquipment) {
+                    regeneratedCharacter.equipment = preservedEquipment;
+                }
+
+                // Set new prestige level
+                regeneratedCharacter.prestige_level = newPrestigeLevel;
+
+                // Update the store
+                set((state) => ({
+                    characters: state.characters.map((c) =>
+                        c.seed === characterId ? regeneratedCharacter : c
+                    )
+                }));
+
+                logger.info('Store', 'Character prestiged', {
+                    characterName: character.name,
+                    previousLevel: currentPrestigeLevel,
+                    newLevel: newPrestigeLevel,
+                    romanNumeral: PrestigeSystem.toRomanNumeral(newPrestigeLevel)
+                });
+
+                return PrestigeSystem.createSuccessResult(currentPrestigeLevel, newPrestigeLevel);
+            },
+
+            /**
+             * Check if a character can prestige.
+             *
+             * @param characterId - The seed of the character to check
+             * @param getTrackListenCount - Callback to get track listen count
+             * @param getTrackXPTotal - Callback to get track XP total
+             * @returns True if the character can prestige
+             */
+            canPrestige: (
+                characterId: string,
+                getTrackListenCount: (trackUuid: string) => number,
+                getTrackXPTotal: (trackUuid: string) => number
+            ): boolean => {
+                const character = get().characters.find((c) => c.seed === characterId);
+                if (!character) return false;
+
+                const prestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
+                const listenCount = getTrackListenCount(characterId);
+                const totalXP = getTrackXPTotal(characterId);
+
+                return PrestigeSystem.canPrestige(prestigeLevel, listenCount, totalXP);
+            },
+
+            /**
+             * Get prestige info for a character.
+             *
+             * @param characterId - The seed of the character
+             * @param getTrackListenCount - Callback to get track listen count
+             * @param getTrackXPTotal - Callback to get track XP total
+             * @returns PrestigeInfo object with current progress, or null if character not found
+             */
+            getPrestigeInfo: (
+                characterId: string,
+                getTrackListenCount: (trackUuid: string) => number,
+                getTrackXPTotal: (trackUuid: string) => number
+            ): PrestigeInfo | null => {
+                const character = get().characters.find((c) => c.seed === characterId);
+                if (!character) return null;
+
+                const prestigeLevel: PrestigeLevel = character.prestige_level ?? 0;
+                const listenCount = getTrackListenCount(characterId);
+                const totalXP = getTrackXPTotal(characterId);
+
+                return PrestigeSystem.getPrestigeInfo(prestigeLevel, listenCount, totalXP);
             }
         }),
         {

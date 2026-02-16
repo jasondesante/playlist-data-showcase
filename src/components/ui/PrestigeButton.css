@@ -1,0 +1,499 @@
+/* ============================================
+   PRESTIGE BUTTON COMPONENT
+   ============================================ */
+
+/**
+ * Prestige Button - Action button for character prestige
+ *
+ * Features:
+ * - Shows current prestige level and next level
+ * - Purple/gold gradient for prestige theme
+ * - Animated glow effect
+ * - Opens confirmation modal on click
+ */
+
+/* ============================================
+   PRESTIGE BUTTON CONTAINER
+   ============================================ */
+
+.prestige-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--surface-2)) 0%,
+    hsl(280 50% 30% / 0.2) 50%,
+    hsl(var(--surface-2)) 100%
+  );
+  border: 1px solid hsl(280 50% 50% / 0.3);
+  border-radius: var(--radius-lg);
+  margin-top: 12px;
+  animation: prestigeButtonGlow 3s ease-in-out infinite;
+}
+
+@keyframes prestigeButtonGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px hsl(280 50% 50% / 0.3),
+                0 2px 8px rgb(0 0 0 / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px hsl(280 50% 50% / 0.5),
+                0 2px 8px rgb(0 0 0 / 0.2);
+  }
+}
+
+.prestige-button-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prestige-button-icon {
+  color: hsl(280 70% 70%);
+  filter: drop-shadow(0 0 4px hsl(280 70% 60% / 0.6));
+}
+
+.prestige-button-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prestige-button-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.prestige-button-subtitle {
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+}
+
+.prestige-button-action {
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 50%) 0%,
+    hsl(300 60% 50%) 100%
+  ) !important;
+  border-color: hsl(280 60% 60%) !important;
+}
+
+.prestige-button-action:hover {
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 55%) 0%,
+    hsl(300 60% 55%) 100%
+  ) !important;
+}
+
+/* ============================================
+   PRESTIGE CONFIRMATION MODAL
+   ============================================ */
+
+.prestige-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+  animation: prestigeModalFadeIn 200ms ease-out;
+}
+
+@keyframes prestigeModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.prestige-modal-container {
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  animation: prestigeModalSlideIn 200ms ease-out;
+}
+
+@keyframes prestigeModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
+.prestige-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: linear-gradient(
+    135deg,
+    hsl(280 40% 25% / 0.3) 0%,
+    hsl(var(--surface-2)) 100%
+  );
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.prestige-modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prestige-modal-header-icon {
+  color: hsl(280 70% 70%);
+  filter: drop-shadow(0 0 4px hsl(280 70% 60% / 0.6));
+}
+
+.prestige-modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.prestige-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.prestige-modal-close:hover {
+  background: hsl(var(--surface-3));
+  color: hsl(var(--foreground));
+}
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
+
+.prestige-modal-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Warning Banner */
+.prestige-modal-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: hsl(0 60% 40% / 0.15);
+  border: 1px solid hsl(0 60% 50% / 0.3);
+  border-radius: var(--radius-lg);
+}
+
+.prestige-modal-warning-icon {
+  color: hsl(0 70% 60%);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.prestige-modal-warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prestige-modal-warning-text strong {
+  color: hsl(0 70% 65%);
+  font-size: var(--font-size-sm);
+}
+
+.prestige-modal-warning-text p {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+}
+
+/* Sections */
+.prestige-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prestige-modal-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.prestige-modal-arrow {
+  color: hsl(280 60% 60%);
+}
+
+/* Changes Grid */
+.prestige-modal-changes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.prestige-modal-change-group {
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid hsl(var(--border));
+}
+
+.prestige-change-reset {
+  background: hsl(0 30% 30% / 0.1);
+  border-color: hsl(0 40% 40% / 0.3);
+}
+
+.prestige-change-keep {
+  background: hsl(140 30% 30% / 0.1);
+  border-color: hsl(140 40% 40% / 0.3);
+}
+
+.prestige-modal-change-title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px 0;
+}
+
+.prestige-change-reset .prestige-modal-change-title {
+  color: hsl(0 60% 65%);
+}
+
+.prestige-change-keep .prestige-modal-change-title {
+  color: hsl(140 50% 60%);
+}
+
+.prestige-modal-change-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prestige-modal-change-list li {
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prestige-modal-keep-item {
+  color: hsl(140 40% 65%) !important;
+}
+
+.prestige-modal-keep-item svg {
+  flex-shrink: 0;
+}
+
+/* Requirements */
+.prestige-modal-requirements {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.prestige-modal-requirement {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.prestige-modal-requirement-label {
+  font-size: var(--font-size-xs);
+  color: hsl(var(--muted-foreground));
+}
+
+.prestige-modal-requirement-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: hsl(280 60% 70%);
+}
+
+/* Rewards */
+.prestige-modal-rewards {
+  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    hsl(280 30% 30% / 0.1) 0%,
+    hsl(300 30% 30% / 0.1) 100%
+  );
+  border: 1px solid hsl(280 40% 40% / 0.2);
+  border-radius: var(--radius-lg);
+}
+
+.prestige-modal-reward-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: hsl(var(--muted-foreground));
+}
+
+.prestige-modal-badge-upgrade {
+  color: hsl(280 70% 70%);
+}
+
+/* ============================================
+   MODAL FOOTER
+   ============================================ */
+
+.prestige-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--surface-2));
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.prestige-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.prestige-modal-cancel {
+  background: hsl(var(--surface-3));
+  color: hsl(var(--muted-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.prestige-modal-cancel:hover {
+  background: hsl(var(--surface-4));
+  color: hsl(var(--foreground));
+}
+
+.prestige-modal-confirm {
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 50%) 0%,
+    hsl(300 60% 50%) 100%
+  );
+  color: hsl(0 0% 100%);
+  box-shadow: 0 2px 8px hsl(280 60% 40% / 0.4);
+}
+
+.prestige-modal-confirm:hover {
+  background: linear-gradient(
+    135deg,
+    hsl(280 60% 55%) 0%,
+    hsl(300 60% 55%) 100%
+  );
+  box-shadow: 0 4px 12px hsl(280 60% 40% / 0.5);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .prestige-button-container {
+    animation: none;
+  }
+
+  .prestige-modal-overlay {
+    animation: none;
+  }
+
+  .prestige-modal-container {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .prestige-button-container {
+    border: 2px solid CurrentColor;
+  }
+
+  .prestige-modal-confirm {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .prestige-modal-cancel {
+    border: 1px solid CurrentColor;
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+  .prestige-button-container {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .prestige-button-info {
+    flex-direction: column;
+  }
+
+  .prestige-modal-changes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prestige-modal-requirements {
+    grid-template-columns: 1fr;
+  }
+
+  .prestige-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .prestige-modal-btn {
+    width: 100%;
+  }
+}
