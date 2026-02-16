@@ -407,18 +407,18 @@ Document the new feature.
 
 ## Success Criteria
 
-- [ ] Config tab is accessible from XPCalculatorTab
-- [ ] All 13 config options are editable with sliders (including altitude)
-- [ ] Changes persist across page reloads
-- [ ] Estimated XP updates in real-time when config changes
-- [ ] Reset button restores all defaults
-- [ ] UI is consistent with existing XP Calculator design
-- [ ] Clear visual distinction between default and modified values
-- [ ] Works on mobile (responsive design)
-- [ ] `mergeProgressionConfig()` is called when config changes (engine integration)
-- [ ] Altitude bonus is marked as "app-specific" in UI
-- [ ] `baseXpRate` removed from appStore and Settings tab
-- [ ] No references to old `settings.baseXpRate` remain
+- [x] Config tab is accessible from XPCalculatorTab
+- [x] All 13 config options are editable with sliders (including altitude)
+- [x] Changes persist across page reloads
+- [x] Estimated XP updates in real-time when config changes
+- [x] Reset button restores all defaults
+- [x] UI is consistent with existing XP Calculator design
+- [x] Clear visual distinction between default and modified values
+- [x] Works on mobile (responsive design)
+- [x] `mergeProgressionConfig()` is called when config changes (engine integration)
+- [x] Altitude bonus is marked as "app-specific" in UI
+- [x] `baseXpRate` removed from appStore and Settings tab
+- [x] No references to old `settings.baseXpRate` remain
 
 ---
 
