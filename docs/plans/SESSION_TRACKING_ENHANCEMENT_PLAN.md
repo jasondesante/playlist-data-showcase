@@ -372,7 +372,12 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 7.3: Performance
 
-- [ ] Memoize mastery calculations
+- [x] Memoize mastery calculations
+  - Added memoized `listenCountMap` for O(1) lookups instead of O(n) filtering
+  - Added mastery info cache using `useRef` to avoid recalculation for same track
+  - Extracted pure functions `buildListenCountMap` and `buildMasteryInfo` for testability
+  - Cache is cleared when listen count map reference changes (new sessions added)
+  - Build: clean, no TypeScript errors
 - [ ] Limit session history render count
 - [ ] Use virtualization if history is large (>100 items)
 

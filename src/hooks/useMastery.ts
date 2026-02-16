@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import { useSessionStore } from '@/store/sessionStore';
 
 /**
@@ -97,11 +97,61 @@ function getNextLevel(currentLevel: MasteryLevel): MasteryLevel | null {
 }
 
 /**
+ * Build a map of track UUID to listen count from session history.
+ * This is extracted as a pure function for testability and performance.
+ */
+function buildListenCountMap(
+    sessions: Array<{ track_uuid: string }>
+): Map<string, number> {
+    const countMap = new Map<string, number>();
+    for (const session of sessions) {
+        const currentCount = countMap.get(session.track_uuid) ?? 0;
+        countMap.set(session.track_uuid, currentCount + 1);
+    }
+    return countMap;
+}
+
+/**
+ * Build complete mastery info from a listen count.
+ * This is a pure function for memoization purposes.
+ */
+function buildMasteryInfo(listenCount: number): MasteryInfo {
+    const level = getMasteryLevelFromCount(listenCount);
+    const isMastered = listenCount >= MASTERY_THRESHOLDS.MASTERED;
+    const progressPercent = calculateProgressPercent(listenCount);
+    const nextLevel = getNextLevel(level);
+
+    // Calculate listens needed to reach next level
+    let listensToNextLevel = 0;
+    if (nextLevel === 'basic') {
+        listensToNextLevel = MASTERY_THRESHOLDS.BASIC - listenCount;
+    } else if (nextLevel === 'familiar') {
+        listensToNextLevel = MASTERY_THRESHOLDS.FAMILIAR - listenCount;
+    } else if (nextLevel === 'mastered') {
+        listensToNextLevel = MASTERY_THRESHOLDS.MASTERED - listenCount;
+    }
+
+    return {
+        level,
+        listenCount,
+        isMastered,
+        progressPercent,
+        listensToNextLevel,
+        nextLevel
+    };
+}
+
+/**
  * React hook for accessing track mastery information.
  *
  * Provides mastery level calculations based on listen counts from the
  * session store. This hook uses the session history to determine how
  * many times a track has been listened to.
+ *
+ * Performance optimizations:
+ * - Memoized listen count map for O(1) lookups instead of O(n) filtering
+ * - Cached mastery info per track to avoid recalculation
+ * - Stable callback references to prevent unnecessary re-renders
  *
  * @example
  * ```tsx
@@ -121,64 +171,87 @@ export const useMastery = () => {
     const sessionHistory = useSessionStore((state) => state.sessionHistory);
 
     /**
-     * Get the number of times a track has been listened to
-     * by counting sessions in the history for that track UUID
+     * Memoized map of track UUID -> listen count.
+     * Rebuilt only when session history reference changes.
+     * Provides O(1) lookup instead of O(n) filter for each call.
      */
-    const getTrackListenCount = useCallback((trackId: string): number => {
-        return sessionHistory.filter(session => session.track_uuid === trackId).length;
-    }, [sessionHistory]);
+    const listenCountMap = useMemo(
+        () => buildListenCountMap(sessionHistory),
+        [sessionHistory]
+    );
 
     /**
-     * Get mastery level name from a listen count
+     * Cache for mastery info to avoid recalculating for the same track.
+     * Uses a ref to persist across renders without triggering re-renders.
+     */
+    const masteryInfoCacheRef = useRef<Map<string, MasteryInfo>>(new Map());
+    const prevListenCountMapRef = useRef<Map<string, number> | null>(null);
+
+    /**
+     * Clear cache when the listen count map changes (new sessions added).
+     * We compare by reference since the map is recreated when sessionHistory changes.
+     */
+    if (listenCountMap !== prevListenCountMapRef.current) {
+        masteryInfoCacheRef.current.clear();
+        prevListenCountMapRef.current = listenCountMap;
+    }
+
+    /**
+     * Get the number of times a track has been listened to.
+     * Uses the memoized map for O(1) lookup.
+     */
+    const getTrackListenCount = useCallback((trackId: string): number => {
+        return listenCountMap.get(trackId) ?? 0;
+    }, [listenCountMap]);
+
+    /**
+     * Get mastery level name from a listen count.
+     * This is a pure function, wrapped in useCallback for stable reference.
      */
     const getTrackMasteryLevel = useCallback((listenCount: number): MasteryLevel => {
         return getMasteryLevelFromCount(listenCount);
     }, []);
 
     /**
-     * Check if a track is mastered (10+ listens by default)
+     * Check if a track is mastered (10+ listens by default).
+     * Uses the memoized listen count map for O(1) lookup.
      */
-    const isTrackMastered = useCallback((trackId: string, threshold: number = MASTERY_THRESHOLDS.MASTERED): boolean => {
-        const listenCount = getTrackListenCount(trackId);
-        return listenCount >= threshold;
-    }, [getTrackListenCount]);
+    const isTrackMastered = useCallback(
+        (trackId: string, threshold: number = MASTERY_THRESHOLDS.MASTERED): boolean => {
+            const listenCount = listenCountMap.get(trackId) ?? 0;
+            return listenCount >= threshold;
+        },
+        [listenCountMap]
+    );
 
     /**
-     * Get complete mastery information for a track
+     * Get complete mastery information for a track.
+     * Uses caching to avoid recalculating mastery info for the same track.
      */
     const getMasteryInfo = useCallback((trackId: string): MasteryInfo => {
-        const listenCount = getTrackListenCount(trackId);
-        const level = getMasteryLevelFromCount(listenCount);
-        const isMastered = listenCount >= MASTERY_THRESHOLDS.MASTERED;
-        const progressPercent = calculateProgressPercent(listenCount);
-        const nextLevel = getNextLevel(level);
-
-        // Calculate listens needed to reach next level
-        let listensToNextLevel = 0;
-        if (nextLevel === 'basic') {
-            listensToNextLevel = MASTERY_THRESHOLDS.BASIC - listenCount;
-        } else if (nextLevel === 'familiar') {
-            listensToNextLevel = MASTERY_THRESHOLDS.FAMILIAR - listenCount;
-        } else if (nextLevel === 'mastered') {
-            listensToNextLevel = MASTERY_THRESHOLDS.MASTERED - listenCount;
+        // Check cache first
+        const cached = masteryInfoCacheRef.current.get(trackId);
+        if (cached) {
+            return cached;
         }
 
-        return {
-            level,
-            listenCount,
-            isMastered,
-            progressPercent,
-            listensToNextLevel,
-            nextLevel
-        };
-    }, [getTrackListenCount]);
+        // Calculate and cache
+        const listenCount = listenCountMap.get(trackId) ?? 0;
+        const info = buildMasteryInfo(listenCount);
+        masteryInfoCacheRef.current.set(trackId, info);
+
+        return info;
+    }, [listenCountMap]);
 
     // Memoize the return object to prevent unnecessary re-renders
-    return useMemo(() => ({
-        getMasteryInfo,
-        getTrackListenCount,
-        getTrackMasteryLevel,
-        isTrackMastered,
-        MASTERY_THRESHOLDS
-    }), [getMasteryInfo, getTrackListenCount, getTrackMasteryLevel, isTrackMastered]);
+    return useMemo(
+        () => ({
+            getMasteryInfo,
+            getTrackListenCount,
+            getTrackMasteryLevel,
+            isTrackMastered,
+            MASTERY_THRESHOLDS
+        }),
+        [getMasteryInfo, getTrackListenCount, getTrackMasteryLevel, isTrackMastered]
+    );
 };
