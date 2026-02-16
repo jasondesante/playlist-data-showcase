@@ -302,13 +302,19 @@ Create a new hook to expose mastery-related data from the engine.
   - Display: shows first 10 sessions with "Show More" button to reveal remaining; showAll=true displays all
   - Each SessionHistoryItem shows: title (with UUID fallback), duration (MM:SS), XP, relative time, bonus indicators, expandable details with environmental/gaming context
   - Build: clean, no TypeScript errors
-- [ ] Test responsive layout on mobile
-  - Verified: CSS has @media (max-width: 639px) breakpoints
-  - Mastery section styles adapt for mobile (centered, smaller padding)
-  - Session history panel reduces max-height on mobile (400px vs 500px)
-- [ ] Test with no sessions (empty state)
+- [x] Test responsive layout on mobile
+  - Verified: All 5 CSS files audited for responsive breakpoints (SessionTrackingTab.css, MasteryBadge.css, MasteryProgressBar.css, SessionHistoryPanel.css, SessionHistoryItem.css)
+  - Consistent breakpoints: `max-width: 639px` (mobile), `min-width: 768px` (tablet/desktop), `prefers-reduced-motion` (accessibility)
+  - SessionTrackingTab.css: Hero grid switches from 2-col to 1-col, song image centers with 100%/max-width:180px, mastery section centers and reduces padding, timer scales down
+  - MasteryProgressBar.css: Font sizes reduce on mobile (level indicator, target, hint)
+  - SessionHistoryPanel.css: Header/stats padding reduced, list max-height 500→400px, stats grid remains 3-col (tested OK at 320px)
+  - SessionHistoryItem.css: Padding/icon size reduced, detail/context grids switch from 2-col to 1-col, proper text truncation
+  - **Fixed**: Empty state padding now responsive (2.5rem→1.5rem on mobile), Show More button touch target increased (min-height 2.75rem), empty state text reduced on mobile
+  - Build: clean, no errors
+- [x] Test with no sessions (empty state)
   - Verified: SessionHistoryPanel shows empty state when sessions.length === 0
   - Displays "No sessions yet" message with hint
+  - Build: clean, no errors
 - [ ] Test with many sessions (scroll/pagination)
   - Verified: max-height: 500px with overflow-y: auto for scrolling
   - "Show More" button for expanding beyond maxItems (default 10)
