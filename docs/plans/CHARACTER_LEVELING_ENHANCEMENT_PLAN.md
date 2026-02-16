@@ -54,19 +54,20 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
 
 #### Tasks
 
-- [ ] **1.1.1 Create XP Formula Types**
-  - [ ] Define `XPFormulaPreset` type with id, name, description, formula functions
-  - [ ] Define `UncappedProgressionSettings` interface for storing per-character config
-  - [ ] File: `src/types/progressionConfig.ts` or add to existing types file
+- [x] **1.1.1 Create XP Formula Types**
+  - [x] Define `XPFormulaPreset` type with id, name, description, formula functions
+  - [x] Define `UncappedProgressionSettings` interface for storing per-character config
+  - [x] File: `src/types/index.ts` (added to existing types file)
+  - [x] Re-exported `UncappedProgressionConfig` from playlist-data-engine
   ```typescript
-  type XPFormulaPreset = {
+  export interface XPFormulaPreset {
     id: string;
     name: string;
     description: string;
     xpFormula: (level: number) => number;
     proficiencyFormula: (level: number) => number;
-    chartColor: string; // For chart preview
-  };
+    chartColor: string;
+  }
   ```
 
 - [ ] **1.1.2 Create Preset Constants**

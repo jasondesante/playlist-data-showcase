@@ -187,3 +187,34 @@ export const DEFAULT_PROGRESSION_CONFIG_SETTINGS: ProgressionConfigSettings = {
  * Increment when making breaking changes to the config structure.
  */
 export const PROGRESSION_CONFIG_VERSION = 1;
+
+// ============================================================
+// XP Formula Preset Types (for Uncapped Progression)
+// ============================================================
+
+// Re-export the engine's UncappedProgressionConfig type
+export type { UncappedProgressionConfig } from 'playlist-data-engine';
+
+/**
+ * XP Formula Preset - A predefined XP progression curve
+ *
+ * Used to allow users to select different XP scaling formulas for
+ * uncapped mode characters. Each preset defines how XP requirements
+ * grow as characters level up beyond level 20.
+ *
+ * @see LevelUpProcessor.setUncappedConfig from playlist-data-engine
+ */
+export interface XPFormulaPreset {
+    /** Unique identifier for the preset (e.g., 'dnd5e', 'linear') */
+    id: string;
+    /** Display name shown in the UI */
+    name: string;
+    /** Short description of the progression style */
+    description: string;
+    /** Formula that calculates total XP required to reach a given level */
+    xpFormula: (level: number) => number;
+    /** Formula that calculates proficiency bonus for a given level */
+    proficiencyFormula: (level: number) => number;
+    /** Color used for this preset in the chart (CSS color value) */
+    chartColor: string;
+}
