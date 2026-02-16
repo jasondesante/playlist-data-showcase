@@ -1935,3 +1935,184 @@
     font-size: 0.9375rem;
   }
 }
+
+/* ========================================
+   CONFIG TAB CONTENT (Task 3.2)
+   ======================================== */
+
+.xp-config-card {
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-config-card:hover {
+  border-color: hsl(var(--border) / 0.8);
+}
+
+.xp-config-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.xp-config-section-icon {
+  color: hsl(var(--primary));
+  flex-shrink: 0;
+}
+
+.xp-config-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .xp-config-section-title {
+    font-size: 1rem;
+  }
+}
+
+.xp-config-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .xp-config-section-content {
+    gap: 1rem;
+  }
+}
+
+.xp-config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.625rem 0.75rem;
+  background-color: hsl(var(--surface-1) / 0.5);
+  border-radius: 0.5rem;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .xp-config-row {
+    padding: 0.75rem 1rem;
+    gap: 1.5rem;
+  }
+}
+
+.xp-config-row:hover {
+  background-color: hsl(var(--surface-1));
+}
+
+.xp-config-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.xp-config-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .xp-config-label {
+    font-size: 0.9375rem;
+  }
+}
+
+.xp-config-description {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .xp-config-description {
+    font-size: 0.8125rem;
+  }
+}
+
+.xp-config-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.xp-config-value-display {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: ui-monospace, 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+@media (min-width: 768px) {
+  .xp-config-value-display {
+    font-size: 1.125rem;
+  }
+}
+
+.xp-config-default {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .xp-config-default {
+    font-size: 0.75rem;
+  }
+}
+
+/* Config info/hint at the bottom */
+.xp-config-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: var(--radius);
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .xp-config-info {
+    padding: 1rem;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+}
+
+.xp-config-info-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .xp-config-info-icon {
+    font-size: 1.125rem;
+  }
+}
+
+.xp-config-info-text {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .xp-config-info-text {
+    font-size: 0.8125rem;
+  }
+}

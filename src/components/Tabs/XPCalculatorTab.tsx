@@ -9,8 +9,12 @@ import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { showToast } from '../ui/Toast';
-import { User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge } from 'lucide-react';
 import type { LevelUpDetail } from 'playlist-data-engine';
+import {
+    useProgressionConfig,
+} from '../../store/progressionConfigStore';
+import { DEFAULT_PROGRESSION_CONFIG_SETTINGS } from '@/types';
 import './XPCalculatorTab.css';
 
 /**
@@ -59,6 +63,11 @@ export function XPCalculatorTab() {
   const { environmentalContext, gamingContext } = useSensorStore();
   const { getActiveCharacter, characters, setActiveCharacter } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
+
+  // Progression config store - read-only for Task 3.2
+  // Actions (updateActivityBonus, etc.) will be added in Task 3.3
+  const config = useProgressionConfig();
+
   const [duration, setDuration] = useState(180);
   const [result, setResult] = useState<XPBreakdown | null>(null);
   const [isMastered, setIsMastered] = useState(false);
@@ -888,12 +897,193 @@ export function XPCalculatorTab() {
         {/* Config Tab Content */}
         {activeTab === 'config' && (
           <div className="xp-config-section">
-            <div className="xp-config-empty">
-              <div className="xp-config-empty-icon">⚙️</div>
-              <h3 className="xp-config-empty-title">Progression Configuration</h3>
-              <p className="xp-config-empty-description">
-                Customize default XP multiplier values for all calculations.
-              </p>
+            {/* Base Settings Section */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Settings size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Base Settings</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Base XP Rate</span>
+                    <span className="xp-config-description">XP earned per second of listening</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.xp_per_second.toFixed(1)}</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.xp_per_second})</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Environmental Activity Section */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Activity size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Environmental Activity</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Running</span>
+                    <span className="xp-config-description">Multiplier when user is running</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.running.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.running})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Walking</span>
+                    <span className="xp-config-description">Multiplier when user is walking</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.walking.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.walking})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Altitude 🏔️</span>
+                    <span className="xp-config-description">High altitude bonus (≥2000m) • App-specific</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.altitude.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.altitude})</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Time & Weather Section */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Cloud size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Time & Weather</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Night Time</span>
+                    <span className="xp-config-description">Bonus for listening at night</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.night_time.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.night_time})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Rain</span>
+                    <span className="xp-config-description">Bonus when it's raining</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.rain.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rain})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Snow</span>
+                    <span className="xp-config-description">Bonus when it's snowing</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.snow.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.snow})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Storm</span>
+                    <span className="xp-config-description">Bonus during storms</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.storm.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.storm})</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Gaming Bonuses Section */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Gamepad2 size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Gaming Bonuses</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Base Gaming</span>
+                    <span className="xp-config-description">Base multiplier when gaming</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.gaming_base.toFixed(2)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.gaming_base})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">RPG Bonus</span>
+                    <span className="xp-config-description">Additive bonus for RPG games</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">+{config.activity_bonuses.rpg_game.toFixed(2)}</span>
+                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rpg_game})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Action/FPS Bonus</span>
+                    <span className="xp-config-description">Additive bonus for Action/FPS games</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">+{config.activity_bonuses.action_fps.toFixed(2)}</span>
+                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.action_fps})</span>
+                  </div>
+                </div>
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Multiplayer Bonus</span>
+                    <span className="xp-config-description">Additive bonus for multiplayer games</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">+{config.activity_bonuses.multiplayer.toFixed(2)}</span>
+                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.multiplayer})</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Global Cap Section */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Gauge size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Global Cap</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <div className="xp-config-row">
+                  <div className="xp-config-label-group">
+                    <span className="xp-config-label">Max Multiplier</span>
+                    <span className="xp-config-description">Total XP multiplier cannot exceed this value</span>
+                  </div>
+                  <div className="xp-config-control">
+                    <span className="xp-config-value-display">{config.activity_bonuses.max_multiplier.toFixed(1)}x</span>
+                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.max_multiplier})</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Config Info */}
+            <div className="xp-config-info">
+              <span className="xp-config-info-icon">💡</span>
+              <span className="xp-config-info-text">
+                Changes are saved automatically and affect all XP calculations.
+                Config is synced with engine. Use Manual Mode for one-time overrides.
+              </span>
             </div>
           </div>
         )}
