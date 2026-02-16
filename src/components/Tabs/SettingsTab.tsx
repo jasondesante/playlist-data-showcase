@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Settings, Key, Cloud, Gamepad2, Volume2, Star, Bug, Database, AlertTriangle, Check, X, Download, Upload } from 'lucide-react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
@@ -160,7 +160,6 @@ interface ExportedData {
       discordClientId: string;
       audioSampleRate: number;
       audioFftSize: number;
-      baseXpRate: number;
       verboseLogging: boolean;
     };
   };
@@ -175,7 +174,6 @@ export function SettingsTab() {
   const [steamKey, setSteamKey] = useState(settings.steamApiKey);
   const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
-  const [baseXpRate, setBaseXpRate] = useState(settings.baseXpRate);
   const [verboseLogging, setVerboseLogging] = useState(settings.verboseLogging);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
@@ -200,11 +198,10 @@ export function SettingsTab() {
       setSteamKey(settings.steamApiKey);
       setDiscordClientId(settings.discordClientId);
       setAudioFftSize(settings.audioFftSize);
-      setBaseXpRate(settings.baseXpRate);
       setVerboseLogging(settings.verboseLogging);
       isInitialized.current = true;
     }
-  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.baseXpRate, settings.verboseLogging]);
+  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.verboseLogging]);
 
   // Sync verbose logging with logger utility
   useEffect(() => {
@@ -245,13 +242,6 @@ export function SettingsTab() {
     const size = parseInt(value, 10) as FFTSizeOption;
     setAudioFftSize(size);
     updateSettings({ audioFftSize: size });
-    setSaveIndicator('saved');
-    setTimeout(() => setSaveIndicator(null), 2000);
-  };
-
-  const handleBaseXpRateChange = (value: number) => {
-    setBaseXpRate(value);
-    updateSettings({ baseXpRate: value });
     setSaveIndicator('saved');
     setTimeout(() => setSaveIndicator(null), 2000);
   };
@@ -676,41 +666,6 @@ export function SettingsTab() {
               <span className="settings-fft-value">4096+</span>
               <span className="settings-fft-desc">Detailed, slower (offline)</span>
             </div>
-          </div>
-        </Card>
-      </section>
-
-      {/* XP Settings Section */}
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <Star className="settings-section-icon" />
-          <h2 className="settings-section-title">XP Settings</h2>
-        </div>
-        <Card variant="elevated" padding="md" className="settings-xp-card">
-          <div className="settings-xp-header">
-            <label className="settings-label" htmlFor="xp-rate-slider">
-              Base XP Rate: <span className="settings-value-highlight">{baseXpRate.toFixed(1)}x</span>
-            </label>
-          </div>
-          <div className="settings-slider-container">
-            <input
-              id="xp-rate-slider"
-              type="range"
-              min={0.1}
-              max={5.0}
-              step={0.1}
-              value={baseXpRate}
-              onChange={(e) => handleBaseXpRateChange(parseFloat(e.target.value))}
-              className="settings-slider"
-            />
-            <div className="settings-slider-marks">
-              <span>0.1x</span>
-              <span>1.0x</span>
-              <span>5.0x</span>
-            </div>
-          </div>
-          <div className="settings-description">
-            Base XP earned per second of listening. This rate is modified by environmental and gaming bonuses (capped at 3.0x total multiplier).
           </div>
         </Card>
       </section>

@@ -15,8 +15,6 @@ interface AppSettings {
     audioSampleRate: number;
     /** FFT size for audio analysis (1024, 2048, 4096, or 8192) */
     audioFftSize: number;
-    /** Base XP rate multiplier (0.1 - 5.0, default: 1.0) */
-    baseXpRate: number;
     /** Enable verbose console logging for debugging */
     verboseLogging: boolean;
 }
@@ -36,7 +34,6 @@ const DEFAULT_SETTINGS: AppSettings = {
     discordClientId: config.discordClientId,
     audioSampleRate: 44100,
     audioFftSize: 2048,
-    baseXpRate: 1.0,
     verboseLogging: false,
 };
 
@@ -53,7 +50,7 @@ export const useAppStore = create<AppState>()(
              * @example
              * ```ts
              * updateSettings({ openWeatherApiKey: 'your-key' });
-             * updateSettings({ audioFftSize: 4096, baseXpRate: 1.5 });
+             * updateSettings({ audioFftSize: 4096 });
              * ```
              */
             updateSettings: (newSettings) => {

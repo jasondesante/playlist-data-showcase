@@ -87,11 +87,11 @@ Create a new store to manage progression configuration state with LocalStorage p
   - [x] Add Zustand persist middleware for LocalStorage
   - [x] Add versioning for future migrations
 
-- [ ] **1.3 Migrate baseXpRate from appStore**
-  - [ ] Add `xp_per_second` to new progressionConfigStore (replaces `baseXpRate`)
-  - [ ] Update `appStore.ts` to remove `baseXpRate` field
-  - [ ] Update `SettingsTab.tsx` to remove XP Settings section (now in Config tab)
-  - [ ] Update any other files that reference `settings.baseXpRate`
+- [x] **1.3 Migrate baseXpRate from appStore** ✓ 2026-02-16
+  - [x] Add `xp_per_second` to new progressionConfigStore (replaces `baseXpRate`)
+  - [x] Update `appStore.ts` to remove `baseXpRate` field
+  - [x] Update `SettingsTab.tsx` to remove XP Settings section (now in Config tab)
+  - [x] Update any other files that reference `settings.baseXpRate`
 
 - [ ] **1.4 Test Store Integration**
   - [ ] Verify persistence works across page reloads

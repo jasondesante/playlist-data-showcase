@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { XPCalculator, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
-import { useAppStore } from '@/store/appStore';
+import { useProgressionConfig } from '@/store/progressionConfigStore';
 
 export interface XPBreakdown {
     baseXP: number;
@@ -48,9 +48,9 @@ export interface XPBreakdown {
  * @returns {Function} calculateXP - Calculates detailed XP breakdown for a session
  */
 export const useXPCalculator = () => {
-    const { settings } = useAppStore();
+    const config = useProgressionConfig();
     const [calculator] = useState(() => new XPCalculator({
-        xp_per_second: settings.baseXpRate
+        xp_per_second: config.xp_per_second
     }));
 
     /**
@@ -85,7 +85,7 @@ export const useXPCalculator = () => {
             const isManualMode = !!manualOverrides;
 
             // Base XP: use override if provided, otherwise calculate from duration
-            const baseXP = manualOverrides?.baseXP ?? Math.floor(durationSeconds * settings.baseXpRate);
+            const baseXP = manualOverrides?.baseXP ?? Math.floor(durationSeconds * config.xp_per_second);
 
             // Calculate or override environmental modifier
             let envMultiplier = 1.0;
@@ -211,7 +211,7 @@ export const useXPCalculator = () => {
             handleError(error, 'XPCalculator');
             return null;
         }
-    }, [calculator, settings.baseXpRate]);
+    }, [calculator, config.xp_per_second]);
 
     return { calculateXP };
 };
