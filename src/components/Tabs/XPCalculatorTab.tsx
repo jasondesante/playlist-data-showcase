@@ -13,8 +13,9 @@ import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge } from 'l
 import type { LevelUpDetail } from 'playlist-data-engine';
 import {
     useProgressionConfig,
+    useProgressionConfigActions,
 } from '../../store/progressionConfigStore';
-import { DEFAULT_PROGRESSION_CONFIG_SETTINGS } from '@/types';
+import { DEFAULT_PROGRESSION_CONFIG_SETTINGS, type ActivityBonuses } from '@/types';
 import './XPCalculatorTab.css';
 
 /**
@@ -39,6 +40,24 @@ interface ManualOverrides {
   baseXP?: number;
   environmentalMultiplier?: number;
   gamingMultiplier?: number;
+}
+
+/**
+ * Props for ConfigSlider component (Task 3.3)
+ */
+interface ConfigSliderProps {
+  label: string;
+  description: string;
+  value: number;
+  defaultValue: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+  formatValue?: (value: number) => string;
+  isAdditive?: boolean;
+  isModified?: boolean;
+  appSpecific?: boolean;
 }
 
 /**
@@ -67,6 +86,7 @@ export function XPCalculatorTab() {
   // Progression config store - read-only for Task 3.2
   // Actions (updateActivityBonus, etc.) will be added in Task 3.3
   const config = useProgressionConfig();
+  const { updateProgressionConfig, updateActivityBonus, resetProgressionConfig, isActivityBonusModified } = useProgressionConfigActions();
 
   const [duration, setDuration] = useState(180);
   const [result, setResult] = useState<XPBreakdown | null>(null);
@@ -187,6 +207,78 @@ export function XPCalculatorTab() {
   const handleManualOverrideChange = (field: keyof ManualOverrides, value: string) => {
     const numValue = value === '' ? undefined : parseFloat(value);
     setManualOverrides(prev => ({ ...prev, [field]: numValue }));
+  };
+
+  /**
+   * ConfigSlider component for progression config settings (Task 3.3)
+   * Renders a slider with label, value display, and default indicator
+   */
+  const ConfigSlider = ({
+    label,
+    description,
+    value,
+    defaultValue,
+    min,
+    max,
+    step,
+    onChange,
+    formatValue,
+    isAdditive = false,
+    isModified = false,
+    appSpecific = false,
+  }: ConfigSliderProps) => {
+    const displayValue = formatValue ? formatValue(value) : (isAdditive ? `+${value.toFixed(2)}` : `${value.toFixed(2)}x`);
+    const defaultDisplay = formatValue ? formatValue(defaultValue) : (isAdditive ? `+${defaultValue}` : `${defaultValue}`);
+
+    return (
+      <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
+        <div className="xp-config-label-group">
+          <span className="xp-config-label">
+            {label}
+            {appSpecific && <span className="xp-config-app-specific" title="App-specific - not in engine">🏔️</span>}
+          </span>
+          <span className="xp-config-description">{description}</span>
+        </div>
+        <div className="xp-config-control">
+          <div className="xp-config-slider-wrapper">
+            <input
+              type="range"
+              className="xp-config-slider"
+              min={min}
+              max={max}
+              step={step}
+              value={value}
+              onChange={(e) => onChange(parseFloat(e.target.value))}
+              aria-label={label}
+            />
+            <span className={`xp-config-value-display ${isModified ? 'xp-config-value-modified' : ''}`}>
+              {displayValue}
+            </span>
+          </div>
+          <span className="xp-config-default">
+            {isModified ? '(default: ' : '('}
+            {defaultDisplay}
+            {isModified ? ')' : ')'}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // Handler for xp_per_second changes
+  const handleXpPerSecondChange = (value: number) => {
+    updateProgressionConfig({ xp_per_second: value });
+  };
+
+  // Handler for activity bonus changes
+  const handleActivityBonusChange = (key: keyof ActivityBonuses) => (value: number) => {
+    updateActivityBonus(key, value);
+  };
+
+  // Handler for reset to defaults
+  const handleResetConfig = () => {
+    resetProgressionConfig();
+    showToast('Progression config reset to defaults', 'success');
   };
 
   /**
@@ -904,16 +996,18 @@ export function XPCalculatorTab() {
                 <h3 className="xp-config-section-title">Base Settings</h3>
               </div>
               <div className="xp-config-section-content">
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Base XP Rate</span>
-                    <span className="xp-config-description">XP earned per second of listening</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.xp_per_second.toFixed(1)}</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.xp_per_second})</span>
-                  </div>
-                </div>
+                <ConfigSlider
+                  label="Base XP Rate"
+                  description="XP earned per second of listening"
+                  value={config.xp_per_second}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.xp_per_second}
+                  min={0.1}
+                  max={5.0}
+                  step={0.1}
+                  onChange={handleXpPerSecondChange}
+                  formatValue={(v) => v.toFixed(1)}
+                  isModified={config.xp_per_second !== DEFAULT_PROGRESSION_CONFIG_SETTINGS.xp_per_second}
+                />
               </div>
             </Card>
 
@@ -924,36 +1018,40 @@ export function XPCalculatorTab() {
                 <h3 className="xp-config-section-title">Environmental Activity</h3>
               </div>
               <div className="xp-config-section-content">
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Running</span>
-                    <span className="xp-config-description">Multiplier when user is running</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.running.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.running})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Walking</span>
-                    <span className="xp-config-description">Multiplier when user is walking</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.walking.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.walking})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Altitude 🏔️</span>
-                    <span className="xp-config-description">High altitude bonus (≥2000m) • App-specific</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.altitude.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.altitude})</span>
-                  </div>
-                </div>
+                <ConfigSlider
+                  label="Running"
+                  description="Multiplier when user is running"
+                  value={config.activity_bonuses.running}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.running}
+                  min={1.0}
+                  max={3.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('running')}
+                  isModified={isActivityBonusModified('running')}
+                />
+                <ConfigSlider
+                  label="Walking"
+                  description="Multiplier when user is walking"
+                  value={config.activity_bonuses.walking}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.walking}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('walking')}
+                  isModified={isActivityBonusModified('walking')}
+                />
+                <ConfigSlider
+                  label="Altitude"
+                  description="High altitude bonus (≥2000m)"
+                  value={config.activity_bonuses.altitude}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.altitude}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('altitude')}
+                  isModified={isActivityBonusModified('altitude')}
+                  appSpecific
+                />
               </div>
             </Card>
 
@@ -964,46 +1062,50 @@ export function XPCalculatorTab() {
                 <h3 className="xp-config-section-title">Time & Weather</h3>
               </div>
               <div className="xp-config-section-content">
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Night Time</span>
-                    <span className="xp-config-description">Bonus for listening at night</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.night_time.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.night_time})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Rain</span>
-                    <span className="xp-config-description">Bonus when it's raining</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.rain.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rain})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Snow</span>
-                    <span className="xp-config-description">Bonus when it's snowing</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.snow.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.snow})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Storm</span>
-                    <span className="xp-config-description">Bonus during storms</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.storm.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.storm})</span>
-                  </div>
-                </div>
+                <ConfigSlider
+                  label="Night Time"
+                  description="Bonus for listening at night"
+                  value={config.activity_bonuses.night_time}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.night_time}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('night_time')}
+                  isModified={isActivityBonusModified('night_time')}
+                />
+                <ConfigSlider
+                  label="Rain"
+                  description="Bonus when it's raining"
+                  value={config.activity_bonuses.rain}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rain}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('rain')}
+                  isModified={isActivityBonusModified('rain')}
+                />
+                <ConfigSlider
+                  label="Snow"
+                  description="Bonus when it's snowing"
+                  value={config.activity_bonuses.snow}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.snow}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('snow')}
+                  isModified={isActivityBonusModified('snow')}
+                />
+                <ConfigSlider
+                  label="Storm"
+                  description="Bonus during storms"
+                  value={config.activity_bonuses.storm}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.storm}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('storm')}
+                  isModified={isActivityBonusModified('storm')}
+                />
               </div>
             </Card>
 
@@ -1014,46 +1116,53 @@ export function XPCalculatorTab() {
                 <h3 className="xp-config-section-title">Gaming Bonuses</h3>
               </div>
               <div className="xp-config-section-content">
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Base Gaming</span>
-                    <span className="xp-config-description">Base multiplier when gaming</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.gaming_base.toFixed(2)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.gaming_base})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">RPG Bonus</span>
-                    <span className="xp-config-description">Additive bonus for RPG games</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">+{config.activity_bonuses.rpg_game.toFixed(2)}</span>
-                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rpg_game})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Action/FPS Bonus</span>
-                    <span className="xp-config-description">Additive bonus for Action/FPS games</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">+{config.activity_bonuses.action_fps.toFixed(2)}</span>
-                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.action_fps})</span>
-                  </div>
-                </div>
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Multiplayer Bonus</span>
-                    <span className="xp-config-description">Additive bonus for multiplayer games</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">+{config.activity_bonuses.multiplayer.toFixed(2)}</span>
-                    <span className="xp-config-default">(default: +{DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.multiplayer})</span>
-                  </div>
-                </div>
+                <ConfigSlider
+                  label="Base Gaming"
+                  description="Base multiplier when gaming"
+                  value={config.activity_bonuses.gaming_base}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.gaming_base}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('gaming_base')}
+                  isModified={isActivityBonusModified('gaming_base')}
+                />
+                <ConfigSlider
+                  label="RPG Bonus"
+                  description="Additive bonus for RPG games"
+                  value={config.activity_bonuses.rpg_game}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rpg_game}
+                  min={0.0}
+                  max={0.5}
+                  step={0.01}
+                  onChange={handleActivityBonusChange('rpg_game')}
+                  isAdditive
+                  isModified={isActivityBonusModified('rpg_game')}
+                />
+                <ConfigSlider
+                  label="Action/FPS Bonus"
+                  description="Additive bonus for Action/FPS games"
+                  value={config.activity_bonuses.action_fps}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.action_fps}
+                  min={0.0}
+                  max={0.5}
+                  step={0.01}
+                  onChange={handleActivityBonusChange('action_fps')}
+                  isAdditive
+                  isModified={isActivityBonusModified('action_fps')}
+                />
+                <ConfigSlider
+                  label="Multiplayer Bonus"
+                  description="Additive bonus for multiplayer games"
+                  value={config.activity_bonuses.multiplayer}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.multiplayer}
+                  min={0.0}
+                  max={0.5}
+                  step={0.01}
+                  onChange={handleActivityBonusChange('multiplayer')}
+                  isAdditive
+                  isModified={isActivityBonusModified('multiplayer')}
+                />
               </div>
             </Card>
 
@@ -1064,18 +1173,31 @@ export function XPCalculatorTab() {
                 <h3 className="xp-config-section-title">Global Cap</h3>
               </div>
               <div className="xp-config-section-content">
-                <div className="xp-config-row">
-                  <div className="xp-config-label-group">
-                    <span className="xp-config-label">Max Multiplier</span>
-                    <span className="xp-config-description">Total XP multiplier cannot exceed this value</span>
-                  </div>
-                  <div className="xp-config-control">
-                    <span className="xp-config-value-display">{config.activity_bonuses.max_multiplier.toFixed(1)}x</span>
-                    <span className="xp-config-default">(default: {DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.max_multiplier})</span>
-                  </div>
-                </div>
+                <ConfigSlider
+                  label="Max Multiplier"
+                  description="Total XP multiplier cannot exceed this value"
+                  value={config.activity_bonuses.max_multiplier}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.max_multiplier}
+                  min={1.5}
+                  max={5.0}
+                  step={0.1}
+                  onChange={handleActivityBonusChange('max_multiplier')}
+                  formatValue={(v) => `${v.toFixed(1)}x`}
+                  isModified={isActivityBonusModified('max_multiplier')}
+                />
               </div>
             </Card>
+
+            {/* Reset Button */}
+            <div className="xp-config-reset-section">
+              <button
+                className="xp-config-reset-button"
+                onClick={handleResetConfig}
+                aria-label="Reset all settings to defaults"
+              >
+                Reset to Defaults
+              </button>
+            </div>
 
             {/* Config Info */}
             <div className="xp-config-info">

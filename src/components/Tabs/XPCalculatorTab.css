@@ -2116,3 +2116,214 @@
     font-size: 0.8125rem;
   }
 }
+
+/* ========================================
+   CONFIG SLIDER STYLES (Task 3.3)
+   ======================================== */
+
+/* Modified row highlight */
+.xp-config-row-modified {
+  background-color: hsl(var(--primary) / 0.08);
+  border-left: 3px solid hsl(var(--primary));
+  padding-left: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .xp-config-row-modified {
+    padding-left: 0.75rem;
+  }
+}
+
+/* App-specific badge in label */
+.xp-config-app-specific {
+  margin-left: 0.25rem;
+  font-size: 0.875em;
+  cursor: help;
+}
+
+/* Slider wrapper - contains both slider and value display */
+.xp-config-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 10rem;
+}
+
+@media (min-width: 768px) {
+  .xp-config-slider-wrapper {
+    gap: 1rem;
+    min-width: 12rem;
+  }
+}
+
+/* Modified value highlight */
+.xp-config-value-modified {
+  color: hsl(var(--primary));
+}
+
+/* Range slider styling */
+.xp-config-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 0.375rem;
+  background: hsl(var(--surface-1));
+  border-radius: 0.25rem;
+  outline: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-config-slider:hover {
+  background: hsl(var(--surface-2));
+}
+
+/* Slider track (WebKit) */
+.xp-config-slider::-webkit-slider-runnable-track {
+  height: 0.375rem;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.5) 100%
+  );
+  border-radius: 0.25rem;
+}
+
+/* Slider thumb (WebKit) */
+.xp-config-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -0.3125rem;
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .xp-config-slider::-webkit-slider-thumb {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: -0.375rem;
+  }
+}
+
+.xp-config-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.4);
+}
+
+.xp-config-slider::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+  box-shadow: 0 1px 4px hsl(var(--primary) / 0.3);
+}
+
+/* Slider track (Firefox) */
+.xp-config-slider::-moz-range-track {
+  height: 0.375rem;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.5) 100%
+  );
+  border-radius: 0.25rem;
+}
+
+/* Slider thumb (Firefox) */
+.xp-config-slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out-cubic),
+              box-shadow var(--duration-fast) var(--ease-out-cubic);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .xp-config-slider::-moz-range-thumb {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.xp-config-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.4);
+}
+
+.xp-config-slider::-moz-range-thumb:active {
+  transform: scale(1.1);
+  box-shadow: 0 1px 4px hsl(var(--primary) / 0.3);
+}
+
+/* Focus styles for accessibility */
+.xp-config-slider:focus {
+  outline: none;
+}
+
+.xp-config-slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.xp-config-slider:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Reset button section */
+.xp-config-reset-section {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .xp-config-reset-section {
+    padding: 1rem 0;
+    margin-top: 0.75rem;
+  }
+}
+
+.xp-config-reset-button {
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--destructive));
+  background-color: transparent;
+  border: 2px solid hsl(var(--destructive) / 0.5);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              border-color var(--duration-fast) var(--ease-out-cubic),
+              transform var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .xp-config-reset-button {
+    padding: 0.75rem 2rem;
+    font-size: 0.9375rem;
+  }
+}
+
+.xp-config-reset-button:hover {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-color: hsl(var(--destructive));
+}
+
+.xp-config-reset-button:active {
+  transform: scale(0.98);
+}
+
+.xp-config-reset-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.2);
+}
