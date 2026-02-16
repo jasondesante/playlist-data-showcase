@@ -274,11 +274,19 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 7.1: Manual Testing
 
-- [ ] Test mastery badge displays correctly at each level
+- [x] Test mastery badge displays correctly at each level
   - Verified: MasteryBadge component handles 'none', 'basic', 'familiar', 'mastered' levels
-  - 'none' returns null (no badge displayed)
-  - 'basic' shows bronze circle, 'familiar' shows silver star, 'mastered' shows gold crown with glow
-  - useMastery hook correctly maps listen counts to levels (0=none, 1-4=basic, 5-9=familiar, 10+=mastered)
+  - 'none' returns null (no badge displayed) — `shouldDisplayBadge()` guard confirmed
+  - 'basic' shows bronze circle SVG, CSS class `mastery-badge-basic` with bronze (#CD7F32) color
+  - 'familiar' shows silver star SVG, CSS class `mastery-badge-familiar` with silver (#ADADAD) color
+  - 'mastered' shows gold crown SVG with `masteryBadgeGlowPulse` animation, gold (#FFD700) color
+  - useMastery hook `getMasteryLevelFromCount()` correctly maps: 0→none, 1-4→basic, 5-9→familiar, 10+→mastered
+  - Integration in SessionTrackingTab verified: badge overlay renders conditionally with null/none guards
+  - Tooltip uses portal rendering with fixed positioning — shows level label on hover/focus
+  - Size variants (sm/md/lg) verified with correct icon dimensions
+  - Accessibility: `role="img"`, `aria-label`, `tabIndex={0}`, focus-visible outline present
+  - Reduced motion: animation disabled, hover transform disabled via `prefers-reduced-motion`
+  - TypeScript compilation: clean, no errors. Build: clean, no errors.
 - [ ] Test progress bar updates when session ends
   - Verified: Reactive chain from sessionHistory → useMastery → masteryInfo → MasteryProgressBar
   - Progress animates via useEffect with requestAnimationFrame
