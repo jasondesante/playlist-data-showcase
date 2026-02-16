@@ -329,7 +329,16 @@ Create a new hook to expose mastery-related data from the engine.
 
 ### Task 7.2: Accessibility
 
-- [ ] Add ARIA labels to mastery badges
+- [x] Add ARIA labels to mastery badges
+  - Verified: `aria-label` with mastery level name present (line 102)
+  - Added: `aria-describedby` linking badge to tooltip for screen reader announcement
+  - Added: `useId()` hook for unique tooltip ID generation
+  - Tooltip now has `id={tooltipId}` matching `aria-describedby`
+  - `role="img"` identifies element as image for assistive tech
+  - `tabIndex={0}` enables keyboard focus
+  - SVG icons have `aria-hidden="true"` (decorative)
+  - Tooltip has `role="tooltip"` for proper semantics
+  - Build: clean, no TypeScript errors
 - [ ] Ensure color contrast for mastery levels
 - [ ] Add keyboard navigation to session history
 - [ ] Add screen reader announcements for mastery changes

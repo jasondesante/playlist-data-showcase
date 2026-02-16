@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useId } from 'react';
 import { createPortal } from 'react-dom';
 import type { MasteryLevel } from '@/hooks/useMastery';
 import './MasteryBadge.css';
@@ -65,6 +65,7 @@ function shouldDisplayBadge(level: MasteryLevel): boolean {
 export function MasteryBadge({ level, size = 'md', className = '' }: MasteryBadgeProps) {
   const wrapperRef = useRef<HTMLSpanElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0, visible: false });
+  const tooltipId = useId();
 
   // Don't render if level is 'none'
   if (!shouldDisplayBadge(level)) {
@@ -96,8 +97,12 @@ export function MasteryBadge({ level, size = 'md', className = '' }: MasteryBadg
         className={`mastery-badge mastery-badge-${level} mastery-badge-${size} ${className}`.trim()}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
         aria-label={`Mastery level: ${label}`}
+        aria-describedby={position.visible ? tooltipId : undefined}
         role="img"
+        tabIndex={0}
       >
         {level === 'basic' && (
           <svg
@@ -142,6 +147,7 @@ export function MasteryBadge({ level, size = 'md', className = '' }: MasteryBadg
       </span>
       {position.visible && createPortal(
         <span
+          id={tooltipId}
           className="mastery-badge-tooltip"
           style={{
             position: 'fixed',
