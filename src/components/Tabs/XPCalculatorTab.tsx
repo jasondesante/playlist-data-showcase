@@ -16,7 +16,7 @@ import './XPCalculatorTab.css';
 /**
  * Tab type for XP Calculator
  */
-type XPCalculatorTab = 'calculator' | 'results';
+type XPCalculatorTabType = 'calculator' | 'results' | 'config';
 
 /**
  * Pie chart data for XP source visualization
@@ -67,8 +67,8 @@ export function XPCalculatorTab() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
 
-  // Two-tab system state
-  const [activeTab, setActiveTab] = useState<XPCalculatorTab>('calculator');
+  // Three-tab system state
+  const [activeTab, setActiveTab] = useState<XPCalculatorTabType>('calculator');
 
   // Manual mode state (Task 4.5.5)
   const [isManualMode, setIsManualMode] = useState(false);
@@ -294,6 +294,13 @@ export function XPCalculatorTab() {
           >
             <span className="xp-calculator-tab-label">Results</span>
             {result && <span className="xp-calculator-tab-indicator" />}
+          </button>
+          <button
+            className={`xp-calculator-tab ${activeTab === 'config' ? 'xp-calculator-tab-active' : ''}`}
+            onClick={() => setActiveTab('config')}
+            aria-current={activeTab === 'config' ? 'true' : undefined}
+          >
+            <span className="xp-calculator-tab-label">Config</span>
           </button>
         </div>
 
@@ -876,6 +883,19 @@ export function XPCalculatorTab() {
               </p>
             </div>
           )
+        )}
+
+        {/* Config Tab Content */}
+        {activeTab === 'config' && (
+          <div className="xp-config-section">
+            <div className="xp-config-empty">
+              <div className="xp-config-empty-icon">⚙️</div>
+              <h3 className="xp-config-empty-title">Progression Configuration</h3>
+              <p className="xp-config-empty-description">
+                Customize default XP multiplier values for all calculations.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Level-Up Detail Modal */}
