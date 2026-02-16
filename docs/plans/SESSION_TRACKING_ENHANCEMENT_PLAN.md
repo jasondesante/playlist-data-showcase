@@ -293,9 +293,15 @@ Create a new hook to expose mastery-related data from the engine.
   - Level transitions verified: progress correctly resets when crossing thresholds (e.g., basic→familiar resets progress range to FAMILIAR→MASTERED)
   - Zustand subscription chain verified: useSessionStore selector in useMastery correctly triggers re-render on sessionHistory reference change
   - Build: clean, no TypeScript errors
-- [ ] Test session history shows all sessions
-  - Verified: SessionHistoryPanel receives sessionHistory from useSessionStore
-  - Sessions displayed via SessionHistoryItem components
+- [x] Test session history shows all sessions
+  - Verified: SessionHistoryPanel receives sessionHistory directly from useSessionStore (SessionTrackingTab.tsx:131)
+  - Data flow complete: sessionStore.endSession() creates ListeningSessionWithTrack with track metadata, prepends to sessionHistory[] (newest first)
+  - All three session-end paths (auto-end on pause/ended, auto-end on track change, manual endSession) call storeEndSession(session, track)
+  - Persistence: sessionHistory persisted via Zustand persist middleware with partialize
+  - Panel passes all sessions: `<SessionHistoryPanel sessions={sessionHistory} maxItems={10} />`
+  - Display: shows first 10 sessions with "Show More" button to reveal remaining; showAll=true displays all
+  - Each SessionHistoryItem shows: title (with UUID fallback), duration (MM:SS), XP, relative time, bonus indicators, expandable details with environmental/gaming context
+  - Build: clean, no TypeScript errors
 - [ ] Test responsive layout on mobile
   - Verified: CSS has @media (max-width: 639px) breakpoints
   - Mastery section styles adapt for mobile (centered, smaller padding)
