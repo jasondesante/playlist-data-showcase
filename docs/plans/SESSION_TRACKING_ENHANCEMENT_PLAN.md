@@ -378,7 +378,14 @@ Create a new hook to expose mastery-related data from the engine.
   - Extracted pure functions `buildListenCountMap` and `buildMasteryInfo` for testability
   - Cache is cleared when listen count map reference changes (new sessions added)
   - Build: clean, no TypeScript errors
-- [ ] Limit session history render count
+- [x] Limit session history render count
+  - Wrapped `SessionHistoryItem` component with `React.memo` for optimal re-render performance
+  - Added custom `arePropsEqual` comparison function that checks:
+    - `session.start_time`, `session.end_time`, `session.total_xp_earned` for data changes
+    - `className` and `initiallyExpanded` for prop changes
+  - Changed key from `${track_uuid}-${start_time}-${index}` to just `start_time` for stable identity
+  - `start_time` is unique per session (Unix timestamp), so index fallback is unnecessary
+  - Build: clean, no TypeScript errors
 - [ ] Use virtualization if history is large (>100 items)
 
 ---

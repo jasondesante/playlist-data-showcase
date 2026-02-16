@@ -1,4 +1,4 @@
-import { useState, useMemo, useId } from 'react';
+import { useState, useMemo, useId, memo } from 'react';
 import { Music, Zap, Gamepad2, MapPin, Sun, Cloud, ChevronDown, ChevronUp, Headphones } from 'lucide-react';
 import type { ListeningSessionWithTrack } from '@/types';
 import './SessionHistoryItem.css';
@@ -16,6 +16,7 @@ import './SessionHistoryItem.css';
  * - Environmental and gaming bonus icons
  * - Expandable to show full session details
  * - Full keyboard navigation and screen reader support
+ * - Memoized for optimal render performance
  */
 
 export interface SessionHistoryItemProps {
@@ -96,6 +97,23 @@ function getSessionArtist(session: ListeningSessionWithTrack): string | null {
 }
 
 /**
+ * Memoized comparison function for SessionHistoryItem props.
+ * Only re-render if session data, className, or initiallyExpanded changes.
+ */
+function arePropsEqual(
+  prevProps: SessionHistoryItemProps,
+  nextProps: SessionHistoryItemProps
+): boolean {
+  return (
+    prevProps.session.start_time === nextProps.session.start_time &&
+    prevProps.session.end_time === nextProps.session.end_time &&
+    prevProps.session.total_xp_earned === nextProps.session.total_xp_earned &&
+    prevProps.className === nextProps.className &&
+    prevProps.initiallyExpanded === nextProps.initiallyExpanded
+  );
+}
+
+/**
  * SessionHistoryItem component for displaying a single session in history.
  *
  * @example
@@ -103,7 +121,7 @@ function getSessionArtist(session: ListeningSessionWithTrack): string | null {
  * <SessionHistoryItem session={sessionData} />
  * ```
  */
-export function SessionHistoryItem({
+const SessionHistoryItemComponent = memo(function SessionHistoryItem({
   session,
   className = '',
   initiallyExpanded = false
@@ -362,6 +380,9 @@ export function SessionHistoryItem({
       )}
     </div>
   );
-}
+}, arePropsEqual);
 
-export default SessionHistoryItem;
+// Named export for the memoized component
+export const SessionHistoryItem = SessionHistoryItemComponent;
+
+export default SessionHistoryItemComponent;

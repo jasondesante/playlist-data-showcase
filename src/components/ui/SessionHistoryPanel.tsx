@@ -237,9 +237,9 @@ export function SessionHistoryPanel({
             aria-label="Session history list"
             onKeyDown={handleListKeyDown}
           >
-            {visibleSessions.map((session, index) => (
+            {visibleSessions.map((session) => (
               <SessionHistoryItem
-                key={`${session.track_uuid}-${session.start_time}-${index}`}
+                key={session.start_time}
                 session={session}
                 className="session-history-panel-item"
               />
