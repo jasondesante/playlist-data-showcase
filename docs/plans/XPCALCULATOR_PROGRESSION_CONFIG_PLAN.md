@@ -135,10 +135,11 @@ Update the `useXPCalculator` hook to use progression config values instead of ha
     - [x] Replace max multiplier `3.0` with `config.activity_bonuses.max_multiplier`
   - [x] Ensure hook re-renders when config changes (updated useCallback dependency to full config)
 
-- [ ] **2.3 Update Hook Dependencies**
-  - [ ] Add progression config to useMemo/useCallback dependencies
-  - [ ] Remove `settings.baseXpRate` dependency (now using progressionConfigStore)
-  - [ ] Test that estimated XP updates when config changes
+- [x] **2.3 Update Hook Dependencies** ✓ 2026-02-16
+  - [x] Add progression config to useMemo/useCallback dependencies
+  - [x] Remove `settings.baseXpRate` dependency (now using progressionConfigStore)
+  - [x] Test that estimated XP updates when config changes
+  - **Note:** Dependency chain verified: `useProgressionConfig()` → `config` in `calculateXP` deps → `calculateXP` in `estimatedXP` deps. Changes to config will trigger recalculation.
 
 ---
 
