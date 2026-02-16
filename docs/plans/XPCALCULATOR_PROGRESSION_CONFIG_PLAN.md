@@ -107,16 +107,17 @@ Update the `useXPCalculator` hook to use progression config values instead of ha
 
 #### Tasks
 
-- [ ] **2.1 Add Engine Integration**
-  - [ ] Import `mergeProgressionConfig` and `DEFAULT_PROGRESSION_CONFIG` from engine
-  - [ ] Create a `useEffect` that calls `mergeProgressionConfig()` when config changes
-  - [ ] Map our config structure to engine's expected format:
-    - [ ] Map `xp_per_second` to `xp.xp_per_second`
-    - [ ] Map `running`, `walking`, `night_time`, `rain`, `snow`, `storm` to `xp.activity_bonuses.*`
-    - [ ] Map `gaming_base`, `rpg_game`, `action_fps`, `multiplayer` to `xp.activity_bonuses.*`
-    - [ ] Map `max_multiplier` to `xp.activity_bonuses.max_multiplier`
-    - [ ] Note: `altitude` is app-specific, NOT passed to engine (keep local)
-  - [ ] Log when engine config is updated (for debugging)
+- [x] **2.1 Add Engine Integration** ✓ 2026-02-16
+  - [x] Import `mergeProgressionConfig` and `type ProgressionConfig` from engine
+  - [x] Create a `useEffect` that calls `mergeProgressionConfig()` when config changes
+  - [x] Map our config structure to engine's expected format:
+    - [x] Map `xp_per_second` to `xp.xp_per_second`
+    - [x] Map `running`, `walking`, `night_time` to `xp.activity_bonuses.*`
+    - [x] Map `rain`, `snow`, `storm` to `xp.activity_bonuses.extreme_weather` (uses max of three)
+    - [x] Map `altitude` to `xp.activity_bonuses.high_altitude` (engine has this field)
+    - [x] ~~Map gaming fields to `xp.activity_bonuses.*`~~ **N/A** - Gaming fields NOT in engine's ProgressionConfig
+  - [x] Log when engine config is updated (for debugging)
+  - **Note:** Gaming bonuses (`gaming_base`, `rpg_game`, `action_fps`, `multiplayer`, `max_multiplier`) are NOT in the engine's `ProgressionConfig`. They are in `SensorConfig.xpModifier` instead. For now, these remain app-only. Future task could add `mergeConfig()` for sensor config integration.
 
 - [ ] **2.2 Refactor useXPCalculator Hook**
   - [ ] Import progression config store

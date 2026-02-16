@@ -1,8 +1,15 @@
-import { useState, useCallback } from 'react';
-import { XPCalculator, EnvironmentalContext, GamingContext } from 'playlist-data-engine';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import {
+    XPCalculator,
+    EnvironmentalContext,
+    GamingContext,
+    mergeProgressionConfig,
+    type ProgressionConfig
+} from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { useProgressionConfig } from '@/store/progressionConfigStore';
+import type { ProgressionConfigSettings } from '@/types';
 
 export interface XPBreakdown {
     baseXP: number;
@@ -47,11 +54,86 @@ export interface XPBreakdown {
  * @returns {Object} Hook return object
  * @returns {Function} calculateXP - Calculates detailed XP breakdown for a session
  */
+
+/**
+ * Map our app's progression config to the engine's ProgressionConfig format.
+ *
+ * Note: Not all of our config fields map directly to the engine:
+ * - Gaming bonuses (gaming_base, rpg_game, etc.) are NOT in ProgressionConfig
+ * - rain/snow/storm all map to extreme_weather in the engine
+ * - altitude maps to high_altitude in the engine
+ *
+ * @param config - Our app's progression config settings
+ * @returns Partial ProgressionConfig for mergeProgressionConfig()
+ */
+const mapConfigToEngineFormat = (config: ProgressionConfigSettings) => {
+    // Use the highest weather bonus for extreme_weather
+    const maxWeatherBonus = Math.max(
+        config.activity_bonuses.rain,
+        config.activity_bonuses.snow,
+        config.activity_bonuses.storm
+    );
+
+    // We only provide the fields we want to override.
+    // mergeProgressionConfig will merge with defaults for unspecified fields.
+    // Type assertion is safe here because the engine handles partial configs.
+    return {
+        xp: {
+            xp_per_second: config.xp_per_second,
+            activity_bonuses: {
+                stationary: 1.0, // Default - we don't have this in our config
+                running: config.activity_bonuses.running,
+                walking: config.activity_bonuses.walking,
+                driving: 1.0, // Default - we don't have this in our config
+                night_time: config.activity_bonuses.night_time,
+                extreme_weather: maxWeatherBonus,
+                high_altitude: config.activity_bonuses.altitude,
+            }
+        }
+    } as Partial<ProgressionConfig>;
+};
+
 export const useXPCalculator = () => {
     const config = useProgressionConfig();
     const [calculator] = useState(() => new XPCalculator({
         xp_per_second: config.xp_per_second
     }));
+
+    // Track previous config to avoid unnecessary engine updates
+    const prevConfigRef = useRef<string>('');
+
+    /**
+     * Sync our progression config with the engine's global config.
+     * This is called whenever our config changes.
+     *
+     * Note: The engine's mergeProgressionConfig() affects global state.
+     * This is intentional for the showcase app - we want to demonstrate
+     * the engine API and have config changes affect all calculations.
+     */
+    useEffect(() => {
+        const configJson = JSON.stringify(config);
+
+        // Only update if config actually changed
+        if (prevConfigRef.current === configJson) {
+            return;
+        }
+        prevConfigRef.current = configJson;
+
+        try {
+            const engineConfig = mapConfigToEngineFormat(config);
+            const mergedConfig = mergeProgressionConfig(engineConfig);
+
+            logger.info('XPCalculator', 'Engine config updated', {
+                xp_per_second: mergedConfig.xp.xp_per_second,
+                running: mergedConfig.xp.activity_bonuses.running,
+                walking: mergedConfig.xp.activity_bonuses.walking,
+                night_time: mergedConfig.xp.activity_bonuses.night_time,
+                extreme_weather: mergedConfig.xp.activity_bonuses.extreme_weather,
+            });
+        } catch (error) {
+            handleError(error, 'XPCalculator.mergeProgressionConfig');
+        }
+    }, [config]);
 
     /**
      * Calculate detailed XP breakdown for a listening session
