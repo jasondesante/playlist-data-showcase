@@ -1,8 +1,25 @@
-import { useState, useMemo, useId, useRef, useCallback } from 'react';
+import { useState, useMemo, useId, useRef, useCallback, useEffect } from 'react';
 import { ScrollText, ChevronDown, ChevronUp, Headphones, Zap, Clock, History, List } from 'lucide-react';
 import { SessionHistoryItem } from './SessionHistoryItem';
 import type { ListeningSessionWithTrack } from '@/types';
 import './SessionHistoryPanel.css';
+
+/**
+ * Virtualization threshold - enable virtualization when sessions exceed this count
+ */
+const VIRTUALIZATION_THRESHOLD = 100;
+
+/**
+ * Estimated height of each session item in pixels (used for virtualization)
+ * Based on typical collapsed item height: ~68px (padding + icon + text)
+ */
+const ESTIMATED_ITEM_HEIGHT = 68;
+
+/**
+ * Number of buffer items to render above and below viewport
+ * Ensures smooth scrolling without visible gaps
+ */
+const BUFFER_ITEMS = 5;
 
 /**
  * SessionHistoryPanel Component
@@ -16,6 +33,7 @@ import './SessionHistoryPanel.css';
  * - Collapsible/expandable design
  * - Empty state when no history
  * - Full keyboard navigation and screen reader support
+ * - Virtualization for large session lists (>100 items)
  */
 
 export interface SessionHistoryPanelProps {
@@ -87,6 +105,9 @@ export function SessionHistoryPanel({
   // Track current focus index
   const focusIndexRef = useRef<number>(0);
 
+  // Virtualization state - track scroll position for large lists
+  const [scrollTop, setScrollTop] = useState(0);
+
   // Generate unique IDs for accessibility
   const uniqueId = useId();
   const contentId = `session-history-content-${uniqueId}`;
@@ -101,6 +122,57 @@ export function SessionHistoryPanel({
     }
     return sessions.slice(0, maxItems);
   }, [sessions, showAll, maxItems]);
+
+  // Determine if virtualization should be enabled
+  const shouldVirtualize = useMemo(() => {
+    return showAll && sessions.length > VIRTUALIZATION_THRESHOLD;
+  }, [showAll, sessions.length]);
+
+  // Calculate virtualized range and padding
+  const virtualization = useMemo(() => {
+    if (!shouldVirtualize || !listRef.current) {
+      return {
+        startIndex: 0,
+        endIndex: visibleSessions.length,
+        paddingTop: 0,
+        paddingBottom: 0
+      };
+    }
+
+    const containerHeight = listRef.current.clientHeight || 500;
+    const itemCount = visibleSessions.length;
+
+    // Calculate visible range based on scroll position
+    const startIndex = Math.max(0, Math.floor(scrollTop / ESTIMATED_ITEM_HEIGHT) - BUFFER_ITEMS);
+    const visibleCount = Math.ceil(containerHeight / ESTIMATED_ITEM_HEIGHT) + (BUFFER_ITEMS * 2);
+    const endIndex = Math.min(itemCount, startIndex + visibleCount);
+
+    // Calculate padding to maintain scroll position
+    const paddingTop = startIndex * ESTIMATED_ITEM_HEIGHT;
+    const paddingBottom = Math.max(0, (itemCount - endIndex) * ESTIMATED_ITEM_HEIGHT);
+
+    return { startIndex, endIndex, paddingTop, paddingBottom };
+  }, [shouldVirtualize, scrollTop, visibleSessions.length]);
+
+  // Sessions to actually render (virtualized subset or all)
+  const renderedSessions = useMemo(() => {
+    if (!shouldVirtualize) {
+      return visibleSessions;
+    }
+    return visibleSessions.slice(virtualization.startIndex, virtualization.endIndex);
+  }, [shouldVirtualize, visibleSessions, virtualization.startIndex, virtualization.endIndex]);
+
+  // Scroll event handler for virtualization
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (shouldVirtualize) {
+      setScrollTop(e.currentTarget.scrollTop);
+    }
+  }, [shouldVirtualize]);
+
+  // Reset scroll position when showAll changes
+  useEffect(() => {
+    setScrollTop(0);
+  }, [showAll]);
 
   const hasMoreSessions = sessions.length > maxItems;
   const remainingCount = sessions.length - maxItems;
@@ -232,18 +304,35 @@ export function SessionHistoryPanel({
           {/* Session List */}
           <div
             ref={listRef}
-            className="session-history-panel-list"
+            className={`session-history-panel-list ${shouldVirtualize ? 'session-history-panel-list-virtualized' : ''}`}
             role="list"
             aria-label="Session history list"
             onKeyDown={handleListKeyDown}
+            onScroll={handleScroll}
           >
-            {visibleSessions.map((session) => (
+            {/* Virtualization: Top padding for items not rendered */}
+            {shouldVirtualize && virtualization.paddingTop > 0 && (
+              <div
+                className="session-history-panel-virtual-padding"
+                style={{ height: virtualization.paddingTop }}
+                aria-hidden="true"
+              />
+            )}
+            {renderedSessions.map((session) => (
               <SessionHistoryItem
                 key={session.start_time}
                 session={session}
                 className="session-history-panel-item"
               />
             ))}
+            {/* Virtualization: Bottom padding for items not rendered */}
+            {shouldVirtualize && virtualization.paddingBottom > 0 && (
+              <div
+                className="session-history-panel-virtual-padding"
+                style={{ height: virtualization.paddingBottom }}
+                aria-hidden="true"
+              />
+            )}
           </div>
 
           {/* Show More/Less Button */}

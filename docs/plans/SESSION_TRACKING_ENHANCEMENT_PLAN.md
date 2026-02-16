@@ -386,7 +386,18 @@ Create a new hook to expose mastery-related data from the engine.
   - Changed key from `${track_uuid}-${start_time}-${index}` to just `start_time` for stable identity
   - `start_time` is unique per session (Unix timestamp), so index fallback is unnecessary
   - Build: clean, no TypeScript errors
-- [ ] Use virtualization if history is large (>100 items)
+- [x] Use virtualization if history is large (>100 items)
+  - Added `VIRTUALIZATION_THRESHOLD = 100` constant
+  - Added `ESTIMATED_ITEM_HEIGHT = 68px` for scroll calculations
+  - Added `BUFFER_ITEMS = 5` for smooth scrolling without visible gaps
+  - Implemented `shouldVirtualize` check - only enables when showAll=true AND sessions > 100
+  - Implemented `virtualization` calculation - determines startIndex, endIndex, paddingTop, paddingBottom
+  - Added `renderedSessions` memo - returns only the virtualized subset of sessions
+  - Added `handleScroll` callback to track scroll position for virtualization
+  - Added `useEffect` to reset scroll position when showAll changes
+  - Added CSS classes: `.session-history-panel-list-virtualized` and `.session-history-panel-virtual-padding`
+  - Uses `contain: content` CSS property for optimized rendering
+  - Build: clean, no TypeScript errors
 
 ---
 

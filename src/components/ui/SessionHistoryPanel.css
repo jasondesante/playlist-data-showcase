@@ -201,6 +201,22 @@
 }
 
 /* ============================================
+   VIRTUALIZATION STYLES
+   For large session lists (>100 items)
+   ============================================ */
+
+.session-history-panel-list-virtualized {
+  /* Ensure stable layout for virtualization */
+  contain: content;
+  will-change: scroll-position;
+}
+
+.session-history-panel-virtual-padding {
+  /* Invisible spacer for virtualized items not in view */
+  flex-shrink: 0;
+}
+
+/* ============================================
    FOOTER - SHOW MORE BUTTON
    ============================================ */
 
