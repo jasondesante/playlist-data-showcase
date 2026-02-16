@@ -93,11 +93,11 @@ Create a new store to manage progression configuration state with LocalStorage p
   - [x] Update `SettingsTab.tsx` to remove XP Settings section (now in Config tab)
   - [x] Update any other files that reference `settings.baseXpRate`
 
-- [ ] **1.4 Test Store Integration**
-  - [ ] Verify persistence works across page reloads
-  - [ ] Test reset functionality
-  - [ ] Ensure TypeScript types are correct
-  - [ ] Verify appStore no longer has baseXpRate
+- [x] **1.4 Test Store Integration** ✓ 2026-02-16
+  - [x] Verify persistence works across page reloads
+  - [x] Test reset functionality
+  - [x] Ensure TypeScript types are correct
+  - [x] Verify appStore no longer has baseXpRate
 
 ---
 
