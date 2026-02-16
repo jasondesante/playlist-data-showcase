@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useId } from 'react';
 import { Music, Zap, Gamepad2, MapPin, Sun, Cloud, ChevronDown, ChevronUp, Headphones } from 'lucide-react';
 import type { ListeningSessionWithTrack } from '@/types';
 import './SessionHistoryItem.css';
@@ -15,6 +15,7 @@ import './SessionHistoryItem.css';
  * - Relative or absolute timestamp
  * - Environmental and gaming bonus icons
  * - Expandable to show full session details
+ * - Full keyboard navigation and screen reader support
  */
 
 export interface SessionHistoryItemProps {
@@ -109,6 +110,10 @@ export function SessionHistoryItem({
 }: SessionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
 
+  // Generate unique IDs for accessibility
+  const uniqueId = useId();
+  const detailsId = `session-details-${uniqueId}`;
+
   // Calculate bonus indicators
   const hasEnvironmentalBonus = session.environmental_context && (
     session.environmental_context.biome ||
@@ -134,7 +139,10 @@ export function SessionHistoryItem({
   };
 
   return (
-    <div className={`session-history-item ${isExpanded ? 'session-history-item-expanded' : ''} ${className}`}>
+    <div
+      className={`session-history-item ${isExpanded ? 'session-history-item-expanded' : ''} ${className}`}
+      role="listitem"
+    >
       {/* Main Row - Always Visible */}
       <div
         className="session-history-item-main"
@@ -148,6 +156,7 @@ export function SessionHistoryItem({
           }
         }}
         aria-expanded={isExpanded}
+        aria-controls={detailsId}
         aria-label={`${title} - ${duration} - ${session.total_xp_earned} XP - ${relativeTime}. Click to ${isExpanded ? 'collapse' : 'expand'}`}
       >
         {/* Track Icon/Image */}
@@ -187,15 +196,23 @@ export function SessionHistoryItem({
           <span className="session-history-item-xp">+{session.total_xp_earned} XP</span>
           {/* Bonus Indicators */}
           {(hasEnvironmentalBonus || hasGamingBonus) && (
-            <div className="session-history-item-bonus-icons">
+            <div className="session-history-item-bonus-icons" aria-label="Bonuses applied">
               {hasEnvironmentalBonus && (
-                <span className="session-history-item-bonus-icon session-history-item-bonus-environmental" title="Environmental bonus">
-                  <Zap size={12} />
+                <span
+                  className="session-history-item-bonus-icon session-history-item-bonus-environmental"
+                  aria-label="Environmental bonus applied"
+                  title="Environmental bonus"
+                >
+                  <Zap size={12} aria-hidden="true" />
                 </span>
               )}
               {hasGamingBonus && (
-                <span className="session-history-item-bonus-icon session-history-item-bonus-gaming" title="Gaming bonus">
-                  <Gamepad2 size={12} />
+                <span
+                  className="session-history-item-bonus-icon session-history-item-bonus-gaming"
+                  aria-label="Gaming bonus applied"
+                  title="Gaming bonus"
+                >
+                  <Gamepad2 size={12} aria-hidden="true" />
                 </span>
               )}
             </div>
@@ -214,7 +231,12 @@ export function SessionHistoryItem({
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="session-history-item-details">
+        <div
+          id={detailsId}
+          className="session-history-item-details"
+          role="region"
+          aria-label="Session details"
+        >
           {/* Session Details Grid */}
           <div className="session-history-item-details-grid">
             <div className="session-history-item-detail">

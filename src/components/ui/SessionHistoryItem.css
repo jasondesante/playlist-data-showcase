@@ -404,3 +404,32 @@
 .session-history-item-expanded {
   background-color: hsl(var(--card) / 1);
 }
+
+/* ============================================
+   ACCESSIBILITY: HIGH CONTRAST MODE
+   ============================================ */
+
+@media (forced-colors: active) {
+  .session-history-item {
+    border: 2px solid CurrentColor;
+  }
+
+  .session-history-item-main:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .session-history-item-expanded {
+    border-color: Highlight;
+  }
+
+  .session-history-item-bonus-icon {
+    border: 1px solid CurrentColor;
+  }
+
+  .session-history-item-details-grid,
+  .session-history-item-context-item {
+    background-color: Canvas;
+    border: 1px solid CurrentColor;
+  }
+}

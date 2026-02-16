@@ -84,11 +84,12 @@
 
 /**
  * Familiar Level - Silver (#C0C0C0)
+ * Using improved contrast silver
  */
 .mastery-level-familiar {
-  background-color: hsl(0 0% 75% / 0.15);
-  color: hsl(0 0% 75%);
-  border: 1px solid hsl(0 0% 75% / 0.3);
+  background-color: hsl(0 0% 68% / 0.15);
+  color: hsl(0 0% 68%);
+  border: 1px solid hsl(0 0% 68% / 0.3);
 }
 
 /**
@@ -157,11 +158,12 @@
 
 /**
  * Familiar to Mastered - Silver to Gold
+ * Using improved contrast silver
  */
 .mastery-level-fill-familiar {
   background: linear-gradient(
     90deg,
-    hsl(0 0% 75%) 0%,
+    hsl(0 0% 68%) 0%,
     hsl(51 100% 50%) 100%
   );
 }
@@ -263,5 +265,78 @@
 
   .mastery-progress-hint {
     font-size: 0.688rem;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY: HIGH CONTRAST MODE
+   ============================================ */
+
+/**
+ * Windows High Contrast Mode support
+ * Uses system colors for maximum compatibility
+ */
+@media (forced-colors: active) {
+  .mastery-level-none,
+  .mastery-level-basic,
+  .mastery-level-familiar,
+  .mastery-level-mastered {
+    background-color: Canvas;
+    color: CanvasText;
+    border: 2px solid CurrentColor;
+  }
+
+  .mastery-level-fill-none,
+  .mastery-level-fill-basic,
+  .mastery-level-fill-familiar,
+  .mastery-level-fill-mastered {
+    background: Highlight;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .mastery-progress-track {
+    background-color: Canvas;
+    border: 1px solid CurrentColor;
+    box-shadow: none;
+  }
+
+  .mastery-progress-complete,
+  .mastery-progress-mastered-hint {
+    color: Highlight;
+  }
+
+  .mastery-progress-target,
+  .mastery-progress-hint {
+    color: CanvasText;
+  }
+}
+
+/**
+ * Increased contrast preference
+ */
+@media (prefers-contrast: more) {
+  .mastery-progress-track {
+    background-color: hsl(var(--muted) / 0.6);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .mastery-level-none {
+    color: hsl(var(--foreground) / 0.8);
+  }
+
+  .mastery-level-basic {
+    color: hsl(28 70% 58%);
+    border-color: hsl(28 70% 58% / 0.5);
+  }
+
+  .mastery-level-familiar {
+    color: hsl(0 0% 75%);
+    border-color: hsl(0 0% 75% / 0.5);
+  }
+
+  .mastery-level-mastered {
+    color: hsl(51 100% 55%);
+    border-color: hsl(51 100% 55% / 0.6);
   }
 }

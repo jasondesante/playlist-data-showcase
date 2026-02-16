@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import type { MasteryLevel } from '@/hooks/useMastery';
 import { MASTERY_THRESHOLDS } from '@/hooks/useMastery';
 import './MasteryProgressBar.css';
@@ -104,6 +104,12 @@ export function MasteryProgressBar({
   // Animate the progress value
   const [displayProgress, setDisplayProgress] = useState(0);
 
+  // Track previous level for announcements
+  const prevLevelRef = useRef<MasteryLevel>(level);
+
+  // Screen reader announcement state
+  const [announcement, setAnnouncement] = useState<string | null>(null);
+
   const nextLevelInfo = getNextLevelInfo(level);
   const currentThreshold = getCurrentThreshold(level);
   const isMastered = level === 'mastered';
@@ -141,20 +147,64 @@ export function MasteryProgressBar({
     return () => cancelAnimationFrame(animationFrame);
   }, [progressPercent]);
 
+  // Announce mastery level changes to screen readers
+  useEffect(() => {
+    if (prevLevelRef.current !== level && prevLevelRef.current !== 'none') {
+      // Level has changed, announce it
+      const newLabel = getMasteryLabel(level);
+      const message = level === 'mastered'
+        ? `Congratulations! Track ${newLabel}!`
+        : `Mastery level increased to ${newLabel}`;
+
+      // Set announcement with a slight delay to ensure live region picks it up
+      setAnnouncement(message);
+
+      // Clear announcement after it's been read
+      const timeout = setTimeout(() => {
+        setAnnouncement(null);
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+    prevLevelRef.current = level;
+  }, [level]);
+
   // Don't render for 'none' level with 0 listens (no progress to show)
   if (level === 'none' && listenCount === 0) {
     return null;
   }
 
   return (
-    <div
-      className={`mastery-progress-bar ${compact ? 'mastery-progress-compact' : ''} ${className}`.trim()}
-      role="progressbar"
-      aria-valuenow={progressPercent}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={`Mastery progress: ${progressPercent}% toward ${nextLevelInfo?.label || 'Mastered'}`}
-    >
+    <>
+      {/* Screen reader announcements for mastery level changes */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: '0',
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: '0'
+        }}
+      >
+        {announcement}
+      </div>
+
+      <div
+        className={`mastery-progress-bar ${compact ? 'mastery-progress-compact' : ''} ${className}`.trim()}
+        role="progressbar"
+        aria-valuenow={progressPercent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Mastery progress: ${progressPercent}% toward ${nextLevelInfo?.label || 'Mastered'}`}
+      >
       {/* Header with level info */}
       <div className="mastery-progress-header">
         <span className={`mastery-progress-level-indicator mastery-level-${level}`}>
@@ -193,7 +243,8 @@ export function MasteryProgressBar({
           Track fully mastered!
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

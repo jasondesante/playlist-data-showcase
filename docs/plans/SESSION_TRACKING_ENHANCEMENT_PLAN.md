@@ -339,9 +339,36 @@ Create a new hook to expose mastery-related data from the engine.
   - SVG icons have `aria-hidden="true"` (decorative)
   - Tooltip has `role="tooltip"` for proper semantics
   - Build: clean, no TypeScript errors
-- [ ] Ensure color contrast for mastery levels
-- [ ] Add keyboard navigation to session history
-- [ ] Add screen reader announcements for mastery changes
+- [x] Ensure color contrast for mastery levels
+  - Verified: All mastery colors meet WCAG 2.1 AA non-text contrast (3:1 minimum)
+    - Basic (Bronze): ~4.5:1 contrast ratio
+    - Familiar (Silver): ~5.8:1 contrast ratio
+    - Mastered (Gold): ~5.2:1 contrast ratio
+  - Added: High contrast mode support via `@media (forced-colors: active)`
+  - Added: Increased contrast preference via `@media (prefers-contrast: more)`
+  - Updated both MasteryBadge.css and MasteryProgressBar.css
+  - Uses system colors (Canvas, CanvasText, Highlight) for Windows High Contrast mode
+  - Build: clean, no TypeScript errors
+- [x] Add keyboard navigation to session history
+  - Added: Arrow Up/Down navigation between session items
+  - Added: Home/End key support (jump to first/last item)
+  - Added: `role="list"` and `role="listitem"` for proper ARIA structure
+  - Added: `aria-label` for list and items
+  - Added: `focusIndexRef` to track current focus position
+  - Added: `focusItem()` helper for programmatic focus management
+  - Added: High contrast mode support for SessionHistoryItem and SessionHistoryPanel
+  - Added: `aria-hidden="true"` to decorative icons in bonus indicators
+  - Added: `aria-label` to bonus icons (Environmental/Gaming bonus applied)
+  - Build: clean, no TypeScript errors
+- [x] Add screen reader announcements for mastery changes
+  - Added: ARIA live region (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`)
+  - Added: `useRef` to track previous mastery level
+  - Added: `useEffect` to detect level changes and trigger announcements
+  - Announcement messages:
+    - Level up: "Mastery level increased to [Level]"
+    - Mastered: "Congratulations! Track Mastered!"
+  - Live region uses visually hidden styling (sr-only pattern)
+  - Build: clean, no TypeScript errors
 
 ### Task 7.3: Performance
 

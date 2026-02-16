@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useId, useRef, useCallback } from 'react';
 import { ScrollText, ChevronDown, ChevronUp, Headphones, Zap, Clock, History, List } from 'lucide-react';
 import { SessionHistoryItem } from './SessionHistoryItem';
 import type { ListeningSessionWithTrack } from '@/types';
@@ -15,6 +15,7 @@ import './SessionHistoryPanel.css';
  * - "Show More" button if more sessions exist
  * - Collapsible/expandable design
  * - Empty state when no history
+ * - Full keyboard navigation and screen reader support
  */
 
 export interface SessionHistoryPanelProps {
@@ -80,6 +81,16 @@ export function SessionHistoryPanel({
   const [isCollapsed, setIsCollapsed] = useState(initiallyCollapsed);
   const [showAll, setShowAll] = useState(false);
 
+  // Ref for the list container
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Track current focus index
+  const focusIndexRef = useRef<number>(0);
+
+  // Generate unique IDs for accessibility
+  const uniqueId = useId();
+  const contentId = `session-history-content-${uniqueId}`;
+
   // Calculate aggregate stats
   const stats = useMemo(() => calculateSessionStats(sessions), [sessions]);
 
@@ -102,6 +113,41 @@ export function SessionHistoryPanel({
     setShowAll(prev => !prev);
   };
 
+  // Helper to focus an item by index
+  const focusItem = useCallback((index: number) => {
+    const items = listRef.current?.querySelectorAll<HTMLButtonElement>('[role="button"]');
+    if (items && items[index]) {
+      items[index].focus();
+      focusIndexRef.current = index;
+    }
+  }, []);
+
+  // Keyboard navigation for the session list
+  const handleListKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const itemCount = visibleSessions.length;
+
+    if (itemCount === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        focusItem(Math.min(focusIndexRef.current + 1, itemCount - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        focusItem(Math.max(focusIndexRef.current - 1, 0));
+        break;
+      case 'Home':
+        e.preventDefault();
+        focusItem(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        focusItem(itemCount - 1);
+        break;
+    }
+  }, [visibleSessions.length, focusItem]);
+
   // Empty state
   if (sessions.length === 0) {
     return (
@@ -112,7 +158,7 @@ export function SessionHistoryPanel({
             <h3 className="session-history-panel-title">Session History</h3>
           </div>
         </div>
-        <div className="session-history-panel-empty">
+        <div className="session-history-panel-empty" role="status">
           <ScrollText className="session-history-panel-empty-icon" size={32} />
           <p className="session-history-panel-empty-text">No sessions yet</p>
           <p className="session-history-panel-empty-hint">
@@ -138,6 +184,7 @@ export function SessionHistoryPanel({
           }
         }}
         aria-expanded={!isCollapsed}
+        aria-controls={contentId}
         aria-label={`Session History - ${stats.totalSessions} sessions. Click to ${isCollapsed ? 'expand' : 'collapse'}`}
       >
         <div className="session-history-panel-title-row">
@@ -158,6 +205,7 @@ export function SessionHistoryPanel({
 
       {/* Stats Summary Bar */}
       {!isCollapsed && (
+        <div id={contentId} role="region" aria-label="Session history content">
         <>
           <div className="session-history-panel-stats">
             <div className="session-history-panel-stat">
@@ -182,7 +230,13 @@ export function SessionHistoryPanel({
           </div>
 
           {/* Session List */}
-          <div className="session-history-panel-list">
+          <div
+            ref={listRef}
+            className="session-history-panel-list"
+            role="list"
+            aria-label="Session history list"
+            onKeyDown={handleListKeyDown}
+          >
             {visibleSessions.map((session, index) => (
               <SessionHistoryItem
                 key={`${session.track_uuid}-${session.start_time}-${index}`}
@@ -200,7 +254,7 @@ export function SessionHistoryPanel({
                 onClick={toggleShowAll}
                 aria-label={showAll ? 'Show fewer sessions' : `Show ${remainingCount} more sessions`}
               >
-                <Headphones size={14} />
+                <Headphones size={14} aria-hidden="true" />
                 {showAll ? (
                   <>Show Less</>
                 ) : (
@@ -210,6 +264,7 @@ export function SessionHistoryPanel({
             </div>
           )}
         </>
+        </div>
       )}
     </div>
   );
