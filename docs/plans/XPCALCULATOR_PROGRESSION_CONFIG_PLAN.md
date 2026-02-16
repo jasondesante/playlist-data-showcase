@@ -71,12 +71,12 @@ Create a new store to manage progression configuration state with LocalStorage p
 
 #### Tasks
 
-- [ ] **1.1 Create Progression Config Types**
-  - [ ] Define `ProgressionConfigSettings` interface matching engine's `ProgressionConfig.xp.activity_bonuses`
-  - [ ] Add app-specific `altitude` field (not in engine's config)
-  - [ ] Include `xp_per_second` (migrated from appStore)
-  - [ ] Create type for the full config state including metadata (version, last modified)
-  - [ ] File: `src/types/progressionConfig.ts` or add to `src/types/index.ts`
+- [x] **1.1 Create Progression Config Types** ✓ 2026-02-16
+  - [x] Define `ProgressionConfigSettings` interface matching engine's `ProgressionConfig.xp.activity_bonuses`
+  - [x] Add app-specific `altitude` field (not in engine's config)
+  - [x] Include `xp_per_second` (migrated from appStore)
+  - [x] Create type for the full config state including metadata (version, last modified)
+  - [x] File: Added to `src/types/index.ts`
 
 - [ ] **1.2 Create Progression Config Store**
   - [ ] Create `src/store/progressionConfigStore.ts`
