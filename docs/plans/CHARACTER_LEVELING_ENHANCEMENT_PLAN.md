@@ -633,9 +633,21 @@ Enhance the StatSelectionModal component to show:
       - Accessibility section
       - Styling section with CSS file path
 
-- [ ] **4.3.2 Add Code Comments**
-  - [ ] Comment complex formula logic
-  - [ ] Document effect extraction helper
+- [x] **4.3.2 Add Code Comments**
+  - [x] Comment complex formula logic
+  - [x] Document effect extraction helper
+  - **Implementation Summary (2026-02-17):**
+    - **xpFormulaPresets.ts:** Added comprehensive JSDoc-style documentation:
+      - D&D 5e formula: Added mathematical derivation with table showing level progression analysis
+      - Linear formula: Added mathematical properties and comparison to D&D 5e
+      - Exponential formula: Added growth rate analysis and warning about steep curve at high levels
+      - OSRS formula: Added comparison to actual OSRS mechanics and growth rate analysis
+      - Each proficiency formula now documented with level/proficiency tables
+    - **CharacterLevelingTab.tsx (getActiveStatEffects):** Added detailed documentation:
+      - JSDoc-style header explaining the function's purpose
+      - Section explaining engine format differences between equipment and feature effects
+      - Inline comments for each processing step explaining the nested structure
+      - Example showing expected return format
 
 ---
 

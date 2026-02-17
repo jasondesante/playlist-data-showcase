@@ -84,40 +84,70 @@ export function CharacterLevelingTab() {
    *
    * Task 3.4.1: Extract Active Effects from Character
    *
+   * This helper function bridges the gap between the engine's effect format and
+   * the UI's display format. The engine stores effects in a nested structure
+   * with different formats for equipment vs feature effects, which we flatten
+   * into a unified StatEffect array for the modal.
+   *
+   * Engine Format Differences:
+   * --------------------------
+   * Equipment effects come in arrays with nested 'effects' properties:
+   *   equipment_effects: [{ source: "Ring of Strength", effects: [{ type: "stat_bonus", target: "STR", value: 2 }] }]
+   *
+   * Feature effects are simpler, direct objects:
+   *   feature_effects: [{ type: "stat_bonus", target: "DEX", value: -1, description: "Curse" }]
+   *
    * @param character - The character sheet to extract effects from
    * @returns Array of StatEffect objects for display in the modal
+   *
+   * @example
+   * const effects = getActiveStatEffects(character);
+   * // Returns: [{ ability: 'STR', amount: 2, source: 'Ring of Strength', type: 'buff' }]
    */
   const getActiveStatEffects = (character: CharacterSheet): StatEffect[] => {
     const effects: StatEffect[] = [];
 
     // Extract from equipment effects
+    // Equipment effects have a nested structure: equipment_effects[].effects[]
+    // - equipment_effects: Array of equipment items with their attached effects
+    // - Each item has a 'source' (item name) and 'effects' array
+    // - The 'effects' array contains individual effect objects
     if (character.equipment_effects) {
       for (const equipmentEffect of character.equipment_effects) {
-        if (equipmentEffect.effects) {
-          for (const prop of equipmentEffect.effects) {
-            // Check for stat_bonus type effects
-            if (prop.type === 'stat_bonus' && prop.target && typeof prop.value === 'number') {
-              effects.push({
-                ability: prop.target as Ability,
-                amount: prop.value,
-                source: equipmentEffect.source || 'Equipment',
-                type: prop.value > 0 ? 'buff' : 'debuff'
-              });
-            }
+        // Skip if this equipment has no effects attached
+        if (!equipmentEffect.effects) continue;
+
+        // Process each effect from this equipment item
+        for (const prop of equipmentEffect.effects) {
+          // We only care about stat_bonus effects (not other effect types like AC bonus)
+          // - type: 'stat_bonus' indicates this modifies an ability score
+          // - target: The ability being modified (STR, DEX, CON, INT, WIS, CHA)
+          // - value: The amount of modification (positive = buff, negative = debuff)
+          if (prop.type === 'stat_bonus' && prop.target && typeof prop.value === 'number') {
+            effects.push({
+              ability: prop.target as Ability,
+              amount: prop.value,
+              source: equipmentEffect.source || 'Equipment', // Use item name, fallback to generic
+              type: prop.value > 0 ? 'buff' : 'debuff' // Determine buff/debuff from sign
+            });
           }
         }
       }
     }
 
     // Extract from feature effects
+    // Feature effects have a simpler flat structure compared to equipment
+    // - feature_effects: Direct array of effect objects (no nested structure)
+    // - Each effect has 'type', 'target', 'value', and 'description' directly
     if (character.feature_effects) {
       for (const featureEffect of character.feature_effects) {
-        // Check for stat_bonus type effects
+        // Check for stat_bonus type effects (same logic as equipment)
+        // Feature effects use 'description' for the source name instead of 'source'
         if (featureEffect.type === 'stat_bonus' && featureEffect.target && typeof featureEffect.value === 'number') {
           effects.push({
             ability: featureEffect.target as Ability,
             amount: featureEffect.value,
-            source: featureEffect.description || 'Feature',
+            source: featureEffect.description || 'Feature', // Use feature name, fallback to generic
             type: featureEffect.value > 0 ? 'buff' : 'debuff'
           });
         }
