@@ -267,6 +267,12 @@ const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
 
 // Helper function to determine log entry color based on action type and result
 function getLogEntryColor(action: any): string {
+  // Tactical actions get their own colors (Phase 4)
+  if (action.type === 'dodge') return 'combat-log-entry-dodge';
+  if (action.type === 'dash') return 'combat-log-entry-dash';
+  if (action.type === 'disengage') return 'combat-log-entry-disengage';
+  if (action.type === 'flee') return 'combat-log-entry-flee';
+  // Standard actions
   if (action.type === 'spell') return 'combat-log-entry-spell';
   if (action.result?.success) return 'combat-log-entry-success';
   if (action.result?.success === false) return 'combat-log-entry-fail';
@@ -325,6 +331,11 @@ export function CombatSimulatorTab() {
     getCurrentCombatant,
     executeAttack,
     executeCastSpell,
+    executeDodge,
+    executeDash,
+    executeDisengage,
+    executeFlee,
+    canFlee,
     nextTurn,
     getCombatResult,
     resetCombat,
@@ -758,6 +769,111 @@ export function CombatSimulatorTab() {
         : [...prev, targetId]
     );
   };
+
+  // ========================================
+  // Phase 4: Tactical Action Handlers
+  // ========================================
+
+  /**
+   * Handle Dodge action - grants +2 AC until next turn
+   * Costs an action, so advance turn after execution
+   */
+  const handleDodge = () => {
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Check if action is available
+    if (current.actionUsed) {
+      logger.warn('CombatSimulator', 'Cannot dodge: action already used this turn');
+      return;
+    }
+
+    const action = executeDodge(current);
+    if (action) {
+      logger.info('CombatSimulator', 'Dodge action executed', { actor: current.character.name });
+      // Advance to next turn
+      nextTurn();
+    }
+  };
+
+  /**
+   * Handle Dash action - doubles movement speed for the turn
+   * Costs an action, so advance turn after execution
+   */
+  const handleDash = () => {
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Check if action is available
+    if (current.actionUsed) {
+      logger.warn('CombatSimulator', 'Cannot dash: action already used this turn');
+      return;
+    }
+
+    const action = executeDash(current);
+    if (action) {
+      logger.info('CombatSimulator', 'Dash action executed', { actor: current.character.name });
+      // Advance to next turn
+      nextTurn();
+    }
+  };
+
+  /**
+   * Handle Disengage action - prevents opportunity attacks this turn
+   * Costs an action, so advance turn after execution
+   */
+  const handleDisengage = () => {
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Check if action is available
+    if (current.actionUsed) {
+      logger.warn('CombatSimulator', 'Cannot disengage: action already used this turn');
+      return;
+    }
+
+    const action = executeDisengage(current);
+    if (action) {
+      logger.info('CombatSimulator', 'Disengage action executed', { actor: current.character.name });
+      // Advance to next turn
+      nextTurn();
+    }
+  };
+
+  /**
+   * Handle Flee action - removes combatant from combat entirely
+   * Requires allowFleeing config to be enabled
+   * Costs an action and ends combat for the fleeing character
+   */
+  const handleFlee = () => {
+    const current = getCurrentCombatant();
+    if (!current) return;
+
+    // Check if fleeing is allowed
+    if (!canFlee()) {
+      logger.warn('CombatSimulator', 'Cannot flee: fleeing is not enabled in combat config');
+      return;
+    }
+
+    // Check if action is available
+    if (current.actionUsed) {
+      logger.warn('CombatSimulator', 'Cannot flee: action already used this turn');
+      return;
+    }
+
+    const action = executeFlee(current);
+    if (action) {
+      logger.info('CombatSimulator', 'Flee action executed', { actor: current.character.name });
+      // The engine handles removing the combatant and may end combat
+      const result = getCombatResult();
+      if (result) {
+        logger.info('CombatSimulator', 'Combat ended after flee', { winner: result.winner.character.name });
+      }
+    }
+  };
+
+  // End of Phase 4: Tactical Action Handlers
+  // ========================================
 
   // Auto-play interval effect (task 4.9.7)
   useEffect(() => {
@@ -1657,9 +1773,27 @@ export function CombatSimulatorTab() {
                           {action.actor.character.name}
                         </span>
                         <span className="combat-log-action">
-                          used {action.type === 'attack' ? 'an attack' : action.type}
+                          {(() => {
+                            // Format action type for display (Phase 4: handle tactical actions)
+                            switch (action.type) {
+                              case 'attack':
+                                return 'used an attack';
+                              case 'dodge':
+                                return 'took the Dodge action 🛡️';
+                              case 'dash':
+                                return 'took the Dash action 🏃';
+                              case 'disengage':
+                                return 'took the Disengage action 🚪';
+                              case 'flee':
+                                return 'fled from combat 🏳️';
+                              case 'spell':
+                                return 'cast a spell';
+                              default:
+                                return `used ${action.type}`;
+                            }
+                          })()}
                         </span>
-                        {action.target && (
+                        {action.target && action.type === 'attack' && (
                           <span className="combat-log-action">
                             on <span className="combat-log-target-name">{action.target.character.name}</span>
                           </span>
@@ -1821,6 +1955,55 @@ export function CombatSimulatorTab() {
           {/* Action Buttons - Hide when combat ended */}
           {isActive && (
             <div className="combat-actions">
+              {/* Tactical Actions - Phase 4 */}
+              {(() => {
+                const currentCombatant = getCurrentCombatant();
+                const isCurrentTurnHero = currentCombatant && !isEnemy(currentCombatant.character);
+                const actionUsed = currentCombatant?.actionUsed ?? false;
+
+                // Only show tactical actions for hero (player-controlled) characters
+                // and when not auto-playing
+                return isCurrentTurnHero && !isAutoPlaying && (
+                  <div className="combat-tactical-actions">
+                    <span className="combat-tactical-label">Tactical Actions:</span>
+                    <button
+                      onClick={handleDodge}
+                      disabled={actionUsed}
+                      className={`combat-action-button combat-button combat-button-tactical combat-button-dodge ${actionUsed ? 'combat-button-disabled' : ''}`}
+                      title="+2 AC until next turn"
+                    >
+                      🛡️ Dodge
+                    </button>
+                    <button
+                      onClick={handleDash}
+                      disabled={actionUsed}
+                      className={`combat-action-button combat-button combat-button-tactical combat-button-dash ${actionUsed ? 'combat-button-disabled' : ''}`}
+                      title="Double movement speed this turn"
+                    >
+                      🏃 Dash
+                    </button>
+                    <button
+                      onClick={handleDisengage}
+                      disabled={actionUsed}
+                      className={`combat-action-button combat-button combat-button-tactical combat-button-disengage ${actionUsed ? 'combat-button-disabled' : ''}`}
+                      title="No opportunity attacks this turn"
+                    >
+                      🚪 Disengage
+                    </button>
+                    {canFlee() && (
+                      <button
+                        onClick={handleFlee}
+                        disabled={actionUsed}
+                        className={`combat-action-button combat-button combat-button-tactical combat-button-flee ${actionUsed ? 'combat-button-disabled' : ''}`}
+                        title="Flee from combat (removes you from battle)"
+                      >
+                        🏳️ Flee
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Manual control buttons */}
               <button
                 onClick={handleNextTurn}

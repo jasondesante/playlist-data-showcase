@@ -109,20 +109,20 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Add Dodge, Dash, Disengage, and Flee action buttons to combat.
 
 ### 4.1 Action Button Components
-- [ ] Add Dodge button
-  - [ ] Call `combat.executeDodge(instance, current)`
-  - [ ] Show "+2 AC until next turn" tooltip
-  - [ ] Disable if action already used
-- [ ] Add Dash button
-  - [ ] Call `combat.executeDash(instance, current)`
-  - [ ] Show "Double movement" tooltip
-- [ ] Add Disengage button
-  - [ ] Call `combat.executeDisengage(instance, current)`
-  - [ ] Show "No opportunity attacks" tooltip
-- [ ] Add Flee button
-  - [ ] Call `combat.executeFlee(instance, current)`
-  - [ ] Require `allowFleeing` config to be enabled
-  - [ ] Show confirmation dialog
+- [x] Add Dodge button
+  - [x] Call `combat.executeDodge(instance, current)`
+  - [x] Show "+2 AC until next turn" tooltip
+  - [x] Disable if action already used
+- [x] Add Dash button
+  - [x] Call `combat.executeDash(instance, current)`
+  - [x] Show "Double movement" tooltip
+- [x] Add Disengage button
+  - [x] Call `combat.executeDisengage(instance, current)`
+  - [x] Show "No opportunity attacks" tooltip
+- [x] Add Flee button
+  - [x] Call `combat.executeFlee(instance, current)`
+  - [x] Require `allowFleeing` config to be enabled
+  - [x] Show confirmation dialog (note: simple implementation without modal dialog)
 
 ### 4.2 Action Economy Display
 - [ ] Show action/bonus action/reaction status
@@ -130,9 +130,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [ ] Reset indicators on new turn
 
 ### 4.3 Combat Log Updates
-- [ ] Handle new action types in log renderer
-- [ ] Show dodge/dash/disengage/flee descriptions
-- [ ] Color-code tactical actions differently
+- [x] Handle new action types in log renderer
+- [x] Show dodge/dash/disengage/flee descriptions
+- [x] Color-code tactical actions differently
 
 ---
 

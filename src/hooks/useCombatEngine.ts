@@ -33,7 +33,7 @@ export interface CombatInstance {
 }
 
 export interface CombatAction {
-  type: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'help' | 'hide' | 'ready';
+  type: 'attack' | 'spell' | 'dodge' | 'dash' | 'disengage' | 'flee' | 'help' | 'hide' | 'ready';
   actor: Combatant;
   target?: Combatant;
   targets?: Combatant[];
@@ -187,11 +187,78 @@ export const useCombatEngine = () => {
         setCombat(null);
     }, []);
 
+    // ========================================
+    // Phase 4: Tactical Actions (Dodge, Dash, Disengage, Flee)
+    // ========================================
+
+    /**
+     * Execute Dodge action - grants +2 AC until next turn
+     */
+    const executeDodge = useCallback((combatant: Combatant) => {
+        if (!combat) return null;
+
+        const action = engine.executeDodge(combat, combatant);
+        setCombat(structuredClone(combat));
+        return action;
+    }, [combat, engine]);
+
+    /**
+     * Execute Dash action - doubles movement speed for the turn
+     */
+    const executeDash = useCallback((combatant: Combatant) => {
+        if (!combat) return null;
+
+        const action = engine.executeDash(combat, combatant);
+        setCombat(structuredClone(combat));
+        return action;
+    }, [combat, engine]);
+
+    /**
+     * Execute Disengage action - prevents opportunity attacks this turn
+     */
+    const executeDisengage = useCallback((combatant: Combatant) => {
+        if (!combat) return null;
+
+        const action = engine.executeDisengage(combat, combatant);
+        setCombat(structuredClone(combat));
+        return action;
+    }, [combat, engine]);
+
+    /**
+     * Execute Flee action - removes combatant from combat
+     * Requires allowFleeing: true in CombatEngine config
+     */
+    const executeFlee = useCallback((combatant: Combatant) => {
+        if (!combat) return null;
+
+        try {
+            const action = engine.executeFlee(combat, combatant);
+            setCombat(structuredClone(combat));
+            return action;
+        } catch (error) {
+            // Handle case where fleeing is not allowed
+            console.warn('[CombatEngine] Flee action failed:', error);
+            return null;
+        }
+    }, [combat, engine]);
+
+    /**
+     * Check if fleeing is allowed in current combat configuration
+     */
+    const canFlee = useCallback((): boolean => {
+        return engine.canFlee?.() ?? false;
+    }, [engine]);
+
     return {
         startCombat,
         getCurrentCombatant,
         executeAttack,
         executeCastSpell,
+        executeDodge,
+        executeDash,
+        executeDisengage,
+        executeFlee,
+        canFlee,
         nextTurn,
         getCombatResult,
         resetCombat,
