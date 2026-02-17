@@ -6,6 +6,7 @@ import { useAudioEnemyGeneration, type TemplateReasoning } from '../../hooks/use
 import { usePlaylistStore } from '../../store/playlistStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
+import { CharacterCard } from '../ui/CharacterCard';
 import {
     SPELL_DATABASE,
     type CharacterSheet,
@@ -518,7 +519,14 @@ function getSpellLevelText(level: number): string {
 }
 
 export function CombatSimulatorTab() {
-  const { getActiveCharacter } = useCharacterStore();
+  const {
+    getActiveCharacter,
+    characters,
+    selectedHeroSeeds,
+    toggleHeroSelection,
+    selectAllHeroes,
+    deselectAllHeroes
+  } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
 
   // ============================================================
@@ -1002,12 +1010,37 @@ export function CombatSimulatorTab() {
    * - Uses generatedEnemies state if populated
    * - Falls back to generating a single enemy if none configured
    * - Passes generated enemies to startCombat()
+   *
+   * Phase 7.1: Party mode support
+   * - When partyMode is 'party', uses selected heroes from store
+   * - When partyMode is 'solo', uses active character only
    */
   const handleStartCombat = useCallback(() => {
-    const activeChar = getActiveCharacter();
-    if (!activeChar) {
-      logger.warn('CombatSimulator', 'Cannot start combat: no active character');
-      return;
+    // Phase 7.1: Determine party members based on party mode
+    let partyMembers: CharacterSheet[] = [];
+
+    if (partyMode === 'party') {
+      // Use selected heroes from store (limited to 4)
+      partyMembers = characters
+        .filter(c => selectedHeroSeeds.includes(c.seed))
+        .slice(0, 4);
+
+      if (partyMembers.length === 0) {
+        logger.warn('CombatSimulator', 'Cannot start combat: no party members selected');
+        return;
+      }
+      logger.info('CombatSimulator', 'Starting party combat', {
+        partySize: partyMembers.length,
+        names: partyMembers.map(c => c.name)
+      });
+    } else {
+      // Solo mode: use active character only
+      const activeChar = getActiveCharacter();
+      if (!activeChar) {
+        logger.warn('CombatSimulator', 'Cannot start combat: no active character');
+        return;
+      }
+      partyMembers = [activeChar];
     }
 
     let enemiesToUse: CharacterSheet[] = [];
@@ -1045,14 +1078,17 @@ export function CombatSimulatorTab() {
       }
     }
 
-    // Start combat with the active character and generated enemies
-    startCombat([activeChar], enemiesToUse);
+    // Start combat with the party members and generated enemies
+    startCombat(partyMembers, enemiesToUse);
   }, [
     getActiveCharacter,
     generatedEnemies,
     enemyGenerator,
     generationConfig,
-    startCombat
+    startCombat,
+    partyMode,
+    characters,
+    selectedHeroSeeds
   ]);
 
   const handleNextTurn = () => {
@@ -1441,6 +1477,83 @@ export function CombatSimulatorTab() {
               {partyMode === 'party' && 'Combat with a party of selected heroes (up to 4).'}
             </p>
           </div>
+
+          {/* Phase 7.1: Party Member Selector - shown when party mode is enabled */}
+          {partyMode === 'party' && (
+            <div className="combat-config-section combat-party-selector-section">
+              <div className="combat-party-selector-header">
+                <span className="combat-party-selector-title">⚔️ Select Party Members</span>
+                <div className="combat-party-selector-count">
+                  <strong>{selectedHeroSeeds.length}</strong> / <strong>4</strong> selected
+                </div>
+              </div>
+
+              {/* Selection controls */}
+              {characters.length > 0 && (
+                <div className="combat-party-selector-controls">
+                  <button
+                    type="button"
+                    onClick={selectAllHeroes}
+                    className="combat-party-selector-control-btn"
+                    disabled={selectedHeroSeeds.length >= 4}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deselectAllHeroes}
+                    className="combat-party-selector-control-btn"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+
+              {/* Character grid */}
+              {characters.length === 0 ? (
+                <p className="combat-party-selector-empty">
+                  No characters available. Generate heroes in the Character tab first.
+                </p>
+              ) : (
+                <div className="combat-party-selector-grid">
+                  {characters.map((character) => {
+                    const isSelected = selectedHeroSeeds.includes(character.seed);
+                    const isOverLimit = !isSelected && selectedHeroSeeds.length >= 4;
+
+                    return (
+                      <div
+                        key={character.seed}
+                        className={`combat-party-selector-card ${isSelected ? 'combat-party-selector-card-selected' : ''} ${isOverLimit ? 'combat-party-selector-card-disabled' : ''}`}
+                      >
+                        <CharacterCard
+                          character={character}
+                          variant={isSelected ? 'selected' : 'selectable'}
+                          selectionMode
+                          isSelected={isSelected}
+                          onToggleSelection={() => {
+                            if (isOverLimit) return; // Don't allow selection if over limit
+                            toggleHeroSelection(character.seed);
+                          }}
+                        />
+                        {isOverLimit && (
+                          <div className="combat-party-selector-card-overlay">
+                            Max 4 heroes
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Help text */}
+              <p className="combat-config-hint">
+                {selectedHeroSeeds.length === 0 && 'Select at least one hero to begin combat.'}
+                {selectedHeroSeeds.length > 0 && selectedHeroSeeds.length < 4 && `${selectedHeroSeeds.length} hero${selectedHeroSeeds.length > 1 ? 'es' : ''} selected. You can add ${4 - selectedHeroSeeds.length} more.`}
+                {selectedHeroSeeds.length === 4 && 'Full party of 4 heroes selected!'}
+              </p>
+            </div>
+          )}
 
           {/* Phase 2.1: Enemy Configuration Panel */}
           <div className="combat-config-panel">

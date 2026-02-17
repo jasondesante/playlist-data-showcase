@@ -197,11 +197,11 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 
 ### 7.1 Party Selection UI
 - [x] Add party mode toggle: "Solo Hero" vs "Party"
-- [ ] Create party member selector
-  - [ ] Show all generated characters from store
-  - [ ] Multi-select with checkboxes
-  - [ ] Display character thumbnails
-  - [ ] Limit to 4-6 party members
+- [x] Create party member selector
+  - [x] Show all generated characters from store
+  - [x] Multi-select with checkboxes
+  - [x] Display character thumbnails
+  - [x] Limit to 4-6 party members
 
 ### 7.2 Party Analyzer Display
 - [ ] Create `PartyAnalyzerCard` component
@@ -216,7 +216,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [ ] Show class composition breakdown
 
 ### 7.3 Party Combat Integration
-- [ ] Pass party array to `startCombat()`
+- [x] Pass party array to `startCombat()`
 - [ ] Update combat result to handle party victory
 - [ ] Distribute XP among party members
 
