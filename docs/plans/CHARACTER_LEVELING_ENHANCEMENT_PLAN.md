@@ -350,10 +350,10 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **3.3.1 Create Effects Summary Section**
-  - [ ] Add collapsible "Active Effects" section above stat grid
-  - [ ] Only show if `activeEffects` has items
-  - [ ] Header: "Active Stat Modifiers"
+- [x] **3.3.1 Create Effects Summary Section**
+  - [x] Add collapsible "Active Effects" section above stat grid
+  - [x] Only show if `activeEffects` has items
+  - [x] Header: "Active Stat Modifiers"
 
 - [ ] **3.3.2 Create Effect Item Component**
   - [ ] Each effect shows:

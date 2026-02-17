@@ -18,7 +18,7 @@
 
 import React from 'react';
 import '../styles/components/StatSelectionModal.css';
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle, ChevronDown, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Ability } from 'playlist-data-engine';
 
 /**
@@ -78,13 +78,14 @@ export function StatSelectionModal({
   pendingCount,
   currentStats = {},
   gameMode = 'standard',
-  activeEffects: _activeEffects = [],
+  activeEffects = [],
   onApply,
   onCancel,
 }: StatSelectionModalProps) {
   const [selectionMode, setSelectionMode] = React.useState<SelectionMode>('single');
   const [selectedStats, setSelectedStats] = React.useState<Ability[]>([]);
   const [maxSelectedError, setMaxSelectedError] = React.useState(false);
+  const [effectsExpanded, setEffectsExpanded] = React.useState(true);
 
   // Stat cap constant for standard mode
   const STAT_CAP = 20;
@@ -95,8 +96,24 @@ export function StatSelectionModal({
       setSelectionMode('single');
       setSelectedStats([]);
       setMaxSelectedError(false);
+      setEffectsExpanded(true);
     }
   }, [isOpen]);
+
+  // Group effects by ability for cleaner display
+  const effectsByAbility = React.useMemo(() => {
+    const grouped: Partial<Record<Ability, StatEffect[]>> = {};
+    activeEffects.forEach(effect => {
+      if (!grouped[effect.ability]) {
+        grouped[effect.ability] = [];
+      }
+      grouped[effect.ability]!.push(effect);
+    });
+    return grouped;
+  }, [activeEffects]);
+
+  // Check if there are any active effects to display
+  const hasActiveEffects = activeEffects.length > 0;
 
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -243,6 +260,62 @@ export function StatSelectionModal({
                   : `${getCappedStatsCount()} stat${getCappedStatsCount() > 1 ? 's are' : ' is'} at maximum (20). Consider choosing different stats.`
                 }
               </span>
+            </div>
+          )}
+
+          {/* Active Stat Modifiers Section (Task 3.3.1) */}
+          {hasActiveEffects && (
+            <div className="statmodal-effects-section">
+              <button
+                type="button"
+                className="statmodal-effects-header"
+                onClick={() => setEffectsExpanded(!effectsExpanded)}
+                aria-expanded={effectsExpanded}
+                aria-controls="statmodal-effects-list"
+              >
+                {effectsExpanded ? (
+                  <ChevronDown size={16} className="statmodal-effects-chevron" />
+                ) : (
+                  <ChevronRight size={16} className="statmodal-effects-chevron" />
+                )}
+                <span className="statmodal-effects-title">Active Stat Modifiers</span>
+                <span className="statmodal-effects-count">
+                  {activeEffects.length} effect{activeEffects.length !== 1 ? 's' : ''}
+                </span>
+              </button>
+              {effectsExpanded && (
+                <div id="statmodal-effects-list" className="statmodal-effects-list">
+                  {(Object.keys(effectsByAbility) as Ability[]).map((ability) => {
+                    const effects = effectsByAbility[ability]!;
+                    const info = ABILITY_INFO[ability];
+                    return (
+                      <div key={ability} className="statmodal-effects-group">
+                        <div className="statmodal-effects-ability-label" style={{ '--stat-color': info.color } as React.CSSProperties}>
+                          {info.short}
+                        </div>
+                        <div className="statmodal-effects-items">
+                          {effects.map((effect, idx) => (
+                            <div
+                              key={`${effect.source}-${idx}`}
+                              className={`statmodal-effect-item ${effect.type === 'buff' ? 'statmodal-effect-buff' : 'statmodal-effect-debuff'}`}
+                            >
+                              {effect.type === 'buff' ? (
+                                <ArrowUp size={12} className="statmodal-effect-icon" />
+                              ) : (
+                                <ArrowDown size={12} className="statmodal-effect-icon" />
+                              )}
+                              <span className="statmodal-effect-amount">
+                                {effect.amount > 0 ? '+' : ''}{effect.amount}
+                              </span>
+                              <span className="statmodal-effect-source">{effect.source}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
