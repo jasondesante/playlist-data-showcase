@@ -13,12 +13,12 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Replace the mock "Goblin" enemy with the full EnemyGenerator system.
 
 ### 1.1 Core Enemy Generator Hook
-- [ ] Create `useEnemyGenerator.ts` hook
-  - [ ] Import and wrap `EnemyGenerator.generate()`
-  - [ ] Import and wrap `EnemyGenerator.generateEncounter()`
-  - [ ] Import and wrap `EnemyGenerator.generateEncounterByCR()`
-  - [ ] Add `getTemplateById()` helper
-  - [ ] Handle seeding for determinism
+- [x] Create `useEnemyGenerator.ts` hook
+  - [x] Import and wrap `EnemyGenerator.generate()`
+  - [x] Import and wrap `EnemyGenerator.generateEncounter()`
+  - [x] Import and wrap `EnemyGenerator.generateEncounterByCR()`
+  - [x] Add `getTemplateById()` helper
+  - [x] Handle seeding for determinism
 
 ### 1.2 Enemy Generation State Management
 - [ ] Add enemy generation state to component
