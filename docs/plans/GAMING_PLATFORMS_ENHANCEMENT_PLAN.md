@@ -29,9 +29,9 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
   - [x] Add `fetchGameSchema(appId)` method
   - [x] Call `sensors.steamClient.getGameSchema(appId)` (or equivalent via sensors)
   - [x] Store result in state
-- [ ] Add `apiStatistics` state
-  - [ ] Call `sensors.getDiagnostics()` to get API performance metrics
-  - [ ] Extract Steam API timing data (avg, min, max, success rate, p95, p99)
+- [x] Add `apiStatistics` state
+  - [x] Call `sensors.getDiagnostics()` to get API performance metrics
+  - [x] Extract Steam API timing data (avg, min, max, success rate, p95, p99)
 - [ ] Add `diagnostics` getter
   - [ ] Expose `sensors.getDiagnostics()` directly for debug panel
 - [x] Add `isServerMode` detection
@@ -335,7 +335,7 @@ discordClient.clearMusicActivity(): Promise<boolean>
 - [x] Add `isServerMode` detection to hook (5 min)
 - [x] Gray out Discord section with overlay (20 min)
 - [x] Add explanatory tooltip for Discord limitation (10 min)
-- [ ] Add `diagnostics` to hook return (5 min)
+- [x] Add `diagnostics` to hook return (5 min)
 - [ ] Create collapsible diagnostics panel (30 min)
 - [x] Add `fetchGameSchema()` to hook (20 min)
 - [ ] Add Game Schema section inside Currently Gaming card (45 min)

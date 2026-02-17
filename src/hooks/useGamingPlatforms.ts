@@ -42,6 +42,58 @@ export interface GameSchemaState {
 }
 
 /**
+ * API performance statistics from Steam API calls
+ */
+export interface ApiStatistics {
+    /** Average response time in milliseconds */
+    average: number;
+    /** Minimum response time in milliseconds */
+    min: number;
+    /** Maximum response time in milliseconds */
+    max: number;
+    /** Success rate as a percentage (0-100) */
+    successRate: number;
+    /** 95th percentile response time in milliseconds */
+    p95: number;
+    /** 99th percentile response time in milliseconds */
+    p99: number;
+    /** Total number of API calls */
+    totalCalls: number;
+}
+
+/**
+ * Gaming diagnostics for debugging and monitoring
+ * Matches the structure returned by GamingPlatformSensors.getDiagnostics()
+ */
+export interface GamingDiagnostics {
+    timestamp: number;
+    steam: {
+        isAuthenticated: boolean;
+        userId?: string;
+        apiKey: boolean;
+    };
+    discord: {
+        isConnected: boolean;
+        clientId: boolean;
+        connectionState: string;
+    };
+    gamingContext: any;
+    polling: {
+        isActive: boolean;
+        intervalMs: number;
+        exponentialBackoff: number;
+    };
+    cache: {
+        gameMetadataCacheSize: number;
+        cachedGames: string[];
+    };
+    performance: {
+        currentGameApi: ApiStatistics;
+        metadataApi: ApiStatistics;
+    };
+}
+
+/**
  * Detect if running in server mode (Node.js/Electron) vs client mode (browser)
  * Discord RPC requires server mode to communicate with Discord's IPC
  */
@@ -72,13 +124,15 @@ const detectServerMode = (): boolean => {
  *
  * @example
  * ```tsx
- * const { connectSteam, checkActivity, setMusicStatus, calculateGamingBonus, fetchGameSchema } = useGamingPlatforms();
+ * const { connectSteam, checkActivity, setMusicStatus, calculateGamingBonus, fetchGameSchema, apiStatistics, diagnostics } = useGamingPlatforms();
  * await connectSteam('steam-id-123');
  * const context = await checkActivity();
  * const bonus = calculateGamingBonus();
  * if (context.currentGame?.appId) {
  *     await fetchGameSchema(context.currentGame.appId);
  * }
+ * console.log('API Performance:', apiStatistics);
+ * console.log('Diagnostics:', diagnostics);
  * ```
  *
  * @returns {Object} Hook return object
@@ -95,6 +149,8 @@ const detectServerMode = (): boolean => {
  * @returns {boolean} isServerMode - Whether running in server mode (Node.js/Electron) vs browser
  * @returns {Object} gameSchema - Game schema state (data, isLoading, error)
  * @returns {Function} fetchGameSchema - Fetches game schema (achievements, stats) for a Steam app ID
+ * @returns {Object|null} apiStatistics - Steam API performance metrics (avg, min, max, success rate, p95, p99)
+ * @returns {Object|null} diagnostics - Full gaming diagnostics for debugging (Steam, Discord, cache, performance)
  */
 export const useGamingPlatforms = () => {
     const { settings } = useAppStore();
@@ -120,15 +176,29 @@ export const useGamingPlatforms = () => {
         error: null
     });
 
+    // API statistics state for Steam API performance metrics
+    const [apiStatistics, setApiStatistics] = useState<ApiStatistics | null>(null);
+
+    // Full diagnostics state for debugging
+    const [diagnostics, setDiagnostics] = useState<GamingDiagnostics | null>(null);
+
     // Detect server mode (Node.js/Electron) vs client mode (browser)
     // Discord RPC requires server mode to communicate with Discord's IPC
     const isServerMode = useMemo(() => detectServerMode(), []);
 
-    // Poll Discord connection state every second
+    // Poll Discord connection state and update diagnostics every second
     useEffect(() => {
         const checkInterval = setInterval(() => {
-            const diagnostics = sensors.getDiagnostics();
-            const discordDiagnostics = diagnostics.discord;
+            const diag = sensors.getDiagnostics();
+            const discordDiagnostics = diag.discord;
+
+            // Update full diagnostics state
+            setDiagnostics(diag as GamingDiagnostics);
+
+            // Extract and update API statistics from diagnostics
+            if (diag.performance?.currentGameApi) {
+                setApiStatistics(diag.performance.currentGameApi as ApiStatistics);
+            }
 
             if (discordDiagnostics.isConnected) {
                 setDiscordConnectionStatus('connected');
@@ -336,6 +406,10 @@ export const useGamingPlatforms = () => {
         isServerMode,
         // Game schema (achievements, stats)
         gameSchema,
-        fetchGameSchema
+        fetchGameSchema,
+        // API statistics (performance metrics)
+        apiStatistics,
+        // Full diagnostics for debugging
+        diagnostics
     };
 };
