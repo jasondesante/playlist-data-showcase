@@ -25,18 +25,18 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
 ## Phase 1: Hook Updates - Expose New Steam Features
 
 ### 1.1 Update useGamingPlatforms Hook
-- [ ] Add `gameSchema` state and fetch method
-  - [ ] Add `fetchGameSchema(appId)` method
-  - [ ] Call `sensors.steamClient.getGameSchema(appId)` (or equivalent via sensors)
-  - [ ] Store result in state
+- [x] Add `gameSchema` state and fetch method
+  - [x] Add `fetchGameSchema(appId)` method
+  - [x] Call `sensors.steamClient.getGameSchema(appId)` (or equivalent via sensors)
+  - [x] Store result in state
 - [ ] Add `apiStatistics` state
   - [ ] Call `sensors.getDiagnostics()` to get API performance metrics
   - [ ] Extract Steam API timing data (avg, min, max, success rate, p95, p99)
 - [ ] Add `diagnostics` getter
   - [ ] Expose `sensors.getDiagnostics()` directly for debug panel
-- [ ] Add `isServerMode` detection
-  - [ ] Check if running in browser vs server environment
-  - [ ] Return boolean for Discord capability check
+- [x] Add `isServerMode` detection
+  - [x] Check if running in browser vs server environment
+  - [x] Return boolean for Discord capability check
 
 **Files to modify:**
 - `src/hooks/useGamingPlatforms.ts`
@@ -337,7 +337,7 @@ discordClient.clearMusicActivity(): Promise<boolean>
 - [x] Add explanatory tooltip for Discord limitation (10 min)
 - [ ] Add `diagnostics` to hook return (5 min)
 - [ ] Create collapsible diagnostics panel (30 min)
-- [ ] Add `fetchGameSchema()` to hook (20 min)
+- [x] Add `fetchGameSchema()` to hook (20 min)
 - [ ] Add Game Schema section inside Currently Gaming card (45 min)
 
 ---

@@ -11,6 +11,37 @@ import { handleError } from '@/utils/errorHandling';
 type DiscordConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'unavailable' | 'error';
 
 /**
+ * Game schema data structure returned from Steam API
+ */
+export interface GameSchema {
+    gameName?: string;
+    gameVersion?: string;
+    availableGameStats?: {
+        achievements?: Array<{
+            name: string;
+            displayName: string;
+            description?: string;
+            icon?: string;
+            hidden?: number;
+        }>;
+        stats?: Array<{
+            name: string;
+            displayName?: string;
+            value: number;
+        }>;
+    };
+}
+
+/**
+ * Game schema fetch state
+ */
+export interface GameSchemaState {
+    data: GameSchema | null;
+    isLoading: boolean;
+    error: string | null;
+}
+
+/**
  * Detect if running in server mode (Node.js/Electron) vs client mode (browser)
  * Discord RPC requires server mode to communicate with Discord's IPC
  */
@@ -41,10 +72,13 @@ const detectServerMode = (): boolean => {
  *
  * @example
  * ```tsx
- * const { connectSteam, checkActivity, setMusicStatus, calculateGamingBonus } = useGamingPlatforms();
+ * const { connectSteam, checkActivity, setMusicStatus, calculateGamingBonus, fetchGameSchema } = useGamingPlatforms();
  * await connectSteam('steam-id-123');
  * const context = await checkActivity();
  * const bonus = calculateGamingBonus();
+ * if (context.currentGame?.appId) {
+ *     await fetchGameSchema(context.currentGame.appId);
+ * }
  * ```
  *
  * @returns {Object} Hook return object
@@ -59,6 +93,8 @@ const detectServerMode = (): boolean => {
  * @returns {string} discordConnectionStatus - Discord connection state
  * @returns {string} discordConnectionError - Discord connection error message (if any)
  * @returns {boolean} isServerMode - Whether running in server mode (Node.js/Electron) vs browser
+ * @returns {Object} gameSchema - Game schema state (data, isLoading, error)
+ * @returns {Function} fetchGameSchema - Fetches game schema (achievements, stats) for a Steam app ID
  */
 export const useGamingPlatforms = () => {
     const { settings } = useAppStore();
@@ -76,6 +112,13 @@ export const useGamingPlatforms = () => {
     // Track Discord connection state separately for UI
     const [discordConnectionStatus, setDiscordConnectionStatus] = useState<DiscordConnectionStatus>('disconnected');
     const [discordConnectionError, setDiscordConnectionError] = useState<string | null>(null);
+
+    // Game schema state for Steam achievements/stats
+    const [gameSchema, setGameSchema] = useState<GameSchemaState>({
+        data: null,
+        isLoading: false,
+        error: null
+    });
 
     // Detect server mode (Node.js/Electron) vs client mode (browser)
     // Discord RPC requires server mode to communicate with Discord's IPC
@@ -249,6 +292,36 @@ export const useGamingPlatforms = () => {
         return bonus;
     }, [sensors]);
 
+    /**
+     * Fetch game schema (achievements, stats) for a Steam app
+     * @param appId Steam app ID to fetch schema for
+     */
+    const fetchGameSchema = useCallback(async (appId: number) => {
+        logger.info('GamingPlatformSensors', 'Fetching game schema', { appId });
+        setGameSchema({ data: null, isLoading: true, error: null });
+
+        try {
+            // @ts-ignore - fetchGameSchema method added to GamingPlatformSensors
+            const schema = await sensors.fetchGameSchema(appId);
+            if (schema) {
+                logger.info('GamingPlatformSensors', 'Game schema fetched successfully', {
+                    gameName: schema.gameName,
+                    achievementsCount: schema.availableGameStats?.achievements?.length || 0,
+                    statsCount: schema.availableGameStats?.stats?.length || 0
+                });
+                setGameSchema({ data: schema, isLoading: false, error: null });
+            } else {
+                logger.warn('GamingPlatformSensors', 'No game schema returned');
+                setGameSchema({ data: null, isLoading: false, error: 'No schema available for this game' });
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to fetch game schema';
+            logger.error('GamingPlatformSensors', 'Failed to fetch game schema', { error });
+            handleError(error, 'GamingPlatformSensors');
+            setGameSchema({ data: null, isLoading: false, error: errorMessage });
+        }
+    }, [sensors]);
+
     return {
         connectSteam,
         connectDiscord,
@@ -260,6 +333,9 @@ export const useGamingPlatforms = () => {
         gamingContext,
         discordConnectionStatus,
         discordConnectionError,
-        isServerMode
+        isServerMode,
+        // Game schema (achievements, stats)
+        gameSchema,
+        fetchGameSchema
     };
 };
