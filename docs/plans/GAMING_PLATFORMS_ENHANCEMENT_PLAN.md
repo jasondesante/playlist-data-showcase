@@ -166,16 +166,16 @@ interface PlayerStat {
 ## Phase 4: Steam API Performance Metrics
 
 ### 4.1 Create API Performance Section
-- [ ] Fetch API statistics from diagnostics
-  - [ ] Call `sensors.getDiagnostics()` and extract performance data
-  - [ ] Or call `steamClient.getCurrentGameApiStatistics()` directly
-- [ ] Create "Steam API Performance" card (collapsible)
-  - [ ] Show average response time
-  - [ ] Show min/max response times
-  - [ ] Show success rate percentage
-  - [ ] Show P95 and P99 latency (if available)
-  - [ ] Show total API calls count
-  - [ ] Visual indicator (green/yellow/red based on latency)
+- [x] Fetch API statistics from diagnostics
+  - [x] Call `sensors.getDiagnostics()` and extract performance data
+  - [x] Or call `steamClient.getCurrentGameApiStatistics()` directly
+- [x] Create "Steam API Performance" card (collapsible)
+  - [x] Show average response time
+  - [x] Show min/max response times
+  - [x] Show success rate percentage
+  - [x] Show P95 and P99 latency (if available)
+  - [x] Show total API calls count
+  - [x] Visual indicator (green/yellow/red based on latency)
 
 **Files to modify:**
 - `src/hooks/useGamingPlatforms.ts`

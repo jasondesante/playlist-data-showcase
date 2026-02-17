@@ -106,6 +106,25 @@ export function GamingPlatformsTab() {
     return <StatusIndicator status={config.type} label={config.label} />;
   };
 
+  // API Performance helper functions
+  const getApiHealthStatus = (api: { average: number; successRate: number }): 'good' | 'warning' | 'bad' => {
+    if (api.average < 200 && api.successRate > 95) return 'good';
+    if (api.average < 500 && api.successRate > 80) return 'warning';
+    return 'bad';
+  };
+
+  const getApiHealthLabel = (api: { average: number; successRate: number }): string => {
+    const status = getApiHealthStatus(api);
+    const labels = { good: 'Excellent', warning: 'Degraded', bad: 'Poor' };
+    return labels[status];
+  };
+
+  const getLatencyColor = (latencyMs: number): string => {
+    if (latencyMs < 200) return 'hsl(var(--cute-teal))';
+    if (latencyMs < 500) return 'hsl(var(--cute-orange))';
+    return 'hsl(var(--destructive))';
+  };
+
   return (
     <div className="gaming-tab-container">
       {/* Header */}
@@ -604,6 +623,85 @@ export function GamingPlatformsTab() {
               </ul>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Steam API Performance Card */}
+      {diagnostics?.performance?.currentGameApi && (
+        <div className="gaming-api-performance-card">
+          <div className="gaming-api-performance-header">
+            <div className="gaming-api-performance-title-row">
+              <Zap size={20} />
+              <h3 className="gaming-api-performance-title">Steam API Performance</h3>
+            </div>
+            <div className={`gaming-api-status-badge gaming-api-status-badge--${getApiHealthStatus(diagnostics.performance.currentGameApi)}`}>
+              {getApiHealthLabel(diagnostics.performance.currentGameApi)}
+            </div>
+          </div>
+
+          <div className="gaming-api-metrics-grid">
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">Avg Response</span>
+              <span className="gaming-api-metric-value">
+                {diagnostics.performance.currentGameApi.average.toFixed(0)}ms
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">Min</span>
+              <span className="gaming-api-metric-value">
+                {diagnostics.performance.currentGameApi.min.toFixed(0)}ms
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">Max</span>
+              <span className="gaming-api-metric-value">
+                {diagnostics.performance.currentGameApi.max.toFixed(0)}ms
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">Success Rate</span>
+              <span className={`gaming-api-metric-value gaming-api-metric-value--${diagnostics.performance.currentGameApi.successRate > 95 ? 'good' : diagnostics.performance.currentGameApi.successRate > 80 ? 'warning' : 'bad'}`}>
+                {diagnostics.performance.currentGameApi.successRate.toFixed(0)}%
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">P95</span>
+              <span className={`gaming-api-metric-value gaming-api-metric-value--${diagnostics.performance.currentGameApi.p95 < 200 ? 'good' : diagnostics.performance.currentGameApi.p95 < 500 ? 'warning' : 'bad'}`}>
+                {diagnostics.performance.currentGameApi.p95.toFixed(0)}ms
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">P99</span>
+              <span className={`gaming-api-metric-value gaming-api-metric-value--${diagnostics.performance.currentGameApi.p99 < 200 ? 'good' : diagnostics.performance.currentGameApi.p99 < 500 ? 'warning' : 'bad'}`}>
+                {diagnostics.performance.currentGameApi.p99.toFixed(0)}ms
+              </span>
+            </div>
+            <div className="gaming-api-metric">
+              <span className="gaming-api-metric-label">Total Calls</span>
+              <span className="gaming-api-metric-value">
+                {diagnostics.performance.currentGameApi.totalCalls.toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          {/* Visual Latency Bar */}
+          <div className="gaming-api-latency-bar-container">
+            <span className="gaming-api-latency-bar-label">Latency Distribution</span>
+            <div className="gaming-api-latency-bar">
+              <div
+                className="gaming-api-latency-bar-fill"
+                style={{
+                  width: `${Math.min((diagnostics.performance.currentGameApi.average / 1000) * 100, 100)}%`,
+                  backgroundColor: getLatencyColor(diagnostics.performance.currentGameApi.average)
+                }}
+              />
+            </div>
+            <div className="gaming-api-latency-bar-legend">
+              <span style={{ color: 'hsl(var(--cute-teal))' }}>&lt;200ms</span>
+              <span style={{ color: 'hsl(var(--cute-orange))' }}>200-500ms</span>
+              <span style={{ color: 'hsl(var(--destructive))' }}>&gt;500ms</span>
+            </div>
+          </div>
         </div>
       )}
 

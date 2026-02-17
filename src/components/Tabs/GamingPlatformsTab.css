@@ -1287,6 +1287,229 @@
 /* Status badge component styles are in src/styles/components/StatusBadge.css */
 
 /* ========================================
+   STEAM API PERFORMANCE CARD
+   ======================================== */
+
+.gaming-api-performance-card {
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-performance-card {
+    padding: 1rem;
+  }
+}
+
+.gaming-api-performance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.gaming-api-performance-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.gaming-api-performance-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-performance-title {
+    font-size: 1rem;
+  }
+}
+
+.gaming-api-performance-title-row svg {
+  color: hsl(var(--primary));
+}
+
+/* API Status Badge */
+.gaming-api-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+.gaming-api-status-badge--good {
+  background-color: hsl(var(--cute-teal) / 0.15);
+  color: hsl(var(--cute-teal));
+  border: 1px solid hsl(var(--cute-teal) / 0.4);
+}
+
+.gaming-api-status-badge--warning {
+  background-color: hsl(var(--cute-orange) / 0.15);
+  color: hsl(var(--cute-orange));
+  border: 1px solid hsl(var(--cute-orange) / 0.4);
+}
+
+.gaming-api-status-badge--bad {
+  background-color: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive) / 0.4);
+}
+
+/* API Metrics Grid */
+.gaming-api-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 480px) {
+  .gaming-api-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .gaming-api-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gaming-api-metrics-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.gaming-api-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: calc(var(--radius) * 0.5);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-metric {
+    padding: 0.625rem;
+  }
+}
+
+.gaming-api-metric-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-metric-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.gaming-api-metric-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .gaming-api-metric-value {
+    font-size: 1.125rem;
+  }
+}
+
+.gaming-api-metric-value--good {
+  color: hsl(var(--cute-teal));
+}
+
+.gaming-api-metric-value--warning {
+  color: hsl(var(--cute-orange));
+}
+
+.gaming-api-metric-value--bad {
+  color: hsl(var(--destructive));
+}
+
+/* Latency Bar */
+.gaming-api-latency-bar-container {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+.gaming-api-latency-bar-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-latency-bar-label {
+    font-size: 0.75rem;
+  }
+}
+
+.gaming-api-latency-bar {
+  height: 0.5rem;
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-latency-bar {
+    height: 0.625rem;
+  }
+}
+
+.gaming-api-latency-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-normal) var(--ease-out-cubic),
+              background-color var(--duration-normal) var(--ease-out-cubic);
+  min-width: 2px;
+}
+
+.gaming-api-latency-bar-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .gaming-api-latency-bar-legend {
+    font-size: 0.6875rem;
+  }
+}
+
+/* ========================================
    DIAGNOSTICS PANEL
    ======================================== */
 
