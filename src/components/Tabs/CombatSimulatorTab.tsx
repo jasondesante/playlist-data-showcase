@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
@@ -16,12 +15,13 @@ import {
     type EnemyArchetype,
     type EncounterDifficulty,
     type EnemyMixMode,
+    type CombatConfig,
     getXPBudgetPerLevel,
     getXPForCR,
     getEncounterMultiplier,
     calculateAdjustedXP
 } from 'playlist-data-engine';
-import { type TreasureConfig } from '../../hooks/useCombatEngine';
+import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
 import type { PlaylistTrack } from '../../types';
 import './CombatSimulatorTab.css';
@@ -352,6 +352,75 @@ const DEFAULT_ADVANCED_CONFIG: AdvancedCombatConfig = {
     seed: ''
 };
 
+// ========================================
+// Phase 6.3: CombatSimulatorConfig - Full config for state management and persistence
+// ========================================
+
+/**
+ * LocalStorage key for combat simulator configuration
+ */
+const COMBAT_SIMULATOR_CONFIG_KEY = 'combat-simulator-config';
+
+/**
+ * Full combat simulator configuration for state management and localStorage persistence.
+ *
+ * This type combines:
+ * - CombatConfig from the engine (useEnvironment, useMusic, tacticalMode, allowFleeing, maxTurnsBeforeDraw, seed, treasure)
+ * - TreasureGenerationConfig from the UI (treasure-specific settings)
+ * - AdvancedCombatConfig from the UI (advanced options)
+ *
+ * It's used to persist the full configuration state to localStorage for UX.
+ */
+export interface CombatSimulatorConfig {
+    /** Advanced combat options (environment, music, tactical mode, fleeing, max turns) */
+    advanced: AdvancedCombatConfig;
+
+    /** Treasure generation settings */
+    treasure: TreasureGenerationConfig;
+}
+
+/**
+ * Default combat simulator configuration
+ */
+const DEFAULT_COMBAT_SIMULATOR_CONFIG: CombatSimulatorConfig = {
+    advanced: DEFAULT_ADVANCED_CONFIG,
+    treasure: DEFAULT_TREASURE_CONFIG
+};
+
+/**
+ * Load combat simulator config from localStorage
+ */
+function loadCombatSimulatorConfig(): CombatSimulatorConfig {
+    try {
+        const stored = localStorage.getItem(COMBAT_SIMULATOR_CONFIG_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Merge with defaults to handle any missing fields from older versions
+            return {
+                advanced: { ...DEFAULT_ADVANCED_CONFIG, ...parsed.advanced },
+                treasure: { ...DEFAULT_TREASURE_CONFIG, ...parsed.treasure }
+            };
+        }
+    } catch (error) {
+        console.warn('[CombatSimulator] Failed to load config from localStorage:', error);
+    }
+    return DEFAULT_COMBAT_SIMULATOR_CONFIG;
+}
+
+/**
+ * Save combat simulator config to localStorage
+ */
+function saveCombatSimulatorConfig(config: CombatSimulatorConfig): void {
+    try {
+        localStorage.setItem(COMBAT_SIMULATOR_CONFIG_KEY, JSON.stringify(config));
+    } catch (error) {
+        console.warn('[CombatSimulator] Failed to save config to localStorage:', error);
+    }
+}
+
+// End of Phase 6.3: CombatSimulatorConfig
+// ========================================
+
 // End of Phase 6: Advanced Combat Configuration Types
 // ========================================
 
@@ -454,10 +523,14 @@ export function CombatSimulatorTab() {
 
   // ============================================================
   // Phase 5.1: Treasure Configuration State (hoisted for useCombatEngine)
+  // Phase 6.3: Load from localStorage on initial mount
   // ============================================================
 
+  // Load persisted config on mount (Phase 6.3)
+  const [initialConfig] = useState<CombatSimulatorConfig>(() => loadCombatSimulatorConfig());
+
   // State: Treasure configuration
-  const [treasureConfig, setTreasureConfig] = useState<TreasureGenerationConfig>(DEFAULT_TREASURE_CONFIG);
+  const [treasureConfig, setTreasureConfig] = useState<TreasureGenerationConfig>(initialConfig.treasure);
 
   // State: Collapsible panel toggle
   const [isTreasureExpanded, setIsTreasureExpanded] = useState(false);
@@ -511,10 +584,11 @@ export function CombatSimulatorTab() {
 
   // ============================================================
   // Phase 6.1: Advanced Combat Configuration State
+  // Phase 6.3: Load from localStorage on initial mount
   // ============================================================
 
-  // State: Advanced configuration options
-  const [advancedConfig, setAdvancedConfig] = useState<AdvancedCombatConfig>(DEFAULT_ADVANCED_CONFIG);
+  // State: Advanced configuration options (loaded from localStorage via initialConfig)
+  const [advancedConfig, setAdvancedConfig] = useState<AdvancedCombatConfig>(initialConfig.advanced);
 
   // State: Collapsible panel toggle
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
@@ -540,46 +614,67 @@ export function CombatSimulatorTab() {
     logger.info('CombatSimulator', 'Toggled advanced option', { key });
   }, []);
 
-  // End of Phase 6.1: Advanced Combat Configuration State
+  // ============================================================
+  // Phase 6.3: Persist config to localStorage
   // ============================================================
 
-  // ============================================================
-  // Phase 5.3: Combat Config for Engine
-  // Convert TreasureGenerationConfig to CombatConfig for useCombatEngine
-  // ============================================================
-
-  const combatConfig = useMemo(() => {
-    if (!treasureConfig.enabled) {
-      return undefined;
-    }
-
-    // Convert our TreasureGenerationConfig to the engine's TreasureConfig
-    const engineTreasureConfig: TreasureConfig = {};
-
-    // Handle gold configuration
-    if (treasureConfig.goldMode === 'fixed') {
-      engineTreasureConfig.gold = treasureConfig.goldFixed;
-    } else if (treasureConfig.goldMode === 'range') {
-      engineTreasureConfig.gold = {
-        min: treasureConfig.goldMin,
-        max: treasureConfig.goldMax
-      };
-    }
-    // If goldMode is 'none', we don't set gold property
-
-    // Convert custom items
-    if (treasureConfig.customItems.length > 0) {
-      engineTreasureConfig.items = treasureConfig.customItems.map(item => ({
-        name: item.name,
-        type: item.type
-      }));
-    }
-
-    return {
-      treasure: engineTreasureConfig,
-      seed: treasureConfig.seed
+  // Effect: Save config to localStorage whenever it changes
+  useEffect(() => {
+    const configToSave: CombatSimulatorConfig = {
+      advanced: advancedConfig,
+      treasure: treasureConfig
     };
-  }, [treasureConfig]);
+    saveCombatSimulatorConfig(configToSave);
+  }, [advancedConfig, treasureConfig]);
+
+  // End of Phase 6.1 & 6.3: Advanced Combat Configuration State
+  // ============================================================
+
+  // ============================================================
+  // Phase 5.3 & 6.3: Combat Config for Engine
+  // Convert all config to CombatConfig for useCombatEngine
+  // ============================================================
+
+  const combatConfig = useMemo((): CombatConfig | undefined => {
+    // Build the engine's CombatConfig from our UI config state
+    const engineConfig: CombatConfig = {
+      // Advanced options (Phase 6.3)
+      useEnvironment: advancedConfig.useEnvironment,
+      useMusic: advancedConfig.useMusic,
+      tacticalMode: advancedConfig.tacticalMode,
+      allowFleeing: advancedConfig.allowFleeing,
+      maxTurnsBeforeDraw: advancedConfig.maxTurnsBeforeDraw,
+      seed: advancedConfig.seed || undefined
+    };
+
+    // Treasure config (Phase 5.3)
+    if (treasureConfig.enabled) {
+      const engineTreasureConfig: TreasureConfig = {};
+
+      // Handle gold configuration
+      if (treasureConfig.goldMode === 'fixed') {
+        engineTreasureConfig.gold = treasureConfig.goldFixed;
+      } else if (treasureConfig.goldMode === 'range') {
+        engineTreasureConfig.gold = {
+          min: treasureConfig.goldMin,
+          max: treasureConfig.goldMax
+        };
+      }
+      // If goldMode is 'none', we don't set gold property
+
+      // Convert custom items
+      if (treasureConfig.customItems.length > 0) {
+        engineTreasureConfig.items = treasureConfig.customItems.map(item => ({
+          name: item.name,
+          type: item.type
+        }));
+      }
+
+      engineConfig.treasure = engineTreasureConfig;
+    }
+
+    return engineConfig;
+  }, [advancedConfig, treasureConfig]);
 
   // ============================================================
   // Combat Engine Hook

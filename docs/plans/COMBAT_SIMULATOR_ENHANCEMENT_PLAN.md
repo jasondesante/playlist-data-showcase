@@ -185,9 +185,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Show any warnings (e.g., "Fleeing disabled")
 
 ### 6.3 Config State Integration
-- [ ] Create `CombatConfig` type/interface
-- [ ] Pass config to `CombatEngine` on initialization
-- [ ] Persist config to localStorage for UX
+- [x] Create `CombatConfig` type/interface
+- [x] Pass config to `CombatEngine` on initialization
+- [x] Persist config to localStorage for UX
 
 ---
 
