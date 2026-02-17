@@ -11,13 +11,13 @@ import { useSensorStore } from '../../store/sensorStore';
 import { useMastery } from '../../hooks/useMastery';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { StatSelectionModal } from '../StatSelectionModal';
+import { StatSelectionModal, type StatEffect } from '../StatSelectionModal';
 import { showToast } from '../ui/Toast';
 import { MasteryBadge } from '../ui/MasteryBadge';
 import { MasteryProgressBar } from '../ui/MasteryProgressBar';
 import { PrestigeButton } from '../ui/PrestigeButton';
 import { SessionHistoryPanel } from '../ui/SessionHistoryPanel';
-import type { ListeningSession, Ability, ISessionTracker } from 'playlist-data-engine';
+import type { ListeningSession, Ability, ISessionTracker, CharacterSheet } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
 // XP thresholds for D&D 5e levels 1-20
@@ -137,6 +137,61 @@ export function SessionTrackingTab() {
   const activeCharacter = getActiveCharacter();
 
   const { environmentalContext, gamingContext } = useSensorStore();
+
+  /**
+   * Extract active stat effects from a character's equipment and feature effects.
+   * Transforms engine format to StatEffect[] format for the StatSelectionModal.
+   *
+   * Task 3.5.1/3.5.2: Update SessionTrackingTab to pass new props
+   *
+   * @param character - The character sheet to extract effects from
+   * @returns Array of StatEffect objects for display in the modal
+   */
+  const getActiveStatEffects = (character: CharacterSheet): StatEffect[] => {
+    const effects: StatEffect[] = [];
+
+    // Extract from equipment effects
+    if (character.equipment_effects) {
+      for (const equipmentEffect of character.equipment_effects) {
+        if (equipmentEffect.effects) {
+          for (const prop of equipmentEffect.effects) {
+            // Check for stat_bonus type effects
+            if (prop.type === 'stat_bonus' && prop.target && typeof prop.value === 'number') {
+              effects.push({
+                ability: prop.target as Ability,
+                amount: prop.value,
+                source: equipmentEffect.source || 'Equipment',
+                type: prop.value > 0 ? 'buff' : 'debuff'
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Extract from feature effects
+    if (character.feature_effects) {
+      for (const featureEffect of character.feature_effects) {
+        // Check for stat_bonus type effects
+        if (featureEffect.type === 'stat_bonus' && featureEffect.target && typeof featureEffect.value === 'number') {
+          effects.push({
+            ability: featureEffect.target as Ability,
+            amount: featureEffect.value,
+            source: featureEffect.description || 'Feature',
+            type: featureEffect.value > 0 ? 'buff' : 'debuff'
+          });
+        }
+      }
+    }
+
+    return effects;
+  };
+
+  // Memoize active effects for the active character to avoid recalculating on every render
+  const activeStatEffects = useMemo(() => {
+    if (!activeCharacter) return [];
+    return getActiveStatEffects(activeCharacter);
+  }, [activeCharacter?.equipment_effects, activeCharacter?.feature_effects]);
 
   // Create ISessionTracker adapter for engine methods
   const sessionTrackerAdapter: ISessionTracker = useMemo(() => ({
@@ -843,6 +898,8 @@ export function SessionTrackingTab() {
         isOpen={showStatModal}
         pendingCount={activeCharacter?.pendingStatIncreases ?? 0}
         currentStats={activeCharacter?.ability_scores}
+        gameMode={activeCharacter?.gameMode}
+        activeEffects={activeStatEffects}
         onApply={handleApplyStats}
         onCancel={handleCloseStatModal}
       />
