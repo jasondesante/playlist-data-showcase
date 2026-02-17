@@ -138,11 +138,11 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   - [x] Highlight selected preset line
   - [x] Add hover tooltips showing exact XP at each level
 
-- [ ] **1.2.2 Add Chart Styling**
-  - [ ] Create `src/styles/components/XPCurveChart.css`
-  - [ ] Style for dark theme
-  - [ ] Smooth animations when switching presets
-  - [ ] Responsive sizing
+- [x] **1.2.2 Add Chart Styling**
+  - [x] Create `src/styles/components/XPCurveChart.css`
+  - [x] Style for dark theme
+  - [x] Smooth animations when switching presets
+  - [x] Responsive sizing
 
 - [ ] **1.2.3 Add XP Table Preview (Optional Enhancement)**
   - [ ] Show small table with XP requirements for levels 1, 5, 10, 20, 30
@@ -154,11 +154,11 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
 
 #### Tasks
 
-- [ ] **1.3.1 Create Settings Panel Component**
-  - [ ] Create `src/components/ui/UncappedProgressionPanel.tsx`
-  - [ ] Collapsible panel (collapsed by default)
-  - [ ] Only render when `character.gameMode === 'uncapped'`
-  - [ ] Props: `character: CharacterSheet`, `onConfigChange: (presetId: string) => void`
+- [x] **1.3.1 Create Settings Panel Component**
+  - [x] Create `src/components/ui/UncappedProgressionPanel.tsx`
+  - [x] Collapsible panel (collapsed by default)
+  - [x] Only render when `character.gameMode === 'uncapped'`
+  - [x] Props: `character: CharacterSheet`, `onConfigChange: (presetId: string) => void`
 
 - [ ] **1.3.2 Add Preset Selection UI**
   - [ ] Show preset cards in a 2x2 grid

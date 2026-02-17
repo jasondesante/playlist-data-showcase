@@ -1,0 +1,294 @@
+/* ========================================
+   UNCAPPED PROGRESSION PANEL COMPONENT
+   ======================================== */
+
+/* Panel container */
+.uncapped-progression-panel {
+  background: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--primary) / 0.3);
+  overflow: hidden;
+}
+
+/* Header button */
+.uncapped-panel-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.uncapped-panel-header:hover {
+  background: hsl(var(--surface-2));
+}
+
+.uncapped-panel-header:focus {
+  outline: none;
+  background: hsl(var(--surface-2));
+}
+
+.uncapped-panel-header:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+.uncapped-panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.uncapped-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.2), hsl(var(--primary) / 0.2));
+  border: 1px solid hsl(var(--cute-purple) / 0.3);
+  border-radius: 0.625rem;
+  color: hsl(var(--cute-purple));
+}
+
+.uncapped-panel-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.uncapped-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+  line-height: 1.3;
+}
+
+.uncapped-panel-subtitle {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.uncapped-panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.uncapped-panel-changes-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--cute-orange) / 0.2);
+  color: hsl(var(--cute-orange));
+  border-radius: var(--radius);
+}
+
+.uncapped-panel-chevron {
+  color: hsl(var(--muted-foreground));
+  transition: transform var(--duration-fast) var(--ease-out-cubic);
+}
+
+/* Content area */
+.uncapped-panel-content {
+  padding: 0 1.25rem 1.25rem;
+  animation: uncappedPanelExpand 0.2s var(--ease-out-cubic);
+}
+
+@keyframes uncappedPanelExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.uncapped-panel-description {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+/* Presets Grid */
+.uncapped-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .uncapped-presets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Preset Card */
+.uncapped-preset-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background: hsl(var(--surface-2));
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.uncapped-preset-card:hover {
+  border-color: hsl(var(--muted-foreground));
+  background: hsl(var(--surface-3));
+}
+
+.uncapped-preset-card:focus {
+  outline: none;
+}
+
+.uncapped-preset-card:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Selected state */
+.uncapped-preset-selected {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+}
+
+.uncapped-preset-selected:hover {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.12);
+}
+
+/* Current (applied) state */
+.uncapped-preset-current.uncapped-preset-selected {
+  border-color: hsl(var(--cute-purple));
+  background: hsl(var(--cute-purple) / 0.1);
+}
+
+.uncapped-preset-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.uncapped-preset-color {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.uncapped-preset-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  flex: 1;
+}
+
+.uncapped-preset-current-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  background: hsl(var(--cute-purple));
+  color: hsl(var(--background));
+  border-radius: 50%;
+}
+
+.uncapped-preset-description {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Chart Section */
+.uncapped-chart-section {
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.uncapped-chart-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 1rem;
+}
+
+/* Actions */
+.uncapped-panel-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.uncapped-apply-button {
+  min-width: 160px;
+  background: linear-gradient(135deg, hsl(var(--cute-purple)), hsl(var(--primary)));
+  border: none;
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+}
+
+.uncapped-apply-button:hover {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+  transform: translateY(-1px);
+}
+
+.uncapped-apply-hint {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .uncapped-panel-content {
+    animation: none;
+  }
+
+  .uncapped-panel-header,
+  .uncapped-preset-card,
+  .uncapped-panel-chevron,
+  .uncapped-apply-button {
+    transition: none;
+  }
+}
+
+/* Dark theme enhancements */
+@media (prefers-color-scheme: dark) {
+  .uncapped-progression-panel {
+    background: hsl(var(--surface-2));
+  }
+
+  .uncapped-preset-card {
+    background: hsl(var(--surface-3));
+  }
+
+  .uncapped-chart-section {
+    background: hsl(var(--surface-3));
+  }
+}
