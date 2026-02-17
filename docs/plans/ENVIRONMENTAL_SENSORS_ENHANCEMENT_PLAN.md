@@ -207,13 +207,13 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
   - [ ] Is the API key activated? (new keys can take a few hours)
 
 ### 6.2 Improve Weather Error UI
-- [ ] Update weather empty state card to show specific reason:
-  - [ ] "No GPS location" (need location for weather)
-  - [ ] "API key not configured" (check settings)
-  - [ ] "API error: [specific message]" (rate limit, invalid key, etc.)
-  - [ ] "Network error" (can't reach OpenWeather)
-- [ ] Add manual refresh button for weather
-- [ ] Show last successful update time
+- [x] Update weather empty state card to show specific reason:
+  - [x] "No GPS location" (need location for weather)
+  - [x] "API key not configured" (check settings)
+  - [x] "API error: [specific message]" (rate limit, invalid key, etc.)
+  - [x] "Network error" (can't reach OpenWeather)
+- [x] Add manual refresh button for weather
+- [x] Show last successful update time
 
 **Files to modify:**
 - `src/hooks/useEnvironmentalSensors.ts`
@@ -308,14 +308,14 @@ interface SevereWeatherAlert {
 ## Quick Win Checklist
 
 **Do These First (for debugging):**
-- [ ] Add debug logging to `useEnvironmentalSensors.ts` to see what's happening with weather API
-- [ ] Add diagnostics panel to show API status, errors, and last call info
+- [x] Add debug logging to `useEnvironmentalSensors.ts` to see what's happening with weather API
+- [x] Add diagnostics panel to show API status, errors, and last call info
 - [ ] Check browser console for errors when monitoring starts
 
 **Then These (once we know data is flowing):**
-- [ ] Add `xpModifier` to hook return and display in card (15 min)
-- [ ] Display `environmentalContext.biome` in GPS card (5 min - data already exists!)
-- [ ] Add severe weather alert card (only if weather is working) (20 min)
+- [x] Add `xpModifier` to hook return and display in card (15 min)
+- [x] Display `environmentalContext.biome` in GPS card (5 min - data already exists!)
+- [x] Add severe weather alert card (only if weather is working) (20 min)
 
 ---
 

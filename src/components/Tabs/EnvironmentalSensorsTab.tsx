@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useEnvironmentalSensors, SevereWeatherAlert } from '../../hooks/useEnvironmentalSensors';
+import { useAppStore } from '../../store/appStore';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle, X, Zap as Lightning } from 'lucide-react';
@@ -319,7 +320,8 @@ function SevereWeatherAlertCard({
 }
 
 export function EnvironmentalSensorsTab() {
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics } = useEnvironmentalSensors();
+  const { settings } = useAppStore();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -755,14 +757,62 @@ export function EnvironmentalSensorsTab() {
                 </span>
               </Card>
             ) : (
-              <Card variant="outlined" padding="lg" className="sensor-warning-card">
-                <div className="sensor-empty-icon">🌡️</div>
-                <h3 className="sensor-empty-title">No Weather Data Yet</h3>
+              <Card variant="outlined" padding="lg" className={`sensor-empty-card ${weatherError ? 'sensor-error-card' : 'sensor-warning-card'}`}>
+                <div className="sensor-empty-icon">
+                  {weatherError ? '⚠️' : '🌡️'}
+                </div>
+                <h3 className="sensor-empty-title">
+                  {weatherError ? 'Weather Error' : 'No Weather Data Yet'}
+                </h3>
                 <ul className="sensor-empty-list">
-                  <li>Add OpenWeather API key in Settings tab</li>
-                  <li>Weather requires API key from openweathermap.org</li>
-                  <li>Data updates every 30 seconds during monitoring</li>
+                  {/* Show specific error reason based on state */}
+                  {!(environmentalContext as any).location ? (
+                    <>
+                      <li>📍 No GPS location available</li>
+                      <li>Weather requires your location to fetch data</li>
+                      <li>Grant geolocation permission and wait for GPS lock</li>
+                    </>
+                  ) : !settings?.openWeatherApiKey ? (
+                    <>
+                      <li>🔑 No OpenWeather API key configured</li>
+                      <li>Add your API key in Settings tab</li>
+                      <li>Get a free key at openweathermap.org</li>
+                    </>
+                  ) : weatherError ? (
+                    <>
+                      <li>❌ API Error: {weatherError}</li>
+                      <li>Check if your API key is valid and activated</li>
+                      <li>New API keys can take a few hours to activate</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>Waiting for weather data...</li>
+                      <li>Weather updates every 30 seconds during monitoring</li>
+                      <li>Check Sensor Diagnostics below for details</li>
+                    </>
+                  )}
                 </ul>
+
+                {/* Manual refresh button */}
+                {isMonitoring && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => refreshWeather()}
+                    leftIcon={RefreshCw}
+                    className="sensor-weather-refresh-button"
+                  >
+                    Refresh Weather
+                  </Button>
+                )}
+
+                {/* Last successful update time */}
+                {lastWeatherSuccess && (
+                  <span className="sensor-last-success-time">
+                    <Clock size={12} />
+                    Last successful update: {formatTimeAgo(lastWeatherSuccess)}
+                  </span>
+                )}
               </Card>
             )}
 

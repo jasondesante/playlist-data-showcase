@@ -103,6 +103,14 @@ export const useEnvironmentalSensors = () => {
     // Uses 'any' since engine's internal type is complex and diagnostics is for debugging
     const [diagnostics, setDiagnostics] = useState<any>(null);
 
+    // Weather-specific error state for UI display
+    // Contains the last error message from weather API calls
+    const [weatherError, setWeatherError] = useState<string | null>(null);
+
+    // Last successful weather update timestamp
+    // Used to show "last successful update" in the UI
+    const [lastWeatherSuccess, setLastWeatherSuccess] = useState<number | null>(null);
+
     // Calculate XP modifier from environmental context (1.0 - 3.0)
     // Updates whenever environmentalContext changes
     const xpModifier = useMemo(() => {
@@ -167,6 +175,42 @@ export const useEnvironmentalSensors = () => {
         }
     }, [setPermission]);
 
+    // Helper to update diagnostics for debugging (shared between functions)
+    const updateDiagnosticsState = useCallback(() => {
+        if (!sensors) return;
+
+        const diag = sensors.getDiagnostics();
+        setDiagnostics(diag);
+
+        // Extract weather-specific error from diagnostics
+        const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
+        if (weatherSensor?.lastError) {
+            setWeatherError(weatherSensor.lastError);
+        }
+
+        // Clear error if weather is working
+        if (weatherSensor?.health === 'healthy') {
+            setWeatherError(null);
+        }
+    }, [sensors]);
+
+    // Helper to check and track weather status (shared between functions)
+    const checkWeatherStatus = useCallback((context: any) => {
+        if (!sensors) return;
+
+        if (context?.weather) {
+            setLastWeatherSuccess(Date.now());
+            setWeatherError(null);
+        } else {
+            // Check diagnostics for weather error
+            const diag = sensors.getDiagnostics();
+            const weatherSensor = (diag.sensors as any[])?.find((s: any) => s?.type?.toLowerCase() === 'weather');
+            if (weatherSensor?.lastError) {
+                setWeatherError(weatherSensor.lastError);
+            }
+        }
+    }, [sensors]);
+
     const startMonitoring = useCallback(async () => {
         if (isMonitoring) return;
         if (!sensors) {
@@ -196,12 +240,6 @@ export const useEnvironmentalSensors = () => {
             }
         };
 
-        // Helper to update diagnostics for debugging
-        const updateDiagnostics = () => {
-            const diag = sensors.getDiagnostics();
-            setDiagnostics(diag);
-        };
-
         try {
             // Start push-based sensors (motion + light) with live callback
             sensors.startMonitoring((context) => {
@@ -225,8 +263,10 @@ export const useEnvironmentalSensors = () => {
             updateEnvironmentalContext({ ...initial } as any);
             // Check for severe weather after initial snapshot
             updateSevereWeather();
+            // Check weather status for error tracking
+            checkWeatherStatus(initial);
             // Update diagnostics after initial snapshot
-            updateDiagnostics();
+            updateDiagnosticsState();
 
             // Keep geolocation/weather fresh every 30 seconds
             const interval = setInterval(async () => {
@@ -244,12 +284,14 @@ export const useEnvironmentalSensors = () => {
                     updateEnvironmentalContext({ ...updated } as any);
                     // Check for severe weather after each update
                     updateSevereWeather();
+                    // Check weather status for error tracking
+                    checkWeatherStatus(updated);
                     // Update diagnostics after each update
-                    updateDiagnostics();
+                    updateDiagnosticsState();
                 } catch (err) {
                     logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
                     // Still update diagnostics on error to show the failure
-                    updateDiagnostics();
+                    updateDiagnosticsState();
                 }
             }, 30_000);
 
@@ -260,12 +302,34 @@ export const useEnvironmentalSensors = () => {
                 setIsMonitoring(false);
                 setSevereWeatherAlert(null);
                 setDiagnostics(null);
+                setWeatherError(null);
+                setLastWeatherSuccess(null);
             };
         } catch (error) {
             handleError(error, 'EnvironmentalSensors');
             setIsMonitoring(false);
         }
-    }, [sensors, isMonitoring, updateEnvironmentalContext, settings.openWeatherApiKey]);
+    }, [sensors, isMonitoring, updateEnvironmentalContext, settings.openWeatherApiKey, checkWeatherStatus, updateDiagnosticsState]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics };
+    // Manual refresh for weather data
+    const refreshWeather = useCallback(async () => {
+        if (!sensors || !isMonitoring) {
+            logger.warn('EnvironmentalSensors', 'Cannot refresh weather - not monitoring');
+            return;
+        }
+
+        logger.info('EnvironmentalSensors', 'Manual weather refresh requested');
+        try {
+            const updated = await sensors.updateSnapshot();
+            updateEnvironmentalContext({ ...updated } as any);
+            checkWeatherStatus(updated);
+            updateDiagnosticsState();
+        } catch (err) {
+            logger.error('EnvironmentalSensors', 'Manual weather refresh failed', err);
+            setWeatherError(err instanceof Error ? err.message : 'Weather refresh failed');
+            updateDiagnosticsState();
+        }
+    }, [sensors, isMonitoring, updateEnvironmentalContext, checkWeatherStatus, updateDiagnosticsState]);
+
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather };
 };
