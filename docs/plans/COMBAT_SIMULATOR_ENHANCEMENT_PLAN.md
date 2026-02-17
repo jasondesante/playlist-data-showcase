@@ -204,16 +204,16 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Limit to 4-6 party members
 
 ### 7.2 Party Analyzer Display
-- [ ] Create `PartyAnalyzerCard` component
-- [ ] Show party statistics:
-  - [ ] Average party level
-  - [ ] Combined party strength score
-  - [ ] Average AC
-  - [ ] Average HP
-  - [ ] Average damage output estimate
-- [ ] Show XP budget by difficulty:
-  - [ ] Easy/Medium/Hard/Deadly thresholds
-- [ ] Show class composition breakdown
+- [x] Create `PartyAnalyzerCard` component
+- [x] Show party statistics:
+  - [x] Average party level
+  - [x] Combined party strength score
+  - [x] Average AC
+  - [x] Average HP
+  - [x] Average damage output estimate
+- [x] Show XP budget by difficulty:
+  - [x] Easy/Medium/Hard/Deadly thresholds
+- [x] Show class composition breakdown
 
 ### 7.3 Party Combat Integration
 - [x] Pass party array to `startCombat()`

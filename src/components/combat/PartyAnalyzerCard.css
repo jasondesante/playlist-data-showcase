@@ -1,0 +1,500 @@
+/**
+ * PartyAnalyzerCard Styles
+ *
+ * A compact card displaying party analysis for the combat simulator.
+ * Part of Phase 7.2: Party Analyzer Display
+ */
+
+/* ============================================
+   MAIN CARD CONTAINER
+   ============================================ */
+
+.party-analyzer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .party-analyzer-card {
+    padding: 1rem 1.25rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.party-analyzer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.party-analyzer-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.party-analyzer-title svg {
+  color: hsl(var(--primary));
+}
+
+.party-analyzer-party-size {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* ============================================
+   STATS GRID
+   ============================================ */
+
+.party-analyzer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .party-analyzer-stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Individual Stat Item */
+.party-analyzer-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
+}
+
+.party-analyzer-stat:hover {
+  background-color: hsl(var(--muted));
+}
+
+@media (min-width: 768px) {
+  .party-analyzer-stat {
+    padding: 0.625rem 0.75rem;
+  }
+}
+
+.party-analyzer-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+  border-radius: 0.25rem;
+  color: hsl(var(--primary-foreground));
+  flex-shrink: 0;
+}
+
+.party-analyzer-stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.party-analyzer-stat-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-bottom: 0.125rem;
+}
+
+.party-analyzer-stat-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .party-analyzer-stat-value {
+    font-size: 1rem;
+  }
+}
+
+.party-analyzer-stat-subtitle {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.125rem;
+}
+
+/* ============================================
+   XP BUDGET SECTION
+   ============================================ */
+
+.party-analyzer-xp-section {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.party-analyzer-xp-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.party-analyzer-xp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .party-analyzer-xp-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+  }
+}
+
+/* XP Card */
+.party-analyzer-xp-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.party-analyzer-xp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.party-analyzer-xp-difficulty {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.125rem;
+}
+
+.party-analyzer-xp-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .party-analyzer-xp-value {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Difficulty Colors */
+.difficulty-easy {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.15), hsl(142 76% 36% / 0.05));
+  border-color: hsl(142 76% 36% / 0.4);
+}
+
+.difficulty-easy .party-analyzer-xp-difficulty {
+  color: hsl(142 76% 36%);
+}
+
+.difficulty-easy:hover {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.2), hsl(142 76% 36% / 0.1));
+  border-color: hsl(142 76% 36% / 0.5);
+}
+
+.difficulty-medium {
+  background: linear-gradient(135deg, hsl(45 93% 47% / 0.15), hsl(45 93% 47% / 0.05));
+  border-color: hsl(45 93% 47% / 0.4);
+}
+
+.difficulty-medium .party-analyzer-xp-difficulty {
+  color: hsl(45 93% 47%);
+}
+
+.difficulty-medium:hover {
+  background: linear-gradient(135deg, hsl(45 93% 47% / 0.2), hsl(45 93% 47% / 0.1));
+  border-color: hsl(45 93% 47% / 0.5);
+}
+
+.difficulty-hard {
+  background: linear-gradient(135deg, hsl(25 95% 53% / 0.15), hsl(25 95% 53% / 0.05));
+  border-color: hsl(25 95% 53% / 0.4);
+}
+
+.difficulty-hard .party-analyzer-xp-difficulty {
+  color: hsl(25 95% 53%);
+}
+
+.difficulty-hard:hover {
+  background: linear-gradient(135deg, hsl(25 95% 53% / 0.2), hsl(25 95% 53% / 0.1));
+  border-color: hsl(25 95% 53% / 0.5);
+}
+
+.difficulty-deadly {
+  background: linear-gradient(135deg, hsl(0 72% 51% / 0.15), hsl(0 72% 51% / 0.05));
+  border-color: hsl(0 72% 51% / 0.4);
+}
+
+.difficulty-deadly .party-analyzer-xp-difficulty {
+  color: hsl(0 72% 51%);
+}
+
+.difficulty-deadly:hover {
+  background: linear-gradient(135deg, hsl(0 72% 51% / 0.2), hsl(0 72% 51% / 0.1));
+  border-color: hsl(0 72% 51% / 0.5);
+}
+
+/* ============================================
+   CLASS COMPOSITION SECTION
+   ============================================ */
+
+.party-analyzer-composition-section {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.party-analyzer-composition-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.party-analyzer-class-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.party-analyzer-class-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  color: hsl(var(--foreground));
+  transition: background-color 0.2s ease;
+}
+
+.party-analyzer-class-badge:hover {
+  background-color: hsl(var(--muted));
+}
+
+.party-analyzer-class-icon {
+  font-size: 0.75rem;
+}
+
+.party-analyzer-class-name {
+  font-weight: 500;
+}
+
+.party-analyzer-class-count {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.625rem;
+  margin-left: 0.125rem;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.party-analyzer-card-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.party-analyzer-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.party-analyzer-empty-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.25rem;
+}
+
+.party-analyzer-empty-text {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   LOADING SKELETON
+   ============================================ */
+
+.party-analyzer-card-loading {
+  pointer-events: none;
+}
+
+/* Skeleton Header */
+.party-analyzer-skeleton-title {
+  width: 120px;
+  height: 1rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+/* Skeleton Stat */
+.party-analyzer-stat-skeleton {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.375rem;
+}
+
+.party-analyzer-skeleton-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.party-analyzer-skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.party-analyzer-skeleton-label {
+  width: 60%;
+  height: 0.625rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.125rem;
+}
+
+.party-analyzer-skeleton-value {
+  width: 40%;
+  height: 1rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.125rem;
+}
+
+/* Skeleton XP Section */
+.party-analyzer-xp-section-skeleton {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.party-analyzer-skeleton-section-title {
+  width: 140px;
+  height: 0.75rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.party-analyzer-xp-skeleton {
+  height: 2.5rem;
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+/* Shimmer Animation */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================
+   LOADED ANIMATION
+   ============================================ */
+
+@keyframes party-analyzer-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.party-analyzer-card-loaded .party-analyzer-stat {
+  animation: party-analyzer-fade-in 0.3s ease forwards;
+}
+
+.party-analyzer-card-loaded .party-analyzer-stat:nth-child(1) { animation-delay: 0ms; }
+.party-analyzer-card-loaded .party-analyzer-stat:nth-child(2) { animation-delay: 40ms; }
+.party-analyzer-card-loaded .party-analyzer-stat:nth-child(3) { animation-delay: 80ms; }
+.party-analyzer-card-loaded .party-analyzer-stat:nth-child(4) { animation-delay: 120ms; }
+.party-analyzer-card-loaded .party-analyzer-stat:nth-child(5) { animation-delay: 160ms; }
+
+.party-analyzer-card-loaded .party-analyzer-xp-card {
+  animation: party-analyzer-fade-in 0.3s ease forwards;
+}
+
+.party-analyzer-card-loaded .party-analyzer-xp-card:nth-child(1) { animation-delay: 200ms; }
+.party-analyzer-card-loaded .party-analyzer-xp-card:nth-child(2) { animation-delay: 240ms; }
+.party-analyzer-card-loaded .party-analyzer-xp-card:nth-child(3) { animation-delay: 280ms; }
+.party-analyzer-card-loaded .party-analyzer-xp-card:nth-child(4) { animation-delay: 320ms; }
+
+.party-analyzer-card-loaded .party-analyzer-class-badge {
+  animation: party-analyzer-fade-in 0.3s ease forwards;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+  .party-analyzer-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .party-analyzer-xp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

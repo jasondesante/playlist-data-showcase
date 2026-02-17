@@ -25,6 +25,7 @@ import {
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
 import type { PlaylistTrack } from '../../types';
+import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import './CombatSimulatorTab.css';
 
 /**
@@ -1552,6 +1553,13 @@ export function CombatSimulatorTab() {
                 {selectedHeroSeeds.length > 0 && selectedHeroSeeds.length < 4 && `${selectedHeroSeeds.length} hero${selectedHeroSeeds.length > 1 ? 'es' : ''} selected. You can add ${4 - selectedHeroSeeds.length} more.`}
                 {selectedHeroSeeds.length === 4 && 'Full party of 4 heroes selected!'}
               </p>
+
+              {/* Phase 7.2: Party Analyzer Card - shows analysis when heroes are selected */}
+              {selectedHeroSeeds.length > 0 && (
+                <PartyAnalyzerCard
+                  partyMembers={characters.filter(c => selectedHeroSeeds.includes(c.seed))}
+                />
+              )}
             </div>
           )}
 
