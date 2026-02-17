@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info, ServerOff, ChevronDown, ChevronRight, Settings, Gamepad, Zap, Database, Activity } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info, ServerOff, ChevronDown, ChevronRight, Settings, Gamepad, Zap, Database, Activity, Trophy, BarChart3, Loader2 } from 'lucide-react';
 import './GamingPlatformsTab.css';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
@@ -25,13 +25,17 @@ import { StatusIndicator } from '../ui/StatusIndicator';
  * ```
  */
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity, isServerMode, diagnostics } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity, isServerMode, diagnostics, gameSchema, fetchGameSchema } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
   const { selectedTrack } = usePlaylistStore();
   const [steamId, setSteamId] = useState('');
   const [steamConnected, setSteamConnected] = useState(false);
   const [musicStatusActive, setMusicStatusActive] = useState(false);
   const [isDiagnosticsExpanded, setIsDiagnosticsExpanded] = useState(false);
+  const [isGameSchemaExpanded, setIsGameSchemaExpanded] = useState(false);
+
+  // Track the last appId we fetched to avoid duplicate fetches
+  const lastFetchedAppIdRef = useRef<number | null>(null);
 
   // Poll for gaming activity every 30 seconds when Steam is connected
   useEffect(() => {
@@ -47,6 +51,18 @@ export function GamingPlatformsTab() {
 
     return () => clearInterval(pollInterval);
   }, [steamConnected, checkActivity]);
+
+  // Auto-fetch game schema when a game is detected with an appId
+  useEffect(() => {
+    const currentGame = gamingContext?.currentGame;
+    const appId = (currentGame as any)?.appId;
+
+    if (appId && appId !== lastFetchedAppIdRef.current) {
+      logger.info('GamingPlatformSensors', 'Auto-fetching game schema for new appId', { appId });
+      lastFetchedAppIdRef.current = appId;
+      fetchGameSchema(appId);
+    }
+  }, [gamingContext?.currentGame, fetchGameSchema]);
 
   const handleConnectSteam = async () => {
     const success = await connectSteam(steamId);
@@ -346,6 +362,146 @@ export function GamingPlatformsTab() {
                   <span className="gaming-stat-value">
                     {gamingContext.currentGame.partySize} {gamingContext.currentGame.partySize === 1 ? 'player' : 'players'}
                   </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Game Stats & Achievements Section - Expandable */}
+          {(gamingContext.currentGame as any)?.appId && (
+            <div className="gaming-schema-section">
+              <button
+                className="gaming-schema-header"
+                onClick={() => setIsGameSchemaExpanded(!isGameSchemaExpanded)}
+                aria-expanded={isGameSchemaExpanded}
+              >
+                <div className="gaming-schema-title-row">
+                  <Trophy size={16} />
+                  <span className="gaming-schema-title">Game Stats & Achievements</span>
+                </div>
+                {isGameSchemaExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isGameSchemaExpanded && (
+                <div className="gaming-schema-content">
+                  {/* Loading State */}
+                  {gameSchema.isLoading && (
+                    <div className="gaming-schema-loading">
+                      <Loader2 size={20} className="gaming-schema-spinner" />
+                      <span>Loading game schema...</span>
+                    </div>
+                  )}
+
+                  {/* Error State */}
+                  {gameSchema.error && !gameSchema.isLoading && (
+                    <div className="gaming-schema-error">
+                      <AlertCircle size={16} />
+                      <span>{gameSchema.error}</span>
+                    </div>
+                  )}
+
+                  {/* Schema Content */}
+                  {gameSchema.data && !gameSchema.isLoading && (
+                    <>
+                      {/* Game Name from Schema */}
+                      {gameSchema.data.gameName && (
+                        <div className="gaming-schema-game-name">
+                          <span className="gaming-schema-label">Game:</span>
+                          <span className="gaming-schema-value">{gameSchema.data.gameName}</span>
+                        </div>
+                      )}
+
+                      {/* Achievements */}
+                      {gameSchema.data.availableGameStats?.achievements &&
+                        gameSchema.data.availableGameStats.achievements.length > 0 && (
+                        <div className="gaming-schema-section-group">
+                          <div className="gaming-schema-group-header">
+                            <Trophy size={14} />
+                            <span>Achievements ({gameSchema.data.availableGameStats.achievements.length})</span>
+                          </div>
+                          <div className="gaming-schema-achievements-list">
+                            {gameSchema.data.availableGameStats.achievements.slice(0, 10).map((achievement, index) => (
+                              <div key={index} className="gaming-schema-achievement-item">
+                                {achievement.icon && (
+                                  <img
+                                    src={achievement.icon}
+                                    alt={achievement.displayName}
+                                    className="gaming-schema-achievement-icon"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                )}
+                                <div className="gaming-schema-achievement-info">
+                                  <span className="gaming-schema-achievement-name">
+                                    {achievement.displayName || achievement.name}
+                                  </span>
+                                  {achievement.description && (
+                                    <span className="gaming-schema-achievement-desc">
+                                      {achievement.description}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {gameSchema.data.availableGameStats.achievements.length > 10 && (
+                              <div className="gaming-schema-more-items">
+                                +{gameSchema.data.availableGameStats.achievements.length - 10} more achievements
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Player Stats */}
+                      {gameSchema.data.availableGameStats?.stats &&
+                        gameSchema.data.availableGameStats.stats.length > 0 && (
+                        <div className="gaming-schema-section-group">
+                          <div className="gaming-schema-group-header">
+                            <BarChart3 size={14} />
+                            <span>Player Stats ({gameSchema.data.availableGameStats.stats.length})</span>
+                          </div>
+                          <div className="gaming-schema-stats-grid">
+                            {gameSchema.data.availableGameStats.stats.slice(0, 8).map((stat, index) => (
+                              <div key={index} className="gaming-schema-stat-item">
+                                <span className="gaming-schema-stat-name">
+                                  {stat.displayName || stat.name}
+                                </span>
+                                <span className="gaming-schema-stat-value">
+                                  {typeof stat.value === 'number'
+                                    ? stat.value.toLocaleString()
+                                    : stat.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          {gameSchema.data.availableGameStats.stats.length > 8 && (
+                            <div className="gaming-schema-more-items">
+                              +{gameSchema.data.availableGameStats.stats.length - 8} more stats
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* No Stats Available */}
+                      {(!gameSchema.data.availableGameStats ||
+                        (!gameSchema.data.availableGameStats.achievements?.length &&
+                          !gameSchema.data.availableGameStats.stats?.length)) && (
+                        <div className="gaming-schema-empty">
+                          <Info size={16} />
+                          <span>No achievements or stats available for this game.</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* No Schema Loaded */}
+                  {!gameSchema.data && !gameSchema.isLoading && !gameSchema.error && (
+                    <div className="gaming-schema-empty">
+                      <Info size={16} />
+                      <span>Waiting for game schema data...</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

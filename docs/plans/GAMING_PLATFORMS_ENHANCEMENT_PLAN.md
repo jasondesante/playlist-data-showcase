@@ -111,21 +111,21 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
 ## Phase 3: Steam Game Schema Display
 
 ### 3.1 Add Game Schema Section Inside "Currently Gaming" Card
-- [ ] When a game is detected and has an `appId`, fetch game schema
-  - [ ] Auto-fetch on game detection if `appId` available
-  - [ ] Store in `gameSchema` state
-- [ ] Create expandable "Game Stats & Achievements" section inside Currently Gaming card
-  - [ ] Collapsible/expandable toggle (default collapsed)
-  - [ ] Show game name and icon (if available)
-  - [ ] Display available achievements list
-    - [ ] Achievement name
-    - [ ] Achievement description
-    - [ ] Completion status (if available)
-  - [ ] Display player stats (if available)
-    - [ ] Stat name
-    - [ ] Current value
-  - [ ] Show loading state while fetching
-  - [ ] Handle error state gracefully
+- [x] When a game is detected and has an `appId`, fetch game schema
+  - [x] Auto-fetch on game detection if `appId` available
+  - [x] Store in `gameSchema` state
+- [x] Create expandable "Game Stats & Achievements" section inside Currently Gaming card
+  - [x] Collapsible/expandable toggle (default collapsed)
+  - [x] Show game name and icon (if available)
+  - [x] Display available achievements list
+    - [x] Achievement name
+    - [x] Achievement description
+    - [x] Completion status (if available)
+  - [x] Display player stats (if available)
+    - [x] Stat name
+    - [x] Current value
+  - [x] Show loading state while fetching
+  - [x] Handle error state gracefully
 
 **Files to modify:**
 - `src/hooks/useGamingPlatforms.ts`
@@ -338,7 +338,7 @@ discordClient.clearMusicActivity(): Promise<boolean>
 - [x] Add `diagnostics` to hook return (5 min)
 - [x] Create collapsible diagnostics panel (30 min)
 - [x] Add `fetchGameSchema()` to hook (20 min)
-- [ ] Add Game Schema section inside Currently Gaming card (45 min)
+- [x] Add Game Schema section inside Currently Gaming card (45 min)
 
 ---
 
