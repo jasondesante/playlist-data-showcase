@@ -120,16 +120,6 @@ export function CharacterLevelingTab() {
   // D&D 5e XP thresholds for levels 1-20
   const xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
 
-  // XP Sources Configuration Reference:
-  // All available XP sources with their metadata for future refactoring (Task 2.2.3)
-  // {
-  //   quest:        { label: 'Complete Quest',    xp: 500,  icon: Scroll,   color: 'blue'   },
-  //   boss_defeat:  { label: 'Defeat Boss',       xp: 5000, icon: Sword,    color: 'red'    },
-  //   exploration:  { label: 'Exploration',       xp: 250,  icon: Compass,  color: 'green'  },
-  //   combat:       { label: 'Combat Victory',    xp: 300,  icon: Swords,   color: 'orange' },
-  //   crafting:     { label: 'Crafting',          xp: 150,  icon: Hammer,   color: 'yellow' },
-  //   social:       { label: 'Social Encounter',  xp: 100,  icon: Users,    color: 'purple' },
-  // }
 
   const handleAddCustomXP = async (amount: number) => {
     if (!activeChar || isProcessing) return;
@@ -197,12 +187,31 @@ export function CharacterLevelingTab() {
     }
   };
 
-  // XP Source handlers
-  const handleCompleteQuest = async () => {
+  // XP Source Configuration
+  // Centralized config for all XP sources with metadata
+  const XP_SOURCES = [
+    { id: 'quest', label: 'Complete Quest', xp: 500, toastIcon: '✅', toastMessage: 'Quest completed!' },
+    { id: 'boss_defeat', label: 'Defeat Boss', xp: 5000, toastIcon: '⚔️', toastMessage: 'Boss defeated!' },
+    { id: 'exploration', label: 'Exploration', xp: 250, toastIcon: '🧭', toastMessage: 'Exploration completed!' },
+    { id: 'combat', label: 'Combat Victory', xp: 300, toastIcon: '⚔️', toastMessage: 'Combat victory!' },
+    { id: 'crafting', label: 'Crafting', xp: 150, toastIcon: '🔨', toastMessage: 'Crafting successful!' },
+    { id: 'social', label: 'Social Encounter', xp: 100, toastIcon: '👥', toastMessage: 'Social encounter completed!' },
+  ] as const;
+
+  // Generic XP Source Handler (Task 2.2.3)
+  // Reduces code duplication by centralizing the XP addition logic
+  const handleXPSource = async (sourceId: string) => {
     if (!activeChar || isProcessing) return;
+
+    const source = XP_SOURCES.find(s => s.id === sourceId);
+    if (!source) {
+      console.error(`Unknown XP source: ${sourceId}`);
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const result = addXPFromSource(activeChar, 500, 'quest');
+      const result = addXPFromSource(activeChar, source.xp, sourceId);
       if (result.leveledUp) {
         triggerLevelUpCelebration();
 
@@ -217,148 +226,21 @@ export function CharacterLevelingTab() {
           setShowLevelUpModal(true);
         }
       }
-      // Show success toast notification
-      showToast('✅ Quest completed! +500 XP awarded', 'success');
-      console.log(`Quest completed! +500 XP. Total: ${result.character.xp.current}`);
+      // Show success toast notification with source-specific message
+      showToast(`${source.toastIcon} ${source.toastMessage} +${source.xp.toLocaleString()} XP awarded`, 'success');
+      console.log(`${source.toastMessage} +${source.xp.toLocaleString()} XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDefeatBoss = async () => {
-    if (!activeChar || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = addXPFromSource(activeChar, 5000, 'boss_defeat');
-      if (result.leveledUp) {
-        triggerLevelUpCelebration();
-
-        // For uncapped mode, show auto-apply notification if stats were increased
-        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-          showUncappedStatNotification(result.levelUpDetails);
-        }
-
-        // Show level-up modal with details
-        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-          setLevelUpDetails(result.levelUpDetails);
-          setShowLevelUpModal(true);
-        }
-      }
-      // Show success toast notification
-      showToast('⚔️ Boss defeated! +5,000 XP awarded', 'success');
-      console.log(`Boss defeated! +5,000 XP. Total: ${result.character.xp.current}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleExploration = async () => {
-    if (!activeChar || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = addXPFromSource(activeChar, 250, 'exploration');
-      if (result.leveledUp) {
-        triggerLevelUpCelebration();
-
-        // For uncapped mode, show auto-apply notification if stats were increased
-        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-          showUncappedStatNotification(result.levelUpDetails);
-        }
-
-        // Show level-up modal with details
-        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-          setLevelUpDetails(result.levelUpDetails);
-          setShowLevelUpModal(true);
-        }
-      }
-      // Show success toast notification
-      showToast('🧭 Exploration completed! +250 XP awarded', 'success');
-      console.log(`Exploration completed! +250 XP. Total: ${result.character.xp.current}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleCombatVictory = async () => {
-    if (!activeChar || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = addXPFromSource(activeChar, 300, 'combat');
-      if (result.leveledUp) {
-        triggerLevelUpCelebration();
-
-        // For uncapped mode, show auto-apply notification if stats were increased
-        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-          showUncappedStatNotification(result.levelUpDetails);
-        }
-
-        // Show level-up modal with details
-        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-          setLevelUpDetails(result.levelUpDetails);
-          setShowLevelUpModal(true);
-        }
-      }
-      // Show success toast notification
-      showToast('⚔️ Combat victory! +300 XP awarded', 'success');
-      console.log(`Combat victory! +300 XP. Total: ${result.character.xp.current}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleCrafting = async () => {
-    if (!activeChar || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = addXPFromSource(activeChar, 150, 'crafting');
-      if (result.leveledUp) {
-        triggerLevelUpCelebration();
-
-        // For uncapped mode, show auto-apply notification if stats were increased
-        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-          showUncappedStatNotification(result.levelUpDetails);
-        }
-
-        // Show level-up modal with details
-        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-          setLevelUpDetails(result.levelUpDetails);
-          setShowLevelUpModal(true);
-        }
-      }
-      // Show success toast notification
-      showToast('🔨 Crafting successful! +150 XP awarded', 'success');
-      console.log(`Crafting successful! +150 XP. Total: ${result.character.xp.current}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSocialEncounter = async () => {
-    if (!activeChar || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = addXPFromSource(activeChar, 100, 'social');
-      if (result.leveledUp) {
-        triggerLevelUpCelebration();
-
-        // For uncapped mode, show auto-apply notification if stats were increased
-        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
-          showUncappedStatNotification(result.levelUpDetails);
-        }
-
-        // Show level-up modal with details
-        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
-          setLevelUpDetails(result.levelUpDetails);
-          setShowLevelUpModal(true);
-        }
-      }
-      // Show success toast notification
-      showToast('👥 Social encounter completed! +100 XP awarded', 'success');
-      console.log(`Social encounter completed! +100 XP. Total: ${result.character.xp.current}`);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  // Convenience wrappers for backward compatibility with button onClick handlers
+  const handleCompleteQuest = () => handleXPSource('quest');
+  const handleDefeatBoss = () => handleXPSource('boss_defeat');
+  const handleExploration = () => handleXPSource('exploration');
+  const handleCombatVictory = () => handleXPSource('combat');
+  const handleCrafting = () => handleXPSource('crafting');
+  const handleSocialEncounter = () => handleXPSource('social');
 
   // Handler for closing level-up modal
   const handleCloseLevelUpModal = () => {

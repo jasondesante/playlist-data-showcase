@@ -265,10 +265,12 @@ Expand the XP Source buttons to include all available sources from the engine, w
   - [ ] Add hover effect showing source description
   - [ ] Keep existing button structure
 
-- [ ] **2.2.3 Create Generic Handler**
-  - [ ] Refactor existing handlers into single `handleXPSource(source: string, amount: number)` function
-  - [ ] Reduce code duplication
-  - [ ] Pass icon and color for toast notification
+- [x] **2.2.3 Create Generic Handler**
+  - [x] Refactor existing handlers into single `handleXPSource(sourceId: string)` function
+  - [x] Reduce code duplication
+  - [x] Pass icon and color for toast notification
+  - [x] Created `XP_SOURCES` constant array with source metadata
+  - [x] Added convenience wrapper functions for backward compatibility
 
 - [ ] **2.2.4 Update CSS**
   - [ ] Add color-specific classes: `leveling-xp-source-combat`, `leveling-xp-source-crafting`, etc.
