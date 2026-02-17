@@ -264,6 +264,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .session-song-status-badge.session-status-active {
@@ -1189,6 +1190,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .session-song-status-badge.session-status-active {
@@ -2097,6 +2099,7 @@
   background: linear-gradient(135deg, hsl(var(--background) / 0.9), hsl(var(--background) / 0.75));
   border-radius: 9999px;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px hsl(var(--foreground) / 0.2);
 }
 

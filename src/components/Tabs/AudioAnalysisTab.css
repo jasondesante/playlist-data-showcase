@@ -176,6 +176,7 @@
   margin-top: 0.5rem;
   background: linear-gradient(135deg, hsl(var(--surface-2) / 0.8), hsl(var(--surface-1) / 0.95));
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid hsl(var(--primary) / 0.15);
   border-radius: 1.5rem;
   overflow: hidden;
@@ -245,6 +246,7 @@
   justify-content: center;
   background: hsl(var(--background) / 0.6);
   backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .audio-analysis-sparkle-icon {
