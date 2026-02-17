@@ -312,7 +312,11 @@ interface SevereWeatherAlert {
 **Do These First (for debugging):**
 - [x] Add debug logging to `useEnvironmentalSensors.ts` to see what's happening with weather API
 - [x] Add diagnostics panel to show API status, errors, and last call info
-- [ ] Check browser console for errors when monitoring starts
+- [x] Check browser console for errors when monitoring starts
+  - **Findings:** Fixed unused import error in ItemsTab.tsx (DetailRow and DetailRowProperty were unused)
+  - Build now passes without TypeScript errors
+  - Debug logging is extensive - see useEnvironmentalSensors.ts for console output details
+  - Note: Actual browser console testing requires running `npm run dev` and testing in browser
 
 **Then These (once we know data is flowing):**
 - [x] Add `xpModifier` to hook return and display in card (15 min)
