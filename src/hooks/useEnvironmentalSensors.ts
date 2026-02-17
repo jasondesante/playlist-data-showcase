@@ -6,6 +6,18 @@ import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
 /**
+ * Severe weather alert information
+ * (Defined locally since not exported from engine's public API)
+ */
+export interface SevereWeatherAlert {
+    type: 'Blizzard' | 'Hurricane' | 'Typhoon' | 'Tornado' | 'None';
+    xpBonus: number; // 0.5 to 1.0 (50% to 100%)
+    severity: 'moderate' | 'high' | 'extreme';
+    message: string;
+    detectedAt: number;
+}
+
+/**
  * React hook for environmental sensor integration via the EnvironmentalSensors engine module.
  *
  * Manages permissions and real-time monitoring of GPS, motion, and weather sensors.
@@ -13,12 +25,13 @@ import { handleError } from '@/utils/errorHandling';
  *
  * @example
  * ```tsx
- * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier, biome } = useEnvironmentalSensors();
+ * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier, biome, severeWeatherAlert } = useEnvironmentalSensors();
  * await requestPermission('geolocation');
  * await startMonitoring();
  * console.log('Activity:', environmentalContext.motion.activity_type);
  * console.log('XP Modifier:', xpModifier);
  * console.log('Biome:', biome); // 'urban' | 'forest' | 'desert' | ...
+ * console.log('Severe Weather:', severeWeatherAlert); // null if no severe weather
  * ```
  *
  * @returns {Object} Hook return object
@@ -30,6 +43,7 @@ import { handleError } from '@/utils/errorHandling';
  * @returns {Object} sensors - Raw sensors instance for direct access to engine methods
  * @returns {number} xpModifier - Current XP modifier (1.0 - 3.0) based on environmental factors
  * @returns {string} biome - Current biome type derived from location (urban, forest, desert, etc.)
+ * @returns {Object|null} severeWeatherAlert - Severe weather alert if detected, null otherwise
  */
 export const useEnvironmentalSensors = () => {
     const { settings } = useAppStore();
@@ -43,6 +57,10 @@ export const useEnvironmentalSensors = () => {
     const [sensors] = useState(() => new EnvironmentalSensors(settings.openWeatherApiKey));
 
     const [isMonitoring, setIsMonitoring] = useState(false);
+
+    // Severe weather alert state - updated when weather changes
+    // Null if no severe weather detected
+    const [severeWeatherAlert, setSevereWeatherAlert] = useState<SevereWeatherAlert | null>(null);
 
     // Calculate XP modifier from environmental context (1.0 - 3.0)
     // Updates whenever environmentalContext changes
@@ -121,6 +139,15 @@ export const useEnvironmentalSensors = () => {
         logger.info('EnvironmentalSensors', 'Starting monitoring');
         setIsMonitoring(true);
 
+        // Helper to detect and update severe weather alert
+        const updateSevereWeather = () => {
+            const alert = sensors.detectSevereWeather();
+            setSevereWeatherAlert(alert as SevereWeatherAlert | null);
+            if (alert) {
+                logger.info('EnvironmentalSensors', `Severe weather detected: ${alert.type}`, alert);
+            }
+        };
+
         try {
             // Start push-based sensors (motion + light) with live callback
             sensors.startMonitoring((context) => {
@@ -132,12 +159,16 @@ export const useEnvironmentalSensors = () => {
             // Initial pull of geolocation + weather
             const initial = await sensors.updateSnapshot();
             updateEnvironmentalContext({ ...initial } as any);
+            // Check for severe weather after initial snapshot
+            updateSevereWeather();
 
             // Keep geolocation/weather fresh every 30 seconds
             const interval = setInterval(async () => {
                 try {
                     const updated = await sensors.updateSnapshot();
                     updateEnvironmentalContext({ ...updated } as any);
+                    // Check for severe weather after each update
+                    updateSevereWeather();
                 } catch (err) {
                     logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
                 }
@@ -148,6 +179,7 @@ export const useEnvironmentalSensors = () => {
                 clearInterval(interval);
                 sensors.stopMonitoring();
                 setIsMonitoring(false);
+                setSevereWeatherAlert(null);
             };
         } catch (error) {
             handleError(error, 'EnvironmentalSensors');
@@ -155,5 +187,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert };
 };

@@ -32,9 +32,9 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
   - [x] Update when environmentalContext changes
 - [x] Add `biome` extraction from environmentalContext
   - [x] Biome is already in EnvironmentalContext type: `environmentalContext.biome`
-- [ ] Add optional `severeWeatherAlert` state
-  - [ ] Call `sensors.detectSevereWeather()` when weather updates
-  - [ ] Store result (null if no severe weather)
+- [x] Add optional `severeWeatherAlert` state
+  - [x] Call `sensors.detectSevereWeather()` when weather updates
+  - [x] Store result (null if no severe weather)
 - [ ] Add `diagnostics` state (optional, for debug panel)
   - [ ] Call `sensors.getDiagnostics()` for comprehensive sensor health
 
