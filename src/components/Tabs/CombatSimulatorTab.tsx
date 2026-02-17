@@ -328,13 +328,65 @@ export function CombatSimulatorTab() {
   const combatLog = combat?.history ?? [];
   const isActive = combat?.isActive ?? false;
 
-  const handleStartCombat = () => {
+  /**
+   * Start combat with generated enemies or fall back to single generated enemy
+   *
+   * Phase 1.3: Replace mock enemy with EnemyGenerator-generated enemies
+   * - Uses generatedEnemies state if populated
+   * - Falls back to generating a single enemy if none configured
+   * - Passes generated enemies to startCombat()
+   */
+  const handleStartCombat = useCallback(() => {
     const activeChar = getActiveCharacter();
-    if (!activeChar) return;
-    // Create a mock enemy based on the active character
-    const enemy = { ...activeChar, name: 'Goblin', hp: { current: 20, max: 20, temp: 0 } };
-    startCombat([activeChar], [enemy]);
-  };
+    if (!activeChar) {
+      logger.warn('CombatSimulator', 'Cannot start combat: no active character');
+      return;
+    }
+
+    let enemiesToUse: CharacterSheet[] = [];
+
+    if (generatedEnemies.length > 0) {
+      // Use pre-generated enemies from state
+      logger.info('CombatSimulator', 'Using pre-generated enemies', {
+        count: generatedEnemies.length,
+        names: generatedEnemies.map(e => e.name)
+      });
+      enemiesToUse = generatedEnemies;
+    } else {
+      // Fall back to generating a single enemy using EnemyGenerator
+      logger.info('CombatSimulator', 'No pre-generated enemies, generating single fallback enemy');
+
+      const fallbackEnemy = enemyGenerator.generate({
+        seed: generationConfig.seed || 'fallback-enemy',
+        templateId: generationConfig.templateId,
+        rarity: generationConfig.baseRarity,
+        category: generationConfig.category,
+        archetype: generationConfig.archetype,
+        difficultyMultiplier: generationConfig.difficultyMultiplier
+      });
+
+      if (fallbackEnemy) {
+        enemiesToUse = [fallbackEnemy];
+        logger.info('CombatSimulator', 'Fallback enemy generated', {
+          name: fallbackEnemy.name,
+          level: fallbackEnemy.level
+        });
+      } else {
+        // Last resort: log error and don't start combat
+        logger.error('CombatSimulator', 'Failed to generate fallback enemy');
+        return;
+      }
+    }
+
+    // Start combat with the active character and generated enemies
+    startCombat([activeChar], enemiesToUse);
+  }, [
+    getActiveCharacter,
+    generatedEnemies,
+    enemyGenerator,
+    generationConfig,
+    startCombat
+  ]);
 
   const handleNextTurn = () => {
     if (!combat) return;
@@ -551,10 +603,12 @@ export function CombatSimulatorTab() {
   }, [combatLog.length]);
 
   // Award XP when combat ends (Task 3.4)
+  // Updated in Phase 1.3: Check if winner is the player character instead of checking for 'Goblin'
   useEffect(() => {
     const result = combat && !combat.isActive ? getCombatResult() : null;
     const activeChar = getActiveCharacter();
-    if (result && activeChar && result.winner.character.name !== 'Goblin') {
+    // Award XP if player (active character) won the combat
+    if (result && activeChar && result.winner.character.name === activeChar.name) {
       // Award XP to the active character
       const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
 

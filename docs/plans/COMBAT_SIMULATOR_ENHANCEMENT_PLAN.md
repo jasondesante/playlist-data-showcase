@@ -28,9 +28,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Reset enemies when config changes
 
 ### 1.3 Replace Mock Enemy with Generated Enemies
-- [ ] Update `handleStartCombat()` to use `generatedEnemies`
-- [ ] Fall back to single generated enemy if none configured
-- [ ] Pass generated enemies to `startCombat()`
+- [x] Update `handleStartCombat()` to use `generatedEnemies`
+- [x] Fall back to single generated enemy if none configured
+- [x] Pass generated enemies to `startCombat()`
 
 ---
 
@@ -362,4 +362,4 @@ src/
 ---
 
 *Plan created: 2026-02-14*
-*Last updated: 2026-02-14*
+*Last updated: 2026-02-17*
