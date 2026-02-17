@@ -32,8 +32,8 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
 - [x] Add `apiStatistics` state
   - [x] Call `sensors.getDiagnostics()` to get API performance metrics
   - [x] Extract Steam API timing data (avg, min, max, success rate, p95, p99)
-- [ ] Add `diagnostics` getter
-  - [ ] Expose `sensors.getDiagnostics()` directly for debug panel
+- [x] Add `diagnostics` getter
+  - [x] Expose `sensors.getDiagnostics()` directly for debug panel
 - [x] Add `isServerMode` detection
   - [x] Check if running in browser vs server environment
   - [x] Return boolean for Discord capability check
@@ -195,23 +195,23 @@ interface PlayerStat {
 ## Phase 5: Diagnostic Dashboard
 
 ### 6.1 Create Collapsible Diagnostics Panel
-- [ ] Add "Sensor Diagnostics" collapsible section
-  - [ ] Hidden by default, expandable for debugging
-  - [ ] Show Steam connection status
-    - [ ] API key configured (masked)
-    - [ ] Steam ID connected
-    - [ ] Last successful API call
-  - [ ] Show Discord connection state
-    - [ ] Client ID configured
-    - [ ] Connection state (Disconnected/Connecting/Connected/Error/Unavailable)
-    - [ ] Last error (if any)
-  - [ ] Show cache statistics
-    - [ ] Game metadata cache size
-    - [ ] Cached games list
-  - [ ] Show polling status
-    - [ ] Polling active/inactive
-    - [ ] Poll interval
-    - [ ] Last poll time
+- [x] Add "Sensor Diagnostics" collapsible section
+  - [x] Hidden by default, expandable for debugging
+  - [x] Show Steam connection status
+    - [x] API key configured (masked)
+    - [x] Steam ID connected
+    - [x] Last successful API call
+  - [x] Show Discord connection state
+    - [x] Client ID configured
+    - [x] Connection state (Disconnected/Connecting/Connected/Error/Unavailable)
+    - [x] Last error (if any)
+  - [x] Show cache statistics
+    - [x] Game metadata cache size
+    - [x] Cached games list
+  - [x] Show polling status
+    - [x] Polling active/inactive
+    - [x] Poll interval
+    - [x] Last poll time
 
 **Files to modify:**
 - `src/components/Tabs/GamingPlatformsTab.tsx`
@@ -336,7 +336,7 @@ discordClient.clearMusicActivity(): Promise<boolean>
 - [x] Gray out Discord section with overlay (20 min)
 - [x] Add explanatory tooltip for Discord limitation (10 min)
 - [x] Add `diagnostics` to hook return (5 min)
-- [ ] Create collapsible diagnostics panel (30 min)
+- [x] Create collapsible diagnostics panel (30 min)
 - [x] Add `fetchGameSchema()` to hook (20 min)
 - [ ] Add Game Schema section inside Currently Gaming card (45 min)
 

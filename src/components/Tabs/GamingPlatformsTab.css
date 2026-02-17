@@ -976,3 +976,235 @@
 }
 
 /* Status badge component styles are in src/styles/components/StatusBadge.css */
+
+/* ========================================
+   DIAGNOSTICS PANEL
+   ======================================== */
+
+.gaming-diagnostics-card {
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.gaming-diagnostics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background-color: hsl(var(--surface-1));
+  border: none;
+  border-bottom: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.gaming-diagnostics-header:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.gaming-diagnostics-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.gaming-diagnostics-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-title {
+    font-size: 1rem;
+  }
+}
+
+.gaming-diagnostics-header svg {
+  color: hsl(var(--muted-foreground));
+}
+
+.gaming-diagnostics-title-row svg {
+  color: hsl(var(--primary));
+}
+
+.gaming-diagnostics-content {
+  padding: 0.875rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-content {
+    padding: 1rem;
+  }
+}
+
+.gaming-diagnostics-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.gaming-diagnostics-empty svg {
+  opacity: 0.5;
+}
+
+.gaming-diagnostics-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Diagnostics Section */
+.gaming-diagnostics-section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.gaming-diagnostics-section:last-of-type {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.gaming-diagnostics-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.625rem 0;
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-section-title {
+    font-size: 0.875rem;
+  }
+}
+
+.gaming-diagnostics-section-title svg {
+  color: hsl(var(--primary));
+  width: 14px;
+  height: 14px;
+}
+
+/* Info Grid */
+.gaming-diagnostics-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .gaming-diagnostics-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.gaming-diagnostics-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: calc(var(--radius) * 0.5);
+}
+
+.gaming-diagnostics-info-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-info-label {
+    font-size: 0.75rem;
+  }
+}
+
+.gaming-diagnostics-info-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  word-break: break-word;
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-info-value {
+    font-size: 0.875rem;
+  }
+}
+
+/* Status Colors */
+.gaming-diagnostics-status--success {
+  color: hsl(var(--cute-teal));
+}
+
+.gaming-diagnostics-status--degraded {
+  color: hsl(var(--cute-orange));
+}
+
+.gaming-diagnostics-status--error {
+  color: hsl(var(--destructive));
+}
+
+/* Cached Games List */
+.gaming-diagnostics-info-value--list {
+  display: block;
+}
+
+.gaming-diagnostics-cached-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.gaming-diagnostics-cached-game-tag {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.gaming-diagnostics-cached-more {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+/* Last Updated */
+.gaming-diagnostics-updated {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .gaming-diagnostics-updated {
+    font-size: 0.75rem;
+  }
+}
