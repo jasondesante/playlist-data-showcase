@@ -1,12 +1,85 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
+import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
-import { SPELL_DATABASE } from 'playlist-data-engine';
+import {
+    SPELL_DATABASE,
+    type CharacterSheet,
+    type EncounterGenerationOptions,
+    type EnemyRarity,
+    type EnemyCategory,
+    type EnemyArchetype,
+    type EncounterDifficulty,
+    type EnemyMixMode
+} from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
 import './CombatSimulatorTab.css';
+
+/**
+ * Generation mode for enemy creation
+ */
+type EnemyGenerationMode = 'single' | 'party-balanced' | 'cr-based';
+
+/**
+ * Configuration for enemy generation in the combat simulator
+ *
+ * This config is used to generate enemies before combat starts.
+ * It wraps the EncounterGenerationOptions with additional UI-specific fields.
+ */
+export interface EnemyGenerationConfig {
+    /** Generation mode: single enemy, party-balanced, or CR-based */
+    mode: EnemyGenerationMode;
+
+    /** Seed for deterministic generation */
+    seed: string;
+
+    /** Number of enemies to generate (1-10) */
+    count: number;
+
+    /** Encounter difficulty for party-balanced mode */
+    difficulty: EncounterDifficulty;
+
+    /** Target CR for CR-based mode */
+    targetCR: number;
+
+    /** Base rarity for generated enemies */
+    baseRarity: EnemyRarity;
+
+    /** Optional: Filter by category */
+    category?: EnemyCategory;
+
+    /** Optional: Filter by archetype */
+    archetype?: EnemyArchetype;
+
+    /** Optional: Force specific template ID */
+    templateId?: string;
+
+    /** Enemy mix mode for encounter generation */
+    enemyMix: EnemyMixMode;
+
+    /** Optional: Template IDs for custom mix mode */
+    templates?: string[];
+
+    /** Optional: Difficulty multiplier */
+    difficultyMultiplier: number;
+}
+
+/**
+ * Default enemy generation configuration
+ */
+const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
+    mode: 'single',
+    seed: 'combat-encounter',
+    count: 1,
+    difficulty: 'medium',
+    targetCR: 1,
+    baseRarity: 'common',
+    enemyMix: 'uniform',
+    difficultyMultiplier: 1.0
+};
 
 /**
  * CombatSimulatorTab Component
@@ -84,6 +157,146 @@ export function CombatSimulatorTab() {
   } = useCombatEngine();
   const { getActiveCharacter } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
+
+  // ============================================================
+  // Phase 1.2: Enemy Generation State Management
+  // ============================================================
+
+  // Hook for enemy generation (Phase 1.1)
+  const enemyGenerator = useEnemyGenerator();
+
+  // State: Generated enemies ready for combat
+  const [generatedEnemies, setGeneratedEnemies] = useState<CharacterSheet[]>([]);
+
+  // State: Configuration for enemy generation
+  const [generationConfig, setGenerationConfig] = useState<EnemyGenerationConfig>(DEFAULT_GENERATION_CONFIG);
+
+  // State: Loading state for enemy generation
+  // Note: _isGenerating will be used in Phase 2 for loading UI
+  const [_isGenerating, setIsGenerating] = useState(false);
+
+  // Reset generated enemies when config changes (Phase 1.2 requirement)
+  // This ensures stale enemies are cleared when user changes generation settings
+  const prevConfigRef = useRef<EnemyGenerationConfig>(generationConfig);
+  useEffect(() => {
+    // Check if any config values changed that would invalidate generated enemies
+    const hasConfigChanged = (
+      prevConfigRef.current.mode !== generationConfig.mode ||
+      prevConfigRef.current.seed !== generationConfig.seed ||
+      prevConfigRef.current.count !== generationConfig.count ||
+      prevConfigRef.current.difficulty !== generationConfig.difficulty ||
+      prevConfigRef.current.targetCR !== generationConfig.targetCR ||
+      prevConfigRef.current.baseRarity !== generationConfig.baseRarity ||
+      prevConfigRef.current.category !== generationConfig.category ||
+      prevConfigRef.current.archetype !== generationConfig.archetype ||
+      prevConfigRef.current.templateId !== generationConfig.templateId ||
+      prevConfigRef.current.enemyMix !== generationConfig.enemyMix ||
+      prevConfigRef.current.templates !== generationConfig.templates
+    );
+
+    if (hasConfigChanged && generatedEnemies.length > 0) {
+      logger.info('CombatSimulator', 'Config changed, clearing generated enemies', {
+        previousMode: prevConfigRef.current.mode,
+        newMode: generationConfig.mode
+      });
+      setGeneratedEnemies([]);
+    }
+
+    prevConfigRef.current = generationConfig;
+  }, [generationConfig, generatedEnemies.length]);
+
+  // Handler: Generate enemies based on current configuration
+  // Note: _handleGenerateEnemies will be wired to UI in Phase 2
+  const _handleGenerateEnemies = useCallback(() => {
+    const activeChar = getActiveCharacter();
+    if (!activeChar) {
+      logger.warn('CombatSimulator', 'Cannot generate enemies: no active character');
+      return;
+    }
+
+    setIsGenerating(true);
+    logger.info('CombatSimulator', 'Generating enemies', {
+      mode: generationConfig.mode,
+      count: generationConfig.count,
+      seed: generationConfig.seed
+    });
+
+    try {
+      let enemies: CharacterSheet[] = [];
+
+      const options: EncounterGenerationOptions = {
+        seed: generationConfig.seed,
+        count: generationConfig.count,
+        difficulty: generationConfig.difficulty,
+        targetCR: generationConfig.targetCR,
+        baseRarity: generationConfig.baseRarity,
+        category: generationConfig.category,
+        archetype: generationConfig.archetype,
+        templateId: generationConfig.templateId,
+        enemyMix: generationConfig.enemyMix,
+        templates: generationConfig.templates,
+        difficultyMultiplier: generationConfig.difficultyMultiplier
+      };
+
+      switch (generationConfig.mode) {
+        case 'single':
+          // Generate a single enemy
+          const singleEnemy = enemyGenerator.generate({
+            seed: generationConfig.seed,
+            templateId: generationConfig.templateId,
+            rarity: generationConfig.baseRarity,
+            category: generationConfig.category,
+            archetype: generationConfig.archetype,
+            difficultyMultiplier: generationConfig.difficultyMultiplier
+          });
+          if (singleEnemy) {
+            enemies = [singleEnemy];
+          }
+          break;
+
+        case 'party-balanced':
+          // Generate party-balanced encounter
+          enemies = enemyGenerator.generateEncounter([activeChar], options);
+          break;
+
+        case 'cr-based':
+          // Generate CR-based encounter
+          enemies = enemyGenerator.generateEncounterByCR(options);
+          break;
+      }
+
+      logger.info('CombatSimulator', 'Enemy generation complete', {
+        enemyCount: enemies.length,
+        enemyNames: enemies.map(e => e.name)
+      });
+
+      setGeneratedEnemies(enemies);
+    } catch (error) {
+      logger.error('CombatSimulator', 'Failed to generate enemies', error);
+      setGeneratedEnemies([]);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [generationConfig, getActiveCharacter, enemyGenerator]);
+
+  // Handler: Update a single config field
+  // Note: _updateGenerationConfig will be wired to UI in Phase 2
+  const _updateGenerationConfig = useCallback(<K extends keyof EnemyGenerationConfig>(
+    key: K,
+    value: EnemyGenerationConfig[K]
+  ) => {
+    setGenerationConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }, []);
+
+  // Acknowledge intentionally unused functions (will be wired to UI in Phase 2)
+  void _handleGenerateEnemies;
+  void _updateGenerationConfig;
+
+  // End of Phase 1.2 state management
+  // ============================================================
 
   // State for manual attack selection (task 4.9.6)
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);

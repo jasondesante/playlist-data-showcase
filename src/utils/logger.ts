@@ -16,6 +16,7 @@ type LogCategory =
     | 'EnvironmentalSensors'
     | 'GamingPlatformSensors'
     | 'CombatEngine'
+    | 'CombatSimulator'
     | 'Settings'
     | 'Store'
     | 'AutoCharacterSetup'

@@ -21,11 +21,11 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Handle seeding for determinism
 
 ### 1.2 Enemy Generation State Management
-- [ ] Add enemy generation state to component
-  - [ ] `generatedEnemies: CharacterSheet[]` state
-  - [ ] `generationConfig: EnemyGenerationConfig` state
-  - [ ] `isGenerating: boolean` loading state
-  - [ ] Reset enemies when config changes
+- [x] Add enemy generation state to component
+  - [x] `generatedEnemies: CharacterSheet[]` state
+  - [x] `generationConfig: EnemyGenerationConfig` state
+  - [x] `isGenerating: boolean` loading state
+  - [x] Reset enemies when config changes
 
 ### 1.3 Replace Mock Enemy with Generated Enemies
 - [ ] Update `handleStartCombat()` to use `generatedEnemies`

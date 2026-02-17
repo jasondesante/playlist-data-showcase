@@ -365,7 +365,7 @@ export function DataViewerTab() {
   } = useDataViewer();
 
   // Get Data Viewer store actions
-  const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased } = useDataViewerStore();
+  const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased, lastEquipmentCount } = useDataViewerStore();
 
   // State
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
@@ -374,14 +374,18 @@ export function DataViewerTab() {
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
     markChangesViewed();
-    // Check if equipment count has increased
-    if (hasEquipmentCountIncreased(dataCounts.equipment)) {
+
+    // Only show "new items" banner if:
+    // 1. lastEquipmentCount > 0 (meaning we've visited before and have a baseline)
+    // 2. The current count is greater than the last known count (actual increase)
+    if (lastEquipmentCount > 0 && hasEquipmentCountIncreased(dataCounts.equipment)) {
       setShowNewItemsIndicator(true);
       // Auto-hide after 5 seconds
       const timer = setTimeout(() => setShowNewItemsIndicator(false), 5000);
       return () => clearTimeout(timer);
     }
-    // Update the stored equipment count to current count
+
+    // Always update the stored equipment count to current count
     updateEquipmentCount(dataCounts.equipment);
   }, []);
   const [searchTerm, setSearchTerm] = useState('');
