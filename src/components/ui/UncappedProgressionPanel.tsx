@@ -58,10 +58,25 @@ export function UncappedProgressionPanel({
   const hasChanges = selectedPresetId !== currentStoredPresetId;
 
   // Sync selectedPresetId when character changes
+  // Also apply the stored preset to the engine so XP calculations use the correct formula
   useEffect(() => {
     const storedPresetId = getCharacterUncappedConfig(character.seed);
     setSelectedPresetId(storedPresetId);
-  }, [character.seed, getCharacterUncappedConfig]);
+
+    // Apply the stored preset to the engine when switching characters
+    const preset = getXPFormulaPresetById(storedPresetId);
+    if (preset) {
+      try {
+        LevelUpProcessor.setUncappedConfig({
+          xpFormula: preset.xpFormula,
+          proficiencyBonusFormula: preset.proficiencyFormula,
+        });
+        console.log(`[UncappedProgression] Auto-applied preset "${preset.name}" for character ${character.name} on switch`);
+      } catch (error) {
+        console.error('[UncappedProgression] Failed to auto-apply preset on character switch:', error);
+      }
+    }
+  }, [character.seed, character.name, getCharacterUncappedConfig]);
 
   // Handle preset selection
   const handlePresetSelect = useCallback((presetId: string) => {
