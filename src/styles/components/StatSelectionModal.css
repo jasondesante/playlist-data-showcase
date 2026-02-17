@@ -339,6 +339,40 @@
   background: hsl(var(--stat-color) / 0.2);
 }
 
+/* ============================================
+   STAT BREAKDOWN DISPLAY (Task 3.3.3)
+   Shows "base (+modifier) = total" format
+   ============================================ */
+
+/* Base stat value in breakdown */
+.statmodal-stat-base {
+  /* Inherit from parent */
+}
+
+/* Modifier portion in breakdown */
+.statmodal-stat-modifier {
+  font-size: 0.75rem;
+  margin-left: 0.125rem;
+}
+
+/* Buff modifier (positive) */
+.statmodal-stat-buff {
+  color: hsl(150 70% 60%);
+}
+
+/* Debuff modifier (negative) */
+.statmodal-stat-debuff {
+  color: hsl(0 70% 60%);
+}
+
+/* Total stat value shown below when breakdown exists */
+.statmodal-stat-total {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(280 20% 80%);
+  text-align: center;
+}
+
 /* Stat Full Name */
 .statmodal-stat-full {
   font-size: 0.6875rem;

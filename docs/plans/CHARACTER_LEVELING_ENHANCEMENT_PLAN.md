@@ -355,24 +355,24 @@ Enhance the StatSelectionModal component to show:
   - [x] Only show if `activeEffects` has items
   - [x] Header: "Active Stat Modifiers"
 
-- [ ] **3.3.2 Create Effect Item Component**
-  - [ ] Each effect shows:
-    - [ ] Ability icon + name
-    - [ ] Amount with +/- indicator
-    - [ ] Source name (equipment, feature, curse, etc.)
-    - [ ] Color: green for buffs, red for debuffs
-  - [ ] Group by ability for cleaner display
+- [x] **3.3.2 Create Effect Item Component**
+  - [x] Each effect shows:
+    - [x] Ability icon + name
+    - [x] Amount with +/- indicator
+    - [x] Source name (equipment, feature, curse, etc.)
+    - [x] Color: green for buffs, red for debuffs
+  - [x] Group by ability for cleaner display
 
-- [ ] **3.3.3 Update Stat Display**
-  - [ ] Show "base + modifiers = total" format
-  - [ ] Example: "STR: 14 (+2 from Ring) = 16"
-  - [ ] Only show breakdown if effects exist
+- [x] **3.3.3 Update Stat Display**
+  - [x] Show "base + modifiers = total" format
+  - [x] Example: "STR: 14 (+2 from Ring) = 16"
+  - [x] Only show breakdown if effects exist
 
-- [ ] **3.3.4 Add Effects CSS**
-  - [ ] Add `.statmodal-effects-section` class
-  - [ ] Add `.statmodal-effect-item` class
-  - [ ] Add `.statmodal-effect-buff` and `.statmodal-effect-debuff` variants
-  - [ ] Add collapse/expand animation
+- [x] **3.3.4 Add Effects CSS**
+  - [x] Add `.statmodal-effects-section` class
+  - [x] Add `.statmodal-effect-item` class
+  - [x] Add `.statmodal-effect-buff` and `.statmodal-effect-debuff` variants
+  - [x] Add collapse/expand animation
 
 ---
 
@@ -380,9 +380,9 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **3.4.1 Extract Active Effects from Character**
-  - [ ] Create helper function to extract effects from `character.equipment_effects` and `character.feature_effects`
-  - [ ] Transform engine format to `StatEffect[]` format
+- [x] **3.4.1 Extract Active Effects from Character**
+  - [x] Create helper function to extract effects from `character.equipment_effects` and `character.feature_effects`
+  - [x] Transform engine format to `StatEffect[]` format
 
   ```typescript
   const getActiveStatEffects = (character: CharacterSheet): StatEffect[] => {
@@ -420,10 +420,10 @@ Enhance the StatSelectionModal component to show:
   };
   ```
 
-- [ ] **3.4.2 Update StatSelectionModal Usage**
-  - [ ] Pass `gameMode={activeChar.gameMode}`
-  - [ ] Pass `activeEffects={getActiveStatEffects(activeChar)}`
-  - [ ] Update modal call in `CharacterLevelingTab.tsx:692-698`
+- [x] **3.4.2 Update StatSelectionModal Usage**
+  - [x] Pass `gameMode={activeChar.gameMode}`
+  - [x] Pass `activeEffects={getActiveStatEffects(activeChar)}`
+  - [x] Update modal call in `CharacterLevelingTab.tsx` (now around line 766)
 
 ---
 

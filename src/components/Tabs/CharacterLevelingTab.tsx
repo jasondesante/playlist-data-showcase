@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -6,11 +6,11 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
-import { StatSelectionModal } from '../StatSelectionModal';
+import { StatSelectionModal, type StatEffect } from '../StatSelectionModal';
 import { StatStrategySelector } from '../ui/StatStrategySelector';
 import { UncappedProgressionPanel } from '../ui/UncappedProgressionPanel';
 import { showToast } from '../ui/Toast';
-import type { LevelUpDetail, Ability } from 'playlist-data-engine';
+import type { LevelUpDetail, Ability, CharacterSheet } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown, Swords, Hammer, Users } from 'lucide-react';
 import './CharacterLevelingTab.css';
@@ -63,6 +63,61 @@ export function CharacterLevelingTab() {
   };
 
   const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>(getInitialStrategy);
+
+  /**
+   * Extract active stat effects from a character's equipment and feature effects.
+   * Transforms engine format to StatEffect[] format for the StatSelectionModal.
+   *
+   * Task 3.4.1: Extract Active Effects from Character
+   *
+   * @param character - The character sheet to extract effects from
+   * @returns Array of StatEffect objects for display in the modal
+   */
+  const getActiveStatEffects = (character: CharacterSheet): StatEffect[] => {
+    const effects: StatEffect[] = [];
+
+    // Extract from equipment effects
+    if (character.equipment_effects) {
+      for (const equipmentEffect of character.equipment_effects) {
+        if (equipmentEffect.effects) {
+          for (const prop of equipmentEffect.effects) {
+            // Check for stat_bonus type effects
+            if (prop.type === 'stat_bonus' && prop.target && typeof prop.value === 'number') {
+              effects.push({
+                ability: prop.target as Ability,
+                amount: prop.value,
+                source: equipmentEffect.source || 'Equipment',
+                type: prop.value > 0 ? 'buff' : 'debuff'
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Extract from feature effects
+    if (character.feature_effects) {
+      for (const featureEffect of character.feature_effects) {
+        // Check for stat_bonus type effects
+        if (featureEffect.type === 'stat_bonus' && featureEffect.target && typeof featureEffect.value === 'number') {
+          effects.push({
+            ability: featureEffect.target as Ability,
+            amount: featureEffect.value,
+            source: featureEffect.description || 'Feature',
+            type: featureEffect.value > 0 ? 'buff' : 'debuff'
+          });
+        }
+      }
+    }
+
+    return effects;
+  };
+
+  // Memoize active effects for the active character to avoid recalculating on every render
+  const activeStatEffects = useMemo(() => {
+    if (!activeChar) return [];
+    return getActiveStatEffects(activeChar);
+  }, [activeChar?.equipment_effects, activeChar?.feature_effects]);
 
   // Handle character selection change
   const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -712,6 +767,8 @@ export function CharacterLevelingTab() {
         isOpen={showStatModal}
         pendingCount={activeChar.pendingStatIncreases ?? 0}
         currentStats={activeChar.ability_scores}
+        gameMode={activeChar.gameMode}
+        activeEffects={activeStatEffects}
         onApply={handleApplyStats}
         onCancel={handleCloseStatModal}
       />

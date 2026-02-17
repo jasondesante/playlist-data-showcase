@@ -354,6 +354,12 @@ export function StatSelectionModal({
               const canSelect = (selectionMode === 'double' ? selectedStats.length < 2 || isSelected : true)
                 && !isCapped && canReceiveBoost;
 
+              // Calculate effect breakdown for this ability (Task 3.3.3)
+              const abilityEffects = effectsByAbility[ability] || [];
+              const hasEffectsForAbility = abilityEffects.length > 0;
+              const totalEffectAmount = abilityEffects.reduce((sum, e) => sum + e.amount, 0);
+              const baseStatValue = currentValue - totalEffectAmount;
+
               return (
                 <button
                   key={ability}
@@ -370,9 +376,24 @@ export function StatSelectionModal({
                 >
                   <div className="statmodal-stat-header">
                     <span className="statmodal-stat-short">{info.short}</span>
-                    <span className="statmodal-stat-value">{currentValue}</span>
+                    <span className="statmodal-stat-value">
+                      {hasEffectsForAbility ? (
+                        <>
+                          <span className="statmodal-stat-base">{baseStatValue}</span>
+                          <span className={`statmodal-stat-modifier ${totalEffectAmount > 0 ? 'statmodal-stat-buff' : 'statmodal-stat-debuff'}`}>
+                            ({totalEffectAmount > 0 ? '+' : ''}{totalEffectAmount})
+                          </span>
+                        </>
+                      ) : (
+                        currentValue
+                      )}
+                    </span>
                   </div>
                   <span className="statmodal-stat-full">{info.full}</span>
+                  {/* Show total value below when effects exist */}
+                  {hasEffectsForAbility && (
+                    <span className="statmodal-stat-total">= {currentValue}</span>
+                  )}
                   {isCapped && (
                     <div className="statmodal-stat-cap-badge">
                       <AlertTriangle size={10} />
