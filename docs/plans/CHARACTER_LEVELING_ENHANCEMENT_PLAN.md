@@ -272,10 +272,10 @@ Expand the XP Source buttons to include all available sources from the engine, w
   - [x] Created `XP_SOURCES` constant array with source metadata
   - [x] Added convenience wrapper functions for backward compatibility
 
-- [ ] **2.2.4 Update CSS**
-  - [ ] Add color-specific classes: `leveling-xp-source-combat`, `leveling-xp-source-crafting`, etc.
-  - [ ] Update grid spacing for 6 items
-  - [ ] Ensure buttons are equal height
+- [x] **2.2.4 Update CSS**
+  - [x] Add color-specific classes: `leveling-xp-source-combat`, `leveling-xp-source-crafting`, etc.
+  - [x] Update grid spacing for 6 items
+  - [x] Ensure buttons are equal height
 
 ---
 
@@ -291,10 +291,10 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **3.1.1 Update Props Interface**
-  - [ ] Add `gameMode?: 'standard' | 'uncapped'` prop
-  - [ ] Add `activeEffects?: StatEffect[]` prop
-  - [ ] Update `StatSelectionModalProps` interface
+- [x] **3.1.1 Update Props Interface**
+  - [x] Add `gameMode?: 'standard' | 'uncapped'` prop
+  - [x] Add `activeEffects?: StatEffect[]` prop
+  - [x] Update `StatSelectionModalProps` interface
   - File: `src/components/StatSelectionModal.tsx`
 
   ```typescript

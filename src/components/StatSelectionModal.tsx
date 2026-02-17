@@ -21,6 +21,21 @@ import '../styles/components/StatSelectionModal.css';
 import { X } from 'lucide-react';
 import type { Ability } from 'playlist-data-engine';
 
+/**
+ * Represents an active stat modifier effect on a character.
+ * Used to display stat breakdowns in the modal.
+ */
+export interface StatEffect {
+  /** The ability score this effect modifies */
+  ability: Ability;
+  /** The amount of modification (positive for buffs, negative for debuffs) */
+  amount: number;
+  /** Source of the effect (e.g., "Ring of Strength", "Curse of Weakness") */
+  source: string;
+  /** Whether this is a buff or debuff */
+  type: 'buff' | 'debuff';
+}
+
 export interface StatSelectionModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -28,6 +43,10 @@ export interface StatSelectionModalProps {
   pendingCount: number;
   /** Current stat values for display reference */
   currentStats?: Partial<Record<Ability, number>>;
+  /** Game mode - affects stat cap behavior (standard caps at 20, uncapped has no limit) */
+  gameMode?: 'standard' | 'uncapped';
+  /** Active stat modifier effects to display in breakdown */
+  activeEffects?: StatEffect[];
   /** Callback when stat increases are applied.
    *  For single mode: secondaryStats will be undefined
    *  For double mode: secondaryStats will be an array with one stat
@@ -58,6 +77,8 @@ export function StatSelectionModal({
   isOpen,
   pendingCount,
   currentStats = {},
+  gameMode: _gameMode = 'standard',
+  activeEffects: _activeEffects = [],
   onApply,
   onCancel,
 }: StatSelectionModalProps) {
