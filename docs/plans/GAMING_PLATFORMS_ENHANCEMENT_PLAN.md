@@ -254,11 +254,11 @@ interface GamingDiagnostics {
 ## Phase 6: Enhanced XP Bonus Breakdown
 
 ### 6.1 Improve XP Bonus Display
-- [ ] Enhance existing XP bonus card with more detail
-  - [ ] Show exact formula being applied
-  - [ ] Display each factor as progress bar
-  - [ ] Show "potential" bonus if session continues
-  - [ ] Add visual countdown/progress to next bonus tier
+- [x] Enhance existing XP bonus card with more detail
+  - [x] Show exact formula being applied
+  - [x] Display each factor as progress bar
+  - [x] Show "potential" bonus if session continues
+  - [x] Add visual countdown/progress to next bonus tier
 
 **Files to modify:**
 - `src/components/Tabs/GamingPlatformsTab.tsx`

@@ -544,44 +544,193 @@ export function GamingPlatformsTab() {
             </div>
           </div>
 
+          {/* Formula Display */}
+          <div className="gaming-formula-section">
+            <span className="gaming-formula-title">Formula</span>
+            <code className="gaming-formula-code">
+              Base + (Session × 0.01) + Genre + Party — capped at 1.75x
+            </code>
+          </div>
+
           <div className="gaming-bonus-breakdown">
-            <span className="gaming-breakdown-title">Bonus Formula Breakdown</span>
-            <div className="gaming-breakdown-row">
-              <span className="gaming-breakdown-name">Base gaming bonus:</span>
-              <span className="gaming-breakdown-value">1.0x</span>
+            <span className="gaming-breakdown-title">Bonus Factor Breakdown</span>
+
+            {/* Base Bonus */}
+            <div className="gaming-breakdown-factor">
+              <div className="gaming-breakdown-factor-header">
+                <span className="gaming-breakdown-name">Base gaming bonus</span>
+                <span className="gaming-breakdown-value">1.00x</span>
+              </div>
+              <div className="gaming-factor-progress">
+                <div className="gaming-factor-progress-bar" style={{ width: '100%' }}></div>
+              </div>
+              <span className="gaming-factor-label">Always applied when gaming</span>
             </div>
-            {gamingContext.currentGame?.sessionDuration && (
-              <div className="gaming-breakdown-row">
-                <span className="gaming-breakdown-name">Session bonus:</span>
-                <span className="gaming-breakdown-value">
-                  +{Math.min(gamingContext.currentGame.sessionDuration * 0.01, 0.75).toFixed(2)}x
+
+            {/* Session Bonus */}
+            {gamingContext.currentGame?.sessionDuration !== undefined && (() => {
+              const sessionMinutes = gamingContext.currentGame?.sessionDuration ?? 0;
+              const sessionBonus = Math.min(sessionMinutes * 0.01, 0.75);
+              const sessionProgress = Math.min((sessionBonus / 0.75) * 100, 100);
+              const minutesToNextTier = sessionMinutes < 75 ? 75 - sessionMinutes : 0;
+
+              return (
+                <div className="gaming-breakdown-factor">
+                  <div className="gaming-breakdown-factor-header">
+                    <span className="gaming-breakdown-name">
+                      Session bonus ({sessionMinutes} min)
+                    </span>
+                    <span className="gaming-breakdown-value">+{sessionBonus.toFixed(2)}x</span>
+                  </div>
+                  <div className="gaming-factor-progress">
+                    <div
+                      className="gaming-factor-progress-bar gaming-factor-progress-bar--session"
+                      style={{ width: `${sessionProgress}%` }}
+                    ></div>
+                  </div>
+                  <span className="gaming-factor-label">
+                    +0.01x per minute (max +0.75x at 75 min)
+                    {minutesToNextTier > 0 && (
+                      <span className="gaming-factor-next-tier">
+                        {' '}• {minutesToNextTier} min to max
+                      </span>
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Genre Bonus */}
+            {gamingContext.currentGame?.genre && gamingContext.currentGame.genre.length > 0 && (() => {
+              const isRpg = gamingContext.currentGame?.genre?.some(g => g.toLowerCase().includes('rpg')) ?? false;
+              const isAction = gamingContext.currentGame?.genre?.some(g =>
+                g.toLowerCase().includes('action') || g.toLowerCase().includes('fps')
+              ) ?? false;
+              const genreBonus = isRpg ? 0.20 : isAction ? 0.15 : 0.10;
+              const genreProgress = (genreBonus / 0.20) * 100;
+              const genreType = isRpg ? 'RPG' : isAction ? 'Action/FPS' : 'Other';
+
+              return (
+                <div className="gaming-breakdown-factor">
+                  <div className="gaming-breakdown-factor-header">
+                    <span className="gaming-breakdown-name">
+                      Genre bonus ({genreType})
+                    </span>
+                    <span className="gaming-breakdown-value">+{genreBonus.toFixed(2)}x</span>
+                  </div>
+                  <div className="gaming-factor-progress">
+                    <div
+                      className={`gaming-factor-progress-bar ${isRpg ? 'gaming-factor-progress-bar--max' : isAction ? 'gaming-factor-progress-bar--medium' : ''}`}
+                      style={{ width: `${genreProgress}%` }}
+                    ></div>
+                  </div>
+                  <span className="gaming-factor-label">
+                    RPG: +0.20x • Action/FPS: +0.15x • Other: +0.10x
+                  </span>
+                </div>
+              );
+            })()}
+
+            {/* Multiplayer Bonus */}
+            {gamingContext.currentGame?.partySize !== undefined && gamingContext.currentGame.partySize > 1 && (
+              <div className="gaming-breakdown-factor">
+                <div className="gaming-breakdown-factor-header">
+                  <span className="gaming-breakdown-name">
+                    Multiplayer bonus ({gamingContext.currentGame.partySize} players)
+                  </span>
+                  <span className="gaming-breakdown-value">+0.15x</span>
+                </div>
+                <div className="gaming-factor-progress">
+                  <div
+                    className="gaming-factor-progress-bar gaming-factor-progress-bar--multiplayer"
+                    style={{ width: '100%' }}
+                  ></div>
+                </div>
+                <span className="gaming-factor-label">
+                  Party size ≥ 2 grants full bonus
                 </span>
               </div>
             )}
-            {gamingContext.currentGame?.genre && gamingContext.currentGame.genre.length > 0 && (
-              <div className="gaming-breakdown-row">
-                <span className="gaming-breakdown-name">Genre bonus:</span>
-                <span className="gaming-breakdown-value">
-                  +{gamingContext.currentGame.genre.some(g => g.toLowerCase().includes('rpg'))
-                    ? '0.20x'
-                    : gamingContext.currentGame.genre.some(g => g.toLowerCase().includes('action') || g.toLowerCase().includes('fps'))
-                      ? '0.15x'
-                      : '0.10x'}
-                </span>
+
+            {/* Total Row */}
+            <div className="gaming-breakdown-total">
+              <div className="gaming-breakdown-total-header">
+                <span className="gaming-breakdown-name">Total Multiplier (max 1.75x)</span>
+                <span className="gaming-breakdown-value">{calculateGamingBonus().toFixed(2)}x</span>
               </div>
-            )}
-            {gamingContext.currentGame?.partySize && gamingContext.currentGame.partySize > 1 && (
-              <div className="gaming-breakdown-row">
-                <span className="gaming-breakdown-name">Multiplayer bonus:</span>
-                <span className="gaming-breakdown-value">+0.15x</span>
+              <div className="gaming-total-progress">
+                <div
+                  className={`gaming-total-progress-bar ${calculateGamingBonus() >= 1.75 ? 'gaming-total-progress-bar--max' : ''}`}
+                  style={{ width: `${Math.min((calculateGamingBonus() / 1.75) * 100, 100)}%` }}
+                ></div>
               </div>
-            )}
-            <div className="gaming-breakdown-row">
-              <span className="gaming-breakdown-name" style={{ fontWeight: 600 }}>Total (max 1.75x):</span>
-              <span className="gaming-breakdown-value" style={{ color: 'hsl(var(--primary))', fontWeight: 700 }}>
-                {calculateGamingBonus().toFixed(2)}x
+              <span className="gaming-factor-label">
+                {calculateGamingBonus() >= 1.75
+                  ? 'Maximum bonus achieved!'
+                  : `${((1.75 - calculateGamingBonus()) * 100).toFixed(0)}% remaining to max`}
               </span>
             </div>
+          </div>
+
+          {/* Potential Bonus Section */}
+          <div className="gaming-potential-section">
+            <span className="gaming-potential-title">Potential Bonus</span>
+            <div className="gaming-potential-grid">
+              <div className="gaming-potential-item">
+                <span className="gaming-potential-label">In 15 min</span>
+                <span className="gaming-potential-value">
+                  {(() => {
+                    const currentSession = gamingContext.currentGame?.sessionDuration ?? 0;
+                    const futureSession = currentSession + 15;
+                    const sessionBonus = Math.min(futureSession * 0.01, 0.75);
+                    const isRpg = gamingContext.currentGame?.genre?.some(g => g.toLowerCase().includes('rpg')) ?? false;
+                    const isAction = gamingContext.currentGame?.genre?.some(g =>
+                      g.toLowerCase().includes('action') || g.toLowerCase().includes('fps')
+                    ) ?? false;
+                    const genreBonus = isRpg ? 0.20 : isAction ? 0.15 : 0.10;
+                    const hasParty = (gamingContext.currentGame?.partySize ?? 0) > 1;
+                    const partyBonus = hasParty ? 0.15 : 0;
+                    return Math.min(1 + sessionBonus + genreBonus + partyBonus, 1.75).toFixed(2) + 'x';
+                  })()}
+                </span>
+              </div>
+              <div className="gaming-potential-item">
+                <span className="gaming-potential-label">In 30 min</span>
+                <span className="gaming-potential-value">
+                  {(() => {
+                    const currentSession = gamingContext.currentGame?.sessionDuration ?? 0;
+                    const futureSession = currentSession + 30;
+                    const sessionBonus = Math.min(futureSession * 0.01, 0.75);
+                    const isRpg = gamingContext.currentGame?.genre?.some(g => g.toLowerCase().includes('rpg')) ?? false;
+                    const isAction = gamingContext.currentGame?.genre?.some(g =>
+                      g.toLowerCase().includes('action') || g.toLowerCase().includes('fps')
+                    ) ?? false;
+                    const genreBonus = isRpg ? 0.20 : isAction ? 0.15 : 0.10;
+                    const hasParty = (gamingContext.currentGame?.partySize ?? 0) > 1;
+                    const partyBonus = hasParty ? 0.15 : 0;
+                    return Math.min(1 + sessionBonus + genreBonus + partyBonus, 1.75).toFixed(2) + 'x';
+                  })()}
+                </span>
+              </div>
+              <div className="gaming-potential-item">
+                <span className="gaming-potential-label">At Max</span>
+                <span className="gaming-potential-value gaming-potential-value--max">1.75x</span>
+              </div>
+            </div>
+            {gamingContext.currentGame?.sessionDuration !== undefined && gamingContext.currentGame.sessionDuration < 75 && (
+              <div className="gaming-countdown-section">
+                <span className="gaming-countdown-label">Progress to Max Session Bonus</span>
+                <div className="gaming-countdown-bar">
+                  <div
+                    className="gaming-countdown-bar-fill"
+                    style={{ width: `${Math.min(((gamingContext.currentGame?.sessionDuration ?? 0) / 75) * 100, 100)}%` }}
+                  ></div>
+                  <span className="gaming-countdown-text">
+                    {75 - (gamingContext.currentGame?.sessionDuration ?? 0)} min remaining
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="gaming-active-indicator">
