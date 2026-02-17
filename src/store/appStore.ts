@@ -22,10 +22,14 @@ interface AppSettings {
 interface AppState {
     /** Current application settings */
     settings: AppSettings;
+    /** Whether settings have been hydrated from storage */
+    _hasHydrated: boolean;
     /** Update one or more settings (merges with existing) */
     updateSettings: (settings: Partial<AppSettings>) => void;
     /** Reset all settings to defaults from environment/config */
     resetSettings: () => void;
+    /** Set hydration status (internal use by persist middleware) */
+    setHasHydrated: (state: boolean) => void;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -41,6 +45,7 @@ export const useAppStore = create<AppState>()(
     persist(
         (set) => ({
             settings: DEFAULT_SETTINGS,
+            _hasHydrated: false,
 
             /**
              * Update one or more application settings
@@ -71,11 +76,30 @@ export const useAppStore = create<AppState>()(
             resetSettings: () => {
                 logger.warn('Store', 'Resetting app settings to defaults');
                 set({ settings: DEFAULT_SETTINGS });
+            },
+
+            /**
+             * Set hydration status (internal use by persist middleware)
+             * Called after zustand finishes loading from storage
+             */
+            setHasHydrated: (state: boolean) => {
+                set({ _hasHydrated: state });
             }
         }),
         {
             name: 'app-settings',
             storage: createJSONStorage(() => storage),
+            onRehydrateStorage: () => {
+                return (state) => {
+                    if (state) {
+                        state.setHasHydrated(true);
+                        logger.info('Store', 'App settings hydrated from storage', {
+                            hasApiKey: !!state.settings.openWeatherApiKey,
+                            keyLength: state.settings.openWeatherApiKey?.length || 0
+                        });
+                    }
+                };
+            }
         }
     )
 );

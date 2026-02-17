@@ -182,15 +182,25 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
   - [x] Log the API response or error
   - [x] Log what `environmentalContext.weather` contains after update
 
-- [ ] Check the data flow:
+- [x] Check the data flow:
   1. Settings → appStore → openWeatherApiKey
   2. useEnvironmentalSensors reads from appStore
   3. EnvironmentalSensors constructor receives API key
   4. `updateSnapshot()` calls weather API
   5. Result stored in environmentalContext
 
+  **✅ ISSUE FOUND AND FIXED:**
+  The `EnvironmentalSensors` instance was created in `useState(() => ...)` at hook mount time.
+  However, the `settings.openWeatherApiKey` might not be hydrated from LocalForage yet at that moment.
+
+  **Fix Applied:**
+  - Added `_hasHydrated` state to `appStore` with `onRehydrateStorage` callback
+  - Updated `useEnvironmentalSensors` to wait for hydration before creating `EnvironmentalSensors`
+  - Added logic to recreate `EnvironmentalSensors` instance when API key changes after hydration
+  - This ensures the API key is properly loaded before being passed to the engine
+
 - [ ] Common issues to check:
-  - [ ] Is the API key actually being passed to EnvironmentalSensors?
+  - [x] Is the API key actually being passed to EnvironmentalSensors? **YES - NOW FIXED**
   - [ ] Is the geolocation data available (needed for weather lookup)?
   - [ ] CORS issues in browser? (OpenWeather should be fine)
   - [ ] API key restrictions? (some keys are restricted by domain)

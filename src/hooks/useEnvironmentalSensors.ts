@@ -48,7 +48,7 @@ export interface SevereWeatherAlert {
  * @returns {Object|null} diagnostics - Comprehensive sensor diagnostics for debugging
  */
 export const useEnvironmentalSensors = () => {
-    const { settings } = useAppStore();
+    const { settings, _hasHydrated } = useAppStore();
     const {
         permissions,
         setPermission,
@@ -56,8 +56,26 @@ export const useEnvironmentalSensors = () => {
         environmentalContext
     } = useSensorStore();
 
-    const [sensors] = useState(() => {
+    // Track the API key that was used to create the sensors instance
+    // This allows us to recreate the instance when the key changes
+    const [sensors, setSensors] = useState<EnvironmentalSensors | null>(null);
+    const [usedApiKey, setUsedApiKey] = useState<string>('');
+
+    // Create or recreate sensors instance when API key changes (after hydration)
+    useEffect(() => {
+        // Wait for hydration before creating sensors instance
+        if (!_hasHydrated) {
+            logger.debug('EnvironmentalSensors', 'Waiting for settings hydration...');
+            return;
+        }
+
         const apiKey = settings.openWeatherApiKey;
+
+        // Only recreate if the API key has changed
+        if (apiKey === usedApiKey && sensors) {
+            return;
+        }
+
         // Debug: Log API key initialization (first/last 4 chars for security)
         if (apiKey) {
             const maskedKey = apiKey.length > 8
@@ -67,8 +85,12 @@ export const useEnvironmentalSensors = () => {
         } else {
             logger.warn('EnvironmentalSensors', 'No OpenWeather API key configured - weather data will not load');
         }
-        return new EnvironmentalSensors(apiKey);
-    });
+
+        const newSensors = new EnvironmentalSensors(apiKey);
+        setSensors(newSensors);
+        setUsedApiKey(apiKey);
+        logger.info('EnvironmentalSensors', 'EnvironmentalSensors instance created/updated');
+    }, [_hasHydrated, settings.openWeatherApiKey, usedApiKey, sensors]);
 
     const [isMonitoring, setIsMonitoring] = useState(false);
 
@@ -84,7 +106,7 @@ export const useEnvironmentalSensors = () => {
     // Calculate XP modifier from environmental context (1.0 - 3.0)
     // Updates whenever environmentalContext changes
     const xpModifier = useMemo(() => {
-        if (!environmentalContext) return 1.0;
+        if (!environmentalContext || !sensors) return 1.0;
         return sensors.calculateXPModifier();
     }, [environmentalContext, sensors]);
 
@@ -94,13 +116,6 @@ export const useEnvironmentalSensors = () => {
         if (!environmentalContext) return undefined;
         return (environmentalContext as any).biome;
     }, [environmentalContext]);
-
-    // Update API key if settings change
-    useEffect(() => {
-        // Note: Engine might not support dynamic config update easily without re-instantiation
-        // For now, we assume it uses the one passed in constructor.
-        // Ideally we'd update it.
-    }, [settings.openWeatherApiKey]);
 
     const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion' | 'light') => {
         logger.info('EnvironmentalSensors', `Requesting permission: ${sensorType}`);
@@ -154,6 +169,10 @@ export const useEnvironmentalSensors = () => {
 
     const startMonitoring = useCallback(async () => {
         if (isMonitoring) return;
+        if (!sensors) {
+            logger.warn('EnvironmentalSensors', 'Cannot start monitoring - sensors instance not ready (waiting for hydration)');
+            return;
+        }
 
         logger.info('EnvironmentalSensors', 'Starting monitoring');
         // Debug: Log current settings state for troubleshooting
@@ -246,7 +265,7 @@ export const useEnvironmentalSensors = () => {
             handleError(error, 'EnvironmentalSensors');
             setIsMonitoring(false);
         }
-    }, [sensors, isMonitoring, updateEnvironmentalContext]);
+    }, [sensors, isMonitoring, updateEnvironmentalContext, settings.openWeatherApiKey]);
 
     return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics };
 };
