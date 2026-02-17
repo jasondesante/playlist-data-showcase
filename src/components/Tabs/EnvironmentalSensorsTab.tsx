@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
+import { useEnvironmentalSensors, SevereWeatherAlert } from '../../hooks/useEnvironmentalSensors';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle, X, Zap as Lightning } from 'lucide-react';
 import './EnvironmentalSensorsTab.css';
 
 /**
@@ -87,6 +87,36 @@ function getSensorStatusDisplay(health: 'healthy' | 'degraded' | 'error') {
       return { icon: AlertCircle, color: 'hsl(48 96% 53%)', label: 'Pending' };
     case 'error':
       return { icon: XCircle, color: 'hsl(var(--destructive))', label: 'Error' };
+  }
+}
+
+// Helper function to get severe weather icon and info
+function getSevereWeatherInfo(type: string): { emoji: string; icon: typeof AlertTriangle; color: string; bgColor: string } {
+  switch (type.toLowerCase()) {
+    case 'blizzard':
+      return { emoji: '❄️', icon: CloudSnow, color: 'hsl(200 80% 60%)', bgColor: 'hsl(200 80% 50% / 0.15)' };
+    case 'hurricane':
+      return { emoji: '🌀', icon: CloudLightning, color: 'hsl(0 70% 55%)', bgColor: 'hsl(0 70% 50% / 0.15)' };
+    case 'typhoon':
+      return { emoji: '🌀', icon: CloudLightning, color: 'hsl(280 60% 55%)', bgColor: 'hsl(280 60% 50% / 0.15)' };
+    case 'tornado':
+      return { emoji: '🌪️', icon: Wind, color: 'hsl(330 70% 50%)', bgColor: 'hsl(330 70% 50% / 0.15)' };
+    default:
+      return { emoji: '⚠️', icon: AlertTriangle, color: 'hsl(var(--cute-orange))', bgColor: 'hsl(var(--cute-orange) / 0.15)' };
+  }
+}
+
+// Helper function to get severity badge styling
+function getSeverityInfo(severity: string): { color: string; bgColor: string; label: string } {
+  switch (severity.toLowerCase()) {
+    case 'moderate':
+      return { color: 'hsl(48 96% 53%)', bgColor: 'hsl(48 96% 53% / 0.2)', label: 'Moderate' };
+    case 'high':
+      return { color: 'hsl(25 95% 53%)', bgColor: 'hsl(25 95% 53% / 0.2)', label: 'High' };
+    case 'extreme':
+      return { color: 'hsl(var(--destructive))', bgColor: 'hsl(var(--destructive) / 0.2)', label: 'Extreme' };
+    default:
+      return { color: 'hsl(var(--muted-foreground))', bgColor: 'hsl(var(--muted) / 0.2)', label: severity };
   }
 }
 
@@ -200,12 +230,106 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
   );
 }
 
+// Severe Weather Alert Card Component
+function SevereWeatherAlertCard({
+  alert,
+  onDismiss
+}: {
+  alert: SevereWeatherAlert;
+  onDismiss: () => void;
+}) {
+  const weatherInfo = getSevereWeatherInfo(alert.type);
+  const severityInfo = getSeverityInfo(alert.severity);
+  const WeatherIcon = weatherInfo.icon;
+
+  // Format XP bonus as percentage
+  const xpBonusPercent = Math.round(alert.xpBonus * 100);
+
+  return (
+    <Card
+      variant="elevated"
+      padding="lg"
+      className="sensor-severe-weather-card"
+      style={{
+        borderColor: weatherInfo.color,
+        background: `linear-gradient(135deg, ${weatherInfo.bgColor}, hsl(var(--surface-2)))`
+      }}
+    >
+      {/* Dismiss button */}
+      <button
+        className="sensor-severe-weather-dismiss"
+        onClick={onDismiss}
+        aria-label="Dismiss alert"
+      >
+        <X size={16} />
+      </button>
+
+      {/* Header with animated icon */}
+      <div className="sensor-severe-weather-header">
+        <div className="sensor-severe-weather-icon-wrapper">
+          <span className="sensor-severe-weather-emoji">{weatherInfo.emoji}</span>
+          <WeatherIcon
+            size={24}
+            className="sensor-severe-weather-icon"
+            style={{ color: weatherInfo.color }}
+          />
+        </div>
+        <div className="sensor-severe-weather-title-row">
+          <h3 className="sensor-severe-weather-title" style={{ color: weatherInfo.color }}>
+            {alert.type} Alert
+          </h3>
+          <span
+            className="sensor-severe-weather-severity-badge"
+            style={{
+              color: severityInfo.color,
+              backgroundColor: severityInfo.bgColor
+            }}
+          >
+            {severityInfo.label}
+          </span>
+        </div>
+      </div>
+
+      {/* XP Bonus indicator */}
+      <div className="sensor-severe-weather-xp-bonus">
+        <Lightning size={16} />
+        <span className="sensor-severe-weather-xp-label">XP Bonus</span>
+        <span className="sensor-severe-weather-xp-value">+{xpBonusPercent}%</span>
+      </div>
+
+      {/* Alert message */}
+      <p className="sensor-severe-weather-message">
+        {alert.message || `Severe weather conditions detected. Stay safe and be aware of your surroundings.`}
+      </p>
+
+      {/* Safety warning */}
+      <div className="sensor-severe-weather-safety">
+        <AlertTriangle size={14} />
+        <span>⚠️ Please prioritize your safety during severe weather conditions.</span>
+      </div>
+
+      {/* Detected time */}
+      {alert.detectedAt && (
+        <span className="sensor-severe-weather-time">
+          Detected: {new Date(alert.detectedAt).toLocaleTimeString()}
+        </span>
+      )}
+    </Card>
+  );
+}
+
 export function EnvironmentalSensorsTab() {
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, diagnostics } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
   const [zData, setZData] = useState<number[]>([]);
+
+  // Track if user has dismissed the current severe weather alert
+  const [dismissedAlertAt, setDismissedAlertAt] = useState<number | null>(null);
+
+  // Show alert if there's a severe weather alert and user hasn't dismissed this one
+  const showSevereWeatherAlert = severeWeatherAlert && severeWeatherAlert.detectedAt !== dismissedAlertAt;
 
   useEffect(() => {
     if (environmentalContext?.motion?.accelerationIncludingGravity) {
@@ -525,6 +649,14 @@ export function EnvironmentalSensorsTab() {
                 </div>
               </div>
             </Card>
+
+            {/* Severe Weather Alert */}
+            {showSevereWeatherAlert && (
+              <SevereWeatherAlertCard
+                alert={severeWeatherAlert}
+                onDismiss={() => setDismissedAlertAt(severeWeatherAlert.detectedAt)}
+              />
+            )}
 
             {/* Weather Status */}
             {environmentalContext.weather ? (

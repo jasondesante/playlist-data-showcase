@@ -1241,3 +1241,244 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* ========================================
+   SEVERE WEATHER ALERT CARD
+   ======================================== */
+
+.sensor-severe-weather-card {
+  position: relative;
+  overflow: hidden;
+  animation: severeWeatherSlideIn 0.4s var(--ease-out-cubic);
+}
+
+@keyframes severeWeatherSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sensor-severe-weather-dismiss {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background-color: hsl(var(--background) / 0.5);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-dismiss {
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+.sensor-severe-weather-dismiss:hover {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.sensor-severe-weather-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-header {
+    gap: 1rem;
+  }
+}
+
+.sensor-severe-weather-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sensor-severe-weather-emoji {
+  position: absolute;
+  font-size: 1.25rem;
+  opacity: 0;
+  animation: severeWeatherEmojiPulse 2s var(--ease-out-cubic) infinite;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-emoji {
+    font-size: 1.5rem;
+  }
+}
+
+@keyframes severeWeatherEmojiPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+.sensor-severe-weather-icon {
+  animation: severeWeatherIconPulse 1.5s var(--ease-out-cubic) infinite;
+}
+
+@keyframes severeWeatherIconPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.sensor-severe-weather-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-right: 2rem;
+}
+
+.sensor-severe-weather-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-title {
+    font-size: 1.25rem;
+  }
+}
+
+.sensor-severe-weather-severity-badge {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius);
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-severity-badge {
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.625rem;
+  }
+}
+
+.sensor-severe-weather-xp-bonus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  background: linear-gradient(135deg, hsl(168 76% 50% / 0.2), hsl(168 76% 40% / 0.1));
+  border: 1px solid hsl(168 76% 50% / 0.3);
+  border-radius: var(--radius);
+}
+
+.sensor-severe-weather-xp-bonus svg {
+  color: hsl(168 76% 50%);
+}
+
+.sensor-severe-weather-xp-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-xp-label {
+    font-size: 0.8125rem;
+  }
+}
+
+.sensor-severe-weather-xp-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(168 76% 50%);
+  margin-left: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-xp-value {
+    font-size: 1rem;
+  }
+}
+
+.sensor-severe-weather-message {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-message {
+    font-size: 0.9375rem;
+  }
+}
+
+.sensor-severe-weather-safety {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+}
+
+.sensor-severe-weather-safety svg {
+  flex-shrink: 0;
+  color: hsl(var(--cute-orange));
+  margin-top: 0.125rem;
+}
+
+.sensor-severe-weather-safety span {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-safety span {
+    font-size: 0.8125rem;
+  }
+}
+
+.sensor-severe-weather-time {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-severe-weather-time {
+    font-size: 0.75rem;
+  }
+}
+

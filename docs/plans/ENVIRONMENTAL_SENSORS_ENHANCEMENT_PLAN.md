@@ -114,14 +114,14 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ## Phase 4: Severe Weather Alerts (If Data Available)
 
 ### 4.1 Add Severe Weather Alert Card
-- [ ] Create conditional alert card that appears when severe weather detected
-  - [ ] Only renders if `severeWeatherAlert` is not null
-  - [ ] Animated warning icon
-  - [ ] Alert type display (Blizzard/Hurricane/Typhoon/Tornado)
-  - [ ] Severity level badge (moderate/high/extreme)
-  - [ ] XP bonus indicator (+50%, +75%, +100%)
-  - [ ] Safety warning text from `getSevereWeatherWarning()`
-  - [ ] Dismissible card
+- [x] Create conditional alert card that appears when severe weather detected
+  - [x] Only renders if `severeWeatherAlert` is not null
+  - [x] Animated warning icon
+  - [x] Alert type display (Blizzard/Hurricane/Typhoon/Tornado)
+  - [x] Severity level badge (moderate/high/extreme)
+  - [x] XP bonus indicator (+50%, +75%, +100%)
+  - [x] Safety warning text from `getSevereWeatherWarning()`
+  - [x] Dismissible card
 
 **Alert Types & Bonuses:**
 | Type | XP Bonus | Detection Criteria |
