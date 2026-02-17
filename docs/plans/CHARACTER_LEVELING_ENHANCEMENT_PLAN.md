@@ -579,10 +579,36 @@ Enhance the StatSelectionModal component to show:
     - **Button component:** Uses native `<button>` element with `:focus-visible` styles - all XP source buttons inherit this accessibility.
     - Build passes with no errors.
 
-- [ ] **4.2.2 Screen Reader Support**
-  - [ ] ARIA labels on chart
-  - [ ] Announce preset changes
-  - [ ] Stat cap warnings are announced
+- [x] **4.2.2 Screen Reader Support**
+  - [x] ARIA labels on chart
+  - [x] Announce preset changes
+  - [x] Stat cap warnings are announced
+  - **Implementation Summary (2026-02-17):**
+    - **XPCurveChart:**
+      - Added screen reader accessible data table (hidden visually) with XP requirements per level
+      - Enhanced SVG with `aria-describedby` pointing to detailed description
+      - Updated legend buttons with descriptive `aria-label` including example XP values
+      - Added `.xp-chart-sr-data` CSS class for visually hidden but screen reader accessible content
+    - **UncappedProgressionPanel:**
+      - Added ARIA live region (`role="status"`, `aria-live="polite"`) for announcements
+      - Added `announceToScreenReader()` helper function to manage announcements
+      - Announces preset selection changes ("Selected preset, press Apply Changes")
+      - Announces successful/failed preset application
+      - Changed preset cards from `aria-pressed` to `role="radio"` with `aria-checked` for proper radiogroup semantics
+      - Added descriptive `aria-label` on each preset card including description and state
+    - **StatSelectionModal:**
+      - Added ARIA live region (`role="status"`, `aria-live="polite"`) for dynamic announcements
+      - Added `announceToScreenReader()` helper function
+      - Announces modal open with pending count
+      - Announces stat selection/deselection with details
+      - Announces mode switches ("Switched to single stat mode")
+      - Announces cap warning when trying to select capped stats
+      - Announces max selection error in double mode
+      - Changed cap warning banner to `role="alert"` with `aria-live="assertive"` for immediate attention
+      - Added `aria-label` to stat grid and individual stat buttons with full context
+      - Added `aria-pressed` and `aria-disabled` to stat buttons
+      - Added `.statmodal-sr-only` CSS class for visually hidden announcements
+    - Build passes with no errors.
 
 ---
 
@@ -603,15 +629,7 @@ Enhance the StatSelectionModal component to show:
 
 ## File Changes Summary
 
-### New Files
 
-| File | Purpose |
-|------|---------|
-| `src/constants/xpFormulaPresets.ts` | XP formula preset definitions |
-| `src/components/ui/XPCurveChart.tsx` | SVG chart for XP curve preview |
-| `src/styles/components/XPCurveChart.css` | Chart styling |
-| `src/components/ui/UncappedProgressionPanel.tsx` | Collapsible panel for uncapped config |
-| `src/styles/components/UncappedProgressionPanel.css` | Panel styling |
 | `src/hooks/useUncappedProgression.ts` | Hook for engine integration |
 
 ### Modified Files

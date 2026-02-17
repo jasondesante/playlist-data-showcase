@@ -9,11 +9,12 @@
  * - Preset selection cards in a 2x2 grid
  * - XPCurveChart visualization
  * - Apply button to set config via engine
+ * - Screen reader announcements for preset changes
  *
  * @see LevelUpProcessor.setUncappedConfig from playlist-data-engine
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronRight, Sparkles, Check } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { Card } from './Card';
@@ -57,6 +58,22 @@ export function UncappedProgressionPanel({
   // Track if there are unsaved changes
   const hasChanges = selectedPresetId !== currentStoredPresetId;
 
+  // Screen reader announcement state
+  const [announcement, setAnnouncement] = useState<string>('');
+  const announcementTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper to announce to screen readers
+  const announceToScreenReader = useCallback((message: string) => {
+    setAnnouncement(message);
+    // Clear after announcement
+    if (announcementTimeoutRef.current) {
+      clearTimeout(announcementTimeoutRef.current);
+    }
+    announcementTimeoutRef.current = setTimeout(() => {
+      setAnnouncement('');
+    }, 1000);
+  }, []);
+
   // Sync selectedPresetId when character changes
   // Also apply the stored preset to the engine so XP calculations use the correct formula
   useEffect(() => {
@@ -80,14 +97,24 @@ export function UncappedProgressionPanel({
 
   // Handle preset selection
   const handlePresetSelect = useCallback((presetId: string) => {
+    const preset = getXPFormulaPresetById(presetId);
     setSelectedPresetId(presetId);
-  }, []);
+
+    // Announce selection to screen readers
+    if (preset) {
+      const isSelected = currentStoredPresetId === presetId;
+      announceToScreenReader(
+        `${preset.name} preset ${isSelected ? 'is currently applied' : 'selected. Press Apply Changes to update.'}`
+      );
+    }
+  }, [currentStoredPresetId, announceToScreenReader]);
 
   // Handle apply changes
   const handleApplyChanges = useCallback(() => {
     const preset = getXPFormulaPresetById(selectedPresetId);
     if (!preset) {
       showToast('Invalid preset selected', 'error');
+      announceToScreenReader('Error: Invalid preset selected');
       return;
     }
 
@@ -104,13 +131,17 @@ export function UncappedProgressionPanel({
       // Show success notification
       showToast(`${preset.name} formula applied!`, 'success');
 
+      // Announce to screen readers
+      announceToScreenReader(`${preset.name} XP formula has been applied successfully`);
+
       // Log for debugging
       console.log(`[UncappedProgression] Applied preset "${preset.name}" for character ${character.name}`);
     } catch (error) {
       console.error('[UncappedProgression] Failed to apply preset:', error);
       showToast('Failed to apply preset', 'error');
+      announceToScreenReader('Failed to apply preset. Please try again.');
     }
-  }, [selectedPresetId, character.seed, character.name, setCharacterUncappedConfig]);
+  }, [selectedPresetId, character.seed, character.name, setCharacterUncappedConfig, announceToScreenReader]);
 
   // Toggle panel collapse
   const toggleCollapse = useCallback(() => {
@@ -126,6 +157,16 @@ export function UncappedProgressionPanel({
       padding="none"
       className={cn('uncapped-progression-panel', className)}
     >
+      {/* Screen reader announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
+
       {/* Header - Always visible */}
       <button
         type="button"
@@ -147,9 +188,9 @@ export function UncappedProgressionPanel({
         </div>
         <div className="uncapped-panel-header-right">
           {hasChanges && (
-            <span className="uncapped-panel-changes-badge">Unsaved</span>
+            <span className="uncapped-panel-changes-badge" aria-label="You have unsaved changes">Unsaved</span>
           )}
-          <span className="uncapped-panel-chevron">
+          <span className="uncapped-panel-chevron" aria-hidden="true">
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronDown size={20} />}
           </span>
         </div>
@@ -164,7 +205,7 @@ export function UncappedProgressionPanel({
           </p>
 
           {/* Preset Cards Grid */}
-          <div className="uncapped-presets-grid">
+          <div className="uncapped-presets-grid" role="radiogroup" aria-label="XP formula presets">
             {XP_FORMULA_PRESETS.map((preset) => {
               const isSelected = selectedPresetId === preset.id;
               const isCurrent = currentStoredPresetId === preset.id;
@@ -179,16 +220,19 @@ export function UncappedProgressionPanel({
                     isCurrent && 'uncapped-preset-current'
                   )}
                   onClick={() => handlePresetSelect(preset.id)}
-                  aria-pressed={isSelected}
+                  role="radio"
+                  aria-checked={isSelected}
+                  aria-label={`${preset.name}: ${preset.description}${isCurrent ? ' (currently applied)' : ''}${isSelected && !isCurrent ? ' (selected, click Apply Changes)' : ''}`}
                 >
                   <div className="uncapped-preset-header">
                     <span
                       className="uncapped-preset-color"
                       style={{ backgroundColor: preset.chartColor }}
+                      aria-hidden="true"
                     />
                     <span className="uncapped-preset-name">{preset.name}</span>
                     {isCurrent && (
-                      <span className="uncapped-preset-current-badge">
+                      <span className="uncapped-preset-current-badge" aria-label="Applied">
                         <Check size={12} />
                       </span>
                     )}
@@ -217,6 +261,7 @@ export function UncappedProgressionPanel({
                 size="lg"
                 onClick={handleApplyChanges}
                 className="uncapped-apply-button"
+                aria-label={`Apply ${getXPFormulaPresetById(selectedPresetId)?.name || 'selected'} preset`}
               >
                 Apply Changes
               </Button>

@@ -14,9 +14,10 @@
  * - Visual feedback for selection state
  * - Validation to prevent invalid selections
  * - Pure CSS (no Tailwind utility classes)
+ * - Screen reader support with ARIA live announcements
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import '../styles/components/StatSelectionModal.css';
 import { X, AlertTriangle, ChevronDown, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Ability } from 'playlist-data-engine';
@@ -82,10 +83,13 @@ export function StatSelectionModal({
   onApply,
   onCancel,
 }: StatSelectionModalProps) {
-  const [selectionMode, setSelectionMode] = React.useState<SelectionMode>('single');
-  const [selectedStats, setSelectedStats] = React.useState<Ability[]>([]);
-  const [maxSelectedError, setMaxSelectedError] = React.useState(false);
-  const [effectsExpanded, setEffectsExpanded] = React.useState(true);
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('single');
+  const [selectedStats, setSelectedStats] = useState<Ability[]>([]);
+  const [maxSelectedError, setMaxSelectedError] = useState(false);
+  const [effectsExpanded, setEffectsExpanded] = useState(true);
+
+  // Screen reader announcement state
+  const [announcement, setAnnouncement] = useState<string>('');
 
   // Stat cap constant for standard mode
   const STAT_CAP = 20;
@@ -93,6 +97,19 @@ export function StatSelectionModal({
   // Ref for focus management
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const announcementTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper to announce to screen readers
+  const announceToScreenReader = useCallback((message: string) => {
+    setAnnouncement(message);
+    // Clear after announcement
+    if (announcementTimeoutRef.current) {
+      clearTimeout(announcementTimeoutRef.current);
+    }
+    announcementTimeoutRef.current = setTimeout(() => {
+      setAnnouncement('');
+    }, 1000);
+  }, []);
 
   // Reset state and manage focus when modal opens
   useEffect(() => {
@@ -105,6 +122,9 @@ export function StatSelectionModal({
       setMaxSelectedError(false);
       setEffectsExpanded(true);
 
+      // Announce modal open to screen readers
+      announceToScreenReader(`Stat increases modal open. You have ${pendingCount} pending stat increase${pendingCount !== 1 ? 's' : ''} to apply.`);
+
       // Focus the modal container after a brief delay for animation
       const timer = setTimeout(() => {
         modalRef.current?.focus();
@@ -112,7 +132,7 @@ export function StatSelectionModal({
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, pendingCount, announceToScreenReader]);
 
   // Restore focus when modal closes
   useEffect(() => {
@@ -145,29 +165,54 @@ export function StatSelectionModal({
 
   // Toggle stat selection
   const toggleStat = (ability: Ability) => {
+    const info = ABILITY_INFO[ability];
+    const isCapped = isStatCappedFn(ability);
+
+    // Don't allow selecting capped stats
+    if (isCapped) {
+      announceToScreenReader(`${info.full} is at maximum (${STAT_CAP}). Cannot increase further in standard mode.`);
+      return;
+    }
+
     setMaxSelectedError(false);
     if (selectionMode === 'single') {
       // Single mode: replace selection
       setSelectedStats([ability]);
+      announceToScreenReader(`${info.full} selected for +2 increase.`);
     } else {
       // Double mode: toggle selection (max 2)
       if (selectedStats.includes(ability)) {
         setSelectedStats(selectedStats.filter((s) => s !== ability));
+        announceToScreenReader(`${info.full} deselected.`);
       } else if (selectedStats.length < 2) {
         setSelectedStats([...selectedStats, ability]);
+        const count = selectedStats.length + 1;
+        announceToScreenReader(`${info.full} selected for +1 increase. ${count} of 2 stats selected.`);
       } else {
         // Trying to select more than 2 in double mode - show error
         setMaxSelectedError(true);
+        announceToScreenReader('Maximum 2 stats allowed. Deselect a stat first.');
         // Clear error after animation
         setTimeout(() => setMaxSelectedError(false), 400);
       }
     }
   };
 
+  // Helper to check if stat is capped (defined before toggleStat uses it)
+  const isStatCappedFn = (ability: Ability): boolean => {
+    if (gameMode !== 'standard') return false;
+    return (currentStats[ability] ?? 10) >= STAT_CAP;
+  };
+
   // Switch selection mode
   const switchMode = (mode: SelectionMode) => {
     setSelectionMode(mode);
     setSelectedStats([]);
+    if (mode === 'single') {
+      announceToScreenReader('Switched to single stat mode: +2 to one ability score.');
+    } else {
+      announceToScreenReader('Switched to double stat mode: +1 to two ability scores.');
+    }
   };
 
   // Validate selection
@@ -270,6 +315,16 @@ export function StatSelectionModal({
         tabIndex={-1}
         onKeyDown={handleModalKeyDown}
       >
+        {/* Screen reader announcements */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="statmodal-sr-only"
+        >
+          {announcement}
+        </div>
+
         {/* Modal Header */}
         <div className="statmodal-header">
           <h1 id="statmodal-title" className="statmodal-title">
@@ -300,8 +355,12 @@ export function StatSelectionModal({
 
           {/* Global Cap Warning Banner */}
           {hasCappedStats() && (
-            <div className="statmodal-cap-banner">
-              <AlertTriangle size={16} className="statmodal-cap-banner-icon" />
+            <div
+              className="statmodal-cap-banner"
+              role="alert"
+              aria-live="assertive"
+            >
+              <AlertTriangle size={16} className="statmodal-cap-banner-icon" aria-hidden="true" />
               <span>
                 {getCappedStatsCount() === 6
                   ? 'All stats are at maximum (20). No increases can be applied.'
@@ -388,7 +447,7 @@ export function StatSelectionModal({
           </div>
 
           {/* Stat Selection Grid */}
-          <div className="statmodal-grid">
+          <div className="statmodal-grid" role="group" aria-label="Ability scores to increase">
             {(Object.keys(ABILITY_INFO) as Ability[]).map((ability) => {
               const info = ABILITY_INFO[ability];
               const isSelected = selectedStats.includes(ability);
@@ -408,6 +467,15 @@ export function StatSelectionModal({
               const totalEffectAmount = abilityEffects.reduce((sum, e) => sum + e.amount, 0);
               const baseStatValue = currentValue - totalEffectAmount;
 
+              // Build aria-label for screen readers
+              const ariaLabel = isCapped
+                ? `${info.full}: ${currentValue}. Capped at ${STAT_CAP}, cannot be increased.`
+                : isNearCap
+                  ? `${info.full}: ${currentValue}. Near cap, only +${remainingCapacity} available.`
+                  : isSelected
+                    ? `${info.full}: ${currentValue}, selected for +${selectionMode === 'single' ? '2' : '1'} increase.`
+                    : `${info.full}: ${currentValue}. Click to select for increase.`;
+
               return (
                 <button
                   key={ability}
@@ -417,6 +485,9 @@ export function StatSelectionModal({
                   } ${isCapped ? 'statmodal-stat-capped' : ''} ${isNearCap ? 'statmodal-stat-near-cap' : ''}`}
                   onClick={() => toggleStat(ability)}
                   disabled={isCapped || (!canSelect && !isSelected)}
+                  aria-disabled={isCapped || (!canSelect && !isSelected)}
+                  aria-label={ariaLabel}
+                  aria-pressed={isSelected}
                   title={isCapped ? `${info.full} is at maximum (${STAT_CAP})` : isNearCap ? `Only +${remainingCapacity} available for ${info.full}` : undefined}
                   style={{
                     '--stat-color': info.color,
@@ -443,18 +514,18 @@ export function StatSelectionModal({
                     <span className="statmodal-stat-total">= {currentValue}</span>
                   )}
                   {isCapped && (
-                    <div className="statmodal-stat-cap-badge">
+                    <div className="statmodal-stat-cap-badge" aria-hidden="true">
                       <AlertTriangle size={10} />
                       <span>Capped</span>
                     </div>
                   )}
                   {!isCapped && isNearCap && (
-                    <div className="statmodal-stat-near-cap-badge">
+                    <div className="statmodal-stat-near-cap-badge" aria-hidden="true">
                       <span>+{remainingCapacity} max</span>
                     </div>
                   )}
                   {isSelected && !isCapped && (
-                    <div className="statmodal-stat-badge">
+                    <div className="statmodal-stat-badge" aria-hidden="true">
                       {selectionMode === 'single' ? '+2' : '+1'}
                     </div>
                   )}

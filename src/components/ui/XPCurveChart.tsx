@@ -12,6 +12,7 @@
  * - Responsive sizing
  * - Dark theme styling
  * - Keyboard accessible with focus states
+ * - Screen reader support with ARIA labels and data table
  */
 
 import { useState, useMemo, useCallback } from 'react';
@@ -254,8 +255,61 @@ export function XPCurveChart({
     setHoveredPresetId(null);
   }, []);
 
+  // Generate screen reader accessible description
+  const chartAriaDescription = useMemo(() => {
+    const selectedPreset = presets.find(p => p.id === selectedId);
+    if (!selectedPreset) return 'XP Curve Chart';
+
+    const keyLevels = [5, 10, 20, 30];
+    const keyLevelData = keyLevels
+      .filter(l => l <= maxLevel)
+      .map(level => {
+        const xp = selectedPreset.xpFormula(level);
+        return `Level ${level}: ${formatXPTooltip(xp)} XP`;
+      })
+      .join('. ');
+
+    return `XP Curve Chart for ${selectedPreset.name} preset. ${keyLevelData}. Use legend buttons below to highlight different curves.`;
+  }, [presets, selectedId, maxLevel]);
+
+  // Generate data for screen reader table
+  const chartDataForSR = useMemo(() => {
+    const selectedPreset = presets.find(p => p.id === selectedId);
+    if (!selectedPreset) return [];
+
+    // Show key levels: 1, 5, 10, 15, 20, 25, 30
+    const keyLevels = [1, 5, 10, 15, 20, 25, 30].filter(l => l <= maxLevel);
+    return keyLevels.map(level => ({
+      level,
+      xp: selectedPreset.xpFormula(level),
+      formattedXP: formatXPTooltip(selectedPreset.xpFormula(level))
+    }));
+  }, [presets, selectedId, maxLevel]);
+
   return (
     <div className={`xp-curve-chart-wrapper ${className || ''}`}>
+      {/* Screen reader accessible data table */}
+      <div className="xp-chart-sr-data" role="region" aria-label="XP requirements table">
+        <table aria-label={`XP requirements for ${presets.find(p => p.id === selectedId)?.name || 'selected'} preset`}>
+          <caption>XP Required Per Level</caption>
+          <thead>
+            <tr>
+              <th scope="col">Level</th>
+              <th scope="col">XP Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            {chartDataForSR.map(({ level, formattedXP }) => (
+              <tr key={level}>
+                <td>{level}</td>
+                <td>{formattedXP}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Visual chart (hidden from screen readers) */}
       <svg
         className="xp-curve-chart"
         viewBox={`0 0 ${width} ${height}`}
@@ -263,7 +317,8 @@ export function XPCurveChart({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         role="img"
-        aria-label="XP Curve Chart showing XP requirements for levels 1-30"
+        aria-label={chartAriaDescription}
+        aria-describedby="xp-chart-description"
       >
         {/* Background */}
         <rect
@@ -443,8 +498,14 @@ export function XPCurveChart({
             y1={margin.top}
             x2={tooltip.x}
             y2={margin.top + chartHeight}
+            aria-hidden="true"
           />
         )}
+
+        {/* Screen reader description (invisible) */}
+        <desc id="xp-chart-description">
+          {chartAriaDescription}
+        </desc>
       </svg>
 
       {/* Tooltip (outside SVG for better positioning) */}
@@ -477,29 +538,33 @@ export function XPCurveChart({
       )}
 
       {/* Legend */}
-      <div className="xp-chart-legend" role="group" aria-label="Chart legend - hover to highlight curves">
-        {presets.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            className={`xp-legend-item ${
-              selectedId === preset.id ? 'xp-legend-item-selected' : ''
-            }`}
-            onMouseEnter={() => setHoveredPresetId(preset.id)}
-            onMouseLeave={() => setHoveredPresetId(null)}
-            onFocus={() => setHoveredPresetId(preset.id)}
-            onBlur={() => setHoveredPresetId(null)}
-            aria-pressed={selectedId === preset.id}
-            aria-label={`${preset.name} curve${selectedId === preset.id ? ' (selected)' : ''}`}
-          >
-            <span
-              className="xp-legend-color"
-              style={{ backgroundColor: preset.chartColor }}
-              aria-hidden="true"
-            />
-            <span className="xp-legend-label">{preset.name}</span>
-          </button>
-        ))}
+      <div className="xp-chart-legend" role="group" aria-label="XP curve presets - click or press to select">
+        {presets.map((preset) => {
+          // Generate sample XP value for this preset at level 10 for context
+          const sampleXP = preset.xpFormula(10);
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              className={`xp-legend-item ${
+                selectedId === preset.id ? 'xp-legend-item-selected' : ''
+              }`}
+              onMouseEnter={() => setHoveredPresetId(preset.id)}
+              onMouseLeave={() => setHoveredPresetId(null)}
+              onFocus={() => setHoveredPresetId(preset.id)}
+              onBlur={() => setHoveredPresetId(null)}
+              aria-pressed={selectedId === preset.id}
+              aria-label={`${preset.name}: ${preset.description}. Example: Level 10 requires ${formatXPTooltip(sampleXP)} XP${selectedId === preset.id ? ' (currently selected)' : ''}`}
+            >
+              <span
+                className="xp-legend-color"
+                style={{ backgroundColor: preset.chartColor }}
+                aria-hidden="true"
+              />
+              <span className="xp-legend-label">{preset.name}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
