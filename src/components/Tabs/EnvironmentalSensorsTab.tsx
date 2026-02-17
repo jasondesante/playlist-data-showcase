@@ -24,6 +24,29 @@ import './EnvironmentalSensorsTab.css';
  * - Weather with icon mapping and details
  */
 
+// Helper function to get biome emoji and display name
+function getBiomeInfo(biome: string | undefined): { emoji: string; name: string } {
+  if (!biome) return { emoji: '🌍', name: 'Unknown' };
+
+  const biomeMap: Record<string, { emoji: string; name: string }> = {
+    urban: { emoji: '🏙️', name: 'Urban' },
+    forest: { emoji: '🌲', name: 'Forest' },
+    desert: { emoji: '🏜️', name: 'Desert' },
+    mountain: { emoji: '⛰️', name: 'Mountain' },
+    valley: { emoji: '🏞️', name: 'Valley' },
+    water: { emoji: '🌊', name: 'Water' },
+    coastal: { emoji: '🌊', name: 'Coastal' },
+    tundra: { emoji: '❄️', name: 'Tundra' },
+    plains: { emoji: '🌾', name: 'Plains' },
+    jungle: { emoji: '🌴', name: 'Jungle' },
+    swamp: { emoji: '🐊', name: 'Swamp' },
+    taiga: { emoji: '🌲❄️', name: 'Taiga' },
+    savanna: { emoji: '🦁', name: 'Savanna' },
+  };
+
+  return biomeMap[biome.toLowerCase()] || { emoji: '🌍', name: biome };
+}
+
 // Helper function to map PermissionState to status type
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
   switch (permission) {
@@ -128,7 +151,7 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
 }
 
 export function EnvironmentalSensorsTab() {
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -263,6 +286,14 @@ export function EnvironmentalSensorsTab() {
                     </span>
                   </div>
                 </div>
+
+                {/* Biome badge */}
+                {biome && (
+                  <div className="sensor-biome-badge">
+                    <span className="sensor-biome-emoji">{getBiomeInfo(biome).emoji}</span>
+                    <span className="sensor-biome-name">{getBiomeInfo(biome).name}</span>
+                  </div>
+                )}
 
                 {/* Mini map placeholder */}
                 <div className="sensor-minimap">

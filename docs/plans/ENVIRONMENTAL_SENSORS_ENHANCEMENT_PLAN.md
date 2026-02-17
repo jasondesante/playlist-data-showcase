@@ -86,8 +86,8 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ## Phase 3: Biome Display
 
 ### 3.1 Add Biome to GPS/Location Card
-- [ ] Display biome in GPS location card
-  - [ ] Use emoji mapping for biomes:
+- [x] Display biome in GPS location card
+  - [x] Use emoji mapping for biomes:
     - urban: 🏙️
     - forest: 🌲
     - desert: 🏜️
@@ -100,8 +100,8 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
     - swamp: 🐊
     - taiga: 🌲❄️
     - savanna: 🦁
-  - [ ] Show biome name below coordinates
-  - [ ] Style as subtle badge or label
+  - [x] Show biome name below coordinates
+  - [x] Style as subtle badge or label
 
 **Files to modify:**
 - `src/components/Tabs/EnvironmentalSensorsTab.tsx`
