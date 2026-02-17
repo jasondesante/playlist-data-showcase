@@ -13,7 +13,8 @@ import {
     type RacialTrait,
     type Equipment,
     type EnhancedEquipment,
-    type Race
+    type Race,
+    ensureAppearanceDefaultsInitialized
 } from 'playlist-data-engine';
 
 /**
@@ -62,7 +63,23 @@ import { useDataViewerStore } from '@/store/dataViewerStore';
 /**
  * Data category types for the data viewer
  */
-export type DataCategory = 'spells' | 'skills' | 'classFeatures' | 'racialTraits' | 'races' | 'classes' | 'equipment';
+export type DataCategory = 'spells' | 'skills' | 'classFeatures' | 'racialTraits' | 'races' | 'classes' | 'equipment' | 'appearance';
+
+/**
+ * Appearance category data for display
+ */
+export interface AppearanceCategoryData {
+    /** Category key (e.g., 'appearance.bodyTypes') */
+    key: string;
+    /** Display name (e.g., 'Body Types') */
+    name: string;
+    /** Description of what this category represents */
+    description: string;
+    /** Available options in this category */
+    options: string[];
+    /** Icon to display for this category */
+    icon: 'body' | 'color' | 'style' | 'feature';
+}
 
 /**
  * Interface for class data with additional computed fields
@@ -75,6 +92,8 @@ export interface ClassDataEntry {
     is_spellcaster: boolean;
     available_skills: string[];
     skill_count: number;
+    /** User-facing description of this class */
+    description?: string;
 }
 
 /**
@@ -111,6 +130,8 @@ export interface RaceDataEntry {
     subraces?: string[];
     /** Subrace-specific data indexed by subrace name */
     subraceData?: Record<string, SubraceDataEntry>;
+    /** User-facing description of this race */
+    description?: string;
 }
 
 /**
@@ -124,6 +145,7 @@ export interface DataCounts {
     races: number;
     classes: number;
     equipment: number;
+    appearance: number;
 }
 
 /**
@@ -148,10 +170,12 @@ export interface UseDataViewerReturn {
     classes: ClassDataEntry[];
     /** All equipment from EQUIPMENT_DATABASE */
     equipment: Equipment[];
+    /** All appearance categories */
+    appearance: AppearanceCategoryData[];
     /** Count of items in each category */
     dataCounts: DataCounts;
     /** Get all data for a specific category */
-    getDataByCategory: (category: DataCategory) => RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[];
+    getDataByCategory: (category: DataCategory) => RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[];
     /** Filter data by search term */
     filterByName: <T extends { name: string }>(data: T[], searchTerm: string) => T[];
     /** Filter spells by level */
@@ -304,7 +328,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
                     ability_bonuses: data.ability_bonuses || {},
                     speed: data.speed || 30,
                     traits: data.traits || [],
-                    subraces: data.subraces
+                    subraces: data.subraces,
+                    description: (data as any).description
                 };
 
                 // Task 4.2: Load subrace-specific data
@@ -371,7 +396,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
                     saving_throws: data.saving_throws || [],
                     is_spellcaster: data.is_spellcaster || false,
                     available_skills: data.available_skills || [],
-                    skill_count: data.skill_count || 2
+                    skill_count: data.skill_count || 2,
+                    description: (data as any).description
                 });
             });
             return classEntries;
@@ -416,6 +442,90 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, [lastDataChange]);
 
     /**
+     * Load all appearance categories from ExtensionManager
+     *
+     * Loads appearance options for character generation:
+     * - Body types (slender, athletic, muscular, stocky)
+     * - Skin tones (hex color values)
+     * - Hair colors (hex color values)
+     * - Hair styles (short, long, braided, etc.)
+     * - Eye colors (hex color values)
+     * - Facial features (scars, tattoos, piercings, etc.)
+     */
+    const appearance = useMemo((): AppearanceCategoryData[] => {
+        try {
+            // Ensure defaults are initialized
+            ensureAppearanceDefaultsInitialized();
+
+            const manager = ExtensionManager.getInstance();
+            const categories: AppearanceCategoryData[] = [];
+
+            // Define the appearance categories to load
+            const categoryConfig = [
+                {
+                    key: 'appearance.bodyTypes',
+                    name: 'Body Types',
+                    description: 'Physical body builds available for characters',
+                    icon: 'body' as const
+                },
+                {
+                    key: 'appearance.skinTones',
+                    name: 'Skin Tones',
+                    description: 'Skin tone color options for character appearance',
+                    icon: 'color' as const
+                },
+                {
+                    key: 'appearance.hairColors',
+                    name: 'Hair Colors',
+                    description: 'Hair color options for character appearance',
+                    icon: 'color' as const
+                },
+                {
+                    key: 'appearance.hairStyles',
+                    name: 'Hair Styles',
+                    description: 'Hair style options for character appearance',
+                    icon: 'style' as const
+                },
+                {
+                    key: 'appearance.eyeColors',
+                    name: 'Eye Colors',
+                    description: 'Eye color options for character appearance',
+                    icon: 'color' as const
+                },
+                {
+                    key: 'appearance.facialFeatures',
+                    name: 'Facial Features',
+                    description: 'Distinctive facial features like scars, tattoos, and piercings',
+                    icon: 'feature' as const
+                }
+            ];
+
+            for (const config of categoryConfig) {
+                try {
+                    const options = manager.get(config.key as any) as string[];
+                    if (options && options.length > 0) {
+                        categories.push({
+                            key: config.key,
+                            name: config.name,
+                            description: config.description,
+                            options: options,
+                            icon: config.icon
+                        });
+                    }
+                } catch {
+                    // Skip categories that fail to load
+                }
+            }
+
+            return categories;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            logger.error('DataViewer', 'Failed to load appearance data', errorMessage);
+            return [];
+        }
+    }, []);
+
+    /**
      * Calculate data counts
      */
     const dataCounts = useMemo(() => ({
@@ -425,8 +535,9 @@ export const useDataViewer = (): UseDataViewerReturn => {
         racialTraits: racialTraits.length,
         races: races.length,
         classes: classes.length,
-        equipment: equipment.length
-    }), [spells.length, skills.length, classFeatures.length, racialTraits.length, races.length, classes.length, equipment.length]);
+        equipment: equipment.length,
+        appearance: appearance.length
+    }), [spells.length, skills.length, classFeatures.length, racialTraits.length, races.length, classes.length, equipment.length, appearance.length]);
 
     /**
      * Get all data for a specific category
@@ -447,10 +558,12 @@ export const useDataViewer = (): UseDataViewerReturn => {
                 return classes;
             case 'equipment':
                 return equipment;
+            case 'appearance':
+                return appearance;
             default:
                 return [];
         }
-    }, [spells, skills, classFeatures, racialTraits, races, classes, equipment]);
+    }, [spells, skills, classFeatures, racialTraits, races, classes, equipment, appearance]);
 
     /**
      * Filter data by search term (case-insensitive name search)
@@ -660,6 +773,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
         races,
         classes,
         equipment,
+        appearance,
         dataCounts,
         getDataByCategory,
         filterByName,

@@ -59,7 +59,7 @@
  * @see EnchantmentModal - Modal for applying enchantments/curses
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Backpack,
   Package,
@@ -96,6 +96,8 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { showToast } from '../ui/Toast';
 import { EnchantmentModal, type ItemEquipmentType } from '../modals/EnchantmentModal';
+import { DetailRow, type DetailRowProperty } from '../ui/DetailRow';
+import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedInventoryItem, EnhancedEquipment, EquipmentModification } from 'playlist-data-engine';
 import './ItemsTab.css';
 
@@ -158,6 +160,13 @@ function formatRarity(rarity: string): string {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+/**
+ * Get equipment data from database by name
+ */
+function getEquipmentData(itemName: string): EnhancedEquipment | undefined {
+  return DEFAULT_EQUIPMENT[itemName];
 }
 
 /**
@@ -292,6 +301,48 @@ export function ItemsTab() {
 
   // Expanded item details state (for modification display)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Selection state for item detail expansion (click to show item details)
+  const [selectedItem, setSelectedItem] = useState<{
+    name: string;
+    type: 'weapon' | 'armor' | 'item';
+  } | null>(null);
+
+  // Ref for click outside detection
+  const itemDetailRef = useRef<HTMLDivElement>(null);
+
+  // Click outside handler to collapse item details
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Don't deselect if clicking on an item row (those have data-item-row="true")
+      if ((target as Element).closest('[data-item-row="true"]')) {
+        return;
+      }
+      if (itemDetailRef.current && !itemDetailRef.current.contains(target)) {
+        setSelectedItem(null);
+      }
+    };
+
+    if (selectedItem) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selectedItem]);
+
+  // Handler to select/deselect an item (single selection with toggle)
+  const handleSelectItem = (name: string, type: 'weapon' | 'armor' | 'item') => {
+    // If clicking the same item, deselect it
+    if (selectedItem?.name === name && selectedItem?.type === type) {
+      setSelectedItem(null);
+    } else {
+      // Otherwise, select the new item (auto-deselects previous)
+      setSelectedItem({ name, type });
+    }
+  };
 
   // Enchantment modal state
   const [isEnchantmentModalOpen, setIsEnchantmentModalOpen] = useState(false);
@@ -664,6 +715,9 @@ export function ItemsTab() {
     const hasModifications = modifications.length > 0;
     const isExpanded = item.instanceId ? expandedItems.has(item.instanceId) : false;
 
+    // Check if this item is selected for detail display
+    const isSelected = selectedItem?.name === item.name && selectedItem?.type === (category === 'weapons' ? 'weapon' : category === 'armor' ? 'armor' : 'item');
+
     // Format property value for display
     const formatPropertyValue = (value: unknown): string => {
       if (typeof value === 'number') {
@@ -701,10 +755,21 @@ export function ItemsTab() {
     };
 
     return (
-      <div
-        key={item.instanceId}
-        className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''} ${itemIsCursed ? 'items-equipment-item-cursed' : ''} ${isExpanded ? 'items-equipment-item-expanded' : ''}`}
-      >
+      <div key={item.instanceId} className="items-equipment-item-wrapper">
+        <div
+          className={`items-equipment-item ${item.equipped ? 'items-equipment-item-equipped' : ''} ${isAmmo ? 'items-equipment-item-ammunition' : ''} ${itemIsCursed ? 'items-equipment-item-cursed' : ''} ${isExpanded ? 'items-equipment-item-expanded' : ''} ${isSelected ? 'items-equipment-item-selected' : ''}`}
+          onClick={() => handleSelectItem(item.name, category === 'weapons' ? 'weapon' : category === 'armor' ? 'armor' : 'item')}
+          role="button"
+          tabIndex={0}
+          data-item-row="true"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleSelectItem(item.name, category === 'weapons' ? 'weapon' : category === 'armor' ? 'armor' : 'item');
+            }
+          }}
+          aria-expanded={isSelected}
+        >
         <div className="items-equipment-item-content">
           {isAmmo && <Target className="items-equipment-ammo-icon" size={16} />}
           {item.equipped && !isAmmo && <Check className="items-equipment-checkmark" size={16} />}
@@ -1004,6 +1069,79 @@ export function ItemsTab() {
             </div>
           </div>
         )}
+        </div>
+        {/* DetailRow for selected item */}
+        {isSelected && renderItemDetailRowInline(item.name)}
+      </div>
+    );
+  };
+
+  // Render item detail row inline (for selected item)
+  const renderItemDetailRowInline = (itemName: string) => {
+    const equipmentData = getEquipmentData(itemName);
+    if (!equipmentData) return null;
+
+    // Build properties array
+    const properties: DetailRowProperty[] = [];
+
+    // Rarity
+    if (equipmentData.rarity) {
+      properties.push({
+        label: 'Rarity',
+        value: formatRarity(equipmentData.rarity),
+        valueColor: RARITY_COLORS[equipmentData.rarity]
+      });
+    }
+
+    // Type
+    properties.push({
+      label: 'Type',
+      value: equipmentData.type.charAt(0).toUpperCase() + equipmentData.type.slice(1)
+    });
+
+    // Weight
+    if (equipmentData.weight !== undefined) {
+      properties.push({ label: 'Weight', value: `${equipmentData.weight} lb` });
+    }
+
+    // Damage for weapons
+    if (equipmentData.type === 'weapon' && equipmentData.damage) {
+      properties.push({
+        label: 'Damage',
+        value: `${equipmentData.damage.dice} ${equipmentData.damage.damageType}`
+      });
+    }
+
+    // AC for armor
+    if (equipmentData.type === 'armor' && 'acBonus' in equipmentData && equipmentData.acBonus !== undefined) {
+      properties.push({ label: 'AC Bonus', value: `+${equipmentData.acBonus}` });
+    }
+
+    // Get icon based on type
+    const ItemIcon = equipmentData.type === 'weapon' ? Sword
+                   : equipmentData.type === 'armor' ? Shield
+                   : Package;
+
+    // Convert properties to effects format for display
+    const effects = equipmentData.properties?.map(p => ({
+      type: p.type,
+      target: p.target ?? '',
+      value: typeof p.value === 'number' ? p.value : String(p.value),
+      description: p.description
+    }));
+
+    return (
+      <div ref={itemDetailRef}>
+        <DetailRow
+          isVisible={true}
+          title={equipmentData.name}
+          icon={ItemIcon}
+          description={equipmentData.description}
+          properties={properties}
+          effects={effects}
+          tag={equipmentData.rarity ? formatRarity(equipmentData.rarity) : undefined}
+          tagColor={equipmentData.rarity ? RARITY_COLORS[equipmentData.rarity] : undefined}
+        />
       </div>
     );
   };

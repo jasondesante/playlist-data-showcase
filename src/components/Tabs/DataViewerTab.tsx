@@ -58,9 +58,13 @@ import {
   TrendingUp,
   Award,
   Flame,
-  Star
+  Star,
+  Eye,
+  Palette,
+  User,
+  Smile
 } from 'lucide-react';
-import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, isEnhancedEquipment } from '../../hooks/useDataViewer';
+import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, isEnhancedEquipment } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
@@ -181,6 +185,7 @@ const CATEGORY_CONFIG: Record<DataCategory, { label: string; icon: typeof Databa
   races: { label: 'Races', icon: Shield, countKey: 'races' },
   classes: { label: 'Classes', icon: Zap, countKey: 'classes' },
   equipment: { label: 'Equipment', icon: Package, countKey: 'equipment' },
+  appearance: { label: 'Appearance', icon: Eye, countKey: 'appearance' },
 };
 
 /**
@@ -342,6 +347,7 @@ export function DataViewerTab() {
     races,
     classes,
     equipment,
+    appearance,
     dataCounts,
     filterByName,
     filterSpellsByLevel,
@@ -439,6 +445,8 @@ export function DataViewerTab() {
         }
         return filterByName(filtered, searchTerm);
       }
+      case 'appearance':
+        return filterByName(appearance, searchTerm);
       default:
         return [];
     }
@@ -451,6 +459,7 @@ export function DataViewerTab() {
     races,
     classes,
     equipment,
+    appearance,
     searchTerm,
     spellLevelFilter,
     spellSchoolFilter,
@@ -580,19 +589,21 @@ export function DataViewerTab() {
 
   // Render a spell card
   const renderSpellCard = (spell: RegisteredSpell) => {
-    const isExpanded = expandedItems.has(spell.id);
+    // Use name as unique key since spell.id may be undefined for default spells
+    const spellKey = spell.id || spell.name;
+    const isExpanded = expandedItems.has(spellKey);
     const schoolColor = SCHOOL_COLORS[spell.school] || 'var(--color-text-secondary)';
     const schoolBg = SCHOOL_BG_COLORS[spell.school] || 'var(--color-surface-dim)';
 
     return (
       <div
-        key={spell.id}
+        key={spellKey}
         className="dataviewer-item-card"
         style={{ backgroundColor: schoolBg }}
       >
         <div
           className="dataviewer-item-header"
-          onClick={() => toggleExpanded(spell.id)}
+          onClick={() => toggleExpanded(spellKey)}
         >
           <div className="dataviewer-item-header-content">
             <span className="dataviewer-item-name" style={{ color: schoolColor }}>
@@ -668,18 +679,41 @@ export function DataViewerTab() {
               <span className="dataviewer-group-count">({grouped[ability].length})</span>
             </div>
             <div className="dataviewer-group-items">
-              {grouped[ability].map(skill => (
-                <div key={skill.id} className="dataviewer-group-item">
-                  <span className="dataviewer-group-item-name">{skill.name}</span>
-                  {skill.categories && skill.categories.length > 0 && (
-                    <div className="dataviewer-group-item-tags">
-                      {skill.categories.map(cat => (
-                        <span key={cat} className="dataviewer-tag dataviewer-tag-small">{cat}</span>
-                      ))}
+              {grouped[ability].map(skill => {
+                const isExpanded = expandedItems.has(skill.id);
+                const hasDescription = skill.description && skill.description.length > 0;
+
+                return (
+                  <div
+                    key={skill.id}
+                    className={`dataviewer-group-item ${hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
+                    onClick={() => hasDescription && toggleExpanded(skill.id)}
+                  >
+                    <div className="dataviewer-group-item-header">
+                      <span className="dataviewer-group-item-name">{skill.name}</span>
+                      <div className="dataviewer-item-badges">
+                        {skill.categories && skill.categories.length > 0 && (
+                          <div className="dataviewer-group-item-tags">
+                            {skill.categories.map(cat => (
+                              <span key={cat} className="dataviewer-tag dataviewer-tag-small">{cat}</span>
+                            ))}
+                          </div>
+                        )}
+                        {hasDescription && (
+                          isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {isExpanded && hasDescription && (
+                      <div className="dataviewer-group-item-details">
+                        <div className="dataviewer-item-description">
+                          {skill.description}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -1063,6 +1097,15 @@ export function DataViewerTab() {
 
             {isExpanded && (
               <div className="dataviewer-card-details">
+                {/* Race description */}
+                {race.description && (
+                  <div className="dataviewer-card-section">
+                    <div className="dataviewer-item-description">
+                      {race.description}
+                    </div>
+                  </div>
+                )}
+
                 {/* Base race ability bonuses */}
                 {race.ability_bonuses && Object.keys(race.ability_bonuses).length > 0 && (
                   <div className="dataviewer-card-section">
@@ -1147,6 +1190,15 @@ export function DataViewerTab() {
 
             {isExpanded && (
               <div className="dataviewer-card-details">
+                {/* Class description */}
+                {cls.description && (
+                  <div className="dataviewer-card-section">
+                    <div className="dataviewer-item-description">
+                      {cls.description}
+                    </div>
+                  </div>
+                )}
+
                 <div className="dataviewer-card-section">
                   <span className="dataviewer-card-section-title">Primary Ability:</span>
                   <span
@@ -1470,6 +1522,12 @@ export function DataViewerTab() {
                     </div>
                   )}
                 </div>
+                {/* Equipment description */}
+                {item.description && (
+                  <div className="dataviewer-item-description">
+                    {item.description}
+                  </div>
+                )}
                 {item.properties && item.properties.length > 0 && (
                   <div className="dataviewer-item-section">
                     <span className="dataviewer-item-section-title">Properties:</span>
@@ -1497,6 +1555,100 @@ export function DataViewerTab() {
                 {renderGrantedFeatures(item)}
                 {/* Tags Section */}
                 {renderTags(item)}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  /**
+   * Get icon for appearance category
+   */
+  const getAppearanceIcon = (iconType: 'body' | 'color' | 'style' | 'feature') => {
+    switch (iconType) {
+      case 'body': return User;
+      case 'color': return Palette;
+      case 'style': return Sparkles;
+      case 'feature': return Smile;
+      default: return Eye;
+    }
+  };
+
+  /**
+   * Check if an option is a color value (hex color)
+   */
+  const isColorOption = (option: string): boolean => {
+    return /^#[0-9A-Fa-f]{6}$/.test(option);
+  };
+
+  /**
+   * Render appearance data categories
+   *
+   * Displays appearance options for character generation:
+   * - Body types (slender, athletic, muscular, stocky)
+   * - Skin tones (hex color swatches)
+   * - Hair colors (hex color swatches)
+   * - Hair styles (short, long, braided, etc.)
+   * - Eye colors (hex color swatches)
+   * - Facial features (scars, tattoos, piercings, etc.)
+   */
+  const renderAppearance = () => (
+    <div className="dataviewer-grid">
+      {(getFilteredData as AppearanceCategoryData[]).map(category => {
+        const isExpanded = expandedItems.has(category.key);
+        const CategoryIcon = getAppearanceIcon(category.icon);
+
+        return (
+          <div key={category.key} className="dataviewer-card">
+            <div
+              className="dataviewer-card-header"
+              onClick={() => toggleExpanded(category.key)}
+            >
+              <div className="dataviewer-card-header-content">
+                <CategoryIcon size={18} className="dataviewer-card-icon" />
+                <span className="dataviewer-card-title">{category.name}</span>
+              </div>
+              <div className="dataviewer-item-badges">
+                <span className="dataviewer-badge dataviewer-badge-secondary">
+                  {category.options.length} options
+                </span>
+                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
+            </div>
+
+            <div className="dataviewer-card-meta">
+              <span className="dataviewer-card-stat">
+                {category.description}
+              </span>
+            </div>
+
+            {isExpanded && (
+              <div className="dataviewer-card-details">
+                <div className="dataviewer-appearance-options">
+                  {category.options.map((option, idx) => {
+                    // Check if this is a color value
+                    if (isColorOption(option)) {
+                      return (
+                        <div key={idx} className="dataviewer-appearance-color">
+                          <div
+                            className="dataviewer-color-swatch"
+                            style={{ backgroundColor: option }}
+                            title={option}
+                          />
+                          <span className="dataviewer-color-value">{option}</span>
+                        </div>
+                      );
+                    }
+                    // Regular option (text)
+                    return (
+                      <span key={idx} className="dataviewer-tag dataviewer-tag-appearance">
+                        {option}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -1566,6 +1718,8 @@ export function DataViewerTab() {
             </div>
           </div>
         );
+      case 'appearance':
+        return renderAppearance();
       default:
         return null;
     }
@@ -1581,6 +1735,7 @@ export function DataViewerTab() {
       case 'races': return races;
       case 'classes': return classes;
       case 'equipment': return equipment;
+      case 'appearance': return appearance;
       default: return [];
     }
   };

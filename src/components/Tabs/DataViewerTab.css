@@ -1116,3 +1116,49 @@
     padding: 0.2rem 0.35rem;
   }
 }
+
+/* ========================================
+   APPEARANCE CATEGORY STYLES
+   ======================================== */
+
+.dataviewer-appearance-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dataviewer-tag-appearance {
+  background: hsl(var(--cute-purple) / 0.12);
+  color: hsl(var(--cute-purple));
+  border: 1px solid hsl(var(--cute-purple) / 0.25);
+}
+
+.dataviewer-appearance-color {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.dataviewer-appearance-color:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dataviewer-color-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.dataviewer-color-value {
+  font-size: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text-secondary);
+}

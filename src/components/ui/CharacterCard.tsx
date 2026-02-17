@@ -102,9 +102,9 @@ export function CharacterCard({
           aria-pressed={isSelected}
         >
           {isSelected ? (
-            <CheckSquare size={18} />
+            <CheckSquare size={14} />
           ) : (
-            <Square size={18} />
+            <Square size={14} />
           )}
         </button>
       )}

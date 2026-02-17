@@ -291,6 +291,20 @@
   border-color: hsl(var(--cute-teal) / 0.4);
 }
 
+/* Selected item styling - matches CharacterGenTab pattern */
+.items-equipment-item-selected {
+  cursor: pointer;
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.5),
+              0 0 12px 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.3);
+  border-color: hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l));
+}
+
+/* Wrapper for item and its inline detail row */
+.items-equipment-item-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .items-equipment-item-content {
   display: flex;
   align-items: center;

@@ -25,7 +25,7 @@ import { showToast } from '../ui/Toast';
 import { Tooltip } from '../ui/Tooltip';
 import { DetailRow } from '../ui/DetailRow';
 import { cn } from '../../utils/cn';
-import { DEFAULT_EQUIPMENT, SpellQuery } from 'playlist-data-engine';
+import { DEFAULT_EQUIPMENT, SpellQuery, SkillQuery } from 'playlist-data-engine';
 import type { EnhancedEquipment, RegisteredSpell } from 'playlist-data-engine';
 import './PartyTab.css';
 
@@ -200,6 +200,7 @@ export function PartyTab() {
     type: 'weapon' | 'armor' | 'item';
   } | null>(null);
   const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   // Phase 6 Task 6.2: Analysis panel dropdown state
   const [activeAnalysisPanel, setActiveAnalysisPanel] = useState<'overview' | 'composition' | null>(null);
@@ -211,6 +212,7 @@ export function PartyTab() {
     setSelectedFeatureId(null);
     setSelectedEquipment(null);
     setSelectedSpellId(null);
+    setSelectedSkillId(null);
   };
 
   const handleSelectFeature = (featureId: string) => {
@@ -218,6 +220,7 @@ export function PartyTab() {
     setSelectedTraitId(null);
     setSelectedEquipment(null);
     setSelectedSpellId(null);
+    setSelectedSkillId(null);
   };
 
   const handleSelectEquipment = (name: string, type: 'weapon' | 'armor' | 'item') => {
@@ -225,6 +228,7 @@ export function PartyTab() {
     setSelectedTraitId(null);
     setSelectedFeatureId(null);
     setSelectedSpellId(null);
+    setSelectedSkillId(null);
   };
 
   const handleSelectSpell = (spellName: string) => {
@@ -232,6 +236,15 @@ export function PartyTab() {
     setSelectedTraitId(null);
     setSelectedFeatureId(null);
     setSelectedEquipment(null);
+    setSelectedSkillId(null);
+  };
+
+  const handleSelectSkill = (skillName: string) => {
+    setSelectedSkillId(skillName);
+    setSelectedTraitId(null);
+    setSelectedFeatureId(null);
+    setSelectedEquipment(null);
+    setSelectedSpellId(null);
   };
 
   // Count of selected heroes for display
@@ -262,11 +275,24 @@ export function PartyTab() {
   }, [isSortDropdownOpen]);
 
   // Phase 6 Task 6.2: Close analysis popover when clicking outside or pressing Escape
+  // Note: We don't close if clicking the analysis toggle buttons - let their onClick handlers manage state
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (analysisPopoverRef.current && !analysisPopoverRef.current.contains(event.target as Node)) {
-        setActiveAnalysisPanel(null);
+      const target = event.target as Node;
+
+      // Don't close if clicking inside the popover
+      if (analysisPopoverRef.current && analysisPopoverRef.current.contains(target)) {
+        return;
       }
+
+      // Don't close if clicking an analysis toggle button - let the button's onClick handle it
+      // This prevents the "flash" where the overlay disappears during the click
+      if (target instanceof Element && target.closest('.party-analysis-btn')) {
+        return;
+      }
+
+      // Close if clicking outside both the popover and the toggle buttons
+      setActiveAnalysisPanel(null);
     };
 
     const handleEscape = (event: KeyboardEvent) => {
@@ -733,30 +759,51 @@ export function PartyTab() {
                 </h4>
                 <div className="party-detail-skills-list">
                   {Object.entries(selectedCharacter.skills).map(([skill, prof]) => {
-                    const modifier = selectedCharacter.ability_modifiers[
-                      skill.includes('Athletics') ? 'STR' :
-                        skill.includes('Acrobatics|Sleight|Stealth') ? 'DEX' :
-                          skill.includes('Arcana|History|Investigation|Nature|Religion') ? 'INT' :
-                            skill.includes('Animal|Insight|Medicine|Perception|Survival') ? 'WIS' :
-                              'CHA'
-                    ] || 0;
-                    const proficiencyBonus = prof === 'expertise' ? selectedCharacter.proficiency_bonus * 2 :
-                      prof === 'proficient' ? selectedCharacter.proficiency_bonus : 0;
-                    const totalMod = modifier + proficiencyBonus;
-
+                    const isSelected = selectedSkillId === skill;
                     return (
-                      <div key={skill} className="party-detail-skill-item">
-                        <span className="party-detail-skill-name">{skill.replace(/_/g, ' ')}</span>
-                        <span className={`party-detail-skill-modifier party-detail-skill-${prof}`}>
-                          {totalMod >= 0 ? '+' : ''}{totalMod}
-                        </span>
+                      <span
+                        key={skill}
+                        className={cn('party-detail-trait-badge', isSelected && 'party-detail-trait-badge-selected')}
+                        onClick={() => handleSelectSkill(skill)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleSelectSkill(skill);
+                          }
+                        }}
+                      >
+                        {skill.replace(/_/g, ' ')}
                         <span className={`party-detail-skill-proficient ${prof}`}>
                           {getSkillProficiencyDisplay(prof)}
                         </span>
-                      </div>
+                      </span>
                     );
                   })}
                 </div>
+                {/* Skill Detail Row */}
+                {selectedSkillId && (() => {
+                  const skillQuery = SkillQuery.getInstance();
+                  const skillData = skillQuery.getSkill(selectedSkillId);
+                  if (!skillData) return null;
+
+                  const profLevel = selectedCharacter.skills[selectedSkillId as keyof typeof selectedCharacter.skills];
+                  const profText = profLevel === 'expertise' ? 'Expertise (×2 proficiency)' :
+                                   profLevel === 'proficient' ? 'Proficient' : 'Not Proficient';
+
+                  return (
+                    <DetailRow
+                      isVisible={true}
+                      title={skillData.name || selectedSkillId.replace(/_/g, ' ')}
+                      description={skillData.description}
+                      properties={[
+                        { label: 'Ability', value: skillData.ability },
+                        { label: 'Proficiency', value: profText }
+                      ]}
+                    />
+                  );
+                })()}
               </div>
 
               {/* Saving Throws */}
