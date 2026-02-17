@@ -44,13 +44,13 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Show/hide relevant config sections based on mode
 
 ### 2.2 Single Enemy Configuration
-- [ ] Add enemy template selector dropdown
-  - [ ] Group by category: Humanoid, Beast, Undead, Fiend, Elemental, Construct, Dragon, Monstrosity
-  - [ ] Show archetype badge (Brute/Archer/Support)
-  - [ ] Display signature ability tooltip
-- [ ] Add rarity tier selector
-  - [ ] Options: Common, Uncommon, Elite, Boss
-  - [ ] Show stat multiplier and extra abilities info
+- [x] Add enemy template selector dropdown
+  - [x] Group by category: Humanoid, Beast, Undead, Fiend, Elemental, Construct, Dragon, Monstrosity
+  - [x] Show archetype badge (Brute/Archer/Support)
+  - [x] Display signature ability tooltip
+- [x] Add rarity tier selector
+  - [x] Options: Common, Uncommon, Elite, Boss
+  - [x] Show stat multiplier and extra abilities info
 
 ### 2.3 Party-Balanced Encounter Configuration
 - [ ] Add difficulty selector

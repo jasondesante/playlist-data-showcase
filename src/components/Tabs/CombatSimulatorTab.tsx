@@ -19,6 +19,133 @@ import { logger } from '../../utils/logger';
 import './CombatSimulatorTab.css';
 
 /**
+ * Template metadata for display in the UI
+ */
+interface TemplateInfo {
+    id: string;
+    name: string;
+    category: EnemyCategory;
+    archetype: EnemyArchetype;
+    signatureAbility: string;
+    signatureAbilityDescription: string;
+}
+
+/**
+ * All available enemy templates organized by category
+ * Based on docs/engine/docs/ENEMY_GENERATION.md
+ */
+const ENEMY_TEMPLATES: TemplateInfo[] = [
+    // Humanoid - Brute
+    { id: 'orc', name: 'Orc', category: 'humanoid', archetype: 'brute', signatureAbility: 'Savage Strike', signatureAbilityDescription: 'Bonus melee damage on hit' },
+    { id: 'bandit', name: 'Bandit', category: 'humanoid', archetype: 'brute', signatureAbility: 'Cheap Shot', signatureAbilityDescription: 'Bonus damage vs flat-footed targets' },
+
+    // Humanoid - Archer
+    { id: 'hunter', name: 'Hunter', category: 'humanoid', archetype: 'archer', signatureAbility: 'Precise Shot', signatureAbilityDescription: 'Ignore half cover on ranged attacks' },
+    { id: 'goblin-archer', name: 'Goblin Archer', category: 'humanoid', archetype: 'archer', signatureAbility: 'Sneaky Shot', signatureAbilityDescription: 'Bonus damage when attacking from hiding' },
+
+    // Humanoid - Support
+    { id: 'shaman', name: 'Shaman', category: 'humanoid', archetype: 'support', signatureAbility: 'Spirit Bond', signatureAbilityDescription: 'Boost ally damage output' },
+    { id: 'cultist', name: 'Cultist', category: 'humanoid', archetype: 'support', signatureAbility: 'Dark Blessing', signatureAbilityDescription: 'Grant ally AC bonus' },
+
+    // Beast - Brute
+    { id: 'bear', name: 'Bear', category: 'beast', archetype: 'brute', signatureAbility: 'Maul', signatureAbilityDescription: 'Multiattack with grapple effect' },
+    { id: 'boar', name: 'Boar', category: 'beast', archetype: 'brute', signatureAbility: 'Gore Charge', signatureAbilityDescription: 'Bonus damage on charge attacks' },
+
+    // Beast - Ranged
+    { id: 'giant-spider', name: 'Giant Spider', category: 'beast', archetype: 'archer', signatureAbility: 'Web Spray', signatureAbilityDescription: 'Ranged restrain ability' },
+    { id: 'stirge', name: 'Stirge', category: 'beast', archetype: 'archer', signatureAbility: 'Blood Drain', signatureAbilityDescription: 'Ranged life steal attack' },
+
+    // Undead - Archer
+    { id: 'skeleton', name: 'Skeleton', category: 'undead', archetype: 'archer', signatureAbility: 'Bone Shot', signatureAbilityDescription: 'Bonus piercing damage on ranged attacks' },
+    { id: 'ghost', name: 'Ghost', category: 'undead', archetype: 'archer', signatureAbility: 'Horrifying Visage', signatureAbilityDescription: 'Apply fear debuff to enemies' },
+
+    // Undead - Brute
+    { id: 'zombie', name: 'Zombie', category: 'undead', archetype: 'brute', signatureAbility: 'Undead Grip', signatureAbilityDescription: 'Grapple + bite combo attack' },
+    { id: 'wight', name: 'Wight', category: 'undead', archetype: 'brute', signatureAbility: 'Life Drain', signatureAbilityDescription: 'Damage enemies and heal self' },
+
+    // Fiend - Archer
+    { id: 'imp', name: 'Imp', category: 'fiend', archetype: 'archer', signatureAbility: 'Sting', signatureAbilityDescription: 'Poison damage on hit' },
+
+    // Fiend - Brute
+    { id: 'lemure', name: 'Lemure', category: 'fiend', archetype: 'brute', signatureAbility: 'Hellish Resilience', signatureAbilityDescription: 'Reduce incoming damage' },
+    { id: 'demon', name: 'Demon', category: 'fiend', archetype: 'brute', signatureAbility: 'Chaos Claw', signatureAbilityDescription: 'Random damage type attack' },
+
+    // Fiend - Support
+    { id: 'quasit', name: 'Quasit', category: 'fiend', archetype: 'support', signatureAbility: 'Fear Aura', signatureAbilityDescription: 'Apply debuff to nearby enemies' },
+
+    // Elemental - Brute
+    { id: 'fire-elemental', name: 'Fire Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Burning Touch', signatureAbilityDescription: 'Fire damage + ongoing burn' },
+    { id: 'earth-elemental', name: 'Earth Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Earth Slam', signatureAbilityDescription: 'AoE attack with prone effect' },
+
+    // Elemental - Archer
+    { id: 'air-elemental', name: 'Air Elemental', category: 'elemental', archetype: 'archer', signatureAbility: 'Wind Blast', signatureAbilityDescription: 'Ranged push attack' },
+
+    // Elemental - Support
+    { id: 'water-elemental', name: 'Water Elemental', category: 'elemental', archetype: 'support', signatureAbility: 'Whirlpool', signatureAbilityDescription: 'Restrain and pull enemies' },
+
+    // Construct - Brute
+    { id: 'animated-armor', name: 'Animated Armor', category: 'construct', archetype: 'brute', signatureAbility: 'Slam', signatureAbilityDescription: 'Force damage attack' },
+    { id: 'golem', name: 'Golem', category: 'construct', archetype: 'brute', signatureAbility: 'Immutable Form', signatureAbilityDescription: 'Immunity to status effects' },
+
+    // Construct - Archer
+    { id: 'flying-sword', name: 'Flying Sword', category: 'construct', archetype: 'archer', signatureAbility: 'Diving Strike', signatureAbilityDescription: 'Bonus damage on dive attacks' },
+
+    // Construct - Support
+    { id: 'shield-guardian', name: 'Shield Guardian', category: 'construct', archetype: 'support', signatureAbility: 'Protection Aura', signatureAbilityDescription: 'Grant ally AC bonus' },
+
+    // Dragon - Brute
+    { id: 'young-red-dragon', name: 'Young Red Dragon', category: 'dragon', archetype: 'brute', signatureAbility: 'Fire Breath', signatureAbilityDescription: 'AoE fire damage breath weapon' },
+    { id: 'dragon-wyrmling', name: 'Dragon Wyrmling', category: 'dragon', archetype: 'brute', signatureAbility: 'Bite + Claw', signatureAbilityDescription: 'Multiattack combo' },
+    { id: 'drake', name: 'Drake', category: 'dragon', archetype: 'brute', signatureAbility: 'Tail Swipe', signatureAbilityDescription: 'Knockback attack' },
+
+    // Dragon - Archer
+    { id: 'young-blue-dragon', name: 'Young Blue Dragon', category: 'dragon', archetype: 'archer', signatureAbility: 'Lightning Breath', signatureAbilityDescription: 'Line lightning damage' },
+
+    // Monstrosity - Brute
+    { id: 'owlbear', name: 'Owlbear', category: 'monstrosity', archetype: 'brute', signatureAbility: 'Multiattack', signatureAbilityDescription: 'Beak + claws combo attack' },
+    { id: 'mimic', name: 'Mimic', category: 'monstrosity', archetype: 'brute', signatureAbility: 'Adhesive', signatureAbilityDescription: 'Auto-grapple on hit' },
+
+    // Monstrosity - Archer
+    { id: 'griffin', name: 'Griffin', category: 'monstrosity', archetype: 'archer', signatureAbility: 'Dive Attack', signatureAbilityDescription: 'Bonus damage from flight' },
+
+    // Monstrosity - Support
+    { id: 'basilisk', name: 'Basilisk', category: 'monstrosity', archetype: 'support', signatureAbility: 'Petrifying Gaze', signatureAbilityDescription: 'Save or be stunned' },
+];
+
+/**
+ * Rarity tier information for display
+ */
+const RARITY_INFO: Record<EnemyRarity, { multiplier: string; extraAbilities: number; description: string }> = {
+    common: { multiplier: '1.0x', extraAbilities: 0, description: 'Base stats, signature ability only' },
+    uncommon: { multiplier: '1.1x', extraAbilities: 1, description: '+10% stats, 1 extra ability' },
+    elite: { multiplier: '1.25x', extraAbilities: 2, description: '+25% stats, 2 extra abilities, resistances' },
+    boss: { multiplier: '1.5x', extraAbilities: 3, description: '+50% stats, 3 extra abilities, legendary actions' },
+};
+
+/**
+ * Archetype display names and icons
+ */
+const ARCHETYPE_INFO: Record<EnemyArchetype, { label: string; icon: string; color: string }> = {
+    brute: { label: 'Brute', icon: '⚔️', color: 'hsl(0 70% 50%)' },
+    archer: { label: 'Archer', icon: '🏹', color: 'hsl(142 70% 45%)' },
+    support: { label: 'Support', icon: '✨', color: 'hsl(217 70% 55%)' },
+};
+
+/**
+ * Category display names and icons
+ */
+const CATEGORY_INFO: Record<EnemyCategory, { label: string; icon: string }> = {
+    humanoid: { label: 'Humanoid', icon: '👤' },
+    beast: { label: 'Beast', icon: '🐾' },
+    undead: { label: 'Undead', icon: '💀' },
+    fiend: { label: 'Fiend', icon: '😈' },
+    elemental: { label: 'Elemental', icon: '🔥' },
+    construct: { label: 'Construct', icon: '🤖' },
+    dragon: { label: 'Dragon', icon: '🐉' },
+    monstrosity: { label: 'Monstrosity', icon: '👹' },
+};
+
+/**
  * Generation mode for enemy creation
  */
 type EnemyGenerationMode = 'single' | 'party-balanced' | 'cr-based';
@@ -680,9 +807,76 @@ export function CombatSimulatorTab() {
             {/* Single Enemy Options - shown only for single mode */}
             {generationConfig.mode === 'single' && (
               <div className="combat-config-section combat-config-section-highlight">
+                {/* Template Selector - Phase 2.2 */}
+                <div className="combat-config-field" style={{ marginBottom: '0.75rem' }}>
+                  <label className="combat-config-label">Enemy Template</label>
+                  <select
+                    value={generationConfig.templateId || ''}
+                    onChange={(e) => updateGenerationConfig('templateId', e.target.value || undefined)}
+                    className="combat-config-select combat-template-select"
+                  >
+                    <option value="">Random (by category filter)</option>
+                    {/* Group templates by category */}
+                    {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(category => {
+                      const categoryTemplates = ENEMY_TEMPLATES.filter(t => t.category === category);
+                      if (categoryTemplates.length === 0) return null;
+                      const catInfo = CATEGORY_INFO[category];
+                      return (
+                        <optgroup key={category} label={`${catInfo.icon} ${catInfo.label}`}>
+                          {categoryTemplates.map(template => {
+                            const archInfo = ARCHETYPE_INFO[template.archetype];
+                            return (
+                              <option key={template.id} value={template.id}>
+                                {template.name} [{archInfo.icon} {archInfo.label}]
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                {/* Selected Template Info - Phase 2.2 */}
+                {generationConfig.templateId && (
+                  <div className="combat-template-info">
+                    {(() => {
+                      const template = ENEMY_TEMPLATES.find(t => t.id === generationConfig.templateId);
+                      if (!template) return null;
+                      const archInfo = ARCHETYPE_INFO[template.archetype];
+                      const catInfo = CATEGORY_INFO[template.category];
+                      return (
+                        <>
+                          <div className="combat-template-badges">
+                            <span
+                              className="combat-template-badge combat-template-badge-category"
+                              title={`Category: ${catInfo.label}`}
+                            >
+                              {catInfo.icon} {catInfo.label}
+                            </span>
+                            <span
+                              className="combat-template-badge combat-template-badge-archetype"
+                              style={{ backgroundColor: archInfo.color }}
+                              title={`Archetype: ${archInfo.label}`}
+                            >
+                              {archInfo.icon} {archInfo.label}
+                            </span>
+                          </div>
+                          <div className="combat-template-ability" title={template.signatureAbilityDescription}>
+                            <span className="combat-template-ability-label">Signature:</span>
+                            <span className="combat-template-ability-name">{template.signatureAbility}</span>
+                            <span className="combat-template-ability-desc">{template.signatureAbilityDescription}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 <div className="combat-config-row">
+                  {/* Rarity Selector with info - Phase 2.2 */}
                   <div className="combat-config-field">
-                    <label className="combat-config-label">Rarity</label>
+                    <label className="combat-config-label">Rarity Tier</label>
                     <select
                       value={generationConfig.baseRarity}
                       onChange={(e) => updateGenerationConfig('baseRarity', e.target.value as EnemyRarity)}
@@ -693,24 +887,47 @@ export function CombatSimulatorTab() {
                       <option value="elite">Elite</option>
                       <option value="boss">Boss</option>
                     </select>
+                    {/* Rarity info tooltip - Phase 2.2 */}
+                    <div className="combat-rarity-info">
+                      {(() => {
+                        const info = RARITY_INFO[generationConfig.baseRarity];
+                        return (
+                          <>
+                            <span className="combat-rarity-multiplier">{info.multiplier} stats</span>
+                            <span className="combat-rarity-abilities">
+                              {info.extraAbilities > 0 ? `+${info.extraAbilities} abilities` : 'Signature only'}
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
+
+                  {/* Category Filter - optional when no template selected */}
                   <div className="combat-config-field">
-                    <label className="combat-config-label">Category (Optional)</label>
+                    <label className="combat-config-label">
+                      Category Filter
+                      {generationConfig.templateId && <span className="combat-config-optional"> (optional)</span>}
+                    </label>
                     <select
                       value={generationConfig.category || ''}
                       onChange={(e) => updateGenerationConfig('category', (e.target.value || undefined) as EnemyCategory | undefined)}
                       className="combat-config-select"
+                      disabled={!!generationConfig.templateId}
                     >
                       <option value="">Any Category</option>
-                      <option value="humanoid">Humanoid</option>
-                      <option value="beast">Beast</option>
-                      <option value="undead">Undead</option>
-                      <option value="fiend">Fiend</option>
-                      <option value="elemental">Elemental</option>
-                      <option value="construct">Construct</option>
-                      <option value="dragon">Dragon</option>
-                      <option value="monstrosity">Monstrosity</option>
+                      {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(cat => {
+                        const info = CATEGORY_INFO[cat];
+                        return (
+                          <option key={cat} value={cat}>
+                            {info.icon} {info.label}
+                          </option>
+                        );
+                      })}
                     </select>
+                    {generationConfig.templateId && (
+                      <p className="combat-config-hint">Disabled when template is selected</p>
+                    )}
                   </div>
                 </div>
               </div>
