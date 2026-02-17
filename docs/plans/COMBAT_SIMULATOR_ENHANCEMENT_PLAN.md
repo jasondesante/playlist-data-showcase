@@ -91,11 +91,11 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Add "Random Selection" button to pick N songs automatically
 
 ### 3.2 Audio Analysis Integration
-- [ ] Create `useAudioEnemyGeneration.ts` hook
-  - [ ] Accept selected tracks array
-  - [ ] Analyze audio for each selected track
-  - [ ] Map audio profile to enemy template weights
-  - [ ] Return generated enemies with audio influence
+- [x] Create `useAudioEnemyGeneration.ts` hook
+  - [x] Accept selected tracks array
+  - [x] Analyze audio for each selected track
+  - [x] Map audio profile to enemy template weights
+  - [x] Return generated enemies with audio influence
 
 ### 3.3 Audio Preview Display
 - [ ] Show which song influenced which enemy

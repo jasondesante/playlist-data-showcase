@@ -19,3 +19,4 @@ export * from './usePartyAnalysis';
 export * from './useItemEnchantment';
 export * from './useMastery';
 export * from './useEnemyGenerator';
+export * from './useAudioEnemyGeneration';
