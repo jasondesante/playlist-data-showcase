@@ -3943,6 +3943,184 @@
   }
 }
 
+/* Phase 6.2: Encounter Difficulty Panel */
+.combat-difficulty-panel {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--background) / 0.5);
+  border: 2px solid;
+  border-radius: var(--radius);
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-panel {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+.combat-difficulty-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-header {
+    margin-bottom: 0.75rem;
+  }
+}
+
+.combat-difficulty-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-label {
+    font-size: 0.875rem;
+  }
+}
+
+.combat-difficulty-rating {
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--background));
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-rating {
+    font-size: 1rem;
+    padding: 0.25rem 0.75rem;
+  }
+}
+
+.combat-difficulty-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-stats {
+    gap: 0.75rem;
+  }
+}
+
+.combat-difficulty-stat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: baseline;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-stat {
+    gap: 0.5rem;
+  }
+}
+
+.combat-difficulty-stat-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-stat-label {
+    font-size: 0.75rem;
+  }
+}
+
+.combat-difficulty-stat-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-stat-value {
+    font-size: 0.875rem;
+  }
+}
+
+.combat-difficulty-stat-hint {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-stat-hint {
+    font-size: 0.6875rem;
+  }
+}
+
+.combat-difficulty-thresholds {
+  padding-top: 0.375rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.combat-difficulty-thresholds-label {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  display: block;
+  margin-bottom: 0.375rem;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-thresholds-label {
+    font-size: 0.6875rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.combat-difficulty-threshold-bars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-threshold-bars {
+    gap: 0.75rem 1.5rem;
+  }
+}
+
+.combat-difficulty-threshold {
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-threshold {
+    font-size: 0.75rem;
+  }
+}
+
+.combat-difficulty-warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6875rem;
+  color: hsl(24 95% 40%);
+  background-color: hsl(24 95% 50% / 0.1);
+  border: 1px solid hsl(24 95% 50% / 0.3);
+  border-radius: var(--radius-sm);
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-warning {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
 /* Toggle Switch Styling */
 .toggle-switch {
   position: relative;

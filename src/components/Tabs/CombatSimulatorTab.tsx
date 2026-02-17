@@ -2217,6 +2217,102 @@ export function CombatSimulatorTab() {
                       )}
                     </div>
                   </div>
+
+                  {/* Phase 6.2: Estimated Encounter Difficulty */}
+                  {generatedEnemies.length > 0 && (() => {
+                    const activeChar = getActiveCharacter();
+                    if (!activeChar) return null;
+
+                    // Calculate total adjusted XP from generated enemies
+                    // Use level as effective CR for enemies
+                    const enemyCRs = generatedEnemies.map(e => e.level || 1);
+                    const encounterMultiplier = getEncounterMultiplier(enemyCRs.length);
+                    const totalAdjustedXP = calculateAdjustedXP(enemyCRs, encounterMultiplier);
+
+                    // Get XP thresholds for the party (single hero for now)
+                    const easyThreshold = getXPBudgetPerLevel(activeChar.level, 'easy');
+                    const mediumThreshold = getXPBudgetPerLevel(activeChar.level, 'medium');
+                    const hardThreshold = getXPBudgetPerLevel(activeChar.level, 'hard');
+                    const deadlyThreshold = getXPBudgetPerLevel(activeChar.level, 'deadly');
+
+                    // Determine difficulty rating
+                    let difficultyRating: 'trivial' | 'easy' | 'medium' | 'hard' | 'deadly' | 'impossible' = 'trivial';
+                    let difficultyColor: string;
+                    let difficultyIcon: string;
+
+                    if (totalAdjustedXP >= deadlyThreshold) {
+                      difficultyRating = 'deadly';
+                      difficultyColor = 'hsl(0 84% 60%)';
+                      difficultyIcon = '💀';
+                    } else if (totalAdjustedXP >= hardThreshold) {
+                      difficultyRating = 'hard';
+                      difficultyColor = 'hsl(24 95% 53%)';
+                      difficultyIcon = '⚠️';
+                    } else if (totalAdjustedXP >= mediumThreshold) {
+                      difficultyRating = 'medium';
+                      difficultyColor = 'hsl(48 96% 53%)';
+                      difficultyIcon = '⚡';
+                    } else if (totalAdjustedXP >= easyThreshold) {
+                      difficultyRating = 'easy';
+                      difficultyColor = 'hsl(142 70% 50%)';
+                      difficultyIcon = '✓';
+                    } else {
+                      difficultyRating = 'trivial';
+                      difficultyColor = 'hsl(210 10% 50%)';
+                      difficultyIcon = '○';
+                    }
+
+                    // Check for impossible encounters (way above deadly)
+                    if (totalAdjustedXP >= deadlyThreshold * 2) {
+                      difficultyRating = 'impossible';
+                      difficultyColor = 'hsl(280 70% 50%)';
+                      difficultyIcon = '☠️';
+                    }
+
+                    return (
+                      <div className="combat-difficulty-panel" style={{ borderColor: difficultyColor }}>
+                        <div className="combat-difficulty-header">
+                          <span className="combat-difficulty-label">Estimated Difficulty</span>
+                          <span
+                            className="combat-difficulty-rating"
+                            style={{ color: difficultyColor }}
+                          >
+                            {difficultyIcon} {difficultyRating.charAt(0).toUpperCase() + difficultyRating.slice(1)}
+                          </span>
+                        </div>
+                        <div className="combat-difficulty-stats">
+                          <div className="combat-difficulty-stat">
+                            <span className="combat-difficulty-stat-label">Enemy XP:</span>
+                            <span className="combat-difficulty-stat-value">{totalAdjustedXP.toLocaleString()} XP</span>
+                            <span className="combat-difficulty-stat-hint">({enemyCRs.length} {enemyCRs.length === 1 ? 'enemy' : 'enemies'}, ×{encounterMultiplier} multiplier)</span>
+                          </div>
+                          <div className="combat-difficulty-thresholds">
+                            <span className="combat-difficulty-thresholds-label">Thresholds for Level {activeChar.level}:</span>
+                            <div className="combat-difficulty-threshold-bars">
+                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(142 70% 50%)' }}>
+                                Easy: {easyThreshold.toLocaleString()}
+                              </div>
+                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(48 96% 53%)' }}>
+                                Med: {mediumThreshold.toLocaleString()}
+                              </div>
+                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(24 95% 53%)' }}>
+                                Hard: {hardThreshold.toLocaleString()}
+                              </div>
+                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(0 84% 60%)' }}>
+                                Deadly: {deadlyThreshold.toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Warning for fleeing disabled */}
+                        {!advancedConfig.allowFleeing && (
+                          <div className="combat-difficulty-warning">
+                            ⚠️ Fleeing is disabled - combatants cannot retreat from this encounter
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

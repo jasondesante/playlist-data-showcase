@@ -181,8 +181,8 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 
 ### 6.2 Configuration Preview
 - [x] Show summary of active options
-- [ ] Display estimated encounter difficulty
-- [ ] Show any warnings (e.g., "Fleeing disabled")
+- [x] Display estimated encounter difficulty
+- [x] Show any warnings (e.g., "Fleeing disabled")
 
 ### 6.3 Config State Integration
 - [ ] Create `CombatConfig` type/interface
