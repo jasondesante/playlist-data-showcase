@@ -196,7 +196,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Enable multi-character parties with analyzer display.
 
 ### 7.1 Party Selection UI
-- [ ] Add party mode toggle: "Solo Hero" vs "Party"
+- [x] Add party mode toggle: "Solo Hero" vs "Party"
 - [ ] Create party member selector
   - [ ] Show all generated characters from store
   - [ ] Multi-select with checkboxes

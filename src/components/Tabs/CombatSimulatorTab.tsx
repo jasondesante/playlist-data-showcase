@@ -961,6 +961,22 @@ export function CombatSimulatorTab() {
   const autoPlayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const combatLogRef = useRef<HTMLDivElement>(null);
 
+  // ============================================================
+  // Phase 7.1: Party Mode Toggle State
+  // ============================================================
+
+  /**
+   * Party mode determines whether combat uses a single hero or a full party.
+   * - 'solo': Uses the active character only (default)
+   * - 'party': Uses selected party members from character store
+   */
+  type PartyMode = 'solo' | 'party';
+
+  const [partyMode, setPartyMode] = useState<PartyMode>('solo');
+
+  // End of Phase 7.1: Party Mode Toggle State
+  // ============================================================
+
   // Performance timing state (Phase 5.5.2)
   const combatStartTimeRef = useRef<number | null>(null);
   const [combatPerformance, setCombatPerformance] = useState<{
@@ -1399,6 +1415,33 @@ export function CombatSimulatorTab() {
         <div className="combat-prompt">Generate a character first</div>
       ) : !combat ? (
         <div className="combat-pregame">
+          {/* Phase 7.1: Party Mode Toggle */}
+          <div className="combat-config-section combat-party-mode-section">
+            <div className="combat-party-mode-header">
+              <span className="combat-party-mode-title">🛡️ Party Mode</span>
+              <div className="combat-party-mode-toggle">
+                <button
+                  type="button"
+                  onClick={() => setPartyMode('solo')}
+                  className={`combat-party-mode-button ${partyMode === 'solo' ? 'combat-party-mode-button-active' : ''}`}
+                >
+                  Solo Hero
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPartyMode('party')}
+                  className={`combat-party-mode-button ${partyMode === 'party' ? 'combat-party-mode-button-active' : ''}`}
+                >
+                  Party
+                </button>
+              </div>
+            </div>
+            <p className="combat-config-hint">
+              {partyMode === 'solo' && 'Combat with the active character only.'}
+              {partyMode === 'party' && 'Combat with a party of selected heroes (up to 4).'}
+            </p>
+          </div>
+
           {/* Phase 2.1: Enemy Configuration Panel */}
           <div className="combat-config-panel">
             <h3 className="combat-config-title">Enemy Configuration</h3>

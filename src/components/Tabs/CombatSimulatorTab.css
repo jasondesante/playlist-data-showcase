@@ -4176,3 +4176,86 @@
 }
 
 /* End of Phase 6.1: Advanced Options Configuration */
+
+/* ============================================
+   Phase 7.1: Party Mode Toggle Styles
+   ============================================ */
+
+.combat-party-mode-section {
+  padding: 0.75rem 1rem;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-party-mode-section {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-party-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.combat-party-mode-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-party-mode-title {
+    font-size: 1rem;
+  }
+}
+
+.combat-party-mode-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background-color: hsl(var(--muted));
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+}
+
+.combat-party-mode-button {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  background-color: transparent;
+  color: hsl(var(--muted-foreground));
+  transition: all var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .combat-party-mode-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+.combat-party-mode-button:hover {
+  background-color: hsl(var(--muted) / 0.8);
+  color: hsl(var(--foreground));
+}
+
+.combat-party-mode-button-active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.combat-party-mode-button-active:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  opacity: 0.9;
+}
+
+/* End of Phase 7.1: Party Mode Toggle Styles */
