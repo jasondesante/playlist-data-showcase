@@ -181,6 +181,18 @@ export function StatSelectionModal({
     return Math.max(0, STAT_CAP - getStatValue(ability));
   };
 
+  // Check if any stats are at the cap (for global warning banner)
+  const hasCappedStats = (): boolean => {
+    if (gameMode !== 'standard') return false;
+    return (Object.keys(ABILITY_INFO) as Ability[]).some(ability => isStatCapped(ability));
+  };
+
+  // Get count of capped stats
+  const getCappedStatsCount = (): number => {
+    if (gameMode !== 'standard') return 0;
+    return (Object.keys(ABILITY_INFO) as Ability[]).filter(ability => isStatCapped(ability)).length;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -220,6 +232,19 @@ export function StatSelectionModal({
               Choose how to distribute your increases following D&D 5e rules.
             </div>
           </div>
+
+          {/* Global Cap Warning Banner */}
+          {hasCappedStats() && (
+            <div className="statmodal-cap-banner">
+              <AlertTriangle size={16} className="statmodal-cap-banner-icon" />
+              <span>
+                {getCappedStatsCount() === 6
+                  ? 'All stats are at maximum (20). No increases can be applied.'
+                  : `${getCappedStatsCount()} stat${getCappedStatsCount() > 1 ? 's are' : ' is'} at maximum (20). Consider choosing different stats.`
+                }
+              </span>
+            </div>
+          )}
 
           {/* Selection Mode Toggle */}
           <div className="statmodal-mode-toggle">

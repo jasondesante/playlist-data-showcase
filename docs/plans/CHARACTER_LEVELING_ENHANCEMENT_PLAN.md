@@ -328,21 +328,21 @@ Enhance the StatSelectionModal component to show:
   - [x] Disable button if stat is already at 20
   - [x] Add tooltip explaining the cap
 
-- [ ] **3.2.2 Add Approaching Cap Warning**
-  - [ ] Show "⚡ Near Cap" indicator when stat is 18-19
-  - [ ] Visual styling: amber/yellow color
-  - [ ] Inform user that only +1 or +2 is available
+- [x] **3.2.2 Add Approaching Cap Warning**
+  - [x] Show "⚡ Near Cap" indicator when stat is 18-19
+  - [x] Visual styling: amber/yellow color
+  - [x] Inform user that only +1 or +2 is available
 
-- [ ] **3.2.3 Add Global Warning Banner**
-  - [ ] If all selected stats would be capped, show warning banner
-  - [ ] Message: "Some stats are at maximum. Consider choosing different stats."
-  - [ ] Only show in standard mode
+- [x] **3.2.3 Add Global Warning Banner**
+  - [x] If all selected stats would be capped, show warning banner
+  - [x] Message: "Some stats are at maximum. Consider choosing different stats."
+  - [x] Only show in standard mode
 
-- [ ] **3.2.4 Update CSS**
-  - [ ] Add `.statmodal-stat-capped` class
-  - [ ] Add `.statmodal-stat-near-cap` class
-  - [ ] Add `.statmodal-cap-banner` class
-  - [ ] File: `src/styles/components/StatSelectionModal.css`
+- [x] **3.2.4 Update CSS**
+  - [x] Add `.statmodal-stat-capped` class
+  - [x] Add `.statmodal-stat-near-cap` class
+  - [x] Add `.statmodal-cap-banner` class
+  - [x] File: `src/styles/components/StatSelectionModal.css`
 
 ---
 

@@ -447,6 +447,41 @@
   border-radius: 0.25rem;
 }
 
+/* ============================================
+   GLOBAL CAP WARNING BANNER (Task 3.2.3)
+   ============================================ */
+
+/* Warning banner shown when stats are at cap */
+.statmodal-cap-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: hsl(0 70% 20% / 0.25);
+  border: 1px solid hsl(0 70% 40% / 0.5);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(0 80% 80%);
+  animation: statmodalBannerFadeIn 0.3s ease-out;
+}
+
+@keyframes statmodalBannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statmodal-cap-banner-icon {
+  flex-shrink: 0;
+  color: hsl(0 70% 60%);
+}
+
 /* Validation Message */
 .statmodal-validation {
   padding: 0.75rem 1rem;
