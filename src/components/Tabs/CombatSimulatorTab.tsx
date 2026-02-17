@@ -3,6 +3,7 @@ import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
+import { useAudioEnemyGeneration, type TemplateReasoning } from '../../hooks/useAudioEnemyGeneration';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -361,6 +362,30 @@ export function CombatSimulatorTab() {
   const [generationConfig, setGenerationConfig] = useState<EnemyGenerationConfig>(DEFAULT_GENERATION_CONFIG);
 
   // State: Loading state for enemy generation (Phase 2.1)
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // ============================================================
+  // Phase 3.1: Audio-Influenced Generation State (hoisted)
+  // ============================================================
+  // Note: These are declared here because they're needed by _handleGenerateEnemies
+
+  // Access playlist store for audio-influenced generation
+  const { currentPlaylist } = usePlaylistStore();
+
+  // Hook for audio-influenced enemy generation (Phase 3.2)
+  const audioEnemyGenerator = useAudioEnemyGeneration();
+
+  // State: Audio-influenced mode toggle
+  const [audioInfluenced, setAudioInfluenced] = useState(false);
+
+  // State: Selected tracks for audio-influenced generation
+  const [selectedAudioTracks, setSelectedAudioTracks] = useState<PlaylistTrack[]>([]);
+
+  // State: Audio generation reasoning for display (Phase 3.3)
+  const [audioReasoning, setAudioReasoning] = useState<TemplateReasoning[]>([]);
+
+  // End of hoisted audio state
+  // ============================================================
 
   // Reset generated enemies when config changes (Phase 1.2 requirement)
   // This ensures stale enemies are cleared when user changes generation settings
@@ -393,8 +418,9 @@ export function CombatSimulatorTab() {
   }, [generationConfig, generatedEnemies.length]);
 
   // Handler: Generate enemies based on current configuration
+  // Updated in Phase 3.3 to support audio-influenced generation
   // Note: _handleGenerateEnemies will be wired to UI in Phase 2
-  const _handleGenerateEnemies = useCallback(() => {
+  const _handleGenerateEnemies = useCallback(async () => {
     const activeChar = getActiveCharacter();
     if (!activeChar) {
       logger.warn('CombatSimulator', 'Cannot generate enemies: no active character');
@@ -402,54 +428,88 @@ export function CombatSimulatorTab() {
     }
 
     setIsGenerating(true);
+    // Clear previous audio reasoning
+    setAudioReasoning([]);
+
     logger.info('CombatSimulator', 'Generating enemies', {
       mode: generationConfig.mode,
       count: generationConfig.count,
-      seed: generationConfig.seed
+      seed: generationConfig.seed,
+      audioInfluenced,
+      selectedTracks: selectedAudioTracks.length
     });
 
     try {
       let enemies: CharacterSheet[] = [];
 
-      const options: EncounterGenerationOptions = {
-        seed: generationConfig.seed,
-        count: generationConfig.count,
-        difficulty: generationConfig.difficulty,
-        targetCR: generationConfig.targetCR,
-        baseRarity: generationConfig.baseRarity,
-        category: generationConfig.category,
-        archetype: generationConfig.archetype,
-        templateId: generationConfig.templateId,
-        enemyMix: generationConfig.enemyMix,
-        templates: generationConfig.templates,
-        difficultyMultiplier: generationConfig.difficultyMultiplier
-      };
+      // Phase 3.3: Use audio-influenced generation when enabled and tracks selected
+      if (audioInfluenced && selectedAudioTracks.length > 0) {
+        logger.info('CombatSimulator', 'Using audio-influenced generation');
 
-      switch (generationConfig.mode) {
-        case 'single':
-          // Generate a single enemy
-          const singleEnemy = enemyGenerator.generate({
+        const audioResult = await audioEnemyGenerator.generateWithAudio(
+          selectedAudioTracks,
+          {
             seed: generationConfig.seed,
-            templateId: generationConfig.templateId,
-            rarity: generationConfig.baseRarity,
+            count: generationConfig.count,
+            baseRarity: generationConfig.baseRarity,
+            difficultyMultiplier: generationConfig.difficultyMultiplier,
             category: generationConfig.category,
             archetype: generationConfig.archetype,
-            difficultyMultiplier: generationConfig.difficultyMultiplier
-          });
-          if (singleEnemy) {
-            enemies = [singleEnemy];
+            templateId: generationConfig.templateId
           }
-          break;
+        );
 
-        case 'party-balanced':
-          // Generate party-balanced encounter
-          enemies = enemyGenerator.generateEncounter([activeChar], options);
-          break;
+        enemies = audioResult.enemies;
 
-        case 'cr-based':
-          // Generate CR-based encounter
-          enemies = enemyGenerator.generateEncounterByCR(options);
-          break;
+        // Store reasoning for display (Phase 3.3)
+        if (audioResult.templateReasoning.length > 0) {
+          setAudioReasoning(audioResult.templateReasoning);
+          logger.info('CombatSimulator', 'Audio reasoning stored', {
+            reasoningCount: audioResult.templateReasoning.length
+          });
+        }
+      } else {
+        // Standard generation (non-audio)
+        const options: EncounterGenerationOptions = {
+          seed: generationConfig.seed,
+          count: generationConfig.count,
+          difficulty: generationConfig.difficulty,
+          targetCR: generationConfig.targetCR,
+          baseRarity: generationConfig.baseRarity,
+          category: generationConfig.category,
+          archetype: generationConfig.archetype,
+          templateId: generationConfig.templateId,
+          enemyMix: generationConfig.enemyMix,
+          templates: generationConfig.templates,
+          difficultyMultiplier: generationConfig.difficultyMultiplier
+        };
+
+        switch (generationConfig.mode) {
+          case 'single':
+            // Generate a single enemy
+            const singleEnemy = enemyGenerator.generate({
+              seed: generationConfig.seed,
+              templateId: generationConfig.templateId,
+              rarity: generationConfig.baseRarity,
+              category: generationConfig.category,
+              archetype: generationConfig.archetype,
+              difficultyMultiplier: generationConfig.difficultyMultiplier
+            });
+            if (singleEnemy) {
+              enemies = [singleEnemy];
+            }
+            break;
+
+          case 'party-balanced':
+            // Generate party-balanced encounter
+            enemies = enemyGenerator.generateEncounter([activeChar], options);
+            break;
+
+          case 'cr-based':
+            // Generate CR-based encounter
+            enemies = enemyGenerator.generateEncounterByCR(options);
+            break;
+        }
       }
 
       logger.info('CombatSimulator', 'Enemy generation complete', {
@@ -461,10 +521,11 @@ export function CombatSimulatorTab() {
     } catch (error) {
       logger.error('CombatSimulator', 'Failed to generate enemies', error);
       setGeneratedEnemies([]);
+      setAudioReasoning([]);
     } finally {
       setIsGenerating(false);
     }
-  }, [generationConfig, getActiveCharacter, enemyGenerator]);
+  }, [generationConfig, getActiveCharacter, enemyGenerator, audioInfluenced, selectedAudioTracks, audioEnemyGenerator]);
 
   // Handler: Update a single config field
   // Note: _updateGenerationConfig will be wired to UI in Phase 2
@@ -481,33 +542,19 @@ export function CombatSimulatorTab() {
   // Wire up updateGenerationConfig function for Phase 2 UI
   const updateGenerationConfig = _updateGenerationConfig;
 
-  // State for tracking if enemies have been generated (Phase 2.1)
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // Wrapper to set loading state during generation
+  // Wrapper to handle async generation (updated for Phase 3.3)
   const handleGenerateEnemiesWithLoading = useCallback(() => {
-    setIsGenerating(true);
+    // The async generation handles its own loading state
     _handleGenerateEnemies();
-    // Generation is synchronous in the current implementation
-    // but we add a small delay for UX feedback
-    setTimeout(() => setIsGenerating(false), 100);
   }, [_handleGenerateEnemies]);
 
   // End of Phase 1.2 state management
   // ============================================================
 
   // ============================================================
-  // Phase 3.1: Audio-Influenced Generation State
+  // Phase 3.1: Audio-Influenced Generation Handlers
+  // Note: State variables moved above to be available for _handleGenerateEnemies
   // ============================================================
-
-  // Access playlist store for audio-influenced generation
-  const { currentPlaylist } = usePlaylistStore();
-
-  // State: Audio-influenced mode toggle
-  const [audioInfluenced, setAudioInfluenced] = useState(false);
-
-  // State: Selected tracks for audio-influenced generation
-  const [selectedAudioTracks, setSelectedAudioTracks] = useState<PlaylistTrack[]>([]);
 
   // Handler: Toggle audio-influenced mode
   const handleToggleAudioInfluenced = useCallback(() => {
@@ -1546,16 +1593,89 @@ export function CombatSimulatorTab() {
               <div className="combat-config-preview">
                 <h4 className="combat-config-preview-title">
                   Generated Enemies ({generatedEnemies.length})
+                  {audioReasoning.length > 0 && (
+                    <span className="combat-preview-audio-badge" title="Audio-influenced generation">
+                      🎵 Audio
+                    </span>
+                  )}
                 </h4>
                 <div className="combat-config-preview-list">
-                  {generatedEnemies.map((enemy, index) => (
-                    <div key={index} className="combat-config-enemy-card">
-                      <div className="combat-config-enemy-name">{enemy.name}</div>
-                      <div className="combat-config-enemy-details">
-                        {enemy.race} {enemy.class} • Level {enemy.level} • HP: {enemy.hp.max}
+                  {generatedEnemies.map((enemy, index) => {
+                    // Find the corresponding audio reasoning for this enemy
+                    const reasoning = audioReasoning[index];
+
+                    return (
+                      <div key={index} className="combat-config-enemy-card">
+                        <div className="combat-config-enemy-header">
+                          <div className="combat-config-enemy-name">{enemy.name}</div>
+                          {reasoning && (
+                            <span className="combat-enemy-audio-indicator" title={`Influenced by: ${reasoning.trackTitle}`}>
+                              🎵
+                            </span>
+                          )}
+                        </div>
+                        <div className="combat-config-enemy-details">
+                          {enemy.race} {enemy.class} • Level {enemy.level} • HP: {enemy.hp.max}
+                        </div>
+
+                        {/* Phase 3.3: Audio influence display */}
+                        {reasoning && (
+                          <div className="combat-enemy-audio-info">
+                            {/* Show which song influenced this enemy */}
+                            <div className="combat-audio-song" title={`Song: ${reasoning.trackTitle}`}>
+                              <span className="combat-audio-song-icon">🎶</span>
+                              <span className="combat-audio-song-name">{reasoning.trackTitle}</span>
+                            </div>
+
+                            {/* Audio profile summary (bass/mid/treble) */}
+                            <div className="combat-audio-profile">
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Bass:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-bass"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.bass * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.bass * 100)}%</span>
+                              </div>
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Mid:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-mid"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.mid * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.mid * 100)}%</span>
+                              </div>
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Treble:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-treble"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.treble * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.treble * 100)}%</span>
+                              </div>
+                            </div>
+
+                            {/* Dominant band indicator */}
+                            <div className={`combat-audio-dominant combat-audio-dominant-${reasoning.audioSummary.dominantBand}`}>
+                              Dominant: {reasoning.audioSummary.dominantBand.charAt(0).toUpperCase() + reasoning.audioSummary.dominantBand.slice(1)}
+                            </div>
+
+                            {/* Template selection reasoning tooltip */}
+                            <div className="combat-audio-reasoning" title={reasoning.reason}>
+                              <span className="combat-audio-reasoning-icon">💡</span>
+                              <span className="combat-audio-reasoning-text">{reasoning.reason}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -98,9 +98,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Return generated enemies with audio influence
 
 ### 3.3 Audio Preview Display
-- [ ] Show which song influenced which enemy
-- [ ] Display audio profile summary (bass/mid/treble)
-- [ ] Show template selection reasoning tooltip
+- [x] Show which song influenced which enemy
+- [x] Display audio profile summary (bass/mid/treble)
+- [x] Show template selection reasoning tooltip
 
 ---
 
