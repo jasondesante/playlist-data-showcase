@@ -979,3 +979,265 @@
     padding: 1rem;
   }
 }
+
+/* ========================================
+   DIAGNOSTICS PANEL
+   ======================================== */
+
+.sensor-diagnostics-card {
+  border-color: hsl(280 60% 50% / 0.3);
+  background: linear-gradient(135deg, hsl(280 60% 50% / 0.08), hsl(var(--surface-2)));
+}
+
+.sensor-diagnostics-card .sensor-card-title {
+  color: hsl(280 60% 60%);
+}
+
+.sensor-diagnostics-mode-badge {
+  margin-left: auto;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: hsl(280 60% 60%);
+  background: hsl(280 60% 50% / 0.15);
+  border: 1px solid hsl(280 60% 50% / 0.3);
+  border-radius: var(--radius);
+}
+
+.sensor-diagnostics-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.sensor-diagnostics-empty p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.sensor-diagnostics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sensor-diagnostics-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sensor-diagnostics-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.sensor-diagnostics-section-title svg {
+  color: hsl(280 60% 60%);
+}
+
+.sensor-diagnostics-section-title--error {
+  color: hsl(var(--destructive));
+}
+
+.sensor-diagnostics-section-title--error svg {
+  color: hsl(var(--destructive));
+}
+
+/* Sensor status grid */
+.sensor-diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .sensor-diagnostics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .sensor-diagnostics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sensor-diagnostics-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+}
+
+.sensor-diagnostics-item--healthy {
+  border-color: hsl(142 76% 36% / 0.3);
+}
+
+.sensor-diagnostics-item--degraded {
+  border-color: hsl(48 96% 53% / 0.3);
+}
+
+.sensor-diagnostics-item--error {
+  border-color: hsl(var(--destructive) / 0.3);
+  background-color: hsl(var(--destructive) / 0.05);
+}
+
+.sensor-diagnostics-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.sensor-diagnostics-item-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.sensor-diagnostics-item-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sensor-diagnostics-item-health {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.sensor-diagnostics-item-time {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground) / 0.8);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+.sensor-diagnostics-item-error {
+  font-size: 0.625rem;
+  color: hsl(var(--destructive));
+  margin-top: 0.125rem;
+  word-break: break-word;
+}
+
+/* Info grid */
+.sensor-diagnostics-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-diagnostics-info-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sensor-diagnostics-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-diagnostics-info-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(280 60% 60% / 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-diagnostics-info-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+.sensor-diagnostics-status--success {
+  color: hsl(142 76% 36%);
+}
+
+.sensor-diagnostics-status--error {
+  color: hsl(var(--destructive));
+}
+
+/* Failures list */
+.sensor-diagnostics-failures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.sensor-diagnostics-failure-item {
+  padding: 0.5rem;
+  background-color: hsl(var(--destructive) / 0.05);
+  border: 1px solid hsl(var(--destructive) / 0.2);
+  border-radius: var(--radius);
+}
+
+.sensor-diagnostics-failure-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.25rem;
+}
+
+.sensor-diagnostics-failure-header svg {
+  color: hsl(var(--destructive));
+  flex-shrink: 0;
+}
+
+.sensor-diagnostics-failure-type {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-transform: capitalize;
+}
+
+.sensor-diagnostics-failure-time {
+  margin-left: auto;
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+.sensor-diagnostics-failure-message {
+  font-size: 0.6875rem;
+  color: hsl(var(--destructive) / 0.9);
+  word-break: break-word;
+}
+
+/* Last updated */
+.sensor-diagnostics-updated {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border));
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.sensor-diagnostics-updated svg {
+  color: hsl(var(--muted-foreground));
+}
+

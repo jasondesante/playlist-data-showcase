@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useEnvironmentalSensors } from '../../hooks/useEnvironmentalSensors';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind } from 'lucide-react';
+import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
 import './EnvironmentalSensorsTab.css';
 
 /**
@@ -45,6 +45,56 @@ function getBiomeInfo(biome: string | undefined): { emoji: string; name: string 
   };
 
   return biomeMap[biome.toLowerCase()] || { emoji: '🌍', name: biome };
+}
+
+// Helper function to format time ago
+function formatTimeAgo(timestamp: number | undefined): string {
+  if (!timestamp) return 'Never';
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 5) return 'Just now';
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+// Helper function to get sensor health status
+function getSensorHealthStatus(health: string | undefined): 'healthy' | 'degraded' | 'error' {
+  if (!health) return 'degraded';
+  switch (health.toLowerCase()) {
+    case 'healthy':
+      return 'healthy';
+    case 'degraded':
+      return 'degraded';
+    case 'error':
+    case 'unavailable':
+    case 'failed':
+      return 'error';
+    default:
+      return 'degraded';
+  }
+}
+
+// Helper function to get sensor status icon and color
+function getSensorStatusDisplay(health: 'healthy' | 'degraded' | 'error') {
+  switch (health) {
+    case 'healthy':
+      return { icon: CheckCircle, color: 'hsl(142 76% 36%)', label: 'Working' };
+    case 'degraded':
+      return { icon: AlertCircle, color: 'hsl(48 96% 53%)', label: 'Pending' };
+    case 'error':
+      return { icon: XCircle, color: 'hsl(var(--destructive))', label: 'Error' };
+  }
+}
+
+// Helper function to mask API key for display (show first 4 and last 4 chars)
+function maskApiKey(key: string | undefined): string {
+  if (!key) return 'Not configured';
+  if (key.length < 12) return '****';
+  return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
 }
 
 // Helper function to map PermissionState to status type
@@ -151,7 +201,7 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
 }
 
 export function EnvironmentalSensorsTab() {
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, diagnostics } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -583,6 +633,164 @@ export function EnvironmentalSensorsTab() {
                 </ul>
               </Card>
             )}
+
+            {/* Sensor Diagnostics Panel */}
+            <Card variant="elevated" padding="lg" className="sensor-diagnostics-card">
+              <div className="sensor-card-title">
+                <Settings size={18} />
+                <span>Sensor Diagnostics</span>
+                {diagnostics?.diagnosticMode && (
+                  <span className="sensor-diagnostics-mode-badge">Debug Mode</span>
+                )}
+              </div>
+
+              {!diagnostics ? (
+                <div className="sensor-diagnostics-empty">
+                  <AlertCircle size={24} />
+                  <p>Start monitoring to see sensor diagnostics</p>
+                </div>
+              ) : (
+                <div className="sensor-diagnostics-content">
+                  {/* Sensor Status Grid */}
+                  <div className="sensor-diagnostics-section">
+                    <h4 className="sensor-diagnostics-section-title">
+                      <Zap size={14} />
+                      Sensor Status
+                    </h4>
+                    <div className="sensor-diagnostics-grid">
+                      {(diagnostics.sensors as any[])?.map((sensor: any, index: number) => {
+                        const health = getSensorHealthStatus(sensor?.health);
+                        const display = getSensorStatusDisplay(health);
+                        const Icon = display.icon;
+                        return (
+                          <div key={index} className={`sensor-diagnostics-item sensor-diagnostics-item--${health}`}>
+                            <div className="sensor-diagnostics-item-header">
+                              <Icon size={14} style={{ color: display.color }} />
+                              <span className="sensor-diagnostics-item-name">{sensor?.type || `Sensor ${index + 1}`}</span>
+                            </div>
+                            <div className="sensor-diagnostics-item-status">
+                              <span className="sensor-diagnostics-item-health">{display.label}</span>
+                              {sensor?.lastUpdate && (
+                                <span className="sensor-diagnostics-item-time">
+                                  {formatTimeAgo(sensor.lastUpdate)}
+                                </span>
+                              )}
+                            </div>
+                            {sensor?.lastError && (
+                              <div className="sensor-diagnostics-item-error">
+                                {sensor.lastError}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Weather API Debug Info */}
+                  <div className="sensor-diagnostics-section">
+                    <h4 className="sensor-diagnostics-section-title">
+                      <Cloud size={14} />
+                      Weather API Debug
+                    </h4>
+                    <div className="sensor-diagnostics-info-grid">
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">API Key</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {maskApiKey((diagnostics as any).context?.weather?.apiKey)}
+                        </span>
+                      </div>
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">Last API Call</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {formatTimeAgo((diagnostics as any).performance?.weatherApi?.lastCall)}
+                        </span>
+                      </div>
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">API Status</span>
+                        <span className={`sensor-diagnostics-info-value sensor-diagnostics-status--${(diagnostics as any).performance?.weatherApi?.successRate > 0.5 ? 'success' : 'error'}`}>
+                          {(diagnostics as any).performance?.weatherApi?.successRate !== undefined
+                            ? `${((diagnostics as any).performance.weatherApi.successRate * 100).toFixed(0)}% success`
+                            : 'No calls yet'}
+                        </span>
+                      </div>
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">Avg Response</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {(diagnostics as any).performance?.weatherApi?.avgResponseTime
+                            ? `${(diagnostics as any).performance.weatherApi.avgResponseTime.toFixed(0)}ms`
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cache Statistics */}
+                  <div className="sensor-diagnostics-section">
+                    <h4 className="sensor-diagnostics-section-title">
+                      <RefreshCw size={14} />
+                      Cache Statistics
+                    </h4>
+                    <div className="sensor-diagnostics-info-grid">
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">Geo Cache Age</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {(diagnostics as any).cache?.geolocationAge !== undefined
+                            ? `${Math.floor((diagnostics as any).cache.geolocationAge / 1000)}s`
+                            : 'No cache'}
+                        </span>
+                      </div>
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">Geo Cache Hits</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {(diagnostics as any).cache?.hits ?? 0} / {(diagnostics as any).cache?.misses ?? 0} misses
+                        </span>
+                      </div>
+                      <div className="sensor-diagnostics-info-item">
+                        <span className="sensor-diagnostics-info-label">Weather Cache</span>
+                        <span className="sensor-diagnostics-info-value">
+                          {(diagnostics as any).cache?.weatherCacheSize !== undefined
+                            ? `${(diagnostics as any).cache.weatherCacheSize} entries`
+                            : 'Empty'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Failures */}
+                  {((diagnostics as any).recentFailures?.length > 0) && (
+                    <div className="sensor-diagnostics-section">
+                      <h4 className="sensor-diagnostics-section-title sensor-diagnostics-section-title--error">
+                        <AlertTriangle size={14} />
+                        Recent Failures ({(diagnostics as any).recentFailures.length})
+                      </h4>
+                      <div className="sensor-diagnostics-failures">
+                        {(diagnostics as any).recentFailures.slice(0, 5).map((failure: any, index: number) => (
+                          <div key={index} className="sensor-diagnostics-failure-item">
+                            <div className="sensor-diagnostics-failure-header">
+                              <XCircle size={12} />
+                              <span className="sensor-diagnostics-failure-type">{failure?.sensorType || 'Unknown'}</span>
+                              <span className="sensor-diagnostics-failure-time">
+                                {formatTimeAgo(failure?.timestamp)}
+                              </span>
+                            </div>
+                            <div className="sensor-diagnostics-failure-message">
+                              {failure?.error || 'Unknown error'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Last Updated */}
+                  <div className="sensor-diagnostics-updated">
+                    <Clock size={12} />
+                    <span>Diagnostics updated: {formatTimeAgo(diagnostics.timestamp)}</span>
+                  </div>
+                </div>
+              )}
+            </Card>
 
             {/* Raw JSON dump */}
             <Card variant="flat" padding="md" className="sensor-raw-card">

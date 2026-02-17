@@ -140,22 +140,22 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ## Phase 5: Sensor Diagnostics (HIGH PRIORITY - For Troubleshooting)
 
 ### 5.1 Add Diagnostics Panel
-- [ ] Create always-visible "Diagnostics" section at bottom of tab
-  - [ ] This is CRITICAL for debugging why weather isn't working
-  - [ ] Show each sensor with status badge:
+- [x] Create always-visible "Diagnostics" section at bottom of tab
+  - [x] This is CRITICAL for debugging why weather isn't working
+  - [x] Show each sensor with status badge:
     - 🟢 Geolocation: Working / Last update: 2s ago
     - 🟡 Motion: Permission granted / No data yet
     - 🔴 Weather: API Error - "Invalid API key" / Last attempt: failed
-  - [ ] Weather API specific debugging:
-    - [ ] API key configured? (yes/no - DON'T show the actual key)
-    - [ ] Last API call timestamp
-    - [ ] API response status (success/error)
-    - [ ] Error message if failed
-    - [ ] Cache hit/miss status
-  - [ ] Cache statistics:
+  - [x] Weather API specific debugging:
+    - [x] API key configured? (yes/no - DON'T show the actual key)
+    - [x] Last API call timestamp
+    - [x] API response status (success/error)
+    - [x] Error message if failed
+    - [x] Cache hit/miss status
+  - [x] Cache statistics:
     - Geolocation cache: hit/miss
     - Weather cache: hit/miss, age
-  - [ ] Recent failures (last 5):
+  - [x] Recent failures (last 5):
     - Timestamp, sensor type, error message
 
 **Files to modify:**
