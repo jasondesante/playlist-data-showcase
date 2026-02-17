@@ -1,7 +1,14 @@
-import { useState, useCallback } from 'react';
-import { CombatEngine, CharacterSheet } from 'playlist-data-engine';
+import { useState, useCallback, useMemo } from 'react';
+import { CombatEngine, CharacterSheet, type CombatConfig } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
+
+// TreasureConfig is defined in the engine but not exported
+// We define it here for our use
+export interface TreasureConfig {
+    gold?: number | { min: number; max: number };
+    items?: any[];
+}
 
 // Types from playlist-data-engine that are not exported from the main package
 export interface Combatant {
@@ -48,9 +55,14 @@ export interface CombatAction {
  * Manages combat instances with initiative tracking, attack resolution, spell casting,
  * and turn management. Supports manual turn-by-turn play or auto-play mode.
  *
+ * @param {CombatConfig} config - Optional combat configuration (treasure, fleeing, etc.)
+ *
  * @example
  * ```tsx
- * const { startCombat, executeAttack, nextTurn, getCombatResult } = useCombatEngine();
+ * const { startCombat, executeAttack, nextTurn, getCombatResult } = useCombatEngine({
+ *   treasure: { gold: 500, items: [] },
+ *   allowFleeing: true
+ * });
  * const combat = startCombat(party, enemies);
  * const action = executeAttack(attacker, target);
  * const updated = nextTurn();
@@ -68,8 +80,9 @@ export interface CombatAction {
  * @returns {Function} getLivingCombatants - Gets all non-defeated combatants
  * @returns {Object} combat - Current combat instance (null if no combat)
  */
-export const useCombatEngine = () => {
-    const [engine] = useState(() => new CombatEngine());
+export const useCombatEngine = (config?: CombatConfig) => {
+    // Create engine with config - memoize to prevent recreation on every render
+    const engine = useMemo(() => new CombatEngine(config), [config]);
 
     // Combat state
     const [combat, setCombat] = useState<CombatInstance | null>(null);

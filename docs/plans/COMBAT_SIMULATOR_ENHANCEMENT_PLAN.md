@@ -152,15 +152,15 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Add/remove item buttons
 
 ### 5.2 Treasure Display in Victory Screen
-- [ ] Show gold awarded
-- [ ] Show items awarded (if any)
-- [ ] Add treasure summary section
-- [ ] Animate treasure reveal
+- [x] Show gold awarded
+- [x] Show items awarded (if any)
+- [x] Add treasure summary section
+- [x] Animate treasure reveal
 
 ### 5.3 Treasure State Management
-- [ ] Add `treasureConfig` to combat initialization
-- [ ] Pass treasure config to `CombatEngine` constructor
-- [ ] Display treasure in combat result
+- [x] Add `treasureConfig` to combat initialization
+- [x] Pass treasure config to `CombatEngine` constructor
+- [x] Display treasure in combat result
 
 ---
 

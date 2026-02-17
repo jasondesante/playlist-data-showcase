@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
@@ -21,6 +21,7 @@ import {
     getEncounterMultiplier,
     calculateAdjustedXP
 } from 'playlist-data-engine';
+import { type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
 import type { PlaylistTrack } from '../../types';
 import './CombatSimulatorTab.css';
@@ -402,66 +403,11 @@ function getSpellLevelText(level: number): string {
 }
 
 export function CombatSimulatorTab() {
-  const {
-    startCombat,
-    getCurrentCombatant,
-    executeAttack,
-    executeCastSpell,
-    executeDodge,
-    executeDash,
-    executeDisengage,
-    executeFlee,
-    canFlee,
-    nextTurn,
-    getCombatResult,
-    resetCombat,
-    getLivingCombatants,
-    combat
-  } = useCombatEngine();
   const { getActiveCharacter } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
 
   // ============================================================
-  // Phase 1.2: Enemy Generation State Management
-  // ============================================================
-
-  // Hook for enemy generation (Phase 1.1)
-  const enemyGenerator = useEnemyGenerator();
-
-  // State: Generated enemies ready for combat
-  const [generatedEnemies, setGeneratedEnemies] = useState<CharacterSheet[]>([]);
-
-  // State: Configuration for enemy generation
-  const [generationConfig, setGenerationConfig] = useState<EnemyGenerationConfig>(DEFAULT_GENERATION_CONFIG);
-
-  // State: Loading state for enemy generation (Phase 2.1)
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // ============================================================
-  // Phase 3.1: Audio-Influenced Generation State (hoisted)
-  // ============================================================
-  // Note: These are declared here because they're needed by _handleGenerateEnemies
-
-  // Access playlist store for audio-influenced generation
-  const { currentPlaylist } = usePlaylistStore();
-
-  // Hook for audio-influenced enemy generation (Phase 3.2)
-  const audioEnemyGenerator = useAudioEnemyGeneration();
-
-  // State: Audio-influenced mode toggle
-  const [audioInfluenced, setAudioInfluenced] = useState(false);
-
-  // State: Selected tracks for audio-influenced generation
-  const [selectedAudioTracks, setSelectedAudioTracks] = useState<PlaylistTrack[]>([]);
-
-  // State: Audio generation reasoning for display (Phase 3.3)
-  const [audioReasoning, setAudioReasoning] = useState<TemplateReasoning[]>([]);
-
-  // End of hoisted audio state
-  // ============================================================
-
-  // ============================================================
-  // Phase 5.1: Treasure Configuration State
+  // Phase 5.1: Treasure Configuration State (hoisted for useCombatEngine)
   // ============================================================
 
   // State: Treasure configuration
@@ -517,7 +463,102 @@ export function CombatSimulatorTab() {
     logger.info('CombatSimulator', 'Removed custom treasure item', { itemId });
   }, []);
 
-  // End of Phase 5.1: Treasure Configuration State
+  // ============================================================
+  // Phase 5.3: Combat Config for Engine
+  // Convert TreasureGenerationConfig to CombatConfig for useCombatEngine
+  // ============================================================
+
+  const combatConfig = useMemo(() => {
+    if (!treasureConfig.enabled) {
+      return undefined;
+    }
+
+    // Convert our TreasureGenerationConfig to the engine's TreasureConfig
+    const engineTreasureConfig: TreasureConfig = {};
+
+    // Handle gold configuration
+    if (treasureConfig.goldMode === 'fixed') {
+      engineTreasureConfig.gold = treasureConfig.goldFixed;
+    } else if (treasureConfig.goldMode === 'range') {
+      engineTreasureConfig.gold = {
+        min: treasureConfig.goldMin,
+        max: treasureConfig.goldMax
+      };
+    }
+    // If goldMode is 'none', we don't set gold property
+
+    // Convert custom items
+    if (treasureConfig.customItems.length > 0) {
+      engineTreasureConfig.items = treasureConfig.customItems.map(item => ({
+        name: item.name,
+        type: item.type
+      }));
+    }
+
+    return {
+      treasure: engineTreasureConfig,
+      seed: treasureConfig.seed
+    };
+  }, [treasureConfig]);
+
+  // ============================================================
+  // Combat Engine Hook
+  // ============================================================
+
+  const {
+    startCombat,
+    getCurrentCombatant,
+    executeAttack,
+    executeCastSpell,
+    executeDodge,
+    executeDash,
+    executeDisengage,
+    executeFlee,
+    canFlee,
+    nextTurn,
+    getCombatResult,
+    resetCombat,
+    getLivingCombatants,
+    combat
+  } = useCombatEngine(combatConfig);
+
+  // ============================================================
+  // Phase 1.2: Enemy Generation State Management
+  // ============================================================
+
+  // Hook for enemy generation (Phase 1.1)
+  const enemyGenerator = useEnemyGenerator();
+
+  // State: Generated enemies ready for combat
+  const [generatedEnemies, setGeneratedEnemies] = useState<CharacterSheet[]>([]);
+
+  // State: Configuration for enemy generation
+  const [generationConfig, setGenerationConfig] = useState<EnemyGenerationConfig>(DEFAULT_GENERATION_CONFIG);
+
+  // State: Loading state for enemy generation (Phase 2.1)
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // ============================================================
+  // Phase 3.1: Audio-Influenced Generation State (hoisted)
+  // ============================================================
+  // Note: These are declared here because they're needed by _handleGenerateEnemies
+
+  // Access playlist store for audio-influenced generation
+  const { currentPlaylist } = usePlaylistStore();
+
+  // Hook for audio-influenced enemy generation (Phase 3.2)
+  const audioEnemyGenerator = useAudioEnemyGeneration();
+
+  // State: Audio-influenced mode toggle
+  const [audioInfluenced, setAudioInfluenced] = useState(false);
+
+  // State: Selected tracks for audio-influenced generation
+  const [selectedAudioTracks, setSelectedAudioTracks] = useState<PlaylistTrack[]>([]);
+
+  // State: Audio generation reasoning for display (Phase 3.3)
+  const [audioReasoning, setAudioReasoning] = useState<TemplateReasoning[]>([]);
+
+  // End of hoisted audio state
   // ============================================================
 
   // Reset generated enemies when config changes (Phase 1.2 requirement)
@@ -2567,6 +2608,38 @@ export function CombatSimulatorTab() {
                         </span>
                       </div>
                     </>
+                  )}
+
+                  {/* Treasure Rewards - Phase 5.2 */}
+                  {combatResult.treasureAwarded && (combatResult.treasureAwarded.gold > 0 || combatResult.treasureAwarded.items?.length > 0) && (
+                    <div className="combat-victory-treasure-section">
+                      <h3 className="combat-victory-treasure-title">💰 Treasure Rewards</h3>
+                      <div className="combat-victory-treasure-content">
+                        {/* Gold Awarded */}
+                        {combatResult.treasureAwarded.gold > 0 && (
+                          <div className="combat-victory-treasure-item combat-victory-treasure-gold">
+                            <span className="combat-victory-treasure-icon">🪙</span>
+                            <span className="combat-victory-treasure-value">
+                              {combatResult.treasureAwarded.gold.toLocaleString()} Gold
+                            </span>
+                          </div>
+                        )}
+                        {/* Items Awarded */}
+                        {combatResult.treasureAwarded.items?.length > 0 && (
+                          <div className="combat-victory-treasure-items">
+                            {combatResult.treasureAwarded.items.map((item: any, index: number) => (
+                              <div key={index} className="combat-victory-treasure-item combat-victory-treasure-loot">
+                                <span className="combat-victory-treasure-icon">🎁</span>
+                                <span className="combat-victory-treasure-item-name">{item.name || `Item ${index + 1}`}</span>
+                                {item.type && (
+                                  <span className="combat-victory-treasure-item-type">({item.type})</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
 
                   {combatResult.description && (
