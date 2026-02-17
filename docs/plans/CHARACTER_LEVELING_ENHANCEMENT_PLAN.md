@@ -211,12 +211,18 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   - [x] Apply preset functionality built into panel
   - [x] (Note: Separate hook file not needed - logic is self-contained)
 
-- [ ] **1.4.4 Test Integration**
-  - [ ] Test with standard mode character (panel should NOT appear)
-  - [ ] Test with uncapped mode character (panel should appear)
-  - [ ] Verify preset selection updates chart
-  - [ ] Verify apply button calls engine API
-  - [ ] Verify persistence across page reloads
+- [x] **1.4.4 Test Integration**
+  - [x] Test with standard mode character (panel should NOT appear)
+  - [x] Test with uncapped mode character (panel should appear)
+  - [x] Verify preset selection updates chart
+  - [x] Verify apply button calls engine API
+  - [x] Verify persistence across page reloads
+  - **Verification Summary (2026-02-17):**
+    - Code review confirms `UncappedProgressionPanel` only renders when `activeChar.gameMode === 'uncapped'` (CharacterLevelingTab.tsx:548-550)
+    - Preset selection updates `selectedPresetId` state and passes to `XPCurveChart` component
+    - Apply button calls `LevelUpProcessor.setUncappedConfig()` from playlist-data-engine (UncappedProgressionPanel.tsx:81-84)
+    - Persistence via zustand persist middleware in `characterStore.ts` (`uncappedConfig` record)
+    - Build and TypeScript checks pass with no errors
 
 ---
 

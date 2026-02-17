@@ -21,7 +21,7 @@ import { DetailRow } from '../ui/DetailRow';
 import { EquipmentBrowser } from '../ui/EquipmentBrowser';
 import { showToast } from '../ui/Toast';
 import { cn } from '../../utils/cn';
-import { DEFAULT_EQUIPMENT, SpellQuery } from 'playlist-data-engine';
+import { DEFAULT_EQUIPMENT, SpellQuery, SkillQuery } from 'playlist-data-engine';
 import type { EnhancedEquipment, RegisteredSpell } from 'playlist-data-engine';
 
 /**
@@ -78,85 +78,6 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
   'rare': 'hsl(210 80% 50% / 0.3)',
   'very_rare': 'hsl(270 60% 50% / 0.3)',
   'legendary': 'hsl(30 90% 50% / 0.4)'
-};
-
-/**
- * Skill descriptions for all 18 standard D&D 5e skills
- * Used for displaying detailed information when a skill is clicked
- */
-const SKILL_DATA: Record<string, { ability: string; description: string }> = {
-  'acrobatics': {
-    ability: 'DEX',
-    description: 'Your ability to stay on your feet in a tricky situation. Includes balancing on a tightrope, staying upright in a storm, or landing safely when falling. Use this when attempting gymnastics, stunts, or escaping from bonds.'
-  },
-  'animal_handling': {
-    ability: 'WIS',
-    description: 'Your ability to calm, direct, and train animals. Includes recognizing an animal\'s mood, spotting signs of disease, and predicting behavior. Use this when approaching hostile beasts or training a mount.'
-  },
-  'arcana': {
-    ability: 'INT',
-    description: 'Your knowledge of magic, spells, and magical phenomena. Includes identifying spells being cast, understanding magical writings, and recognizing magical traditions. Use this when studying ancient tomes or investigating magical effects.'
-  },
-  'athletics': {
-    ability: 'STR',
-    description: 'Your physical prowess in activities requiring strength and endurance. Includes climbing, jumping, swimming, and pushing through obstacles. Use this when scaling walls, leaping across gaps, or wrestling opponents.'
-  },
-  'deception': {
-    ability: 'CHA',
-    description: 'Your ability to mislead others through lies, bluffs, or fast talk. Includes disguising your intentions, passing yourself off as someone else, and concealing your true feelings. Use this when trying to fool guards or negotiate under false pretenses.'
-  },
-  'history': {
-    ability: 'INT',
-    description: 'Your knowledge of past events, legends, and historical figures. Includes recognizing noble lineages, recalling wars and treaties, and understanding the rise and fall of empires. Use this when researching ancient ruins or recalling royal bloodlines.'
-  },
-  'insight': {
-    ability: 'WIS',
-    description: 'Your ability to read people and situations. Includes detecting lies, predicting behavior, and understanding hidden motives. Use this when determining if an NPC is trustworthy or figuring out someone\'s true intentions.'
-  },
-  'intimidation': {
-    ability: 'CHA',
-    description: 'Your ability to influence others through threats or hostile actions. Includes bullying, interrogation, and extracting information through fear. Use this when trying to get a prisoner to talk or convincing bandits to back down.'
-  },
-  'investigation': {
-    ability: 'INT',
-    description: 'Your ability to find and interpret clues. Includes deducing conclusions from evidence, searching for hidden objects, and analyzing crime scenes. Use this when examining tracks, investigating a murder, or solving puzzles.'
-  },
-  'medicine': {
-    ability: 'WIS',
-    description: 'Your ability to heal and diagnose ailments. Includes stabilizing dying companions, treating diseases, and assessing a creature\'s health. Use this when performing first aid or identifying illnesses.'
-  },
-  'nature': {
-    ability: 'INT',
-    description: 'Your knowledge of the natural world. Includes identifying plants and animals, predicting weather, and understanding natural phenomena. Use this when foraging for food, tracking beasts, or navigating wilderness.'
-  },
-  'perception': {
-    ability: 'WIS',
-    description: 'Your awareness of your surroundings. Includes spotting hidden creatures, hearing whispers, and noticing traps. Use this when keeping watch, searching for secret doors, or detecting ambushes.'
-  },
-  'performance': {
-    ability: 'CHA',
-    description: 'Your ability to entertain an audience. Includes acting, singing, dancing, and playing instruments. Use this when earning coin in a tavern, distracting guards, or impressing nobles at court.'
-  },
-  'persuasion': {
-    ability: 'CHA',
-    description: 'Your ability to influence others through charm and reason. Includes negotiation, flattery, and making compelling arguments. Use this when bargaining with merchants, convincing guards to let you pass, or rallying allies.'
-  },
-  'religion': {
-    ability: 'INT',
-    description: 'Your knowledge of deities, religious practices, and sacred traditions. Includes recognizing holy symbols, recalling religious lore, and understanding divine hierarchies. Use this when identifying cursed items or dealing with cultists.'
-  },
-  'sleight_of_hand': {
-    ability: 'DEX',
-    description: 'Your manual dexterity and quick fingers. Includes pickpocketing, palming objects, and performing magic tricks. Use this when stealing keys from a guard, planting evidence, or cheating at cards.'
-  },
-  'stealth': {
-    ability: 'DEX',
-    description: 'Your ability to move quietly and hide from observers. Includes sneaking past guards, concealing yourself in shadows, and ambushing enemies. Use this when infiltrating enemy territory or setting up a surprise attack.'
-  },
-  'survival': {
-    ability: 'WIS',
-    description: 'Your ability to survive in the wilderness. Includes finding food and water, tracking creatures, and navigating without a map. Use this when following tracks, avoiding natural hazards, or foraging in the wild.'
-  }
 };
 
 /**
@@ -1107,7 +1028,9 @@ export function CharacterGenTab() {
             </div>
             {/* Skill Detail Row */}
             {selectedSkillId && (() => {
-              const skillData = SKILL_DATA[selectedSkillId];
+              // Get skill data from the engine's SkillQuery
+              const skillQuery = SkillQuery.getInstance();
+              const skillData = skillQuery.getSkill(selectedSkillId);
               if (!skillData) return null;
 
               const profLevel = character.skills[selectedSkillId as keyof typeof character.skills];
@@ -1117,7 +1040,7 @@ export function CharacterGenTab() {
               return (
                 <DetailRow
                   isVisible={true}
-                  title={selectedSkillId.replace(/_/g, ' ')}
+                  title={skillData.name || selectedSkillId.replace(/_/g, ' ')}
                   description={skillData.description}
                   properties={[
                     { label: 'Ability', value: skillData.ability },
