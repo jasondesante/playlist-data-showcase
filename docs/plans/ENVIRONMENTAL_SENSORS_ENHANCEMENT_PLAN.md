@@ -30,8 +30,8 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 - [x] Add `xpModifier` state and expose from hook
   - [x] Call `sensors.calculateXPModifier()` and store result
   - [x] Update when environmentalContext changes
-- [ ] Add `biome` extraction from environmentalContext
-  - [ ] Biome is already in EnvironmentalContext type: `environmentalContext.biome`
+- [x] Add `biome` extraction from environmentalContext
+  - [x] Biome is already in EnvironmentalContext type: `environmentalContext.biome`
 - [ ] Add optional `severeWeatherAlert` state
   - [ ] Call `sensors.detectSevereWeather()` when weather updates
   - [ ] Store result (null if no severe weather)

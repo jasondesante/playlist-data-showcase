@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { EnvironmentalSensors } from 'playlist-data-engine';
+import { EnvironmentalSensors, BiomeType } from 'playlist-data-engine';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
 import { logger } from '@/utils/logger';
@@ -13,11 +13,12 @@ import { handleError } from '@/utils/errorHandling';
  *
  * @example
  * ```tsx
- * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier } = useEnvironmentalSensors();
+ * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier, biome } = useEnvironmentalSensors();
  * await requestPermission('geolocation');
  * await startMonitoring();
  * console.log('Activity:', environmentalContext.motion.activity_type);
  * console.log('XP Modifier:', xpModifier);
+ * console.log('Biome:', biome); // 'urban' | 'forest' | 'desert' | ...
  * ```
  *
  * @returns {Object} Hook return object
@@ -28,6 +29,7 @@ import { handleError } from '@/utils/errorHandling';
  * @returns {Object} permissions - Permission state for each sensor type
  * @returns {Object} sensors - Raw sensors instance for direct access to engine methods
  * @returns {number} xpModifier - Current XP modifier (1.0 - 3.0) based on environmental factors
+ * @returns {string} biome - Current biome type derived from location (urban, forest, desert, etc.)
  */
 export const useEnvironmentalSensors = () => {
     const { settings } = useAppStore();
@@ -48,6 +50,13 @@ export const useEnvironmentalSensors = () => {
         if (!environmentalContext) return 1.0;
         return sensors.calculateXPModifier();
     }, [environmentalContext, sensors]);
+
+    // Extract biome from environmental context
+    // Biome is derived from location data and represents the environmental zone
+    const biome = useMemo((): BiomeType | undefined => {
+        if (!environmentalContext) return undefined;
+        return (environmentalContext as any).biome;
+    }, [environmentalContext]);
 
     // Update API key if settings change
     useEffect(() => {
@@ -146,5 +155,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome };
 };
