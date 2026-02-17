@@ -70,9 +70,9 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
 ## Phase 2: Discord Client-Side Limitation Warning
 
 ### 2.1 Add Environment Detection
-- [ ] Detect if running in client-side (browser) vs server mode
-  - [ ] Check `typeof window !== 'undefined'` or similar
-  - [ ] Add `isServerMode: boolean` to hook return
+- [x] Detect if running in client-side (browser) vs server mode
+  - [x] Check `typeof window !== 'undefined'` or similar
+  - [x] Add `isServerMode: boolean` to hook return
 
 ### 2.2 Gray Out Discord Section in Client-Side Mode
 - [ ] Apply visual overlay to Discord card when in client-side mode
