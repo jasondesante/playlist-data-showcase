@@ -141,15 +141,15 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Configure and display treasure rewards.
 
 ### 5.1 Treasure Configuration UI
-- [ ] Add treasure config section (collapsible)
-- [ ] Add gold configuration options
-  - [ ] Fixed amount input
-  - [ ] Range inputs (min/max)
-  - [ ] Seed input for deterministic generation
-- [ ] Add custom items configuration
-  - [ ] Item name input
-  - [ ] Item type selector
-  - [ ] Add/remove item buttons
+- [x] Add treasure config section (collapsible)
+- [x] Add gold configuration options
+  - [x] Fixed amount input
+  - [x] Range inputs (min/max)
+  - [x] Seed input for deterministic generation
+- [x] Add custom items configuration
+  - [x] Item name input
+  - [x] Item type selector
+  - [x] Add/remove item buttons
 
 ### 5.2 Treasure Display in Victory Screen
 - [ ] Show gold awarded

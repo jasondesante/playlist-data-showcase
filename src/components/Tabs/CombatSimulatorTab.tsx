@@ -235,6 +235,79 @@ const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
     difficultyMultiplier: 1.0
 };
 
+// ========================================
+// Phase 5: Treasure Configuration Types
+// ========================================
+
+/**
+ * Custom item for treasure rewards
+ */
+export interface TreasureCustomItem {
+    /** Unique ID for the item in the list */
+    id: string;
+    /** Item name */
+    name: string;
+    /** Item type (weapon, armor, consumable, misc) */
+    type: 'weapon' | 'armor' | 'consumable' | 'misc';
+}
+
+/**
+ * Configuration for treasure rewards after combat
+ *
+ * Phase 5.1: Treasure Configuration UI
+ * - Supports fixed gold amount or randomized range
+ * - Allows custom items to be added
+ * - Seed for deterministic generation
+ */
+export interface TreasureGenerationConfig {
+    /** Enable treasure rewards */
+    enabled: boolean;
+
+    /** Gold mode: 'none', 'fixed', or 'range' */
+    goldMode: 'none' | 'fixed' | 'range';
+
+    /** Fixed gold amount (when goldMode is 'fixed') */
+    goldFixed: number;
+
+    /** Gold range minimum (when goldMode is 'range') */
+    goldMin: number;
+
+    /** Gold range maximum (when goldMode is 'range') */
+    goldMax: number;
+
+    /** Custom items to add to treasure */
+    customItems: TreasureCustomItem[];
+
+    /** Seed for deterministic gold range generation */
+    seed: string;
+}
+
+/**
+ * Default treasure generation configuration
+ */
+const DEFAULT_TREASURE_CONFIG: TreasureGenerationConfig = {
+    enabled: false,
+    goldMode: 'fixed',
+    goldFixed: 50,
+    goldMin: 10,
+    goldMax: 100,
+    customItems: [],
+    seed: 'treasure-seed'
+};
+
+/**
+ * Item type options for treasure configuration
+ */
+const TREASURE_ITEM_TYPES = [
+    { value: 'weapon', label: 'Weapon' },
+    { value: 'armor', label: 'Armor' },
+    { value: 'consumable', label: 'Consumable' },
+    { value: 'misc', label: 'Miscellaneous' }
+] as const;
+
+// End of Phase 5: Treasure Configuration Types
+// ========================================
+
 /**
  * CombatSimulatorTab Component
  *
@@ -385,6 +458,66 @@ export function CombatSimulatorTab() {
   const [audioReasoning, setAudioReasoning] = useState<TemplateReasoning[]>([]);
 
   // End of hoisted audio state
+  // ============================================================
+
+  // ============================================================
+  // Phase 5.1: Treasure Configuration State
+  // ============================================================
+
+  // State: Treasure configuration
+  const [treasureConfig, setTreasureConfig] = useState<TreasureGenerationConfig>(DEFAULT_TREASURE_CONFIG);
+
+  // State: Collapsible panel toggle
+  const [isTreasureExpanded, setIsTreasureExpanded] = useState(false);
+
+  // State: New custom item being added
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemType, setNewItemType] = useState<TreasureCustomItem['type']>('misc');
+
+  // Handler: Update treasure config field
+  const updateTreasureConfig = useCallback(<K extends keyof TreasureGenerationConfig>(
+    key: K,
+    value: TreasureGenerationConfig[K]
+  ) => {
+    setTreasureConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }, []);
+
+  // Handler: Add custom item to treasure
+  const handleAddCustomItem = useCallback(() => {
+    if (!newItemName.trim()) return;
+
+    const newItem: TreasureCustomItem = {
+      id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: newItemName.trim(),
+      type: newItemType
+    };
+
+    setTreasureConfig(prev => ({
+      ...prev,
+      customItems: [...prev.customItems, newItem]
+    }));
+
+    // Reset input fields
+    setNewItemName('');
+    setNewItemType('misc');
+
+    logger.info('CombatSimulator', 'Added custom treasure item', { name: newItem.name, type: newItem.type });
+  }, [newItemName, newItemType]);
+
+  // Handler: Remove custom item from treasure
+  const handleRemoveCustomItem = useCallback((itemId: string) => {
+    setTreasureConfig(prev => ({
+      ...prev,
+      customItems: prev.customItems.filter(item => item.id !== itemId)
+    }));
+
+    logger.info('CombatSimulator', 'Removed custom treasure item', { itemId });
+  }, []);
+
+  // End of Phase 5.1: Treasure Configuration State
   // ============================================================
 
   // Reset generated enemies when config changes (Phase 1.2 requirement)
@@ -1583,6 +1716,211 @@ export function CombatSimulatorTab() {
                         ))}
                       </div>
                     </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Treasure Configuration Section - Phase 5.1 */}
+            <div className="combat-config-section combat-treasure-section">
+              {/* Collapsible Header */}
+              <button
+                type="button"
+                onClick={() => setIsTreasureExpanded(!isTreasureExpanded)}
+                className="combat-treasure-header"
+              >
+                <span className="combat-treasure-title">
+                  💎 Treasure Configuration
+                  {treasureConfig.enabled && (
+                    <span className="combat-treasure-enabled-badge">Enabled</span>
+                  )}
+                </span>
+                <span className={`combat-treasure-expand-icon ${isTreasureExpanded ? 'combat-treasure-expanded' : ''}`}>
+                  ▼
+                </span>
+              </button>
+
+              {/* Collapsible Content */}
+              {isTreasureExpanded && (
+                <div className="combat-treasure-content">
+                  {/* Enable Treasure Toggle */}
+                  <div className="combat-treasure-field">
+                    <label className="combat-config-label">Enable Treasure Rewards</label>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={treasureConfig.enabled}
+                        onChange={(e) => updateTreasureConfig('enabled', e.target.checked)}
+                        className="toggle-checkbox"
+                      />
+                    </label>
+                  </div>
+
+                  {treasureConfig.enabled && (
+                    <>
+                      {/* Gold Configuration */}
+                      <div className="combat-treasure-gold-section">
+                        <h5 className="combat-treasure-subsection-title">💰 Gold Rewards</h5>
+
+                        {/* Gold Mode Selector */}
+                        <div className="combat-treasure-field">
+                          <label className="combat-config-label">Gold Mode</label>
+                          <select
+                            value={treasureConfig.goldMode}
+                            onChange={(e) => updateTreasureConfig('goldMode', e.target.value as TreasureGenerationConfig['goldMode'])}
+                            className="combat-config-select"
+                          >
+                            <option value="none">No Gold</option>
+                            <option value="fixed">Fixed Amount</option>
+                            <option value="range">Random Range</option>
+                          </select>
+                        </div>
+
+                        {/* Fixed Gold Amount */}
+                        {treasureConfig.goldMode === 'fixed' && (
+                          <div className="combat-treasure-field">
+                            <label className="combat-config-label">Gold Amount</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100000"
+                              value={treasureConfig.goldFixed}
+                              onChange={(e) => updateTreasureConfig('goldFixed', parseInt(e.target.value) || 0)}
+                              className="combat-config-input"
+                            />
+                            <p className="combat-config-hint">Fixed gold pieces to award on victory</p>
+                          </div>
+                        )}
+
+                        {/* Gold Range */}
+                        {treasureConfig.goldMode === 'range' && (
+                          <div className="combat-treasure-field-row">
+                            <div className="combat-treasure-field">
+                              <label className="combat-config-label">Min Gold</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100000"
+                                value={treasureConfig.goldMin}
+                                onChange={(e) => updateTreasureConfig('goldMin', parseInt(e.target.value) || 0)}
+                                className="combat-config-input"
+                              />
+                            </div>
+                            <div className="combat-treasure-field">
+                              <label className="combat-config-label">Max Gold</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100000"
+                                value={treasureConfig.goldMax}
+                                onChange={(e) => updateTreasureConfig('goldMax', parseInt(e.target.value) || 0)}
+                                className="combat-config-input"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Seed for deterministic generation */}
+                        {treasureConfig.goldMode === 'range' && (
+                          <div className="combat-treasure-field">
+                            <label className="combat-config-label">Gold Seed <span className="combat-config-optional">(optional)</span></label>
+                            <input
+                              type="text"
+                              value={treasureConfig.seed}
+                              onChange={(e) => updateTreasureConfig('seed', e.target.value)}
+                              className="combat-config-input"
+                              placeholder="treasure-seed"
+                            />
+                            <p className="combat-config-hint">Same seed produces same gold amount</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Custom Items Configuration */}
+                      <div className="combat-treasure-items-section">
+                        <h5 className="combat-treasure-subsection-title">🎁 Custom Items</h5>
+
+                        {/* Item List */}
+                        {treasureConfig.customItems.length > 0 && (
+                          <div className="combat-treasure-items-list">
+                            {treasureConfig.customItems.map((item) => (
+                              <div key={item.id} className="combat-treasure-item-chip">
+                                <span className="combat-treasure-item-type-badge">{item.type}</span>
+                                <span className="combat-treasure-item-name">{item.name}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCustomItem(item.id)}
+                                  className="combat-treasure-item-remove"
+                                  title="Remove item"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Add New Item */}
+                        <div className="combat-treasure-add-item">
+                          <div className="combat-treasure-field-row">
+                            <div className="combat-treasure-field combat-treasure-add-name">
+                              <label className="combat-config-label">Item Name</label>
+                              <input
+                                type="text"
+                                value={newItemName}
+                                onChange={(e) => setNewItemName(e.target.value)}
+                                className="combat-config-input"
+                                placeholder="e.g., Potion of Healing"
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddCustomItem()}
+                              />
+                            </div>
+                            <div className="combat-treasure-field combat-treasure-add-type">
+                              <label className="combat-config-label">Type</label>
+                              <select
+                                value={newItemType}
+                                onChange={(e) => setNewItemType(e.target.value as TreasureCustomItem['type'])}
+                                className="combat-config-select"
+                              >
+                                {TREASURE_ITEM_TYPES.map(type => (
+                                  <option key={type.value} value={type.value}>{type.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleAddCustomItem}
+                            disabled={!newItemName.trim()}
+                            className={`combat-treasure-add-button ${!newItemName.trim() ? 'combat-treasure-add-button-disabled' : ''}`}
+                          >
+                            + Add Item
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Treasure Summary */}
+                      <div className="combat-treasure-summary">
+                        <span className="combat-treasure-summary-label">Treasure Preview:</span>
+                        <span className="combat-treasure-summary-value">
+                          {treasureConfig.goldMode !== 'none' && (
+                            <>
+                              💰 {treasureConfig.goldMode === 'fixed'
+                                ? `${treasureConfig.goldFixed.toLocaleString()} gold`
+                                : `${treasureConfig.goldMin.toLocaleString()}-${treasureConfig.goldMax.toLocaleString()} gold`}
+                            </>
+                          )}
+                          {treasureConfig.customItems.length > 0 && (
+                            <>
+                              {treasureConfig.goldMode !== 'none' && ' • '}
+                              🎁 {treasureConfig.customItems.length} {treasureConfig.customItems.length === 1 ? 'item' : 'items'}
+                            </>
+                          )}
+                          {treasureConfig.goldMode === 'none' && treasureConfig.customItems.length === 0 && (
+                            'No rewards configured'
+                          )}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               )}

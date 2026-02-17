@@ -3224,3 +3224,336 @@
   background-color: hsl(var(--primary) / 0.4);
 }
 
+/* ============================================
+   TREASURE CONFIGURATION (Phase 5.1)
+   ============================================ */
+
+.combat-treasure-section {
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border) / 0.5);
+  overflow: hidden;
+}
+
+.combat-treasure-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-header {
+    padding: 1rem;
+  }
+}
+
+.combat-treasure-header:hover {
+  background-color: hsl(var(--accent) / 0.5);
+}
+
+.combat-treasure-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-title {
+    font-size: 1rem;
+  }
+}
+
+.combat-treasure-enabled-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background-color: hsl(142 70% 50% / 0.15);
+  color: hsl(142 70% 50%);
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-enabled-badge {
+    font-size: 0.6875rem;
+  }
+}
+
+.combat-treasure-expand-icon {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  transition: transform var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-expand-icon {
+    font-size: 0.75rem;
+  }
+}
+
+.combat-treasure-expanded {
+  transform: rotate(180deg);
+}
+
+.combat-treasure-content {
+  padding: 0 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-content {
+    padding: 0 1rem 1rem;
+    gap: 1rem;
+  }
+}
+
+.combat-treasure-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-field {
+    gap: 0.375rem;
+  }
+}
+
+.combat-treasure-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-field-row {
+    gap: 1rem;
+  }
+}
+
+/* Gold Configuration Section */
+.combat-treasure-gold-section {
+  padding: 0.5rem;
+  background-color: hsl(var(--background) / 0.5);
+  border-radius: var(--radius-sm);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-gold-section {
+    padding: 0.75rem;
+  }
+}
+
+/* Custom Items Section */
+.combat-treasure-items-section {
+  padding: 0.5rem;
+  background-color: hsl(var(--background) / 0.5);
+  border-radius: var(--radius-sm);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-items-section {
+    padding: 0.75rem;
+  }
+}
+
+.combat-treasure-subsection-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-subsection-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Item Chips List */
+.combat-treasure-items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-items-list {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-treasure-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem 0.25rem 0;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-item-chip {
+    padding: 0.375rem 0.5rem 0.375rem 0;
+    font-size: 0.6875rem;
+  }
+}
+
+.combat-treasure-item-type-badge {
+  padding: 0.125rem 0.375rem;
+  background-color: hsl(270 60% 60% / 0.15);
+  color: hsl(270 60% 70%);
+  border-radius: var(--radius-sm);
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-item-type-badge {
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.5rem;
+  }
+}
+
+.combat-treasure-item-name {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.combat-treasure-item-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  margin-left: 0.25rem;
+  background-color: hsl(0 70% 60% / 0.15);
+  color: hsl(0 70% 60%);
+  border: none;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.combat-treasure-item-remove:hover {
+  background-color: hsl(0 70% 60% / 0.3);
+}
+
+/* Add Item Section */
+.combat-treasure-add-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-add-item {
+    gap: 0.75rem;
+  }
+}
+
+.combat-treasure-add-name {
+  flex: 2;
+}
+
+.combat-treasure-add-type {
+  flex: 1;
+}
+
+.combat-treasure-add-button {
+  padding: 0.5rem 1rem;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-add-button {
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+  }
+}
+
+.combat-treasure-add-button:hover:not(.combat-treasure-add-button-disabled) {
+  opacity: 0.9;
+}
+
+.combat-treasure-add-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Treasure Summary */
+.combat-treasure-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: hsl(48 96% 53% / 0.1);
+  border: 1px solid hsl(48 96% 53% / 0.3);
+  border-radius: var(--radius-sm);
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-summary {
+    padding: 0.625rem;
+  }
+}
+
+.combat-treasure-summary-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-summary-label {
+    font-size: 0.75rem;
+  }
+}
+
+.combat-treasure-summary-value {
+  font-size: 0.6875rem;
+  color: hsl(48 80% 40%);
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-summary-value {
+    font-size: 0.75rem;
+  }
+}
+
+/* End of Phase 5.1: Treasure Configuration */
+
