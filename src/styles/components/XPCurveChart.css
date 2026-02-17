@@ -1,0 +1,346 @@
+/* ========================================
+   XP CURVE CHART COMPONENT
+   ======================================== */
+
+/* Chart wrapper */
+.xp-curve-chart-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Main SVG chart */
+.xp-curve-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: inherit;
+}
+
+/* Chart background */
+.xp-chart-background {
+  fill: hsl(var(--surface-1));
+  rx: 4;
+}
+
+/* Grid lines */
+.xp-chart-grid-line {
+  stroke: hsl(var(--border));
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.5;
+}
+
+/* Axes */
+.xp-chart-axis {
+  stroke: hsl(var(--muted-foreground));
+  stroke-width: 1.5;
+}
+
+/* Labels */
+.xp-chart-label {
+  fill: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+}
+
+.xp-chart-y-label {
+  font-size: 9px;
+}
+
+.xp-chart-x-label {
+  font-size: 9px;
+}
+
+/* Axis titles */
+.xp-chart-title {
+  fill: hsl(--foreground);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.xp-chart-y-title {
+  font-size: 10px;
+}
+
+.xp-chart-x-title {
+  font-size: 10px;
+}
+
+/* Chart lines */
+.xp-chart-line-group {
+  transition: opacity var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.4;
+  transition: opacity var(--duration-fast) var(--ease-out-cubic),
+              stroke-width var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-chart-line-highlighted {
+  stroke-width: 3;
+  opacity: 1;
+}
+
+.xp-chart-line-selected .xp-chart-line {
+  opacity: 1;
+}
+
+/* Line glow effect */
+.xp-chart-line-glow {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.15;
+  filter: blur(4px);
+}
+
+/* Data points */
+.xp-chart-point {
+  stroke: hsl(var(--background));
+  stroke-width: 2;
+  transition: r var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-chart-point:hover {
+  r: 6;
+}
+
+/* Cursor line */
+.xp-chart-cursor {
+  stroke: hsl(var(--primary));
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+
+/* Tooltip */
+.xp-chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  z-index: 10;
+  background: hsl(var(--surface-3));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  box-shadow: var(--shadow-lg);
+  min-width: 120px;
+  animation: xp-tooltip-appear 0.15s var(--ease-out-cubic);
+}
+
+@keyframes xp-tooltip-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+.xp-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.xp-tooltip-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.xp-tooltip-preset {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.xp-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.xp-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.xp-tooltip-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.xp-tooltip-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground));
+}
+
+/* Legend */
+.xp-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.xp-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  transition: background-color var(--duration-fast) var(--ease-out-cubic),
+              opacity var(--duration-fast) var(--ease-out-cubic);
+  opacity: 0.7;
+}
+
+.xp-legend-item:hover {
+  background: hsl(var(--surface-2));
+  opacity: 1;
+}
+
+.xp-legend-item-selected {
+  background: hsl(var(--surface-2));
+  opacity: 1;
+}
+
+.xp-legend-color {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.xp-legend-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .xp-chart-label {
+    font-size: 8px;
+  }
+
+  .xp-chart-y-label,
+  .xp-chart-x-label {
+    font-size: 8px;
+  }
+
+  .xp-chart-title {
+    font-size: 9px;
+  }
+
+  .xp-chart-legend {
+    gap: 0.375rem 0.75rem;
+  }
+
+  .xp-legend-label {
+    font-size: 0.6875rem;
+  }
+
+  .xp-chart-tooltip {
+    padding: 0.375rem 0.5rem;
+    min-width: 100px;
+  }
+
+  .xp-tooltip-preset {
+    font-size: 0.6875rem;
+  }
+
+  .xp-tooltip-label {
+    font-size: 0.625rem;
+  }
+
+  .xp-tooltip-value {
+    font-size: 0.6875rem;
+  }
+}
+
+/* Dark theme enhancements */
+@media (prefers-color-scheme: dark) {
+  .xp-chart-background {
+    fill: hsl(var(--surface-2));
+  }
+
+  .xp-chart-grid-line {
+    opacity: 0.3;
+  }
+
+  .xp-chart-tooltip {
+    background: hsl(var(--surface-3));
+    border-color: hsl(var(--primary) / 0.3);
+  }
+}
+
+/* Animation for lines appearing */
+@keyframes xp-line-appear {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+  }
+}
+
+.xp-curve-chart-wrapper .xp-chart-line {
+  animation: xp-line-appear 1s var(--ease-out-cubic) forwards;
+}
+
+/* Stagger animation for multiple lines */
+.xp-chart-line-group:nth-child(1) .xp-chart-line { animation-delay: 0s; }
+.xp-chart-line-group:nth-child(2) .xp-chart-line { animation-delay: 0.1s; }
+.xp-chart-line-group:nth-child(3) .xp-chart-line { animation-delay: 0.2s; }
+.xp-chart-line-group:nth-child(4) .xp-chart-line { animation-delay: 0.3s; }
+
+/* Focus states for accessibility */
+.xp-legend-item:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .xp-chart-line {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .xp-chart-tooltip {
+    animation: none;
+  }
+
+  .xp-chart-line,
+  .xp-chart-line-highlighted,
+  .xp-chart-line-group,
+  .xp-legend-item {
+    transition: none;
+  }
+}

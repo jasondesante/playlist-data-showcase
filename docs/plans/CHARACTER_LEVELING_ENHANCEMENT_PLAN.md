@@ -129,14 +129,14 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
 
 #### Tasks
 
-- [ ] **1.2.1 Create XPCurveChart Component**
-  - [ ] Create `src/components/ui/XPCurveChart.tsx`
-  - [ ] Use a simple SVG-based line chart (no external library needed)
-  - [ ] Props: `presets: XPFormulaPreset[]`, `selectedId: string`, `maxLevel?: number`
-  - [ ] Show levels 1-30 on X-axis
-  - [ ] Show XP values (with smart scaling) on Y-axis
-  - [ ] Highlight selected preset line
-  - [ ] Add hover tooltips showing exact XP at each level
+- [x] **1.2.1 Create XPCurveChart Component**
+  - [x] Create `src/components/ui/XPCurveChart.tsx`
+  - [x] Use a simple SVG-based line chart (no external library needed)
+  - [x] Props: `presets: XPFormulaPreset[]`, `selectedId: string`, `maxLevel?: number`
+  - [x] Show levels 1-30 on X-axis
+  - [x] Show XP values (with smart scaling) on Y-axis
+  - [x] Highlight selected preset line
+  - [x] Add hover tooltips showing exact XP at each level
 
 - [ ] **1.2.2 Add Chart Styling**
   - [ ] Create `src/styles/components/XPCurveChart.css`

@@ -20,6 +20,7 @@
 @import url('./components/StatusBadge.css');
 @import url('./components/TabBadge.css');
 @import url('./components/Toggle.css');
+@import url('./components/XPCurveChart.css');
 
 /* Layout: Application layout styles */
 @import url('./layout.css');
