@@ -18,7 +18,7 @@
 
 import React from 'react';
 import '../styles/components/StatSelectionModal.css';
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import type { Ability } from 'playlist-data-engine';
 
 /**
@@ -77,7 +77,7 @@ export function StatSelectionModal({
   isOpen,
   pendingCount,
   currentStats = {},
-  gameMode: _gameMode = 'standard',
+  gameMode = 'standard',
   activeEffects: _activeEffects = [],
   onApply,
   onCancel,
@@ -85,6 +85,9 @@ export function StatSelectionModal({
   const [selectionMode, setSelectionMode] = React.useState<SelectionMode>('single');
   const [selectedStats, setSelectedStats] = React.useState<Ability[]>([]);
   const [maxSelectedError, setMaxSelectedError] = React.useState(false);
+
+  // Stat cap constant for standard mode
+  const STAT_CAP = 20;
 
   // Reset state when modal opens
   React.useEffect(() => {
@@ -159,6 +162,25 @@ export function StatSelectionModal({
     return currentStats[ability] ?? 10;
   };
 
+  // Check if a stat is at the cap (only in standard mode)
+  const isStatCapped = (ability: Ability): boolean => {
+    if (gameMode !== 'standard') return false;
+    return getStatValue(ability) >= STAT_CAP;
+  };
+
+  // Check if a stat is near the cap (18-19 in standard mode)
+  const isStatNearCap = (ability: Ability): boolean => {
+    if (gameMode !== 'standard') return false;
+    const value = getStatValue(ability);
+    return value >= 18 && value < STAT_CAP;
+  };
+
+  // Get the remaining capacity for a stat (+how much can be added)
+  const getStatRemainingCapacity = (ability: Ability): number => {
+    if (gameMode !== 'standard') return 999; // No cap in uncapped mode
+    return Math.max(0, STAT_CAP - getStatValue(ability));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -225,7 +247,14 @@ export function StatSelectionModal({
               const info = ABILITY_INFO[ability];
               const isSelected = selectedStats.includes(ability);
               const currentValue = getStatValue(ability);
-              const canSelect = selectionMode === 'double' ? selectedStats.length < 2 || isSelected : true;
+              const isCapped = isStatCapped(ability);
+              const isNearCap = isStatNearCap(ability);
+              const remainingCapacity = getStatRemainingCapacity(ability);
+              // Check if stat can receive the boost amount based on mode
+              const boostAmount = selectionMode === 'single' ? 2 : 1;
+              const canReceiveBoost = remainingCapacity >= boostAmount;
+              const canSelect = (selectionMode === 'double' ? selectedStats.length < 2 || isSelected : true)
+                && !isCapped && canReceiveBoost;
 
               return (
                 <button
@@ -233,9 +262,10 @@ export function StatSelectionModal({
                   type="button"
                   className={`statmodal-stat-btn ${isSelected ? 'statmodal-stat-selected' : ''} ${
                     !canSelect && !isSelected ? 'statmodal-stat-disabled' : ''
-                  }`}
+                  } ${isCapped ? 'statmodal-stat-capped' : ''} ${isNearCap ? 'statmodal-stat-near-cap' : ''}`}
                   onClick={() => toggleStat(ability)}
-                  disabled={!canSelect && !isSelected}
+                  disabled={isCapped || (!canSelect && !isSelected)}
+                  title={isCapped ? `${info.full} is at maximum (${STAT_CAP})` : isNearCap ? `Only +${remainingCapacity} available for ${info.full}` : undefined}
                   style={{
                     '--stat-color': info.color,
                   } as React.CSSProperties}
@@ -245,7 +275,18 @@ export function StatSelectionModal({
                     <span className="statmodal-stat-value">{currentValue}</span>
                   </div>
                   <span className="statmodal-stat-full">{info.full}</span>
-                  {isSelected && (
+                  {isCapped && (
+                    <div className="statmodal-stat-cap-badge">
+                      <AlertTriangle size={10} />
+                      <span>Capped</span>
+                    </div>
+                  )}
+                  {!isCapped && isNearCap && (
+                    <div className="statmodal-stat-near-cap-badge">
+                      <span>+{remainingCapacity} max</span>
+                    </div>
+                  )}
+                  {isSelected && !isCapped && (
                     <div className="statmodal-stat-badge">
                       {selectionMode === 'single' ? '+2' : '+1'}
                     </div>

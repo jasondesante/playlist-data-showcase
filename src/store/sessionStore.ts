@@ -28,6 +28,8 @@ interface SessionState {
     clearTrackSessions: (trackUuid: string) => number;
     /** Get total XP earned for a specific track */
     getTrackXPTotal: (trackUuid: string) => number;
+    /** Get number of listening sessions for a specific track */
+    getTrackListenCount: (trackUuid: string) => number;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -128,6 +130,19 @@ export const useSessionStore = create<SessionState>()(
                 return state.sessionHistory
                     .filter((session) => session.track_uuid === trackUuid)
                     .reduce((total, session) => total + (session.total_xp_earned || 0), 0);
+            },
+
+            /**
+             * Get number of listening sessions for a specific track.
+             * Used by the prestige system to calculate track-level play count.
+             * @param trackUuid - The track UUID
+             * @returns Number of completed sessions for this track
+             */
+            getTrackListenCount: (trackUuid: string): number => {
+                const state = get();
+                return state.sessionHistory.filter(
+                    (session) => session.track_uuid === trackUuid
+                ).length;
             }
         }),
         {

@@ -136,8 +136,17 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 set({ error: err.message, playbackState: 'error' });
             });
         } else {
-            // Same track - resume if paused
-            if (get().playbackState === 'paused') {
+            // Same track - resume if paused or restart if ended
+            const state = get().playbackState;
+            if (state === 'paused') {
+                audio.play().catch((err) => {
+                    console.error('Playback failed:', err);
+                    set({ error: err.message, playbackState: 'error' });
+                });
+            } else if (state === 'ended') {
+                // Restart from beginning when song has ended
+                audio.currentTime = 0;
+                set({ currentTime: 0, playbackState: 'loading' });
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });
@@ -180,6 +189,14 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 // Immediately update state to ensure sync
                 set({ playbackState: 'paused' });
             } else if (playbackState === 'paused') {
+                audio.play().catch((err) => {
+                    console.error('Playback failed:', err);
+                    set({ error: err.message, playbackState: 'error' });
+                });
+            } else if (playbackState === 'ended') {
+                // Restart from beginning when song has ended
+                audio.currentTime = 0;
+                set({ currentTime: 0, playbackState: 'loading' });
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });

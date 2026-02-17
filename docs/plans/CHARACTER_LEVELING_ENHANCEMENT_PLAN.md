@@ -322,11 +322,11 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **3.2.1 Add Cap Warning to Stat Buttons**
-  - [ ] In standard mode, check if `currentStats[ability] >= 20`
-  - [ ] Add "⚠️ Capped at 20" badge below stat value
-  - [ ] Disable button if stat is already at 20
-  - [ ] Add tooltip explaining the cap
+- [x] **3.2.1 Add Cap Warning to Stat Buttons**
+  - [x] In standard mode, check if `currentStats[ability] >= 20`
+  - [x] Add "⚠️ Capped at 20" badge below stat value
+  - [x] Disable button if stat is already at 20
+  - [x] Add tooltip explaining the cap
 
 - [ ] **3.2.2 Add Approaching Cap Warning**
   - [ ] Show "⚡ Near Cap" indicator when stat is 18-19

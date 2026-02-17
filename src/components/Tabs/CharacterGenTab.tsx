@@ -81,6 +81,85 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
 };
 
 /**
+ * Skill descriptions for all 18 standard D&D 5e skills
+ * Used for displaying detailed information when a skill is clicked
+ */
+const SKILL_DATA: Record<string, { ability: string; description: string }> = {
+  'acrobatics': {
+    ability: 'DEX',
+    description: 'Your ability to stay on your feet in a tricky situation. Includes balancing on a tightrope, staying upright in a storm, or landing safely when falling. Use this when attempting gymnastics, stunts, or escaping from bonds.'
+  },
+  'animal_handling': {
+    ability: 'WIS',
+    description: 'Your ability to calm, direct, and train animals. Includes recognizing an animal\'s mood, spotting signs of disease, and predicting behavior. Use this when approaching hostile beasts or training a mount.'
+  },
+  'arcana': {
+    ability: 'INT',
+    description: 'Your knowledge of magic, spells, and magical phenomena. Includes identifying spells being cast, understanding magical writings, and recognizing magical traditions. Use this when studying ancient tomes or investigating magical effects.'
+  },
+  'athletics': {
+    ability: 'STR',
+    description: 'Your physical prowess in activities requiring strength and endurance. Includes climbing, jumping, swimming, and pushing through obstacles. Use this when scaling walls, leaping across gaps, or wrestling opponents.'
+  },
+  'deception': {
+    ability: 'CHA',
+    description: 'Your ability to mislead others through lies, bluffs, or fast talk. Includes disguising your intentions, passing yourself off as someone else, and concealing your true feelings. Use this when trying to fool guards or negotiate under false pretenses.'
+  },
+  'history': {
+    ability: 'INT',
+    description: 'Your knowledge of past events, legends, and historical figures. Includes recognizing noble lineages, recalling wars and treaties, and understanding the rise and fall of empires. Use this when researching ancient ruins or recalling royal bloodlines.'
+  },
+  'insight': {
+    ability: 'WIS',
+    description: 'Your ability to read people and situations. Includes detecting lies, predicting behavior, and understanding hidden motives. Use this when determining if an NPC is trustworthy or figuring out someone\'s true intentions.'
+  },
+  'intimidation': {
+    ability: 'CHA',
+    description: 'Your ability to influence others through threats or hostile actions. Includes bullying, interrogation, and extracting information through fear. Use this when trying to get a prisoner to talk or convincing bandits to back down.'
+  },
+  'investigation': {
+    ability: 'INT',
+    description: 'Your ability to find and interpret clues. Includes deducing conclusions from evidence, searching for hidden objects, and analyzing crime scenes. Use this when examining tracks, investigating a murder, or solving puzzles.'
+  },
+  'medicine': {
+    ability: 'WIS',
+    description: 'Your ability to heal and diagnose ailments. Includes stabilizing dying companions, treating diseases, and assessing a creature\'s health. Use this when performing first aid or identifying illnesses.'
+  },
+  'nature': {
+    ability: 'INT',
+    description: 'Your knowledge of the natural world. Includes identifying plants and animals, predicting weather, and understanding natural phenomena. Use this when foraging for food, tracking beasts, or navigating wilderness.'
+  },
+  'perception': {
+    ability: 'WIS',
+    description: 'Your awareness of your surroundings. Includes spotting hidden creatures, hearing whispers, and noticing traps. Use this when keeping watch, searching for secret doors, or detecting ambushes.'
+  },
+  'performance': {
+    ability: 'CHA',
+    description: 'Your ability to entertain an audience. Includes acting, singing, dancing, and playing instruments. Use this when earning coin in a tavern, distracting guards, or impressing nobles at court.'
+  },
+  'persuasion': {
+    ability: 'CHA',
+    description: 'Your ability to influence others through charm and reason. Includes negotiation, flattery, and making compelling arguments. Use this when bargaining with merchants, convincing guards to let you pass, or rallying allies.'
+  },
+  'religion': {
+    ability: 'INT',
+    description: 'Your knowledge of deities, religious practices, and sacred traditions. Includes recognizing holy symbols, recalling religious lore, and understanding divine hierarchies. Use this when identifying cursed items or dealing with cultists.'
+  },
+  'sleight_of_hand': {
+    ability: 'DEX',
+    description: 'Your manual dexterity and quick fingers. Includes pickpocketing, palming objects, and performing magic tricks. Use this when stealing keys from a guard, planting evidence, or cheating at cards.'
+  },
+  'stealth': {
+    ability: 'DEX',
+    description: 'Your ability to move quietly and hide from observers. Includes sneaking past guards, concealing yourself in shadows, and ambushing enemies. Use this when infiltrating enemy territory or setting up a surprise attack.'
+  },
+  'survival': {
+    ability: 'WIS',
+    description: 'Your ability to survive in the wilderness. Includes finding food and water, tracking creatures, and navigating without a map. Use this when following tracks, avoiding natural hazards, or foraging in the wild.'
+  }
+};
+
+/**
  * Spell level color mapping for Phase 6
  * Cantrips (level 0) are teal, leveled spells (1-9) use progressively deeper purple
  */
@@ -193,12 +272,25 @@ export function CharacterGenTab() {
   // Phase 6: Selection state for spells (Task 6.1)
   const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
 
+  // Selection state for skills
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+
   // Phase 6 Task 6.6: Handler to select a spell and clear all other selections
   const handleSelectSpell = (spellName: string) => {
     setSelectedSpellId(spellName);
     setSelectedTraitId(null); // Auto-clear trait selection
     setSelectedFeatureId(null); // Auto-clear feature selection
     setSelectedEquipment(null); // Auto-clear equipment selection
+    setSelectedSkillId(null); // Auto-clear skill selection
+  };
+
+  // Handler to select a skill and clear all other selections
+  const handleSelectSkill = (skillName: string) => {
+    setSelectedSkillId(skillName);
+    setSelectedTraitId(null);
+    setSelectedFeatureId(null);
+    setSelectedEquipment(null);
+    setSelectedSpellId(null);
   };
 
   // Phase 5 Task 5.4: Handler to select equipment and clear trait/feature/spell selections
@@ -207,6 +299,7 @@ export function CharacterGenTab() {
     setSelectedTraitId(null); // Auto-clear trait selection
     setSelectedFeatureId(null); // Auto-clear feature selection
     setSelectedSpellId(null); // Auto-clear spell selection
+    setSelectedSkillId(null); // Auto-clear skill selection
   };
 
   // Phase 4 Task 4.4: Handler to select a feature and clear trait/equipment/spell selection
@@ -215,6 +308,7 @@ export function CharacterGenTab() {
     setSelectedTraitId(null); // Auto-clear trait selection when selecting a feature
     setSelectedEquipment(null); // Auto-clear equipment selection
     setSelectedSpellId(null); // Auto-clear spell selection
+    setSelectedSkillId(null); // Auto-clear skill selection
   };
 
   // Phase 3 Task 3.4: Handler to select a trait and clear feature/equipment/spell selection
@@ -223,6 +317,7 @@ export function CharacterGenTab() {
     setSelectedFeatureId(null); // Auto-clear feature selection when selecting a trait
     setSelectedEquipment(null); // Auto-clear equipment selection
     setSelectedSpellId(null); // Auto-clear spell selection
+    setSelectedSkillId(null); // Auto-clear skill selection
   };
 
   // Handler to add equipment for injection (used by EquipmentBrowser in Task 3.4)
@@ -986,18 +1081,51 @@ export function CharacterGenTab() {
               <Tooltip content="Skills represent specific trained abilities like Stealth, Athletics, or Persuasion. When making a skill check, you roll a d20 plus the ability modifier (like DEX for Stealth) and add your proficiency bonus if you're trained in that skill. Some characters (Bards and Rogues) can have expertise in skills, adding double their proficiency bonus for even better results." />
             </div>
             <div className="character-skills-grid">
-              {Object.entries(character.skills).map(([skill, prof]) => (
-                <div key={skill} className="character-skill-item" title={
-                  prof === 'expertise' ? 'Expertise (double proficiency)' :
-                    prof === 'proficient' ? 'Proficient' : 'Not proficient'
-                }>
-                  <span className="character-skill-name">{skill.replace(/_/g, ' ')}</span>
-                  <span className={`character-skill-proficiency ${prof}`}>
-                    {prof === 'expertise' ? '★★' : prof === 'proficient' ? '★' : '○'}
+              {Object.entries(character.skills).map(([skill, prof]) => {
+                const isSelected = selectedSkillId === skill;
+                return (
+                  <span
+                    key={skill}
+                    className={cn('character-trait-badge', isSelected && 'character-trait-badge-selected')}
+                    onClick={() => handleSelectSkill(skill)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectSkill(skill);
+                      }
+                    }}
+                  >
+                    {skill.replace(/_/g, ' ')}
+                    <span className={`character-skill-proficiency ${prof}`}>
+                      {prof === 'expertise' ? '★★' : prof === 'proficient' ? '★' : '○'}
+                    </span>
                   </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
+            {/* Skill Detail Row */}
+            {selectedSkillId && (() => {
+              const skillData = SKILL_DATA[selectedSkillId];
+              if (!skillData) return null;
+
+              const profLevel = character.skills[selectedSkillId as keyof typeof character.skills];
+              const profText = profLevel === 'expertise' ? 'Expertise (×2 proficiency)' :
+                               profLevel === 'proficient' ? 'Proficient' : 'Not Proficient';
+
+              return (
+                <DetailRow
+                  isVisible={true}
+                  title={selectedSkillId.replace(/_/g, ' ')}
+                  description={skillData.description}
+                  properties={[
+                    { label: 'Ability', value: skillData.ability },
+                    { label: 'Proficiency', value: profText }
+                  ]}
+                />
+              );
+            })()}
           </Card>
 
           {/* Race & Heritage */}

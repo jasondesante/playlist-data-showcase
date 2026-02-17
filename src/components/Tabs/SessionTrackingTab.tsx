@@ -17,7 +17,7 @@ import { MasteryBadge } from '../ui/MasteryBadge';
 import { MasteryProgressBar } from '../ui/MasteryProgressBar';
 import { PrestigeButton } from '../ui/PrestigeButton';
 import { SessionHistoryPanel } from '../ui/SessionHistoryPanel';
-import type { ListeningSession, Ability } from 'playlist-data-engine';
+import type { ListeningSession, Ability, ISessionTracker } from 'playlist-data-engine';
 import './SessionTrackingTab.css';
 
 // XP thresholds for D&D 5e levels 1-20
@@ -138,6 +138,13 @@ export function SessionTrackingTab() {
 
   const { environmentalContext, gamingContext } = useSensorStore();
 
+  // Create ISessionTracker adapter for engine methods
+  const sessionTrackerAdapter: ISessionTracker = useMemo(() => ({
+    getTrackListenCount: (trackUuid: string) => getTrackListenCount(trackUuid),
+    getTrackXPTotal: (trackUuid: string) => getTrackXPTotal(trackUuid),
+    clearTrackSessions: (trackUuid: string) => clearTrackSessions(trackUuid),
+  }), [getTrackListenCount, getTrackXPTotal, clearTrackSessions]);
+
   // Get mastery info for the selected track (uses character's prestige level)
   const masteryInfo = useMemo(() => {
     if (!selectedTrack) return null;
@@ -148,22 +155,14 @@ export function SessionTrackingTab() {
   // Get prestige info for the active character (for PrestigeButton)
   const prestigeInfo = useMemo(() => {
     if (!activeCharacter) return null;
-    return getPrestigeInfo(
-      activeCharacter.seed,
-      (trackUuid) => getTrackListenCount(trackUuid),
-      (trackUuid) => getTrackXPTotal(trackUuid)
-    );
-  }, [activeCharacter, getPrestigeInfo, getTrackListenCount, getTrackXPTotal]);
+    return getPrestigeInfo(activeCharacter.seed, sessionTrackerAdapter);
+  }, [activeCharacter, getPrestigeInfo, sessionTrackerAdapter]);
 
   // Check if character can prestige
   const canPrestigeState = useMemo(() => {
     if (!activeCharacter) return false;
-    return canPrestige(
-      activeCharacter.seed,
-      (trackUuid) => getTrackListenCount(trackUuid),
-      (trackUuid) => getTrackXPTotal(trackUuid)
-    );
-  }, [activeCharacter, canPrestige, getTrackListenCount, getTrackXPTotal]);
+    return canPrestige(activeCharacter.seed, sessionTrackerAdapter);
+  }, [activeCharacter, canPrestige, sessionTrackerAdapter]);
 
   // Calculate real-time XP based on elapsed time
   // Update whenever elapsedTime changes (every second when session is active)
@@ -320,7 +319,7 @@ export function SessionTrackingTab() {
       activeCharacter.seed,
       profile,
       selectedTrack,
-      clearTrackSessions
+      sessionTrackerAdapter
     );
 
     if (result.success) {
