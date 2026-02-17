@@ -14,7 +14,10 @@ import {
     type EnemyArchetype,
     type EncounterDifficulty,
     type EnemyMixMode,
-    getXPBudgetPerLevel
+    getXPBudgetPerLevel,
+    getXPForCR,
+    getEncounterMultiplier,
+    calculateAdjustedXP
 } from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
 import './CombatSimulatorTab.css';
@@ -1147,6 +1150,40 @@ export function CombatSimulatorTab() {
                     </select>
                   </div>
                 </div>
+
+                {/* Total Encounter XP Preview */}
+                {(() => {
+                  // Calculate total encounter XP based on CR and enemy count
+                  const xpPerEnemy = getXPForCR(generationConfig.targetCR);
+                  const encounterMultiplier = getEncounterMultiplier(generationConfig.count);
+                  const enemyCRs = Array(generationConfig.count).fill(generationConfig.targetCR);
+                  const totalXP = calculateAdjustedXP(enemyCRs, encounterMultiplier);
+
+                  // Determine difficulty color based on XP
+                  const xpColor = totalXP >= 5000 ? 'hsl(0 84% 60%)' :  // Deadly - red
+                                  totalXP >= 2000 ? 'hsl(24 95% 53%)' :  // Hard - orange
+                                  totalXP >= 1000 ? 'hsl(48 96% 53%)' :  // Medium - yellow
+                                  'hsl(142 70% 50%)';  // Easy - green
+
+                  return (
+                    <div className="combat-xp-preview" style={{ borderColor: xpColor, marginTop: '0.75rem' }}>
+                      <div className="combat-xp-preview-row">
+                        <span className="combat-xp-preview-label">Base XP/Enemy:</span>
+                        <span className="combat-xp-preview-value">{xpPerEnemy.toLocaleString()} XP</span>
+                        <span className="combat-xp-preview-hint">(CR {generationConfig.targetCR < 1 ? `1/${1/generationConfig.targetCR}` : generationConfig.targetCR})</span>
+                      </div>
+                      <div className="combat-xp-preview-row">
+                        <span className="combat-xp-preview-label">Encounter Multiplier:</span>
+                        <span className="combat-xp-preview-value">×{encounterMultiplier}</span>
+                        <span className="combat-xp-preview-hint">({generationConfig.count} {generationConfig.count === 1 ? 'enemy' : 'enemies'})</span>
+                      </div>
+                      <div className="combat-xp-preview-row combat-xp-preview-total">
+                        <span className="combat-xp-preview-label">Total Encounter XP:</span>
+                        <span className="combat-xp-preview-value" style={{ color: xpColor }}>{totalXP.toLocaleString()} XP</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

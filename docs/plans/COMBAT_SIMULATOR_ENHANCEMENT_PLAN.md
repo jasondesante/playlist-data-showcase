@@ -65,10 +65,10 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Custom (specify templates)
 
 ### 2.4 CR-Based Encounter Configuration
-- [ ] Add target CR input (0.25, 0.5, 1-20)
-- [ ] Add enemy count input
-- [ ] Add base rarity selector
-- [ ] Show calculated total encounter XP
+- [x] Add target CR input (0.25, 0.5, 1-20)
+- [x] Add enemy count input
+- [x] Add base rarity selector
+- [x] Show calculated total encounter XP
 
 ### 2.5 Custom Template Mix
 - [ ] Add template selection for custom mix mode
