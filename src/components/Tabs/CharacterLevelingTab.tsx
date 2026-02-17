@@ -244,13 +244,14 @@ export function CharacterLevelingTab() {
 
   // XP Source Configuration
   // Centralized config for all XP sources with metadata
+  // Task 2.2.2: Added description field for hover tooltips
   const XP_SOURCES = [
-    { id: 'quest', label: 'Complete Quest', xp: 500, toastIcon: '✅', toastMessage: 'Quest completed!' },
-    { id: 'boss_defeat', label: 'Defeat Boss', xp: 5000, toastIcon: '⚔️', toastMessage: 'Boss defeated!' },
-    { id: 'exploration', label: 'Exploration', xp: 250, toastIcon: '🧭', toastMessage: 'Exploration completed!' },
-    { id: 'combat', label: 'Combat Victory', xp: 300, toastIcon: '⚔️', toastMessage: 'Combat victory!' },
-    { id: 'crafting', label: 'Crafting', xp: 150, toastIcon: '🔨', toastMessage: 'Crafting successful!' },
-    { id: 'social', label: 'Social Encounter', xp: 100, toastIcon: '👥', toastMessage: 'Social encounter completed!' },
+    { id: 'quest', label: 'Complete Quest', xp: 500, toastIcon: '✅', toastMessage: 'Quest completed!', description: 'Complete a story quest or major objective' },
+    { id: 'boss_defeat', label: 'Defeat Boss', xp: 5000, toastIcon: '⚔️', toastMessage: 'Boss defeated!', description: 'Defeat a major boss or powerful enemy' },
+    { id: 'exploration', label: 'Exploration', xp: 250, toastIcon: '🧭', toastMessage: 'Exploration completed!', description: 'Discover new locations or hidden areas' },
+    { id: 'combat', label: 'Combat Victory', xp: 300, toastIcon: '⚔️', toastMessage: 'Combat victory!', description: 'Win a combat encounter against enemies' },
+    { id: 'crafting', label: 'Crafting', xp: 150, toastIcon: '🔨', toastMessage: 'Crafting successful!', description: 'Create or improve items through crafting' },
+    { id: 'social', label: 'Social Encounter', xp: 100, toastIcon: '👥', toastMessage: 'Social encounter completed!', description: 'Successfully navigate social situations' },
   ] as const;
 
   // Generic XP Source Handler (Task 2.2.3)
@@ -589,87 +590,106 @@ export function CharacterLevelingTab() {
         </div>
 
         {/* XP Sources (Simulate Activities) */}
+        {/* Task 2.2.2: Added hover tooltips with source descriptions */}
         <div className="leveling-xp-sources">
           <span className="leveling-xp-sources-label">XP Sources (Simulate Activities)</span>
           <div className="leveling-xp-sources-grid">
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleCompleteQuest}
-              leftIcon={Scroll}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-quest"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Complete Quest</span>
-                <span className="leveling-xp-source-amount">+500 XP</span>
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleDefeatBoss}
-              leftIcon={Sword}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-boss"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Defeat Boss</span>
-                <span className="leveling-xp-source-amount">+5,000 XP</span>
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleExploration}
-              leftIcon={Compass}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-exploration"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Exploration</span>
-                <span className="leveling-xp-source-amount">+250 XP</span>
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleCombatVictory}
-              leftIcon={Swords}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-combat"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Combat Victory</span>
-                <span className="leveling-xp-source-amount">+300 XP</span>
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleCrafting}
-              leftIcon={Hammer}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-crafting"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Crafting</span>
-                <span className="leveling-xp-source-amount">+150 XP</span>
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={handleSocialEncounter}
-              leftIcon={Users}
-              disabled={isProcessing || !activeChar}
-              className="leveling-xp-source-btn leveling-xp-source-social"
-            >
-              <span className="leveling-xp-source-content">
-                <span className="leveling-xp-source-label">Social Encounter</span>
-                <span className="leveling-xp-source-amount">+100 XP</span>
-              </span>
-            </Button>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleCompleteQuest}
+                leftIcon={Scroll}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-quest"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Complete Quest</span>
+                  <span className="leveling-xp-source-amount">+500 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Complete a story quest or major objective</span>
+            </div>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleDefeatBoss}
+                leftIcon={Sword}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-boss"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Defeat Boss</span>
+                  <span className="leveling-xp-source-amount">+5,000 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Defeat a major boss or powerful enemy</span>
+            </div>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleExploration}
+                leftIcon={Compass}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-exploration"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Exploration</span>
+                  <span className="leveling-xp-source-amount">+250 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Discover new locations or hidden areas</span>
+            </div>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleCombatVictory}
+                leftIcon={Swords}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-combat"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Combat Victory</span>
+                  <span className="leveling-xp-source-amount">+300 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Win a combat encounter against enemies</span>
+            </div>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleCrafting}
+                leftIcon={Hammer}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-crafting"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Crafting</span>
+                  <span className="leveling-xp-source-amount">+150 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Create or improve items through crafting</span>
+            </div>
+            <div className="leveling-xp-source-wrapper">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleSocialEncounter}
+                leftIcon={Users}
+                disabled={isProcessing || !activeChar}
+                className="leveling-xp-source-btn leveling-xp-source-social"
+              >
+                <span className="leveling-xp-source-content">
+                  <span className="leveling-xp-source-label">Social Encounter</span>
+                  <span className="leveling-xp-source-amount">+100 XP</span>
+                </span>
+              </Button>
+              <span className="leveling-xp-source-tooltip">Successfully navigate social situations</span>
+            </div>
           </div>
         </div>
       </Card>

@@ -706,6 +706,57 @@
   }
 }
 
+/* XP Source Button Wrapper - Task 2.2.2: Added for hover tooltip */
+.leveling-xp-source-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.leveling-xp-source-wrapper .leveling-xp-source-btn {
+  width: 100%;
+}
+
+/* XP Source Tooltip - Task 2.2.2: Hover effect showing source description */
+.leveling-xp-source-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-fast) var(--ease-out-cubic),
+              visibility var(--duration-fast) var(--ease-out-cubic),
+              transform var(--duration-fast) var(--ease-out-cubic);
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.leveling-xp-source-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: hsl(var(--border));
+}
+
+.leveling-xp-source-wrapper:hover .leveling-xp-source-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-2px);
+}
+
 /* XP Source Buttons */
 .leveling-xp-source-btn {
   position: relative;

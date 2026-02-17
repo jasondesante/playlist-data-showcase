@@ -268,8 +268,14 @@ Expand the XP Source buttons to include all available sources from the engine, w
 - [x] **2.2.2 Enhance Button Design**
   - [x] Add color coding per source type (using CSS classes)
   - [x] Show XP amount more prominently
-  - [ ] Add hover effect showing source description
-  - [ ] Keep existing button structure
+  - [x] Add hover effect showing source description
+  - [x] Keep existing button structure
+  - **Implementation (2026-02-17):**
+    - Added `description` field to each XP source in `XP_SOURCES` constant
+    - Added wrapper divs around each button with CSS tooltip positioning
+    - Created `.leveling-xp-source-wrapper` and `.leveling-xp-source-tooltip` CSS classes
+    - Tooltips appear above buttons on hover with fade-in animation
+    - Pure CSS solution - no external libraries needed
 
 - [x] **2.2.3 Create Generic Handler**
   - [x] Refactor existing handlers into single `handleXPSource(sourceId: string)` function
