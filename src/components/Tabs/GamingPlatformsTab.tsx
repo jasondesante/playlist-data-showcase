@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { Gamepad2, Waves, Disc, CheckCircle2, AlertCircle, Info, ServerOff } from 'lucide-react';
 import './GamingPlatformsTab.css';
 import { useGamingPlatforms } from '../../hooks/useGamingPlatforms';
 import { useAppStore } from '@/store/appStore';
@@ -25,7 +25,7 @@ import { StatusIndicator } from '../ui/StatusIndicator';
  * ```
  */
 export function GamingPlatformsTab() {
-  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity } = useGamingPlatforms();
+  const { connectSteam, connectDiscord, disconnectDiscord, setMusicStatus, clearMusicStatus, calculateGamingBonus, gamingContext, discordConnectionStatus, discordConnectionError, checkActivity, isServerMode } = useGamingPlatforms();
   const { settings, updateSettings } = useAppStore();
   const { selectedTrack } = usePlaylistStore();
   const [steamId, setSteamId] = useState('');
@@ -121,7 +121,32 @@ export function GamingPlatformsTab() {
       </div>
 
       {/* Discord Section */}
-      <div className="gaming-platform-card discord">
+      <div className={`gaming-platform-card discord${!isServerMode ? ' discord-disabled' : ''}`}>
+        {/* Server Mode Required Overlay - shown when running in browser */}
+        {!isServerMode && (
+          <div className="discord-server-mode-overlay">
+            <div className="discord-server-mode-badge">
+              <ServerOff size={16} />
+              <span>Server Mode Required</span>
+            </div>
+            <div className="discord-server-mode-message">
+              <p><strong>Discord Rich Presence requires server-side execution.</strong></p>
+              <p>Client-side browser apps cannot communicate with Discord&apos;s local IPC (Inter-Process Communication).</p>
+              <p>
+                To use Discord features, run this app in{' '}
+                <a
+                  href="https://electronjs.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Electron
+                </a>{' '}
+                or a Node.js server environment.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="gaming-platform-header">
           <div className="gaming-platform-icon">
             <Disc size={24} />
@@ -151,14 +176,15 @@ export function GamingPlatformsTab() {
             onChange={(e) => updateSettings({ discordClientId: e.target.value })}
             className="gaming-input"
             placeholder="Enter Discord Client ID..."
-            disabled={isDiscordConnected || isDiscordConnecting}
+            disabled={isDiscordConnected || isDiscordConnecting || !isServerMode}
+            readOnly={!isServerMode}
           />
         </div>
 
         <div className="gaming-button-row">
           <button
             onClick={handleConnectDiscord}
-            disabled={isDiscordConnecting || !settings.discordClientId?.trim()}
+            disabled={isDiscordConnecting || !settings.discordClientId?.trim() || !isServerMode}
             className="gaming-connect-btn gaming-discord-btn"
           >
             {isDiscordConnecting ? 'Connecting...' : isDiscordConnected ? 'Disconnect Discord' : 'Connect Discord'}

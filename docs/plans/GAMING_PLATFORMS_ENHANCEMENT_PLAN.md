@@ -75,15 +75,15 @@ Enhance the GamingPlatformsTab to showcase Steam game schema/stats, API performa
   - [x] Add `isServerMode: boolean` to hook return
 
 ### 2.2 Gray Out Discord Section in Client-Side Mode
-- [ ] Apply visual overlay to Discord card when in client-side mode
-  - [ ] Semi-transparent gray overlay
-  - [ ] "Server Mode Required" badge at top of section
-  - [ ] Disable interactive elements (inputs, buttons)
-  - [ ] Keep inputs visible but read-only
-- [ ] Add explanatory tooltip/modal on hover
-  - [ ] "Discord Rich Presence requires server-side execution"
-  - [ ] "Client-side apps cannot communicate with Discord's IPC"
-  - [ ] Link to engine docs about server mode
+- [x] Apply visual overlay to Discord card when in client-side mode
+  - [x] Semi-transparent gray overlay
+  - [x] "Server Mode Required" badge at top of section
+  - [x] Disable interactive elements (inputs, buttons)
+  - [x] Keep inputs visible but read-only
+- [x] Add explanatory tooltip/modal on hover
+  - [x] "Discord Rich Presence requires server-side execution"
+  - [x] "Client-side apps cannot communicate with Discord's IPC"
+  - [x] Link to engine docs about server mode
 
 **Files to modify:**
 - `src/hooks/useGamingPlatforms.ts`
@@ -332,9 +332,9 @@ discordClient.clearMusicActivity(): Promise<boolean>
 
 ## Quick Win Checklist
 
-- [ ] Add `isServerMode` detection to hook (5 min)
-- [ ] Gray out Discord section with overlay (20 min)
-- [ ] Add explanatory tooltip for Discord limitation (10 min)
+- [x] Add `isServerMode` detection to hook (5 min)
+- [x] Gray out Discord section with overlay (20 min)
+- [x] Add explanatory tooltip for Discord limitation (10 min)
 - [ ] Add `diagnostics` to hook return (5 min)
 - [ ] Create collapsible diagnostics panel (30 min)
 - [ ] Add `fetchGameSchema()` to hook (20 min)

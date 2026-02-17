@@ -129,6 +129,76 @@
   background: linear-gradient(135deg, hsl(255 80% 60% / 0.2), hsl(255 80% 60% / 0.1));
 }
 
+/* Discord disabled state in client-side mode */
+.gaming-platform-card.discord-disabled {
+  position: relative;
+  opacity: 0.7;
+}
+
+.gaming-platform-card.discord-disabled .gaming-input,
+.gaming-platform-card.discord-disabled .gaming-button-row button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Server mode required overlay */
+.discord-server-mode-overlay {
+  position: relative;
+  background: linear-gradient(135deg, hsl(var(--muted) / 0.9), hsl(var(--surface-1) / 0.95));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.discord-server-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: hsl(var(--cute-orange) / 0.15);
+  border: 1px solid hsl(var(--cute-orange) / 0.4);
+  color: hsl(var(--cute-orange));
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.discord-server-mode-badge svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.discord-server-mode-message {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .discord-server-mode-message {
+    font-size: 0.875rem;
+  }
+}
+
+.discord-server-mode-message p {
+  margin: 0 0 0.5rem 0;
+}
+
+.discord-server-mode-message p:last-child {
+  margin-bottom: 0;
+}
+
+.discord-server-mode-message a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.discord-server-mode-message a:hover {
+  text-decoration: none;
+}
+
 /* Input group */
 .gaming-input-group {
   display: flex;
