@@ -13,7 +13,8 @@ import {
     type EnemyCategory,
     type EnemyArchetype,
     type EncounterDifficulty,
-    type EnemyMixMode
+    type EnemyMixMode,
+    getXPBudgetPerLevel
 } from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
 import './CombatSimulatorTab.css';
@@ -129,6 +130,26 @@ const ARCHETYPE_INFO: Record<EnemyArchetype, { label: string; icon: string; colo
     brute: { label: 'Brute', icon: '⚔️', color: 'hsl(0 70% 50%)' },
     archer: { label: 'Archer', icon: '🏹', color: 'hsl(142 70% 45%)' },
     support: { label: 'Support', icon: '✨', color: 'hsl(217 70% 55%)' },
+};
+
+/**
+ * Difficulty display info with XP preview hint
+ */
+const DIFFICULTY_INFO: Record<EncounterDifficulty, { label: string; description: string; color: string }> = {
+    easy: { label: 'Easy', description: 'Minor challenge, few resources spent', color: 'hsl(142 70% 50%)' },
+    medium: { label: 'Medium', description: 'Balanced fight, some resource drain', color: 'hsl(48 96% 53%)' },
+    hard: { label: 'Hard', description: 'Tough fight, significant resource use', color: 'hsl(24 95% 53%)' },
+    deadly: { label: 'Deadly', description: 'Life-threatening, possible casualties', color: 'hsl(0 84% 60%)' },
+};
+
+/**
+ * Enemy mix mode display info
+ */
+const ENEMY_MIX_INFO: Record<EnemyMixMode, { label: string; description: string }> = {
+    uniform: { label: 'Uniform', description: 'All enemies same type' },
+    category: { label: 'Category Mix', description: 'Mix from selected category' },
+    custom: { label: 'Custom Mix', description: 'Specify exact templates' },
+    random: { label: 'Random', description: 'Completely random enemies' },
 };
 
 /**
@@ -949,6 +970,20 @@ export function CombatSimulatorTab() {
                       <option value="hard">Hard</option>
                       <option value="deadly">Deadly</option>
                     </select>
+                    {/* XP Budget Preview */}
+                    {(() => {
+                      const activeChar = getActiveCharacter();
+                      if (!activeChar) return null;
+                      const xpBudget = getXPBudgetPerLevel(activeChar.level, generationConfig.difficulty);
+                      const difficultyInfo = DIFFICULTY_INFO[generationConfig.difficulty];
+                      return (
+                        <div className="combat-xp-preview" style={{ borderColor: difficultyInfo.color }}>
+                          <span className="combat-xp-preview-label">XP Budget:</span>
+                          <span className="combat-xp-preview-value">{xpBudget.toLocaleString()} XP</span>
+                          <span className="combat-xp-preview-hint">({activeChar.level && `Level ${activeChar.level}`})</span>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="combat-config-field">
                     <label className="combat-config-label">Enemy Count</label>
@@ -962,6 +997,111 @@ export function CombatSimulatorTab() {
                     />
                   </div>
                 </div>
+
+                {/* Optional filters */}
+                <div className="combat-config-row">
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">
+                      Category Filter
+                      <span className="combat-config-optional"> (optional)</span>
+                    </label>
+                    <select
+                      value={generationConfig.category || ''}
+                      onChange={(e) => updateGenerationConfig('category', (e.target.value || undefined) as EnemyCategory | undefined)}
+                      className="combat-config-select"
+                    >
+                      <option value="">Any Category</option>
+                      {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(cat => {
+                        const info = CATEGORY_INFO[cat];
+                        return (
+                          <option key={cat} value={cat}>
+                            {info.icon} {info.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">
+                      Archetype Filter
+                      <span className="combat-config-optional"> (optional)</span>
+                    </label>
+                    <select
+                      value={generationConfig.archetype || ''}
+                      onChange={(e) => updateGenerationConfig('archetype', (e.target.value || undefined) as EnemyArchetype | undefined)}
+                      className="combat-config-select"
+                    >
+                      <option value="">Any Archetype</option>
+                      {(Object.keys(ARCHETYPE_INFO) as EnemyArchetype[]).map(arch => {
+                        const info = ARCHETYPE_INFO[arch];
+                        return (
+                          <option key={arch} value={arch}>
+                            {info.icon} {info.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Enemy Mix Mode */}
+                <div className="combat-config-field">
+                  <label className="combat-config-label">Enemy Mix Mode</label>
+                  <select
+                    value={generationConfig.enemyMix}
+                    onChange={(e) => updateGenerationConfig('enemyMix', e.target.value as EnemyMixMode)}
+                    className="combat-config-select"
+                  >
+                    <option value="uniform">Uniform - All same type</option>
+                    <option value="category">Category Mix - Mix from category</option>
+                    <option value="custom">Custom - Specify templates</option>
+                    <option value="random">Random - Completely random</option>
+                  </select>
+                  <p className="combat-config-hint">
+                    {ENEMY_MIX_INFO[generationConfig.enemyMix].description}
+                    {generationConfig.enemyMix === 'category' && !generationConfig.category && (
+                      <span className="combat-config-warning"> (Select a category filter above)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Custom templates selector - shown only for custom mix mode */}
+                {generationConfig.enemyMix === 'custom' && (
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Custom Templates</label>
+                    <div className="combat-template-chips">
+                      {ENEMY_TEMPLATES.map(template => {
+                        const isSelected = generationConfig.templates?.includes(template.id) ?? false;
+                        const archInfo = ARCHETYPE_INFO[template.archetype];
+                        return (
+                          <button
+                            key={template.id}
+                            type="button"
+                            onClick={() => {
+                              const currentTemplates = generationConfig.templates || [];
+                              const newTemplates = isSelected
+                                ? currentTemplates.filter(id => id !== template.id)
+                                : [...currentTemplates, template.id];
+                              updateGenerationConfig('templates', newTemplates.length > 0 ? newTemplates : undefined);
+                            }}
+                            className={`combat-template-chip ${isSelected ? 'combat-template-chip-selected' : ''}`}
+                          >
+                            {template.name}
+                            <span className="combat-template-chip-archetype" style={{ backgroundColor: archInfo.color }}>
+                              {archInfo.icon}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {generationConfig.templates && generationConfig.templates.length > 0 && (
+                      <p className="combat-config-hint">
+                        {generationConfig.templates.length} template{generationConfig.templates.length !== 1 ? 's' : ''} selected.
+                        {generationConfig.count > generationConfig.templates.length && ` Will cycle through templates for ${generationConfig.count} enemies.`}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

@@ -53,16 +53,16 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Show stat multiplier and extra abilities info
 
 ### 2.3 Party-Balanced Encounter Configuration
-- [ ] Add difficulty selector
-  - [ ] Options: Easy, Medium, Hard, Deadly
-  - [ ] Show XP budget preview
-- [ ] Add enemy count input (1-10)
-- [ ] Add category filter dropdown (optional)
-- [ ] Add archetype filter dropdown (optional)
-- [ ] Add enemy mix mode selector
-  - [ ] Uniform (all same type)
-  - [ ] Category (mix from selected category)
-  - [ ] Custom (specify templates)
+- [x] Add difficulty selector
+  - [x] Options: Easy, Medium, Hard, Deadly
+  - [x] Show XP budget preview
+- [x] Add enemy count input (1-10)
+- [x] Add category filter dropdown (optional)
+- [x] Add archetype filter dropdown (optional)
+- [x] Add enemy mix mode selector
+  - [x] Uniform (all same type)
+  - [x] Category (mix from selected category)
+  - [x] Custom (specify templates)
 
 ### 2.4 CR-Based Encounter Configuration
 - [ ] Add target CR input (0.25, 0.5, 1-20)
