@@ -3013,7 +3013,7 @@ export function CombatSimulatorTab() {
                                   key={combatant.id}
                                   className={`combat-initiative-item combat-initiative-item-party ${
                                     isCurrentTurn
-                                      ? 'combat-initiative-item-current'
+                                      ? 'combat-initiative-item-current-party'
                                       : combatant.isDefeated
                                       ? 'combat-initiative-item-defeated'
                                       : ''
@@ -3087,10 +3087,19 @@ export function CombatSimulatorTab() {
                   const enemyArchInfo = enemyTemplate ? ARCHETYPE_INFO[enemyTemplate.archetype] : undefined;
                   const enemyRarity = combatant.character.subrace as EnemyRarity | undefined;
 
+                  // Phase 7.4: Enhanced highlighting for current party member's turn
+                  const isCurrentPartyMember = isCurrentTurn && !enemyIsEnemy;
+
                   return (
                     <div
                       key={combatant.id}
-                      className={`combat-combatant-card ${isCurrentTurn ? 'combat-combatant-card-current' : ''} ${combatant.isDefeated ? 'combat-combatant-card-defeated' : ''} ${enemyIsEnemy ? 'combat-combatant-card-enemy' : ''} ${enemyRarity ? `combat-combatant-card-${enemyRarity}` : ''}`}
+                      className={`combat-combatant-card ${
+                        isCurrentPartyMember
+                          ? 'combat-combatant-card-current-party'
+                          : isCurrentTurn
+                          ? 'combat-combatant-card-current'
+                          : ''
+                      } ${combatant.isDefeated ? 'combat-combatant-card-defeated' : ''} ${enemyIsEnemy ? 'combat-combatant-card-enemy' : ''} ${enemyRarity ? `combat-combatant-card-${enemyRarity}` : ''}`}
                     >
                       <div className="combat-combatant-header">
                         <div>
@@ -3122,7 +3131,9 @@ export function CombatSimulatorTab() {
                             <div className="combat-combatant-class">{combatant.character.race} {combatant.character.class}</div>
                           )}
                         </div>
-                        {isCurrentTurn && <span className="combat-combatant-badge">Current</span>}
+                        {/* Phase 7.4: Enhanced "Your Turn" badge for party members */}
+                        {isCurrentPartyMember && <span className="combat-combatant-badge-your-turn">Your Turn</span>}
+                        {isCurrentTurn && enemyIsEnemy && <span className="combat-combatant-badge">Current</span>}
                       </div>
 
                       <div className="combat-combatant-hp-section">

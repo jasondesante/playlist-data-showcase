@@ -694,6 +694,111 @@
   box-shadow: 0 0 0 2px hsl(var(--primary));
 }
 
+/* ============================================
+   Phase 7.4: Enhanced Current Party Member Highlighting
+   ============================================ */
+
+/* Current party member card - prominent highlighting */
+.combat-combatant-card-current-party {
+  box-shadow:
+    0 0 0 3px hsl(217 70% 55%),
+    0 0 15px hsl(217 70% 55% / 0.4),
+    0 0 30px hsl(217 70% 55% / 0.2);
+  animation: combat-party-turn-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes combat-party-turn-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px hsl(217 70% 55%),
+      0 0 15px hsl(217 70% 55% / 0.4),
+      0 0 30px hsl(217 70% 55% / 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px hsl(217 70% 60%),
+      0 0 20px hsl(217 70% 55% / 0.6),
+      0 0 40px hsl(217 70% 55% / 0.3);
+  }
+}
+
+/* "Your Turn" badge for current party member */
+.combat-combatant-badge-your-turn {
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, hsl(217 70% 55%) 0%, hsl(217 80% 60%) 100%);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  animation: combat-badge-pulse 1s ease-in-out infinite;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@keyframes combat-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@media (min-width: 768px) {
+  .combat-combatant-badge-your-turn {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.625rem;
+  }
+}
+
+/* Enhanced initiative item highlighting for current party member */
+.combat-initiative-item-current-party {
+  background: linear-gradient(135deg, hsl(217 70% 55%) 0%, hsl(217 60% 50%) 100%);
+  color: white;
+  border-color: hsl(217 70% 55%);
+  animation: combat-initiative-party-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes combat-initiative-party-pulse {
+  0%, 100% {
+    background: linear-gradient(135deg, hsl(217 70% 55%) 0%, hsl(217 60% 50%) 100%);
+    box-shadow: 0 0 0 rgba(217, 70%, 55%, 0);
+  }
+  50% {
+    background: linear-gradient(135deg, hsl(217 70% 60%) 0%, hsl(217 60% 55%) 100%);
+    box-shadow: 0 2px 8px hsl(217 70% 55% / 0.3);
+  }
+}
+
+/* Dark mode adjustments for party turn highlighting */
+@media (prefers-color-scheme: dark) {
+  .combat-combatant-card-current-party {
+    box-shadow:
+      0 0 0 3px hsl(217 70% 60%),
+      0 0 20px hsl(217 70% 60% / 0.5),
+      0 0 40px hsl(217 70% 60% / 0.3);
+  }
+
+  @keyframes combat-party-turn-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 0 3px hsl(217 70% 60%),
+        0 0 20px hsl(217 70% 60% / 0.5),
+        0 0 40px hsl(217 70% 60% / 0.3);
+    }
+    50% {
+      box-shadow:
+        0 0 0 3px hsl(217 70% 65%),
+        0 0 25px hsl(217 70% 60% / 0.7),
+        0 0 50px hsl(217 70% 60% / 0.4);
+    }
+  }
+}
+
+/* End Phase 7.4: Enhanced Current Party Member Highlighting */
+
 .combat-combatant-card-defeated {
   opacity: 0.5;
 }
