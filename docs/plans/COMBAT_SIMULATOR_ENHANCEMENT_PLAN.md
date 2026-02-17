@@ -221,7 +221,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Distribute XP among party members
 
 ### 7.4 Party in Combat UI
-- [ ] Group party members visually in initiative order
+- [x] Group party members visually in initiative order
 - [ ] Show party vs enemies in combatant grid
 - [ ] Highlight current party member's turn
 

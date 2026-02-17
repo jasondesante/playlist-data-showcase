@@ -2982,35 +2982,87 @@ export function CombatSimulatorTab() {
           {/* Combat Area: Initiative Order + Combatant Cards */}
           <div className="combat-area">
             {/* Initiative Order Sidebar - Task 4.9.2 */}
+            {/* Phase 7.4: Group party members visually in initiative order */}
             <div className="combat-initiative">
               <div className="combat-initiative-inner">
                 <h3 className="combat-initiative-title">Initiative Order</h3>
                 <div className="combat-initiative-list">
-                  {combat.combatants
-                    .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative)
-                    .map((combatant: Combatant, index: number) => {
-                      const current = getCurrentCombatant();
-                      const isCurrentTurn = current?.id === combatant.id;
+                  {(() => {
+                    const current = getCurrentCombatant();
+                    // Separate combatants into party and enemies
+                    const partyCombatants = combat.combatants
+                      .filter((c: Combatant) => !isEnemy(c.character))
+                      .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative);
+                    const enemyCombatants = combat.combatants
+                      .filter((c: Combatant) => isEnemy(c.character))
+                      .sort((a: Combatant, b: Combatant) => b.initiative - a.initiative);
 
-                      return (
-                        <div
-                          key={combatant.id}
-                          className={`combat-initiative-item ${
-                            isCurrentTurn
-                              ? 'combat-initiative-item-current'
-                              : combatant.isDefeated
-                              ? 'combat-initiative-item-defeated'
-                              : ''
-                          }`}
-                        >
-                          <div className="combat-initiative-row">
-                            <span className="combat-initiative-number">{index + 1}.</span>
-                            <span className="combat-initiative-name">{combatant.character.name}</span>
-                            <span className="combat-initiative-value">{combatant.initiative}</span>
+                    return (
+                      <>
+                        {/* Party Section */}
+                        {partyCombatants.length > 0 && (
+                          <div className="combat-initiative-group">
+                            <div className="combat-initiative-group-header combat-initiative-group-party">
+                              <span className="combat-initiative-group-icon">⚔️</span>
+                              <span>Party ({partyCombatants.length})</span>
+                            </div>
+                            {partyCombatants.map((combatant: Combatant, index: number) => {
+                              const isCurrentTurn = current?.id === combatant.id;
+                              return (
+                                <div
+                                  key={combatant.id}
+                                  className={`combat-initiative-item combat-initiative-item-party ${
+                                    isCurrentTurn
+                                      ? 'combat-initiative-item-current'
+                                      : combatant.isDefeated
+                                      ? 'combat-initiative-item-defeated'
+                                      : ''
+                                  }`}
+                                >
+                                  <div className="combat-initiative-row">
+                                    <span className="combat-initiative-number">{index + 1}.</span>
+                                    <span className="combat-initiative-name">{combatant.character.name}</span>
+                                    <span className="combat-initiative-value">{combatant.initiative}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        </div>
-                      );
-                    })}
+                        )}
+
+                        {/* Enemies Section */}
+                        {enemyCombatants.length > 0 && (
+                          <div className="combat-initiative-group">
+                            <div className="combat-initiative-group-header combat-initiative-group-enemy">
+                              <span className="combat-initiative-group-icon">👹</span>
+                              <span>Enemies ({enemyCombatants.length})</span>
+                            </div>
+                            {enemyCombatants.map((combatant: Combatant, index: number) => {
+                              const isCurrentTurn = current?.id === combatant.id;
+                              return (
+                                <div
+                                  key={combatant.id}
+                                  className={`combat-initiative-item combat-initiative-item-enemy ${
+                                    isCurrentTurn
+                                      ? 'combat-initiative-item-current'
+                                      : combatant.isDefeated
+                                      ? 'combat-initiative-item-defeated'
+                                      : ''
+                                  }`}
+                                >
+                                  <div className="combat-initiative-row">
+                                    <span className="combat-initiative-number">{index + 1}.</span>
+                                    <span className="combat-initiative-name">{combatant.character.name}</span>
+                                    <span className="combat-initiative-value">{combatant.initiative}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
