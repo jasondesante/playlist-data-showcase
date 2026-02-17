@@ -803,6 +803,66 @@
   color: hsl(var(--cute-teal));
 }
 
+/* Combat button - orange theme */
+.leveling-xp-source-combat {
+  border-color: hsl(var(--cute-orange) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-combat:hover:not(:disabled) {
+  border-color: hsl(var(--cute-orange)) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-orange) / 0.2), hsl(var(--cute-orange) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-combat .button-icon {
+  color: hsl(var(--cute-orange)) !important;
+}
+
+.leveling-xp-source-combat .leveling-xp-source-amount {
+  color: hsl(var(--cute-orange));
+}
+
+/* Crafting button - yellow theme */
+.leveling-xp-source-crafting {
+  border-color: hsl(var(--cute-yellow) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-crafting:hover:not(:disabled) {
+  border-color: hsl(var(--cute-yellow)) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-yellow) / 0.2), hsl(var(--cute-yellow) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-crafting .button-icon {
+  color: hsl(var(--cute-yellow)) !important;
+}
+
+.leveling-xp-source-crafting .leveling-xp-source-amount {
+  color: hsl(var(--cute-yellow));
+}
+
+/* Social button - purple/pink theme */
+.leveling-xp-source-social {
+  border-color: hsl(var(--cute-pink) / 0.5) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-pink) / 0.1), transparent) !important;
+}
+
+.leveling-xp-source-social:hover:not(:disabled) {
+  border-color: hsl(var(--cute-pink)) !important;
+  background: linear-gradient(135deg, hsl(var(--cute-pink) / 0.2), hsl(var(--cute-pink) / 0.05)) !important;
+  transform: translateY(-1px);
+}
+
+.leveling-xp-source-social .button-icon {
+  color: hsl(var(--cute-pink)) !important;
+}
+
+.leveling-xp-source-social .leveling-xp-source-amount {
+  color: hsl(var(--cute-pink));
+}
+
 /* Disabled state for source buttons */
 .leveling-xp-source-btn:disabled {
   opacity: 0.5;

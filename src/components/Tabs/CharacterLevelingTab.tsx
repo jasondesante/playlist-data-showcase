@@ -12,7 +12,7 @@ import { UncappedProgressionPanel } from '../ui/UncappedProgressionPanel';
 import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
-import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown } from 'lucide-react';
+import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown, Swords, Hammer, Users } from 'lucide-react';
 import './CharacterLevelingTab.css';
 
 /**
@@ -119,6 +119,17 @@ export function CharacterLevelingTab() {
 
   // D&D 5e XP thresholds for levels 1-20
   const xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+
+  // XP Sources Configuration Reference:
+  // All available XP sources with their metadata for future refactoring (Task 2.2.3)
+  // {
+  //   quest:        { label: 'Complete Quest',    xp: 500,  icon: Scroll,   color: 'blue'   },
+  //   boss_defeat:  { label: 'Defeat Boss',       xp: 5000, icon: Sword,    color: 'red'    },
+  //   exploration:  { label: 'Exploration',       xp: 250,  icon: Compass,  color: 'green'  },
+  //   combat:       { label: 'Combat Victory',    xp: 300,  icon: Swords,   color: 'orange' },
+  //   crafting:     { label: 'Crafting',          xp: 150,  icon: Hammer,   color: 'yellow' },
+  //   social:       { label: 'Social Encounter',  xp: 100,  icon: Users,    color: 'purple' },
+  // }
 
   const handleAddCustomXP = async (amount: number) => {
     if (!activeChar || isProcessing) return;
@@ -263,6 +274,87 @@ export function CharacterLevelingTab() {
       // Show success toast notification
       showToast('🧭 Exploration completed! +250 XP awarded', 'success');
       console.log(`Exploration completed! +250 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCombatVictory = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 300, 'combat');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
+      }
+      // Show success toast notification
+      showToast('⚔️ Combat victory! +300 XP awarded', 'success');
+      console.log(`Combat victory! +300 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCrafting = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 150, 'crafting');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
+      }
+      // Show success toast notification
+      showToast('🔨 Crafting successful! +150 XP awarded', 'success');
+      console.log(`Crafting successful! +150 XP. Total: ${result.character.xp.current}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSocialEncounter = async () => {
+    if (!activeChar || isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const result = addXPFromSource(activeChar, 100, 'social');
+      if (result.leveledUp) {
+        triggerLevelUpCelebration();
+
+        // For uncapped mode, show auto-apply notification if stats were increased
+        if (activeChar.gameMode === 'uncapped' && result.levelUpDetails && result.levelUpDetails.length > 0) {
+          showUncappedStatNotification(result.levelUpDetails);
+        }
+
+        // Show level-up modal with details
+        if (result.levelUpDetails && result.levelUpDetails.length > 0) {
+          setLevelUpDetails(result.levelUpDetails);
+          setShowLevelUpModal(true);
+        }
+      }
+      // Show success toast notification
+      showToast('👥 Social encounter completed! +100 XP awarded', 'success');
+      console.log(`Social encounter completed! +100 XP. Total: ${result.character.xp.current}`);
     } finally {
       setIsProcessing(false);
     }
@@ -600,6 +692,45 @@ export function CharacterLevelingTab() {
               <span className="leveling-xp-source-content">
                 <span className="leveling-xp-source-label">Exploration</span>
                 <span className="leveling-xp-source-amount">+250 XP</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleCombatVictory}
+              leftIcon={Swords}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-combat"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Combat Victory</span>
+                <span className="leveling-xp-source-amount">+300 XP</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleCrafting}
+              leftIcon={Hammer}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-crafting"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Crafting</span>
+                <span className="leveling-xp-source-amount">+150 XP</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleSocialEncounter}
+              leftIcon={Users}
+              disabled={isProcessing || !activeChar}
+              className="leveling-xp-source-btn leveling-xp-source-social"
+            >
+              <span className="leveling-xp-source-content">
+                <span className="leveling-xp-source-label">Social Encounter</span>
+                <span className="leveling-xp-source-amount">+100 XP</span>
               </span>
             </Button>
           </div>

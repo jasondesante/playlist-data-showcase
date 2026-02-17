@@ -230,9 +230,9 @@ Expand the XP Source buttons to include all available sources from the engine, w
 
 #### Tasks
 
-- [ ] **2.1.1 Define Complete XP Sources**
-  - [ ] Create `XP_SOURCES` constant array in `CharacterLevelingTab.tsx` or separate file
-  - [ ] Include all sources with metadata:
+- [x] **2.1.1 Define Complete XP Sources**
+  - [x] Create `XP_SOURCES` constant array in `CharacterLevelingTab.tsx` or separate file
+  - [x] Include all sources with metadata:
   ```typescript
   const XP_SOURCES = [
     { id: 'quest', label: 'Complete Quest', xp: 500, icon: Scroll, color: 'blue' },
@@ -244,9 +244,9 @@ Expand the XP Source buttons to include all available sources from the engine, w
   ];
   ```
 
-- [ ] **2.1.2 Add Lucide Icons**
-  - [ ] Import additional icons: `Swords`, `Hammer`, `Users`
-  - [ ] Update icon imports in `CharacterLevelingTab.tsx`
+- [x] **2.1.2 Add Lucide Icons**
+  - [x] Import additional icons: `Swords`, `Hammer`, `Users`
+  - [x] Update icon imports in `CharacterLevelingTab.tsx`
 
 ---
 
@@ -254,14 +254,14 @@ Expand the XP Source buttons to include all available sources from the engine, w
 
 #### Tasks
 
-- [ ] **2.2.1 Update Grid Layout**
-  - [ ] Change from 3-column to 3x2 grid (6 sources)
-  - [ ] Update `leveling-xp-sources-grid` CSS class
-  - [ ] Keep responsive design (2 columns on mobile)
+- [x] **2.2.1 Update Grid Layout**
+  - [x] Change from 3-column to 3x2 grid (6 sources)
+  - [x] Update `leveling-xp-sources-grid` CSS class
+  - [x] Keep responsive design (2 columns on mobile)
 
-- [ ] **2.2.2 Enhance Button Design**
-  - [ ] Add color coding per source type (using CSS classes)
-  - [ ] Show XP amount more prominently
+- [x] **2.2.2 Enhance Button Design**
+  - [x] Add color coding per source type (using CSS classes)
+  - [x] Show XP amount more prominently
   - [ ] Add hover effect showing source description
   - [ ] Keep existing button structure
 
