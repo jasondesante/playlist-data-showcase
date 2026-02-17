@@ -56,7 +56,19 @@ export const useEnvironmentalSensors = () => {
         environmentalContext
     } = useSensorStore();
 
-    const [sensors] = useState(() => new EnvironmentalSensors(settings.openWeatherApiKey));
+    const [sensors] = useState(() => {
+        const apiKey = settings.openWeatherApiKey;
+        // Debug: Log API key initialization (first/last 4 chars for security)
+        if (apiKey) {
+            const maskedKey = apiKey.length > 8
+                ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`
+                : `${apiKey.slice(0, 2)}...${apiKey.slice(-2)}`;
+            logger.info('EnvironmentalSensors', `Initializing with API key: ${maskedKey} (${apiKey.length} chars)`);
+        } else {
+            logger.warn('EnvironmentalSensors', 'No OpenWeather API key configured - weather data will not load');
+        }
+        return new EnvironmentalSensors(apiKey);
+    });
 
     const [isMonitoring, setIsMonitoring] = useState(false);
 
@@ -144,6 +156,16 @@ export const useEnvironmentalSensors = () => {
         if (isMonitoring) return;
 
         logger.info('EnvironmentalSensors', 'Starting monitoring');
+        // Debug: Log current settings state for troubleshooting
+        const apiKey = settings.openWeatherApiKey;
+        if (apiKey) {
+            const maskedKey = apiKey.length > 8
+                ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`
+                : `${apiKey.slice(0, 2)}...${apiKey.slice(-2)}`;
+            logger.debug('EnvironmentalSensors', `Current API key from settings: ${maskedKey} (${apiKey.length} chars)`);
+        } else {
+            logger.warn('EnvironmentalSensors', 'No API key found in settings - weather will not load');
+        }
         setIsMonitoring(true);
 
         // Helper to detect and update severe weather alert
@@ -170,7 +192,17 @@ export const useEnvironmentalSensors = () => {
             });
 
             // Initial pull of geolocation + weather
+            logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() for initial data...');
             const initial = await sensors.updateSnapshot();
+            logger.debug('EnvironmentalSensors', 'updateSnapshot() returned', {
+                hasGeolocation: !!(initial as any).geolocation,
+                hasWeather: !!(initial as any).weather,
+                weatherData: (initial as any).weather ? {
+                    temp: (initial as any).weather.temperature,
+                    condition: (initial as any).weather.condition,
+                    description: (initial as any).weather.description
+                } : null
+            });
             updateEnvironmentalContext({ ...initial } as any);
             // Check for severe weather after initial snapshot
             updateSevereWeather();
@@ -180,7 +212,16 @@ export const useEnvironmentalSensors = () => {
             // Keep geolocation/weather fresh every 30 seconds
             const interval = setInterval(async () => {
                 try {
+                    logger.debug('EnvironmentalSensors', 'Calling updateSnapshot() (interval refresh)...');
                     const updated = await sensors.updateSnapshot();
+                    logger.debug('EnvironmentalSensors', 'updateSnapshot() interval returned', {
+                        hasGeolocation: !!(updated as any).geolocation,
+                        hasWeather: !!(updated as any).weather,
+                        weatherData: (updated as any).weather ? {
+                            temp: (updated as any).weather.temperature,
+                            condition: (updated as any).weather.condition
+                        } : null
+                    });
                     updateEnvironmentalContext({ ...updated } as any);
                     // Check for severe weather after each update
                     updateSevereWeather();

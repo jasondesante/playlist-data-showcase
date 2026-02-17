@@ -176,11 +176,11 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ### 6.1 Investigate Weather API Issue
 **Current Issue:** API key entered but no weather data loading
 
-- [ ] Add debug logging to `useEnvironmentalSensors.ts`
-  - [ ] Log when `updateSnapshot()` is called
-  - [ ] Log the API key being used (first/last 4 chars only for security)
-  - [ ] Log the API response or error
-  - [ ] Log what `environmentalContext.weather` contains after update
+- [x] Add debug logging to `useEnvironmentalSensors.ts`
+  - [x] Log when `updateSnapshot()` is called
+  - [x] Log the API key being used (first/last 4 chars only for security)
+  - [x] Log the API response or error
+  - [x] Log what `environmentalContext.weather` contains after update
 
 - [ ] Check the data flow:
   1. Settings → appStore → openWeatherApiKey
