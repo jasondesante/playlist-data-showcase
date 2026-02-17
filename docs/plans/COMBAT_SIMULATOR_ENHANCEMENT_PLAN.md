@@ -232,13 +232,13 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Show enemy metadata and polish the overall UI.
 
 ### 8.1 Enemy Card Enhancements
-- [ ] Add category badge (Humanoid, Beast, etc.)
-- [ ] Add archetype badge (Brute, Archer, Support)
-- [ ] Add rarity tier indicator
-  - [ ] Common: Gray/bronze border
-  - [ ] Uncommon: Green border
-  - [ ] Elite: Purple border with glow
-  - [ ] Boss: Gold border with animated glow
+- [x] Add category badge (Humanoid, Beast, etc.)
+- [x] Add archetype badge (Brute, Archer, Support)
+- [x] Add rarity tier indicator
+  - [x] Common: Gray/bronze border
+  - [x] Uncommon: Green border
+  - [x] Elite: Purple border with glow
+  - [x] Boss: Gold border with animated glow
 - [ ] Show signature ability name
 - [ ] Display resistances/immunities
 
