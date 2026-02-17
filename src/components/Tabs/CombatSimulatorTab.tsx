@@ -996,7 +996,21 @@ export function CombatSimulatorTab() {
   } | null>(null);
 
   // XP award state (Task 3.4)
-  const [xpAwarded, setXpAwarded] = useState<{ amount: number; characterName: string; leveledUp: boolean } | null>(null);
+  // Phase 7.3: Updated to support multiple party members
+  // - members: array of XP recipients (for party mode)
+  // - Legacy fields kept for backward compatibility with solo mode display
+  const [xpAwarded, setXpAwarded] = useState<{
+    amount: number;
+    characterName: string;
+    leveledUp: boolean;
+    // Phase 7.3: Party XP distribution
+    members?: Array<{
+      name: string;
+      xpReceived: number;
+      leveledUp: boolean;
+      newLevel?: number;
+    }>;
+  } | null>(null);
 
   // Combat state from task 4.9.1 (moved before useEffect hooks to fix TS error)
   const currentTurnIndex = combat?.currentTurnIndex ?? null;
@@ -1413,26 +1427,87 @@ export function CombatSimulatorTab() {
 
   // Award XP when combat ends (Task 3.4)
   // Updated in Phase 1.3: Check if winner is the player character instead of checking for 'Goblin'
+  // Updated in Phase 7.3: Handle party mode - distribute XP among all party members
   useEffect(() => {
     const result = combat && !combat.isActive ? getCombatResult() : null;
-    const activeChar = getActiveCharacter();
-    // Award XP if player (active character) won the combat
-    if (result && activeChar && result.winner.character.name === activeChar.name) {
-      // Award XP to the active character
-      const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
+    if (!result) return;
 
-      console.log(`[Combat] ${activeChar.name} received ${result.xpAwarded} XP from combat!`);
+    // Check if the winner is a party member (not an enemy)
+    const winnerIsPartyMember = !isEnemy(result.winner.character);
 
-      if (xpResult.leveledUp) {
-        console.log(`[Combat] ${activeChar.name} leveled up to ${xpResult.newLevel}!`);
-        // TODO: Could trigger level-up modal here if needed
-      }
+    if (!winnerIsPartyMember) {
+      // Enemies won - no XP to award
+      logger.info('CombatSimulator', 'Enemies won the combat, no XP awarded');
+      return;
+    }
+
+    // Phase 7.3: Get all party members from combat
+    const partyCombatants = combat?.combatants.filter(
+      (c: Combatant) => !isEnemy(c.character)
+    ) ?? [];
+
+    if (partyMode === 'party' && partyCombatants.length > 1) {
+      // Party mode: Award full XP to each surviving party member
+      // In D&D 5e, XP is awarded in full to each party member (not split)
+      const xpPerMember = result.xpAwarded;
+
+      const memberResults: Array<{
+        name: string;
+        xpReceived: number;
+        leveledUp: boolean;
+        newLevel?: number;
+      }> = [];
+
+      // Award XP to each party member
+      partyCombatants.forEach((combatant: Combatant) => {
+        const character = characters.find(c => c.seed === combatant.character.seed);
+        if (character) {
+          const xpResult = addXPFromSource(character, xpPerMember, 'combat');
+          memberResults.push({
+            name: character.name,
+            xpReceived: xpPerMember,
+            leveledUp: xpResult.leveledUp ?? false,
+            newLevel: xpResult.newLevel
+          });
+
+          console.log(`[Combat] ${character.name} received ${xpPerMember} XP from combat!`);
+          if (xpResult.leveledUp) {
+            console.log(`[Combat] ${character.name} leveled up to ${xpResult.newLevel}!`);
+          }
+        }
+      });
 
       setXpAwarded({
-        amount: result.xpAwarded,
-        characterName: activeChar.name,
-        leveledUp: xpResult.leveledUp ?? false
+        amount: result.xpAwarded * memberResults.length, // Total XP distributed
+        characterName: 'Party', // Legacy field for backward compatibility
+        leveledUp: memberResults.some(m => m.leveledUp),
+        members: memberResults
       });
+
+      logger.info('CombatSimulator', 'Party XP distributed', {
+        totalXP: result.xpAwarded,
+        xpPerMember,
+        memberCount: memberResults.length,
+        levelUps: memberResults.filter(m => m.leveledUp).map(m => m.name)
+      });
+    } else {
+      // Solo mode: Award XP to the single party member (winner)
+      const activeChar = getActiveCharacter();
+      if (activeChar && result.winner.character.name === activeChar.name) {
+        const xpResult = addXPFromSource(activeChar, result.xpAwarded, 'combat');
+
+        console.log(`[Combat] ${activeChar.name} received ${result.xpAwarded} XP from combat!`);
+
+        if (xpResult.leveledUp) {
+          console.log(`[Combat] ${activeChar.name} leveled up to ${xpResult.newLevel}!`);
+        }
+
+        setXpAwarded({
+          amount: result.xpAwarded,
+          characterName: activeChar.name,
+          leveledUp: xpResult.leveledUp ?? false
+        });
+      }
     }
     // Only run when combat transitions from active to inactive
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3182,10 +3257,30 @@ export function CombatSimulatorTab() {
                     <span className="combat-victory-stat-label">XP Awarded</span>
                     <span className="combat-victory-stat-value combat-victory-xp">
                       +{combatResult.xpAwarded} XP
-                      {xpAwarded && <span className="combat-victory-xp-recipient"> to {xpAwarded.characterName}</span>}
-                      {xpAwarded?.leveledUp && <span className="combat-victory-levelup"> 🎉 LEVEL UP!</span>}
+                      {xpAwarded && !xpAwarded.members && (
+                        <span className="combat-victory-xp-recipient"> to {xpAwarded.characterName}</span>
+                      )}
+                      {xpAwarded?.leveledUp && !xpAwarded.members && <span className="combat-victory-levelup"> 🎉 LEVEL UP!</span>}
                     </span>
                   </div>
+
+                  {/* Phase 7.3: Party XP Distribution */}
+                  {xpAwarded?.members && xpAwarded.members.length > 0 && (
+                    <div className="combat-victory-party-xp-section">
+                      <h3 className="combat-victory-party-xp-title">⭐ Party XP Distribution</h3>
+                      <div className="combat-victory-party-xp-list">
+                        {xpAwarded.members.map((member, index) => (
+                          <div key={index} className="combat-victory-party-xp-member">
+                            <span className="combat-victory-party-xp-name">{member.name}</span>
+                            <span className="combat-victory-party-xp-amount">+{member.xpReceived} XP</span>
+                            {member.leveledUp && (
+                              <span className="combat-victory-party-xp-levelup">🎉 Level {member.newLevel}!</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="combat-victory-stat">
                     <span className="combat-victory-stat-label">Rounds Elapsed</span>

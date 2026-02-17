@@ -217,8 +217,8 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 
 ### 7.3 Party Combat Integration
 - [x] Pass party array to `startCombat()`
-- [ ] Update combat result to handle party victory
-- [ ] Distribute XP among party members
+- [x] Update combat result to handle party victory
+- [x] Distribute XP among party members
 
 ### 7.4 Party in Combat UI
 - [ ] Group party members visually in initiative order

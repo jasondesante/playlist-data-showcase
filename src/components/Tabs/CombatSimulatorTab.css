@@ -1319,6 +1319,96 @@
   animation-delay: 0.5s;
 }
 
+/* Victory Party XP Distribution - Phase 7.3 */
+.combat-victory-party-xp-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+  animation: treasure-reveal 0.6s ease-out forwards;
+}
+
+.combat-victory-party-xp-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(142 70% 45%);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .combat-victory-party-xp-title {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-victory-party-xp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.combat-victory-party-xp-member {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, hsl(142 70% 45% / 0.1) 0%, hsl(142 70% 35% / 0.05) 100%);
+  border: 1px solid hsl(142 70% 45% / 0.25);
+  border-radius: var(--radius-sm);
+  animation: treasure-reveal 0.4s ease-out forwards;
+}
+
+.combat-victory-party-xp-member:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.combat-victory-party-xp-member:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.combat-victory-party-xp-member:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.combat-victory-party-xp-member:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.combat-victory-party-xp-name {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  flex: 1;
+}
+
+.combat-victory-party-xp-amount {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: hsl(142 70% 50%);
+}
+
+@media (min-width: 768px) {
+  .combat-victory-party-xp-amount {
+    font-size: 1rem;
+  }
+}
+
+.combat-victory-party-xp-levelup {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(45 93% 47%);
+  background: hsl(45 93% 47% / 0.15);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .combat-victory-party-xp-levelup {
+    font-size: 0.875rem;
+  }
+}
+
 /* Combat Action Buttons */
 .combat-actions {
   display: flex;
