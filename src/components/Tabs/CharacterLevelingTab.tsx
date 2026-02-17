@@ -8,6 +8,7 @@ import { Input } from '../ui/Input';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { StatSelectionModal } from '../StatSelectionModal';
 import { StatStrategySelector } from '../ui/StatStrategySelector';
+import { UncappedProgressionPanel } from '../ui/UncappedProgressionPanel';
 import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
@@ -513,6 +514,11 @@ export function CharacterLevelingTab() {
           Note: Changing strategy won't affect existing pending stat increases.
         </div>
       </Card>
+
+      {/* Uncapped Progression Settings - Only shown for uncapped mode characters */}
+      {activeChar.gameMode === 'uncapped' && (
+        <UncappedProgressionPanel character={activeChar} />
+      )}
 
       {/* XP Addition Section */}
       <Card variant="default" padding="md" className="leveling-xp-actions">

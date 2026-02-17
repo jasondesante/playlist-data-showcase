@@ -160,31 +160,31 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   - [x] Only render when `character.gameMode === 'uncapped'`
   - [x] Props: `character: CharacterSheet`, `onConfigChange: (presetId: string) => void`
 
-- [ ] **1.3.2 Add Preset Selection UI**
-  - [ ] Show preset cards in a 2x2 grid
-  - [ ] Each card shows:
-    - [ ] Preset name
-    - [ ] Short description
-    - [ ] Mini color indicator (matches chart)
-    - [ ] Selected state styling
-  - [ ] Click to select preset
+- [x] **1.3.2 Add Preset Selection UI**
+  - [x] Show preset cards in a 2x2 grid
+  - [x] Each card shows:
+    - [x] Preset name
+    - [x] Short description
+    - [x] Mini color indicator (matches chart)
+    - [x] Selected state styling
+  - [x] Click to select preset
 
-- [ ] **1.3.3 Add Chart Integration**
-  - [ ] Render `XPCurveChart` below preset cards
-  - [ ] Update chart when preset changes
-  - [ ] Show "XP Curve Preview" label
+- [x] **1.3.3 Add Chart Integration**
+  - [x] Render `XPCurveChart` below preset cards
+  - [x] Update chart when preset changes
+  - [x] Show "XP Curve Preview" label
 
-- [ ] **1.3.4 Add Apply Button**
-  - [ ] Show "Apply Changes" button when preset differs from current
-  - [ ] Button triggers `LevelUpProcessor.setUncappedConfig()` from engine
-  - [ ] Show toast notification on success
-  - [ ] Update character store with new preset id
+- [x] **1.3.4 Add Apply Button**
+  - [x] Show "Apply Changes" button when preset differs from current
+  - [x] Button triggers `LevelUpProcessor.setUncappedConfig()` from engine
+  - [x] Show toast notification on success
+  - [x] Update character store with new preset id
 
-- [ ] **1.3.5 Add Panel Styling**
-  - [ ] Create `src/styles/components/UncappedProgressionPanel.css`
-  - [ ] Match existing CharacterLevelingTab card styling
-  - [ ] Collapsible animation
-  - [ ] Responsive layout
+- [x] **1.3.5 Add Panel Styling**
+  - [x] Create `src/styles/components/UncappedProgressionPanel.css`
+  - [x] Match existing CharacterLevelingTab card styling
+  - [x] Collapsible animation
+  - [x] Responsive layout
 
 ---
 
@@ -192,24 +192,24 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
 
 #### Tasks
 
-- [ ] **1.4.1 Add Panel to Tab**
-  - [ ] Import `UncappedProgressionPanel` in `CharacterLevelingTab.tsx`
-  - [ ] Add below the Stat Strategy card (after line 515)
-  - [ ] Only show when `activeChar.gameMode === 'uncapped'`
-  - [ ] Add collapsible toggle button
+- [x] **1.4.1 Add Panel to Tab**
+  - [x] Import `UncappedProgressionPanel` in `CharacterLevelingTab.tsx`
+  - [x] Add below the Stat Strategy card (after line 515)
+  - [x] Only show when `activeChar.gameMode === 'uncapped'`
+  - [x] Add collapsible toggle button (implemented in panel component)
 
-- [ ] **1.4.2 Create Config Change Handler**
-  - [ ] Create `handleUncappedConfigChange(presetId: string)` function
-  - [ ] Call `LevelUpProcessor.setUncappedConfig()` with preset formulas
-  - [ ] Update character store
-  - [ ] Show success toast
-  - [ ] Log change for debugging
+- [x] **1.4.2 Create Config Change Handler**
+  - [x] Create `handleUncappedConfigChange(presetId: string)` function (implemented as `handleApplyChanges` in UncappedProgressionPanel)
+  - [x] Call `LevelUpProcessor.setUncappedConfig()` with preset formulas
+  - [x] Update character store
+  - [x] Show success toast
+  - [x] Log change for debugging
 
-- [ ] **1.4.3 Add Hook for Engine Integration**
-  - [ ] Create or update `useUncappedProgression` hook
-  - [ ] Import `LevelUpProcessor` from engine
-  - [ ] Expose `applyPreset(preset: XPFormulaPreset)` method
-  - [ ] File: `src/hooks/useUncappedProgression.ts`
+- [x] **1.4.3 Add Hook for Engine Integration**
+  - [x] Engine integration handled directly in UncappedProgressionPanel component
+  - [x] Import `LevelUpProcessor` from engine
+  - [x] Apply preset functionality built into panel
+  - [x] (Note: Separate hook file not needed - logic is self-contained)
 
 - [ ] **1.4.4 Test Integration**
   - [ ] Test with standard mode character (panel should NOT appear)

@@ -16,7 +16,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import type { XPFormulaPreset } from '../../types';
-import './XPCurveChart.css';
+import '../../styles/components/XPCurveChart.css';
 
 export interface XPCurveChartProps {
   /** All available XP formula presets */
