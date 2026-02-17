@@ -16,7 +16,7 @@
  * - Pure CSS (no Tailwind utility classes)
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import '../styles/components/StatSelectionModal.css';
 import { X, AlertTriangle, ChevronDown, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Ability } from 'playlist-data-engine';
@@ -90,13 +90,34 @@ export function StatSelectionModal({
   // Stat cap constant for standard mode
   const STAT_CAP = 20;
 
-  // Reset state when modal opens
-  React.useEffect(() => {
+  // Ref for focus management
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Reset state and manage focus when modal opens
+  useEffect(() => {
     if (isOpen) {
+      // Store the previously focused element
+      previousFocusRef.current = document.activeElement as HTMLElement;
+
       setSelectionMode('single');
       setSelectedStats([]);
       setMaxSelectedError(false);
       setEffectsExpanded(true);
+
+      // Focus the modal container after a brief delay for animation
+      const timer = setTimeout(() => {
+        modalRef.current?.focus();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Restore focus when modal closes
+  useEffect(() => {
+    if (!isOpen && previousFocusRef.current) {
+      previousFocusRef.current.focus();
     }
   }, [isOpen]);
 
@@ -118,13 +139,6 @@ export function StatSelectionModal({
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onCancel();
-    }
-  };
-
-  // Handle escape key
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
       onCancel();
     }
   };
@@ -210,18 +224,52 @@ export function StatSelectionModal({
     return (Object.keys(ABILITY_INFO) as Ability[]).filter(ability => isStatCapped(ability)).length;
   };
 
+  // Handle Tab key for focus trapping
+  const handleTabKey = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+
+    const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusableElements || focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (e.shiftKey && document.activeElement === firstElement) {
+      e.preventDefault();
+      lastElement.focus();
+    } else if (!e.shiftKey && document.activeElement === lastElement) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  };
+
+  // Combined keyboard handler
+  const handleModalKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onCancel();
+    } else if (e.key === 'Tab') {
+      handleTabKey(e);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
       className="statmodal-overlay"
       onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="statmodal-title"
     >
-      <div className="statmodal-container">
+      <div
+        ref={modalRef}
+        className="statmodal-container"
+        tabIndex={-1}
+        onKeyDown={handleModalKeyDown}
+      >
         {/* Modal Header */}
         <div className="statmodal-header">
           <h1 id="statmodal-title" className="statmodal-title">

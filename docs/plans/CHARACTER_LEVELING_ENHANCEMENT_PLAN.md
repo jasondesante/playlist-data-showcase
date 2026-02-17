@@ -568,10 +568,16 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **4.2.1 Keyboard Navigation**
-  - [ ] All preset cards are keyboard accessible
-  - [ ] Tab order is logical
-  - [ ] Enter/Space activates preset
+- [x] **4.2.1 Keyboard Navigation**
+  - [x] All preset cards are keyboard accessible
+  - [x] Tab order is logical
+  - [x] Enter/Space activates preset
+  - **Implementation Summary (2026-02-17):**
+    - **UncappedProgressionPanel:** Uses native `<button>` elements for preset cards with `aria-pressed` attribute. Header toggle has `aria-expanded` and `aria-controls`. All buttons have `:focus-visible` styles in CSS.
+    - **XPCurveChart:** Changed legend items from `<div>` to `<button>` elements with `aria-pressed`, `aria-label`, and keyboard focus handlers (`onFocus`/`onBlur`). Added `role="group"` and `aria-label` to legend container.
+    - **StatSelectionModal:** Added focus management with `useRef` and `useEffect` to auto-focus modal on open. Implemented Tab key focus trapping (cycles through modal elements only). Restores focus to previous element when modal closes. Already uses native `<button>` elements for all interactive elements.
+    - **Button component:** Uses native `<button>` element with `:focus-visible` styles - all XP source buttons inherit this accessibility.
+    - Build passes with no errors.
 
 - [ ] **4.2.2 Screen Reader Support**
   - [ ] ARIA labels on chart

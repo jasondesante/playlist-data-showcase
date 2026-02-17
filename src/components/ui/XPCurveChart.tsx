@@ -477,22 +477,28 @@ export function XPCurveChart({
       )}
 
       {/* Legend */}
-      <div className="xp-chart-legend">
+      <div className="xp-chart-legend" role="group" aria-label="Chart legend - hover to highlight curves">
         {presets.map((preset) => (
-          <div
+          <button
             key={preset.id}
+            type="button"
             className={`xp-legend-item ${
               selectedId === preset.id ? 'xp-legend-item-selected' : ''
             }`}
             onMouseEnter={() => setHoveredPresetId(preset.id)}
             onMouseLeave={() => setHoveredPresetId(null)}
+            onFocus={() => setHoveredPresetId(preset.id)}
+            onBlur={() => setHoveredPresetId(null)}
+            aria-pressed={selectedId === preset.id}
+            aria-label={`${preset.name} curve${selectedId === preset.id ? ' (selected)' : ''}`}
           >
             <span
               className="xp-legend-color"
               style={{ backgroundColor: preset.chartColor }}
+              aria-hidden="true"
             />
             <span className="xp-legend-label">{preset.name}</span>
-          </div>
+          </button>
         ))}
       </div>
     </div>
