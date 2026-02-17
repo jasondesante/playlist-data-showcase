@@ -25,13 +25,14 @@ export interface SevereWeatherAlert {
  *
  * @example
  * ```tsx
- * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier, biome, severeWeatherAlert } = useEnvironmentalSensors();
+ * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier, biome, severeWeatherAlert, diagnostics } = useEnvironmentalSensors();
  * await requestPermission('geolocation');
  * await startMonitoring();
  * console.log('Activity:', environmentalContext.motion.activity_type);
  * console.log('XP Modifier:', xpModifier);
  * console.log('Biome:', biome); // 'urban' | 'forest' | 'desert' | ...
  * console.log('Severe Weather:', severeWeatherAlert); // null if no severe weather
+ * console.log('Diagnostics:', diagnostics); // sensor health, cache stats, failures
  * ```
  *
  * @returns {Object} Hook return object
@@ -44,6 +45,7 @@ export interface SevereWeatherAlert {
  * @returns {number} xpModifier - Current XP modifier (1.0 - 3.0) based on environmental factors
  * @returns {string} biome - Current biome type derived from location (urban, forest, desert, etc.)
  * @returns {Object|null} severeWeatherAlert - Severe weather alert if detected, null otherwise
+ * @returns {Object|null} diagnostics - Comprehensive sensor diagnostics for debugging
  */
 export const useEnvironmentalSensors = () => {
     const { settings } = useAppStore();
@@ -61,6 +63,11 @@ export const useEnvironmentalSensors = () => {
     // Severe weather alert state - updated when weather changes
     // Null if no severe weather detected
     const [severeWeatherAlert, setSevereWeatherAlert] = useState<SevereWeatherAlert | null>(null);
+
+    // Diagnostics state for debugging sensor issues
+    // Contains sensor health, cache stats, and recent failures
+    // Uses 'any' since engine's internal type is complex and diagnostics is for debugging
+    const [diagnostics, setDiagnostics] = useState<any>(null);
 
     // Calculate XP modifier from environmental context (1.0 - 3.0)
     // Updates whenever environmentalContext changes
@@ -148,6 +155,12 @@ export const useEnvironmentalSensors = () => {
             }
         };
 
+        // Helper to update diagnostics for debugging
+        const updateDiagnostics = () => {
+            const diag = sensors.getDiagnostics();
+            setDiagnostics(diag);
+        };
+
         try {
             // Start push-based sensors (motion + light) with live callback
             sensors.startMonitoring((context) => {
@@ -161,6 +174,8 @@ export const useEnvironmentalSensors = () => {
             updateEnvironmentalContext({ ...initial } as any);
             // Check for severe weather after initial snapshot
             updateSevereWeather();
+            // Update diagnostics after initial snapshot
+            updateDiagnostics();
 
             // Keep geolocation/weather fresh every 30 seconds
             const interval = setInterval(async () => {
@@ -169,8 +184,12 @@ export const useEnvironmentalSensors = () => {
                     updateEnvironmentalContext({ ...updated } as any);
                     // Check for severe weather after each update
                     updateSevereWeather();
+                    // Update diagnostics after each update
+                    updateDiagnostics();
                 } catch (err) {
                     logger.warn('EnvironmentalSensors', 'Snapshot update failed', err);
+                    // Still update diagnostics on error to show the failure
+                    updateDiagnostics();
                 }
             }, 30_000);
 
@@ -180,6 +199,7 @@ export const useEnvironmentalSensors = () => {
                 sensors.stopMonitoring();
                 setIsMonitoring(false);
                 setSevereWeatherAlert(null);
+                setDiagnostics(null);
             };
         } catch (error) {
             handleError(error, 'EnvironmentalSensors');
@@ -187,5 +207,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics };
 };

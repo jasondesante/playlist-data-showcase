@@ -35,8 +35,8 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 - [x] Add optional `severeWeatherAlert` state
   - [x] Call `sensors.detectSevereWeather()` when weather updates
   - [x] Store result (null if no severe weather)
-- [ ] Add `diagnostics` state (optional, for debug panel)
-  - [ ] Call `sensors.getDiagnostics()` for comprehensive sensor health
+- [x] Add `diagnostics` state (optional, for debug panel)
+  - [x] Call `sensors.getDiagnostics()` for comprehensive sensor health
 
 **Files to modify:**
 - `src/hooks/useEnvironmentalSensors.ts`
