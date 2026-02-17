@@ -1737,6 +1737,21 @@ export function CombatSimulatorTab() {
                         <div>Initiative: <span className="combat-stat-bold">{combatant.initiative}</span></div>
                         {combatant.isDefeated && <span className="combat-combatant-defeated">Defeated</span>}
                       </div>
+
+                      {/* Action Economy Display - Phase 4.2 */}
+                      {!combatant.isDefeated && (
+                        <div className="combat-action-economy">
+                          <span className={`combat-action-economy-item ${combatant.actionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                            {combatant.actionUsed ? '⚔️ Act' : '⚔️ Act'}
+                          </span>
+                          <span className={`combat-action-economy-item ${combatant.bonusActionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                            {combatant.bonusActionUsed ? '✨ BA' : '✨ BA'}
+                          </span>
+                          <span className={`combat-action-economy-item ${combatant.reactionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                            {combatant.reactionUsed ? '🔄 Rea' : '🔄 Rea'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1955,6 +1970,31 @@ export function CombatSimulatorTab() {
           {/* Action Buttons - Hide when combat ended */}
           {isActive && (
             <div className="combat-actions">
+              {/* Current Turn Action Economy Display - Phase 4.2 */}
+              {(() => {
+                const currentCombatant = getCurrentCombatant();
+
+                // Show action economy for current turn's combatant
+                return currentCombatant && (
+                  <div className="combat-turn-economy">
+                    <span className="combat-turn-economy-label">
+                      {currentCombatant.character.name}'s Actions:
+                    </span>
+                    <div className="combat-action-economy">
+                      <span className={`combat-action-economy-item ${currentCombatant.actionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                        {currentCombatant.actionUsed ? '⚔️ Act' : '⚔️ Act'}
+                      </span>
+                      <span className={`combat-action-economy-item ${currentCombatant.bonusActionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                        {currentCombatant.bonusActionUsed ? '✨ BA' : '✨ BA'}
+                      </span>
+                      <span className={`combat-action-economy-item ${currentCombatant.reactionUsed ? 'combat-action-economy-used' : 'combat-action-economy-available'}`}>
+                        {currentCombatant.reactionUsed ? '🔄 Rea' : '🔄 Rea'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Tactical Actions - Phase 4 */}
               {(() => {
                 const currentCombatant = getCurrentCombatant();

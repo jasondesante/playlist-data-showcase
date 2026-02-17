@@ -125,9 +125,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Show confirmation dialog (note: simple implementation without modal dialog)
 
 ### 4.2 Action Economy Display
-- [ ] Show action/bonus action/reaction status
-- [ ] Visual indicator when action is consumed
-- [ ] Reset indicators on new turn
+- [x] Show action/bonus action/reaction status
+- [x] Visual indicator when action is consumed
+- [x] Reset indicators on new turn
 
 ### 4.3 Combat Log Updates
 - [x] Handle new action types in log renderer

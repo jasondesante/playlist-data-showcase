@@ -2660,3 +2660,35 @@
   text-decoration: line-through;
   opacity: 0.7;
 }
+
+/* Current turn action economy display - Phase 4.2 */
+.combat-turn-economy {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: hsl(var(--card));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-turn-economy {
+    gap: 1rem;
+    padding: 0.625rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.combat-turn-economy-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-turn-economy-label {
+    font-size: 0.875rem;
+  }
+}
