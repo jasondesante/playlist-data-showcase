@@ -565,6 +565,106 @@
   }
 }
 
+/* ============================================
+   COMBATANTS SPLIT VIEW (Phase 7.4)
+   ============================================ */
+
+.combat-combatants-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.combat-combatants-group {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  background-color: hsl(var(--card));
+}
+
+@media (min-width: 768px) {
+  .combat-combatants-group {
+    padding: 1rem;
+  }
+}
+
+.combat-combatants-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.combat-combatants-group-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-combatants-group-title {
+    font-size: 1rem;
+  }
+}
+
+.combat-combatants-group-summary {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Party section - blue/green tint */
+.combat-combatants-party {
+  border-left: 3px solid hsl(217 70% 50%);
+  background-color: hsl(217 30% 97%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .combat-combatants-party {
+    background-color: hsl(217 20% 12%);
+  }
+}
+
+.combat-combatants-party .combat-combatants-group-title {
+  color: hsl(217 70% 50%);
+}
+
+/* Enemies section - red tint */
+.combat-combatants-enemies {
+  border-left: 3px solid hsl(0 70% 50%);
+  background-color: hsl(0 30% 97%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .combat-combatants-enemies {
+    background-color: hsl(0 20% 12%);
+  }
+}
+
+.combat-combatants-enemies .combat-combatants-group-title {
+  color: hsl(0 70% 50%);
+}
+
+/* Combatants grid inside groups */
+.combat-combatants-group .combat-combatants-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-combatants-group .combat-combatants-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================
+   END COMBATANTS SPLIT VIEW (Phase 7.4)
+   ============================================ */
+
 .combat-combatants-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);

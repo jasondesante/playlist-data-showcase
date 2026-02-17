@@ -3067,10 +3067,14 @@ export function CombatSimulatorTab() {
               </div>
             </div>
 
-            {/* Combatant Cards */}
+            {/* Combatant Cards - Party vs Enemies (Phase 7.4) */}
             <div className="combat-combatants">
-              <div className="combat-combatants-grid">
-                {combat.combatants.map((combatant: Combatant) => {
+              {/* Separate party and enemies into distinct sections */}
+              {(() => {
+                const partyCombatants = combat.combatants.filter((c: Combatant) => !isEnemy(c.character));
+                const enemyCombatants = combat.combatants.filter((c: Combatant) => isEnemy(c.character));
+
+                const renderCombatantCard = (combatant: Combatant) => {
                   const current = getCurrentCombatant();
                   const isCurrentTurn = current?.id === combatant.id;
                   const hpPercent = (combatant.currentHP / combatant.character.hp.max) * 100;
@@ -3152,8 +3156,42 @@ export function CombatSimulatorTab() {
                       )}
                     </div>
                   );
-                })}
-              </div>
+                };
+
+                return (
+                  <div className="combat-combatants-split">
+                    {/* Party Section */}
+                    {partyCombatants.length > 0 && (
+                      <div className="combat-combatants-group combat-combatants-party">
+                        <div className="combat-combatants-group-header">
+                          <h4 className="combat-combatants-group-title">🛡️ Party ({partyCombatants.length})</h4>
+                          <span className="combat-combatants-group-summary">
+                            {partyCombatants.filter((c: Combatant) => !c.isDefeated).length} standing
+                          </span>
+                        </div>
+                        <div className="combat-combatants-grid">
+                          {partyCombatants.map(renderCombatantCard)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Enemies Section */}
+                    {enemyCombatants.length > 0 && (
+                      <div className="combat-combatants-group combat-combatants-enemies">
+                        <div className="combat-combatants-group-header">
+                          <h4 className="combat-combatants-group-title">⚔️ Enemies ({enemyCombatants.length})</h4>
+                          <span className="combat-combatants-group-summary">
+                            {enemyCombatants.filter((c: Combatant) => !c.isDefeated).length} standing
+                          </span>
+                        </div>
+                        <div className="combat-combatants-grid">
+                          {enemyCombatants.map(renderCombatantCard)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
