@@ -171,9 +171,7 @@ export function CombatSimulatorTab() {
   // State: Configuration for enemy generation
   const [generationConfig, setGenerationConfig] = useState<EnemyGenerationConfig>(DEFAULT_GENERATION_CONFIG);
 
-  // State: Loading state for enemy generation
-  // Note: _isGenerating will be used in Phase 2 for loading UI
-  const [_isGenerating, setIsGenerating] = useState(false);
+  // State: Loading state for enemy generation (Phase 2.1)
 
   // Reset generated enemies when config changes (Phase 1.2 requirement)
   // This ensures stale enemies are cleared when user changes generation settings
@@ -291,9 +289,20 @@ export function CombatSimulatorTab() {
     }));
   }, []);
 
-  // Acknowledge intentionally unused functions (will be wired to UI in Phase 2)
-  void _handleGenerateEnemies;
-  void _updateGenerationConfig;
+  // Wire up updateGenerationConfig function for Phase 2 UI
+  const updateGenerationConfig = _updateGenerationConfig;
+
+  // State for tracking if enemies have been generated (Phase 2.1)
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Wrapper to set loading state during generation
+  const handleGenerateEnemiesWithLoading = useCallback(() => {
+    setIsGenerating(true);
+    _handleGenerateEnemies();
+    // Generation is synchronous in the current implementation
+    // but we add a small delay for UX feedback
+    setTimeout(() => setIsGenerating(false), 100);
+  }, [_handleGenerateEnemies]);
 
   // End of Phase 1.2 state management
   // ============================================================
@@ -642,12 +651,193 @@ export function CombatSimulatorTab() {
       {!getActiveCharacter() ? (
         <div className="combat-prompt">Generate a character first</div>
       ) : !combat ? (
-        <button
-          onClick={handleStartCombat}
-          className="combat-generate-button combat-button-base"
-        >
-          Start Combat
-        </button>
+        <div className="combat-pregame">
+          {/* Phase 2.1: Enemy Configuration Panel */}
+          <div className="combat-config-panel">
+            <h3 className="combat-config-title">Enemy Configuration</h3>
+
+            {/* Generation Mode Selector */}
+            <div className="combat-config-section">
+              <label className="combat-config-label">Generation Mode</label>
+              <select
+                value={generationConfig.mode}
+                onChange={(e) => updateGenerationConfig('mode', e.target.value as EnemyGenerationMode)}
+                className="combat-config-select"
+              >
+                <option value="single">Single Enemy</option>
+                <option value="party-balanced">Party-Balanced Encounter</option>
+                <option value="cr-based">CR-Based Encounter</option>
+              </select>
+              <p className="combat-config-hint">
+                {generationConfig.mode === 'single' && 'Generate a single enemy based on template and rarity.'}
+                {generationConfig.mode === 'party-balanced' && 'Generate an encounter balanced to your party\'s level and chosen difficulty.'}
+                {generationConfig.mode === 'cr-based' && 'Generate enemies at a specific Challenge Rating regardless of party level.'}
+              </p>
+            </div>
+
+            {/* Mode-specific config sections (Phase 2.1: Show/hide based on mode) */}
+
+            {/* Single Enemy Options - shown only for single mode */}
+            {generationConfig.mode === 'single' && (
+              <div className="combat-config-section combat-config-section-highlight">
+                <div className="combat-config-row">
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Rarity</label>
+                    <select
+                      value={generationConfig.baseRarity}
+                      onChange={(e) => updateGenerationConfig('baseRarity', e.target.value as EnemyRarity)}
+                      className="combat-config-select"
+                    >
+                      <option value="common">Common</option>
+                      <option value="uncommon">Uncommon</option>
+                      <option value="elite">Elite</option>
+                      <option value="boss">Boss</option>
+                    </select>
+                  </div>
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Category (Optional)</label>
+                    <select
+                      value={generationConfig.category || ''}
+                      onChange={(e) => updateGenerationConfig('category', (e.target.value || undefined) as EnemyCategory | undefined)}
+                      className="combat-config-select"
+                    >
+                      <option value="">Any Category</option>
+                      <option value="humanoid">Humanoid</option>
+                      <option value="beast">Beast</option>
+                      <option value="undead">Undead</option>
+                      <option value="fiend">Fiend</option>
+                      <option value="elemental">Elemental</option>
+                      <option value="construct">Construct</option>
+                      <option value="dragon">Dragon</option>
+                      <option value="monstrosity">Monstrosity</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Party-Balanced Options - shown only for party-balanced mode */}
+            {generationConfig.mode === 'party-balanced' && (
+              <div className="combat-config-section combat-config-section-highlight">
+                <div className="combat-config-row">
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Difficulty</label>
+                    <select
+                      value={generationConfig.difficulty}
+                      onChange={(e) => updateGenerationConfig('difficulty', e.target.value as EncounterDifficulty)}
+                      className="combat-config-select"
+                    >
+                      <option value="easy">Easy</option>
+                      <option value="medium">Medium</option>
+                      <option value="hard">Hard</option>
+                      <option value="deadly">Deadly</option>
+                    </select>
+                  </div>
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Enemy Count</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={generationConfig.count}
+                      onChange={(e) => updateGenerationConfig('count', Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
+                      className="combat-config-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* CR-Based Options - shown only for CR-based mode */}
+            {generationConfig.mode === 'cr-based' && (
+              <div className="combat-config-section combat-config-section-highlight">
+                <div className="combat-config-row">
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Target CR</label>
+                    <select
+                      value={generationConfig.targetCR}
+                      onChange={(e) => updateGenerationConfig('targetCR', parseFloat(e.target.value))}
+                      className="combat-config-select"
+                    >
+                      <option value="0.25">CR 1/4</option>
+                      <option value="0.5">CR 1/2</option>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(cr => (
+                        <option key={cr} value={cr}>CR {cr}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Enemy Count</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={generationConfig.count}
+                      onChange={(e) => updateGenerationConfig('count', Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
+                      className="combat-config-input"
+                    />
+                  </div>
+                  <div className="combat-config-field">
+                    <label className="combat-config-label">Base Rarity</label>
+                    <select
+                      value={generationConfig.baseRarity}
+                      onChange={(e) => updateGenerationConfig('baseRarity', e.target.value as EnemyRarity)}
+                      className="combat-config-select"
+                    >
+                      <option value="common">Common</option>
+                      <option value="uncommon">Uncommon</option>
+                      <option value="elite">Elite</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Generated Enemies Preview */}
+            {generatedEnemies.length > 0 && (
+              <div className="combat-config-preview">
+                <h4 className="combat-config-preview-title">
+                  Generated Enemies ({generatedEnemies.length})
+                </h4>
+                <div className="combat-config-preview-list">
+                  {generatedEnemies.map((enemy, index) => (
+                    <div key={index} className="combat-config-enemy-card">
+                      <div className="combat-config-enemy-name">{enemy.name}</div>
+                      <div className="combat-config-enemy-details">
+                        {enemy.race} {enemy.class} • Level {enemy.level} • HP: {enemy.hp.max}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="combat-config-actions">
+              <button
+                onClick={handleGenerateEnemiesWithLoading}
+                disabled={isGenerating}
+                className={`combat-config-button combat-config-button-secondary ${isGenerating ? 'combat-config-button-disabled' : ''}`}
+              >
+                {isGenerating ? 'Generating...' : 'Generate Enemies'}
+              </button>
+              <button
+                onClick={handleStartCombat}
+                disabled={generatedEnemies.length === 0}
+                className={`combat-config-button combat-config-button-primary ${generatedEnemies.length === 0 ? 'combat-config-button-disabled' : ''}`}
+              >
+                Start Combat
+              </button>
+            </div>
+
+            {/* Help text when no enemies generated */}
+            {generatedEnemies.length === 0 && (
+              <p className="combat-config-help">
+                Generate enemies before starting combat, or click Start Combat to use a random fallback enemy.
+              </p>
+            )}
+          </div>
+        </div>
       ) : (
         <div className="combat-content">
           {/* Combat Info */}

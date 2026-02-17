@@ -39,9 +39,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Provide UI controls for all enemy generation parameters.
 
 ### 2.1 Generation Mode Selector
-- [ ] Add generation mode dropdown
-  - [ ] Options: "Single Enemy", "Party-Balanced Encounter", "CR-Based Encounter"
-  - [ ] Show/hide relevant config sections based on mode
+- [x] Add generation mode dropdown
+  - [x] Options: "Single Enemy", "Party-Balanced Encounter", "CR-Based Encounter"
+  - [x] Show/hide relevant config sections based on mode
 
 ### 2.2 Single Enemy Configuration
 - [ ] Add enemy template selector dropdown

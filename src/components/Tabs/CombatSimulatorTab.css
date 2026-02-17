@@ -1520,3 +1520,298 @@
   background-color: hsl(0 84% 97%);
   color: hsl(0 72% 51%);
 }
+
+/* ============================================
+   ENEMY CONFIGURATION PANEL (Phase 2)
+   ============================================ */
+
+.combat-pregame {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.combat-config-panel {
+  background-color: hsl(var(--muted));
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+}
+
+@media (min-width: 768px) {
+  .combat-config-panel {
+    padding: 1rem;
+  }
+}
+
+.combat-config-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-config-title {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-config-section {
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-config-section {
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-config-section-highlight {
+  background-color: hsl(var(--background) / 0.5);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.combat-config-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .combat-config-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.combat-config-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) ease;
+}
+
+.combat-config-select:hover {
+  border-color: hsl(var(--primary));
+}
+
+.combat-config-select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.combat-config-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+}
+
+.combat-config-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.combat-config-hint {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .combat-config-hint {
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+}
+
+.combat-config-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .combat-config-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .combat-config-row {
+    gap: 1rem;
+  }
+}
+
+.combat-config-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Generated Enemies Preview */
+.combat-config-preview {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+@media (min-width: 768px) {
+  .combat-config-preview {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+}
+
+.combat-config-preview-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-config-preview-title {
+    font-size: 0.875rem;
+  }
+}
+
+.combat-config-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .combat-config-preview-list {
+    gap: 0.5rem;
+  }
+}
+
+.combat-config-enemy-card {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  min-width: 140px;
+}
+
+@media (min-width: 768px) {
+  .combat-config-enemy-card {
+    padding: 0.75rem;
+    min-width: 180px;
+  }
+}
+
+.combat-config-enemy-name {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-config-enemy-name {
+    font-size: 0.875rem;
+  }
+}
+
+.combat-config-enemy-details {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-config-enemy-details {
+    font-size: 0.75rem;
+  }
+}
+
+/* Config Action Buttons */
+.combat-config-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .combat-config-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+.combat-config-button {
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease, background-color var(--duration-fast) ease;
+  border: none;
+}
+
+@media (min-width: 768px) {
+  .combat-config-button {
+    padding: 0.625rem 1.25rem;
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+}
+
+.combat-config-button-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.combat-config-button-primary:hover:not(.combat-config-button-disabled) {
+  opacity: 0.9;
+}
+
+.combat-config-button-secondary {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.combat-config-button-secondary:hover:not(.combat-config-button-disabled) {
+  background-color: hsl(var(--accent));
+}
+
+.combat-config-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.combat-config-help {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .combat-config-help {
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+  }
+}
