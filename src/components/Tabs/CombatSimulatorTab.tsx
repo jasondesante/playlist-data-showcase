@@ -309,6 +309,52 @@ const TREASURE_ITEM_TYPES = [
 // End of Phase 5: Treasure Configuration Types
 // ========================================
 
+// ========================================
+// Phase 6: Advanced Combat Configuration Types
+// ========================================
+
+/**
+ * Advanced combat configuration options
+ *
+ * Phase 6.1: Advanced Options Panel
+ * - Toggle switches for environment, music, tactical mode, fleeing
+ * - Numeric inputs for max turns and seed
+ */
+export interface AdvancedCombatConfig {
+    /** Apply environmental bonuses (weather, terrain effects) */
+    useEnvironment: boolean;
+
+    /** Apply music-based bonuses (audio-influenced combat effects) */
+    useMusic: boolean;
+
+    /** Enable advanced tactical rules (flanking, cover, etc.) */
+    tacticalMode: boolean;
+
+    /** Enable the flee action for combatants */
+    allowFleeing: boolean;
+
+    /** Maximum turns before combat is declared a draw (default: 100) */
+    maxTurnsBeforeDraw: number;
+
+    /** Seed for deterministic combat resolution */
+    seed: string;
+}
+
+/**
+ * Default advanced combat configuration
+ */
+const DEFAULT_ADVANCED_CONFIG: AdvancedCombatConfig = {
+    useEnvironment: false,
+    useMusic: false,
+    tacticalMode: false,
+    allowFleeing: true,  // Flee is enabled by default for flexibility
+    maxTurnsBeforeDraw: 100,
+    seed: ''
+};
+
+// End of Phase 6: Advanced Combat Configuration Types
+// ========================================
+
 /**
  * CombatSimulatorTab Component
  *
@@ -462,6 +508,40 @@ export function CombatSimulatorTab() {
 
     logger.info('CombatSimulator', 'Removed custom treasure item', { itemId });
   }, []);
+
+  // ============================================================
+  // Phase 6.1: Advanced Combat Configuration State
+  // ============================================================
+
+  // State: Advanced configuration options
+  const [advancedConfig, setAdvancedConfig] = useState<AdvancedCombatConfig>(DEFAULT_ADVANCED_CONFIG);
+
+  // State: Collapsible panel toggle
+  const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
+
+  // Handler: Update advanced config field
+  const updateAdvancedConfig = useCallback(<K extends keyof AdvancedCombatConfig>(
+    key: K,
+    value: AdvancedCombatConfig[K]
+  ) => {
+    setAdvancedConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    logger.info('CombatSimulator', 'Updated advanced config', { key, value });
+  }, []);
+
+  // Handler: Toggle a boolean advanced option
+  const toggleAdvancedOption = useCallback((key: 'useEnvironment' | 'useMusic' | 'tacticalMode' | 'allowFleeing') => {
+    setAdvancedConfig(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+    logger.info('CombatSimulator', 'Toggled advanced option', { key });
+  }, []);
+
+  // End of Phase 6.1: Advanced Combat Configuration State
+  // ============================================================
 
   // ============================================================
   // Phase 5.3: Combat Config for Engine
@@ -1963,6 +2043,180 @@ export function CombatSimulatorTab() {
                       </div>
                     </>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Advanced Options Configuration Section - Phase 6.1 */}
+            <div className="combat-config-section combat-advanced-section">
+              {/* Collapsible Header */}
+              <button
+                type="button"
+                onClick={() => setIsAdvancedExpanded(!isAdvancedExpanded)}
+                className="combat-advanced-header"
+              >
+                <span className="combat-advanced-title">
+                  ⚙️ Advanced Options
+                  {(() => {
+                    const activeOptions = [
+                      advancedConfig.useEnvironment && 'Environment',
+                      advancedConfig.useMusic && 'Music',
+                      advancedConfig.tacticalMode && 'Tactical',
+                      advancedConfig.allowFleeing && 'Flee'
+                    ].filter(Boolean);
+                    return activeOptions.length > 0 ? (
+                      <span className="combat-advanced-active-badge">
+                        {activeOptions.length} active
+                      </span>
+                    ) : null;
+                  })()}
+                </span>
+                <span className={`combat-advanced-expand-icon ${isAdvancedExpanded ? 'combat-advanced-expanded' : ''}`}>
+                  ▼
+                </span>
+              </button>
+
+              {/* Collapsible Content */}
+              {isAdvancedExpanded && (
+                <div className="combat-advanced-content">
+                  {/* Toggle Switches */}
+                  <div className="combat-advanced-toggles">
+                    {/* Use Environment Toggle */}
+                    <div className="combat-advanced-toggle-row">
+                      <div className="combat-advanced-toggle-info">
+                        <span className="combat-advanced-toggle-label">Use Environment</span>
+                        <span className="combat-advanced-toggle-description">
+                          Apply environmental bonuses (weather, terrain effects)
+                        </span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={advancedConfig.useEnvironment}
+                          onChange={() => toggleAdvancedOption('useEnvironment')}
+                          className="toggle-checkbox"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Use Music Toggle */}
+                    <div className="combat-advanced-toggle-row">
+                      <div className="combat-advanced-toggle-info">
+                        <span className="combat-advanced-toggle-label">Use Music</span>
+                        <span className="combat-advanced-toggle-description">
+                          Apply music-based bonuses (audio-influenced combat effects)
+                        </span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={advancedConfig.useMusic}
+                          onChange={() => toggleAdvancedOption('useMusic')}
+                          className="toggle-checkbox"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Tactical Mode Toggle */}
+                    <div className="combat-advanced-toggle-row">
+                      <div className="combat-advanced-toggle-info">
+                        <span className="combat-advanced-toggle-label">Tactical Mode</span>
+                        <span className="combat-advanced-toggle-description">
+                          Enable advanced tactical rules (flanking, cover, etc.)
+                        </span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={advancedConfig.tacticalMode}
+                          onChange={() => toggleAdvancedOption('tacticalMode')}
+                          className="toggle-checkbox"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Allow Fleeing Toggle */}
+                    <div className="combat-advanced-toggle-row">
+                      <div className="combat-advanced-toggle-info">
+                        <span className="combat-advanced-toggle-label">Allow Fleeing</span>
+                        <span className="combat-advanced-toggle-description">
+                          Enable the flee action for combatants
+                        </span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={advancedConfig.allowFleeing}
+                          onChange={() => toggleAdvancedOption('allowFleeing')}
+                          className="toggle-checkbox"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Numeric Inputs */}
+                  <div className="combat-advanced-numerics">
+                    <div className="combat-config-field">
+                      <label className="combat-config-label">Max Turns Before Draw</label>
+                      <input
+                        type="number"
+                        min={10}
+                        max={999}
+                        value={advancedConfig.maxTurnsBeforeDraw}
+                        onChange={(e) => updateAdvancedConfig('maxTurnsBeforeDraw', Math.max(10, parseInt(e.target.value) || 100))}
+                        className="combat-config-input"
+                      />
+                      <p className="combat-config-hint">
+                        Combat ends in a draw after this many turns (default: 100)
+                      </p>
+                    </div>
+
+                    <div className="combat-config-field">
+                      <label className="combat-config-label">Combat Seed <span className="combat-config-optional">(optional)</span></label>
+                      <input
+                        type="text"
+                        value={advancedConfig.seed}
+                        onChange={(e) => updateAdvancedConfig('seed', e.target.value)}
+                        className="combat-config-input"
+                        placeholder="Enter seed for deterministic combat"
+                      />
+                      <p className="combat-config-hint">
+                        Same seed produces same combat outcomes
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Configuration Summary */}
+                  <div className="combat-advanced-summary">
+                    <span className="combat-advanced-summary-label">Active Options:</span>
+                    <div className="combat-advanced-summary-badges">
+                      {advancedConfig.useEnvironment && (
+                        <span className="combat-advanced-summary-badge combat-advanced-badge-environment">
+                          🌍 Environment
+                        </span>
+                      )}
+                      {advancedConfig.useMusic && (
+                        <span className="combat-advanced-summary-badge combat-advanced-badge-music">
+                          🎵 Music
+                        </span>
+                      )}
+                      {advancedConfig.tacticalMode && (
+                        <span className="combat-advanced-summary-badge combat-advanced-badge-tactical">
+                          ⚔️ Tactical
+                        </span>
+                      )}
+                      {advancedConfig.allowFleeing && (
+                        <span className="combat-advanced-summary-badge combat-advanced-badge-flee">
+                          🏃 Flee
+                        </span>
+                      )}
+                      {!advancedConfig.useEnvironment && !advancedConfig.useMusic && !advancedConfig.tacticalMode && !advancedConfig.allowFleeing && (
+                        <span className="combat-advanced-summary-none">
+                          No special options enabled
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

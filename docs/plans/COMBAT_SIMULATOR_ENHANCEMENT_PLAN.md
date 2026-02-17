@@ -169,18 +169,18 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Provide advanced options for encounter customization.
 
 ### 6.1 Advanced Options Panel
-- [ ] Create collapsible "Advanced Options" section
-- [ ] Add toggle switches:
-  - [ ] `useEnvironment` - Apply environmental bonuses
-  - [ ] `useMusic` - Apply music-based bonuses
-  - [ ] `tacticalMode` - Enable advanced tactical rules
-  - [ ] `allowFleeing` - Enable flee action
-- [ ] Add numeric inputs:
-  - [ ] `maxTurnsBeforeDraw` - Combat timeout (default 100)
-  - [ ] `seed` - Deterministic generation seed
+- [x] Create collapsible "Advanced Options" section
+- [x] Add toggle switches:
+  - [x] `useEnvironment` - Apply environmental bonuses
+  - [x] `useMusic` - Apply music-based bonuses
+  - [x] `tacticalMode` - Enable advanced tactical rules
+  - [x] `allowFleeing` - Enable flee action
+- [x] Add numeric inputs:
+  - [x] `maxTurnsBeforeDraw` - Combat timeout (default 100)
+  - [x] `seed` - Deterministic generation seed
 
 ### 6.2 Configuration Preview
-- [ ] Show summary of active options
+- [x] Show summary of active options
 - [ ] Display estimated encounter difficulty
 - [ ] Show any warnings (e.g., "Fleeing disabled")
 
