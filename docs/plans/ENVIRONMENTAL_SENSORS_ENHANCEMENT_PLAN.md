@@ -199,9 +199,11 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
   - Added logic to recreate `EnvironmentalSensors` instance when API key changes after hydration
   - This ensures the API key is properly loaded before being passed to the engine
 
-- [ ] Common issues to check:
+- [x] Common issues to check:
   - [x] Is the API key actually being passed to EnvironmentalSensors? **YES - NOW FIXED**
-  - [ ] Is the geolocation data available (needed for weather lookup)?
+  - [x] Is the geolocation data available (needed for weather lookup)? **FIXED - UI was checking wrong property**
+    - **Issue Found:** The UI was checking `(environmentalContext as any).location?.coords?.latitude` but the engine returns `geolocation.latitude` directly (no `.coords` wrapper)
+    - **Fix Applied:** Updated all references in EnvironmentalSensorsTab.tsx from `.location?.coords?` to `.geolocation?`
   - [ ] CORS issues in browser? (OpenWeather should be fine)
   - [ ] API key restrictions? (some keys are restricted by domain)
   - [ ] Is the API key activated? (new keys can take a few hours)

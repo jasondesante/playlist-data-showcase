@@ -440,7 +440,7 @@ export function EnvironmentalSensorsTab() {
         {environmentalContext ? (
           <div className="sensor-data-section">
             {/* GPS Location */}
-            {(environmentalContext as any).location ? (
+            {(environmentalContext as any).geolocation ? (
               <Card variant="elevated" padding="lg" className="sensor-gps-card">
                 <div className="sensor-card-title">
                   <Navigation size={18} />
@@ -452,13 +452,13 @@ export function EnvironmentalSensorsTab() {
                   <div className="sensor-coordinate-item">
                     <span className="sensor-coordinate-label">Latitude</span>
                     <span className="sensor-coordinate-value">
-                      {(environmentalContext as any).location?.coords?.latitude?.toFixed(6) ?? 'N/A'}
+                      {(environmentalContext as any).geolocation?.latitude?.toFixed(6) ?? 'N/A'}
                     </span>
                   </div>
                   <div className="sensor-coordinate-item">
                     <span className="sensor-coordinate-label">Longitude</span>
                     <span className="sensor-coordinate-value">
-                      {(environmentalContext as any).location?.coords?.longitude?.toFixed(6) ?? 'N/A'}
+                      {(environmentalContext as any).geolocation?.longitude?.toFixed(6) ?? 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -477,11 +477,11 @@ export function EnvironmentalSensorsTab() {
                   <div className="sensor-minimap-pin">
                     <Navigation size={32} />
                     <span className="sensor-minimap-coords">
-                      {(environmentalContext as any).location?.coords?.latitude?.toFixed(4) ?? '0.0000'}, {(environmentalContext as any).location?.coords?.longitude?.toFixed(4) ?? '0.0000'}
+                      {(environmentalContext as any).geolocation?.latitude?.toFixed(4) ?? '0.0000'}, {(environmentalContext as any).geolocation?.longitude?.toFixed(4) ?? '0.0000'}
                     </span>
                   </div>
                   <a
-                    href={`https://www.google.com/maps?q=${(environmentalContext as any).location?.coords?.latitude ?? 0},${(environmentalContext as any).location?.coords?.longitude ?? 0}`}
+                    href={`https://www.google.com/maps?q=${(environmentalContext as any).geolocation?.latitude ?? 0},${(environmentalContext as any).geolocation?.longitude ?? 0}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="sensor-maps-link"
@@ -495,32 +495,32 @@ export function EnvironmentalSensorsTab() {
 
                 {/* GPS details */}
                 <div className="sensor-gps-details">
-                  {(environmentalContext as any).location?.coords?.altitude != null && (
+                  {(environmentalContext as any).geolocation?.altitude != null && (
                     <div className="sensor-gps-detail">
                       <span className="sensor-gps-detail-label">Alt</span>
-                      <span className="sensor-gps-detail-value">{(environmentalContext as any).location.coords.altitude.toFixed(1)} m</span>
+                      <span className="sensor-gps-detail-value">{(environmentalContext as any).geolocation.altitude.toFixed(1)} m</span>
                     </div>
                   )}
-                  {(environmentalContext as any).location?.coords?.speed != null && (
+                  {(environmentalContext as any).geolocation?.speed != null && (
                     <div className="sensor-gps-detail">
                       <span className="sensor-gps-detail-label">Speed</span>
-                      <span className="sensor-gps-detail-value">{((environmentalContext as any).location.coords.speed * 3.6).toFixed(1)} km/h</span>
+                      <span className="sensor-gps-detail-value">{((environmentalContext as any).geolocation.speed * 3.6).toFixed(1)} km/h</span>
                     </div>
                   )}
-                  {(environmentalContext as any).location?.coords?.heading != null && (
+                  {(environmentalContext as any).geolocation?.heading != null && (
                     <div className="sensor-gps-detail">
                       <span className="sensor-gps-detail-label">Heading</span>
-                      <span className="sensor-gps-detail-value">{(environmentalContext as any).location.coords.heading.toFixed(0)}°</span>
+                      <span className="sensor-gps-detail-value">{(environmentalContext as any).geolocation.heading.toFixed(0)}°</span>
                     </div>
                   )}
                   <div className="sensor-gps-detail">
                     <span className="sensor-gps-detail-label">Accuracy</span>
-                    <span className="sensor-gps-detail-value">±{(environmentalContext as any).location?.coords?.accuracy ?? 0} m</span>
+                    <span className="sensor-gps-detail-value">±{(environmentalContext as any).geolocation?.accuracy ?? 0} m</span>
                   </div>
                 </div>
 
                 <span className="sensor-updated-time">
-                  Updated: {new Date((environmentalContext as any).location?.timestamp ?? environmentalContext.timestamp).toLocaleTimeString()}
+                  Updated: {new Date((environmentalContext as any).geolocation?.timestamp ?? environmentalContext.timestamp).toLocaleTimeString()}
                 </span>
               </Card>
             ) : (
@@ -766,7 +766,7 @@ export function EnvironmentalSensorsTab() {
                 </h3>
                 <ul className="sensor-empty-list">
                   {/* Show specific error reason based on state */}
-                  {!(environmentalContext as any).location ? (
+                  {!(environmentalContext as any).geolocation ? (
                     <>
                       <li>📍 No GPS location available</li>
                       <li>Weather requires your location to fetch data</li>
