@@ -71,10 +71,10 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Show calculated total encounter XP
 
 ### 2.5 Custom Template Mix
-- [ ] Add template selection for custom mix mode
-  - [ ] Multi-select or tag-style input
-  - [ ] Visual preview of enemy composition
-  - [ ] Cycle templates if count > templates.length
+- [x] Add template selection for custom mix mode
+  - [x] Multi-select or tag-style input
+  - [x] Visual preview of enemy composition
+  - [x] Cycle templates if count > templates.length
 
 ---
 

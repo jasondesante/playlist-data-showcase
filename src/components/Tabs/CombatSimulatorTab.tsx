@@ -1103,6 +1103,56 @@ export function CombatSimulatorTab() {
                         {generationConfig.count > generationConfig.templates.length && ` Will cycle through templates for ${generationConfig.count} enemies.`}
                       </p>
                     )}
+
+                    {/* Visual preview of enemy composition - Phase 2.5 */}
+                    {generationConfig.templates && generationConfig.templates.length > 0 && (
+                      <div className="combat-composition-preview">
+                        <div className="combat-composition-preview-header">
+                          <span className="combat-composition-preview-title">Enemy Composition Preview</span>
+                          <span className="combat-composition-preview-count">
+                            {generationConfig.count} {generationConfig.count === 1 ? 'enemy' : 'enemies'}
+                          </span>
+                        </div>
+                        <div className="combat-composition-preview-grid">
+                          {Array.from({ length: Math.min(generationConfig.count, 10) }).map((_, index) => {
+                            // Cycle through templates
+                            const templateId = generationConfig.templates![index % generationConfig.templates!.length];
+                            const template = ENEMY_TEMPLATES.find(t => t.id === templateId);
+                            if (!template) return null;
+                            const archInfo = ARCHETYPE_INFO[template.archetype];
+                            const catInfo = CATEGORY_INFO[template.category];
+                            const isCycling = index >= generationConfig.templates!.length;
+
+                            return (
+                              <div
+                                key={index}
+                                className={`combat-composition-enemy ${isCycling ? 'combat-composition-enemy-cycled' : ''}`}
+                                title={isCycling ? `Cycled from template #${(index % generationConfig.templates!.length) + 1}` : undefined}
+                              >
+                                <div className="combat-composition-enemy-index">{index + 1}</div>
+                                <div className="combat-composition-enemy-icon" style={{ backgroundColor: archInfo.color }}>
+                                  {archInfo.icon}
+                                </div>
+                                <div className="combat-composition-enemy-info">
+                                  <span className="combat-composition-enemy-name">{template.name}</span>
+                                  <span className="combat-composition-enemy-category">{catInfo.icon} {catInfo.label}</span>
+                                </div>
+                                {isCycling && (
+                                  <span className="combat-composition-cycle-badge" title="This template is cycled from earlier selection">
+                                    ↻
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {generationConfig.count > 10 && (
+                          <p className="combat-composition-preview-truncated">
+                            Showing first 10 of {generationConfig.count} enemies
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
