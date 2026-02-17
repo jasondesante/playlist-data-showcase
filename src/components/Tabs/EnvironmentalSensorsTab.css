@@ -472,6 +472,157 @@
   background-color: hsl(0 0% 0% / 0.3);
 }
 
+/* XP Modifier card */
+.sensor-xp-modifier-card {
+  border-color: hsl(168 76% 50% / 0.3);
+  background: linear-gradient(135deg, hsl(168 76% 50% / 0.1), hsl(var(--surface-2)));
+}
+
+.sensor-xp-icon {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-icon {
+    font-size: 1.25rem;
+  }
+}
+
+.sensor-xp-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-display {
+    padding: 1.25rem 0;
+  }
+}
+
+.sensor-xp-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transition: color var(--duration-fast) var(--ease-out-cubic);
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-value {
+    font-size: 3rem;
+  }
+}
+
+/* XP value color tiers */
+.sensor-xp-value[data-tier="base"] {
+  color: hsl(var(--muted-foreground));
+}
+
+.sensor-xp-value[data-tier="bonus"] {
+  color: hsl(48 96% 53%);
+}
+
+.sensor-xp-value[data-tier="high"] {
+  color: hsl(25 95% 53%);
+}
+
+.sensor-xp-value[data-tier="epic"] {
+  color: hsl(168 76% 50%);
+  text-shadow: 0 0 20px hsl(168 76% 50% / 0.4);
+}
+
+.sensor-xp-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-label {
+    font-size: 0.875rem;
+  }
+}
+
+.sensor-xp-tier-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-tier-indicators {
+    gap: 1.5rem;
+  }
+}
+
+.sensor-xp-tier {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  opacity: 0.4;
+  transition: opacity var(--duration-fast) var(--ease-out-cubic);
+}
+
+.sensor-xp-tier[data-active="true"] {
+  opacity: 1;
+}
+
+.sensor-xp-tier-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: hsl(var(--muted-foreground));
+  transition: background-color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.sensor-xp-tier[data-active="true"] .sensor-xp-tier-dot {
+  animation: sensorTierPulse 1.5s var(--ease-out-cubic) infinite;
+}
+
+.sensor-xp-tier:nth-child(1) .sensor-xp-tier-dot {
+  background-color: hsl(var(--muted-foreground));
+}
+
+.sensor-xp-tier:nth-child(2) .sensor-xp-tier-dot {
+  background-color: hsl(48 96% 53%);
+}
+
+.sensor-xp-tier:nth-child(3) .sensor-xp-tier-dot {
+  background-color: hsl(25 95% 53%);
+}
+
+.sensor-xp-tier:nth-child(4) .sensor-xp-tier-dot {
+  background-color: hsl(168 76% 50%);
+}
+
+@keyframes sensorTierPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 8px 2px currentColor;
+  }
+}
+
+.sensor-xp-tier-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .sensor-xp-tier-label {
+    font-size: 0.75rem;
+  }
+}
+
 /* Weather card */
 .sensor-weather-card {
   border-color: hsl(199 89% 48% / 0.3);

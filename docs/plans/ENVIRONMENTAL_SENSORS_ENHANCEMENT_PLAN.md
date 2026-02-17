@@ -64,14 +64,14 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ## Phase 2: XP Modifier Card (Simple)
 
 ### 2.1 Create XP Modifier Display Card
-- [ ] Create prominent XP Modifier card in EnvironmentalSensorsTab
-  - [ ] Large multiplier display (e.g., "1.75x")
-  - [ ] Color-coded based on value:
+- [x] Create prominent XP Modifier card in EnvironmentalSensorsTab
+  - [x] Large multiplier display (e.g., "1.75x")
+  - [x] Color-coded based on value:
     - 1.0x - 1.24x: Default/muted
     - 1.25x - 1.49x: Yellow (bonus active)
     - 1.5x - 1.99x: Orange (high bonus)
     - 2.0x+: Green/teal (epic bonus)
-  - [ ] Optional: small label like "XP Bonus" or "Environmental Modifier"
+  - [x] Optional: small label like "XP Bonus" or "Environmental Modifier"
 
 **Files to modify:**
 - `src/components/Tabs/EnvironmentalSensorsTab.tsx`

@@ -128,7 +128,7 @@ function MotionGraph({ data, color, label }: { data: number[]; color: string; la
 }
 
 export function EnvironmentalSensorsTab() {
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -395,6 +395,55 @@ export function EnvironmentalSensorsTab() {
                 </ul>
               </Card>
             )}
+
+            {/* XP Modifier */}
+            <Card variant="elevated" padding="lg" className="sensor-xp-modifier-card">
+              <div className="sensor-card-title">
+                <span className="sensor-xp-icon">✨</span>
+                <span>XP Modifier</span>
+              </div>
+
+              <div className="sensor-xp-display">
+                <span
+                  className="sensor-xp-value"
+                  data-tier={(() => {
+                    if (xpModifier >= 2.0) return 'epic';
+                    if (xpModifier >= 1.5) return 'high';
+                    if (xpModifier >= 1.25) return 'bonus';
+                    return 'base';
+                  })()}
+                >
+                  {xpModifier.toFixed(2)}x
+                </span>
+                <span className="sensor-xp-label">
+                  {(() => {
+                    if (xpModifier >= 2.0) return 'Epic Environmental Bonus!';
+                    if (xpModifier >= 1.5) return 'High Environmental Bonus';
+                    if (xpModifier >= 1.25) return 'Environmental Bonus Active';
+                    return 'Base XP Rate';
+                  })()}
+                </span>
+              </div>
+
+              <div className="sensor-xp-tier-indicators">
+                <div className="sensor-xp-tier" data-active={xpModifier >= 1.0}>
+                  <span className="sensor-xp-tier-dot" />
+                  <span className="sensor-xp-tier-label">Base</span>
+                </div>
+                <div className="sensor-xp-tier" data-active={xpModifier >= 1.25}>
+                  <span className="sensor-xp-tier-dot" />
+                  <span className="sensor-xp-tier-label">Bonus</span>
+                </div>
+                <div className="sensor-xp-tier" data-active={xpModifier >= 1.5}>
+                  <span className="sensor-xp-tier-dot" />
+                  <span className="sensor-xp-tier-label">High</span>
+                </div>
+                <div className="sensor-xp-tier" data-active={xpModifier >= 2.0}>
+                  <span className="sensor-xp-tier-dot" />
+                  <span className="sensor-xp-tier-label">Epic</span>
+                </div>
+              </div>
+            </Card>
 
             {/* Weather Status */}
             {environmentalContext.weather ? (
