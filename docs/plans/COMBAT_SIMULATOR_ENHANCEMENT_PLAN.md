@@ -83,12 +83,12 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 **Goal:** Enable enemy generation influenced by playlist audio analysis.
 
 ### 3.1 Audio Generation UI
-- [ ] Add "Audio-Influenced" toggle
-- [ ] Add song selector when audio mode enabled
-  - [ ] Show playlist tracks as multi-select
-  - [ ] Limit selection to enemy count
-  - [ ] Display "X of Y songs selected" counter
-- [ ] Add "Random Selection" button to pick N songs automatically
+- [x] Add "Audio-Influenced" toggle
+- [x] Add song selector when audio mode enabled
+  - [x] Show playlist tracks as multi-select
+  - [x] Limit selection to enemy count
+  - [x] Display "X of Y songs selected" counter
+- [x] Add "Random Selection" button to pick N songs automatically
 
 ### 3.2 Audio Analysis Integration
 - [ ] Create `useAudioEnemyGeneration.ts` hook

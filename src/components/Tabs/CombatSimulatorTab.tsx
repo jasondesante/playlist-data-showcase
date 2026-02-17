@@ -3,6 +3,7 @@ import { useCombatEngine, type Combatant } from '../../hooks/useCombatEngine';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useEnemyGenerator } from '../../hooks/useEnemyGenerator';
+import { usePlaylistStore } from '../../store/playlistStore';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import {
@@ -20,6 +21,7 @@ import {
     calculateAdjustedXP
 } from 'playlist-data-engine';
 import { logger } from '../../utils/logger';
+import type { PlaylistTrack } from '../../types';
 import './CombatSimulatorTab.css';
 
 /**
@@ -492,6 +494,63 @@ export function CombatSimulatorTab() {
   }, [_handleGenerateEnemies]);
 
   // End of Phase 1.2 state management
+  // ============================================================
+
+  // ============================================================
+  // Phase 3.1: Audio-Influenced Generation State
+  // ============================================================
+
+  // Access playlist store for audio-influenced generation
+  const { currentPlaylist } = usePlaylistStore();
+
+  // State: Audio-influenced mode toggle
+  const [audioInfluenced, setAudioInfluenced] = useState(false);
+
+  // State: Selected tracks for audio-influenced generation
+  const [selectedAudioTracks, setSelectedAudioTracks] = useState<PlaylistTrack[]>([]);
+
+  // Handler: Toggle audio-influenced mode
+  const handleToggleAudioInfluenced = useCallback(() => {
+    setAudioInfluenced(prev => !prev);
+    // Clear selected tracks when disabling audio mode
+    if (audioInfluenced) {
+      setSelectedAudioTracks([]);
+    }
+  }, [audioInfluenced]);
+
+  // Handler: Toggle a track selection
+  const handleToggleAudioTrack = useCallback((track: PlaylistTrack) => {
+    setSelectedAudioTracks(prev => {
+      const isSelected = prev.some(t => t.title === track.title && t.artist === track.artist);
+      if (isSelected) {
+        return prev.filter(t => !(t.title === track.title && t.artist === track.artist));
+      } else {
+        // Limit selection to enemy count
+        if (prev.length >= generationConfig.count) {
+          return prev;
+        }
+        return [...prev, track];
+      }
+    });
+  }, [generationConfig.count]);
+
+  // Handler: Random selection of N songs
+  const handleRandomAudioSelection = useCallback(() => {
+    if (!currentPlaylist?.tracks) return;
+
+    const tracks = [...currentPlaylist.tracks];
+    const count = Math.min(generationConfig.count, tracks.length);
+
+    // Fisher-Yates shuffle and pick first N
+    for (let i = tracks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+    }
+
+    setSelectedAudioTracks(tracks.slice(0, count));
+  }, [currentPlaylist, generationConfig.count]);
+
+  // End of Phase 3.1 state management
   // ============================================================
 
   // State for manual attack selection (task 4.9.6)
@@ -1377,6 +1436,110 @@ export function CombatSimulatorTab() {
                 })()}
               </div>
             )}
+
+            {/* Audio-Influenced Generation Section - Phase 3.1 */}
+            <div className="combat-config-section combat-audio-section">
+              <div className="combat-audio-header">
+                <div className="combat-audio-title-row">
+                  <span className="combat-audio-title">🎵 Audio-Influenced</span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={audioInfluenced}
+                      onChange={handleToggleAudioInfluenced}
+                      className="toggle-checkbox"
+                      disabled={!currentPlaylist?.tracks?.length}
+                    />
+                  </label>
+                </div>
+                {!currentPlaylist?.tracks?.length && (
+                  <p className="combat-audio-warning">
+                    Load a playlist first to enable audio-influenced generation
+                  </p>
+                )}
+                {audioInfluenced && currentPlaylist?.tracks && (
+                  <p className="combat-audio-hint">
+                    Select songs to influence enemy generation. Audio characteristics will affect enemy types.
+                  </p>
+                )}
+              </div>
+
+              {/* Song Selector - shown when audio mode is enabled */}
+              {audioInfluenced && currentPlaylist?.tracks && (
+                <div className="combat-audio-selector">
+                  <div className="combat-audio-selector-header">
+                    <span className="combat-audio-selector-label">
+                      Select Songs ({selectedAudioTracks.length} of {generationConfig.count} selected)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRandomAudioSelection}
+                      className="combat-audio-random-button"
+                      title="Randomly select songs"
+                    >
+                      🎲 Random
+                    </button>
+                  </div>
+
+                  <div className="combat-audio-tracks-list">
+                    {currentPlaylist.tracks.map((track, index) => {
+                      const isSelected = selectedAudioTracks.some(
+                        t => t.title === track.title && t.artist === track.artist
+                      );
+                      const isAtLimit = selectedAudioTracks.length >= generationConfig.count && !isSelected;
+
+                      return (
+                        <button
+                          key={`${track.title}-${track.artist}-${index}`}
+                          type="button"
+                          onClick={() => handleToggleAudioTrack(track)}
+                          disabled={isAtLimit}
+                          className={`combat-audio-track ${isSelected ? 'combat-audio-track-selected' : ''} ${isAtLimit ? 'combat-audio-track-disabled' : ''}`}
+                          title={track.title && track.artist ? `${track.title} by ${track.artist}` : track.title || 'Unknown Track'}
+                        >
+                          <div className="combat-audio-track-checkbox">
+                            {isSelected ? '✓' : ''}
+                          </div>
+                          <div className="combat-audio-track-info">
+                            <span className="combat-audio-track-title">
+                              {track.title || 'Unknown Title'}
+                            </span>
+                            <span className="combat-audio-track-artist">
+                              {track.artist || 'Unknown Artist'}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedAudioTracks.length > 0 && (
+                    <div className="combat-audio-selected-preview">
+                      <span className="combat-audio-selected-label">Selected:</span>
+                      <div className="combat-audio-selected-chips">
+                        {selectedAudioTracks.map((track, index) => (
+                          <span
+                            key={`selected-${index}`}
+                            className="combat-audio-selected-chip"
+                            title={track.title && track.artist ? `${track.title} by ${track.artist}` : track.title || 'Unknown'}
+                          >
+                            {track.title || 'Unknown'}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAudioTrack(track)}
+                              className="combat-audio-chip-remove"
+                              title="Remove"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Generated Enemies Preview */}
             {generatedEnemies.length > 0 && (
