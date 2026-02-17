@@ -1,20 +1,43 @@
 /**
  * StatSelectionModal Component
  *
- * Modal component for applying pending stat increases in D&D 5e standard mode.
+ * Modal component for applying pending stat increases following D&D 5e rules.
  * Allows players to choose between:
- * - +2 to one ability score
- * - +1 to two ability scores
+ * - +2 to one ability score (single mode)
+ * - +1 to two ability scores (double mode)
  *
- * Created as part of Task 4.2 of UPDATE_PLAN.md.
+ * Originally created as part of Task 4.2 of UPDATE_PLAN.md.
+ * Enhanced in Phase 3 of CHARACTER_LEVELING_ENHANCEMENT_PLAN.md.
  *
- * Features:
- * - Two selection modes: single stat (+2) or double stats (+1 each)
- * - Displays current stat values for reference
- * - Visual feedback for selection state
- * - Validation to prevent invalid selections
- * - Pure CSS (no Tailwind utility classes)
+ * Selection Modes:
+ * - Single Mode: Select one stat to receive +2 increase
+ * - Double Mode: Select two different stats to each receive +1
+ *
+ * Phase 3 Enhancements:
+ * - Stat Cap Warnings: Shows "Capped at 20" badge for stats at max in standard mode
+ * - Near Cap Indicators: Shows "Near Cap" warning for stats at 18-19 in standard mode
+ * - Global Cap Banner: Warning when all stats would be capped
+ * - Active Effects Breakdown: Collapsible section showing all stat modifiers
+ * - Stat Display Breakdown: Shows "base + modifiers = total" format when effects exist
+ *
+ * Props:
+ * @property {boolean} isOpen - Whether the modal is visible
+ * @property {number} pendingCount - Number of pending stat increases to apply
+ * @property {Partial<Record<Ability, number>>} currentStats - Current stat values for reference
+ * @property {'standard' | 'uncapped'} gameMode - Affects stat cap behavior (default: 'standard')
+ * @property {StatEffect[]} activeEffects - Active stat modifiers to display in breakdown
+ * @property {Function} onApply - Callback when increases are applied
+ * @property {Function} onCancel - Callback when modal is cancelled
+ *
+ * Accessibility:
+ * - Full keyboard navigation with Tab focus trapping
  * - Screen reader support with ARIA live announcements
+ * - Focus management (auto-focuses modal on open, restores on close)
+ * - All interactive elements use native <button> elements
+ *
+ * Styling:
+ * - Pure CSS (no Tailwind utility classes)
+ * - Styles located at src/styles/components/StatSelectionModal.css
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';

@@ -616,10 +616,22 @@ Enhance the StatSelectionModal component to show:
 
 #### Tasks
 
-- [ ] **4.3.1 Update Component Comments**
-  - [ ] Update CharacterLevelingTab header comment
-  - [ ] Update StatSelectionModal header comment
-  - [ ] Document new props
+- [x] **4.3.1 Update Component Comments**
+  - [x] Update CharacterLevelingTab header comment
+  - [x] Update StatSelectionModal header comment
+  - [x] Document new props
+  - **Implementation Summary (2026-02-17):**
+    - **CharacterLevelingTab.tsx:** Updated header comment with comprehensive documentation:
+      - Core Features (6 items)
+      - Game Modes section (standard vs uncapped)
+      - Props Passed to StatSelectionModal section
+      - XP Sources Configuration with all 6 sources and XP amounts
+    - **StatSelectionModal.tsx:** Updated header comment with comprehensive documentation:
+      - Selection Modes description
+      - Phase 3 Enhancements section (cap warnings, effects breakdown, etc.)
+      - Props documentation with all properties listed
+      - Accessibility section
+      - Styling section with CSS file path
 
 - [ ] **4.3.2 Add Code Comments**
   - [ ] Comment complex formula logic

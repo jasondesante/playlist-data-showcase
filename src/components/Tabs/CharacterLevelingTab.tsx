@@ -18,19 +18,33 @@ import './CharacterLevelingTab.css';
 /**
  * CharacterLevelingTab Component
  *
- * Demonstrates the CharacterUpdater engine module by:
- * 1. Displaying the active character's XP progress
- * 2. Providing quick-add XP buttons for testing
- * 3. Showing manual XP input for custom amounts
- * 4. Automatically handling level-ups based on XP thresholds
- * 5. Displaying current stats (HP, AC, proficiency bonus)
- * 6. Raw JSON dump for debugging
+ * Primary interface for character progression, demonstrating the CharacterUpdater
+ * engine module and showcasing playlist-data-engine capabilities.
  *
- * The XP thresholds follow D&D 5e rules:
- * - Level 1→2: 300 XP
- * - Level 2→3: 900 XP
- * - Level 3→4: 2,700 XP
- * - And so on...
+ * Core Features:
+ * 1. XP Progress Display - Visual progress bar with XP to next level breakdown
+ * 2. XP Source Buttons - 6 activity types (Quest, Boss, Exploration, Combat, Crafting, Social)
+ *    with hover tooltips showing descriptions and color-coded styling
+ * 3. Manual XP Input - Custom XP amounts for testing
+ * 4. Level-Up Handling - Automatic detection and celebration with detail modal
+ * 5. Stat Management - Manual selection modal or smart auto-selection based on game mode
+ * 6. Uncapped Progression Panel - Per-character XP formula customization (Phase 1 feature)
+ *
+ * Game Modes:
+ * - Standard: Stats capped at 20, manual stat selection required, D&D 5e XP curve
+ * - Uncapped: No stat limit, smart stat selection, customizable XP curves (4 presets)
+ *
+ * Props Passed to StatSelectionModal:
+ * - gameMode: Determines stat cap warnings visibility
+ * - activeEffects: Extracted from character.equipment_effects and feature_effects
+ *
+ * XP Sources Configuration (XP_SOURCES constant):
+ * - quest: 500 XP - Story quests and major objectives
+ * - boss_defeat: 5000 XP - Major boss encounters
+ * - exploration: 250 XP - Location discovery
+ * - combat: 300 XP - Combat victories
+ * - crafting: 150 XP - Item creation
+ * - social: 100 XP - Social encounters
  *
  * @example
  * ```tsx
