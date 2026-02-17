@@ -790,16 +790,30 @@ Enhance the StatSelectionModal component to show:
 
 ## Success Criteria
 
-- [ ] Uncapped Progression Panel only shows for uncapped mode characters
-- [ ] All 4 XP formula presets are selectable and show chart preview
-- [ ] Apply button correctly calls `LevelUpProcessor.setUncappedConfig()`
-- [ ] Per-character preset selection persists across page reloads
-- [ ] All 6 XP source buttons work and award correct XP amounts
-- [ ] StatSelectionModal shows cap warnings in standard mode
-- [ ] StatSelectionModal shows effect breakdown when effects exist
-- [ ] All changes are backward compatible
-- [ ] Works on mobile (responsive design)
-- [ ] Keyboard accessible
+- [x] Uncapped Progression Panel only shows for uncapped mode characters
+- [x] All 4 XP formula presets are selectable and show chart preview
+- [x] Apply button correctly calls `LevelUpProcessor.setUncappedConfig()`
+- [x] Per-character preset selection persists across page reloads
+- [x] All 6 XP source buttons work and award correct XP amounts
+- [x] StatSelectionModal shows cap warnings in standard mode
+- [x] StatSelectionModal shows effect breakdown when effects exist
+- [x] All changes are backward compatible
+- [x] Works on mobile (responsive design)
+- [x] Keyboard accessible
+
+**Verification Summary (2026-02-17):**
+All success criteria have been verified through code review:
+1. `UncappedProgressionPanel` only renders when `activeChar.gameMode === 'uncapped'` (CharacterLevelingTab.tsx:593)
+2. 4 presets defined in `XP_FORMULA_PRESETS` (xpFormulaPresets.ts:307-340) with chart preview via `XPCurveChart` component
+3. Apply button calls `LevelUpProcessor.setUncappedConfig()` (UncappedProgressionPanel.tsx:124)
+4. Persistence via zustand store's `setCharacterUncappedConfig()` and localStorage middleware
+5. 6 XP sources in `XP_SOURCES` array with correct amounts (CharacterLevelingTab.tsx:292-299)
+6. Cap warnings via `isStatCapped()` function (StatSelectionModal.tsx:265-268)
+7. Effect breakdown via `effectsByAbility` grouping (StatSelectionModal.tsx:168-178)
+8. New props are optional with defaults (StatSelectionModal.tsx:80-81)
+9. Responsive CSS with media queries in all component stylesheets
+10. ARIA labels, keyboard navigation, and screen reader support implemented
+Build passes with no errors.
 
 ---
 
