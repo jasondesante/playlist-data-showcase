@@ -27,9 +27,9 @@ Enhance the EnvironmentalSensorsTab to showcase all available engine features in
 ## Phase 1: Hook & Store Updates
 
 ### 1.1 Update useEnvironmentalSensors Hook
-- [ ] Add `xpModifier` state and expose from hook
-  - [ ] Call `sensors.calculateXPModifier()` and store result
-  - [ ] Update when environmentalContext changes
+- [x] Add `xpModifier` state and expose from hook
+  - [x] Call `sensors.calculateXPModifier()` and store result
+  - [x] Update when environmentalContext changes
 - [ ] Add `biome` extraction from environmentalContext
   - [ ] Biome is already in EnvironmentalContext type: `environmentalContext.biome`
 - [ ] Add optional `severeWeatherAlert` state

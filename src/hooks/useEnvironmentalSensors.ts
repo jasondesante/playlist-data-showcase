@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { EnvironmentalSensors } from 'playlist-data-engine';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
@@ -13,10 +13,11 @@ import { handleError } from '@/utils/errorHandling';
  *
  * @example
  * ```tsx
- * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions } = useEnvironmentalSensors();
+ * const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, xpModifier } = useEnvironmentalSensors();
  * await requestPermission('geolocation');
  * await startMonitoring();
  * console.log('Activity:', environmentalContext.motion.activity_type);
+ * console.log('XP Modifier:', xpModifier);
  * ```
  *
  * @returns {Object} Hook return object
@@ -26,6 +27,7 @@ import { handleError } from '@/utils/errorHandling';
  * @returns {Object} environmentalContext - Current environmental context data
  * @returns {Object} permissions - Permission state for each sensor type
  * @returns {Object} sensors - Raw sensors instance for direct access to engine methods
+ * @returns {number} xpModifier - Current XP modifier (1.0 - 3.0) based on environmental factors
  */
 export const useEnvironmentalSensors = () => {
     const { settings } = useAppStore();
@@ -39,6 +41,13 @@ export const useEnvironmentalSensors = () => {
     const [sensors] = useState(() => new EnvironmentalSensors(settings.openWeatherApiKey));
 
     const [isMonitoring, setIsMonitoring] = useState(false);
+
+    // Calculate XP modifier from environmental context (1.0 - 3.0)
+    // Updates whenever environmentalContext changes
+    const xpModifier = useMemo(() => {
+        if (!environmentalContext) return 1.0;
+        return sensors.calculateXPModifier();
+    }, [environmentalContext, sensors]);
 
     // Update API key if settings change
     useEffect(() => {
@@ -137,5 +146,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier };
 };
