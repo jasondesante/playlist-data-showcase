@@ -505,11 +505,33 @@ Enhance the StatSelectionModal component to show:
     - Level-up celebration and modal triggered when `result.leveledUp` is true
     - Build passes with no errors
 
-- [ ] **4.1.3 Test StatSelectionModal**
-  - [ ] Cap warnings show for standard mode characters
-  - [ ] Cap warnings don't show for uncapped mode
-  - [ ] Effects breakdown shows when effects exist
-  - [ ] Modal works without new props (backward compatible)
+- [x] **4.1.3 Test StatSelectionModal**
+  - [x] Cap warnings show for standard mode characters
+  - [x] Cap warnings don't show for uncapped mode
+  - [x] Effects breakdown shows when effects exist
+  - [x] Modal works without new props (backward compatible)
+  - **Verification Summary (2026-02-17):**
+    - **Cap warnings for standard mode:**
+      - `isStatCapped()` (line 183-186): Returns true only when `gameMode === 'standard'` AND stat >= 20
+      - `hasCappedStats()` (line 202-205): Returns true only in standard mode when any stat is at 20
+      - Global cap banner (line 254-264): Renders when capped stats exist in standard mode
+      - Individual cap badges (line 397-401): Show "Capped" indicator on stats at 20
+    - **No cap warnings for uncapped mode:**
+      - `isStatCapped()` returns false when `gameMode !== 'standard'`
+      - `isStatNearCap()` returns false when `gameMode !== 'standard'`
+      - `hasCappedStats()` returns false when `gameMode !== 'standard'`
+      - All cap-related UI elements conditionally render based on gameMode
+    - **Effects breakdown:**
+      - `hasActiveEffects` (line 116): Tracks if `activeEffects.length > 0`
+      - Effects section (line 267-320): Collapsible section showing all effects grouped by ability
+      - Stat breakdown display (lines 358-395): Shows "base (+modifier) = total" format when effects exist
+      - Green styling for buffs, red for debuffs
+    - **Backward compatibility:**
+      - `gameMode` defaults to 'standard' (line 80)
+      - `activeEffects` defaults to empty array (line 81)
+      - `currentStats` defaults to empty object (line 79)
+      - All props are optional - modal functions without any new props
+    - Build passes with no errors
 
 - [ ] **4.1.4 Cross-Browser Testing**
   - [ ] Chrome
