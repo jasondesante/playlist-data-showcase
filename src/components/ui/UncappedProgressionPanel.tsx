@@ -20,6 +20,7 @@ import { cn } from '../../utils/cn';
 import { Card } from './Card';
 import { Button } from './Button';
 import { XPCurveChart } from './XPCurveChart';
+import { XPTablePreview } from './XPTablePreview';
 import { showToast } from './Toast';
 import { XP_FORMULA_PRESETS, getXPFormulaPresetById } from '../../constants/xpFormulaPresets';
 import { LevelUpProcessor } from 'playlist-data-engine';
@@ -250,6 +251,13 @@ export function UncappedProgressionPanel({
               presets={XP_FORMULA_PRESETS}
               selectedId={selectedPresetId}
               maxLevel={30}
+            />
+
+            {/* XP Table Preview - Shows comparison when selected differs from applied */}
+            <XPTablePreview
+              presets={XP_FORMULA_PRESETS}
+              selectedId={selectedPresetId}
+              currentAppliedId={currentStoredPresetId}
             />
           </div>
 

@@ -144,9 +144,19 @@ Add a collapsible "Uncapped Progression Settings" panel that only appears when t
   - [x] Smooth animations when switching presets
   - [x] Responsive sizing
 
-- [ ] **1.2.3 Add XP Table Preview (Optional Enhancement)**
-  - [ ] Show small table with XP requirements for levels 1, 5, 10, 20, 30
-  - [ ] Compare selected preset vs current (if different)
+- [x] **1.2.3 Add XP Table Preview (Optional Enhancement)**
+  - [x] Show small table with XP requirements for levels 1, 5, 10, 20, 30
+  - [x] Compare selected preset vs current (if different)
+  - **Implementation Summary (2026-02-17):**
+    - Created `XPTablePreview.tsx` component with comparison feature
+    - Shows XP requirements for key levels: 1, 5, 10, 20, 30
+    - When selected preset differs from applied preset, shows side-by-side comparison
+    - Includes percentage difference column showing increase/decrease
+    - Total row shows cumulative XP across all displayed levels
+    - Color-coded badges: red for increases, green for decreases
+    - Integrated into `UncappedProgressionPanel` below the XP curve chart
+    - Created `XPTablePreview.css` with responsive styling
+    - Build passes with no errors
 
 ---
 
