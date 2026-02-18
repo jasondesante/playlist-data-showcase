@@ -604,3 +604,70 @@
     width: auto;
   }
 }
+
+/* Discord disabled card styles */
+.settings-card-disabled {
+  position: relative;
+  opacity: 0.85;
+}
+
+.settings-discord-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.97),
+    hsl(var(--card) / 0.99)
+  );
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.settings-discord-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: hsl(var(--cute-orange) / 0.15);
+  color: hsl(var(--cute-orange));
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.settings-discord-badge svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.settings-discord-message {
+  max-width: 280px;
+}
+
+.settings-discord-message p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+
+.settings-discord-message p + p {
+  margin-top: 0.5rem;
+}
+
+.settings-discord-message a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.settings-discord-message a:hover {
+  color: hsl(var(--primary) / 0.8);
+}

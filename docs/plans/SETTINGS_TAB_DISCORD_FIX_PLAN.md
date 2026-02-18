@@ -7,9 +7,10 @@ Two UI bugs need to be fixed in the Settings tab:
 
 ## Phase 1: Detection & UI Update
 
-- [ ] Add environment detection utility
-  - [ ] Create or use existing utility to detect client-side vs server-side environment
-  - [ ] Could check `typeof window !== 'undefined'` or use a more robust method
+- [x] Add environment detection utility
+  - [x] Create or use existing utility to detect client-side vs server-side environment
+  - [x] Added `isServerMode()` function to `/workspace/src/utils/env.ts` that checks for Node.js/Electron vs browser environment
+  - [x] Updated `useGamingPlatforms` hook to import from env.ts instead of duplicating the function
 
 - [ ] Update SettingsTab Discord section
   - [ ] Disable the Discord Client ID input field when running client-side

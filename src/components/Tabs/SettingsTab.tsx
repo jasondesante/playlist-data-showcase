@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSensorStore } from '@/store/sensorStore';
 import { logger } from '@/utils/logger';
 import { storage } from '@/utils/storage';
+import { isServerMode } from '@/utils/env';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -181,6 +182,10 @@ export function SettingsTab() {
   const [importMessage, setImportMessage] = useState<string>('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirming' | 'resetting' | 'success' | 'error'>('idle');
   const [resetMessage, setResetMessage] = useState<string>('');
+
+  // Detect server mode (Node.js/Electron) vs client mode (browser)
+  // Discord RPC requires server mode to communicate with Discord's IPC
+  const isRunningInServerMode = useMemo(() => isServerMode(), []);
 
   // API key validation states
   const [openWeatherValidation, setOpenWeatherValidation] = useState<ApiKeyValidationResult>({ status: 'idle' });
@@ -607,7 +612,31 @@ export function SettingsTab() {
           </Card>
 
           {/* Discord Client ID */}
-          <Card variant="elevated" padding="md" className="settings-card">
+          <Card variant="elevated" padding="md" className={`settings-card${!isRunningInServerMode ? ' settings-card-disabled' : ''}`}>
+            {/* Server Mode Required Overlay - shown when running in browser */}
+            {!isRunningInServerMode && (
+              <div className="settings-discord-overlay">
+                <div className="settings-discord-badge">
+                  <ServerOff size={14} />
+                  <span>Server Mode Required</span>
+                </div>
+                <div className="settings-discord-message">
+                  <p><strong>Discord Rich Presence requires a server environment.</strong></p>
+                  <p>This feature is not available when running in the browser. Discord&apos;s IPC (Inter-Process Communication) cannot be accessed from web applications.</p>
+                  <p>
+                    To use Discord features, run this app in{' '}
+                    <a
+                      href="https://electronjs.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Electron
+                    </a>{' '}
+                    or a Node.js server environment.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="settings-api-key-header">
               <Gamepad2 className="settings-api-key-icon settings-api-key-icon-discord" />
               <div className="settings-api-key-title">Discord Integration</div>
@@ -619,6 +648,7 @@ export function SettingsTab() {
               placeholder="Enter your Discord Client ID..."
               helperText="For Discord music status integration. Create an app at discord.com/developers/applications"
               containerClassName="settings-input-wrapper"
+              disabled={!isRunningInServerMode}
             />
           </Card>
         </div>

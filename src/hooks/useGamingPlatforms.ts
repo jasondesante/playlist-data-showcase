@@ -4,6 +4,7 @@ import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
+import { isServerMode as detectServerMode } from '@/utils/env';
 
 /**
  * Discord connection state for UI
@@ -92,29 +93,6 @@ export interface GamingDiagnostics {
         metadataApi: ApiStatistics;
     };
 }
-
-/**
- * Detect if running in server mode (Node.js/Electron) vs client mode (browser)
- * Discord RPC requires server mode to communicate with Discord's IPC
- */
-const detectServerMode = (): boolean => {
-    // Check if we're in a Node.js/Electron environment
-    // In browser: window exists but process.versions.electron doesn't
-    // In Electron: both window and process.versions.electron exist
-    // In pure Node.js: window doesn't exist
-    if (typeof window === 'undefined') {
-        // Pure Node.js environment - server mode
-        return true;
-    }
-    // Check for Electron environment - use globalThis to avoid TypeScript errors
-    // @ts-ignore - process may not exist in browser
-    const processObj = typeof globalThis !== 'undefined' ? (globalThis as any).process : undefined;
-    if (processObj && processObj.versions?.electron) {
-        return true;
-    }
-    // Browser environment - client mode (Discord RPC won't work)
-    return false;
-};
 
 /**
  * React hook for gaming platform integration via the GamingPlatformSensors engine module.

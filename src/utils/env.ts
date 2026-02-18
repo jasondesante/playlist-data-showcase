@@ -3,9 +3,34 @@ import { logger } from './logger';
 
 /**
  * Environment Variable Utility
- * 
+ *
  * Validates and exports environment variables.
  */
+
+/**
+ * Detect if running in server mode (Node.js/Electron) vs client mode (browser)
+ * Discord RPC requires server mode to communicate with Discord's IPC
+ *
+ * @returns true if running in Node.js or Electron, false if running in browser
+ */
+export const isServerMode = (): boolean => {
+    // Check if we're in a Node.js/Electron environment
+    // In browser: window exists but process.versions.electron doesn't
+    // In Electron: both window and process.versions.electron exist
+    // In pure Node.js: window doesn't exist
+    if (typeof window === 'undefined') {
+        // Pure Node.js environment - server mode
+        return true;
+    }
+    // Check for Electron environment - use globalThis to avoid TypeScript errors
+    // @ts-ignore - process may not exist in browser
+    const processObj = typeof globalThis !== 'undefined' ? (globalThis as any).process : undefined;
+    if (processObj && processObj.versions?.electron) {
+        return true;
+    }
+    // Browser environment - client mode (Discord RPC won't work)
+    return false;
+};
 
 const envSchema = z.object({
     VITE_OPENWEATHER_API_KEY: z.string().optional(),
