@@ -244,9 +244,9 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 
 ### 8.2 Boss/Elite Visual Treatment
 - [x] Special card styling for elite enemies
-- [ ] Enhanced boss card with larger size
-- [ ] Show legendary action count for bosses
-- [ ] Display legendary resistances remaining
+- [x] Enhanced boss card with larger size
+- [x] Show legendary action count for bosses
+- [x] Display legendary resistances remaining
 
 ### 8.3 Enemy Template Browser
 - [ ] Create expandable template reference panel

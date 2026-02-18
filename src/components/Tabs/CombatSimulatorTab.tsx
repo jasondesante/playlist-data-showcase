@@ -3246,6 +3246,28 @@ export function CombatSimulatorTab() {
                           </span>
                         </div>
                       )}
+
+                      {/* Phase 8.2: Legendary Actions/Resistances for Boss enemies */}
+                      {enemyIsEnemy && enemyRarity === 'boss' && (combatant.character as any).legendary_config && (
+                        <div className="combat-enemy-legendary-section">
+                          {((combatant.character as any).legendary_config.actions?.length > 0) && (
+                            <span
+                              className="combat-enemy-legendary-actions"
+                              title={`${(combatant.character as any).legendary_config.actions.length} legendary actions available:\n${(combatant.character as any).legendary_config.actions.map((a: any) => `• ${a.name} (cost: ${a.cost})`).join('\n')}`}
+                            >
+                              👑 {(combatant.character as any).legendary_config.actions.length} Legendary Actions
+                            </span>
+                          )}
+                          {((combatant.character as any).legendary_config.resistances > 0) && (
+                            <span
+                              className="combat-enemy-legendary-resistances"
+                              title={`Can automatically succeed on ${((combatant.character as any).legendary_config.resistances)} saving throws per day`}
+                            >
+                              🛡️ {(combatant.character as any).legendary_config.resistances} Legendary Resistances
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 };

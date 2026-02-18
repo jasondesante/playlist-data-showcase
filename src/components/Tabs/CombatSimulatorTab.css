@@ -1101,24 +1101,186 @@
   }
 }
 
+/* Phase 8.2: Enhanced Boss card with larger size and enhanced styling */
 .combat-combatant-card-enemy.combat-combatant-card-boss {
   border-color: hsl(45 90% 50%);
   border-width: 3px;
-  box-shadow: 0 0 12px hsl(45 90% 50% / 0.4);
+  box-shadow:
+    0 0 12px hsl(45 90% 50% / 0.4),
+    0 4px 16px hsl(0 0% 0% / 0.2);
+  /* Make boss cards span full width (2 columns) in the grid */
+  grid-column: 1 / -1;
+  /* Larger padding for boss cards */
+  padding: 1.25rem;
+  /* Enhanced background for bosses */
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    hsl(45 30% 20%) 25%,
+    hsl(45 40% 15%) 50%,
+    hsl(45 30% 20%) 75%,
+    hsl(var(--card)) 100%
+  );
+  background-size: 200% 200%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dark mode boss background */
+@media (prefers-color-scheme: dark) {
+  .combat-combatant-card-enemy.combat-combatant-card-boss {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card)) 0%,
+      hsl(45 25% 12%) 25%,
+      hsl(45 35% 8%) 50%,
+      hsl(45 25% 12%) 75%,
+      hsl(var(--card)) 100%
+    );
+  }
+}
+
+/* Boss card animated gradient background */
+.combat-combatant-card-enemy.combat-combatant-card-boss:not(.combat-combatant-card-defeated) {
+  animation: combat-boss-glow 2s ease-in-out infinite, combat-boss-gradient 8s ease-in-out infinite;
+}
+
+@keyframes combat-boss-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Boss card name styling - larger and more prominent */
+.combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: hsl(45 90% 50%);
+  text-shadow: 0 0 8px hsl(45 90% 50% / 0.5);
+}
+
+@media (min-width: 768px) {
+  .combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
+    font-size: 1.25rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
+    color: hsl(45 90% 65%);
+    text-shadow: 0 0 12px hsl(45 90% 50% / 0.6);
+  }
+}
+
+/* Boss card badges - slightly larger */
+.combat-combatant-card-enemy.combat-combatant-card-boss .combat-enemy-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Boss HP bar - more prominent */
+.combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-hp-bar {
+  height: 10px;
+  border-radius: 5px;
 }
 
 /* Boss card glow animation */
-.combat-combatant-card-enemy.combat-combatant-card-boss:not(.combat-combatant-card-defeated) {
-  animation: combat-boss-glow 2s ease-in-out infinite;
-}
-
 @keyframes combat-boss-glow {
   0%, 100% {
-    box-shadow: 0 0 12px hsl(45 90% 50% / 0.4);
+    box-shadow:
+      0 0 12px hsl(45 90% 50% / 0.4),
+      0 4px 16px hsl(0 0% 0% / 0.2),
+      inset 0 0 30px hsl(45 50% 50% / 0.05);
   }
   50% {
-    box-shadow: 0 0 20px hsl(45 90% 50% / 0.6);
+    box-shadow:
+      0 0 24px hsl(45 90% 50% / 0.6),
+      0 4px 24px hsl(0 0% 0% / 0.3),
+      inset 0 0 50px hsl(45 50% 50% / 0.1);
   }
+}
+
+/* Boss card shimmer effect overlay (similar to elite but gold) */
+.combat-combatant-card-enemy.combat-combatant-card-boss::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(45 100% 80% / 0.15),
+    transparent
+  );
+  animation: combat-boss-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes combat-boss-shimmer {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+/* Stop shimmer for defeated bosses */
+.combat-combatant-card-enemy.combat-combatant-card-boss.combat-combatant-card-defeated::before {
+  animation: none;
+  opacity: 0;
+}
+
+/* Boss card stats section - larger text */
+.combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-stats {
+  font-size: 0.875rem;
+}
+
+/* Boss card action economy - more visible */
+.combat-combatant-card-enemy.combat-combatant-card-boss .combat-action-economy-item {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+}
+
+/* Boss card legendary section placeholder (for future use) */
+.combat-enemy-legendary-section {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(45 50% 50% / 0.3);
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.combat-enemy-legendary-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: hsl(45 90% 50%);
+  background: hsl(45 50% 50% / 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(45 50% 50% / 0.3);
+}
+
+.combat-enemy-legendary-resistances {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: hsl(0 70% 60%);
+  background: hsl(0 50% 50% / 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(0 50% 50% / 0.3);
 }
 
 /* Phase 8.2: Enhanced Elite card glow with multiple layers */
