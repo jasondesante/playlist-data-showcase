@@ -7,6 +7,7 @@
 .template-browser {
   background-color: hsl(var(--muted) / 0.5);
   border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
   overflow: hidden;
 }
 
@@ -17,10 +18,13 @@
   justify-content: space-between;
   width: 100%;
   padding: 0.75rem;
-  background: none;
-  border: none;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid hsl(217 70% 55%); /* Blue accent */
+  border-radius: var(--radius);
   cursor: pointer;
   text-align: left;
+  transition: all var(--duration-fast) ease;
 }
 
 @media (min-width: 768px) {
@@ -30,7 +34,13 @@
 }
 
 .template-browser-header:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: hsl(217 70% 55% / 0.1);
+  border-color: hsl(217 70% 55% / 0.3);
+}
+
+.template-browser-header:focus-visible {
+  outline: 2px solid hsl(217 70% 55%);
+  outline-offset: 2px;
 }
 
 .template-browser-title {

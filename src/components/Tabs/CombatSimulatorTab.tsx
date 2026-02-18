@@ -2848,14 +2848,6 @@ export function CombatSimulatorTab() {
               />
             )}
 
-            {/* Phase 8.3: Enemy Template Browser */}
-            <TemplateBrowser
-              templates={ENEMY_TEMPLATES}
-              selectedTemplateId={generationConfig.templateId}
-              onTemplateSelect={handleTemplateBrowserSelect}
-              className="combat-template-browser-section"
-            />
-
             {/* Action Buttons */}
             <div className="combat-config-actions">
               <button
@@ -2880,6 +2872,14 @@ export function CombatSimulatorTab() {
                 Generate enemies before starting combat, or click Start Combat to use a random fallback enemy.
               </p>
             )}
+
+            {/* Phase 8.3: Enemy Template Browser - moved below action buttons */}
+            <TemplateBrowser
+              templates={ENEMY_TEMPLATES}
+              selectedTemplateId={generationConfig.templateId}
+              onTemplateSelect={handleTemplateBrowserSelect}
+              className="combat-template-browser-section"
+            />
           </div>
         </div>
       ) : (

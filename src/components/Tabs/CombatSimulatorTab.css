@@ -2961,6 +2961,17 @@
   }
 }
 
+/* Template Browser Section - moved to bottom of pregame */
+.combat-template-browser-section {
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .combat-template-browser-section {
+    margin-top: 1.5rem;
+  }
+}
+
 /* ============================================
    TEMPLATE SELECTOR STYLES (Phase 2.2)
    ============================================ */
@@ -3709,6 +3720,7 @@
 /* Audio section container */
 .combat-audio-section {
   border: 1px solid hsl(var(--border));
+  border-left: 3px solid hsl(280 60% 50%); /* Purple accent */
   border-radius: var(--radius);
   padding: 0.75rem;
   margin-top: 0.5rem;
@@ -4053,11 +4065,13 @@
   justify-content: space-between;
   width: 100%;
   padding: 0.75rem;
-  background-color: transparent;
-  border: none;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid hsl(45 96% 53%); /* Gold accent */
+  border-radius: var(--radius);
   cursor: pointer;
   text-align: left;
-  transition: background-color var(--duration-fast) ease;
+  transition: all var(--duration-fast) ease;
 }
 
 @media (min-width: 768px) {
@@ -4067,7 +4081,13 @@
 }
 
 .combat-treasure-header:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: hsl(45 96% 53% / 0.1);
+  border-color: hsl(45 96% 53% / 0.3);
+}
+
+.combat-treasure-header:focus-visible {
+  outline: 2px solid hsl(45 96% 53%);
+  outline-offset: 2px;
 }
 
 .combat-treasure-title {
@@ -4089,8 +4109,8 @@
   display: inline-flex;
   align-items: center;
   padding: 0.125rem 0.5rem;
-  background-color: hsl(142 70% 50% / 0.15);
-  color: hsl(142 70% 50%);
+  background-color: hsl(45 96% 53% / 0.2);
+  color: hsl(45 96% 53%);
   border-radius: 9999px;
   font-size: 0.625rem;
   font-weight: 600;
@@ -4411,11 +4431,13 @@
   justify-content: space-between;
   width: 100%;
   padding: 0.75rem;
-  background-color: transparent;
-  border: none;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid hsl(215 15% 50%); /* Steel gray accent */
+  border-radius: var(--radius);
   cursor: pointer;
   text-align: left;
-  transition: background-color var(--duration-fast) ease;
+  transition: all var(--duration-fast) ease;
 }
 
 @media (min-width: 768px) {
@@ -4425,7 +4447,13 @@
 }
 
 .combat-advanced-header:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: hsl(215 15% 50% / 0.1);
+  border-color: hsl(215 15% 50% / 0.3);
+}
+
+.combat-advanced-header:focus-visible {
+  outline: 2px solid hsl(215 15% 50%);
+  outline-offset: 2px;
 }
 
 .combat-advanced-title {
@@ -4447,8 +4475,8 @@
   display: inline-flex;
   align-items: center;
   padding: 0.125rem 0.5rem;
-  background-color: hsl(217 91% 60% / 0.15);
-  color: hsl(217 91% 60%);
+  background-color: hsl(215 15% 50% / 0.2);
+  color: hsl(215 15% 40%);
   border-radius: 9999px;
   font-size: 0.625rem;
   font-weight: 600;
@@ -4911,16 +4939,32 @@
   box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2);
 }
 
-.toggle-checkbox:checked + .toggle-switch::before {
+/* Fixed: Use :has() selector since checkbox is inside the label */
+.toggle-switch:has(.toggle-checkbox:checked)::before {
   background-color: hsl(var(--primary));
 }
 
-.toggle-checkbox:checked + .toggle-switch::after {
+.toggle-switch:has(.toggle-checkbox:checked)::after {
   transform: translateX(1.125rem);
 }
 
-.toggle-checkbox:focus + .toggle-switch::before {
+.toggle-switch:has(.toggle-checkbox:focus)::before {
   box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+/* Disabled state styling */
+.toggle-switch:has(.toggle-checkbox:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle-switch:has(.toggle-checkbox:disabled)::before {
+  background-color: hsl(var(--muted) / 0.5);
+  cursor: not-allowed;
+}
+
+.toggle-switch:has(.toggle-checkbox:disabled)::after {
+  background-color: hsl(var(--muted));
 }
 
 /* End of Phase 6.1: Advanced Options Configuration */
