@@ -12,11 +12,11 @@ Two UI bugs need to be fixed in the Settings tab:
   - [x] Added `isServerMode()` function to `/workspace/src/utils/env.ts` that checks for Node.js/Electron vs browser environment
   - [x] Updated `useGamingPlatforms` hook to import from env.ts instead of duplicating the function
 
-- [ ] Update SettingsTab Discord section
-  - [ ] Disable the Discord Client ID input field when running client-side
-  - [ ] Add visual styling (grayed out, opacity, etc.)
-  - [ ] Add helper message explaining why it's disabled
-  - [ ] Message should say something like: "Discord Rich Presence requires a server environment. This feature is not available when running in the browser."
+- [x] Update SettingsTab Discord section
+  - [x] Disable the Discord Client ID input field when running client-side
+  - [x] Add visual styling (grayed out, opacity, etc.)
+  - [x] Add helper message explaining why it's disabled
+  - [x] Message should say something like: "Discord Rich Presence requires a server environment. This feature is not available when running in the browser."
 
 ## Phase 2: XP Rate Slider Fix
 
