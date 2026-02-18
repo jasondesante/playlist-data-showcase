@@ -239,7 +239,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Uncommon: Green border
   - [x] Elite: Purple border with glow
   - [x] Boss: Gold border with animated glow
-- [ ] Show signature ability name
+- [x] Show signature ability name
 - [ ] Display resistances/immunities
 
 ### 8.2 Boss/Elite Visual Treatment

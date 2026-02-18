@@ -3126,6 +3126,15 @@ export function CombatSimulatorTab() {
                                   {enemyRarity.charAt(0).toUpperCase() + enemyRarity.slice(1)}
                                 </span>
                               )}
+                              {/* Phase 8.1: Signature Ability display */}
+                              {enemyTemplate && (
+                                <span
+                                  className="combat-enemy-signature-ability"
+                                  title={enemyTemplate.signatureAbilityDescription}
+                                >
+                                  ⚡ {enemyTemplate.signatureAbility}
+                                </span>
+                              )}
                             </div>
                           ) : (
                             <div className="combat-combatant-class">{combatant.character.race} {combatant.character.class}</div>
