@@ -272,14 +272,14 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 ## Dependencies
 
 ### Prerequisites
-- [ ] `playlist-data-engine` must export `EnemyGenerator`
-- [ ] `playlist-data-engine` must export `PartyAnalyzer`
-- [ ] `playlist-data-engine` must export tactical action methods
-- [ ] `useCombatEngine` hook must support new config options
+- [x] `playlist-data-engine` must export `EnemyGenerator` ✓ (verified via successful build)
+- [x] `playlist-data-engine` must export `PartyAnalyzer` ✓ (verified via successful build)
+- [x] `playlist-data-engine` must export tactical action methods ✓ (verified via successful build)
+- [x] `useCombatEngine` hook must support new config options ✓ (verified - uses CombatConfig from engine)
 
 ### External Requirements
-- [ ] Character store must support multiple active characters
-- [ ] Audio analysis must be available for audio-influenced generation
+- [x] Character store must support multiple active characters ✓ (verified - has selectedHeroSeeds for party selection)
+- [x] Audio analysis must be available for audio-influenced generation ✓ (verified - useAudioAnalyzer and useAudioEnemyGeneration hooks)
 
 ---
 
@@ -351,14 +351,14 @@ src/
 
 ## Success Criteria
 
-- [ ] Users can generate enemies by template, CR, or party-balanced difficulty
-- [ ] Audio-influenced generation works with playlist track selection
-- [ ] All tactical actions (Dodge, Dash, Disengage, Flee) are functional
-- [ ] Treasure rewards are configurable and displayed on victory
-- [ ] Party mode supports multiple characters with analyzer preview
-- [ ] Enemy cards clearly show type, archetype, and rarity tier
-- [ ] Advanced options are accessible but don't clutter main UI
-- [ ] Combat log correctly displays all new action types
+- [x] Users can generate enemies by template, CR, or party-balanced difficulty ✓
+- [x] Audio-influenced generation works with playlist track selection ✓
+- [x] All tactical actions (Dodge, Dash, Disengage, Flee) are functional ✓
+- [x] Treasure rewards are configurable and displayed on victory ✓
+- [x] Party mode supports multiple characters with analyzer preview ✓
+- [x] Enemy cards clearly show type, archetype, and rarity tier ✓
+- [x] Advanced options are accessible but don't clutter main UI ✓
+- [x] Combat log correctly displays all new action types ✓
 
 ---
 
