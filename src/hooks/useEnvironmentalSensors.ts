@@ -63,6 +63,14 @@ export const useEnvironmentalSensors = () => {
 
     // Create or recreate sensors instance when API key changes (after hydration)
     useEffect(() => {
+        // DEBUG: Log all values to understand what's happening
+        console.log('[DEBUG] useEnvironmentalSensors effect triggered:', {
+            _hasHydrated,
+            'settings.openWeatherApiKey': settings.openWeatherApiKey ? `${settings.openWeatherApiKey.slice(0, 4)}...${settings.openWeatherApiKey.slice(-4)} (${settings.openWeatherApiKey.length} chars)` : 'EMPTY/UNDEFINED',
+            usedApiKey: usedApiKey ? `${usedApiKey.slice(0, 4)}...${usedApiKey.slice(-4)}` : 'EMPTY',
+            sensorsExists: !!sensors,
+        });
+
         // Wait for hydration before creating sensors instance
         if (!_hasHydrated) {
             logger.debug('EnvironmentalSensors', 'Waiting for settings hydration...');
@@ -73,8 +81,11 @@ export const useEnvironmentalSensors = () => {
 
         // Only recreate if the API key has changed
         if (apiKey === usedApiKey && sensors) {
+            console.log('[DEBUG] Skipping sensors creation - same key and sensors exists');
             return;
         }
+
+        console.log('[DEBUG] Creating new sensors instance with apiKey:', apiKey ? 'HAS VALUE' : 'EMPTY');
 
         // Debug: Log API key initialization (first/last 4 chars for security)
         if (apiKey) {
@@ -126,33 +137,47 @@ export const useEnvironmentalSensors = () => {
     }, [environmentalContext]);
 
     const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion' | 'light') => {
+        console.log('[DEBUG] requestPermission called for:', sensorType);
         logger.info('EnvironmentalSensors', `Requesting permission: ${sensorType}`);
 
         try {
+            // Call the engine's requestPermissions method to update its internal state
+            // This is critical - the engine's startMonitoring() checks its own permission state
+            if (sensors) {
+                console.log('[DEBUG] Calling engine.requestPermissions for:', sensorType);
+                const results = await sensors.requestPermissions([sensorType]);
+                const result = results.find(r => r.type === sensorType);
+                const granted = result?.granted ?? false;
+
+                console.log('[DEBUG] Engine permission result:', sensorType, granted ? 'GRANTED' : 'DENIED');
+
+                // Also update the React store for UI display
+                setPermission(sensorType, granted ? 'granted' : 'denied');
+                return granted;
+            }
+
+            // Fallback if sensors not initialized yet (shouldn't happen after hydration)
+            console.log('[DEBUG] Sensors not initialized, using fallback permission logic');
             let granted = false;
 
             if (sensorType === 'motion') {
-                // This is the REAL iOS permission prompt
                 if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
                     const response = await (DeviceMotionEvent as any).requestPermission();
                     granted = response === 'granted';
                 } else {
-                    // Android or desktop: usually auto-granted
                     granted = true;
                 }
             } else if (sensorType === 'geolocation') {
-                // Trigger actual geolocation prompt
                 await new Promise<void>((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(
                         () => resolve(),
                         (error) => {
-                            // PositionError.code: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
                             if (error.code === 1) {
-                                reject(new Error('Geolocation permission denied. Please enable location access in your browser settings to use GPS features.'));
+                                reject(new Error('Geolocation permission denied.'));
                             } else if (error.code === 2) {
-                                reject(new Error('Location information unavailable. Please check your device location settings.'));
+                                reject(new Error('Location unavailable.'));
                             } else if (error.code === 3) {
-                                reject(new Error('Location request timed out. Please try again.'));
+                                reject(new Error('Location request timed out.'));
                             } else {
                                 reject(new Error(`Geolocation error: ${error.message}`));
                             }
@@ -161,10 +186,10 @@ export const useEnvironmentalSensors = () => {
                 });
                 granted = true;
             } else if (sensorType === 'light') {
-                // Light sensor usually doesn't need explicit request
                 granted = true;
             }
 
+            console.log('[DEBUG] Fallback permission result:', sensorType, granted ? 'GRANTED' : 'DENIED');
             setPermission(sensorType, granted ? 'granted' : 'denied');
             return granted;
         } catch (error) {
@@ -173,13 +198,14 @@ export const useEnvironmentalSensors = () => {
             handleError(error, 'EnvironmentalSensors');
             return false;
         }
-    }, [setPermission]);
+    }, [sensors, setPermission]);
 
     // Helper to update diagnostics for debugging (shared between functions)
     const updateDiagnosticsState = useCallback(() => {
         if (!sensors) return;
 
         const diag = sensors.getDiagnostics();
+        console.log('[DEBUG] Full diagnostics object:', JSON.stringify(diag, null, 2));
         setDiagnostics(diag);
 
         // Extract weather-specific error from diagnostics

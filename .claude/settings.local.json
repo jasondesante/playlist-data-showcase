@@ -4,7 +4,9 @@
       "Bash(npm test:*)",
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "mcp__RepoPrompt__context_builder"
+      "mcp__RepoPrompt__context_builder",
+      "mcp__RepoPrompt__file_search",
+      "mcp__RepoPrompt__get_file_tree"
     ],
     "deny": [],
     "ask": []

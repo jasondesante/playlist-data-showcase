@@ -82,15 +82,41 @@ async function validateOpenWeatherApiKey(apiKey: string): Promise<ApiKeyValidati
 }
 
 /**
+ * Validates Steam API key format
+ * Steam API keys are typically 32-character hexadecimal strings
+ */
+function isValidSteamApiKeyFormat(apiKey: string): boolean {
+  const trimmed = apiKey.trim();
+  // Steam API keys are 32 character hex strings
+  return /^[A-F0-9]{32}$/i.test(trimmed);
+}
+
+/**
  * Validates Steam API key by making a test API call
+ *
+ * NOTE: Steam's API does NOT support CORS requests from browsers.
+ * This function will fail with a CORS error when running in a browser.
+ * In development, we validate format only. For full validation, use a backend proxy.
  */
 async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResult> {
   if (!apiKey || apiKey.trim().length === 0) {
     return { status: 'idle' };
   }
 
+  const trimmedKey = apiKey.trim();
+
+  // First, check if the key format looks valid
+  if (!isValidSteamApiKeyFormat(trimmedKey)) {
+    return {
+      status: 'invalid',
+      message: 'Invalid key format. Steam API keys should be 32 hexadecimal characters.'
+    };
+  }
+
+  // Try to validate via direct API call
+  // Note: This WILL fail in browsers due to CORS - Steam doesn't allow browser requests
   try {
-    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey.trim()}&steamids=76561197960287930`;
+    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${trimmedKey}&steamids=76561197960287930`;
     const response = await fetch(url);
 
     const data = await response.json();
@@ -121,6 +147,26 @@ async function validateSteamApiKey(apiKey: string): Promise<ApiKeyValidationResu
       message: 'Unexpected response from Steam API. Please check your API key.'
     };
   } catch (error) {
+    // Check if this is a CORS error (browser blocking the request)
+    // CORS errors typically manifest as TypeError with no specific message
+    // or "Failed to fetch" / "NetworkError" messages
+    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+    const isCorsError =
+      error instanceof TypeError &&
+      (errorMessage.includes('failed to fetch') ||
+        errorMessage.includes('networkerror') ||
+        errorMessage === 'typeerror: failed to fetch' ||
+        errorMessage === '');
+
+    if (isCorsError) {
+      // CORS error - Steam API doesn't allow browser requests
+      // Key format is valid, but we can't verify it actually works
+      return {
+        status: 'valid',
+        message: 'Key format valid. (Browser cannot verify Steam API - use in Electron/server for full validation)'
+      };
+    }
+
     return {
       status: 'invalid',
       message: 'Network error. Please check your internet connection and try again.'
@@ -590,7 +636,31 @@ export function SettingsTab() {
           </Card>
 
           {/* Steam API Key */}
-          <Card variant="elevated" padding="md" className="settings-card">
+          <Card variant="elevated" padding="md" className={`settings-card${!isRunningInServerMode ? ' settings-card-disabled' : ''}`}>
+            {/* Server Mode Required Overlay - shown when running in browser */}
+            {!isRunningInServerMode && (
+              <div className="settings-discord-overlay">
+                <div className="settings-discord-badge">
+                  <ServerOff size={14} />
+                  <span>Browser Not Supported</span>
+                </div>
+                <div className="settings-discord-message">
+                  <p><strong>Steam API requires a server environment.</strong></p>
+                  <p>Browsers block Steam API requests due to CORS restrictions. Steam&apos;s servers don&apos;t allow cross-origin requests from web apps.</p>
+                  <p>
+                    To use Steam integration, run this app as a desktop application (via{' '}
+                    <a
+                      href="https://electronjs.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Electron
+                    </a>
+                    ) or with a backend proxy server.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="settings-api-key-header">
               <Gamepad2 className="settings-api-key-icon" />
               <div className="settings-api-key-title">Steam API</div>
@@ -600,15 +670,18 @@ export function SettingsTab() {
               value={steamKey}
               onChange={(e) => handleSteamKeyChange(e.target.value)}
               placeholder="Enter your Steam API key..."
-              helperText="Required for Steam integration in Gaming Platforms tab. Get your key at steamcommunity.com/dev/apikey"
+              helperText="Required for Steam integration. Get your key at steamcommunity.com/dev/apikey (32-char hex key)"
               containerClassName="settings-input-wrapper"
+              disabled={!isRunningInServerMode}
             />
-            <div className={`settings-validation-status ${getValidationStatusClass(steamValidation.status)}`}>
-              {getValidationIcon(steamValidation.status)}
-              {steamValidation.message && (
-                <span className="settings-validation-message">{steamValidation.message}</span>
-              )}
-            </div>
+            {isRunningInServerMode && (
+              <div className={`settings-validation-status ${getValidationStatusClass(steamValidation.status)}`}>
+                {getValidationIcon(steamValidation.status)}
+                {steamValidation.message && (
+                  <span className="settings-validation-message">{steamValidation.message}</span>
+                )}
+              </div>
+            )}
           </Card>
 
           {/* Discord Client ID */}

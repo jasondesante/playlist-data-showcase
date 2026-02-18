@@ -879,28 +879,28 @@ export function EnvironmentalSensorsTab() {
                       <div className="sensor-diagnostics-info-item">
                         <span className="sensor-diagnostics-info-label">API Key</span>
                         <span className="sensor-diagnostics-info-value">
-                          {maskApiKey((diagnostics as any).context?.weather?.apiKey)}
+                          {maskApiKey(settings?.openWeatherApiKey)}
                         </span>
                       </div>
                       <div className="sensor-diagnostics-info-item">
-                        <span className="sensor-diagnostics-info-label">Last API Call</span>
+                        <span className="sensor-diagnostics-info-label">Total API Calls</span>
                         <span className="sensor-diagnostics-info-value">
-                          {formatTimeAgo((diagnostics as any).performance?.weatherApi?.lastCall)}
+                          {(diagnostics as any)?.performance?.weatherApi?.totalCalls ?? 0}
                         </span>
                       </div>
                       <div className="sensor-diagnostics-info-item">
                         <span className="sensor-diagnostics-info-label">API Status</span>
-                        <span className={`sensor-diagnostics-info-value sensor-diagnostics-status--${(diagnostics as any).performance?.weatherApi?.successRate > 0.5 ? 'success' : 'error'}`}>
-                          {(diagnostics as any).performance?.weatherApi?.successRate !== undefined
-                            ? `${((diagnostics as any).performance.weatherApi.successRate * 100).toFixed(0)}% success`
+                        <span className={`sensor-diagnostics-info-value sensor-diagnostics-status--${(diagnostics as any)?.performance?.weatherApi?.successRate > 0.5 ? 'success' : 'error'}`}>
+                          {(diagnostics as any)?.performance?.weatherApi?.successRate !== undefined && (diagnostics as any)?.performance?.weatherApi?.totalCalls > 0
+                            ? `${(((diagnostics as any)?.performance?.weatherApi?.successRate ?? 0) * 100).toFixed(0)}% success`
                             : 'No calls yet'}
                         </span>
                       </div>
                       <div className="sensor-diagnostics-info-item">
                         <span className="sensor-diagnostics-info-label">Avg Response</span>
                         <span className="sensor-diagnostics-info-value">
-                          {(diagnostics as any).performance?.weatherApi?.avgResponseTime
-                            ? `${(diagnostics as any).performance.weatherApi.avgResponseTime.toFixed(0)}ms`
+                          {(diagnostics as any)?.performance?.weatherApi?.average > 0
+                            ? `${((diagnostics as any)?.performance?.weatherApi?.average ?? 0).toFixed(0)}ms`
                             : 'N/A'}
                         </span>
                       </div>

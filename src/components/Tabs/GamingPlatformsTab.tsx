@@ -134,7 +134,31 @@ export function GamingPlatformsTab() {
       </div>
 
       {/* Steam Section */}
-      <div className="gaming-platform-card steam">
+      <div className={`gaming-platform-card steam${!isServerMode ? ' steam-disabled' : ''}`}>
+        {/* Server Mode Required Overlay - shown when running in browser */}
+        {!isServerMode && (
+          <div className="discord-server-mode-overlay">
+            <div className="discord-server-mode-badge">
+              <ServerOff size={16} />
+              <span>Server Mode Required</span>
+            </div>
+            <div className="discord-server-mode-message">
+              <p><strong>Steam API requires a server environment.</strong></p>
+              <p>Browsers block Steam API requests due to CORS restrictions. Steam&apos;s servers don&apos;t allow cross-origin requests from web apps.</p>
+              <p>
+                To use Steam integration, run this app in{' '}
+                <a
+                  href="https://electronjs.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Electron
+                </a>{' '}
+                or with a backend proxy server.
+              </p>
+            </div>
+          </div>
+        )}
         <div className="gaming-platform-header">
           <div className="gaming-platform-icon">
             <Gamepad2 size={24} />
@@ -151,14 +175,15 @@ export function GamingPlatformsTab() {
             onChange={(e) => setSteamId(e.target.value)}
             className="gaming-input"
             placeholder="Enter Steam ID..."
-            disabled={steamConnected}
+            disabled={steamConnected || !isServerMode}
+            readOnly={!isServerMode}
           />
         </div>
 
         <div className="gaming-button-row">
           <button
             onClick={handleConnectSteam}
-            disabled={steamConnected || !steamId.trim()}
+            disabled={steamConnected || !steamId.trim() || !isServerMode}
             className="gaming-connect-btn"
           >
             {steamConnected ? 'Connected' : 'Connect Steam'}

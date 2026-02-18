@@ -2887,6 +2887,51 @@
 
 /* End of Phase 3.3: Audio Influence Display */
 
+/* Quick Actions Row - Generation Mode + Action Buttons combined */
+.combat-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--accent) / 0.1);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-quick-actions {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+}
+
+.combat-quick-actions-mode {
+  flex: 0 1 auto;
+  min-width: 180px;
+}
+
+@media (min-width: 768px) {
+  .combat-quick-actions-mode {
+    flex: 0 1 220px;
+  }
+}
+
+.combat-quick-actions-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .combat-quick-actions-buttons {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+}
+
 /* Config Action Buttons */
 .combat-config-actions {
   display: flex;
@@ -4059,35 +4104,45 @@
   overflow: hidden;
 }
 
-.combat-treasure-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: hsl(var(--card));
+/* Inline toggle style (like audio section) */
+.combat-treasure-inline {
   border: 1px solid hsl(var(--border));
   border-left: 3px solid hsl(45 96% 53%); /* Gold accent */
   border-radius: var(--radius);
-  cursor: pointer;
-  text-align: left;
-  transition: all var(--duration-fast) ease;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background-color: hsl(var(--card));
 }
 
 @media (min-width: 768px) {
-  .combat-treasure-header {
+  .combat-treasure-inline {
     padding: 1rem;
+    margin-top: 0.75rem;
   }
 }
 
-.combat-treasure-header:hover {
-  background-color: hsl(45 96% 53% / 0.1);
-  border-color: hsl(45 96% 53% / 0.3);
+.combat-treasure-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.combat-treasure-header:focus-visible {
-  outline: 2px solid hsl(45 96% 53%);
-  outline-offset: 2px;
+.combat-treasure-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.combat-treasure-hint {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .combat-treasure-hint {
+    font-size: 0.75rem;
+  }
 }
 
 .combat-treasure-title {
@@ -4160,6 +4215,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+/* For inline treasure section (no wrapper), show content normally */
+.combat-treasure-inline .combat-treasure-content {
+  opacity: 1;
+  transform: none;
+  margin-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 0.75rem;
+}
+
+/* Legacy wrapper-based animation */
+.combat-treasure-content-wrapper .combat-treasure-content {
   opacity: 0;
   transform: translateY(-8px);
   transition: opacity var(--duration-normal) var(--ease-out-cubic),
@@ -4544,6 +4612,43 @@
   }
 }
 
+/* Enemy Configuration Section in Advanced Options */
+.combat-advanced-enemy-config {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .combat-advanced-enemy-config {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.combat-advanced-subsection-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .combat-advanced-subsection-title {
+    font-size: 0.8125rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.combat-template-info-compact {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--accent) / 0.1);
+  border-radius: var(--radius-sm);
+}
+
 /* Toggle Switches Section */
 .combat-advanced-toggles {
   display: flex;
@@ -4889,8 +4994,25 @@
   border-radius: var(--radius-sm);
 }
 
+/* Fleeing warning - shown when fleeing is disabled */
+.combat-fleeing-warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.6875rem;
+  color: hsl(0 70% 40%);
+  background-color: hsl(0 70% 50% / 0.1);
+  border: 1px solid hsl(0 70% 50% / 0.3);
+  border-radius: var(--radius-sm);
+}
+
 @media (min-width: 768px) {
   .combat-difficulty-warning {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .combat-fleeing-warning {
     margin-top: 0.75rem;
     font-size: 0.75rem;
     padding: 0.5rem 1rem;

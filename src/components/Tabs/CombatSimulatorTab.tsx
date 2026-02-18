@@ -341,6 +341,161 @@ const TREASURE_ITEM_TYPES = [
     { value: 'misc', label: 'Miscellaneous' }
 ] as const;
 
+/**
+ * Database of available treasure items organized by type
+ * Users can select from these predefined items for more confidence
+ */
+const TREASURE_ITEMS_DATABASE: Record<TreasureCustomItem['type'], { name: string; rarity: 'common' | 'uncommon' | 'rare' | 'very-rare' | 'legendary' }[]> = {
+    weapon: [
+        // Common weapons
+        { name: 'Dagger', rarity: 'common' },
+        { name: 'Shortsword', rarity: 'common' },
+        { name: 'Longsword', rarity: 'common' },
+        { name: 'Greatsword', rarity: 'common' },
+        { name: 'Handaxe', rarity: 'common' },
+        { name: 'Battleaxe', rarity: 'common' },
+        { name: 'Greataxe', rarity: 'common' },
+        { name: 'Light Hammer', rarity: 'common' },
+        { name: 'Warhammer', rarity: 'common' },
+        { name: 'Maul', rarity: 'common' },
+        { name: 'Spear', rarity: 'common' },
+        { name: 'Glaive', rarity: 'common' },
+        { name: 'Halberd', rarity: 'common' },
+        { name: 'Pike', rarity: 'common' },
+        { name: 'Rapier', rarity: 'common' },
+        { name: 'Scimitar', rarity: 'common' },
+        { name: 'Shortbow', rarity: 'common' },
+        { name: 'Longbow', rarity: 'common' },
+        { name: 'Crossbow, Light', rarity: 'common' },
+        { name: 'Crossbow, Heavy', rarity: 'common' },
+        // Magic weapons
+        { name: 'Weapon +1', rarity: 'uncommon' },
+        { name: 'Weapon +2', rarity: 'rare' },
+        { name: 'Weapon +3', rarity: 'very-rare' },
+        { name: 'Flame Tongue', rarity: 'rare' },
+        { name: 'Frost Brand', rarity: 'rare' },
+        { name: 'Holy Avenger', rarity: 'legendary' },
+        { name: 'Sword of Sharpness', rarity: 'very-rare' },
+        { name: 'Vorpal Sword', rarity: 'legendary' },
+        { name: 'Sun Blade', rarity: 'rare' },
+    ],
+    armor: [
+        // Common armor
+        { name: 'Padded Armor', rarity: 'common' },
+        { name: 'Leather Armor', rarity: 'common' },
+        { name: 'Studded Leather', rarity: 'common' },
+        { name: 'Hide Armor', rarity: 'common' },
+        { name: 'Chain Shirt', rarity: 'common' },
+        { name: 'Scale Mail', rarity: 'common' },
+        { name: 'Breastplate', rarity: 'common' },
+        { name: 'Half Plate', rarity: 'common' },
+        { name: 'Ring Mail', rarity: 'common' },
+        { name: 'Chain Mail', rarity: 'common' },
+        { name: 'Splint Armor', rarity: 'common' },
+        { name: 'Plate Armor', rarity: 'common' },
+        // Shields
+        { name: 'Shield', rarity: 'common' },
+        // Magic armor
+        { name: 'Armor +1', rarity: 'uncommon' },
+        { name: 'Armor +2', rarity: 'rare' },
+        { name: 'Armor +3', rarity: 'very-rare' },
+        { name: 'Shield +1', rarity: 'uncommon' },
+        { name: 'Shield +2', rarity: 'rare' },
+        { name: 'Cloak of Protection', rarity: 'uncommon' },
+        { name: 'Ring of Protection', rarity: 'rare' },
+        { name: 'Mithral Armor', rarity: 'rare' },
+        { name: 'Adamantine Armor', rarity: 'uncommon' },
+        { name: 'Demon Armor', rarity: 'rare' },
+    ],
+    consumable: [
+        // Potions
+        { name: 'Potion of Healing', rarity: 'common' },
+        { name: 'Potion of Greater Healing', rarity: 'uncommon' },
+        { name: 'Potion of Superior Healing', rarity: 'rare' },
+        { name: 'Potion of Supreme Healing', rarity: 'very-rare' },
+        { name: 'Potion of Climbing', rarity: 'common' },
+        { name: 'Potion of Fire Breath', rarity: 'uncommon' },
+        { name: 'Potion of Flying', rarity: 'rare' },
+        { name: 'Potion of Healing (Bonus Action)', rarity: 'uncommon' },
+        { name: 'Potion of Invisibility', rarity: 'rare' },
+        { name: 'Potion of Resistance (Acid)', rarity: 'uncommon' },
+        { name: 'Potion of Resistance (Cold)', rarity: 'uncommon' },
+        { name: 'Potion of Resistance (Fire)', rarity: 'uncommon' },
+        { name: 'Potion of Resistance (Lightning)', rarity: 'uncommon' },
+        { name: 'Potion of Resistance (Poison)', rarity: 'uncommon' },
+        { name: 'Potion of Speed', rarity: 'rare' },
+        { name: 'Potion of Water Breathing', rarity: 'common' },
+        { name: 'Potion of Giant Strength (Hill)', rarity: 'uncommon' },
+        { name: 'Potion of Giant Strength (Frost)', rarity: 'rare' },
+        { name: 'Potion of Giant Strength (Stone)', rarity: 'rare' },
+        { name: 'Potion of Giant Strength (Fire)', rarity: 'very-rare' },
+        { name: 'Potion of Giant Strength (Cloud)', rarity: 'very-rare' },
+        { name: 'Potion of Giant Strength (Storm)', rarity: 'legendary' },
+        // Scrolls
+        { name: 'Spell Scroll (Cantrip)', rarity: 'common' },
+        { name: 'Spell Scroll (1st Level)', rarity: 'common' },
+        { name: 'Spell Scroll (2nd Level)', rarity: 'uncommon' },
+        { name: 'Spell Scroll (3rd Level)', rarity: 'uncommon' },
+        { name: 'Spell Scroll (4th Level)', rarity: 'rare' },
+        { name: 'Spell Scroll (5th Level)', rarity: 'rare' },
+        // Other consumables
+        { name: 'Antitoxin', rarity: 'common' },
+        { name: 'Elixir of Health', rarity: 'rare' },
+        { name: 'Oil of Sharpness', rarity: 'very-rare' },
+        { name: 'Oil of Slipperiness', rarity: 'uncommon' },
+        { name: 'Keoghtom\'s Ointment', rarity: 'uncommon' },
+        { name: 'Dust of Disappearance', rarity: 'uncommon' },
+        { name: 'Dust of Dryness', rarity: 'uncommon' },
+        { name: 'Dust of Sneezing and Choking', rarity: 'uncommon' },
+    ],
+    misc: [
+        // Common items
+        { name: 'Backpack', rarity: 'common' },
+        { name: 'Bedroll', rarity: 'common' },
+        { name: 'Rations (1 day)', rarity: 'common' },
+        { name: 'Torches (10)', rarity: 'common' },
+        { name: 'Rope (50 ft)', rarity: 'common' },
+        { name: 'Crowbar', rarity: 'common' },
+        { name: 'Grappling Hook', rarity: 'common' },
+        { name: 'Tinderbox', rarity: 'common' },
+        { name: 'Waterskin', rarity: 'common' },
+        { name: 'Lantern, Hooded', rarity: 'common' },
+        { name: 'Oil (flask)', rarity: 'common' },
+        // Tools
+        { name: 'Thieves\' Tools', rarity: 'common' },
+        { name: 'Healer\'s Kit', rarity: 'common' },
+        { name: 'Climber\'s Kit', rarity: 'common' },
+        { name: 'Disguise Kit', rarity: 'common' },
+        { name: 'Forgery Kit', rarity: 'common' },
+        { name: 'Herbalism Kit', rarity: 'common' },
+        { name: 'Poisoner\'s Kit', rarity: 'common' },
+        // Magic items
+        { name: 'Bag of Holding', rarity: 'uncommon' },
+        { name: 'Heward\'s Handy Haversack', rarity: 'uncommon' },
+        { name: 'Portable Hole', rarity: 'rare' },
+        { name: 'Driftglobe', rarity: 'uncommon' },
+        { name: 'Everbright Lantern', rarity: 'uncommon' },
+        { name: 'Sending Stones', rarity: 'uncommon' },
+        { name: 'Wand of Magic Detection', rarity: 'uncommon' },
+        { name: 'Wand of Secrets', rarity: 'uncommon' },
+        { name: 'Amulet of Proof Against Detection', rarity: 'uncommon' },
+        { name: 'Stone of Good Luck', rarity: 'uncommon' },
+        { name: 'Cloak of Elvenkind', rarity: 'uncommon' },
+        { name: 'Boots of Elvenkind', rarity: 'uncommon' },
+        { name: 'Gloves of Thievery', rarity: 'uncommon' },
+        { name: 'Immovable Rod', rarity: 'uncommon' },
+        { name: 'Decanter of Endless Water', rarity: 'uncommon' },
+        { name: 'Alchemy Jug', rarity: 'uncommon' },
+        { name: 'Horn of Blasting', rarity: 'rare' },
+        { name: 'Necklace of Fireballs', rarity: 'rare' },
+        { name: 'Pearl of Power', rarity: 'uncommon' },
+        { name: 'Spell Gem (Obsidian)', rarity: 'uncommon' },
+        { name: 'Spell Gem (Amethyst)', rarity: 'rare' },
+        { name: 'Spell Gem (Sapphire)', rarity: 'very-rare' },
+        { name: 'Spell Gem (Diamond)', rarity: 'legendary' },
+    ],
+};
+
 // End of Phase 5: Treasure Configuration Types
 // ========================================
 
@@ -573,9 +728,6 @@ export function CombatSimulatorTab() {
 
   // State: Treasure configuration
   const [treasureConfig, setTreasureConfig] = useState<TreasureGenerationConfig>(initialConfig.treasure);
-
-  // State: Collapsible panel toggle
-  const [isTreasureExpanded, setIsTreasureExpanded] = useState(false);
 
   // State: New custom item being added
   const [newItemName, setNewItemName] = useState('');
@@ -1705,155 +1857,181 @@ export function CombatSimulatorTab() {
           <div className="combat-config-panel">
             <h3 className="combat-config-title">Enemy Configuration</h3>
 
-            {/* Generation Mode Selector */}
-            <div className="combat-config-section">
-              <label className="combat-config-label">Generation Mode</label>
-              <select
-                value={generationConfig.mode}
-                onChange={(e) => updateGenerationConfig('mode', e.target.value as EnemyGenerationMode)}
-                className="combat-config-select"
-              >
-                <option value="single">Single Enemy</option>
-                <option value="party-balanced">Party-Balanced Encounter</option>
-                <option value="cr-based">CR-Based Encounter</option>
-              </select>
-              <p className="combat-config-hint">
-                {generationConfig.mode === 'single' && 'Generate a single enemy based on template and rarity.'}
-                {generationConfig.mode === 'party-balanced' && 'Generate an encounter balanced to your party\'s level and chosen difficulty.'}
-                {generationConfig.mode === 'cr-based' && 'Generate enemies at a specific Challenge Rating regardless of party level.'}
-              </p>
+            {/* Quick Actions Row - Generation Mode + Action Buttons */}
+            <div className="combat-quick-actions">
+              <div className="combat-quick-actions-mode">
+                <label className="combat-config-label">Generation Mode</label>
+                <select
+                  value={generationConfig.mode}
+                  onChange={(e) => updateGenerationConfig('mode', e.target.value as EnemyGenerationMode)}
+                  className="combat-config-select"
+                >
+                  <option value="single">Single Enemy</option>
+                  <option value="party-balanced">Party-Balanced Encounter</option>
+                  <option value="cr-based">CR-Based Encounter</option>
+                </select>
+              </div>
+              <div className="combat-quick-actions-buttons">
+                <button
+                  onClick={handleGenerateEnemiesWithLoading}
+                  disabled={isGenerating}
+                  className={`combat-config-button combat-config-button-secondary ${isGenerating ? 'combat-config-button-disabled' : ''}`}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate Enemies'}
+                </button>
+                <button
+                  onClick={handleStartCombat}
+                  disabled={generatedEnemies.length === 0}
+                  className={`combat-config-button combat-config-button-primary ${generatedEnemies.length === 0 ? 'combat-config-button-disabled' : ''}`}
+                >
+                  Start Combat
+                </button>
+              </div>
             </div>
+            <p className="combat-config-hint">
+              {generationConfig.mode === 'single' && 'Generate a single enemy based on template and rarity.'}
+              {generationConfig.mode === 'party-balanced' && 'Generate an encounter balanced to your party\'s level and chosen difficulty.'}
+              {generationConfig.mode === 'cr-based' && 'Generate enemies at a specific Challenge Rating regardless of party level.'}
+            </p>
 
-            {/* Mode-specific config sections (Phase 2.1: Show/hide based on mode) */}
-
-            {/* Single Enemy Options - shown only for single mode */}
-            {generationConfig.mode === 'single' && (
-              <div className="combat-config-section combat-config-section-highlight">
-                {/* Template Selector - Phase 2.2 */}
-                <div className="combat-config-field" style={{ marginBottom: '0.75rem' }}>
-                  <label className="combat-config-label">Enemy Template</label>
-                  <select
-                    value={generationConfig.templateId || ''}
-                    onChange={(e) => updateGenerationConfig('templateId', e.target.value || undefined)}
-                    className="combat-config-select combat-template-select"
-                  >
-                    <option value="">Random (by category filter)</option>
-                    {/* Group templates by category */}
-                    {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(category => {
-                      const categoryTemplates = ENEMY_TEMPLATES.filter(t => t.category === category);
-                      if (categoryTemplates.length === 0) return null;
-                      const catInfo = CATEGORY_INFO[category];
-                      return (
-                        <optgroup key={category} label={`${catInfo.icon} ${catInfo.label}`}>
-                          {categoryTemplates.map(template => {
-                            const archInfo = ARCHETYPE_INFO[template.archetype];
-                            return (
-                              <option key={template.id} value={template.id}>
-                                {template.name} [{archInfo.icon} {archInfo.label}]
-                              </option>
-                            );
-                          })}
-                        </optgroup>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                {/* Selected Template Info - Phase 2.2 */}
-                {generationConfig.templateId && (
-                  <div className="combat-template-info">
-                    {(() => {
-                      const template = ENEMY_TEMPLATES.find(t => t.id === generationConfig.templateId);
-                      if (!template) return null;
-                      const archInfo = ARCHETYPE_INFO[template.archetype];
-                      const catInfo = CATEGORY_INFO[template.category];
-                      return (
-                        <>
-                          <div className="combat-template-badges">
-                            <span
-                              className="combat-template-badge combat-template-badge-category"
-                              title={`Category: ${catInfo.label}`}
-                            >
-                              {catInfo.icon} {catInfo.label}
-                            </span>
-                            <span
-                              className="combat-template-badge combat-template-badge-archetype"
-                              style={{ backgroundColor: archInfo.color }}
-                              title={`Archetype: ${archInfo.label}`}
-                            >
-                              {archInfo.icon} {archInfo.label}
-                            </span>
-                          </div>
-                          <div className="combat-template-ability" title={template.signatureAbilityDescription}>
-                            <span className="combat-template-ability-label">Signature:</span>
-                            <span className="combat-template-ability-name">{template.signatureAbility}</span>
-                            <span className="combat-template-ability-desc">{template.signatureAbilityDescription}</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-
-                <div className="combat-config-row">
-                  {/* Rarity Selector with info - Phase 2.2 */}
-                  <div className="combat-config-field">
-                    <label className="combat-config-label">Rarity Tier</label>
-                    <select
-                      value={generationConfig.baseRarity}
-                      onChange={(e) => updateGenerationConfig('baseRarity', e.target.value as EnemyRarity)}
-                      className="combat-config-select"
-                    >
-                      <option value="common">Common</option>
-                      <option value="uncommon">Uncommon</option>
-                      <option value="elite">Elite</option>
-                      <option value="boss">Boss</option>
-                    </select>
-                    {/* Rarity info tooltip - Phase 2.2 */}
-                    <div className="combat-rarity-info">
-                      {(() => {
-                        const info = RARITY_INFO[generationConfig.baseRarity];
-                        return (
-                          <>
-                            <span className="combat-rarity-multiplier">{info.multiplier} stats</span>
-                            <span className="combat-rarity-abilities">
-                              {info.extraAbilities > 0 ? `+${info.extraAbilities} abilities` : 'Signature only'}
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Category Filter - optional when no template selected */}
-                  <div className="combat-config-field">
-                    <label className="combat-config-label">
-                      Category Filter
-                      {generationConfig.templateId && <span className="combat-config-optional"> (optional)</span>}
-                    </label>
-                    <select
-                      value={generationConfig.category || ''}
-                      onChange={(e) => updateGenerationConfig('category', (e.target.value || undefined) as EnemyCategory | undefined)}
-                      className="combat-config-select"
-                      disabled={!!generationConfig.templateId}
-                    >
-                      <option value="">Any Category</option>
-                      {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(cat => {
-                        const info = CATEGORY_INFO[cat];
-                        return (
-                          <option key={cat} value={cat}>
-                            {info.icon} {info.label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    {generationConfig.templateId && (
-                      <p className="combat-config-hint">Disabled when template is selected</p>
-                    )}
-                  </div>
+            {/* Generated Enemies Preview - shown right after quick actions */}
+            {/* Phase 8.5: Show skeleton loading while generating */}
+            {isGenerating && (
+              <div className="combat-config-preview">
+                <h4 className="combat-config-preview-title">
+                  Generating Enemies...
+                </h4>
+                <div className="combat-config-preview-list-generating">
+                  {Array.from({ length: generationConfig.count }).map((_, index) => (
+                    <div key={index} className="combat-enemy-card-skeleton" />
+                  ))}
                 </div>
               </div>
             )}
+            {generatedEnemies.length > 0 && (
+              <div className="combat-config-preview">
+                <h4 className={`combat-config-preview-title ${animateEnemies ? 'combat-config-preview-title-animated' : ''}`}>
+                  Generated Enemies ({generatedEnemies.length})
+                  {audioReasoning.length > 0 && (
+                    <span className="combat-preview-audio-badge" title="Audio-influenced generation">
+                      🎵 Audio
+                    </span>
+                  )}
+                </h4>
+                <div className="combat-config-preview-list">
+                  {generatedEnemies.map((enemy, index) => {
+                    // Find the corresponding audio reasoning for this enemy
+                    const reasoning = audioReasoning[index];
+
+                    // Phase 8.5: Determine animation class based on rarity
+                    const enemyRarity = enemy.subrace as EnemyRarity | undefined;
+                    const animationClass = animateEnemies
+                      ? enemyRarity === 'boss'
+                        ? 'combat-config-enemy-card-animated-boss'
+                        : enemyRarity === 'elite'
+                          ? 'combat-config-enemy-card-animated-elite'
+                          : 'combat-config-enemy-card-animated'
+                      : '';
+
+                    return (
+                      <div
+                        key={index}
+                        className={`combat-config-enemy-card combat-enemy-card-gpu ${animationClass}`}
+                      >
+                        <div className="combat-config-enemy-header">
+                          <div className="combat-config-enemy-name">{enemy.name}</div>
+                          {reasoning && (
+                            <span className="combat-enemy-audio-indicator" title={`Influenced by: ${reasoning.trackTitle}`}>
+                              🎵
+                            </span>
+                          )}
+                        </div>
+                        <div className="combat-config-enemy-details">
+                          {enemy.race} {enemy.class} • Level {enemy.level} • HP: {enemy.hp.max}
+                        </div>
+
+                        {/* Phase 3.3: Audio influence display */}
+                        {reasoning && (
+                          <div className="combat-enemy-audio-info">
+                            {/* Show which song influenced this enemy */}
+                            <div className="combat-audio-song" title={`Song: ${reasoning.trackTitle}`}>
+                              <span className="combat-audio-song-icon">🎶</span>
+                              <span className="combat-audio-song-name">{reasoning.trackTitle}</span>
+                            </div>
+
+                            {/* Audio profile summary (bass/mid/treble) */}
+                            <div className="combat-audio-profile">
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Bass:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-bass"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.bass * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.bass * 100)}%</span>
+                              </div>
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Mid:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-mid"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.mid * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.mid * 100)}%</span>
+                              </div>
+                              <div className="combat-audio-profile-bar">
+                                <span className="combat-audio-profile-label">Treble:</span>
+                                <div className="combat-audio-profile-track">
+                                  <div
+                                    className="combat-audio-profile-fill combat-audio-profile-fill-treble"
+                                    style={{ width: `${Math.round(reasoning.audioSummary.treble * 100)}%` }}
+                                  />
+                                </div>
+                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.treble * 100)}%</span>
+                              </div>
+                            </div>
+
+                            {/* Dominant band indicator */}
+                            <div className={`combat-audio-dominant combat-audio-dominant-${reasoning.audioSummary.dominantBand}`}>
+                              Dominant: {reasoning.audioSummary.dominantBand.charAt(0).toUpperCase() + reasoning.audioSummary.dominantBand.slice(1)}
+                            </div>
+
+                            {/* Template selection reasoning tooltip */}
+                            <div className="combat-audio-reasoning" title={reasoning.reason}>
+                              <span className="combat-audio-reasoning-icon">💡</span>
+                              <span className="combat-audio-reasoning-text">{reasoning.reason}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Phase 8.4: Encounter Summary Panel - shows before combat starts */}
+            {generatedEnemies.length > 0 && (
+              <EncounterSummaryPanel
+                enemies={generatedEnemies}
+                partyMembers={partyMode === 'party'
+                  ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
+                  : getActiveCharacter() ? [getActiveCharacter()!] : []
+                }
+                className="combat-encounter-summary"
+              />
+            )}
+
+            {/* Warning for fleeing disabled - shown when enemies are generated */}
+            {generatedEnemies.length > 0 && !advancedConfig.allowFleeing && (
+              <div className="combat-fleeing-warning">
+                ⚠️ Fleeing is disabled - combatants cannot retreat from this encounter
+              </div>
+            )}
+
+            {/* Mode-specific config sections (Phase 2.1: Show/hide based on mode) */}
 
             {/* Party-Balanced Options - shown only for party-balanced mode */}
             {generationConfig.mode === 'party-balanced' && (
@@ -2240,43 +2418,31 @@ export function CombatSimulatorTab() {
             </div>
 
             {/* Treasure Configuration Section - Phase 5.1 */}
-            <div className="combat-config-section combat-treasure-section">
-              {/* Collapsible Header */}
-              <button
-                type="button"
-                onClick={() => setIsTreasureExpanded(!isTreasureExpanded)}
-                className="combat-treasure-header"
-              >
-                <span className="combat-treasure-title">
-                  💎 Treasure Configuration
-                  {treasureConfig.enabled && (
-                    <span className="combat-treasure-enabled-badge">Enabled</span>
-                  )}
-                </span>
-                <span className={`combat-treasure-expand-icon ${isTreasureExpanded ? 'combat-treasure-expanded' : ''}`}>
-                  ▼
-                </span>
-              </button>
+            {/* Inline toggle style - click to enable AND expand */}
+            <div className="combat-config-section combat-treasure-section combat-treasure-inline">
+              <div className="combat-treasure-header">
+                <div className="combat-treasure-title-row">
+                  <span className="combat-treasure-title">💎 Treasure Configuration</span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={treasureConfig.enabled}
+                      onChange={(e) => updateTreasureConfig('enabled', e.target.checked)}
+                      className="toggle-checkbox"
+                    />
+                  </label>
+                </div>
+                {treasureConfig.enabled && (
+                  <p className="combat-treasure-hint">
+                    Configure gold rewards and custom items for victory.
+                  </p>
+                )}
+              </div>
 
-              {/* Collapsible Content - Phase 8.5: Added transition wrapper */}
-              <div className={`combat-treasure-content-wrapper ${isTreasureExpanded ? 'expanded' : ''}`}>
-                <div className="combat-treasure-content-inner">
-                  <div className="combat-treasure-content">
-                    {/* Enable Treasure Toggle */}
-                    <div className="combat-treasure-field">
-                    <label className="combat-config-label">Enable Treasure Rewards</label>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={treasureConfig.enabled}
-                        onChange={(e) => updateTreasureConfig('enabled', e.target.checked)}
-                        className="toggle-checkbox"
-                      />
-                    </label>
-                  </div>
-
-                  {treasureConfig.enabled && (
-                    <>
+              {/* Treasure Content - shown when enabled */}
+              {treasureConfig.enabled && (
+                <div className="combat-treasure-content">
+                  <>
                       {/* Gold Configuration */}
                       <div className="combat-treasure-gold-section">
                         <h5 className="combat-treasure-subsection-title">💰 Gold Rewards</h5>
@@ -2379,30 +2545,55 @@ export function CombatSimulatorTab() {
                           </div>
                         )}
 
-                        {/* Add New Item */}
+                        {/* Add New Item - Dropdown based selection */}
                         <div className="combat-treasure-add-item">
                           <div className="combat-treasure-field-row">
-                            <div className="combat-treasure-field combat-treasure-add-name">
-                              <label className="combat-config-label">Item Name</label>
-                              <input
-                                type="text"
-                                value={newItemName}
-                                onChange={(e) => setNewItemName(e.target.value)}
-                                className="combat-config-input"
-                                placeholder="e.g., Potion of Healing"
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddCustomItem()}
-                              />
-                            </div>
                             <div className="combat-treasure-field combat-treasure-add-type">
-                              <label className="combat-config-label">Type</label>
+                              <label className="combat-config-label">Item Type</label>
                               <select
                                 value={newItemType}
-                                onChange={(e) => setNewItemType(e.target.value as TreasureCustomItem['type'])}
+                                onChange={(e) => {
+                                  setNewItemType(e.target.value as TreasureCustomItem['type']);
+                                  setNewItemName(''); // Reset item name when type changes
+                                }}
                                 className="combat-config-select"
                               >
                                 {TREASURE_ITEM_TYPES.map(type => (
                                   <option key={type.value} value={type.value}>{type.label}</option>
                                 ))}
+                              </select>
+                            </div>
+                            <div className="combat-treasure-field combat-treasure-add-name">
+                              <label className="combat-config-label">Select Item</label>
+                              <select
+                                value={newItemName}
+                                onChange={(e) => setNewItemName(e.target.value)}
+                                className="combat-config-select"
+                              >
+                                <option value="">-- Choose an item --</option>
+                                {(() => {
+                                  const items = TREASURE_ITEMS_DATABASE[newItemType];
+                                  const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'] as const;
+                                  const rarityLabels: Record<string, string> = {
+                                    'common': 'Common',
+                                    'uncommon': 'Uncommon',
+                                    'rare': 'Rare',
+                                    'very-rare': 'Very Rare',
+                                    'legendary': 'Legendary'
+                                  };
+
+                                  return rarityOrder.map(rarity => {
+                                    const itemsOfRarity = items.filter(item => item.rarity === rarity);
+                                    if (itemsOfRarity.length === 0) return null;
+                                    return (
+                                      <optgroup key={rarity} label={rarityLabels[rarity]}>
+                                        {itemsOfRarity.map(item => (
+                                          <option key={item.name} value={item.name}>{item.name}</option>
+                                        ))}
+                                      </optgroup>
+                                    );
+                                  });
+                                })()}
                               </select>
                             </div>
                           </div>
@@ -2440,10 +2631,8 @@ export function CombatSimulatorTab() {
                         </span>
                       </div>
                     </>
-                  )}
-                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Advanced Options Configuration Section - Phase 6.1 */}
@@ -2479,6 +2668,135 @@ export function CombatSimulatorTab() {
               <div className={`combat-advanced-content-wrapper ${isAdvancedExpanded ? 'expanded' : ''}`}>
                 <div className="combat-advanced-content-inner">
                   <div className="combat-advanced-content">
+                    {/* Enemy Template Configuration - moved from Single Enemy Options */}
+                    <div className="combat-advanced-enemy-config">
+                      <h5 className="combat-advanced-subsection-title">Enemy Configuration</h5>
+
+                      <div className="combat-config-row">
+                        {/* Template Selector */}
+                        <div className="combat-config-field">
+                          <label className="combat-config-label">Enemy Template</label>
+                          <select
+                            value={generationConfig.templateId || ''}
+                            onChange={(e) => updateGenerationConfig('templateId', e.target.value || undefined)}
+                            className="combat-config-select combat-template-select"
+                          >
+                            <option value="">Random (by category filter)</option>
+                            {/* Group templates by category */}
+                            {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(category => {
+                              const categoryTemplates = ENEMY_TEMPLATES.filter(t => t.category === category);
+                              if (categoryTemplates.length === 0) return null;
+                              const catInfo = CATEGORY_INFO[category];
+                              return (
+                                <optgroup key={category} label={`${catInfo.icon} ${catInfo.label}`}>
+                                  {categoryTemplates.map(template => {
+                                    const archInfo = ARCHETYPE_INFO[template.archetype];
+                                    return (
+                                      <option key={template.id} value={template.id}>
+                                        {template.name} [{archInfo.icon} {archInfo.label}]
+                                      </option>
+                                    );
+                                  })}
+                                </optgroup>
+                              );
+                            })}
+                          </select>
+                        </div>
+
+                        {/* Rarity Selector */}
+                        <div className="combat-config-field">
+                          <label className="combat-config-label">Rarity Tier</label>
+                          <select
+                            value={generationConfig.baseRarity}
+                            onChange={(e) => updateGenerationConfig('baseRarity', e.target.value as EnemyRarity)}
+                            className="combat-config-select"
+                          >
+                            <option value="common">Common</option>
+                            <option value="uncommon">Uncommon</option>
+                            <option value="elite">Elite</option>
+                            <option value="boss">Boss</option>
+                          </select>
+                          {/* Rarity info tooltip */}
+                          <div className="combat-rarity-info">
+                            {(() => {
+                              const info = RARITY_INFO[generationConfig.baseRarity];
+                              return (
+                                <>
+                                  <span className="combat-rarity-multiplier">{info.multiplier} stats</span>
+                                  <span className="combat-rarity-abilities">
+                                    {info.extraAbilities > 0 ? `+${info.extraAbilities} abilities` : 'Signature only'}
+                                  </span>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div className="combat-config-field">
+                          <label className="combat-config-label">
+                            Category Filter
+                            {generationConfig.templateId && <span className="combat-config-optional"> (optional)</span>}
+                          </label>
+                          <select
+                            value={generationConfig.category || ''}
+                            onChange={(e) => updateGenerationConfig('category', (e.target.value || undefined) as EnemyCategory | undefined)}
+                            className="combat-config-select"
+                            disabled={!!generationConfig.templateId}
+                          >
+                            <option value="">Any Category</option>
+                            {(Object.keys(CATEGORY_INFO) as EnemyCategory[]).map(cat => {
+                              const info = CATEGORY_INFO[cat];
+                              return (
+                                <option key={cat} value={cat}>
+                                  {info.icon} {info.label}
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {generationConfig.templateId && (
+                            <p className="combat-config-hint">Disabled when template is selected</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Selected Template Info */}
+                      {generationConfig.templateId && (
+                        <div className="combat-template-info combat-template-info-compact">
+                          {(() => {
+                            const template = ENEMY_TEMPLATES.find(t => t.id === generationConfig.templateId);
+                            if (!template) return null;
+                            const archInfo = ARCHETYPE_INFO[template.archetype];
+                            const catInfo = CATEGORY_INFO[template.category];
+                            return (
+                              <>
+                                <div className="combat-template-badges">
+                                  <span
+                                    className="combat-template-badge combat-template-badge-category"
+                                    title={`Category: ${catInfo.label}`}
+                                  >
+                                    {catInfo.icon} {catInfo.label}
+                                  </span>
+                                  <span
+                                    className="combat-template-badge combat-template-badge-archetype"
+                                    style={{ backgroundColor: archInfo.color }}
+                                    title={`Archetype: ${archInfo.label}`}
+                                  >
+                                    {archInfo.icon} {archInfo.label}
+                                  </span>
+                                </div>
+                                <div className="combat-template-ability" title={template.signatureAbilityDescription}>
+                                  <span className="combat-template-ability-label">Signature:</span>
+                                  <span className="combat-template-ability-name">{template.signatureAbility}</span>
+                                  <span className="combat-template-ability-desc">{template.signatureAbilityDescription}</span>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Toggle Switches */}
                     <div className="combat-advanced-toggles">
                       {/* Use Environment Toggle */}
@@ -2617,263 +2935,12 @@ export function CombatSimulatorTab() {
                       )}
                     </div>
                   </div>
-
-                  {/* Phase 6.2: Estimated Encounter Difficulty */}
-                  {generatedEnemies.length > 0 && (() => {
-                    const activeChar = getActiveCharacter();
-                    if (!activeChar) return null;
-
-                    // Calculate total adjusted XP from generated enemies
-                    // Use level as effective CR for enemies
-                    const enemyCRs = generatedEnemies.map(e => e.level || 1);
-                    const encounterMultiplier = getEncounterMultiplier(enemyCRs.length);
-                    const totalAdjustedXP = calculateAdjustedXP(enemyCRs, encounterMultiplier);
-
-                    // Get XP thresholds for the party (single hero for now)
-                    const easyThreshold = getXPBudgetPerLevel(activeChar.level, 'easy');
-                    const mediumThreshold = getXPBudgetPerLevel(activeChar.level, 'medium');
-                    const hardThreshold = getXPBudgetPerLevel(activeChar.level, 'hard');
-                    const deadlyThreshold = getXPBudgetPerLevel(activeChar.level, 'deadly');
-
-                    // Determine difficulty rating
-                    let difficultyRating: 'trivial' | 'easy' | 'medium' | 'hard' | 'deadly' | 'impossible' = 'trivial';
-                    let difficultyColor: string;
-                    let difficultyIcon: string;
-
-                    if (totalAdjustedXP >= deadlyThreshold) {
-                      difficultyRating = 'deadly';
-                      difficultyColor = 'hsl(0 84% 60%)';
-                      difficultyIcon = '💀';
-                    } else if (totalAdjustedXP >= hardThreshold) {
-                      difficultyRating = 'hard';
-                      difficultyColor = 'hsl(24 95% 53%)';
-                      difficultyIcon = '⚠️';
-                    } else if (totalAdjustedXP >= mediumThreshold) {
-                      difficultyRating = 'medium';
-                      difficultyColor = 'hsl(48 96% 53%)';
-                      difficultyIcon = '⚡';
-                    } else if (totalAdjustedXP >= easyThreshold) {
-                      difficultyRating = 'easy';
-                      difficultyColor = 'hsl(142 70% 50%)';
-                      difficultyIcon = '✓';
-                    } else {
-                      difficultyRating = 'trivial';
-                      difficultyColor = 'hsl(210 10% 50%)';
-                      difficultyIcon = '○';
-                    }
-
-                    // Check for impossible encounters (way above deadly)
-                    if (totalAdjustedXP >= deadlyThreshold * 2) {
-                      difficultyRating = 'impossible';
-                      difficultyColor = 'hsl(280 70% 50%)';
-                      difficultyIcon = '☠️';
-                    }
-
-                    return (
-                      <div className="combat-difficulty-panel" style={{ borderColor: difficultyColor }}>
-                        <div className="combat-difficulty-header">
-                          <span className="combat-difficulty-label">Estimated Difficulty</span>
-                          <span
-                            className="combat-difficulty-rating"
-                            style={{ color: difficultyColor }}
-                          >
-                            {difficultyIcon} {difficultyRating.charAt(0).toUpperCase() + difficultyRating.slice(1)}
-                          </span>
-                        </div>
-                        <div className="combat-difficulty-stats">
-                          <div className="combat-difficulty-stat">
-                            <span className="combat-difficulty-stat-label">Enemy XP:</span>
-                            <span className="combat-difficulty-stat-value">{totalAdjustedXP.toLocaleString()} XP</span>
-                            <span className="combat-difficulty-stat-hint">({enemyCRs.length} {enemyCRs.length === 1 ? 'enemy' : 'enemies'}, ×{encounterMultiplier} multiplier)</span>
-                          </div>
-                          <div className="combat-difficulty-thresholds">
-                            <span className="combat-difficulty-thresholds-label">Thresholds for Level {activeChar.level}:</span>
-                            <div className="combat-difficulty-threshold-bars">
-                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(142 70% 50%)' }}>
-                                Easy: {easyThreshold.toLocaleString()}
-                              </div>
-                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(48 96% 53%)' }}>
-                                Med: {mediumThreshold.toLocaleString()}
-                              </div>
-                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(24 95% 53%)' }}>
-                                Hard: {hardThreshold.toLocaleString()}
-                              </div>
-                              <div className="combat-difficulty-threshold" style={{ color: 'hsl(0 84% 60%)' }}>
-                                Deadly: {deadlyThreshold.toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Warning for fleeing disabled */}
-                        {!advancedConfig.allowFleeing && (
-                          <div className="combat-difficulty-warning">
-                            ⚠️ Fleeing is disabled - combatants cannot retreat from this encounter
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Generated Enemies Preview */}
-            {/* Phase 8.5: Show skeleton loading while generating */}
-            {isGenerating && (
-              <div className="combat-config-preview">
-                <h4 className="combat-config-preview-title">
-                  Generating Enemies...
-                </h4>
-                <div className="combat-config-preview-list-generating">
-                  {Array.from({ length: generationConfig.count }).map((_, index) => (
-                    <div key={index} className="combat-enemy-card-skeleton" />
-                  ))}
-                </div>
-              </div>
-            )}
-            {generatedEnemies.length > 0 && (
-              <div className="combat-config-preview">
-                <h4 className={`combat-config-preview-title ${animateEnemies ? 'combat-config-preview-title-animated' : ''}`}>
-                  Generated Enemies ({generatedEnemies.length})
-                  {audioReasoning.length > 0 && (
-                    <span className="combat-preview-audio-badge" title="Audio-influenced generation">
-                      🎵 Audio
-                    </span>
-                  )}
-                </h4>
-                <div className="combat-config-preview-list">
-                  {generatedEnemies.map((enemy, index) => {
-                    // Find the corresponding audio reasoning for this enemy
-                    const reasoning = audioReasoning[index];
-
-                    // Phase 8.5: Determine animation class based on rarity
-                    const enemyRarity = enemy.subrace as EnemyRarity | undefined;
-                    const animationClass = animateEnemies
-                      ? enemyRarity === 'boss'
-                        ? 'combat-config-enemy-card-animated-boss'
-                        : enemyRarity === 'elite'
-                          ? 'combat-config-enemy-card-animated-elite'
-                          : 'combat-config-enemy-card-animated'
-                      : '';
-
-                    return (
-                      <div
-                        key={index}
-                        className={`combat-config-enemy-card combat-enemy-card-gpu ${animationClass}`}
-                      >
-                        <div className="combat-config-enemy-header">
-                          <div className="combat-config-enemy-name">{enemy.name}</div>
-                          {reasoning && (
-                            <span className="combat-enemy-audio-indicator" title={`Influenced by: ${reasoning.trackTitle}`}>
-                              🎵
-                            </span>
-                          )}
-                        </div>
-                        <div className="combat-config-enemy-details">
-                          {enemy.race} {enemy.class} • Level {enemy.level} • HP: {enemy.hp.max}
-                        </div>
-
-                        {/* Phase 3.3: Audio influence display */}
-                        {reasoning && (
-                          <div className="combat-enemy-audio-info">
-                            {/* Show which song influenced this enemy */}
-                            <div className="combat-audio-song" title={`Song: ${reasoning.trackTitle}`}>
-                              <span className="combat-audio-song-icon">🎶</span>
-                              <span className="combat-audio-song-name">{reasoning.trackTitle}</span>
-                            </div>
-
-                            {/* Audio profile summary (bass/mid/treble) */}
-                            <div className="combat-audio-profile">
-                              <div className="combat-audio-profile-bar">
-                                <span className="combat-audio-profile-label">Bass:</span>
-                                <div className="combat-audio-profile-track">
-                                  <div
-                                    className="combat-audio-profile-fill combat-audio-profile-fill-bass"
-                                    style={{ width: `${Math.round(reasoning.audioSummary.bass * 100)}%` }}
-                                  />
-                                </div>
-                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.bass * 100)}%</span>
-                              </div>
-                              <div className="combat-audio-profile-bar">
-                                <span className="combat-audio-profile-label">Mid:</span>
-                                <div className="combat-audio-profile-track">
-                                  <div
-                                    className="combat-audio-profile-fill combat-audio-profile-fill-mid"
-                                    style={{ width: `${Math.round(reasoning.audioSummary.mid * 100)}%` }}
-                                  />
-                                </div>
-                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.mid * 100)}%</span>
-                              </div>
-                              <div className="combat-audio-profile-bar">
-                                <span className="combat-audio-profile-label">Treble:</span>
-                                <div className="combat-audio-profile-track">
-                                  <div
-                                    className="combat-audio-profile-fill combat-audio-profile-fill-treble"
-                                    style={{ width: `${Math.round(reasoning.audioSummary.treble * 100)}%` }}
-                                  />
-                                </div>
-                                <span className="combat-audio-profile-value">{Math.round(reasoning.audioSummary.treble * 100)}%</span>
-                              </div>
-                            </div>
-
-                            {/* Dominant band indicator */}
-                            <div className={`combat-audio-dominant combat-audio-dominant-${reasoning.audioSummary.dominantBand}`}>
-                              Dominant: {reasoning.audioSummary.dominantBand.charAt(0).toUpperCase() + reasoning.audioSummary.dominantBand.slice(1)}
-                            </div>
-
-                            {/* Template selection reasoning tooltip */}
-                            <div className="combat-audio-reasoning" title={reasoning.reason}>
-                              <span className="combat-audio-reasoning-icon">💡</span>
-                              <span className="combat-audio-reasoning-text">{reasoning.reason}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Phase 8.4: Encounter Summary Panel - shows before combat starts */}
-            {generatedEnemies.length > 0 && (
-              <EncounterSummaryPanel
-                enemies={generatedEnemies}
-                partyMembers={partyMode === 'party'
-                  ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
-                  : getActiveCharacter() ? [getActiveCharacter()!] : []
-                }
-                className="combat-encounter-summary"
-              />
-            )}
-
-            {/* Action Buttons */}
-            <div className="combat-config-actions">
-              <button
-                onClick={handleGenerateEnemiesWithLoading}
-                disabled={isGenerating}
-                className={`combat-config-button combat-config-button-secondary ${isGenerating ? 'combat-config-button-disabled' : ''}`}
-              >
-                {isGenerating ? 'Generating...' : 'Generate Enemies'}
-              </button>
-              <button
-                onClick={handleStartCombat}
-                disabled={generatedEnemies.length === 0}
-                className={`combat-config-button combat-config-button-primary ${generatedEnemies.length === 0 ? 'combat-config-button-disabled' : ''}`}
-              >
-                Start Combat
-              </button>
-            </div>
-
-            {/* Help text when no enemies generated */}
-            {generatedEnemies.length === 0 && (
-              <p className="combat-config-help">
-                Generate enemies before starting combat, or click Start Combat to use a random fallback enemy.
-              </p>
-            )}
-
-            {/* Phase 8.3: Enemy Template Browser - moved below action buttons */}
+            {/* Phase 8.3: Enemy Template Browser */}
             <TemplateBrowser
               templates={ENEMY_TEMPLATES}
               selectedTemplateId={generationConfig.templateId}

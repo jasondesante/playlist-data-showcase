@@ -130,13 +130,16 @@
 }
 
 /* Discord disabled state in client-side mode */
-.gaming-platform-card.discord-disabled {
+.gaming-platform-card.discord-disabled,
+.gaming-platform-card.steam-disabled {
   position: relative;
   opacity: 0.7;
 }
 
 .gaming-platform-card.discord-disabled .gaming-input,
-.gaming-platform-card.discord-disabled .gaming-button-row button {
+.gaming-platform-card.discord-disabled .gaming-button-row button,
+.gaming-platform-card.steam-disabled .gaming-input,
+.gaming-platform-card.steam-disabled .gaming-button-row button {
   opacity: 0.5;
   cursor: not-allowed;
 }
