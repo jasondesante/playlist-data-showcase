@@ -186,7 +186,7 @@ export const DEFAULT_PROGRESSION_CONFIG_SETTINGS: ProgressionConfigSettings = {
  * Current schema version for progression config.
  * Increment when making breaking changes to the config structure.
  */
-export const PROGRESSION_CONFIG_VERSION = 1;
+export const PROGRESSION_CONFIG_VERSION = 2;
 
 // ============================================================
 // XP Formula Preset Types (for Uncapped Progression)

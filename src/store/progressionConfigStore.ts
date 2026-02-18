@@ -229,13 +229,18 @@ export const useProgressionConfigStore = create<ProgressionConfigStoreState>()(
 
                     // For now, just reset to defaults if version is outdated
                     // This is safe because it's a new store
-                    return {
-                        ...createInitialState(),
-                        actions: state.actions,
-                    };
+                    return createInitialState();
                 }
 
-                return state;
+                // IMPORTANT: We must preserve the initial state's structure (including actions)
+                // because persisted state from JSON storage doesn't include functions.
+                // The zustand persist middleware uses the return value of migrate to set the state,
+                // so we need to merge the persisted data with the initial state.
+                return {
+                    ...createInitialState(),
+                    settings: state.settings ?? createInitialState().settings,
+                    metadata: state.metadata ?? createInitialState().metadata,
+                };
             },
             // Callback after zustand finishes hydrating from storage
             onRehydrateStorage: () => {

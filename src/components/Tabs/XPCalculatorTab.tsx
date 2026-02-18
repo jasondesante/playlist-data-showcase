@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -61,6 +61,105 @@ interface ConfigSliderProps {
   /** Optional marks to display below slider. If true, auto-generates marks for min/mid/max. */
   marks?: boolean | { value: number; label: string }[];
 }
+
+/**
+ * ConfigSlider component for progression config settings (Task 3.3)
+ * Renders a slider with label, value display, and default indicator.
+ *
+ * IMPORTANT: This component is defined outside XPCalculatorTab and memoized
+ * to prevent re-creation on every parent render, which would break drag interactions.
+ */
+const ConfigSlider = React.memo(function ConfigSlider({
+  label,
+  description,
+  value,
+  defaultValue,
+  min,
+  max,
+  step,
+  onChange,
+  formatValue,
+  isAdditive = false,
+  isModified = false,
+  appSpecific = false,
+  marks,
+}: ConfigSliderProps) {
+  const displayValue = formatValue ? formatValue(value) : (isAdditive ? `+${value.toFixed(2)}` : `${value.toFixed(2)}x`);
+  const defaultDisplay = formatValue ? formatValue(defaultValue) : (isAdditive ? `+${defaultValue}` : `${defaultValue}`);
+
+  // Compute mark positions for linear scale
+  const sliderMarks = useMemo(() => {
+    if (!marks) return null;
+
+    // If marks is true, auto-generate min/mid/max marks
+    if (marks === true) {
+      const midValue = (min + max) / 2;
+      const formatMark = (v: number) => formatValue ? formatValue(v) : (isAdditive ? `+${v.toFixed(2)}` : `${v.toFixed(1)}x`);
+      return [
+        { value: min, label: formatMark(min) },
+        { value: midValue, label: formatMark(midValue) },
+        { value: max, label: formatMark(max) },
+      ];
+    }
+
+    // Otherwise use provided marks array
+    return marks;
+  }, [marks, min, max, formatValue, isAdditive]);
+
+  // Calculate position percentage for a mark value
+  const getMarkPosition = (markValue: number): number => {
+    return ((markValue - min) / (max - min)) * 100;
+  };
+
+  return (
+    <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
+      <div className="xp-config-label-group">
+        <span className="xp-config-label">
+          {label}
+          {appSpecific && <span className="xp-config-app-specific" title="App-specific - not in engine">🏔️</span>}
+        </span>
+        <span className="xp-config-description">{description}</span>
+      </div>
+      <div className="xp-config-control">
+        <div className="xp-config-slider-wrapper">
+          <div className="xp-config-slider-container">
+            <input
+              type="range"
+              className="xp-config-slider"
+              min={min}
+              max={max}
+              step={step}
+              value={value}
+              onChange={(e) => onChange(parseFloat(e.target.value))}
+              aria-label={label}
+            />
+            {sliderMarks && (
+              <div className="xp-config-slider-marks">
+                {sliderMarks.map((mark) => (
+                  <span
+                    key={mark.value}
+                    className="xp-config-slider-mark"
+                    style={{ left: `${getMarkPosition(mark.value)}%` }}
+                  >
+                    {mark.label}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className={`xp-config-value-display ${isModified ? 'xp-config-value-modified' : ''}`}>
+            {displayValue}
+          </span>
+        </div>
+        <span className="xp-config-default">
+          {isModified ? '(default: ' : '('}
+          {defaultDisplay}
+          {isModified ? ')' : ')'}
+        </span>
+      </div>
+    </div>
+  );
+});
 
 /**
  * XPCalculatorTab - XP Calculator Tab Component
@@ -234,102 +333,6 @@ export function XPCalculatorTab() {
   const handleManualOverrideChange = (field: keyof ManualOverrides, value: string) => {
     const numValue = value === '' ? undefined : parseFloat(value);
     setManualOverrides(prev => ({ ...prev, [field]: numValue }));
-  };
-
-  /**
-   * ConfigSlider component for progression config settings (Task 3.3)
-   * Renders a slider with label, value display, and default indicator
-   */
-  const ConfigSlider = ({
-    label,
-    description,
-    value,
-    defaultValue,
-    min,
-    max,
-    step,
-    onChange,
-    formatValue,
-    isAdditive = false,
-    isModified = false,
-    appSpecific = false,
-    marks,
-  }: ConfigSliderProps) => {
-    const displayValue = formatValue ? formatValue(value) : (isAdditive ? `+${value.toFixed(2)}` : `${value.toFixed(2)}x`);
-    const defaultDisplay = formatValue ? formatValue(defaultValue) : (isAdditive ? `+${defaultValue}` : `${defaultValue}`);
-
-    // Compute mark positions for linear scale
-    const sliderMarks = useMemo(() => {
-      if (!marks) return null;
-
-      // If marks is true, auto-generate min/mid/max marks
-      if (marks === true) {
-        const midValue = (min + max) / 2;
-        const formatMark = (v: number) => formatValue ? formatValue(v) : (isAdditive ? `+${v.toFixed(2)}` : `${v.toFixed(1)}x`);
-        return [
-          { value: min, label: formatMark(min) },
-          { value: midValue, label: formatMark(midValue) },
-          { value: max, label: formatMark(max) },
-        ];
-      }
-
-      // Otherwise use provided marks array
-      return marks;
-    }, [marks, min, max, formatValue, isAdditive]);
-
-    // Calculate position percentage for a mark value
-    const getMarkPosition = (markValue: number): number => {
-      return ((markValue - min) / (max - min)) * 100;
-    };
-
-    return (
-      <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
-        <div className="xp-config-label-group">
-          <span className="xp-config-label">
-            {label}
-            {appSpecific && <span className="xp-config-app-specific" title="App-specific - not in engine">🏔️</span>}
-          </span>
-          <span className="xp-config-description">{description}</span>
-        </div>
-        <div className="xp-config-control">
-          <div className="xp-config-slider-wrapper">
-            <div className="xp-config-slider-container">
-              <input
-                type="range"
-                className="xp-config-slider"
-                min={min}
-                max={max}
-                step={step}
-                value={value}
-                onChange={(e) => onChange(parseFloat(e.target.value))}
-                aria-label={label}
-              />
-              {sliderMarks && (
-                <div className="xp-config-slider-marks">
-                  {sliderMarks.map((mark) => (
-                    <span
-                      key={mark.value}
-                      className="xp-config-slider-mark"
-                      style={{ left: `${getMarkPosition(mark.value)}%` }}
-                    >
-                      {mark.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <span className={`xp-config-value-display ${isModified ? 'xp-config-value-modified' : ''}`}>
-              {displayValue}
-            </span>
-          </div>
-          <span className="xp-config-default">
-            {isModified ? '(default: ' : '('}
-            {defaultDisplay}
-            {isModified ? ')' : ')'}
-          </span>
-        </div>
-      </div>
-    );
   };
 
   // Handler for xp_per_second changes
