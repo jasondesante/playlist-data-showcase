@@ -265,7 +265,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Add animations for enemy generation
 - [x] Polish rarity tier color schemes
 - [x] Add transition effects for config panels
-- [ ] Responsive layout adjustments
+- [x] Responsive layout adjustments
 
 ---
 
