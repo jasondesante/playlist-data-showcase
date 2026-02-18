@@ -20,10 +20,19 @@ Two UI bugs need to be fixed in the Settings tab:
 
 ## Phase 2: XP Rate Slider Fix
 
-- [ ] Investigate the current slider implementation
-  - [ ] Review the slider range (0.1 to 5.0) and mark positions
-  - [ ] Identify the mismatch: 1.0x appears at ~18% position but marks suggest it should be centered
-  - [ ] Check `settings-slider-marks` CSS and slider configuration
+- [x] Investigate the current slider implementation
+  - [x] Review the slider range (0.1 to 5.0) and mark positions
+    - **Finding:** XP settings were migrated from SettingsTab.tsx to XPCalculatorTab.tsx (Config tab)
+    - **Current implementation:** `ConfigSlider` component (lines 241-289 in XPCalculatorTab.tsx)
+    - **Range:** min=0.1, max=5.0, step=0.1 (linear scale)
+    - **No visual marks exist** - the current ConfigSlider doesn't have mark indicators
+    - **1.0x position:** (1.0 - 0.1) / (5.0 - 0.1) = 18.4% from left
+  - [x] Identify the mismatch: 1.0x appears at ~18% position but marks suggest it should be centered
+    - The CSS has `.settings-slider-marks` but it's not currently used
+    - The ConfigSlider needs visual marks added that reflect the linear scale
+  - [x] Check `settings-slider-marks` CSS and slider configuration
+    - CSS exists in SettingsTab.css lines 370-375
+    - Not used in current XPCalculatorTab implementation
 
 - [ ] Fix the slider visual alignment
   - [ ] Option A: Use logarithmic scale so 1.0x appears in the middle
