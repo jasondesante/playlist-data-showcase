@@ -2,6 +2,83 @@
    COMBAT SIMULATOR TAB STYLES
    ============================================ */
 
+/* ============================================
+   PHASE 8.5: POLISHED RARITY COLOR SCHEMES
+   CSS Custom Properties for consistent rarity theming
+
+   Rarity tiers and their semantic meanings:
+   - Common: Standard enemies (bronze/copper tones)
+   - Uncommon: Tougher variants (emerald/green tones)
+   - Elite: Special enemies (amethyst/purple tones)
+   - Boss: Major threats (golden/amber tones)
+   ============================================ */
+:root {
+  /* Common Rarity - Bronze/Copper */
+  --rarity-common-h: 28;
+  --rarity-common-s: 40%;
+  --rarity-common-l: 45%;
+  --rarity-common-bg: hsl(28 30% 94%);
+  --rarity-common-border: hsl(28 40% 65%);
+  --rarity-common-text: hsl(28 40% 35%);
+  --rarity-common-glow: hsl(28 50% 50% / 0.2);
+
+  /* Uncommon Rarity - Emerald Green */
+  --rarity-uncommon-h: 152;
+  --rarity-uncommon-s: 65%;
+  --rarity-uncommon-l: 40%;
+  --rarity-uncommon-bg: hsl(152 45% 92%);
+  --rarity-uncommon-border: hsl(152 60% 45%);
+  --rarity-uncommon-text: hsl(152 65% 28%);
+  --rarity-uncommon-glow: hsl(152 60% 50% / 0.25);
+
+  /* Elite Rarity - Amethyst Purple */
+  --rarity-elite-h: 275;
+  --rarity-elite-s: 55%;
+  --rarity-elite-l: 45%;
+  --rarity-elite-bg: hsl(275 40% 93%);
+  --rarity-elite-border: hsl(275 55% 50%);
+  --rarity-elite-text: hsl(275 55% 32%);
+  --rarity-elite-glow: hsl(275 55% 55% / 0.35);
+
+  /* Boss Rarity - Golden Amber */
+  --rarity-boss-h: 43;
+  --rarity-boss-s: 85%;
+  --rarity-boss-l: 50%;
+  --rarity-boss-bg: hsl(43 70% 88%);
+  --rarity-boss-border: hsl(43 85% 55%);
+  --rarity-boss-text: hsl(43 90% 30%);
+  --rarity-boss-glow: hsl(43 90% 55% / 0.45);
+}
+
+/* Dark mode rarity adjustments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Common - warmer bronze in dark mode */
+    --rarity-common-bg: hsl(28 25% 18%);
+    --rarity-common-border: hsl(28 35% 45%);
+    --rarity-common-text: hsl(28 40% 70%);
+    --rarity-common-glow: hsl(28 50% 45% / 0.25);
+
+    /* Uncommon - deeper emerald in dark mode */
+    --rarity-uncommon-bg: hsl(152 35% 12%);
+    --rarity-uncommon-border: hsl(152 55% 42%);
+    --rarity-uncommon-text: hsl(152 60% 65%);
+    --rarity-uncommon-glow: hsl(152 60% 45% / 0.3);
+
+    /* Elite - richer amethyst in dark mode */
+    --rarity-elite-bg: hsl(275 30% 14%);
+    --rarity-elite-border: hsl(275 50% 55%);
+    --rarity-elite-text: hsl(275 55% 75%);
+    --rarity-elite-glow: hsl(275 55% 60% / 0.4);
+
+    /* Boss - more radiant gold in dark mode */
+    --rarity-boss-bg: hsl(43 50% 14%);
+    --rarity-boss-border: hsl(43 85% 55%);
+    --rarity-boss-text: hsl(43 90% 70%);
+    --rarity-boss-glow: hsl(43 95% 55% / 0.5);
+  }
+}
+
 /* Container */
 .combat-container {
   display: flex;
@@ -968,34 +1045,45 @@
   color: white;
 }
 
-/* Rarity badge - tier-specific styling */
+/* Rarity badge - tier-specific styling (Phase 8.5 polished) */
 .combat-enemy-badge-rarity {
   text-transform: capitalize;
+  transition: all 0.2s ease;
 }
 
+/* Common Rarity Badge - Bronze/Copper */
 .combat-enemy-badge-rarity-common {
-  background-color: hsl(0 0% 90%);
-  color: hsl(0 0% 40%);
-  border: 1px solid hsl(0 0% 80%);
+  background: linear-gradient(135deg, var(--rarity-common-bg), hsl(var(--rarity-common-h) var(--rarity-common-s) calc(var(--rarity-common-l) + 25%)));
+  color: var(--rarity-common-text);
+  border: 1px solid var(--rarity-common-border);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.1);
 }
 
+/* Uncommon Rarity Badge - Emerald Green */
 .combat-enemy-badge-rarity-uncommon {
-  background-color: hsl(142 70% 90%);
-  color: hsl(142 70% 30%);
-  border: 1px solid hsl(142 70% 70%);
+  background: linear-gradient(135deg, var(--rarity-uncommon-bg), hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) calc(var(--rarity-uncommon-l) + 30%)));
+  color: var(--rarity-uncommon-text);
+  border: 1px solid var(--rarity-uncommon-border);
+  box-shadow: 0 0 4px var(--rarity-uncommon-glow), inset 0 1px 0 hsl(0 0% 100% / 0.15);
 }
 
+/* Elite Rarity Badge - Amethyst Purple */
 .combat-enemy-badge-rarity-elite {
-  background-color: hsl(280 60% 90%);
-  color: hsl(280 60% 30%);
-  border: 1px solid hsl(280 60% 70%);
+  background: linear-gradient(135deg, var(--rarity-elite-bg), hsl(var(--rarity-elite-h) var(--rarity-elite-s) calc(var(--rarity-elite-l) + 28%)));
+  color: var(--rarity-elite-text);
+  border: 1px solid var(--rarity-elite-border);
+  box-shadow: 0 0 6px var(--rarity-elite-glow), inset 0 1px 0 hsl(0 0% 100% / 0.2);
+  font-weight: 600;
 }
 
+/* Boss Rarity Badge - Golden Amber */
 .combat-enemy-badge-rarity-boss {
-  background-color: hsl(45 90% 85%);
-  color: hsl(45 90% 25%);
-  border: 1px solid hsl(45 90% 60%);
+  background: linear-gradient(135deg, var(--rarity-boss-bg), hsl(var(--rarity-boss-h) calc(var(--rarity-boss-s) - 10%) calc(var(--rarity-boss-l) + 20%)));
+  color: var(--rarity-boss-text);
+  border: 1px solid var(--rarity-boss-border);
+  box-shadow: 0 0 8px var(--rarity-boss-glow), inset 0 1px 0 hsl(0 0% 100% / 0.25);
   font-weight: 700;
+  text-shadow: 0 1px 1px hsl(0 0% 0% / 0.2);
 }
 
 /* Phase 8.1: Signature Ability display */
@@ -1026,44 +1114,64 @@
   }
 }
 
-/* Enemy card border styling by rarity */
+/* Enemy card border styling by rarity (Phase 8.5 polished) */
+
+/* Common Card - Subtle bronze border */
 .combat-combatant-card-enemy.combat-combatant-card-common {
-  border-color: hsl(0 0% 80%);
+  border-color: var(--rarity-common-border);
+  box-shadow: 0 0 4px var(--rarity-common-glow);
+  transition: all 0.2s ease;
 }
 
+.combat-combatant-card-enemy.combat-combatant-card-common:hover {
+  box-shadow: 0 0 8px var(--rarity-common-glow);
+}
+
+/* Common card name styling - subtle bronze */
+.combat-combatant-card-enemy.combat-combatant-card-common .combat-combatant-name {
+  color: var(--rarity-common-text);
+}
+
+/* Uncommon Card - Green border with subtle glow */
 .combat-combatant-card-enemy.combat-combatant-card-uncommon {
-  border-color: hsl(142 70% 50%);
+  border-color: var(--rarity-uncommon-border);
   border-width: 2px;
-}
-
-/* Phase 8.2: Enhanced Elite card styling with special background and effects */
-.combat-combatant-card-enemy.combat-combatant-card-elite {
-  border-color: hsl(280 60% 50%);
-  border-width: 2px;
-  box-shadow: 0 0 8px hsl(280 60% 50% / 0.3);
+  box-shadow: 0 0 6px var(--rarity-uncommon-glow);
   background: linear-gradient(
     135deg,
     hsl(var(--card)) 0%,
-    hsl(280 30% 97%) 50%,
+    var(--rarity-uncommon-bg) 50%,
+    hsl(var(--card)) 100%
+  );
+  transition: all 0.2s ease;
+}
+
+.combat-combatant-card-enemy.combat-combatant-card-uncommon:hover {
+  box-shadow: 0 0 12px var(--rarity-uncommon-glow);
+}
+
+/* Uncommon card name styling - emerald */
+.combat-combatant-card-enemy.combat-combatant-card-uncommon .combat-combatant-name {
+  color: var(--rarity-uncommon-text);
+  font-weight: 500;
+}
+
+/* Phase 8.5: Enhanced Elite card styling with polished amethyst theme */
+.combat-combatant-card-enemy.combat-combatant-card-elite {
+  border-color: var(--rarity-elite-border);
+  border-width: 2px;
+  box-shadow: 0 0 10px var(--rarity-elite-glow);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    var(--rarity-elite-bg) 50%,
     hsl(var(--card)) 100%
   );
   position: relative;
   overflow: hidden;
 }
 
-/* Dark mode elite background */
-@media (prefers-color-scheme: dark) {
-  .combat-combatant-card-enemy.combat-combatant-card-elite {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--card)) 0%,
-      hsl(280 25% 15%) 50%,
-      hsl(var(--card)) 100%
-    );
-  }
-}
-
-/* Elite shimmer effect overlay */
+/* Elite shimmer effect overlay - amethyst glow */
 .combat-combatant-card-enemy.combat-combatant-card-elite::before {
   content: '';
   position: absolute;
@@ -1074,7 +1182,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    hsl(280 60% 70% / 0.08) 50%,
+    hsl(var(--rarity-elite-h) var(--rarity-elite-s) calc(var(--rarity-elite-l) + 25%) / 0.12) 50%,
     transparent 100%
   );
   animation: combat-elite-shimmer 4s ease-in-out infinite;
@@ -1092,52 +1200,33 @@
 
 /* Elite card name styling */
 .combat-combatant-card-enemy.combat-combatant-card-elite .combat-combatant-name {
-  color: hsl(280 60% 40%);
+  color: var(--rarity-elite-text);
+  font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-  .combat-combatant-card-enemy.combat-combatant-card-elite .combat-combatant-name {
-    color: hsl(280 70% 75%);
-  }
-}
-
-/* Phase 8.2: Enhanced Boss card with larger size and enhanced styling */
+/* Phase 8.5: Enhanced Boss card with polished golden amber theme */
 .combat-combatant-card-enemy.combat-combatant-card-boss {
-  border-color: hsl(45 90% 50%);
+  border-color: var(--rarity-boss-border);
   border-width: 3px;
   box-shadow:
-    0 0 12px hsl(45 90% 50% / 0.4),
+    0 0 15px var(--rarity-boss-glow),
     0 4px 16px hsl(0 0% 0% / 0.2);
   /* Make boss cards span full width (2 columns) in the grid */
   grid-column: 1 / -1;
   /* Larger padding for boss cards */
   padding: 1.25rem;
-  /* Enhanced background for bosses */
+  /* Enhanced background for bosses with golden tones */
   background: linear-gradient(
     135deg,
     hsl(var(--card)) 0%,
-    hsl(45 30% 20%) 25%,
-    hsl(45 40% 15%) 50%,
-    hsl(45 30% 20%) 75%,
+    var(--rarity-boss-bg) 25%,
+    hsl(var(--rarity-boss-h) calc(var(--rarity-boss-s) - 30%) calc(var(--rarity-boss-l) - 35%)) 50%,
+    var(--rarity-boss-bg) 75%,
     hsl(var(--card)) 100%
   );
   background-size: 200% 200%;
   position: relative;
   overflow: hidden;
-}
-
-/* Dark mode boss background */
-@media (prefers-color-scheme: dark) {
-  .combat-combatant-card-enemy.combat-combatant-card-boss {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--card)) 0%,
-      hsl(45 25% 12%) 25%,
-      hsl(45 35% 8%) 50%,
-      hsl(45 25% 12%) 75%,
-      hsl(var(--card)) 100%
-    );
-  }
 }
 
 /* Boss card animated gradient background */
@@ -1158,20 +1247,13 @@
 .combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
   font-size: 1.125rem;
   font-weight: 700;
-  color: hsl(45 90% 50%);
-  text-shadow: 0 0 8px hsl(45 90% 50% / 0.5);
+  color: var(--rarity-boss-border);
+  text-shadow: 0 0 8px var(--rarity-boss-glow);
 }
 
 @media (min-width: 768px) {
   .combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
     font-size: 1.25rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .combat-combatant-card-enemy.combat-combatant-card-boss .combat-combatant-name {
-    color: hsl(45 90% 65%);
-    text-shadow: 0 0 12px hsl(45 90% 50% / 0.6);
   }
 }
 
@@ -1187,23 +1269,23 @@
   border-radius: 5px;
 }
 
-/* Boss card glow animation */
+/* Boss card glow animation (Phase 8.5 polished) */
 @keyframes combat-boss-glow {
   0%, 100% {
     box-shadow:
-      0 0 12px hsl(45 90% 50% / 0.4),
+      0 0 15px var(--rarity-boss-glow),
       0 4px 16px hsl(0 0% 0% / 0.2),
-      inset 0 0 30px hsl(45 50% 50% / 0.05);
+      inset 0 0 30px hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.05);
   }
   50% {
     box-shadow:
-      0 0 24px hsl(45 90% 50% / 0.6),
+      0 0 30px var(--rarity-boss-glow),
       0 4px 24px hsl(0 0% 0% / 0.3),
-      inset 0 0 50px hsl(45 50% 50% / 0.1);
+      inset 0 0 50px hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.1);
   }
 }
 
-/* Boss card shimmer effect overlay (similar to elite but gold) */
+/* Boss card shimmer effect overlay - golden amber */
 .combat-combatant-card-enemy.combat-combatant-card-boss::before {
   content: '';
   position: absolute;
@@ -1214,7 +1296,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    hsl(45 100% 80% / 0.15),
+    hsl(var(--rarity-boss-h) calc(var(--rarity-boss-s) + 15%) calc(var(--rarity-boss-l) + 30%) / 0.2),
     transparent
   );
   animation: combat-boss-shimmer 4s ease-in-out infinite;
@@ -1248,11 +1330,11 @@
   border-radius: var(--radius);
 }
 
-/* Boss card legendary section placeholder (for future use) */
+/* Boss card legendary section (Phase 8.5 polished) */
 .combat-enemy-legendary-section {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid hsl(45 50% 50% / 0.3);
+  border-top: 1px solid hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.3);
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
@@ -1264,11 +1346,11 @@
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: hsl(45 90% 50%);
-  background: hsl(45 50% 50% / 0.1);
+  color: var(--rarity-boss-border);
+  background: hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.15);
   padding: 0.125rem 0.5rem;
   border-radius: var(--radius);
-  border: 1px solid hsl(45 50% 50% / 0.3);
+  border: 1px solid hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.3);
 }
 
 .combat-enemy-legendary-resistances {
@@ -1283,7 +1365,7 @@
   border: 1px solid hsl(0 50% 50% / 0.3);
 }
 
-/* Phase 8.2: Enhanced Elite card glow with multiple layers */
+/* Phase 8.5: Enhanced Elite card glow with polished amethyst theme */
 .combat-combatant-card-enemy.combat-combatant-card-elite:not(.combat-combatant-card-defeated) {
   animation: combat-elite-glow 3s ease-in-out infinite;
 }
@@ -1291,14 +1373,14 @@
 @keyframes combat-elite-glow {
   0%, 100% {
     box-shadow:
-      0 0 8px hsl(280 60% 50% / 0.3),
-      inset 0 0 20px hsl(280 40% 50% / 0.05);
+      0 0 10px var(--rarity-elite-glow),
+      inset 0 0 20px hsl(var(--rarity-elite-h) var(--rarity-elite-s) var(--rarity-elite-l) / 0.05);
   }
   50% {
     box-shadow:
-      0 0 16px hsl(280 60% 50% / 0.5),
-      0 0 30px hsl(280 60% 50% / 0.2),
-      inset 0 0 30px hsl(280 40% 50% / 0.08);
+      0 0 20px var(--rarity-elite-glow),
+      0 0 35px hsl(var(--rarity-elite-h) var(--rarity-elite-s) var(--rarity-elite-l) / 0.25),
+      inset 0 0 30px hsl(var(--rarity-elite-h) var(--rarity-elite-s) var(--rarity-elite-l) / 0.08);
   }
 }
 
@@ -1739,7 +1821,7 @@
 .combat-victory-treasure-title {
   font-size: 1rem;
   font-weight: 600;
-  color: hsl(45 93% 47%);
+  color: var(--rarity-boss-border);
   margin-bottom: 0.75rem;
   text-align: center;
 }
@@ -1767,8 +1849,8 @@
 }
 
 .combat-victory-treasure-gold {
-  background: linear-gradient(135deg, hsl(45 93% 47% / 0.15) 0%, hsl(45 93% 37% / 0.1) 100%);
-  border: 1px solid hsl(45 93% 47% / 0.3);
+  background: linear-gradient(135deg, hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.15) 0%, hsl(var(--rarity-boss-h) var(--rarity-boss-s) calc(var(--rarity-boss-l) - 10%) / 0.1) 100%);
+  border: 1px solid hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.3);
 }
 
 .combat-victory-treasure-icon {
@@ -1779,7 +1861,7 @@
 .combat-victory-treasure-value {
   font-weight: 700;
   font-size: 1.125rem;
-  color: hsl(45 93% 57%);
+  color: var(--rarity-boss-border);
 }
 
 .combat-victory-treasure-items {
@@ -1844,7 +1926,7 @@
   animation-delay: 0.5s;
 }
 
-/* Victory Party XP Distribution - Phase 7.3 */
+/* Victory Party XP Distribution - Phase 7.3 (Phase 8.5 polished) */
 .combat-victory-party-xp-section {
   margin-top: 1rem;
   padding-top: 1rem;
@@ -1855,7 +1937,7 @@
 .combat-victory-party-xp-title {
   font-size: 1rem;
   font-weight: 600;
-  color: hsl(142 70% 45%);
+  color: var(--rarity-uncommon-border);
   margin-bottom: 0.75rem;
   text-align: center;
 }
@@ -1878,8 +1960,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(135deg, hsl(142 70% 45% / 0.1) 0%, hsl(142 70% 35% / 0.05) 100%);
-  border: 1px solid hsl(142 70% 45% / 0.25);
+  background: linear-gradient(135deg, hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) var(--rarity-uncommon-l) / 0.1) 0%, hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) calc(var(--rarity-uncommon-l) - 5%) / 0.05) 100%);
+  border: 1px solid hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) var(--rarity-uncommon-l) / 0.25);
   border-radius: var(--radius-sm);
   animation: treasure-reveal 0.4s ease-out forwards;
 }
@@ -4522,16 +4604,17 @@
   }
 }
 
+/* Phase 8.5: Polished badge colors using rarity CSS variables */
 .combat-advanced-badge-environment {
-  background-color: hsl(142 70% 50% / 0.15);
-  color: hsl(142 70% 45%);
-  border: 1px solid hsl(142 70% 50% / 0.3);
+  background-color: hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) var(--rarity-uncommon-l) / 0.15);
+  color: var(--rarity-uncommon-border);
+  border: 1px solid hsl(var(--rarity-uncommon-h) var(--rarity-uncommon-s) var(--rarity-uncommon-l) / 0.3);
 }
 
 .combat-advanced-badge-music {
-  background-color: hsl(280 60% 50% / 0.15);
-  color: hsl(280 60% 60%);
-  border: 1px solid hsl(280 60% 50% / 0.3);
+  background-color: hsl(var(--rarity-elite-h) var(--rarity-elite-s) var(--rarity-elite-l) / 0.15);
+  color: var(--rarity-elite-border);
+  border: 1px solid hsl(var(--rarity-elite-h) var(--rarity-elite-s) var(--rarity-elite-l) / 0.3);
 }
 
 .combat-advanced-badge-tactical {
@@ -4541,9 +4624,9 @@
 }
 
 .combat-advanced-badge-flee {
-  background-color: hsl(45 90% 50% / 0.15);
-  color: hsl(45 90% 40%);
-  border: 1px solid hsl(45 90% 50% / 0.3);
+  background-color: hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.15);
+  color: var(--rarity-boss-border);
+  border: 1px solid hsl(var(--rarity-boss-h) var(--rarity-boss-s) var(--rarity-boss-l) / 0.3);
 }
 
 .combat-advanced-summary-none {
