@@ -22,11 +22,12 @@
   background-color: hsl(var(--card));
   border-radius: var(--radius);
   border: 1px solid hsl(var(--border));
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.2s ease;
   /* Prevent panel from being squeezed in flex containers */
   flex-shrink: 0;
-  min-height: 0;
+  /* Ensure panel has minimum space for header + stats + list */
+  min-height: fit-content;
 }
 
 .session-history-panel:hover {
@@ -107,6 +108,8 @@
 
 .session-history-panel > [role="region"] {
   animation: sessionPanelSlideIn 0.25s ease-out;
+  /* Ensure content can expand naturally */
+  overflow: visible;
 }
 
 @keyframes sessionPanelSlideIn {
@@ -117,7 +120,7 @@
   }
   to {
     opacity: 1;
-    max-height: 1000px;
+    max-height: 2000px;
     transform: translateY(0);
   }
 }
@@ -174,8 +177,9 @@
   flex-direction: column;
   gap: 0.625rem;
   padding: 0.875rem;
-  /* Use min-height with max-height to ensure list has space but can scroll */
-  min-height: 300px;
+  /* Allow list to grow but not shrink - items maintain their height */
+  flex: 1 0 auto;
+  /* Scroll when content exceeds this height */
   max-height: 500px;
   overflow-y: auto;
   /* Custom scrollbar styling */
@@ -325,8 +329,7 @@
 
   .session-history-panel-list {
     padding: 0.625rem;
-    min-height: 250px;
-    max-height: 400px;
+    max-height: 350px;
   }
 
   .session-history-panel-footer {

@@ -536,8 +536,8 @@ export function SessionTrackingTab() {
                     <span className={`session-song-status-badge ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
                       {isActive ? 'Active' : 'Inactive'}
                     </span>
-                    {/* Mastery Badge Overlay */}
-                    {masteryInfo && masteryInfo.isMastered && (
+                    {/* Mastery Badge Overlay - shows when mastered OR has prestige level */}
+                    {masteryInfo && (masteryInfo.isMastered || masteryInfo.prestigeLevel > 0) && (
                       <div className="session-mastery-badge-overlay">
                         <MasteryBadge
                           isMastered={masteryInfo.isMastered}

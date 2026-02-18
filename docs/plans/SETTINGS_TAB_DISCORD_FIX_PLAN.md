@@ -57,7 +57,14 @@ Two UI bugs need to be fixed in the Settings tab:
     - Overlay uses semi-transparent gradient background to cover the card content
     - Badge uses orange color (`--cute-orange`) for visibility
     - Message clearly explains: what limitation is, why it's not available, and what user can do (Electron/Node.js)
-  - [ ] Verify Discord message is clear to users
+  - [x] Verify Discord message is clear to users
+    - **Verified on 2026-02-18:**
+    - Updated badge text from "Server Mode Required" to "Browser Not Supported" (clearer for non-technical users)
+    - Simplified message to remove technical jargon like "IPC" and "Node.js server environment"
+    - Changed message to: "Discord Rich Presence requires a desktop app" (more relatable)
+    - Explanation: "This feature isn't available in web browsers because Discord requires direct system access that browsers don't provide"
+    - Solution: "run this app as a desktop application (via Electron)"
+    - Message is now clearer while remaining accurate
   - [ ] Verify XP slider marks align with thumb position
   - [ ] Test slider at various values (0.1x, 1.0x, 5.0x)
 

@@ -618,21 +618,21 @@ export function SettingsTab() {
               <div className="settings-discord-overlay">
                 <div className="settings-discord-badge">
                   <ServerOff size={14} />
-                  <span>Server Mode Required</span>
+                  <span>Browser Not Supported</span>
                 </div>
                 <div className="settings-discord-message">
-                  <p><strong>Discord Rich Presence requires a server environment.</strong></p>
-                  <p>This feature is not available when running in the browser. Discord&apos;s IPC (Inter-Process Communication) cannot be accessed from web applications.</p>
+                  <p><strong>Discord Rich Presence requires a desktop app.</strong></p>
+                  <p>This feature isn&apos;t available in web browsers because Discord requires direct system access that browsers don&apos;t provide.</p>
                   <p>
-                    To use Discord features, run this app in{' '}
+                    To use Discord integration, run this app as a desktop application (via{' '}
                     <a
                       href="https://electronjs.org/"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       Electron
-                    </a>{' '}
-                    or a Node.js server environment.
+                    </a>
+                    ).
                   </p>
                 </div>
               </div>

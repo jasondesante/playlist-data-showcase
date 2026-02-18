@@ -24,6 +24,8 @@
   border: 1px solid hsl(var(--border));
   overflow: hidden;
   transition: all 0.2s ease;
+  /* CRITICAL: Prevent item from shrinking in flex column parent */
+  flex-shrink: 0;
 }
 
 .session-history-item:hover {

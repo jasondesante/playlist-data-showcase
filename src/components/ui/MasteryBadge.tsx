@@ -38,10 +38,11 @@ export interface MasteryBadgeProps {
  * Get the display label for mastery status
  */
 function getMasteryLabel(isMastered: boolean, prestigeRoman: string, isMaxPrestige: boolean): string {
-  if (!isMastered) return '';
-  if (isMaxPrestige) return 'Mastered - MAX PRESTIGE';
-  if (prestigeRoman) return `Mastered - Prestige ${prestigeRoman}`;
-  return 'Mastered';
+  if (isMaxPrestige) return 'MAX PRESTIGE';
+  if (isMastered && prestigeRoman) return `Mastered - Prestige ${prestigeRoman}`;
+  if (isMastered) return 'Mastered';
+  if (prestigeRoman) return `Prestige ${prestigeRoman} - Working toward mastery`;
+  return '';
 }
 
 /**
@@ -65,8 +66,9 @@ export function MasteryBadge({
   const [position, setPosition] = useState({ top: 0, left: 0, visible: false });
   const tooltipId = useId();
 
-  // Don't render if not mastered
-  if (!isMastered) {
+  // Don't render if not mastered AND no prestige level
+  // (Show badge if prestiged even if not currently mastered for that level)
+  if (!isMastered && prestigeLevel === 0) {
     return null;
   }
 
