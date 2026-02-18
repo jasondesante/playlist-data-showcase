@@ -6,14 +6,15 @@ import './SessionHistoryPanel.css';
 
 /**
  * Virtualization threshold - enable virtualization when sessions exceed this count
+ * Lowered from 100 to 30 for smoother performance with moderate session counts
  */
-const VIRTUALIZATION_THRESHOLD = 100;
+const VIRTUALIZATION_THRESHOLD = 30;
 
 /**
  * Estimated height of each session item in pixels (used for virtualization)
- * Based on typical collapsed item height: ~68px (padding + icon + text)
+ * Based on typical collapsed item height: ~88px (padding + larger icon + text)
  */
-const ESTIMATED_ITEM_HEIGHT = 68;
+const ESTIMATED_ITEM_HEIGHT = 88;
 
 /**
  * Number of buffer items to render above and below viewport

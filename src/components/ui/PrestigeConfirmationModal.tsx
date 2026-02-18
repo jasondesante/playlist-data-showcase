@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, AlertTriangle, Crown, Sword, Shield, FlaskConical, ArrowRight } from 'lucide-react';
 import type { PrestigeInfo, CharacterSheet } from '@/types';
 import { PrestigeSystem } from '@/types';
@@ -81,7 +82,9 @@ export function PrestigeConfirmationModal({
         }
     };
 
-    return (
+    // Use portal to render modal at document.body to escape any stacking context
+    // issues (transforms, filters, etc.) from parent components
+    return createPortal(
         <div
             className="prestige-modal-overlay"
             onClick={handleBackdropClick}
@@ -207,7 +210,8 @@ export function PrestigeConfirmationModal({
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
