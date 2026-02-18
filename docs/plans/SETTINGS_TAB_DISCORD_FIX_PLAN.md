@@ -47,7 +47,7 @@ Two UI bugs need to be fixed in the Settings tab:
 
 ## Phase 3: Polish
 
-- [ ] Test all UI changes
+- [x] Test all UI changes
   - [x] Verify Discord disabled state looks appropriate
     - **Verified on 2026-02-18:**
     - Discord card has `.settings-card-disabled` class applied when `!isRunningInServerMode`
