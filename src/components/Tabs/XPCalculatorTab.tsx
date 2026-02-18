@@ -1074,7 +1074,11 @@ export function XPCalculatorTab() {
                   onChange={handleXpPerSecondChange}
                   formatValue={(v) => `${v.toFixed(1)}x`}
                   isModified={config.xp_per_second !== DEFAULT_PROGRESSION_CONFIG_SETTINGS.xp_per_second}
-                  marks
+                  marks={[
+                    { value: 0.1, label: '0.1x' },
+                    { value: 1.0, label: '1.0x' },
+                    { value: 5.0, label: '5.0x' },
+                  ]}
                 />
               </div>
             </Card>

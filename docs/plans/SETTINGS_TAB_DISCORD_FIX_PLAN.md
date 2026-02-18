@@ -34,11 +34,16 @@ Two UI bugs need to be fixed in the Settings tab:
     - CSS exists in SettingsTab.css lines 370-375
     - Not used in current XPCalculatorTab implementation
 
-- [ ] Fix the slider visual alignment
-  - [ ] Option A: Use logarithmic scale so 1.0x appears in the middle
-  - [ ] Option B: Adjust marks to show actual positions (e.g., 0.1x, 2.5x, 5.0x)
-  - [ ] Option C: Change range to be more intuitive (e.g., 0.5x to 2.0x with 1.0x in middle)
-  - [ ] Implement chosen solution and verify visual alignment
+- [x] Fix the slider visual alignment (Task 2.1)
+  - [x] ~~Option A: Use logarithmic scale so 1.0x appears in the middle~~ (not chosen - adds complexity)
+  - [x] Option B: Adjust marks to show actual positions (e.g., 0.1x, 1.0x, 5.0x) ✓ **CHOSEN**
+  - [x] ~~Option C: Change range to be more intuitive~~ (not chosen - loses flexibility)
+  - [x] Implemented Option B: Changed the Base XP Rate slider from auto-generated marks (`marks` boolean) to explicit marks array with positions at 0.1x, 1.0x, and 5.0x
+    - The `getMarkPosition()` function in ConfigSlider correctly calculates linear positions
+    - Mark at 0.1x appears at 0% from left
+    - Mark at 1.0x appears at ~18% from left (correct: (1.0-0.1)/(5.0-0.1) = 18.4%)
+    - Mark at 5.0x appears at 100% from left
+    - This truthfully shows users where the values actually are on the slider
 
 ## Phase 3: Polish
 
