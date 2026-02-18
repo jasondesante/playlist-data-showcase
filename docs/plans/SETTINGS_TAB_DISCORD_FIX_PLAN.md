@@ -48,7 +48,15 @@ Two UI bugs need to be fixed in the Settings tab:
 ## Phase 3: Polish
 
 - [ ] Test all UI changes
-  - [ ] Verify Discord disabled state looks appropriate
+  - [x] Verify Discord disabled state looks appropriate
+    - **Verified on 2026-02-18:**
+    - Discord card has `.settings-card-disabled` class applied when `!isRunningInServerMode`
+    - Overlay appears with "Server Mode Required" badge and clear message
+    - Input field is properly disabled with `disabled={!isRunningInServerMode}`
+    - CSS styling: card opacity 0.85, input opacity 0.5, cursor: not-allowed
+    - Overlay uses semi-transparent gradient background to cover the card content
+    - Badge uses orange color (`--cute-orange`) for visibility
+    - Message clearly explains: what limitation is, why it's not available, and what user can do (Electron/Node.js)
   - [ ] Verify Discord message is clear to users
   - [ ] Verify XP slider marks align with thumb position
   - [ ] Test slider at various values (0.1x, 1.0x, 5.0x)
