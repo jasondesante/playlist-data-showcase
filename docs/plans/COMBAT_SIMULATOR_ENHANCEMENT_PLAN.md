@@ -249,10 +249,10 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Display legendary resistances remaining
 
 ### 8.3 Enemy Template Browser
-- [ ] Create expandable template reference panel
-- [ ] Show all available templates with stats
-- [ ] Filter by category/archetype
-- [ ] Click to select for generation
+- [x] Create expandable template reference panel
+- [x] Show all available templates with stats
+- [x] Filter by category/archetype
+- [x] Click to select for generation
 
 ### 8.4 Encounter Summary Panel
 - [ ] Show before combat starts:

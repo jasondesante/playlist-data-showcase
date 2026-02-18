@@ -26,6 +26,7 @@ import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hook
 import { logger } from '../../utils/logger';
 import type { PlaylistTrack } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
+import { TemplateBrowser } from '../combat/TemplateBrowser';
 import './CombatSimulatorTab.css';
 
 /**
@@ -930,6 +931,18 @@ export function CombatSimulatorTab() {
 
   // Wire up updateGenerationConfig function for Phase 2 UI
   const updateGenerationConfig = _updateGenerationConfig;
+
+  // Handler: Template selection from TemplateBrowser (Phase 8.3)
+  // When a template is selected, update the config and switch to single mode
+  const handleTemplateBrowserSelect = useCallback((templateId: string) => {
+    // Update to single mode and set the template
+    setGenerationConfig(prev => ({
+      ...prev,
+      mode: 'single',
+      templateId: templateId
+    }));
+    logger.info('CombatSimulator', 'Template selected from browser', { templateId });
+  }, []);
 
   // Wrapper to handle async generation (updated for Phase 3.3)
   const handleGenerateEnemiesWithLoading = useCallback(() => {
@@ -2773,6 +2786,14 @@ export function CombatSimulatorTab() {
                 </div>
               </div>
             )}
+
+            {/* Phase 8.3: Enemy Template Browser */}
+            <TemplateBrowser
+              templates={ENEMY_TEMPLATES}
+              selectedTemplateId={generationConfig.templateId}
+              onTemplateSelect={handleTemplateBrowserSelect}
+              className="combat-template-browser-section"
+            />
 
             {/* Action Buttons */}
             <div className="combat-config-actions">
