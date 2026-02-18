@@ -1,0 +1,395 @@
+/* ============================================
+   ENCOUNTER SUMMARY PANEL STYLES
+   Phase 8.4: Encounter Summary Panel
+   ============================================ */
+
+/* Main Panel Container */
+.encounter-summary-panel {
+  padding: 0.75rem;
+  background-color: hsl(var(--background) / 0.6);
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-panel {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+/* Compact Mode */
+.encounter-summary-compact {
+  padding: 0.5rem;
+}
+
+.encounter-summary-compact .encounter-summary-types-section,
+.encounter-summary-compact .encounter-summary-comparison-section,
+.encounter-summary-compact .encounter-summary-challenge {
+  display: none;
+}
+
+/* Header */
+.encounter-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.encounter-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-title {
+    font-size: 1rem;
+  }
+}
+
+.encounter-summary-rating {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-rating {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+  }
+}
+
+/* Stats Grid */
+.encounter-summary-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .encounter-summary-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Individual Stat Item */
+.encounter-summary-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.encounter-summary-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.encounter-summary-stat-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.encounter-summary-stat-label {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-stat-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.encounter-summary-stat-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-stat-value {
+    font-size: 1rem;
+  }
+}
+
+.encounter-summary-stat-subtitle {
+  font-size: 0.5625rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-stat-subtitle {
+    font-size: 0.625rem;
+  }
+}
+
+/* Types Section */
+.encounter-summary-types-section {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+  margin-bottom: 0.75rem;
+}
+
+.encounter-summary-types-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-types-title {
+    font-size: 0.75rem;
+  }
+}
+
+/* Type Badges Grid */
+.encounter-summary-types-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-types-grid {
+    gap: 0.5rem;
+  }
+}
+
+.encounter-summary-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+  }
+}
+
+.encounter-summary-type-icon {
+  font-size: 0.75rem;
+}
+
+.encounter-summary-type-name {
+  font-weight: 500;
+}
+
+.encounter-summary-type-count {
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-left: 0.125rem;
+}
+
+/* Enemy List by Category */
+.encounter-summary-enemy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.encounter-summary-enemy-category {
+  padding: 0.5rem;
+  background-color: hsl(var(--background) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.encounter-summary-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.375rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.2);
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-category-header {
+    font-size: 0.75rem;
+  }
+}
+
+.encounter-summary-category-count {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted) / 0.5);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+.encounter-summary-category-enemies {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.encounter-summary-enemy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6875rem;
+  padding: 0.125rem 0;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-enemy-item {
+    font-size: 0.75rem;
+  }
+}
+
+.encounter-summary-enemy-name {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+.encounter-summary-enemy-level {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.625rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-enemy-level {
+    font-size: 0.6875rem;
+  }
+}
+
+/* Party Comparison Section */
+.encounter-summary-comparison-section {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+  margin-bottom: 0.75rem;
+}
+
+.encounter-summary-comparison-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-comparison-title {
+    font-size: 0.75rem;
+  }
+}
+
+.encounter-summary-thresholds-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+  .encounter-summary-thresholds-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+.encounter-summary-threshold {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.375rem 0.5rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.encounter-summary-threshold-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-threshold-label {
+    font-size: 0.625rem;
+  }
+}
+
+.encounter-summary-threshold-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-threshold-value {
+    font-size: 0.75rem;
+  }
+}
+
+/* Challenge Indicator */
+.encounter-summary-challenge {
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.encounter-summary-challenge-bar {
+  height: 0.375rem;
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 0.375rem;
+}
+
+.encounter-summary-challenge-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.encounter-summary-challenge-label {
+  font-size: 0.6875rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .encounter-summary-challenge-label {
+    font-size: 0.75rem;
+  }
+}

@@ -255,11 +255,11 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Click to select for generation
 
 ### 8.4 Encounter Summary Panel
-- [ ] Show before combat starts:
-  - [ ] Total enemies by type
-  - [ ] Total encounter XP
-  - [ ] Difficulty rating vs party
-  - [ ] Estimated challenge
+- [x] Show before combat starts:
+  - [x] Total enemies by type
+  - [x] Total encounter XP
+  - [x] Difficulty rating vs party
+  - [x] Estimated challenge
 
 ### 8.5 CSS Enhancements
 - [ ] Add animations for enemy generation
@@ -303,7 +303,8 @@ src/
 │   │   ├── PartySelector.tsx       # Phase 7
 │   │   ├── PartyAnalyzerCard.tsx   # Phase 7
 │   │   ├── EnemyCard.tsx           # Phase 8
-│   │   └── TemplateBrowser.tsx     # Phase 8
+│   │   ├── TemplateBrowser.tsx     # Phase 8
+│   │   └── EncounterSummaryPanel.tsx # Phase 8.4
 │   └── ui/
 │       └── RarityBadge.tsx         # Phase 8
 └── types/
@@ -362,4 +363,4 @@ src/
 ---
 
 *Plan created: 2026-02-14*
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-18*

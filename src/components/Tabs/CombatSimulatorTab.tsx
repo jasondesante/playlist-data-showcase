@@ -27,6 +27,7 @@ import { logger } from '../../utils/logger';
 import type { PlaylistTrack } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';
+import { EncounterSummaryPanel } from '../combat/EncounterSummaryPanel';
 import './CombatSimulatorTab.css';
 
 /**
@@ -2785,6 +2786,18 @@ export function CombatSimulatorTab() {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Phase 8.4: Encounter Summary Panel - shows before combat starts */}
+            {generatedEnemies.length > 0 && (
+              <EncounterSummaryPanel
+                enemies={generatedEnemies}
+                partyMembers={partyMode === 'party'
+                  ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
+                  : getActiveCharacter() ? [getActiveCharacter()!] : []
+                }
+                className="combat-encounter-summary"
+              />
             )}
 
             {/* Phase 8.3: Enemy Template Browser */}
