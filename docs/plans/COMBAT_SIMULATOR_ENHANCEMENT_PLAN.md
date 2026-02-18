@@ -262,7 +262,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
   - [x] Estimated challenge
 
 ### 8.5 CSS Enhancements
-- [ ] Add animations for enemy generation
+- [x] Add animations for enemy generation
 - [ ] Polish rarity tier color schemes
 - [ ] Add transition effects for config panels
 - [ ] Responsive layout adjustments

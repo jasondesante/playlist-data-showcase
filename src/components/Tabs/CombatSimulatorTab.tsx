@@ -755,6 +755,9 @@ export function CombatSimulatorTab() {
   // State: Loading state for enemy generation (Phase 2.1)
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // State: Trigger enemy card spawn animations (Phase 8.5)
+  const [animateEnemies, setAnimateEnemies] = useState(false);
+
   // ============================================================
   // Phase 3.1: Audio-Influenced Generation State (hoisted)
   // ============================================================
@@ -807,6 +810,19 @@ export function CombatSimulatorTab() {
 
     prevConfigRef.current = generationConfig;
   }, [generationConfig, generatedEnemies.length]);
+
+  // Phase 8.5: Reset animation state after animations complete
+  // This allows the animation to re-trigger if new enemies are generated
+  useEffect(() => {
+    if (animateEnemies) {
+      // Reset animation state after the longest possible animation duration
+      // (boss animation + stagger delays = ~2s max)
+      const timer = setTimeout(() => {
+        setAnimateEnemies(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [animateEnemies]);
 
   // Handler: Generate enemies based on current configuration
   // Updated in Phase 3.3 to support audio-influenced generation
@@ -909,6 +925,8 @@ export function CombatSimulatorTab() {
       });
 
       setGeneratedEnemies(enemies);
+      // Phase 8.5: Trigger spawn animation for enemy cards
+      setAnimateEnemies(true);
     } catch (error) {
       logger.error('CombatSimulator', 'Failed to generate enemies', error);
       setGeneratedEnemies([]);
@@ -2697,9 +2715,22 @@ export function CombatSimulatorTab() {
             </div>
 
             {/* Generated Enemies Preview */}
-            {generatedEnemies.length > 0 && (
+            {/* Phase 8.5: Show skeleton loading while generating */}
+            {isGenerating && (
               <div className="combat-config-preview">
                 <h4 className="combat-config-preview-title">
+                  Generating Enemies...
+                </h4>
+                <div className="combat-config-preview-list-generating">
+                  {Array.from({ length: generationConfig.count }).map((_, index) => (
+                    <div key={index} className="combat-enemy-card-skeleton" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {generatedEnemies.length > 0 && (
+              <div className="combat-config-preview">
+                <h4 className={`combat-config-preview-title ${animateEnemies ? 'combat-config-preview-title-animated' : ''}`}>
                   Generated Enemies ({generatedEnemies.length})
                   {audioReasoning.length > 0 && (
                     <span className="combat-preview-audio-badge" title="Audio-influenced generation">
@@ -2712,8 +2743,21 @@ export function CombatSimulatorTab() {
                     // Find the corresponding audio reasoning for this enemy
                     const reasoning = audioReasoning[index];
 
+                    // Phase 8.5: Determine animation class based on rarity
+                    const enemyRarity = enemy.subrace as EnemyRarity | undefined;
+                    const animationClass = animateEnemies
+                      ? enemyRarity === 'boss'
+                        ? 'combat-config-enemy-card-animated-boss'
+                        : enemyRarity === 'elite'
+                          ? 'combat-config-enemy-card-animated-elite'
+                          : 'combat-config-enemy-card-animated'
+                      : '';
+
                     return (
-                      <div key={index} className="combat-config-enemy-card">
+                      <div
+                        key={index}
+                        className={`combat-config-enemy-card combat-enemy-card-gpu ${animationClass}`}
+                      >
                         <div className="combat-config-enemy-header">
                           <div className="combat-config-enemy-name">{enemy.name}</div>
                           {reasoning && (
