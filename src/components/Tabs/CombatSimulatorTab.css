@@ -1036,10 +1036,69 @@
   border-width: 2px;
 }
 
+/* Phase 8.2: Enhanced Elite card styling with special background and effects */
 .combat-combatant-card-enemy.combat-combatant-card-elite {
   border-color: hsl(280 60% 50%);
   border-width: 2px;
   box-shadow: 0 0 8px hsl(280 60% 50% / 0.3);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    hsl(280 30% 97%) 50%,
+    hsl(var(--card)) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dark mode elite background */
+@media (prefers-color-scheme: dark) {
+  .combat-combatant-card-enemy.combat-combatant-card-elite {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card)) 0%,
+      hsl(280 25% 15%) 50%,
+      hsl(var(--card)) 100%
+    );
+  }
+}
+
+/* Elite shimmer effect overlay */
+.combat-combatant-card-enemy.combat-combatant-card-elite::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(280 60% 70% / 0.08) 50%,
+    transparent 100%
+  );
+  animation: combat-elite-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes combat-elite-shimmer {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+/* Elite card name styling */
+.combat-combatant-card-enemy.combat-combatant-card-elite .combat-combatant-name {
+  color: hsl(280 60% 40%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .combat-combatant-card-enemy.combat-combatant-card-elite .combat-combatant-name {
+    color: hsl(280 70% 75%);
+  }
 }
 
 .combat-combatant-card-enemy.combat-combatant-card-boss {
@@ -1062,23 +1121,34 @@
   }
 }
 
-/* Elite card subtle glow */
+/* Phase 8.2: Enhanced Elite card glow with multiple layers */
 .combat-combatant-card-enemy.combat-combatant-card-elite:not(.combat-combatant-card-defeated) {
   animation: combat-elite-glow 3s ease-in-out infinite;
 }
 
 @keyframes combat-elite-glow {
   0%, 100% {
-    box-shadow: 0 0 8px hsl(280 60% 50% / 0.3);
+    box-shadow:
+      0 0 8px hsl(280 60% 50% / 0.3),
+      inset 0 0 20px hsl(280 40% 50% / 0.05);
   }
   50% {
-    box-shadow: 0 0 14px hsl(280 60% 50% / 0.5);
+    box-shadow:
+      0 0 16px hsl(280 60% 50% / 0.5),
+      0 0 30px hsl(280 60% 50% / 0.2),
+      inset 0 0 30px hsl(280 40% 50% / 0.08);
   }
 }
 
-/* Defeated enemies don't glow */
+/* Defeated enemies don't glow or shimmer */
 .combat-combatant-card-defeated {
   animation: none !important;
+}
+
+/* Phase 8.2: Stop shimmer animation for defeated elite enemies */
+.combat-combatant-card-enemy.combat-combatant-card-elite.combat-combatant-card-defeated::before {
+  animation: none;
+  opacity: 0;
 }
 
 /* Combat Log */

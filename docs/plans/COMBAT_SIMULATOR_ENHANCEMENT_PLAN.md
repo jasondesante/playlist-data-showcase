@@ -243,7 +243,7 @@ Transform the CombatSimulatorTab from a basic combat demo into a full-featured c
 - [x] Display resistances/immunities
 
 ### 8.2 Boss/Elite Visual Treatment
-- [ ] Special card styling for elite enemies
+- [x] Special card styling for elite enemies
 - [ ] Enhanced boss card with larger size
 - [ ] Show legendary action count for bosses
 - [ ] Display legendary resistances remaining
