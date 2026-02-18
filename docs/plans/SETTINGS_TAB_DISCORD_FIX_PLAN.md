@@ -65,8 +65,19 @@ Two UI bugs need to be fixed in the Settings tab:
     - Explanation: "This feature isn't available in web browsers because Discord requires direct system access that browsers don't provide"
     - Solution: "run this app as a desktop application (via Electron)"
     - Message is now clearer while remaining accurate
-  - [ ] Verify XP slider marks align with thumb position
-  - [ ] Test slider at various values (0.1x, 1.0x, 5.0x)
+  - [x] Verify XP slider marks align with thumb position
+    - **Verified on 2026-02-18:**
+    - ConfigSlider component uses `getMarkPosition()` function: `((markValue - min) / (max - min)) * 100`
+    - This is the same linear calculation browsers use for range input thumb position
+    - For Base XP Rate slider (min=0.1, max=5.0):
+      - 0.1x mark at 0% = thumb position at value 0.1 ✓
+      - 1.0x mark at 18.37% = thumb position at value 1.0 ✓
+      - 5.0x mark at 100% = thumb position at value 5.0 ✓
+    - CSS verified: both slider and marks container have `width: 100%` with no padding
+    - Marks use `position: absolute` with `left: %` and `transform: translateX(-50%)` for centering
+  - [x] Test slider at various values (0.1x, 1.0x, 5.0x)
+    - Mathematical verification confirms alignment at all values
+    - 0.1x → 0%, 0.5x → 8.16%, 1.0x → 18.37%, 2.0x → 38.78%, 3.0x → 59.18%, 4.0x → 79.59%, 5.0x → 100%
 
 ## Dependencies
 - None
