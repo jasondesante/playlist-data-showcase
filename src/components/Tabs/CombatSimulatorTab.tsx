@@ -2258,11 +2258,12 @@ export function CombatSimulatorTab() {
                 </span>
               </button>
 
-              {/* Collapsible Content */}
-              {isTreasureExpanded && (
-                <div className="combat-treasure-content">
-                  {/* Enable Treasure Toggle */}
-                  <div className="combat-treasure-field">
+              {/* Collapsible Content - Phase 8.5: Added transition wrapper */}
+              <div className={`combat-treasure-content-wrapper ${isTreasureExpanded ? 'expanded' : ''}`}>
+                <div className="combat-treasure-content-inner">
+                  <div className="combat-treasure-content">
+                    {/* Enable Treasure Toggle */}
+                    <div className="combat-treasure-field">
                     <label className="combat-config-label">Enable Treasure Rewards</label>
                     <label className="toggle-switch">
                       <input
@@ -2440,8 +2441,9 @@ export function CombatSimulatorTab() {
                       </div>
                     </>
                   )}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Advanced Options Configuration Section - Phase 6.1 */}
@@ -2473,22 +2475,23 @@ export function CombatSimulatorTab() {
                 </span>
               </button>
 
-              {/* Collapsible Content */}
-              {isAdvancedExpanded && (
-                <div className="combat-advanced-content">
-                  {/* Toggle Switches */}
-                  <div className="combat-advanced-toggles">
-                    {/* Use Environment Toggle */}
-                    <div className="combat-advanced-toggle-row">
-                      <div className="combat-advanced-toggle-info">
-                        <span className="combat-advanced-toggle-label">Use Environment</span>
-                        <span className="combat-advanced-toggle-description">
-                          Apply environmental bonuses (weather, terrain effects)
-                        </span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
+              {/* Collapsible Content - Phase 8.5: Added transition wrapper */}
+              <div className={`combat-advanced-content-wrapper ${isAdvancedExpanded ? 'expanded' : ''}`}>
+                <div className="combat-advanced-content-inner">
+                  <div className="combat-advanced-content">
+                    {/* Toggle Switches */}
+                    <div className="combat-advanced-toggles">
+                      {/* Use Environment Toggle */}
+                      <div className="combat-advanced-toggle-row">
+                        <div className="combat-advanced-toggle-info">
+                          <span className="combat-advanced-toggle-label">Use Environment</span>
+                          <span className="combat-advanced-toggle-description">
+                            Apply environmental bonuses (weather, terrain effects)
+                          </span>
+                        </div>
+                        <label className="toggle-switch">
+                          <input
+                            type="checkbox"
                           checked={advancedConfig.useEnvironment}
                           onChange={() => toggleAdvancedOption('useEnvironment')}
                           className="toggle-checkbox"
@@ -2710,8 +2713,9 @@ export function CombatSimulatorTab() {
                       </div>
                     );
                   })()}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Generated Enemies Preview */}
