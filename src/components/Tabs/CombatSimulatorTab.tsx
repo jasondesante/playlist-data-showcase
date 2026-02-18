@@ -29,6 +29,12 @@ import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import './CombatSimulatorTab.css';
 
 /**
+ * Damage types for resistances/immunities display
+ * Subset of DamageType from playlist-data-engine
+ */
+type DamageTypeDisplay = 'slashing' | 'piercing' | 'bludgeoning' | 'fire' | 'cold' | 'lightning' | 'thunder' | 'poison' | 'acid' | 'necrotic' | 'radiant' | 'psychic' | 'force';
+
+/**
  * Template metadata for display in the UI
  */
 interface TemplateInfo {
@@ -38,15 +44,20 @@ interface TemplateInfo {
     archetype: EnemyArchetype;
     signatureAbility: string;
     signatureAbilityDescription: string;
+    /** Damage resistances (half damage) for Elite+ enemies */
+    resistances?: DamageTypeDisplay[];
+    /** Damage immunities (zero damage) for Elite+ enemies */
+    immunities?: DamageTypeDisplay[];
 }
 
 /**
  * All available enemy templates organized by category
  * Based on docs/engine/docs/ENEMY_GENERATION.md
+ * Resistances/immunities apply to Elite and Boss rarity only.
  */
 const ENEMY_TEMPLATES: TemplateInfo[] = [
     // Humanoid - Brute
-    { id: 'orc', name: 'Orc', category: 'humanoid', archetype: 'brute', signatureAbility: 'Savage Strike', signatureAbilityDescription: 'Bonus melee damage on hit' },
+    { id: 'orc', name: 'Orc', category: 'humanoid', archetype: 'brute', signatureAbility: 'Savage Strike', signatureAbilityDescription: 'Bonus melee damage on hit', resistances: ['poison'] },
     { id: 'bandit', name: 'Bandit', category: 'humanoid', archetype: 'brute', signatureAbility: 'Cheap Shot', signatureAbilityDescription: 'Bonus damage vs flat-footed targets' },
 
     // Humanoid - Archer
@@ -54,72 +65,72 @@ const ENEMY_TEMPLATES: TemplateInfo[] = [
     { id: 'goblin-archer', name: 'Goblin Archer', category: 'humanoid', archetype: 'archer', signatureAbility: 'Sneaky Shot', signatureAbilityDescription: 'Bonus damage when attacking from hiding' },
 
     // Humanoid - Support
-    { id: 'shaman', name: 'Shaman', category: 'humanoid', archetype: 'support', signatureAbility: 'Spirit Bond', signatureAbilityDescription: 'Boost ally damage output' },
-    { id: 'cultist', name: 'Cultist', category: 'humanoid', archetype: 'support', signatureAbility: 'Dark Blessing', signatureAbilityDescription: 'Grant ally AC bonus' },
+    { id: 'shaman', name: 'Shaman', category: 'humanoid', archetype: 'support', signatureAbility: 'Spirit Bond', signatureAbilityDescription: 'Boost ally damage output', resistances: ['necrotic'] },
+    { id: 'cultist', name: 'Cultist', category: 'humanoid', archetype: 'support', signatureAbility: 'Dark Blessing', signatureAbilityDescription: 'Grant ally AC bonus', resistances: ['necrotic'] },
 
     // Beast - Brute
-    { id: 'bear', name: 'Bear', category: 'beast', archetype: 'brute', signatureAbility: 'Maul', signatureAbilityDescription: 'Multiattack with grapple effect' },
+    { id: 'bear', name: 'Bear', category: 'beast', archetype: 'brute', signatureAbility: 'Maul', signatureAbilityDescription: 'Multiattack with grapple effect', resistances: ['cold'] },
     { id: 'boar', name: 'Boar', category: 'beast', archetype: 'brute', signatureAbility: 'Gore Charge', signatureAbilityDescription: 'Bonus damage on charge attacks' },
 
     // Beast - Ranged
-    { id: 'giant-spider', name: 'Giant Spider', category: 'beast', archetype: 'archer', signatureAbility: 'Web Spray', signatureAbilityDescription: 'Ranged restrain ability' },
+    { id: 'giant-spider', name: 'Giant Spider', category: 'beast', archetype: 'archer', signatureAbility: 'Web Spray', signatureAbilityDescription: 'Ranged restrain ability', resistances: ['poison'] },
     { id: 'stirge', name: 'Stirge', category: 'beast', archetype: 'archer', signatureAbility: 'Blood Drain', signatureAbilityDescription: 'Ranged life steal attack' },
 
-    // Undead - Archer
-    { id: 'skeleton', name: 'Skeleton', category: 'undead', archetype: 'archer', signatureAbility: 'Bone Shot', signatureAbilityDescription: 'Bonus piercing damage on ranged attacks' },
-    { id: 'ghost', name: 'Ghost', category: 'undead', archetype: 'archer', signatureAbility: 'Horrifying Visage', signatureAbilityDescription: 'Apply fear debuff to enemies' },
+    // Undead - Archer (Undead Traits: necrotic resistance, poison immunity)
+    { id: 'skeleton', name: 'Skeleton', category: 'undead', archetype: 'archer', signatureAbility: 'Bone Shot', signatureAbilityDescription: 'Bonus piercing damage on ranged attacks', resistances: ['necrotic'], immunities: ['poison'] },
+    { id: 'ghost', name: 'Ghost', category: 'undead', archetype: 'archer', signatureAbility: 'Horrifying Visage', signatureAbilityDescription: 'Apply fear debuff to enemies', resistances: ['necrotic'], immunities: ['poison'] },
 
     // Undead - Brute
-    { id: 'zombie', name: 'Zombie', category: 'undead', archetype: 'brute', signatureAbility: 'Undead Grip', signatureAbilityDescription: 'Grapple + bite combo attack' },
-    { id: 'wight', name: 'Wight', category: 'undead', archetype: 'brute', signatureAbility: 'Life Drain', signatureAbilityDescription: 'Damage enemies and heal self' },
+    { id: 'zombie', name: 'Zombie', category: 'undead', archetype: 'brute', signatureAbility: 'Undead Grip', signatureAbilityDescription: 'Grapple + bite combo attack', resistances: ['necrotic'], immunities: ['poison'] },
+    { id: 'wight', name: 'Wight', category: 'undead', archetype: 'brute', signatureAbility: 'Life Drain', signatureAbilityDescription: 'Damage enemies and heal self', resistances: ['necrotic'], immunities: ['poison'] },
 
-    // Fiend - Archer
-    { id: 'imp', name: 'Imp', category: 'fiend', archetype: 'archer', signatureAbility: 'Sting', signatureAbilityDescription: 'Poison damage on hit' },
+    // Fiend - Archer (Fiend Traits: fire resistance, cold resistance, poison immunity)
+    { id: 'imp', name: 'Imp', category: 'fiend', archetype: 'archer', signatureAbility: 'Sting', signatureAbilityDescription: 'Poison damage on hit', resistances: ['fire', 'cold'], immunities: ['poison'] },
 
     // Fiend - Brute
-    { id: 'lemure', name: 'Lemure', category: 'fiend', archetype: 'brute', signatureAbility: 'Hellish Resilience', signatureAbilityDescription: 'Reduce incoming damage' },
-    { id: 'demon', name: 'Demon', category: 'fiend', archetype: 'brute', signatureAbility: 'Chaos Claw', signatureAbilityDescription: 'Random damage type attack' },
+    { id: 'lemure', name: 'Lemure', category: 'fiend', archetype: 'brute', signatureAbility: 'Hellish Resilience', signatureAbilityDescription: 'Reduce incoming damage', resistances: ['fire', 'cold'], immunities: ['poison'] },
+    { id: 'demon', name: 'Demon', category: 'fiend', archetype: 'brute', signatureAbility: 'Chaos Claw', signatureAbilityDescription: 'Random damage type attack', resistances: ['fire', 'cold'], immunities: ['poison'] },
 
     // Fiend - Support
-    { id: 'quasit', name: 'Quasit', category: 'fiend', archetype: 'support', signatureAbility: 'Fear Aura', signatureAbilityDescription: 'Apply debuff to nearby enemies' },
+    { id: 'quasit', name: 'Quasit', category: 'fiend', archetype: 'support', signatureAbility: 'Fear Aura', signatureAbilityDescription: 'Apply debuff to nearby enemies', resistances: ['fire', 'cold'], immunities: ['poison'] },
 
-    // Elemental - Brute
-    { id: 'fire-elemental', name: 'Fire Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Burning Touch', signatureAbilityDescription: 'Fire damage + ongoing burn' },
-    { id: 'earth-elemental', name: 'Earth Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Earth Slam', signatureAbilityDescription: 'AoE attack with prone effect' },
+    // Elemental - Brute (Fire: fire immunity; Earth: poison immunity, necrotic resistance)
+    { id: 'fire-elemental', name: 'Fire Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Burning Touch', signatureAbilityDescription: 'Fire damage + ongoing burn', immunities: ['fire'] },
+    { id: 'earth-elemental', name: 'Earth Elemental', category: 'elemental', archetype: 'brute', signatureAbility: 'Earth Slam', signatureAbilityDescription: 'AoE attack with prone effect', resistances: ['necrotic'], immunities: ['poison'] },
 
-    // Elemental - Archer
-    { id: 'air-elemental', name: 'Air Elemental', category: 'elemental', archetype: 'archer', signatureAbility: 'Wind Blast', signatureAbilityDescription: 'Ranged push attack' },
+    // Elemental - Archer (Air: lightning immunity, thunder resistance)
+    { id: 'air-elemental', name: 'Air Elemental', category: 'elemental', archetype: 'archer', signatureAbility: 'Wind Blast', signatureAbilityDescription: 'Ranged push attack', resistances: ['thunder'], immunities: ['lightning'] },
 
-    // Elemental - Support
-    { id: 'water-elemental', name: 'Water Elemental', category: 'elemental', archetype: 'support', signatureAbility: 'Whirlpool', signatureAbilityDescription: 'Restrain and pull enemies' },
+    // Elemental - Support (Water: cold immunity, fire/necrotic resistance)
+    { id: 'water-elemental', name: 'Water Elemental', category: 'elemental', archetype: 'support', signatureAbility: 'Whirlpool', signatureAbilityDescription: 'Restrain and pull enemies', resistances: ['fire', 'necrotic'], immunities: ['cold'] },
 
-    // Construct - Brute
-    { id: 'animated-armor', name: 'Animated Armor', category: 'construct', archetype: 'brute', signatureAbility: 'Slam', signatureAbilityDescription: 'Force damage attack' },
-    { id: 'golem', name: 'Golem', category: 'construct', archetype: 'brute', signatureAbility: 'Immutable Form', signatureAbilityDescription: 'Immunity to status effects' },
+    // Construct - Brute (Construct Traits: poison immunity, psychic immunity)
+    { id: 'animated-armor', name: 'Animated Armor', category: 'construct', archetype: 'brute', signatureAbility: 'Slam', signatureAbilityDescription: 'Force damage attack', immunities: ['poison', 'psychic'] },
+    { id: 'golem', name: 'Golem', category: 'construct', archetype: 'brute', signatureAbility: 'Immutable Form', signatureAbilityDescription: 'Immunity to status effects', immunities: ['poison', 'psychic'] },
 
     // Construct - Archer
-    { id: 'flying-sword', name: 'Flying Sword', category: 'construct', archetype: 'archer', signatureAbility: 'Diving Strike', signatureAbilityDescription: 'Bonus damage on dive attacks' },
+    { id: 'flying-sword', name: 'Flying Sword', category: 'construct', archetype: 'archer', signatureAbility: 'Diving Strike', signatureAbilityDescription: 'Bonus damage on dive attacks', immunities: ['poison', 'psychic'] },
 
     // Construct - Support
-    { id: 'shield-guardian', name: 'Shield Guardian', category: 'construct', archetype: 'support', signatureAbility: 'Protection Aura', signatureAbilityDescription: 'Grant ally AC bonus' },
+    { id: 'shield-guardian', name: 'Shield Guardian', category: 'construct', archetype: 'support', signatureAbility: 'Protection Aura', signatureAbilityDescription: 'Grant ally AC bonus', immunities: ['poison', 'psychic'] },
 
-    // Dragon - Brute
-    { id: 'young-red-dragon', name: 'Young Red Dragon', category: 'dragon', archetype: 'brute', signatureAbility: 'Fire Breath', signatureAbilityDescription: 'AoE fire damage breath weapon' },
-    { id: 'dragon-wyrmling', name: 'Dragon Wyrmling', category: 'dragon', archetype: 'brute', signatureAbility: 'Bite + Claw', signatureAbilityDescription: 'Multiattack combo' },
-    { id: 'drake', name: 'Drake', category: 'dragon', archetype: 'brute', signatureAbility: 'Tail Swipe', signatureAbilityDescription: 'Knockback attack' },
+    // Dragon - Brute (Young Red: fire immunity; Wyrmling: acid resistance; Drake: cold resistance)
+    { id: 'young-red-dragon', name: 'Young Red Dragon', category: 'dragon', archetype: 'brute', signatureAbility: 'Fire Breath', signatureAbilityDescription: 'AoE fire damage breath weapon', immunities: ['fire'] },
+    { id: 'dragon-wyrmling', name: 'Dragon Wyrmling', category: 'dragon', archetype: 'brute', signatureAbility: 'Bite + Claw', signatureAbilityDescription: 'Multiattack combo', resistances: ['acid'] },
+    { id: 'drake', name: 'Drake', category: 'dragon', archetype: 'brute', signatureAbility: 'Tail Swipe', signatureAbilityDescription: 'Knockback attack', resistances: ['cold'] },
 
-    // Dragon - Archer
-    { id: 'young-blue-dragon', name: 'Young Blue Dragon', category: 'dragon', archetype: 'archer', signatureAbility: 'Lightning Breath', signatureAbilityDescription: 'Line lightning damage' },
+    // Dragon - Archer (Young Blue: lightning immunity, thunder resistance)
+    { id: 'young-blue-dragon', name: 'Young Blue Dragon', category: 'dragon', archetype: 'archer', signatureAbility: 'Lightning Breath', signatureAbilityDescription: 'Line lightning damage', resistances: ['thunder'], immunities: ['lightning'] },
 
-    // Monstrosity - Brute
+    // Monstrosity - Brute (Mimic: acid resistance; Owlbear: none)
     { id: 'owlbear', name: 'Owlbear', category: 'monstrosity', archetype: 'brute', signatureAbility: 'Multiattack', signatureAbilityDescription: 'Beak + claws combo attack' },
-    { id: 'mimic', name: 'Mimic', category: 'monstrosity', archetype: 'brute', signatureAbility: 'Adhesive', signatureAbilityDescription: 'Auto-grapple on hit' },
+    { id: 'mimic', name: 'Mimic', category: 'monstrosity', archetype: 'brute', signatureAbility: 'Adhesive', signatureAbilityDescription: 'Auto-grapple on hit', resistances: ['acid'] },
 
-    // Monstrosity - Archer
+    // Monstrosity - Archer (Griffin: none)
     { id: 'griffin', name: 'Griffin', category: 'monstrosity', archetype: 'archer', signatureAbility: 'Dive Attack', signatureAbilityDescription: 'Bonus damage from flight' },
 
-    // Monstrosity - Support
-    { id: 'basilisk', name: 'Basilisk', category: 'monstrosity', archetype: 'support', signatureAbility: 'Petrifying Gaze', signatureAbilityDescription: 'Save or be stunned' },
+    // Monstrosity - Support (Basilisk: poison resistance)
+    { id: 'basilisk', name: 'Basilisk', category: 'monstrosity', archetype: 'support', signatureAbility: 'Petrifying Gaze', signatureAbilityDescription: 'Save or be stunned', resistances: ['poison'] },
 ];
 
 /**
@@ -173,6 +184,26 @@ const CATEGORY_INFO: Record<EnemyCategory, { label: string; icon: string }> = {
     construct: { label: 'Construct', icon: '🤖' },
     dragon: { label: 'Dragon', icon: '🐉' },
     monstrosity: { label: 'Monstrosity', icon: '👹' },
+};
+
+/**
+ * Damage type display info with icons and colors
+ * Used for displaying resistances and immunities
+ */
+const DAMAGE_TYPE_INFO: Record<DamageTypeDisplay, { label: string; icon: string; color: string }> = {
+    slashing: { label: 'Slashing', icon: '🗡️', color: 'hsl(0 0% 50%)' },
+    piercing: { label: 'Piercing', icon: '⚔️', color: 'hsl(0 0% 50%)' },
+    bludgeoning: { label: 'Bludgeoning', icon: '🔨', color: 'hsl(0 0% 50%)' },
+    fire: { label: 'Fire', icon: '🔥', color: 'hsl(20 90% 50%)' },
+    cold: { label: 'Cold', icon: '❄️', color: 'hsl(200 90% 60%)' },
+    lightning: { label: 'Lightning', icon: '⚡', color: 'hsl(50 90% 50%)' },
+    thunder: { label: 'Thunder', icon: '💥', color: 'hsl(280 60% 50%)' },
+    poison: { label: 'Poison', icon: '☠️', color: 'hsl(120 50% 35%)' },
+    acid: { label: 'Acid', icon: '🧪', color: 'hsl(80 70% 40%)' },
+    necrotic: { label: 'Necrotic', icon: '💀', color: 'hsl(270 50% 40%)' },
+    radiant: { label: 'Radiant', icon: '✨', color: 'hsl(45 100% 60%)' },
+    psychic: { label: 'Psychic', icon: '🧠', color: 'hsl(300 60% 50%)' },
+    force: { label: 'Force', icon: '💫', color: 'hsl(240 60% 60%)' },
 };
 
 /**
@@ -3134,6 +3165,47 @@ export function CombatSimulatorTab() {
                                 >
                                   ⚡ {enemyTemplate.signatureAbility}
                                 </span>
+                              )}
+                              {/* Phase 8.1: Resistances/Immunities display (Elite+ only) */}
+                              {enemyTemplate && enemyRarity && (enemyRarity === 'elite' || enemyRarity === 'boss') && (
+                                (enemyTemplate.resistances?.length || enemyTemplate.immunities?.length) ? (
+                                  <div className="combat-enemy-resistances">
+                                    {enemyTemplate.resistances && enemyTemplate.resistances.length > 0 && (
+                                      <div className="combat-enemy-resistance-group">
+                                        {enemyTemplate.resistances.map(dmgType => {
+                                          const info = DAMAGE_TYPE_INFO[dmgType];
+                                          return (
+                                            <span
+                                              key={`res-${dmgType}`}
+                                              className="combat-enemy-resistance combat-enemy-resistance-half"
+                                              style={{ borderColor: info.color }}
+                                              title={`Resistant to ${info.label} (half damage)`}
+                                            >
+                                              {info.icon}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                    {enemyTemplate.immunities && enemyTemplate.immunities.length > 0 && (
+                                      <div className="combat-enemy-resistance-group">
+                                        {enemyTemplate.immunities.map(dmgType => {
+                                          const info = DAMAGE_TYPE_INFO[dmgType];
+                                          return (
+                                            <span
+                                              key={`imm-${dmgType}`}
+                                              className="combat-enemy-resistance combat-enemy-resistance-immunity"
+                                              style={{ borderColor: info.color, backgroundColor: `${info.color}22` }}
+                                              title={`Immune to ${info.label} (no damage)`}
+                                            >
+                                              {info.icon}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null
                               )}
                             </div>
                           ) : (
