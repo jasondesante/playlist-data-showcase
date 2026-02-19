@@ -110,6 +110,22 @@
    PROGRESS BAR TRACK & FILL
    ============================================ */
 
+.mastery-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mastery-progress-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
 .mastery-progress-track {
   position: relative;
   width: 100%;

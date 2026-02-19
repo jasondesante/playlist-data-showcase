@@ -228,12 +228,13 @@
   .settings-audio-content {
     flex-direction: row;
     align-items: flex-start;
-    justify-content: space-between;
+    gap: 1.5rem;
   }
 }
 
 .settings-audio-info {
   flex: 1;
+  min-width: 200px;
 }
 
 .settings-label {
