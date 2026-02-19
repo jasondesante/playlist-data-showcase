@@ -213,6 +213,18 @@ export const useProgressionConfigStore = create<ProgressionConfigStoreState>()(
         {
             name: 'progression-config-storage',
             storage: createJSONStorage(() => storage),
+            // Only persist settings and metadata, not actions (functions can't be serialized)
+            partialize: (state) => ({
+                settings: state.settings,
+                metadata: state.metadata,
+            }),
+            // Merge persisted state with initial state to preserve actions (functions)
+            // Explicitly only merge settings and metadata, never override actions
+            merge: (persistedState, currentState) => ({
+                ...currentState,
+                settings: (persistedState as any)?.settings ?? currentState.settings,
+                metadata: (persistedState as any)?.metadata ?? currentState.metadata,
+            }),
             // Migration function for future schema changes
             version: PROGRESSION_CONFIG_VERSION,
             migrate: (persistedState, version) => {
@@ -228,16 +240,16 @@ export const useProgressionConfigStore = create<ProgressionConfigStoreState>()(
                     // }
 
                     // For now, just reset to defaults if version is outdated
-                    // This is safe because it's a new store
-                    return createInitialState();
+                    // Return only settings and metadata to be merged with the initial state
+                    // (which includes the actions object)
+                    return {
+                        settings: createInitialState().settings,
+                        metadata: createInitialState().metadata,
+                    };
                 }
 
-                // IMPORTANT: We must preserve the initial state's structure (including actions)
-                // because persisted state from JSON storage doesn't include functions.
-                // The zustand persist middleware uses the return value of migrate to set the state,
-                // so we need to merge the persisted data with the initial state.
+                // Return persisted data (partialized state is merged with initial state which includes actions)
                 return {
-                    ...createInitialState(),
                     settings: state.settings ?? createInitialState().settings,
                     metadata: state.metadata ?? createInitialState().metadata,
                 };

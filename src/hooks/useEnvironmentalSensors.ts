@@ -63,14 +63,6 @@ export const useEnvironmentalSensors = () => {
 
     // Create or recreate sensors instance when API key changes (after hydration)
     useEffect(() => {
-        // DEBUG: Log all values to understand what's happening
-        console.log('[DEBUG] useEnvironmentalSensors effect triggered:', {
-            _hasHydrated,
-            'settings.openWeatherApiKey': settings.openWeatherApiKey ? `${settings.openWeatherApiKey.slice(0, 4)}...${settings.openWeatherApiKey.slice(-4)} (${settings.openWeatherApiKey.length} chars)` : 'EMPTY/UNDEFINED',
-            usedApiKey: usedApiKey ? `${usedApiKey.slice(0, 4)}...${usedApiKey.slice(-4)}` : 'EMPTY',
-            sensorsExists: !!sensors,
-        });
-
         // Wait for hydration before creating sensors instance
         if (!_hasHydrated) {
             logger.debug('EnvironmentalSensors', 'Waiting for settings hydration...');
@@ -81,13 +73,9 @@ export const useEnvironmentalSensors = () => {
 
         // Only recreate if the API key has changed
         if (apiKey === usedApiKey && sensors) {
-            console.log('[DEBUG] Skipping sensors creation - same key and sensors exists');
             return;
         }
 
-        console.log('[DEBUG] Creating new sensors instance with apiKey:', apiKey ? 'HAS VALUE' : 'EMPTY');
-
-        // Debug: Log API key initialization (first/last 4 chars for security)
         if (apiKey) {
             const maskedKey = apiKey.length > 8
                 ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`
@@ -102,6 +90,52 @@ export const useEnvironmentalSensors = () => {
         setUsedApiKey(apiKey);
         logger.info('EnvironmentalSensors', 'EnvironmentalSensors instance created/updated');
     }, [_hasHydrated, settings.openWeatherApiKey, usedApiKey, sensors]);
+
+    // Sync engine permissions with browser's actual permission state when sensors instance is created
+    // This fixes the bug where permissions had to be requested every time
+    useEffect(() => {
+        if (!sensors) return;
+
+        const syncPermissionsWithBrowser = async () => {
+            const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [];
+
+            // Check geolocation permission
+            if ('permissions' in navigator) {
+                try {
+                    const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
+                    if (geoStatus.state === 'granted') {
+                        typesToRequest.push('geolocation', 'weather');
+                    }
+                } catch {
+                    // Some browsers don't support permissions.query for geolocation
+                }
+            }
+
+            // Check motion permission (desktop browsers usually auto-grant)
+            if ('DeviceMotionEvent' in window) {
+                if (typeof (DeviceMotionEvent as any).requestPermission !== 'function') {
+                    // Desktop browser - motion is auto-granted
+                    typesToRequest.push('motion');
+                }
+                // iOS requires explicit user gesture to check/request, so we skip it here
+            }
+
+            // Request permissions for already-granted browser permissions
+            if (typesToRequest.length > 0) {
+                logger.info('EnvironmentalSensors', 'Auto-syncing permissions with browser state', typesToRequest);
+                await sensors.requestPermissions(typesToRequest);
+
+                // Update React store to reflect the synced state
+                typesToRequest.forEach(type => {
+                    if (type !== 'weather') {
+                        setPermission(type, 'granted');
+                    }
+                });
+            }
+        };
+
+        syncPermissionsWithBrowser();
+    }, [sensors, setPermission]);
 
     const [isMonitoring, setIsMonitoring] = useState(false);
 
@@ -137,19 +171,21 @@ export const useEnvironmentalSensors = () => {
     }, [environmentalContext]);
 
     const requestPermission = useCallback(async (sensorType: 'geolocation' | 'motion' | 'light') => {
-        console.log('[DEBUG] requestPermission called for:', sensorType);
         logger.info('EnvironmentalSensors', `Requesting permission: ${sensorType}`);
 
         try {
             // Call the engine's requestPermissions method to update its internal state
             // This is critical - the engine's startMonitoring() checks its own permission state
             if (sensors) {
-                console.log('[DEBUG] Calling engine.requestPermissions for:', sensorType);
-                const results = await sensors.requestPermissions([sensorType]);
+                // For geolocation, also request weather permission (weather needs GPS coordinates)
+                const typesToRequest: ('geolocation' | 'motion' | 'weather' | 'light')[] = [sensorType];
+                if (sensorType === 'geolocation') {
+                    typesToRequest.push('weather'); // Weather doesn't need browser permission, but engine needs it set
+                }
+
+                const results = await sensors.requestPermissions(typesToRequest);
                 const result = results.find(r => r.type === sensorType);
                 const granted = result?.granted ?? false;
-
-                console.log('[DEBUG] Engine permission result:', sensorType, granted ? 'GRANTED' : 'DENIED');
 
                 // Also update the React store for UI display
                 setPermission(sensorType, granted ? 'granted' : 'denied');
@@ -157,7 +193,6 @@ export const useEnvironmentalSensors = () => {
             }
 
             // Fallback if sensors not initialized yet (shouldn't happen after hydration)
-            console.log('[DEBUG] Sensors not initialized, using fallback permission logic');
             let granted = false;
 
             if (sensorType === 'motion') {
@@ -189,7 +224,6 @@ export const useEnvironmentalSensors = () => {
                 granted = true;
             }
 
-            console.log('[DEBUG] Fallback permission result:', sensorType, granted ? 'GRANTED' : 'DENIED');
             setPermission(sensorType, granted ? 'granted' : 'denied');
             return granted;
         } catch (error) {
@@ -205,7 +239,6 @@ export const useEnvironmentalSensors = () => {
         if (!sensors) return;
 
         const diag = sensors.getDiagnostics();
-        console.log('[DEBUG] Full diagnostics object:', JSON.stringify(diag, null, 2));
         setDiagnostics(diag);
 
         // Extract weather-specific error from diagnostics
