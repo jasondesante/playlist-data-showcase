@@ -527,6 +527,21 @@ export function CharacterLevelingTab() {
           <div className="leveling-character-info">
             <h3 className="leveling-character-name">{activeChar.name}</h3>
             <div className="leveling-character-class">{activeChar.race} {activeChar.class}</div>
+            {/* Quick Stats - Small inline badges */}
+            <div className="leveling-quick-stats">
+              <span className="leveling-quick-stat leveling-quick-stat-hp" title="Hit Points">
+                <Heart size={12} />
+                <span>{activeChar.hp.max}</span>
+              </span>
+              <span className="leveling-quick-stat leveling-quick-stat-ac" title="Armor Class">
+                <Shield size={12} />
+                <span>{activeChar.armor_class}</span>
+              </span>
+              <span className="leveling-quick-stat leveling-quick-stat-prof" title="Proficiency Bonus">
+                <Star size={12} />
+                <span>+{activeChar.proficiency_bonus}</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -550,30 +565,78 @@ export function CharacterLevelingTab() {
         </div>
       </Card>
 
-      {/* Level Milestones */}
+      {/* Pending Stat Increases Badge - Shows at the TOP for visibility */}
+      {hasPendingStatIncreases(activeChar) && (
+        <Card variant="elevated" padding="md" className="leveling-pending-badge-card">
+          <div className="leveling-pending-badge-content">
+            <div className="leveling-pending-badge-icon">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="leveling-pending-badge-text">
+              <h4 className="leveling-pending-badge-title">
+                Pending Stat Increases: {getPendingStatIncreaseCount(activeChar)}
+              </h4>
+              <div className="leveling-pending-badge-description">
+                You have stat increases waiting to be applied. When using manual strategy, stat increases must be applied manually.
+                {activeChar.gameMode === 'standard' ? ' In standard mode, increases are awarded at levels 4, 8, 12, 16, and 19.' : ' In uncapped mode, increases are awarded at every level-up.'}
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleOpenStatModal}
+            className="leveling-apply-stats-button"
+          >
+            Apply Stat Increases
+          </Button>
+        </Card>
+      )}
+
+      {/* Level Milestones - Dynamic view centered around current level */}
       <Card variant="default" padding="md" className="leveling-milestones-card">
         <h4 className="leveling-milestones-title">Level Milestones</h4>
         <div className="leveling-milestones-grid">
-          {xpThresholds.slice(1, 11).map((threshold, idx) => {
-            const levelNum = idx + 2;
-            const isReached = currentXP >= threshold;
-            const isCurrent = activeChar.level === levelNum;
-            return (
-              <div
-                key={levelNum}
-                className={`leveling-milestone ${isReached ? 'leveling-milestone-reached' : ''} ${isCurrent ? 'leveling-milestone-current' : ''}`}
-              >
-                <div className="leveling-milestone-dot">
-                  {isReached && <span className="leveling-milestone-check">✓</span>}
-                  {isCurrent && <span className="leveling-milestone-star">★</span>}
+          {/* Calculate which levels to show: current level in middle-ish, with some levels ahead */}
+          {(() => {
+            const currentLevel = activeChar.level;
+            const totalLevels = 10; // Show 10 milestones at a time
+            const levelsAhead = 4; // Show 4 levels ahead of current
+            const levelsBehind = totalLevels - levelsAhead - 1; // Rest are behind
+
+            let startLevel = Math.max(2, currentLevel - levelsBehind);
+            // If we're near the end, shift the window to show all available levels
+            const maxLevel = 20;
+            if (startLevel + totalLevels - 1 > maxLevel) {
+              startLevel = Math.max(2, maxLevel - totalLevels + 1);
+            }
+
+            const levelsToShow = [];
+            for (let lvl = startLevel; lvl < startLevel + totalLevels && lvl <= maxLevel; lvl++) {
+              levelsToShow.push(lvl);
+            }
+
+            return levelsToShow.map((levelNum) => {
+              const threshold = xpThresholds[levelNum - 1]; // level 2 is at index 1
+              const isReached = currentXP >= threshold;
+              const isCurrent = activeChar.level === levelNum;
+              return (
+                <div
+                  key={levelNum}
+                  className={`leveling-milestone ${isReached ? 'leveling-milestone-reached' : ''} ${isCurrent ? 'leveling-milestone-current' : ''}`}
+                >
+                  <div className="leveling-milestone-dot">
+                    {isReached && <span className="leveling-milestone-check">✓</span>}
+                    {isCurrent && <span className="leveling-milestone-star">★</span>}
+                  </div>
+                  <div className="leveling-milestone-info">
+                    <span className="leveling-milestone-level">Lv {levelNum}</span>
+                    <span className="leveling-milestone-xp">{threshold.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="leveling-milestone-info">
-                  <span className="leveling-milestone-level">Lv {levelNum}</span>
-                  <span className="leveling-milestone-xp">{threshold.toLocaleString()}</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       </Card>
 
@@ -733,68 +796,6 @@ export function CharacterLevelingTab() {
                 </span>
               </Button>
               <span className="leveling-xp-source-tooltip">Successfully navigate social situations</span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Pending Stat Increases Badge - Shows for any character with manual strategy */}
-      {hasPendingStatIncreases(activeChar) && (
-        <Card variant="elevated" padding="md" className="leveling-pending-badge-card">
-          <div className="leveling-pending-badge-content">
-            <div className="leveling-pending-badge-icon">
-              <AlertTriangle size={24} />
-            </div>
-            <div className="leveling-pending-badge-text">
-              <h4 className="leveling-pending-badge-title">
-                Pending Stat Increases: {getPendingStatIncreaseCount(activeChar)}
-              </h4>
-              <div className="leveling-pending-badge-description">
-                You have stat increases waiting to be applied. When using manual strategy, stat increases must be applied manually.
-                {activeChar.gameMode === 'standard' ? ' In standard mode, increases are awarded at levels 4, 8, 12, 16, and 19.' : ' In uncapped mode, increases are awarded at every level-up.'}
-              </div>
-            </div>
-          </div>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleOpenStatModal}
-            className="leveling-apply-stats-button"
-          >
-            Apply Stat Increases
-          </Button>
-        </Card>
-      )}
-
-      {/* Character Stats */}
-      <Card variant="default" padding="md" className="leveling-stats-card">
-        <h4 className="leveling-stats-title">Current Stats</h4>
-        <div className="leveling-stats-grid">
-          <div className="leveling-stat-item leveling-stat-hp">
-            <div className="leveling-stat-icon">
-              <Heart size={20} />
-            </div>
-            <div className="leveling-stat-info">
-              <span className="leveling-stat-label">Hit Points</span>
-              <span className="leveling-stat-value">{activeChar.hp.max}</span>
-            </div>
-          </div>
-          <div className="leveling-stat-item leveling-stat-ac">
-            <div className="leveling-stat-icon">
-              <Shield size={20} />
-            </div>
-            <div className="leveling-stat-info">
-              <span className="leveling-stat-label">Armor Class</span>
-              <span className="leveling-stat-value">{activeChar.armor_class}</span>
-            </div>
-          </div>
-          <div className="leveling-stat-item leveling-stat-prof">
-            <div className="leveling-stat-icon">
-              <Star size={20} />
-            </div>
-            <div className="leveling-stat-info">
-              <span className="leveling-stat-label">Proficiency</span>
-              <span className="leveling-stat-value">+{activeChar.proficiency_bonus}</span>
             </div>
           </div>
         </div>

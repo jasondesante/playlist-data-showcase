@@ -16,6 +16,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import type { XPFormulaPreset } from '../../types';
 import '../../styles/components/XPCurveChart.css';
 
@@ -118,12 +119,40 @@ export function XPCurveChart({
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [hoveredPresetId, setHoveredPresetId] = useState<string | null>(null);
 
+  // Track which presets are visible on the chart (all visible by default)
+  const [visiblePresetIds, setVisiblePresetIds] = useState<Set<string>>(
+    () => new Set(presets.map(p => p.id))
+  );
+
+  // Toggle preset visibility
+  const togglePresetVisibility = useCallback((presetId: string) => {
+    setVisiblePresetIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(presetId)) {
+        // Don't allow hiding the last visible preset
+        if (newSet.size > 1) {
+          newSet.delete(presetId);
+        }
+      } else {
+        newSet.add(presetId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // Get visible presets
+  const visiblePresets = useMemo(
+    () => presets.filter(p => visiblePresetIds.has(p.id)),
+    [presets, visiblePresetIds]
+  );
+
   // Calculate chart dimensions
   const { width, height, margin } = CHART_CONFIG;
   const chartWidth = width - margin.left - margin.right;
   const chartHeight = height - margin.top - margin.bottom;
 
   // Calculate XP values for all levels and presets
+  // IMPORTANT: Scale is based ONLY on visible presets so hiding Exponential makes other curves visible
   const { chartLines, maxXP, yTicks } = useMemo(() => {
     // Generate XP values for each level
     const levels = Array.from(
@@ -131,21 +160,23 @@ export function XPCurveChart({
       (_, i) => CHART_CONFIG.minLevel + i
     );
 
-    // Calculate XP values for all presets
-    const presetXPValues = presets.map((preset) =>
+    // Calculate XP values for VISIBLE presets only (for scaling)
+    const visibleXPValues = visiblePresets.map((preset) =>
       levels.map((level) => preset.xpFormula(level))
     );
 
-    // Find the maximum XP value across all presets
-    const maxXPValue = Math.max(...presetXPValues.flat());
+    // Find the maximum XP value across VISIBLE presets only
+    const maxXPValue = visibleXPValues.length > 0
+      ? Math.max(...visibleXPValues.flat())
+      : 0;
 
-    // Calculate Y-axis ticks
+    // Calculate Y-axis ticks based on visible data
     const ticks = calculateYTicks(maxXPValue, CHART_CONFIG.gridLines);
     const maxY = ticks[ticks.length - 1];
 
-    // Generate chart lines
-    const lines: ChartLine[] = presets.map((preset, presetIndex) => {
-      const xpValues = presetXPValues[presetIndex];
+    // Generate chart lines for ALL presets (hidden ones won't render, but we need the data)
+    const lines: ChartLine[] = presets.map((preset) => {
+      const xpValues = levels.map((level) => preset.xpFormula(level));
 
       const points: ChartPoint[] = levels.map((level, levelIndex) => {
         const xp = xpValues[levelIndex];
@@ -176,7 +207,7 @@ export function XPCurveChart({
     });
 
     return { chartLines: lines, maxXP: maxY, yTicks: ticks };
-  }, [presets, selectedId, maxLevel, margin.left, margin.top, chartWidth, chartHeight]);
+  }, [presets, visiblePresets, selectedId, maxLevel, margin.left, margin.top, chartWidth, chartHeight]);
 
   // Generate X-axis tick values (levels)
   const xTicks = useMemo(() => {
@@ -434,9 +465,9 @@ export function XPCurveChart({
           Level
         </text>
 
-        {/* XP Curves */}
+        {/* XP Curves - Only render visible presets */}
         <g className="xp-chart-lines">
-          {chartLines.map((line) => {
+          {chartLines.filter((line) => visiblePresetIds.has(line.presetId)).map((line) => {
             const isHovered = hoveredPresetId === line.presetId;
             const showHighlight = line.isSelected || isHovered;
 
@@ -537,24 +568,27 @@ export function XPCurveChart({
         </div>
       )}
 
-      {/* Legend */}
-      <div className="xp-chart-legend" role="group" aria-label="XP curve presets - click or press to select">
+      {/* Legend with visibility toggles */}
+      <div className="xp-chart-legend" role="group" aria-label="Toggle XP curve visibility">
         {presets.map((preset) => {
-          // Generate sample XP value for this preset at level 10 for context
-          const sampleXP = preset.xpFormula(10);
+          const isVisible = visiblePresetIds.has(preset.id);
+          const canHide = visiblePresetIds.size > 1;
           return (
             <button
               key={preset.id}
               type="button"
               className={`xp-legend-item ${
                 selectedId === preset.id ? 'xp-legend-item-selected' : ''
-              }`}
-              onMouseEnter={() => setHoveredPresetId(preset.id)}
+              } ${!isVisible ? 'xp-legend-item-hidden' : ''}`}
+              onClick={() => togglePresetVisibility(preset.id)}
+              disabled={isVisible && !canHide}
+              onMouseEnter={() => isVisible && setHoveredPresetId(preset.id)}
               onMouseLeave={() => setHoveredPresetId(null)}
-              onFocus={() => setHoveredPresetId(preset.id)}
+              onFocus={() => isVisible && setHoveredPresetId(preset.id)}
               onBlur={() => setHoveredPresetId(null)}
-              aria-pressed={selectedId === preset.id}
-              aria-label={`${preset.name}: ${preset.description}. Example: Level 10 requires ${formatXPTooltip(sampleXP)} XP${selectedId === preset.id ? ' (currently selected)' : ''}`}
+              aria-pressed={isVisible}
+              aria-label={`${preset.name}: ${preset.description}. ${isVisible ? 'Currently visible - click to hide' : 'Currently hidden - click to show'}. ${selectedId === preset.id ? 'This preset is selected.' : ''}`}
+              title={isVisible && !canHide ? 'Cannot hide the last visible curve' : undefined}
             >
               <span
                 className="xp-legend-color"
@@ -562,6 +596,13 @@ export function XPCurveChart({
                 aria-hidden="true"
               />
               <span className="xp-legend-label">{preset.name}</span>
+              <span className="xp-legend-toggle" aria-hidden="true">
+                {isVisible ? (
+                  <Eye size={12} />
+                ) : (
+                  <EyeOff size={12} />
+                )}
+              </span>
             </button>
           );
         })}

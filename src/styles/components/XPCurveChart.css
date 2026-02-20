@@ -268,6 +268,36 @@
   opacity: 1;
 }
 
+.xp-legend-item-hidden {
+  opacity: 0.4;
+}
+
+.xp-legend-item-hidden:hover {
+  opacity: 0.7;
+}
+
+.xp-legend-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.xp-legend-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  transition: color var(--duration-fast) var(--ease-out-cubic);
+}
+
+.xp-legend-item:hover .xp-legend-toggle {
+  color: hsl(var(--foreground));
+}
+
+.xp-legend-item-selected .xp-legend-toggle {
+  color: hsl(var(--primary));
+}
+
 .xp-legend-color {
   width: 12px;
   height: 4px;
