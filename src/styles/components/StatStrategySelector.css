@@ -207,6 +207,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--color-primary);
 }
 
 .stat-strategy-selected-label {
@@ -300,6 +301,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--color-primary);
 }
 
 .stat-strategy-option-content {

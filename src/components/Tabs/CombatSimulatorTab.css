@@ -3789,6 +3789,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
+}
+
+.combat-audio-title-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .combat-audio-title {
@@ -4131,6 +4136,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
+}
+
+.combat-treasure-title-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .combat-treasure-hint {
@@ -4614,7 +4624,7 @@
 }
 
 .combat-advanced-content {
-  padding: 0 0.75rem 0.75rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -4631,22 +4641,22 @@
 
 @media (min-width: 768px) {
   .combat-advanced-content {
-    padding: 0 1rem 1rem;
+    padding: 1rem;
     gap: 1.25rem;
   }
 }
 
 /* Enemy Configuration Section in Advanced Options */
 .combat-advanced-enemy-config {
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid hsl(var(--border));
-  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background-color: hsl(var(--card) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: var(--radius);
 }
 
 @media (min-width: 768px) {
   .combat-advanced-enemy-config {
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
+    padding: 1rem;
   }
 }
 
@@ -4656,13 +4666,22 @@
   color: hsl(var(--muted-foreground));
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.combat-advanced-subsection-title::before {
+  content: '⚙';
+  font-size: 0.6875rem;
+  opacity: 0.7;
 }
 
 @media (min-width: 768px) {
   .combat-advanced-subsection-title {
     font-size: 0.8125rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.875rem;
   }
 }
 
@@ -4741,6 +4760,15 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.75rem;
+}
+
+.combat-advanced-numerics .combat-config-field {
+  min-width: 0;
+}
+
+.combat-advanced-numerics .combat-config-input {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {

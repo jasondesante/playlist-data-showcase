@@ -2314,9 +2314,12 @@ export function CombatSimulatorTab() {
             {/* Audio-Influenced Generation Section - Phase 3.1 */}
             <div className="combat-config-section combat-audio-section">
               <div className="combat-audio-header">
-                <div className="combat-audio-title-row">
+                <div
+                  className="combat-audio-title-row"
+                  onClick={() => currentPlaylist?.tracks?.length && handleToggleAudioInfluenced()}
+                >
                   <span className="combat-audio-title">🎵 Audio-Influenced</span>
-                  <label className="toggle-switch">
+                  <label className="toggle-switch" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={audioInfluenced}
@@ -2419,9 +2422,12 @@ export function CombatSimulatorTab() {
             {/* Inline toggle style - click to enable AND expand */}
             <div className="combat-config-section combat-treasure-section combat-treasure-inline">
               <div className="combat-treasure-header">
-                <div className="combat-treasure-title-row">
+                <div
+                  className="combat-treasure-title-row"
+                  onClick={() => updateTreasureConfig('enabled', !treasureConfig.enabled)}
+                >
                   <span className="combat-treasure-title">💎 Treasure Configuration</span>
-                  <label className="toggle-switch">
+                  <label className="toggle-switch" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={treasureConfig.enabled}
