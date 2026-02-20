@@ -9,6 +9,7 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { CharacterCard } from '../ui/CharacterCard';
 import {
     SPELL_DATABASE,
+    ExtensionManager,
     type CharacterSheet,
     type EncounterGenerationOptions,
     type EnemyRarity,
@@ -17,6 +18,7 @@ import {
     type EncounterDifficulty,
     type EnemyMixMode,
     type CombatConfig,
+    type Equipment,
     getXPBudgetPerLevel,
     getXPForCR,
     getEncounterMultiplier,
@@ -277,14 +279,17 @@ const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
 
 /**
  * Custom item for treasure rewards
+ * Aligned with playlist-data-engine EquipmentType ('weapon' | 'armor' | 'item')
  */
 export interface TreasureCustomItem {
     /** Unique ID for the item in the list */
     id: string;
     /** Item name */
     name: string;
-    /** Item type (weapon, armor, consumable, misc) */
-    type: 'weapon' | 'armor' | 'consumable' | 'misc';
+    /** Item type - aligned with playlist-data-engine EquipmentType */
+    type: 'weapon' | 'armor' | 'item';
+    /** Optional tags for categorization (e.g., 'consumable', 'gear', 'tools', 'magic') */
+    tags?: string[];
 }
 
 /**
@@ -333,168 +338,79 @@ const DEFAULT_TREASURE_CONFIG: TreasureGenerationConfig = {
 
 /**
  * Item type options for treasure configuration
+ * Aligned with playlist-data-engine EquipmentType
  */
 const TREASURE_ITEM_TYPES = [
     { value: 'weapon', label: 'Weapon' },
     { value: 'armor', label: 'Armor' },
-    { value: 'consumable', label: 'Consumable' },
-    { value: 'misc', label: 'Miscellaneous' }
+    { value: 'item', label: 'Item' }
 ] as const;
 
 /**
- * Database of available treasure items organized by type
- * Users can select from these predefined items for more confidence
+ * Type for treasure item entry (derived from Equipment)
  */
-const TREASURE_ITEMS_DATABASE: Record<TreasureCustomItem['type'], { name: string; rarity: 'common' | 'uncommon' | 'rare' | 'very-rare' | 'legendary' }[]> = {
-    weapon: [
-        // Common weapons
-        { name: 'Dagger', rarity: 'common' },
-        { name: 'Shortsword', rarity: 'common' },
-        { name: 'Longsword', rarity: 'common' },
-        { name: 'Greatsword', rarity: 'common' },
-        { name: 'Handaxe', rarity: 'common' },
-        { name: 'Battleaxe', rarity: 'common' },
-        { name: 'Greataxe', rarity: 'common' },
-        { name: 'Light Hammer', rarity: 'common' },
-        { name: 'Warhammer', rarity: 'common' },
-        { name: 'Maul', rarity: 'common' },
-        { name: 'Spear', rarity: 'common' },
-        { name: 'Glaive', rarity: 'common' },
-        { name: 'Halberd', rarity: 'common' },
-        { name: 'Pike', rarity: 'common' },
-        { name: 'Rapier', rarity: 'common' },
-        { name: 'Scimitar', rarity: 'common' },
-        { name: 'Shortbow', rarity: 'common' },
-        { name: 'Longbow', rarity: 'common' },
-        { name: 'Crossbow, Light', rarity: 'common' },
-        { name: 'Crossbow, Heavy', rarity: 'common' },
-        // Magic weapons
-        { name: 'Weapon +1', rarity: 'uncommon' },
-        { name: 'Weapon +2', rarity: 'rare' },
-        { name: 'Weapon +3', rarity: 'very-rare' },
-        { name: 'Flame Tongue', rarity: 'rare' },
-        { name: 'Frost Brand', rarity: 'rare' },
-        { name: 'Holy Avenger', rarity: 'legendary' },
-        { name: 'Sword of Sharpness', rarity: 'very-rare' },
-        { name: 'Vorpal Sword', rarity: 'legendary' },
-        { name: 'Sun Blade', rarity: 'rare' },
-    ],
-    armor: [
-        // Common armor
-        { name: 'Padded Armor', rarity: 'common' },
-        { name: 'Leather Armor', rarity: 'common' },
-        { name: 'Studded Leather', rarity: 'common' },
-        { name: 'Hide Armor', rarity: 'common' },
-        { name: 'Chain Shirt', rarity: 'common' },
-        { name: 'Scale Mail', rarity: 'common' },
-        { name: 'Breastplate', rarity: 'common' },
-        { name: 'Half Plate', rarity: 'common' },
-        { name: 'Ring Mail', rarity: 'common' },
-        { name: 'Chain Mail', rarity: 'common' },
-        { name: 'Splint Armor', rarity: 'common' },
-        { name: 'Plate Armor', rarity: 'common' },
-        // Shields
-        { name: 'Shield', rarity: 'common' },
-        // Magic armor
-        { name: 'Armor +1', rarity: 'uncommon' },
-        { name: 'Armor +2', rarity: 'rare' },
-        { name: 'Armor +3', rarity: 'very-rare' },
-        { name: 'Shield +1', rarity: 'uncommon' },
-        { name: 'Shield +2', rarity: 'rare' },
-        { name: 'Cloak of Protection', rarity: 'uncommon' },
-        { name: 'Ring of Protection', rarity: 'rare' },
-        { name: 'Mithral Armor', rarity: 'rare' },
-        { name: 'Adamantine Armor', rarity: 'uncommon' },
-        { name: 'Demon Armor', rarity: 'rare' },
-    ],
-    consumable: [
-        // Potions
-        { name: 'Potion of Healing', rarity: 'common' },
-        { name: 'Potion of Greater Healing', rarity: 'uncommon' },
-        { name: 'Potion of Superior Healing', rarity: 'rare' },
-        { name: 'Potion of Supreme Healing', rarity: 'very-rare' },
-        { name: 'Potion of Climbing', rarity: 'common' },
-        { name: 'Potion of Fire Breath', rarity: 'uncommon' },
-        { name: 'Potion of Flying', rarity: 'rare' },
-        { name: 'Potion of Healing (Bonus Action)', rarity: 'uncommon' },
-        { name: 'Potion of Invisibility', rarity: 'rare' },
-        { name: 'Potion of Resistance (Acid)', rarity: 'uncommon' },
-        { name: 'Potion of Resistance (Cold)', rarity: 'uncommon' },
-        { name: 'Potion of Resistance (Fire)', rarity: 'uncommon' },
-        { name: 'Potion of Resistance (Lightning)', rarity: 'uncommon' },
-        { name: 'Potion of Resistance (Poison)', rarity: 'uncommon' },
-        { name: 'Potion of Speed', rarity: 'rare' },
-        { name: 'Potion of Water Breathing', rarity: 'common' },
-        { name: 'Potion of Giant Strength (Hill)', rarity: 'uncommon' },
-        { name: 'Potion of Giant Strength (Frost)', rarity: 'rare' },
-        { name: 'Potion of Giant Strength (Stone)', rarity: 'rare' },
-        { name: 'Potion of Giant Strength (Fire)', rarity: 'very-rare' },
-        { name: 'Potion of Giant Strength (Cloud)', rarity: 'very-rare' },
-        { name: 'Potion of Giant Strength (Storm)', rarity: 'legendary' },
-        // Scrolls
-        { name: 'Spell Scroll (Cantrip)', rarity: 'common' },
-        { name: 'Spell Scroll (1st Level)', rarity: 'common' },
-        { name: 'Spell Scroll (2nd Level)', rarity: 'uncommon' },
-        { name: 'Spell Scroll (3rd Level)', rarity: 'uncommon' },
-        { name: 'Spell Scroll (4th Level)', rarity: 'rare' },
-        { name: 'Spell Scroll (5th Level)', rarity: 'rare' },
-        // Other consumables
-        { name: 'Antitoxin', rarity: 'common' },
-        { name: 'Elixir of Health', rarity: 'rare' },
-        { name: 'Oil of Sharpness', rarity: 'very-rare' },
-        { name: 'Oil of Slipperiness', rarity: 'uncommon' },
-        { name: 'Keoghtom\'s Ointment', rarity: 'uncommon' },
-        { name: 'Dust of Disappearance', rarity: 'uncommon' },
-        { name: 'Dust of Dryness', rarity: 'uncommon' },
-        { name: 'Dust of Sneezing and Choking', rarity: 'uncommon' },
-    ],
-    misc: [
-        // Common items
-        { name: 'Backpack', rarity: 'common' },
-        { name: 'Bedroll', rarity: 'common' },
-        { name: 'Rations (1 day)', rarity: 'common' },
-        { name: 'Torches (10)', rarity: 'common' },
-        { name: 'Rope (50 ft)', rarity: 'common' },
-        { name: 'Crowbar', rarity: 'common' },
-        { name: 'Grappling Hook', rarity: 'common' },
-        { name: 'Tinderbox', rarity: 'common' },
-        { name: 'Waterskin', rarity: 'common' },
-        { name: 'Lantern, Hooded', rarity: 'common' },
-        { name: 'Oil (flask)', rarity: 'common' },
-        // Tools
-        { name: 'Thieves\' Tools', rarity: 'common' },
-        { name: 'Healer\'s Kit', rarity: 'common' },
-        { name: 'Climber\'s Kit', rarity: 'common' },
-        { name: 'Disguise Kit', rarity: 'common' },
-        { name: 'Forgery Kit', rarity: 'common' },
-        { name: 'Herbalism Kit', rarity: 'common' },
-        { name: 'Poisoner\'s Kit', rarity: 'common' },
-        // Magic items
-        { name: 'Bag of Holding', rarity: 'uncommon' },
-        { name: 'Heward\'s Handy Haversack', rarity: 'uncommon' },
-        { name: 'Portable Hole', rarity: 'rare' },
-        { name: 'Driftglobe', rarity: 'uncommon' },
-        { name: 'Everbright Lantern', rarity: 'uncommon' },
-        { name: 'Sending Stones', rarity: 'uncommon' },
-        { name: 'Wand of Magic Detection', rarity: 'uncommon' },
-        { name: 'Wand of Secrets', rarity: 'uncommon' },
-        { name: 'Amulet of Proof Against Detection', rarity: 'uncommon' },
-        { name: 'Stone of Good Luck', rarity: 'uncommon' },
-        { name: 'Cloak of Elvenkind', rarity: 'uncommon' },
-        { name: 'Boots of Elvenkind', rarity: 'uncommon' },
-        { name: 'Gloves of Thievery', rarity: 'uncommon' },
-        { name: 'Immovable Rod', rarity: 'uncommon' },
-        { name: 'Decanter of Endless Water', rarity: 'uncommon' },
-        { name: 'Alchemy Jug', rarity: 'uncommon' },
-        { name: 'Horn of Blasting', rarity: 'rare' },
-        { name: 'Necklace of Fireballs', rarity: 'rare' },
-        { name: 'Pearl of Power', rarity: 'uncommon' },
-        { name: 'Spell Gem (Obsidian)', rarity: 'uncommon' },
-        { name: 'Spell Gem (Amethyst)', rarity: 'rare' },
-        { name: 'Spell Gem (Sapphire)', rarity: 'very-rare' },
-        { name: 'Spell Gem (Diamond)', rarity: 'legendary' },
-    ],
+type TreasureItemEntry = {
+    name: string;
+    rarity: 'common' | 'uncommon' | 'rare' | 'very-rare' | 'legendary';
+    tags?: string[];
 };
+
+/**
+ * Hook to load treasure items dynamically from the data engine
+ * Uses ExtensionManager to get all equipment (default + custom items)
+ * Organizes items by type for the treasure configuration UI
+ */
+function useTreasureItems(): Record<TreasureCustomItem['type'], TreasureItemEntry[]> {
+    return useMemo(() => {
+        const itemsByType: Record<TreasureCustomItem['type'], TreasureItemEntry[]> = {
+            weapon: [],
+            armor: [],
+            item: []
+        };
+
+        try {
+            const extensionManager = ExtensionManager.getInstance();
+            const allEquipment = extensionManager.get('equipment') as Equipment[];
+
+            if (allEquipment && allEquipment.length > 0) {
+                // Organize equipment by type
+                allEquipment.forEach(eq => {
+                    if (eq.type === 'weapon') {
+                        itemsByType.weapon.push({
+                            name: eq.name,
+                            rarity: eq.rarity as TreasureItemEntry['rarity'],
+                            tags: eq.tags
+                        });
+                    } else if (eq.type === 'armor') {
+                        itemsByType.armor.push({
+                            name: eq.name,
+                            rarity: eq.rarity as TreasureItemEntry['rarity'],
+                            tags: eq.tags
+                        });
+                    } else if (eq.type === 'item') {
+                        itemsByType.item.push({
+                            name: eq.name,
+                            rarity: eq.rarity as TreasureItemEntry['rarity'],
+                            tags: eq.tags
+                        });
+                    }
+                });
+
+                logger.debug('CombatSimulator', `Loaded ${allEquipment.length} items from ExtensionManager for treasure`);
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            logger.error('CombatSimulator', 'Failed to load equipment for treasure', errorMessage);
+        }
+
+        // Sort each category by name
+        Object.keys(itemsByType).forEach(type => {
+            itemsByType[type as TreasureCustomItem['type']].sort((a, b) => a.name.localeCompare(b.name));
+        });
+
+        return itemsByType;
+    }, []);
+}
 
 // End of Phase 5: Treasure Configuration Types
 // ========================================
@@ -552,6 +468,59 @@ const DEFAULT_ADVANCED_CONFIG: AdvancedCombatConfig = {
 const COMBAT_SIMULATOR_CONFIG_KEY = 'combat-simulator-config';
 
 /**
+ * Config version for migration support
+ * Increment when making breaking changes to the config structure
+ */
+const COMBAT_SIMULATOR_CONFIG_VERSION = 2;
+
+/**
+ * Migrate legacy treasure items to the new format
+ * Converts 'consumable' and 'misc' types to 'item' with appropriate tags
+ */
+function migrateTreasureItems(items: any[]): TreasureCustomItem[] {
+  return items.map((item: any): TreasureCustomItem => {
+    // Handle legacy types
+    if (item.type === 'consumable') {
+      return {
+        ...item,
+        type: 'item' as const,
+        tags: ['consumable', ...(item.tags || [])]
+      };
+    }
+    if (item.type === 'misc') {
+      // Determine appropriate tag based on item name heuristics
+      const tags: string[] = [];
+      const name = (item.name || '').toLowerCase();
+
+      if (name.includes('potion') || name.includes('scroll') || name.includes('oil') || name.includes('dust') || name.includes('elixir') || name.includes('ointment')) {
+        tags.push('consumable');
+      } else if (name.includes('kit') || name.includes("tools") || name.includes("tool")) {
+        tags.push('tools');
+      } else if (name.includes('lantern') || name.includes('torch') || name.includes('light') || name.includes('globe')) {
+        tags.push('gear', 'light');
+      } else if (name.includes('bag') || name.includes('sack') || name.includes('pack') || name.includes('hole') || name.includes('rod') || name.includes('jug') || name.includes('decanter')) {
+        tags.push('magic');
+      } else if (name.includes('cloak') || name.includes('boots') || name.includes('gloves') || name.includes('amulet') || name.includes('ring') || name.includes('stone') || name.includes('wand') || name.includes('pearl') || name.includes('gem')) {
+        tags.push('magic');
+      } else if (name.includes('horn') || name.includes('necklace')) {
+        tags.push('magic');
+      } else {
+        tags.push('gear');
+      }
+
+      return {
+        ...item,
+        type: 'item' as const,
+        tags
+      };
+    }
+
+    // Already new format
+    return item;
+  });
+}
+
+/**
  * Full combat simulator configuration for state management and localStorage persistence.
  *
  * This type combines:
@@ -578,13 +547,29 @@ const DEFAULT_COMBAT_SIMULATOR_CONFIG: CombatSimulatorConfig = {
 };
 
 /**
- * Load combat simulator config from localStorage
+ * Load combat simulator config from localStorage with migration support
  */
 function loadCombatSimulatorConfig(): CombatSimulatorConfig {
     try {
         const stored = localStorage.getItem(COMBAT_SIMULATOR_CONFIG_KEY);
         if (stored) {
             const parsed = JSON.parse(stored);
+
+            // Check version and migrate if needed
+            const configVersion = parsed._version || 1;
+
+            if (configVersion < COMBAT_SIMULATOR_CONFIG_VERSION) {
+                // Run migrations
+                if (configVersion < 2 && parsed.treasure?.customItems) {
+                    // Migrate legacy treasure item types (consumable/misc -> item with tags)
+                    parsed.treasure.customItems = migrateTreasureItems(parsed.treasure.customItems);
+                }
+                // Future migrations would go here
+
+                // Update version
+                parsed._version = COMBAT_SIMULATOR_CONFIG_VERSION;
+            }
+
             // Merge with defaults to handle any missing fields from older versions
             return {
                 advanced: { ...DEFAULT_ADVANCED_CONFIG, ...parsed.advanced },
@@ -598,11 +583,15 @@ function loadCombatSimulatorConfig(): CombatSimulatorConfig {
 }
 
 /**
- * Save combat simulator config to localStorage
+ * Save combat simulator config to localStorage with version
  */
 function saveCombatSimulatorConfig(config: CombatSimulatorConfig): void {
     try {
-        localStorage.setItem(COMBAT_SIMULATOR_CONFIG_KEY, JSON.stringify(config));
+        const configToSave = {
+            ...config,
+            _version: COMBAT_SIMULATOR_CONFIG_VERSION
+        };
+        localStorage.setItem(COMBAT_SIMULATOR_CONFIG_KEY, JSON.stringify(configToSave));
     } catch (error) {
         console.warn('[CombatSimulator] Failed to save config to localStorage:', error);
     }
@@ -731,7 +720,10 @@ export function CombatSimulatorTab() {
 
   // State: New custom item being added
   const [newItemName, setNewItemName] = useState('');
-  const [newItemType, setNewItemType] = useState<TreasureCustomItem['type']>('misc');
+  const [newItemType, setNewItemType] = useState<TreasureCustomItem['type']>('item');
+
+  // Load treasure items from data engine (uses ExtensionManager)
+  const treasureItemsDatabase = useTreasureItems();
 
   // Handler: Update treasure config field
   const updateTreasureConfig = useCallback(<K extends keyof TreasureGenerationConfig>(
@@ -748,10 +740,15 @@ export function CombatSimulatorTab() {
   const handleAddCustomItem = useCallback(() => {
     if (!newItemName.trim()) return;
 
+    // Look up the item in the database to get its tags
+    const itemData = treasureItemsDatabase[newItemType]?.find(item => item.name === newItemName.trim());
+
     const newItem: TreasureCustomItem = {
       id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: newItemName.trim(),
-      type: newItemType
+      type: newItemType,
+      // Include tags from database if available
+      ...(itemData?.tags && itemData.tags.length > 0 ? { tags: itemData.tags } : {})
     };
 
     setTreasureConfig(prev => ({
@@ -761,10 +758,10 @@ export function CombatSimulatorTab() {
 
     // Reset input fields
     setNewItemName('');
-    setNewItemType('misc');
+    setNewItemType('item');
 
-    logger.info('CombatSimulator', 'Added custom treasure item', { name: newItem.name, type: newItem.type });
-  }, [newItemName, newItemType]);
+    logger.info('CombatSimulator', 'Added custom treasure item', { name: newItem.name, type: newItem.type, tags: newItem.tags });
+  }, [newItemName, newItemType, treasureItemsDatabase]);
 
   // Handler: Remove custom item from treasure
   const handleRemoveCustomItem = useCallback((itemId: string) => {
@@ -856,11 +853,12 @@ export function CombatSimulatorTab() {
       }
       // If goldMode is 'none', we don't set gold property
 
-      // Convert custom items
+      // Convert custom items (include tags if present)
       if (treasureConfig.customItems.length > 0) {
         engineTreasureConfig.items = treasureConfig.customItems.map(item => ({
           name: item.name,
-          type: item.type
+          type: item.type,
+          ...(item.tags && item.tags.length > 0 ? { tags: item.tags } : {})
         }));
       }
 
@@ -2532,6 +2530,14 @@ export function CombatSimulatorTab() {
                               <div key={item.id} className="combat-treasure-item-chip">
                                 <span className="combat-treasure-item-type-badge">{item.type}</span>
                                 <span className="combat-treasure-item-name">{item.name}</span>
+                                {item.tags && item.tags.length > 0 && (
+                                  <span className="combat-treasure-item-tags">
+                                    {item.tags.slice(0, 2).map(tag => (
+                                      <span key={tag} className="combat-treasure-item-tag">{tag}</span>
+                                    ))}
+                                    {item.tags.length > 2 && <span className="combat-treasure-item-tag-more">+{item.tags.length - 2}</span>}
+                                  </span>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveCustomItem(item.id)}
@@ -2572,7 +2578,44 @@ export function CombatSimulatorTab() {
                               >
                                 <option value="">-- Choose an item --</option>
                                 {(() => {
-                                  const items = TREASURE_ITEMS_DATABASE[newItemType];
+                                  const items = treasureItemsDatabase[newItemType];
+
+                                  // For 'item' type, group by primary tag for better organization
+                                  if (newItemType === 'item') {
+                                    const tagGroups: Record<string, string> = {
+                                      'consumable': 'Consumables',
+                                      'gear': 'Adventuring Gear',
+                                      'tools': 'Tools',
+                                      'magic': 'Magic Items'
+                                    };
+
+                                    // Group items by their primary tag
+                                    const itemsByTag: Record<string, typeof items> = {};
+                                    items.forEach(item => {
+                                      const primaryTag = item.tags?.[0] || 'gear';
+                                      if (!itemsByTag[primaryTag]) itemsByTag[primaryTag] = [];
+                                      itemsByTag[primaryTag].push(item);
+                                    });
+
+                                    return Object.entries(tagGroups).map(([tag, label]) => {
+                                      const tagItems = itemsByTag[tag];
+                                      if (!tagItems || tagItems.length === 0) return null;
+
+                                      // Sort items within each tag group by rarity
+                                      const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'];
+                                      tagItems.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
+
+                                      return (
+                                        <optgroup key={tag} label={label}>
+                                          {tagItems.map(item => (
+                                            <option key={item.name} value={item.name}>{item.name}</option>
+                                          ))}
+                                        </optgroup>
+                                      );
+                                    });
+                                  }
+
+                                  // For weapon/armor, keep existing rarity-based grouping
                                   const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'] as const;
                                   const rarityLabels: Record<string, string> = {
                                     'common': 'Common',

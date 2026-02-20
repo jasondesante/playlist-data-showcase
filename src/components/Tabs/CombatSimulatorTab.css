@@ -4367,6 +4367,30 @@
   font-weight: 500;
 }
 
+/* Tag badges for treasure items */
+.combat-treasure-item-tags {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.combat-treasure-item-tag {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: capitalize;
+}
+
+.combat-treasure-item-tag-more {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  background-color: hsl(var(--muted) / 0.2);
+  border-radius: 0.25rem;
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
 .combat-treasure-item-remove {
   display: inline-flex;
   align-items: center;

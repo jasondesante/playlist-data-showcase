@@ -1486,16 +1486,6 @@ export function DataViewerTab() {
                   {item.name}
                 </span>
                 <div className="dataviewer-item-badges">
-                  {spawnWeightBadge && (
-                    <span className={`dataviewer-badge ${spawnWeightBadge.className}`}>
-                      {spawnWeightBadge.label}
-                    </span>
-                  )}
-                  {item.rarity && (
-                    <span className="dataviewer-badge" style={{ backgroundColor: rarityColor }}>
-                      {formatRarity(item.rarity)}
-                    </span>
-                  )}
                   <span className="dataviewer-badge dataviewer-badge-secondary">
                     {item.type}
                   </span>
@@ -1507,6 +1497,14 @@ export function DataViewerTab() {
             {isExpanded && (
               <div className="dataviewer-item-details">
                 <div className="dataviewer-item-stats">
+                  {item.rarity && (
+                    <div className="dataviewer-item-stat">
+                      <span className="dataviewer-item-stat-label">Rarity:</span>
+                      <span className="dataviewer-item-stat-value" style={{ color: rarityColor }}>
+                        {formatRarity(item.rarity)}
+                      </span>
+                    </div>
+                  )}
                   <div className="dataviewer-item-stat">
                     <span className="dataviewer-item-stat-label">Weight:</span>
                     <span className="dataviewer-item-stat-value">{item.weight} lb</span>
@@ -1523,6 +1521,14 @@ export function DataViewerTab() {
                     <div className="dataviewer-item-stat">
                       <span className="dataviewer-item-stat-label">AC:</span>
                       <span className="dataviewer-item-stat-value">+{item.acBonus}</span>
+                    </div>
+                  )}
+                  {item.spawnWeight !== undefined && (
+                    <div className="dataviewer-item-stat">
+                      <span className="dataviewer-item-stat-label">Spawn:</span>
+                      <span className="dataviewer-item-stat-value">
+                        {spawnWeightBadge ? spawnWeightBadge.label : `Normal (${item.spawnWeight})`}
+                      </span>
                     </div>
                   )}
                 </div>
