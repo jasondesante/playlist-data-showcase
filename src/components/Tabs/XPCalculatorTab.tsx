@@ -4,7 +4,6 @@ import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { StatusIndicator } from '../ui/StatusIndicator';
-import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
@@ -564,124 +563,184 @@ export function XPCalculatorTab() {
           </Card>
         )}
 
+        {/* Combined Duration & XP Calculator Card */}
+        <Card variant="default" padding="md" className="xp-calculator-main-card">
+          <div className="xp-calculator-main-grid">
+            {/* Left: Duration Input Section */}
+            <div className="xp-duration-section">
+              <div className="xp-duration-header">
+                <h3 className="xp-duration-title">Session Duration</h3>
+                <span className="xp-duration-readable">
+                  {Math.floor(duration / 60)}m {duration % 60}s
+                </span>
+              </div>
+
+              <div className="xp-duration-input-wrapper">
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                  min="0"
+                  max="3600"
+                  className="xp-duration-number-input"
+                  aria-label="Duration in seconds"
+                />
+                <span className="xp-duration-unit">sec</span>
+              </div>
+
+              {/* Quick Duration Presets */}
+              <div className="xp-duration-presets">
+                <button
+                  className={`xp-preset-btn ${duration === 60 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(60)}
+                  aria-label="1 minute"
+                >
+                  1m
+                </button>
+                <button
+                  className={`xp-preset-btn ${duration === 180 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(180)}
+                  aria-label="3 minutes"
+                >
+                  3m
+                </button>
+                <button
+                  className={`xp-preset-btn ${duration === 300 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(300)}
+                  aria-label="5 minutes"
+                >
+                  5m
+                </button>
+                <button
+                  className={`xp-preset-btn ${duration === 600 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(600)}
+                  aria-label="10 minutes"
+                >
+                  10m
+                </button>
+                <button
+                  className={`xp-preset-btn ${duration === 900 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(900)}
+                  aria-label="15 minutes"
+                >
+                  15m
+                </button>
+                <button
+                  className={`xp-preset-btn ${duration === 1800 ? 'xp-preset-active' : ''}`}
+                  onClick={() => setDuration(1800)}
+                  aria-label="30 minutes"
+                >
+                  30m
+                </button>
+              </div>
+
+              {/* Active Bonuses Pills */}
+              <div className="xp-active-bonuses">
+                {estimatedXP && estimatedXP.totalMultiplier > 1 && (
+                  <span className="xp-bonus-pill xp-bonus-total">
+                    {estimatedXP.totalMultiplier.toFixed(2)}x total
+                  </span>
+                )}
+                {isMastered && (
+                  <span className="xp-bonus-pill xp-bonus-mastery">
+                    +50 Mastery
+                  </span>
+                )}
+                {environmentalContext && !isManualMode && (
+                  <span className="xp-bonus-pill xp-bonus-environmental">
+                    Env Active
+                  </span>
+                )}
+                {gamingContext?.isActivelyGaming && !isManualMode && (
+                  <span className="xp-bonus-pill xp-bonus-gaming">
+                    Gaming
+                  </span>
+                )}
+                {isManualMode && (
+                  <span className="xp-bonus-pill xp-bonus-manual">
+                    Manual
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Right: XP Estimate Display */}
+            <div className="xp-estimate-section">
+              <div className="xp-estimate-hero">
+                <span className="xp-estimate-hero-value">
+                  {estimatedXP ? estimatedXP.totalXP.toLocaleString() : '0'}
+                </span>
+                <span className="xp-estimate-hero-label">XP</span>
+              </div>
+
+              {estimatedXP && (
+                <div className="xp-estimate-mini-breakdown">
+                  <div className="xp-mini-row">
+                    <span className="xp-mini-label">Base</span>
+                    <span className="xp-mini-value">{estimatedXP.baseXP}</span>
+                  </div>
+                  {estimatedXP.environmentalBonusXP > 0 && (
+                    <div className="xp-mini-row xp-mini-environmental">
+                      <span className="xp-mini-label">Env</span>
+                      <span className="xp-mini-value">+{estimatedXP.environmentalBonusXP}</span>
+                    </div>
+                  )}
+                  {estimatedXP.gamingBonusXP > 0 && (
+                    <div className="xp-mini-row xp-mini-gaming">
+                      <span className="xp-mini-label">Game</span>
+                      <span className="xp-mini-value">+{estimatedXP.gamingBonusXP}</span>
+                    </div>
+                  )}
+                  {estimatedXP.masteryBonusXP > 0 && (
+                    <div className="xp-mini-row xp-mini-mastery">
+                      <span className="xp-mini-label">Mastery</span>
+                      <span className="xp-mini-value">+{estimatedXP.masteryBonusXP}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {estimatedXP && estimatedXP.totalMultiplier >= 3.0 && (
+                <div className="xp-cap-indicator">
+                  Capped at 3.0x
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Calculate & Apply Button */}
+        <div className="xp-calculate-section">
+          {activeCharacter ? (
+            <>
+              <button
+                onClick={handleCalculate}
+                className="xp-calculate-button"
+                disabled={isApplying}
+              >
+                {isApplying ? 'Calculating & Applying...' : 'Calculate & Apply XP'}
+              </button>
+              <div className="xp-calculate-hint">
+                XP will be immediately applied to <strong>{activeCharacter.name}</strong> (Level {activeCharacter.level})
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleCalculate}
+                className="xp-calculate-button"
+              >
+                Calculate XP
+              </button>
+              <div className="xp-calculate-hint xp-calculate-hint-warning">
+                ⚠️ No character selected - XP will be calculated but not applied
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Context & Settings Section - Secondary Info */}
         <div className="xp-calculator-context-grid">
-          {/* Duration Input Card - Main Attraction */}
-          <Card variant="default" padding="md" className="xp-duration-card">
-            <Input
-              label="Duration (seconds)"
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              min="0"
-              max="3600"
-              helperText={`${Math.floor(duration / 60)} minutes ${duration % 60} seconds`}
-              className="xp-duration-input"
-            />
-          </Card>
-
-          {/* Environmental Context Card */}
-          <Card variant="default" padding="md">
-            <div className="xp-context-card-header">
-              <h3 className="xp-context-card-title">Environmental Context</h3>
-              <StatusIndicator
-                status={environmentalContext ? 'healthy' : 'degraded'}
-                label={environmentalContext ? 'Active' : 'Not set'}
-              />
-            </div>
-
-            {environmentalContext ? (
-              <div className="xp-context-card-body">
-                <div className="xp-context-row">
-                  <span className="xp-context-label">Last Updated:</span>
-                  <span className="xp-context-value">
-                    {new Date(environmentalContext.timestamp || Date.now()).toLocaleTimeString()}
-                  </span>
-                </div>
-
-                {environmentalContext.motion && (
-                  <div className="xp-context-row">
-                    <span className="xp-context-label">Motion Data:</span>
-                    <span className="xp-context-value active">Active</span>
-                  </div>
-                )}
-
-                {(environmentalContext as any).geolocation && (
-                  <div className="xp-context-row">
-                    <span className="xp-context-label">GPS:</span>
-                    <span className="xp-context-value">
-                      {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
-                      {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
-                    </span>
-                  </div>
-                )}
-
-                {(environmentalContext as any).weather && (
-                  <div className="xp-context-row">
-                    <span className="xp-context-label">Weather:</span>
-                    <span className="xp-context-value">
-                      {(environmentalContext as any).weather.weather_type || 'Unknown'}
-                      {(environmentalContext as any).weather.temperature && (
-                        <span className="ml-2">
-                          {Math.round((environmentalContext as any).weather.temperature)}°C
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                <div className="xp-context-hint">From Environmental Sensors tab</div>
-              </div>
-            ) : (
-              <div className="xp-context-empty">
-                No environmental data available. Visit the Environmental Sensors tab to set up sensors.
-              </div>
-            )}
-          </Card>
-
-          {/* Gaming Context Card */}
-          <Card variant="default" padding="md">
-            <div className="xp-context-card-header">
-              <h3 className="xp-context-card-title">Gaming Context</h3>
-              <StatusIndicator
-                status={gamingContext?.isActivelyGaming ? 'healthy' : 'degraded'}
-                label={gamingContext?.isActivelyGaming ? 'Gaming' : 'Not gaming'}
-              />
-            </div>
-
-            {gamingContext ? (
-              <div className="xp-context-card-body">
-                <div className="xp-context-row">
-                  <span className="xp-context-label">Status:</span>
-                  <span className={`xp-context-value ${gamingContext.isActivelyGaming ? 'active' : 'inactive'}`}>
-                    {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
-                  </span>
-                </div>
-
-                {(gamingContext as any).currentGame && (
-                  <div className="xp-context-row">
-                    <span className="xp-context-label">Game:</span>
-                    <span className="xp-context-value">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
-                  </div>
-                )}
-
-                {(gamingContext as any).steamId && (
-                  <div className="xp-context-row">
-                    <span className="xp-context-label">Steam ID:</span>
-                    <span className="xp-context-value font-mono">
-                      {(gamingContext as any).steamId}
-                    </span>
-                  </div>
-                )}
-
-                <div className="xp-context-hint">From Gaming Platforms tab</div>
-              </div>
-            ) : (
-              <div className="xp-context-empty">
-                No gaming data available. Visit the Gaming Platforms tab to connect platforms.
-              </div>
-            )}
-          </Card>
-
           {/* Mastery Toggle Card */}
           <Card variant="default" padding="md">
             <div className="xp-toggle-header">
@@ -790,77 +849,109 @@ export function XPCalculatorTab() {
               </div>
             )}
           </Card>
-        </div>
 
-        {/* Estimated XP Display (Task 3.3.3 - 3.3.4) */}
-        {estimatedXP && (
-          <Card variant="default" padding="md" className="xp-estimate-card">
-            <div className="xp-estimate-header">
-              <h3 className="xp-estimate-title">Estimated XP</h3>
-              <span className="xp-estimate-badge">Preview</span>
+          {/* Environmental Context Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-context-card-header">
+              <h3 className="xp-context-card-title">Environmental Context</h3>
+              <StatusIndicator
+                status={environmentalContext ? 'healthy' : 'degraded'}
+                label={environmentalContext ? 'Active' : 'Not set'}
+              />
             </div>
-            <div className="xp-estimate-total">
-              <span className="xp-estimate-value">{estimatedXP.totalXP.toLocaleString()}</span>
-              <span className="xp-estimate-label">Total XP</span>
-            </div>
-            <div className="xp-estimate-breakdown">
-              <div className="xp-estimate-row">
-                <span className="xp-estimate-row-label">Base XP</span>
-                <span className="xp-estimate-row-value">{estimatedXP.baseXP} XP</span>
+
+            {environmentalContext ? (
+              <div className="xp-context-card-body">
+                <div className="xp-context-row">
+                  <span className="xp-context-label">Last Updated:</span>
+                  <span className="xp-context-value">
+                    {new Date(environmentalContext.timestamp || Date.now()).toLocaleTimeString()}
+                  </span>
+                </div>
+
+                {environmentalContext.motion && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Motion Data:</span>
+                    <span className="xp-context-value active">Active</span>
+                  </div>
+                )}
+
+                {(environmentalContext as any).geolocation && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">GPS:</span>
+                    <span className="xp-context-value">
+                      {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
+                      {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
+                    </span>
+                  </div>
+                )}
+
+                {(environmentalContext as any).weather && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Weather:</span>
+                    <span className="xp-context-value">
+                      {(environmentalContext as any).weather.weather_type || 'Unknown'}
+                      {(environmentalContext as any).weather.temperature && (
+                        <span className="ml-2">
+                          {Math.round((environmentalContext as any).weather.temperature)}°C
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
+                <div className="xp-context-hint">From Environmental Sensors tab</div>
               </div>
-              {estimatedXP.environmentalBonusXP > 0 && (
-                <div className="xp-estimate-row bonus-environmental">
-                  <span className="xp-estimate-row-label">Environmental</span>
-                  <span className="xp-estimate-row-value">+{estimatedXP.environmentalBonusXP} XP</span>
-                </div>
-              )}
-              {estimatedXP.gamingBonusXP > 0 && (
-                <div className="xp-estimate-row bonus-gaming">
-                  <span className="xp-estimate-row-label">Gaming</span>
-                  <span className="xp-estimate-row-value">+{estimatedXP.gamingBonusXP} XP</span>
-                </div>
-              )}
-              {estimatedXP.masteryBonusXP > 0 && (
-                <div className="xp-estimate-row bonus-mastery">
-                  <span className="xp-estimate-row-label">Mastery</span>
-                  <span className="xp-estimate-row-value">+{estimatedXP.masteryBonusXP} XP</span>
-                </div>
-              )}
-            </div>
-            <div className="xp-estimate-hint">
-              Updates automatically as you change inputs above
-            </div>
+            ) : (
+              <div className="xp-context-empty">
+                No environmental data available. Visit the Environmental Sensors tab to set up sensors.
+              </div>
+            )}
           </Card>
-        )}
 
-        {/* Calculate & Apply Button */}
-        <div className="xp-calculate-section">
-          {activeCharacter ? (
-            <>
-              <button
-                onClick={handleCalculate}
-                className="xp-calculate-button"
-                disabled={isApplying}
-              >
-                {isApplying ? 'Calculating & Applying...' : 'Calculate & Apply XP'}
-              </button>
-              <div className="xp-calculate-hint">
-                XP will be immediately applied to <strong>{activeCharacter.name}</strong> (Level {activeCharacter.level})
+          {/* Gaming Context Card */}
+          <Card variant="default" padding="md">
+            <div className="xp-context-card-header">
+              <h3 className="xp-context-card-title">Gaming Context</h3>
+              <StatusIndicator
+                status={gamingContext?.isActivelyGaming ? 'healthy' : 'degraded'}
+                label={gamingContext?.isActivelyGaming ? 'Gaming' : 'Not gaming'}
+              />
+            </div>
+
+            {gamingContext ? (
+              <div className="xp-context-card-body">
+                <div className="xp-context-row">
+                  <span className="xp-context-label">Status:</span>
+                  <span className={`xp-context-value ${gamingContext.isActivelyGaming ? 'active' : 'inactive'}`}>
+                    {gamingContext.isActivelyGaming ? 'Currently Gaming' : 'Not Gaming'}
+                  </span>
+                </div>
+
+                {(gamingContext as any).currentGame && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Game:</span>
+                    <span className="xp-context-value">{(gamingContext as any).currentGame.name || 'Unknown'}</span>
+                  </div>
+                )}
+
+                {(gamingContext as any).steamId && (
+                  <div className="xp-context-row">
+                    <span className="xp-context-label">Steam ID:</span>
+                    <span className="xp-context-value font-mono">
+                      {(gamingContext as any).steamId}
+                    </span>
+                  </div>
+                )}
+
+                <div className="xp-context-hint">From Gaming Platforms tab</div>
               </div>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleCalculate}
-                className="xp-calculate-button"
-              >
-                Calculate XP
-              </button>
-              <div className="xp-calculate-hint xp-calculate-hint-warning">
-                ⚠️ No character selected - XP will be calculated but not applied
+            ) : (
+              <div className="xp-context-empty">
+                No gaming data available. Visit the Gaming Platforms tab to connect platforms.
               </div>
-            </>
-          )}
+            )}
+          </Card>
         </div>
           </>
         )}

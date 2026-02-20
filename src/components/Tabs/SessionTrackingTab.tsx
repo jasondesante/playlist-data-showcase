@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Clock, Music, Sparkles, Zap, Gamepad2, Star, User, TrendingUp, Headphones } from 'lucide-react';
+import { Play, Pause, Clock, Music, Zap, Gamepad2, Star, User, TrendingUp, Headphones } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionStore } from '../../store/sessionStore';
@@ -426,58 +426,98 @@ export function SessionTrackingTab() {
         </Card>
       ) : (
         <div className="session-content">
-          {/* Hero & Song Section */}
+          {/* Top Section: Timer Ring (Left) + Combined Info (Right) */}
           <div className="session-hero-song-grid">
-            {/* Left Card: Hero Info */}
-            <Card variant="elevated" padding="lg" className="session-hero-card">
-              <CardContent className="session-hero-card-content">
+            {/* Left Card: Timer Ring with Track Image */}
+            <Card variant="elevated" padding="lg" className={`session-timer-card ${isActive ? 'session-timer-card-active' : ''}`}>
+              <div className="session-timer-display">
+                <TimerRing
+                  progress={isActive ? progress : 0}
+                  size={140}
+                  strokeWidth={12}
+                  isActive={isActive}
+                  isCompact={true}
+                />
+                <div className="session-timer-text-container">
+                  <div className="session-time-label">
+                    {isActive ? 'Listening' : 'Ready'}
+                  </div>
+                  <div className="session-time-value">
+                    {formatTime(elapsedTime)}
+                  </div>
+                  <div className="session-time-total">
+                    of {formatTime(trackDuration)}
+                  </div>
+                </div>
+              </div>
+
+              {isActive && sessionId && (
+                <div className="session-id-display">
+                  <span className="session-id-label">Session ID:</span>
+                  <span className="session-id-value">{sessionId}</span>
+                </div>
+              )}
+
+              {/* Mini track info below timer */}
+              <div className="session-timer-track-info">
+                <h4 className="session-timer-track-title">{selectedTrack.title}</h4>
+                <p className="session-timer-track-artist">{selectedTrack.artist}</p>
+              </div>
+            </Card>
+
+            {/* Right Card: Combined XP + Mastery/Prestige Info */}
+            <Card variant="elevated" padding="lg" className="session-combined-info-card">
+              <CardContent className="session-combined-info-content">
+                {/* Character XP Section */}
                 {activeCharacter && (
-                  <>
-                    <div className="session-character-header">
-                      <div className="session-character-avatar">
-                        <User className="session-character-icon" size={20} />
+                  <div className="session-combined-xp-section">
+                    <div className="session-combined-header">
+                      <div className="session-combined-avatar">
+                        <User className="session-combined-icon" size={16} />
                       </div>
-                      <div className="session-character-info">
-                        <div className="session-character-name-row">
-                          <span className="session-character-name">{activeCharacter.name}</span>
-                          {activeCharacter.gameMode && (
-                            <span className={`session-character-mode-badge ${activeCharacter.gameMode}`}>
-                              {activeCharacter.gameMode === 'standard' ? 'CAPPED' : 'UNCAPPED'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="session-character-details">
-                          Level {activeCharacter.level} {activeCharacter.race} {activeCharacter.class}
-                        </div>
+                      <div className="session-combined-char-info">
+                        <span className="session-combined-char-name">{activeCharacter.name}</span>
+                        <span className="session-combined-char-level">Level {activeCharacter.level} {activeCharacter.class}</span>
                       </div>
+                      {activeCharacter.gameMode && (
+                        <span className={`session-combined-mode-badge ${activeCharacter.gameMode}`}>
+                          {activeCharacter.gameMode === 'standard' ? 'CAPPED' : 'UNCAPPED'}
+                        </span>
+                      )}
                     </div>
-                    <div className="session-character-stats">
-                      <div className="session-character-stat-item session-character-stat-xp">
-                        <div className="session-character-xp-content">
-                          <span className="session-character-stat-label">Total XP</span>
-                          <span className="session-character-stat-value">
+
+                    {/* XP Progress */}
+                    <div className="session-combined-xp-progress">
+                      <div className="session-combined-xp-stats">
+                        <div className="session-combined-xp-stat">
+                          <span className="session-combined-xp-label">Total XP</span>
+                          <span className="session-combined-xp-value">
                             {(activeCharacter.xp.current + displayedXP).toLocaleString()}
                           </span>
                           {displayedXP > 0 && (
-                            <span className="session-character-xp-session">
-                              +{displayedXP} this session
-                            </span>
+                            <span className="session-combined-xp-session">+{displayedXP}</span>
                           )}
                         </div>
+                        <div className="session-combined-xp-stat">
+                          <span className="session-combined-xp-label">Next Level</span>
+                          <span className="session-combined-xp-value">{activeCharacter.xp.next_level.toLocaleString()}</span>
+                        </div>
                       </div>
-                      <div className="session-character-stat-item">
-                        <span className="session-character-stat-label">Next Level</span>
-                        <span className="session-character-stat-value">{activeCharacter.xp.next_level.toLocaleString()}</span>
+                      <div className="session-combined-xp-bar-container">
+                        <div
+                          className="session-combined-xp-bar"
+                          style={{ width: `${xpProgress ? Math.min(xpProgress.progressPercent, 100) : 0}%` }}
+                        />
                       </div>
-                      <div className="session-character-stat-item">
-                        <span className="session-character-stat-label">HP</span>
-                        <span className="session-character-stat-value">{activeCharacter.hp.current}/{activeCharacter.hp.max}</span>
+                      <div className="session-combined-xp-hint">
+                        {xpProgress ? xpProgress.xpNeeded.toLocaleString() : activeCharacter.xp.next_level.toLocaleString()} XP to next level
                       </div>
                     </div>
-                    {/* Pending Stat Increases for Manual Mode */}
+
+                    {/* Pending Stat Increases */}
                     {activeCharacter.pendingStatIncreases && activeCharacter.pendingStatIncreases > 0 && (
                       <div
-                        className="session-pending-stats-alert"
+                        className="session-combined-pending-alert"
                         onClick={handleOpenStatModal}
                         role="button"
                         tabIndex={0}
@@ -489,56 +529,33 @@ export function SessionTrackingTab() {
                         }}
                         aria-label="Open stat selection modal"
                       >
-                        <TrendingUp className="session-pending-stats-icon" size={14} />
-                        <span className="session-pending-stats-text">
-                          {activeCharacter.pendingStatIncreases} stat increase{activeCharacter.pendingStatIncreases > 1 ? 's' : ''} pending
-                        </span>
+                        <TrendingUp size={12} />
+                        <span>{activeCharacter.pendingStatIncreases} stat increase{activeCharacter.pendingStatIncreases > 1 ? 's' : ''} pending</span>
                       </div>
                     )}
-                    {/* For manual mode, show info about future stat increases */}
-                    {(!activeCharacter.pendingStatIncreases || activeCharacter.pendingStatIncreases === 0) && (
-                      <div className="session-stat-info">
-                        <span className="session-stat-info-text">
-                          {activeCharacter.gameMode === 'standard' ? 'Stat increases at levels 4, 8, 12, 16, 19' : 'Stat increases at every level (manual mode)'}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-                {/* No active character warning */}
-                {!activeCharacter && (
-                  <div className="session-no-character-warning">
-                    <User className="session-no-character-icon" size={18} />
-                    <span className="session-no-character-text">
-                      No active character. Select one from the Party tab.
-                    </span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
 
-            {/* Right Card: Song Info */}
-            <Card variant="elevated" padding="lg" className="session-song-card">
-              <CardContent className="session-song-card-content">
-                <div className="session-song-header">
-                  <div className="session-song-image-container">
-                    {selectedTrack.image_url ? (
-                      <img
-                        src={selectedTrack.image_url}
-                        alt={selectedTrack.title}
-                        className="session-song-image"
-                      />
-                    ) : (
-                      <div className="session-song-image-placeholder">
-                        <Music className="session-song-placeholder-icon" size={24} />
-                      </div>
-                    )}
-                    <span className={`session-song-status-badge ${isActive ? 'session-status-active' : 'session-status-inactive'}`}>
-                      {isActive ? 'Active' : 'Inactive'}
-                    </span>
-                    {/* Mastery Badge Overlay - shows when mastered OR has prestige level */}
-                    {masteryInfo && (masteryInfo.isMastered || masteryInfo.prestigeLevel > 0) && (
-                      <div className="session-mastery-badge-overlay">
+                {/* No active character warning */}
+                {!activeCharacter && (
+                  <div className="session-combined-no-char">
+                    <User size={16} />
+                    <span>No active character. Select one from the Party tab.</span>
+                  </div>
+                )}
+
+                {/* Divider between XP and Mastery */}
+                {activeCharacter && masteryInfo && masteryInfo.listenCount > 0 && (
+                  <div className="session-combined-divider" />
+                )}
+
+                {/* Mastery/Prestige Section */}
+                {masteryInfo && masteryInfo.listenCount > 0 && (
+                  <div className="session-combined-mastery-section">
+                    <div className="session-combined-mastery-header">
+                      <Star size={14} className="session-combined-mastery-icon" />
+                      <span className="session-combined-mastery-label">Track Mastery</span>
+                      {masteryInfo && (masteryInfo.isMastered || masteryInfo.prestigeLevel > 0) && (
                         <MasteryBadge
                           isMastered={masteryInfo.isMastered}
                           prestigeLevel={masteryInfo.prestigeLevel}
@@ -546,25 +563,9 @@ export function SessionTrackingTab() {
                           isMaxPrestige={masteryInfo.isMaxPrestige}
                           size="sm"
                         />
-                      </div>
-                    )}
-                  </div>
-                  <div className="session-song-info">
-                    <h3 className="session-song-title">{selectedTrack.title}</h3>
-                    <p className="session-song-artist">{selectedTrack.artist}</p>
-                    <div className="session-song-meta">
-                      <span className="session-song-duration">{formatTime(trackDuration)}</span>
+                      )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Mastery Progress Section */}
-                {masteryInfo && masteryInfo.listenCount > 0 && (
-                  <div className="session-mastery-section">
-                    <div className="session-mastery-header">
-                      <Star className="session-mastery-icon" size={14} />
-                      <span className="session-mastery-label">Mastery</span>
-                    </div>
                     <MasteryProgressBar
                       listenCount={masteryInfo.listenCount}
                       totalXP={masteryInfo.totalXP}
@@ -575,16 +576,14 @@ export function SessionTrackingTab() {
                       prestigeRoman={masteryInfo.prestigeRoman}
                       isMaxPrestige={masteryInfo.isMaxPrestige}
                       compact={true}
-                      className="session-mastery-progress"
                     />
-                    <div className="session-listen-count">
-                      <Headphones className="session-listen-icon" size={12} />
-                      <span className="session-listen-text">
-                        Listened {masteryInfo.listenCount} time{masteryInfo.listenCount !== 1 ? 's' : ''}
-                      </span>
+
+                    <div className="session-combined-listen-count">
+                      <Headphones size={12} />
+                      <span>Listened {masteryInfo.listenCount} time{masteryInfo.listenCount !== 1 ? 's' : ''}</span>
                     </div>
 
-                    {/* Prestige Button - shows when character can prestige */}
+                    {/* Prestige Button */}
                     {canPrestigeState && prestigeInfo && activeCharacter && (
                       <PrestigeButton
                         canPrestige={canPrestigeState}
@@ -596,14 +595,40 @@ export function SessionTrackingTab() {
                   </div>
                 )}
 
-                {/* Real-time XP Display */}
-                {isActive && displayedXP > 0 && (
-                  <div className="session-xp-display-compact">
-                    <Sparkles className="session-xp-icon" size={14} />
-                    <span className="session-xp-value-compact">
-                      +{displayedXP} XP this session
-                    </span>
-                  </div>
+                {/* Bonus XP Breakdown (when active) */}
+                {isActive && xpBreakdown && (xpBreakdown.environmentalBonusXP > 0 || xpBreakdown.gamingBonusXP > 0 || xpBreakdown.masteryBonusXP > 0) && (
+                  <>
+                    <div className="session-combined-divider" />
+                    <div className="session-combined-bonus-section">
+                      <div className="session-combined-bonus-title">Active Bonuses</div>
+                      <div className="session-combined-bonus-grid">
+                        {xpBreakdown.environmentalBonusXP > 0 && (
+                          <div className="session-combined-bonus-item">
+                            <Zap size={10} />
+                            <span>+{xpBreakdown.environmentalBonusXP} Env</span>
+                          </div>
+                        )}
+                        {xpBreakdown.gamingBonusXP > 0 && (
+                          <div className="session-combined-bonus-item">
+                            <Gamepad2 size={10} />
+                            <span>+{xpBreakdown.gamingBonusXP} Gaming</span>
+                          </div>
+                        )}
+                        {xpBreakdown.masteryBonusXP > 0 && (
+                          <div className="session-combined-bonus-item">
+                            <Star size={10} />
+                            <span>+{xpBreakdown.masteryBonusXP} Mastery</span>
+                          </div>
+                        )}
+                      </div>
+                      {xpBreakdown.totalMultiplier > 1 && (
+                        <div className="session-combined-multiplier">
+                          <span className="session-combined-multiplier-label">Total</span>
+                          <span className="session-combined-multiplier-value">{xpBreakdown.totalMultiplier.toFixed(2)}x</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -632,114 +657,6 @@ export function SessionTrackingTab() {
                 End Session & Stop Audio
               </Button>
             )}
-          </div>
-
-          {/* Timer Section */}
-          <div className="session-timer-layout">
-            {/* Timer Ring Card - Redesigned compact version */}
-            <Card variant="elevated" padding="lg" className={`session-timer-card ${isActive ? 'session-timer-card-active' : ''}`}>
-              <div className="session-timer-display">
-                <TimerRing
-                  progress={isActive ? progress : 0}
-                  size={120}
-                  strokeWidth={10}
-                  isActive={isActive}
-                  isCompact={true}
-                />
-                <div className="session-timer-text-container">
-                  <div className="session-time-label">
-                    {isActive ? 'Listening' : 'Ready'}
-                  </div>
-                  <div className="session-time-value">
-                    {formatTime(elapsedTime)}
-                  </div>
-                  <div className="session-time-total">
-                    of {formatTime(trackDuration)}
-                  </div>
-                </div>
-              </div>
-
-              {isActive && sessionId && (
-                <div className="session-id-display">
-                  <span className="session-id-label">Session ID:</span>
-                  <span className="session-id-value">{sessionId}</span>
-                </div>
-              )}
-            </Card>
-
-            {/* Session Info Card */}
-            <Card variant="elevated" padding="lg" className="session-info-card">
-              <CardHeader className="session-info-header">
-                <CardTitle>Session Details</CardTitle>
-                <CardDescription>
-                  {isActive ? 'Session in progress' : 'Start a session to track your listening'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="session-info-content">
-                {/* XP Progress Bar (if active character exists) */}
-                {isActive && xpProgress && (
-                  <div className="session-xp-progress-section">
-                    <div className="session-xp-progress-header">
-                      <span className="session-xp-progress-label">
-                        Level {xpProgress.level} Progress
-                      </span>
-                      <span className="session-xp-progress-text">
-                        {xpProgress.currentXP.toLocaleString()} / {xpProgress.nextLevelXP.toLocaleString()} XP
-                      </span>
-                    </div>
-                    <div className="session-xp-progress-bar-container">
-                      <div
-                        className="session-xp-progress-bar"
-                        style={{ width: `${Math.min(xpProgress.progressPercent, 100)}%` }}
-                      />
-                    </div>
-                    <div className="session-xp-progress-hint">
-                      {xpProgress.xpNeeded.toLocaleString()} XP to next level
-                    </div>
-                  </div>
-                )}
-
-                {/* Bonus XP Breakdown */}
-                {isActive && xpBreakdown && (xpBreakdown.environmentalBonusXP > 0 || xpBreakdown.gamingBonusXP > 0 || xpBreakdown.masteryBonusXP > 0) && (
-                  <div className="session-bonus-breakdown">
-                    <div className="session-bonus-title">Bonus XP Breakdown</div>
-                    {xpBreakdown.environmentalBonusXP > 0 && (
-                      <div className="session-bonus-item">
-                        <span className="session-bonus-label">
-                          <Zap size={12} className="session-bonus-icon" />
-                          Environmental
-                        </span>
-                        <span className="session-bonus-value">+{xpBreakdown.environmentalBonusXP} XP</span>
-                      </div>
-                    )}
-                    {xpBreakdown.gamingBonusXP > 0 && (
-                      <div className="session-bonus-item">
-                        <span className="session-bonus-label">
-                          <Gamepad2 size={12} className="session-bonus-icon" />
-                          Gaming
-                        </span>
-                        <span className="session-bonus-value">+{xpBreakdown.gamingBonusXP} XP</span>
-                      </div>
-                    )}
-                    {xpBreakdown.masteryBonusXP > 0 && (
-                      <div className="session-bonus-item">
-                        <span className="session-bonus-label">
-                          <Star size={12} className="session-bonus-icon" />
-                          Mastery
-                        </span>
-                        <span className="session-bonus-value">+{xpBreakdown.masteryBonusXP} XP</span>
-                      </div>
-                    )}
-                    {xpBreakdown.totalMultiplier > 1 && (
-                      <div className="session-bonus-total">
-                        <span className="session-bonus-total-label">Total Multiplier</span>
-                        <span className="session-bonus-total-value">{xpBreakdown.totalMultiplier.toFixed(2)}x</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
           {/* Last Session Data Card */}
