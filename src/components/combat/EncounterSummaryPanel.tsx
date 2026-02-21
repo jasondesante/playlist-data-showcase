@@ -11,6 +11,7 @@
 import { useMemo } from 'react';
 import { CharacterSheet, getXPForCR, getEncounterMultiplier, calculateAdjustedXP, getXPBudgetPerLevel } from 'playlist-data-engine';
 import { Swords, Users, Skull, Star, AlertTriangle } from 'lucide-react';
+import { CombatExportButton, type ExportAction } from '../ui/CombatExportButton';
 import './EncounterSummaryPanel.css';
 
 export interface EncounterSummaryPanelProps {
@@ -22,6 +23,8 @@ export interface EncounterSummaryPanelProps {
   compact?: boolean;
   /** Additional CSS class */
   className?: string;
+  /** Optional export handler - receives action type, returns success */
+  onExport?: (action: ExportAction) => Promise<boolean> | boolean;
 }
 
 /**
@@ -230,7 +233,8 @@ export function EncounterSummaryPanel({
   enemies,
   partyMembers,
   compact = false,
-  className = ''
+  className = '',
+  onExport
 }: EncounterSummaryPanelProps) {
   // Calculate enemy type breakdown
   const enemyBreakdown = useMemo((): EnemyTypeBreakdown[] => {
@@ -311,9 +315,20 @@ export function EncounterSummaryPanel({
           <Swords size={16} />
           <span>Encounter Summary</span>
         </div>
-        <div className="encounter-summary-rating"
-             style={{ color: difficultyStyle.color, backgroundColor: difficultyStyle.bgColor }}>
-          {difficultyStyle.icon} {encounterStats.rating.charAt(0).toUpperCase() + encounterStats.rating.slice(1)}
+        <div className="encounter-summary-header-actions">
+          {onExport && (
+            <CombatExportButton
+              onExport={onExport}
+              size="icon"
+              variant="toggle"
+              label="Pre-Combat Data"
+              tooltip="Export encounter data"
+            />
+          )}
+          <div className="encounter-summary-rating"
+               style={{ color: difficultyStyle.color, backgroundColor: difficultyStyle.bgColor }}>
+            {difficultyStyle.icon} {encounterStats.rating.charAt(0).toUpperCase() + encounterStats.rating.slice(1)}
+          </div>
         </div>
       </div>
 

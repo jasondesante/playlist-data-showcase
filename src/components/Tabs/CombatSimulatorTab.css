@@ -110,6 +110,13 @@
   }
 }
 
+/* Header Actions (Export All button + Status) - Phase 5 */
+.combat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Prompt */
 .combat-prompt {
   font-size: 0.875rem;
@@ -1418,6 +1425,13 @@
   }
 }
 
+/* Combat Log Header Actions (export button + autoscroll indicator) */
+.combat-log-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .combat-log-autoscroll {
   font-size: 0.625rem;
   color: hsl(142 76% 50%);
@@ -1782,6 +1796,26 @@
 @media (min-width: 768px) {
   .combat-victory-description-text {
     font-size: 0.875rem;
+  }
+}
+
+/* Victory Actions Container - Phase 4 */
+.combat-victory-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .combat-victory-actions {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .combat-victory-actions .combat-victory-restart {
+    flex: 1;
   }
 }
 
@@ -2562,6 +2596,7 @@
 
 .combat-config-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-sm);
   border: 1px solid hsl(var(--border));
@@ -2611,6 +2646,7 @@
 .combat-config-field {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 /* Generated Enemies Preview */
@@ -6473,6 +6509,34 @@
   font-size: 0.75rem;
   font-weight: 600;
   min-width: 2.5rem;
+}
+
+.combat-difficulty-badge-clickable {
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+  user-select: none;
+}
+
+.combat-difficulty-badge-clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.combat-difficulty-badge-clickable:active {
+  transform: scale(0.98);
+}
+
+.combat-difficulty-multiplier-input {
+  width: 4rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid hsl(var(--primary));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
 }
 
 .combat-difficulty-multiplier-easier {

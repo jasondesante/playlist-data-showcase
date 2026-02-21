@@ -22,7 +22,8 @@ import {
     getXPBudgetPerLevel,
     getXPForCR,
     getEncounterMultiplier,
-    calculateAdjustedXP
+    calculateAdjustedXP,
+    PartyAnalyzer
 } from 'playlist-data-engine';
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
@@ -30,6 +31,8 @@ import type { PlaylistTrack } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';
 import { EncounterSummaryPanel } from '../combat/EncounterSummaryPanel';
+import { CombatExportButton } from '../ui/CombatExportButton';
+import { exportPreCombat, exportCombatLog, exportPostCombat, exportFullCombatData, type ExportAction, type EnemyGenerationConfigExport, type AdvancedCombatConfigExport, type TreasureGenerationConfigExport } from '../../utils/combatDataExporter';
 import './CombatSimulatorTab.css';
 
 /**
@@ -788,6 +791,10 @@ export function CombatSimulatorTab() {
   // State: Collapsible panel toggle
   const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
 
+  // State: Editing difficulty multiplier manually
+  const [isEditingDifficulty, setIsEditingDifficulty] = useState(false);
+  const [difficultyInputValue, setDifficultyInputValue] = useState('');
+
   // Handler: Update advanced config field
   const updateAdvancedConfig = useCallback(<K extends keyof AdvancedCombatConfig>(
     key: K,
@@ -1241,6 +1248,407 @@ export function CombatSimulatorTab() {
   const roundNumber = combat?.roundNumber ?? null;
   const combatLog = combat?.history ?? [];
   const isActive = combat?.isActive ?? false;
+
+  // ============================================================
+  // Phase 2: Pre-Combat Export Handler
+  // ============================================================
+
+  /**
+   * Handle exporting pre-combat data (party, enemies, config)
+   * Used by EncounterSummaryPanel and PartyAnalyzerCard export buttons
+   */
+  const handlePreCombatExport = useCallback(async (action: ExportAction): Promise<boolean> => {
+    // Get party members based on current mode
+    const partyMembersForExport = partyMode === 'party'
+      ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
+      : getActiveCharacter() ? [getActiveCharacter()!] : [];
+
+    // Calculate party analysis
+    const partyAnalysis = partyMembersForExport.length > 0
+      ? PartyAnalyzer.analyzeParty(partyMembersForExport)
+      : null;
+
+    // Map generation config to export format
+    const generationConfigExport: EnemyGenerationConfigExport = {
+      mode: generationConfig.mode,
+      difficulty: generationConfig.difficulty,
+      targetCR: generationConfig.targetCR,
+      baseRarity: generationConfig.baseRarity,
+      enemyMix: generationConfig.enemyMix,
+      difficultyMultiplier: generationConfig.difficultyMultiplier,
+      count: generationConfig.count,
+      seed: generationConfig.seed,
+      deterministic: generationConfig.deterministic,
+    };
+
+    // Map advanced config to export format
+    const advancedConfigExport: AdvancedCombatConfigExport = {
+      useEnvironment: advancedConfig.useEnvironment,
+      tacticalMode: advancedConfig.tacticalMode,
+      useMusic: advancedConfig.useMusic,
+      allowFleeing: advancedConfig.allowFleeing,
+      maxTurnsBeforeDraw: advancedConfig.maxTurnsBeforeDraw,
+    };
+
+    // Map treasure config to export format
+    const treasureConfigExport: TreasureGenerationConfigExport = {
+      enabled: treasureConfig.enabled,
+      goldMode: treasureConfig.goldMode,
+      goldFixed: treasureConfig.goldFixed,
+      goldMin: treasureConfig.goldMin,
+      goldMax: treasureConfig.goldMax,
+    };
+
+    // Character strategies (placeholder - could be expanded later)
+    const characterStrategies: Record<string, string> = {};
+    partyMembersForExport.forEach(c => {
+      characterStrategies[c.name] = 'default';
+    });
+
+    // Uncapped config (placeholder - could be expanded later)
+    const uncappedConfig: Record<string, string> = {};
+
+    return exportPreCombat(
+      action,
+      partyMode,
+      partyMembersForExport,
+      partyAnalysis,
+      generationConfigExport,
+      generatedEnemies,
+      advancedConfigExport,
+      treasureConfigExport,
+      characterStrategies,
+      uncappedConfig
+    );
+  }, [
+    partyMode,
+    characters,
+    selectedHeroSeeds,
+    generationConfig,
+    advancedConfig,
+    treasureConfig,
+    generatedEnemies,
+    getActiveCharacter,
+  ]);
+
+  // ============================================================
+  // Phase 3: Combat Log Export Handler
+  // ============================================================
+
+  /**
+   * Handle exporting combat log data (during/after combat)
+   * Exports the current combat state with derived statistics
+   */
+  const handleCombatLogExport = useCallback(async (action: ExportAction): Promise<boolean> => {
+    // Can only export if combat has started
+    if (!combat) {
+      return false;
+    }
+
+    // Map generation config to export format
+    const generationConfigExport: EnemyGenerationConfigExport = {
+      mode: generationConfig.mode,
+      difficulty: generationConfig.difficulty,
+      targetCR: generationConfig.targetCR,
+      baseRarity: generationConfig.baseRarity,
+      enemyMix: generationConfig.enemyMix,
+      difficultyMultiplier: generationConfig.difficultyMultiplier,
+      count: generationConfig.count,
+      seed: generationConfig.seed,
+      deterministic: generationConfig.deterministic,
+    };
+
+    // Map advanced config to export format
+    const advancedConfigExport: AdvancedCombatConfigExport = {
+      useEnvironment: advancedConfig.useEnvironment,
+      tacticalMode: advancedConfig.tacticalMode,
+      useMusic: advancedConfig.useMusic,
+      allowFleeing: advancedConfig.allowFleeing,
+      maxTurnsBeforeDraw: advancedConfig.maxTurnsBeforeDraw,
+    };
+
+    return exportCombatLog(action, combat, generationConfigExport, advancedConfigExport);
+  }, [combat, generationConfig, advancedConfig]);
+
+  // ============================================================
+  // Phase 4: Post-Combat Export Handler
+  // ============================================================
+
+  /**
+   * Handle exporting post-combat summary data
+   * Includes combat result, XP distribution, treasure, and full context
+   */
+  const handlePostCombatExport = useCallback(async (action: ExportAction): Promise<boolean> => {
+    // Can only export if combat has ended
+    if (!combat || combat.isActive) {
+      return false;
+    }
+
+    // Get combat result using the hook's function
+    const result = getCombatResult();
+    if (!result) {
+      return false;
+    }
+
+    // Get party members based on current mode
+    const partyMembersForExport = partyMode === 'party'
+      ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
+      : getActiveCharacter() ? [getActiveCharacter()!] : [];
+
+    // Calculate party analysis
+    const partyAnalysis = partyMembersForExport.length > 0
+      ? PartyAnalyzer.analyzeParty(partyMembersForExport)
+      : null;
+
+    // Map generation config to export format
+    const generationConfigExport: EnemyGenerationConfigExport = {
+      mode: generationConfig.mode,
+      difficulty: generationConfig.difficulty,
+      targetCR: generationConfig.targetCR,
+      baseRarity: generationConfig.baseRarity,
+      enemyMix: generationConfig.enemyMix,
+      difficultyMultiplier: generationConfig.difficultyMultiplier,
+      count: generationConfig.count,
+      seed: generationConfig.seed,
+      deterministic: generationConfig.deterministic,
+    };
+
+    // Map advanced config to export format
+    const advancedConfigExport: AdvancedCombatConfigExport = {
+      useEnvironment: advancedConfig.useEnvironment,
+      tacticalMode: advancedConfig.tacticalMode,
+      useMusic: advancedConfig.useMusic,
+      allowFleeing: advancedConfig.allowFleeing,
+      maxTurnsBeforeDraw: advancedConfig.maxTurnsBeforeDraw,
+    };
+
+    // Map treasure config to export format
+    const treasureConfigExport: TreasureGenerationConfigExport = {
+      enabled: treasureConfig.enabled,
+      goldMode: treasureConfig.goldMode,
+      goldFixed: treasureConfig.goldFixed,
+      goldMin: treasureConfig.goldMin,
+      goldMax: treasureConfig.goldMax,
+    };
+
+    // Character strategies (placeholder - could be expanded later)
+    const characterStrategies: Record<string, string> = {};
+    partyMembersForExport.forEach(c => {
+      characterStrategies[c.name] = 'default';
+    });
+
+    // Uncapped config (placeholder - could be expanded later)
+    const uncappedConfig: Record<string, string> = {};
+
+    // Format XP awarded data
+    const xpAwardedExport = {
+      totalXP: xpAwarded?.amount ?? result.xpAwarded,
+      distribution: xpAwarded?.members?.map(m => ({
+        name: m.name,
+        xpReceived: m.xpReceived,
+        leveledUp: m.leveledUp,
+        newLevel: m.newLevel,
+      })) ?? [{
+        name: xpAwarded?.characterName ?? 'Unknown',
+        xpReceived: xpAwarded?.amount ?? result.xpAwarded,
+        leveledUp: xpAwarded?.leveledUp ?? false,
+      }],
+    };
+
+    // Format treasure data
+    const treasureExport = result.treasureAwarded ? {
+      gold: result.treasureAwarded.gold,
+      items: result.treasureAwarded.items?.map((item: any) => ({
+        name: item.name || 'Unknown Item',
+        type: item.type || 'item',
+        tags: item.tags,
+      })) ?? [],
+    } : null;
+
+    return exportPostCombat(
+      action,
+      combat,
+      xpAwardedExport,
+      treasureExport,
+      partyMode,
+      partyMembersForExport,
+      partyAnalysis,
+      generationConfigExport,
+      generatedEnemies,
+      advancedConfigExport,
+      treasureConfigExport,
+      characterStrategies,
+      uncappedConfig
+    );
+  }, [
+    combat,
+    partyMode,
+    characters,
+    selectedHeroSeeds,
+    generationConfig,
+    advancedConfig,
+    treasureConfig,
+    generatedEnemies,
+    xpAwarded,
+    getActiveCharacter,
+    getCombatResult,
+  ]);
+
+  // ============================================================
+  // Phase 5: Full Export Handler (Export All)
+  // ============================================================
+
+  /**
+   * Handle exporting full combat data (all phases combined)
+   * This is the comprehensive export for AI balance analysis
+   */
+  const handleFullExport = useCallback(async (action: ExportAction): Promise<boolean> => {
+    // Get party members based on current mode
+    const partyMembersForExport = partyMode === 'party'
+      ? characters.filter(c => selectedHeroSeeds.includes(c.seed)).slice(0, 4)
+      : getActiveCharacter() ? [getActiveCharacter()!] : [];
+
+    // Calculate party analysis
+    const partyAnalysis = partyMembersForExport.length > 0
+      ? PartyAnalyzer.analyzeParty(partyMembersForExport)
+      : null;
+
+    // Map generation config to export format
+    const generationConfigExport: EnemyGenerationConfigExport = {
+      mode: generationConfig.mode,
+      difficulty: generationConfig.difficulty,
+      targetCR: generationConfig.targetCR,
+      baseRarity: generationConfig.baseRarity,
+      enemyMix: generationConfig.enemyMix,
+      difficultyMultiplier: generationConfig.difficultyMultiplier,
+      count: generationConfig.count,
+      seed: generationConfig.seed,
+      deterministic: generationConfig.deterministic,
+    };
+
+    // Map advanced config to export format
+    const advancedConfigExport: AdvancedCombatConfigExport = {
+      useEnvironment: advancedConfig.useEnvironment,
+      tacticalMode: advancedConfig.tacticalMode,
+      useMusic: advancedConfig.useMusic,
+      allowFleeing: advancedConfig.allowFleeing,
+      maxTurnsBeforeDraw: advancedConfig.maxTurnsBeforeDraw,
+    };
+
+    // Map treasure config to export format
+    const treasureConfigExport: TreasureGenerationConfigExport = {
+      enabled: treasureConfig.enabled,
+      goldMode: treasureConfig.goldMode,
+      goldFixed: treasureConfig.goldFixed,
+      goldMin: treasureConfig.goldMin,
+      goldMax: treasureConfig.goldMax,
+    };
+
+    // Character strategies (placeholder)
+    const characterStrategies: Record<string, string> = {};
+    partyMembersForExport.forEach(c => {
+      characterStrategies[c.name] = 'default';
+    });
+
+    // Uncapped config (placeholder)
+    const uncappedConfig: Record<string, string> = {};
+
+    // Format XP awarded data if combat ended
+    let xpAwardedExport: { totalXP: number; distribution: Array<{ name: string; xpReceived: number; leveledUp: boolean; newLevel?: number }> } | null = null;
+    if (xpAwarded) {
+      xpAwardedExport = {
+        totalXP: xpAwarded.amount,
+        distribution: xpAwarded.members?.map(m => ({
+          name: m.name,
+          xpReceived: m.xpReceived,
+          leveledUp: m.leveledUp,
+          newLevel: m.newLevel,
+        })) ?? [{
+          name: xpAwarded.characterName ?? 'Unknown',
+          xpReceived: xpAwarded.amount,
+          leveledUp: xpAwarded.leveledUp ?? false,
+        }],
+      };
+    }
+
+    // Format treasure data if available
+    let treasureExport: { gold: number; items: Array<{ name: string; type: string; tags?: string[] }> } | null = null;
+    if (combat && !combat.isActive) {
+      const result = getCombatResult();
+      if (result?.treasureAwarded) {
+        treasureExport = {
+          gold: result.treasureAwarded.gold,
+          items: result.treasureAwarded.items?.map((item: any) => ({
+            name: item.name || 'Unknown Item',
+            type: item.type || 'item',
+            tags: item.tags,
+          })) ?? [],
+        };
+      }
+    }
+
+    return exportFullCombatData(
+      action,
+      partyMode,
+      partyMembersForExport,
+      partyAnalysis,
+      generationConfigExport,
+      generatedEnemies,
+      advancedConfigExport,
+      treasureConfigExport,
+      characterStrategies,
+      uncappedConfig,
+      combat,
+      xpAwardedExport,
+      treasureExport
+    );
+  }, [
+    partyMode,
+    characters,
+    selectedHeroSeeds,
+    generationConfig,
+    advancedConfig,
+    treasureConfig,
+    generatedEnemies,
+    combat,
+    xpAwarded,
+    getActiveCharacter,
+    getCombatResult,
+  ]);
+
+  // ============================================================
+  // Phase 6: Keyboard Shortcuts for Export
+  // ============================================================
+
+  /**
+   * Keyboard shortcuts for quick export:
+   * - Ctrl/Cmd+Shift+E: Export All (full combat data)
+   * - Ctrl/Cmd+Shift+C: Copy Pre-Combat data
+   */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Ctrl/Cmd + Shift modifier
+      const isModKeyPressed = e.metaKey || e.ctrlKey;
+      if (!isModKeyPressed || !e.shiftKey) return;
+
+      // Ctrl/Cmd + Shift + E = Export All
+      if (e.key === 'E' || e.key === 'e') {
+        e.preventDefault();
+        logger.info('CombatSimulator', 'Keyboard shortcut triggered: Export All');
+        handleFullExport('download');
+      }
+
+      // Ctrl/Cmd + Shift + C = Copy Pre-Combat data
+      if (e.key === 'C' || e.key === 'c') {
+        e.preventDefault();
+        logger.info('CombatSimulator', 'Keyboard shortcut triggered: Copy Pre-Combat');
+        handlePreCombatExport('copy');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleFullExport, handlePreCombatExport]);
 
   /**
    * Start combat with generated enemies or fall back to single generated enemy
@@ -1749,7 +2157,15 @@ export function CombatSimulatorTab() {
     <div className="combat-container">
       <div className="combat-header">
         <h2 className="combat-title">Combat Engine</h2>
-        {combat && <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />}
+        <div className="combat-header-actions">
+          <CombatExportButton
+            onExport={handleFullExport}
+            size="compact"
+            variant="toggle"
+            label="Export All"
+          />
+          {combat && <StatusIndicator status={isActive ? 'healthy' : 'error'} label={isActive ? 'Active' : 'Ended'} />}
+        </div>
       </div>
 
       {!getActiveCharacter() ? (
@@ -1862,6 +2278,7 @@ export function CombatSimulatorTab() {
               {selectedHeroSeeds.length > 0 && (
                 <PartyAnalyzerCard
                   partyMembers={characters.filter(c => selectedHeroSeeds.includes(c.seed))}
+                  onExport={handlePreCombatExport}
                 />
               )}
             </div>
@@ -2035,6 +2452,7 @@ export function CombatSimulatorTab() {
                   : getActiveCharacter() ? [getActiveCharacter()!] : []
                 }
                 className="combat-encounter-summary"
+                onExport={handlePreCombatExport}
               />
             )}
 
@@ -2835,28 +3253,66 @@ export function CombatSimulatorTab() {
                               <input
                                 type="range"
                                 min={0.5}
-                                max={1.5}
+                                max={5}
                                 step={0.1}
-                                value={generationConfig.difficultyMultiplier}
+                                value={Math.min(generationConfig.difficultyMultiplier, 5)}
                                 onChange={(e) => updateGenerationConfig('difficultyMultiplier', parseFloat(e.target.value))}
                                 className="combat-difficulty-multiplier-slider"
                               />
                               <div className="combat-difficulty-multiplier-value">
-                                <span
-                                  className={`combat-difficulty-multiplier-badge ${
-                                    generationConfig.difficultyMultiplier < 1 ? 'combat-difficulty-multiplier-easier' :
-                                    generationConfig.difficultyMultiplier > 1 ? 'combat-difficulty-multiplier-harder' :
-                                    'combat-difficulty-multiplier-normal'
-                                  }`}
-                                >
-                                  {generationConfig.difficultyMultiplier.toFixed(1)}x
-                                </span>
+                                {isEditingDifficulty ? (
+                                  <input
+                                    type="number"
+                                    min={0.1}
+                                    step={0.1}
+                                    value={difficultyInputValue}
+                                    onChange={(e) => setDifficultyInputValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        const val = parseFloat(difficultyInputValue);
+                                        if (!isNaN(val) && val >= 0.1) {
+                                          updateGenerationConfig('difficultyMultiplier', val);
+                                        }
+                                        setIsEditingDifficulty(false);
+                                      } else if (e.key === 'Escape') {
+                                        setIsEditingDifficulty(false);
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      const val = parseFloat(difficultyInputValue);
+                                      if (!isNaN(val) && val >= 0.1) {
+                                        updateGenerationConfig('difficultyMultiplier', val);
+                                      }
+                                      setIsEditingDifficulty(false);
+                                    }}
+                                    autoFocus
+                                    className="combat-difficulty-multiplier-input"
+                                  />
+                                ) : (
+                                  <span
+                                    onClick={() => {
+                                      setDifficultyInputValue(generationConfig.difficultyMultiplier.toString());
+                                      setIsEditingDifficulty(true);
+                                    }}
+                                    className={`combat-difficulty-multiplier-badge combat-difficulty-badge-clickable ${
+                                      generationConfig.difficultyMultiplier < 1 ? 'combat-difficulty-multiplier-easier' :
+                                      generationConfig.difficultyMultiplier > 1 ? 'combat-difficulty-multiplier-harder' :
+                                      'combat-difficulty-multiplier-normal'
+                                    }`}
+                                    title="Click to edit"
+                                  >
+                                    {generationConfig.difficultyMultiplier.toFixed(1)}x
+                                  </span>
+                                )}
                                 <span className="combat-difficulty-multiplier-description">
                                   {generationConfig.difficultyMultiplier < 0.9 ? 'Much Easier' :
                                    generationConfig.difficultyMultiplier < 1 ? 'Easier' :
                                    generationConfig.difficultyMultiplier === 1 ? 'Normal' :
-                                   generationConfig.difficultyMultiplier <= 1.2 ? 'Harder' :
-                                   'Much Harder'}
+                                   generationConfig.difficultyMultiplier <= 1.5 ? 'Harder' :
+                                   generationConfig.difficultyMultiplier <= 2 ? 'Much Harder' :
+                                   generationConfig.difficultyMultiplier <= 3 ? 'Insane' :
+                                   generationConfig.difficultyMultiplier <= 4 ? 'Nightmare' :
+                                   'Ludicrous'}
                                 </span>
                               </div>
                             </div>
@@ -2874,10 +3330,22 @@ export function CombatSimulatorTab() {
                                 1.0x Normal
                               </button>
                               <button
-                                onClick={() => updateGenerationConfig('difficultyMultiplier', 1.2)}
-                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 1.2 ? 'combat-preset-button-active' : ''}`}
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 1.5)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 1.5 ? 'combat-preset-button-active' : ''}`}
                               >
-                                1.2x Harder
+                                1.5x Harder
+                              </button>
+                              <button
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 2.0)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 2.0 ? 'combat-preset-button-active' : ''}`}
+                              >
+                                2.0x Insane
+                              </button>
+                              <button
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 3.0)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 3.0 ? 'combat-preset-button-active' : ''}`}
+                              >
+                                3.0x Nightmare
                               </button>
                             </div>
                           </div>
@@ -3636,7 +4104,16 @@ export function CombatSimulatorTab() {
             <div className="combat-log-section">
               <div className="combat-log-header">
                 <h3 className="combat-log-title">Combat Log</h3>
-                {isAutoPlaying && <span className="combat-log-autoscroll combat-log-autoscroll-pulse">● Auto-scrolling</span>}
+                <div className="combat-log-header-actions">
+                  <CombatExportButton
+                    onExport={handleCombatLogExport}
+                    size="icon"
+                    variant="toggle"
+                    label="Combat Log"
+                    tooltip="Export combat log"
+                  />
+                  {isAutoPlaying && <span className="combat-log-autoscroll combat-log-autoscroll-pulse">● Auto-scrolling</span>}
+                </div>
               </div>
               <div ref={combatLogRef} className="combat-log-container">
                 {combatLog.map((action: any, index: number) => {
@@ -3881,12 +4358,21 @@ export function CombatSimulatorTab() {
                   )}
                 </div>
 
-                <button
-                  onClick={resetCombat}
-                  className="combat-victory-restart"
-                >
-                  Restart Combat
-                </button>
+                {/* Export Actions */}
+                <div className="combat-victory-actions">
+                  <CombatExportButton
+                    onExport={handlePostCombatExport}
+                    size="compact"
+                    variant="toggle"
+                    label="Export Results"
+                  />
+                  <button
+                    onClick={resetCombat}
+                    className="combat-victory-restart"
+                  >
+                    Restart Combat
+                  </button>
+                </div>
               </div>
             </div>
           )}

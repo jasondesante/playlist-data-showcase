@@ -1,0 +1,165 @@
+/* ============================================
+   COMBAT EXPORT BUTTON STYLES
+   Part of Combat Data Export System - Phase 1
+   ============================================ */
+
+/* Base wrapper for button groups */
+.export-button-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Icon sizes */
+.export-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.export-icon-small {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Spinning loader animation */
+.export-icon.spinning {
+  animation: export-spin 1s linear infinite;
+}
+
+@keyframes export-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   ICON SIZE VARIANT
+   ============================================ */
+
+.export-button-icon {
+  position: relative;
+}
+
+.export-button-icon .export-button-main {
+  width: 2rem;
+  height: 2rem;
+  min-height: 2rem;
+  padding: 0;
+}
+
+.export-button-icon .export-button-toggle {
+  position: absolute;
+  right: -0.375rem;
+  bottom: -0.375rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  min-height: 1.25rem;
+  padding: 0;
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: 50%;
+  opacity: 0.8;
+  transition: opacity var(--duration-fast) var(--ease-out-cubic);
+}
+
+.export-button-icon:hover .export-button-toggle {
+  opacity: 1;
+}
+
+.export-button-icon .export-button-toggle:hover {
+  background-color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Single button (non-toggle mode) */
+.export-button-single {
+  width: 2rem;
+  height: 2rem;
+  min-height: 2rem;
+}
+
+/* ============================================
+   COMPACT SIZE VARIANT
+   ============================================ */
+
+.export-button-compact .export-button-main {
+  flex: 1;
+}
+
+.export-button-compact .export-button-toggle {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0;
+}
+
+/* ============================================
+   FULL SIZE VARIANT
+   ============================================ */
+
+.export-button-full {
+  gap: 0.5rem;
+}
+
+.export-button-full .export-button-copy,
+.export-button-full .export-button-download {
+  min-width: 5rem;
+}
+
+.export-button-label {
+  color: hsl(var(--foreground-muted));
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+/* ============================================
+   HOVER STATES
+   ============================================ */
+
+.export-button-wrapper .button:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+
+.export-button-wrapper .button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Stack full-size buttons on mobile */
+  .export-button-full {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-button-full .export-button-label {
+    display: none;
+  }
+
+  /* Reduce toggle button size on mobile */
+  .export-button-icon .export-button-toggle {
+    width: 1rem;
+    height: 1rem;
+    min-height: 1rem;
+    right: -0.25rem;
+    bottom: -0.25rem;
+  }
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .export-button-icon .export-button-toggle {
+    background-color: hsl(var(--surface-3));
+  }
+}

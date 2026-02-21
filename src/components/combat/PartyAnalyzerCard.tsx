@@ -10,6 +10,7 @@
 import { useMemo } from 'react';
 import { CharacterSheet, PartyAnalyzer, PartyAnalysis } from 'playlist-data-engine';
 import { Users, Shield, Heart, Zap, Crosshair } from 'lucide-react';
+import { CombatExportButton, type ExportAction } from '../ui/CombatExportButton';
 import './PartyAnalyzerCard.css';
 
 export interface PartyAnalyzerCardProps {
@@ -19,6 +20,8 @@ export interface PartyAnalyzerCardProps {
   isLoading?: boolean;
   /** Compact mode - shows only essential stats */
   compact?: boolean;
+  /** Optional export handler - receives action type, returns success */
+  onExport?: (action: ExportAction) => Promise<boolean> | boolean;
 }
 
 /**
@@ -167,7 +170,8 @@ function calculateClassComposition(members: CharacterSheet[]): Map<string, numbe
 export function PartyAnalyzerCard({
   partyMembers,
   isLoading = false,
-  compact = false
+  compact = false,
+  onExport
 }: PartyAnalyzerCardProps) {
   // Calculate party analysis using PartyAnalyzer
   const analysis = useMemo((): PartyAnalysis | null => {
@@ -207,8 +211,19 @@ export function PartyAnalyzerCard({
           <Users size={16} />
           <span>Party Analysis</span>
         </div>
-        <div className="party-analyzer-party-size">
-          {analysis.partySize} {analysis.partySize === 1 ? 'hero' : 'heroes'}
+        <div className="party-analyzer-header-actions">
+          {onExport && (
+            <CombatExportButton
+              onExport={onExport}
+              size="icon"
+              variant="toggle"
+              label="Party Data"
+              tooltip="Export party analysis"
+            />
+          )}
+          <div className="party-analyzer-party-size">
+            {analysis.partySize} {analysis.partySize === 1 ? 'hero' : 'heroes'}
+          </div>
         </div>
       </div>
 
