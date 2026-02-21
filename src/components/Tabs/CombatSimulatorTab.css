@@ -6388,3 +6388,159 @@
 }
 
 /* End of Phase 8.5: Responsive Layout Adjustments */
+
+/* ============================================
+   DIFFICULTY MULTIPLIER CONTROLS
+   ============================================ */
+
+.combat-difficulty-multiplier-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-multiplier-section {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+}
+
+.combat-config-field-full {
+  flex: 1 1 100%;
+  min-width: 100%;
+}
+
+.combat-difficulty-multiplier {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-multiplier {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.combat-difficulty-multiplier-slider {
+  flex: 1;
+  height: 0.375rem;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--muted));
+  appearance: none;
+  cursor: pointer;
+}
+
+.combat-difficulty-multiplier-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  transition: transform var(--duration-fast) ease;
+}
+
+.combat-difficulty-multiplier-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.combat-difficulty-multiplier-slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: none;
+}
+
+.combat-difficulty-multiplier-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 7rem;
+}
+
+.combat-difficulty-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 2.5rem;
+}
+
+.combat-difficulty-multiplier-easier {
+  background-color: hsl(142 70% 40% / 0.2);
+  color: hsl(142 70% 55%);
+}
+
+.combat-difficulty-multiplier-normal {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.combat-difficulty-multiplier-harder {
+  background-color: hsl(0 70% 40% / 0.2);
+  color: hsl(0 70% 60%);
+}
+
+.combat-difficulty-multiplier-description {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-multiplier-description {
+    font-size: 0.75rem;
+  }
+}
+
+.combat-difficulty-multiplier-presets {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .combat-difficulty-multiplier-presets {
+    gap: 0.5rem;
+    margin-top: 0.375rem;
+  }
+}
+
+.combat-preset-button {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.625rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+@media (min-width: 768px) {
+  .combat-preset-button {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+}
+
+.combat-preset-button:hover {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.combat-preset-button-active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}

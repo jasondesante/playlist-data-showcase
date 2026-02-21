@@ -228,6 +228,9 @@ export interface EnemyGenerationConfig {
     /** Seed for deterministic generation */
     seed: string;
 
+    /** Use deterministic generation (same seed = same enemies). When false, generates random seed each time. */
+    deterministic: boolean;
+
     /** Number of enemies to generate (1-10) */
     count: number;
 
@@ -265,6 +268,7 @@ export interface EnemyGenerationConfig {
 const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
     mode: 'single',
     seed: 'combat-encounter',
+    deterministic: false, // Default to random generation each time
     count: 1,
     difficulty: 'medium',
     targetCR: 1,
@@ -939,6 +943,7 @@ export function CombatSimulatorTab() {
     const hasConfigChanged = (
       prevConfigRef.current.mode !== generationConfig.mode ||
       prevConfigRef.current.seed !== generationConfig.seed ||
+      prevConfigRef.current.deterministic !== generationConfig.deterministic ||
       prevConfigRef.current.count !== generationConfig.count ||
       prevConfigRef.current.difficulty !== generationConfig.difficulty ||
       prevConfigRef.current.targetCR !== generationConfig.targetCR ||
@@ -984,6 +989,11 @@ export function CombatSimulatorTab() {
       return;
     }
 
+    // Generate seed based on deterministic setting
+    const effectiveSeed = generationConfig.deterministic
+      ? generationConfig.seed
+      : `encounter-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
     setIsGenerating(true);
     // Clear previous audio reasoning
     setAudioReasoning([]);
@@ -991,7 +1001,8 @@ export function CombatSimulatorTab() {
     logger.info('CombatSimulator', 'Generating enemies', {
       mode: generationConfig.mode,
       count: generationConfig.count,
-      seed: generationConfig.seed,
+      seed: effectiveSeed,
+      deterministic: generationConfig.deterministic,
       audioInfluenced,
       selectedTracks: selectedAudioTracks.length
     });
@@ -1006,7 +1017,7 @@ export function CombatSimulatorTab() {
         const audioResult = await audioEnemyGenerator.generateWithAudio(
           selectedAudioTracks,
           {
-            seed: generationConfig.seed,
+            seed: effectiveSeed,
             count: generationConfig.count,
             baseRarity: generationConfig.baseRarity,
             difficultyMultiplier: generationConfig.difficultyMultiplier,
@@ -1028,7 +1039,7 @@ export function CombatSimulatorTab() {
       } else {
         // Standard generation (non-audio)
         const options: EncounterGenerationOptions = {
-          seed: generationConfig.seed,
+          seed: effectiveSeed,
           count: generationConfig.count,
           difficulty: generationConfig.difficulty,
           targetCR: generationConfig.targetCR,
@@ -1045,7 +1056,7 @@ export function CombatSimulatorTab() {
           case 'single':
             // Generate a single enemy
             const singleEnemy = enemyGenerator.generate({
-              seed: generationConfig.seed,
+              seed: effectiveSeed,
               templateId: generationConfig.templateId,
               rarity: generationConfig.baseRarity,
               category: generationConfig.category,
@@ -1284,8 +1295,13 @@ export function CombatSimulatorTab() {
       // Fall back to generating a single enemy using EnemyGenerator
       logger.info('CombatSimulator', 'No pre-generated enemies, generating single fallback enemy');
 
+      // Generate seed based on deterministic setting
+      const fallbackSeed = generationConfig.deterministic
+        ? (generationConfig.seed || 'fallback-enemy')
+        : `fallback-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
       const fallbackEnemy = enemyGenerator.generate({
-        seed: generationConfig.seed || 'fallback-enemy',
+        seed: fallbackSeed,
         templateId: generationConfig.templateId,
         rarity: generationConfig.baseRarity,
         category: generationConfig.category,
@@ -2699,7 +2715,8 @@ export function CombatSimulatorTab() {
                       advancedConfig.useEnvironment && 'Environment',
                       advancedConfig.useMusic && 'Music',
                       advancedConfig.tacticalMode && 'Tactical',
-                      advancedConfig.allowFleeing && 'Flee'
+                      advancedConfig.allowFleeing && 'Flee',
+                      generationConfig.difficultyMultiplier !== 1.0 && `${generationConfig.difficultyMultiplier.toFixed(1)}x Diff`
                     ].filter(Boolean);
                     return activeOptions.length > 0 ? (
                       <span className="combat-advanced-active-badge">
@@ -2806,6 +2823,64 @@ export function CombatSimulatorTab() {
                           {generationConfig.templateId && (
                             <p className="combat-config-hint">Disabled when template is selected</p>
                           )}
+                        </div>
+                      </div>
+
+                      {/* Difficulty Multiplier - fine-tune encounter difficulty */}
+                      <div className="combat-difficulty-multiplier-section">
+                        <h5 className="combat-advanced-subsection-title">Difficulty Tuning</h5>
+                        <div className="combat-config-row">
+                          <div className="combat-config-field combat-config-field-full">
+                            <div className="combat-difficulty-multiplier">
+                              <input
+                                type="range"
+                                min={0.5}
+                                max={1.5}
+                                step={0.1}
+                                value={generationConfig.difficultyMultiplier}
+                                onChange={(e) => updateGenerationConfig('difficultyMultiplier', parseFloat(e.target.value))}
+                                className="combat-difficulty-multiplier-slider"
+                              />
+                              <div className="combat-difficulty-multiplier-value">
+                                <span
+                                  className={`combat-difficulty-multiplier-badge ${
+                                    generationConfig.difficultyMultiplier < 1 ? 'combat-difficulty-multiplier-easier' :
+                                    generationConfig.difficultyMultiplier > 1 ? 'combat-difficulty-multiplier-harder' :
+                                    'combat-difficulty-multiplier-normal'
+                                  }`}
+                                >
+                                  {generationConfig.difficultyMultiplier.toFixed(1)}x
+                                </span>
+                                <span className="combat-difficulty-multiplier-description">
+                                  {generationConfig.difficultyMultiplier < 0.9 ? 'Much Easier' :
+                                   generationConfig.difficultyMultiplier < 1 ? 'Easier' :
+                                   generationConfig.difficultyMultiplier === 1 ? 'Normal' :
+                                   generationConfig.difficultyMultiplier <= 1.2 ? 'Harder' :
+                                   'Much Harder'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="combat-difficulty-multiplier-presets">
+                              <button
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 0.8)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 0.8 ? 'combat-preset-button-active' : ''}`}
+                              >
+                                0.8x Easier
+                              </button>
+                              <button
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 1.0)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 1.0 ? 'combat-preset-button-active' : ''}`}
+                              >
+                                1.0x Normal
+                              </button>
+                              <button
+                                onClick={() => updateGenerationConfig('difficultyMultiplier', 1.2)}
+                                className={`combat-preset-button ${generationConfig.difficultyMultiplier === 1.2 ? 'combat-preset-button-active' : ''}`}
+                              >
+                                1.2x Harder
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -2953,6 +3028,50 @@ export function CombatSimulatorTab() {
                     </div>
                   </div>
 
+                  {/* Enemy Generation Options */}
+                  <div className="combat-advanced-section-divider">
+                    <span className="combat-advanced-section-title">Enemy Generation</span>
+                  </div>
+
+                  <div className="combat-advanced-toggles">
+                    {/* Deterministic Generation Toggle */}
+                    <div className="combat-advanced-toggle-row">
+                      <div className="combat-advanced-toggle-info">
+                        <span className="combat-advanced-toggle-label">Deterministic Generation</span>
+                        <span className="combat-advanced-toggle-description">
+                          Use fixed seed for reproducible enemies. When off, generates random enemies each time.
+                        </span>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={generationConfig.deterministic}
+                          onChange={(e) => updateGenerationConfig('deterministic', e.target.checked)}
+                          className="toggle-checkbox"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Seed Input - only shown when deterministic is enabled */}
+                  {generationConfig.deterministic && (
+                    <div className="combat-advanced-numerics">
+                      <div className="combat-config-field">
+                        <label className="combat-config-label">Generation Seed</label>
+                        <input
+                          type="text"
+                          value={generationConfig.seed}
+                          onChange={(e) => updateGenerationConfig('seed', e.target.value)}
+                          className="combat-config-input"
+                          placeholder="Enter seed for deterministic enemy generation"
+                        />
+                        <p className="combat-config-hint">
+                          Same seed + same settings = same enemies every time
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Configuration Summary */}
                   <div className="combat-advanced-summary">
                     <span className="combat-advanced-summary-label">Active Options:</span>
@@ -2977,7 +3096,12 @@ export function CombatSimulatorTab() {
                           🏃 Flee
                         </span>
                       )}
-                      {!advancedConfig.useEnvironment && !advancedConfig.useMusic && !advancedConfig.tacticalMode && !advancedConfig.allowFleeing && (
+                      {generationConfig.deterministic && (
+                        <span className="combat-advanced-summary-badge combat-advanced-badge-deterministic">
+                          🎲 Deterministic
+                        </span>
+                      )}
+                      {!advancedConfig.useEnvironment && !advancedConfig.useMusic && !advancedConfig.tacticalMode && !advancedConfig.allowFleeing && !generationConfig.deterministic && (
                         <span className="combat-advanced-summary-none">
                           No special options enabled
                         </span>
