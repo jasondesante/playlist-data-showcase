@@ -489,29 +489,34 @@ export function PartyTab() {
           </h2>
         </div>
         <div className="party-header-actions">
-          {/* Phase 6 Task 6.1: Analysis icon buttons */}
+          {/* Party Analysis Group */}
           {characters.length >= 1 && (
-            <>
-              <button
-                className={cn('party-analysis-btn', activeAnalysisPanel === 'overview' && 'party-analysis-btn-active')}
-                onClick={() => handleToggleAnalysisPanel('overview')}
-                aria-label="Party Overview"
-                aria-expanded={activeAnalysisPanel === 'overview'}
-                title="Party Overview - XP budgets and analysis"
-              >
-                <BarChart3 size={18} />
-              </button>
-              <button
-                className={cn('party-analysis-btn', activeAnalysisPanel === 'composition' && 'party-analysis-btn-active')}
-                onClick={() => handleToggleAnalysisPanel('composition')}
-                disabled={characters.length < 2}
-                aria-label="Party Composition"
-                aria-expanded={activeAnalysisPanel === 'composition'}
-                title={characters.length >= 2 ? 'Party Composition - Class and role distribution' : 'Need 2+ heroes for composition'}
-              >
-                <PieChart size={18} />
-              </button>
-            </>
+            <div className="party-analysis-group">
+              <span className="party-analysis-group-label">Analysis</span>
+              <div className="party-analysis-group-buttons">
+                <button
+                  className={cn('party-analysis-btn', activeAnalysisPanel === 'overview' && 'party-analysis-btn-active')}
+                  onClick={() => handleToggleAnalysisPanel('overview')}
+                  aria-label="Party Overview"
+                  aria-expanded={activeAnalysisPanel === 'overview'}
+                  title="Party Overview - XP budgets and analysis"
+                >
+                  <BarChart3 size={16} />
+                  <span className="party-analysis-btn-text">Overview</span>
+                </button>
+                <button
+                  className={cn('party-analysis-btn', activeAnalysisPanel === 'composition' && 'party-analysis-btn-active')}
+                  onClick={() => handleToggleAnalysisPanel('composition')}
+                  disabled={characters.length < 2}
+                  aria-label="Party Composition"
+                  aria-expanded={activeAnalysisPanel === 'composition'}
+                  title={characters.length >= 2 ? 'Party Composition - Class and role distribution' : 'Need 2+ heroes for composition'}
+                >
+                  <PieChart size={16} />
+                  <span className="party-analysis-btn-text">Composition</span>
+                </button>
+              </div>
+            </div>
           )}
           <Button
             variant="outline"
