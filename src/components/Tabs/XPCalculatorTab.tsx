@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 import { useSessionStore } from '../../store/sessionStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useMastery } from '../../hooks/useMastery';
@@ -213,6 +214,7 @@ export function XPCalculatorTab() {
   const { addXPFromSource } = useCharacterUpdater();
   const { addFakeSessions, clearTrackSessions, getTrackListenCount, getTrackXPTotal } = useSessionStore();
   const { getMasteryInfo } = useMastery();
+  const { audioProfile, selectedTrack } = usePlaylistStore();
 
   // Progression config store - for reading and modifying XP multiplier values
   const config = useProgressionConfig();
@@ -420,6 +422,12 @@ export function XPCalculatorTab() {
       return;
     }
 
+    // Require a real track to be selected for proper audio data
+    if (!selectedTrack) {
+      showToast('Select a track in the Session tab first - prestige requires real audio data', 'warning');
+      return;
+    }
+
     // Check if can prestige
     const sessionTracker = {
       getTrackListenCount: (id: string) => getTrackListenCount(id),
@@ -439,26 +447,22 @@ export function XPCalculatorTab() {
       return;
     }
 
-    // Execute prestige
-    const audioProfile = {
-      danceability: 0.5,
-      energy: 0.5,
-      acousticness: 0.5,
-      instrumentalness: 0.5,
-      tempo: 120,
-      loudness: -10,
-      valence: 0.5,
+    // Use real audio profile from store, or create a default one if not available
+    const profile = audioProfile || {
+      bass_dominance: 0.5,
+      mid_dominance: 0.5,
+      treble_dominance: 0.5,
+      average_amplitude: 0.5,
+      analysis_metadata: {
+        duration_analyzed: 0,
+        full_buffer_analyzed: true,
+        sample_positions: [0],
+        analyzed_at: new Date().toISOString()
+      }
     };
 
-    // Create a minimal track object for the prestige
-    const track = {
-      id: activeCharacter.seed,
-      title: activeCharacter.name,
-      artist: 'Unknown',
-      audio_url: '',
-    };
-
-    const result = prestigeCharacter(activeCharacter.seed, audioProfile as any, track as any, sessionTracker);
+    // Use the real selected track from the playlist store
+    const result = prestigeCharacter(activeCharacter.seed, profile, selectedTrack, sessionTracker);
 
     if (result.success) {
       showToast(`Prestiged to level ${PrestigeSystem.toRomanNumeral(result.newPrestigeLevel)}!`, 'success');

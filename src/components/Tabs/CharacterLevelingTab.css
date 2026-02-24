@@ -434,6 +434,17 @@
   border-color: hsl(45 100% 50% / 0.3);
 }
 
+.leveling-quick-stat-prestige {
+  padding: 0.125rem 0.375rem;
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.15), hsl(var(--cute-purple) / 0.05));
+  border-color: hsl(var(--cute-purple) / 0.3);
+}
+
+.leveling-quick-stat-prestige:hover {
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.25), hsl(var(--cute-purple) / 0.1));
+  border-color: hsl(var(--cute-purple) / 0.5);
+}
+
 @media (min-width: 768px) {
   .leveling-quick-stat {
     font-size: 0.75rem;

@@ -13,6 +13,8 @@ import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability, CharacterSheet } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
 import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown, Swords, Hammer, Users } from 'lucide-react';
+import { MasteryBadge } from '../ui/MasteryBadge';
+import { PrestigeSystem } from '@/types';
 import './CharacterLevelingTab.css';
 
 /**
@@ -531,7 +533,7 @@ export function CharacterLevelingTab() {
             <div className="leveling-quick-stats">
               <span className="leveling-quick-stat leveling-quick-stat-hp" title="Hit Points">
                 <Heart size={12} />
-                <span>{activeChar.hp.max}</span>
+                <span>{activeChar.hp?.max ?? 0}</span>
               </span>
               <span className="leveling-quick-stat leveling-quick-stat-ac" title="Armor Class">
                 <Shield size={12} />
@@ -541,6 +543,17 @@ export function CharacterLevelingTab() {
                 <Star size={12} />
                 <span>+{activeChar.proficiency_bonus}</span>
               </span>
+              {(activeChar.prestige_level ?? 0) > 0 && (
+                <span className="leveling-quick-stat leveling-quick-stat-prestige" title={`Prestige Level ${PrestigeSystem.toRomanNumeral(activeChar.prestige_level ?? 0)}`}>
+                  <MasteryBadge
+                    isMastered={true}
+                    prestigeLevel={activeChar.prestige_level ?? 0}
+                    prestigeRoman={PrestigeSystem.toRomanNumeral(activeChar.prestige_level ?? 0)}
+                    isMaxPrestige={(activeChar.prestige_level ?? 0) >= 10}
+                    size="sm"
+                  />
+                </span>
+              )}
             </div>
           </div>
         </div>
