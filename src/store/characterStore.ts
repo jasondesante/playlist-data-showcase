@@ -293,6 +293,29 @@ interface CharacterState {
      * ```
      */
     getCharacterUncappedConfig: (seed: string) => string;
+    /**
+     * Reset a character's prestige level back to 0 (cheat/debug helper).
+     * Useful for testing prestige progression without losing character data.
+     * Does NOT clear session history - use sessionStore.clearTrackSessions() separately if needed.
+     *
+     * @param characterId - The seed of the character to reset
+     * @returns True if reset was successful, false if character not found
+     * @example
+     * ```ts
+     * resetPrestigeLevel('character-seed-123');
+     * ```
+     */
+    resetPrestigeLevel: (characterId: string) => boolean;
+    /**
+     * Directly set a character's prestige level (cheat/debug helper).
+     * Bypasses all prestige requirements and session tracking.
+     * Useful for testing different prestige levels.
+     *
+     * @param characterId - The seed of the character
+     * @param prestigeLevel - The new prestige level (0-10)
+     * @returns True if successful, false if character not found or invalid level
+     */
+    setPrestigeLevel: (characterId: string, prestigeLevel: number) => boolean;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -838,6 +861,80 @@ export const useCharacterStore = create<CharacterState>()(
             getCharacterUncappedConfig: (seed: string): string => {
                 const { uncappedConfig } = get();
                 return uncappedConfig[seed] ?? DEFAULT_XP_FORMULA_PRESET_ID;
+            },
+
+            /**
+             * Reset a character's prestige level back to 0 (cheat/debug helper).
+             * Useful for testing prestige progression without losing character data.
+             * Does NOT clear session history - use sessionStore.clearTrackSessions() separately if needed.
+             *
+             * @param characterId - The seed of the character to reset
+             * @returns True if reset was successful, false if character not found
+             */
+            resetPrestigeLevel: (characterId: string): boolean => {
+                const character = get().characters.find((c) => c.seed === characterId);
+                if (!character) {
+                    logger.warn('Store', 'Character not found for prestige reset', { characterId });
+                    return false;
+                }
+
+                const oldLevel = character.prestige_level ?? 0;
+                if (oldLevel === 0) {
+                    logger.info('Store', 'Character already at prestige 0, no change needed', { characterId });
+                    return true;
+                }
+
+                set((state) => ({
+                    characters: state.characters.map((c) =>
+                        c.seed === characterId ? { ...c, prestige_level: 0 as 0 } : c
+                    )
+                }));
+
+                logger.info('Store', 'Reset character prestige to 0', {
+                    characterId,
+                    characterName: character.name,
+                    previousLevel: oldLevel
+                });
+                return true;
+            },
+
+            /**
+             * Directly set a character's prestige level (cheat/debug helper).
+             * Bypasses all prestige requirements and session tracking.
+             * Useful for testing different prestige levels.
+             *
+             * @param characterId - The seed of the character
+             * @param prestigeLevel - The new prestige level (0-10)
+             * @returns True if successful, false if character not found or invalid level
+             */
+            setPrestigeLevel: (characterId: string, prestigeLevel: number): boolean => {
+                if (prestigeLevel < 0 || prestigeLevel > 10) {
+                    logger.warn('Store', 'Invalid prestige level', { characterId, prestigeLevel });
+                    return false;
+                }
+
+                const character = get().characters.find((c) => c.seed === characterId);
+                if (!character) {
+                    logger.warn('Store', 'Character not found for prestige level set', { characterId });
+                    return false;
+                }
+
+                const oldLevel = character.prestige_level ?? 0;
+                // Cast to PrestigeLevel type (0-10 union type)
+                const validPrestigeLevel = prestigeLevel as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+                set((state) => ({
+                    characters: state.characters.map((c) =>
+                        c.seed === characterId ? { ...c, prestige_level: validPrestigeLevel } : c
+                    )
+                }));
+
+                logger.info('Store', 'Set character prestige level', {
+                    characterId,
+                    characterName: character.name,
+                    previousLevel: oldLevel,
+                    newLevel: prestigeLevel
+                });
+                return true;
             }
         }),
         {

@@ -2,14 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
+import { useSessionStore } from '../../store/sessionStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
+import { useMastery } from '../../hooks/useMastery';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { showToast } from '../ui/Toast';
-import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge } from 'lucide-react';
+import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw } from 'lucide-react';
 import type { LevelUpDetail } from 'playlist-data-engine';
+import { PrestigeSystem } from '@/types';
 import {
     useProgressionConfig,
     useProgressionConfigActions,
@@ -206,8 +209,10 @@ const ConfigSlider = React.memo(function ConfigSlider({
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
   const { environmentalContext, gamingContext } = useSensorStore();
-  const { getActiveCharacter, characters, setActiveCharacter } = useCharacterStore();
+  const { getActiveCharacter, characters, setActiveCharacter, prestigeCharacter, resetPrestigeLevel, canPrestige } = useCharacterStore();
   const { addXPFromSource } = useCharacterUpdater();
+  const { addFakeSessions, clearTrackSessions, getTrackListenCount, getTrackXPTotal } = useSessionStore();
+  const { getMasteryInfo } = useMastery();
 
   // Progression config store - for reading and modifying XP multiplier values
   const config = useProgressionConfig();
@@ -348,6 +353,118 @@ export function XPCalculatorTab() {
   const handleResetConfig = () => {
     resetProgressionConfig();
     showToast('Progression config reset to defaults', 'success');
+  };
+
+  // Track Mastery cheat handlers
+  const handleFillMasteryRequirements = () => {
+    if (!activeCharacter) {
+      showToast('No character selected', 'warning');
+      return;
+    }
+
+    const currentPrestigeLevel = activeCharacter.prestige_level ?? 0;
+    if (currentPrestigeLevel >= 10) {
+      showToast('Already at max prestige level', 'warning');
+      return;
+    }
+
+    // Get the thresholds for current prestige level
+    const playsThreshold = PrestigeSystem.getPlaysThreshold(currentPrestigeLevel);
+    const xpThreshold = PrestigeSystem.getXPThreshold(currentPrestigeLevel);
+
+    // Get current progress
+    const currentListenCount = getTrackListenCount(activeCharacter.seed);
+    const currentXP = getTrackXPTotal(activeCharacter.seed);
+
+    // Calculate how many more sessions we need
+    const playsNeeded = Math.max(0, playsThreshold - currentListenCount);
+    const xpNeeded = Math.max(0, xpThreshold - currentXP);
+    const xpPerSession = playsNeeded > 0 ? Math.ceil(xpNeeded / playsNeeded) : Math.ceil(xpThreshold / 10);
+
+    if (playsNeeded > 0) {
+      // Add fake sessions to meet requirements
+      addFakeSessions(activeCharacter.seed, playsNeeded, xpPerSession);
+      showToast(`Added ${playsNeeded} sessions with ${xpPerSession} XP each`, 'success');
+    } else if (xpNeeded > 0) {
+      // Already have enough plays but need more XP - add 1 session with the needed XP
+      addFakeSessions(activeCharacter.seed, 1, xpNeeded);
+      showToast(`Added 1 session with ${xpNeeded} XP`, 'success');
+    } else {
+      showToast('Requirements already met!', 'info');
+    }
+  };
+
+  const handleResetPrestige = () => {
+    if (!activeCharacter) {
+      showToast('No character selected', 'warning');
+      return;
+    }
+
+    const currentLevel = activeCharacter.prestige_level ?? 0;
+    if (currentLevel === 0) {
+      showToast('Already at prestige level 0', 'info');
+      return;
+    }
+
+    const success = resetPrestigeLevel(activeCharacter.seed);
+    if (success) {
+      showToast(`Reset ${activeCharacter.name}'s prestige to 0`, 'success');
+    } else {
+      showToast('Failed to reset prestige', 'error');
+    }
+  };
+
+  const handleLevelUpPrestige = () => {
+    if (!activeCharacter) {
+      showToast('No character selected', 'warning');
+      return;
+    }
+
+    // Check if can prestige
+    const sessionTracker = {
+      getTrackListenCount: (id: string) => getTrackListenCount(id),
+      getTrackXPTotal: (id: string) => getTrackXPTotal(id),
+      clearTrackSessions: (id: string) => clearTrackSessions(id),
+    };
+
+    const canDoPrestige = canPrestige(activeCharacter.seed, sessionTracker);
+    if (!canDoPrestige) {
+      showToast('Requirements not met - use Fill Requirements first', 'warning');
+      return;
+    }
+
+    const currentLevel = activeCharacter.prestige_level ?? 0;
+    if (currentLevel >= 10) {
+      showToast('Already at max prestige level', 'warning');
+      return;
+    }
+
+    // Execute prestige
+    const audioProfile = {
+      danceability: 0.5,
+      energy: 0.5,
+      acousticness: 0.5,
+      instrumentalness: 0.5,
+      tempo: 120,
+      loudness: -10,
+      valence: 0.5,
+    };
+
+    // Create a minimal track object for the prestige
+    const track = {
+      id: activeCharacter.seed,
+      title: activeCharacter.name,
+      artist: 'Unknown',
+      audio_url: '',
+    };
+
+    const result = prestigeCharacter(activeCharacter.seed, audioProfile as any, track as any, sessionTracker);
+
+    if (result.success) {
+      showToast(`Prestiged to level ${PrestigeSystem.toRomanNumeral(result.newPrestigeLevel)}!`, 'success');
+    } else {
+      showToast(`Prestige failed: ${result.message}`, 'error');
+    }
   };
 
   /**
@@ -846,6 +963,95 @@ export function XPCalculatorTab() {
                 <div className="xp-manual-hint">
                   Leave fields empty to use automatic values from sensors/stores
                 </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Track Mastery Cheat Card */}
+          <Card variant="default" padding="md" className="xp-mastery-cheat-card">
+            <div className="xp-context-card-header">
+              <h3 className="xp-context-card-title">
+                <Crown size={16} className="xp-mastery-icon" />
+                Track Mastery Controls
+              </h3>
+              <StatusIndicator
+                status={activeCharacter ? 'healthy' : 'degraded'}
+                label={activeCharacter ? `Prestige ${PrestigeSystem.toRomanNumeral(activeCharacter.prestige_level ?? 0)}` : 'No Character'}
+              />
+            </div>
+
+            {activeCharacter ? (
+              <div className="xp-mastery-content">
+                {/* Current Progress */}
+                {(() => {
+                  const masteryInfo = getMasteryInfo(activeCharacter.seed, activeCharacter.prestige_level ?? 0);
+                  return (
+                    <div className="xp-mastery-progress">
+                      <div className="xp-mastery-stat">
+                        <span className="xp-mastery-label">Plays</span>
+                        <span className="xp-mastery-value">
+                          {masteryInfo.listenCount} / {masteryInfo.playsThreshold}
+                        </span>
+                        <div className="xp-mastery-bar">
+                          <div
+                            className="xp-mastery-bar-fill"
+                            style={{ width: `${Math.min(100, masteryInfo.playsProgress * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="xp-mastery-stat">
+                        <span className="xp-mastery-label">XP</span>
+                        <span className="xp-mastery-value">
+                          {masteryInfo.totalXP.toLocaleString()} / {masteryInfo.xpThreshold.toLocaleString()}
+                        </span>
+                        <div className="xp-mastery-bar">
+                          <div
+                            className="xp-mastery-bar-fill xp-mastery-bar-xp"
+                            style={{ width: `${Math.min(100, masteryInfo.xpProgress * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Cheat Buttons */}
+                <div className="xp-mastery-buttons">
+                  <button
+                    onClick={handleFillMasteryRequirements}
+                    className="xp-mastery-btn xp-mastery-btn-fill"
+                    title="Fill mastery requirements with fake sessions"
+                  >
+                    <Sparkles size={14} />
+                    Fill Requirements
+                  </button>
+                  <button
+                    onClick={handleLevelUpPrestige}
+                    className="xp-mastery-btn xp-mastery-btn-prestige"
+                    disabled={(activeCharacter.prestige_level ?? 0) >= 10}
+                    title="Level up prestige when requirements are met"
+                  >
+                    <Crown size={14} />
+                    Level Up Prestige
+                  </button>
+                  <button
+                    onClick={handleResetPrestige}
+                    className="xp-mastery-btn xp-mastery-btn-reset"
+                    disabled={(activeCharacter.prestige_level ?? 0) === 0}
+                    title="Reset prestige level back to 0"
+                  >
+                    <RotateCcw size={14} />
+                    Reset Prestige
+                  </button>
+                </div>
+
+                <div className="xp-mastery-hint">
+                  Cheat buttons for testing prestige progression
+                </div>
+              </div>
+            ) : (
+              <div className="xp-context-empty">
+                Select a character to access track mastery controls
               </div>
             )}
           </Card>

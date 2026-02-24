@@ -460,7 +460,18 @@ export function SessionTrackingTab() {
 
               {/* Mini track info below timer */}
               <div className="session-timer-track-info">
-                <h4 className="session-timer-track-title">{selectedTrack.title}</h4>
+                <div className="session-timer-track-title-row">
+                  <h4 className="session-timer-track-title">{selectedTrack.title}</h4>
+                  {masteryInfo && (masteryInfo.isMastered || masteryInfo.prestigeLevel > 0) && (
+                    <MasteryBadge
+                      isMastered={masteryInfo.isMastered}
+                      prestigeLevel={masteryInfo.prestigeLevel}
+                      prestigeRoman={masteryInfo.prestigeRoman}
+                      isMaxPrestige={masteryInfo.isMaxPrestige}
+                      size="sm"
+                    />
+                  )}
+                </div>
                 <p className="session-timer-track-artist">{selectedTrack.artist}</p>
               </div>
             </Card>

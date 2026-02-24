@@ -30,6 +30,15 @@ interface SessionState {
     getTrackXPTotal: (trackUuid: string) => number;
     /** Get number of listening sessions for a specific track */
     getTrackListenCount: (trackUuid: string) => number;
+    /**
+     * Add fake sessions for a track to meet mastery requirements (cheat/debug helper).
+     * Used for testing prestige functionality without actual listening sessions.
+     * @param trackUuid - The track UUID to add sessions for
+     * @param count - Number of sessions to add (for plays threshold)
+     * @param xpPerSession - XP per session (for XP threshold)
+     * @param track - Optional track metadata for display
+     */
+    addFakeSessions: (trackUuid: string, count: number, xpPerSession: number, track?: PlaylistTrack) => void;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -143,6 +152,42 @@ export const useSessionStore = create<SessionState>()(
                 return state.sessionHistory.filter(
                     (session) => session.track_uuid === trackUuid
                 ).length;
+            },
+
+            /**
+             * Add fake sessions for a track to meet mastery requirements (cheat/debug helper).
+             * Used for testing prestige functionality without actual listening sessions.
+             * @param trackUuid - The track UUID to add sessions for
+             * @param count - Number of sessions to add (for plays threshold)
+             * @param xpPerSession - XP per session (for XP threshold)
+             * @param track - Optional track metadata for display
+             */
+            addFakeSessions: (trackUuid: string, count: number, xpPerSession: number, track?: PlaylistTrack): void => {
+                const fakeSessions: ListeningSessionWithTrack[] = [];
+                const now = Date.now();
+
+                for (let i = 0; i < count; i++) {
+                    const startTime = now - (count - i) * 200000; // Stagger timestamps
+                    fakeSessions.push({
+                        track_uuid: trackUuid,
+                        start_time: startTime,
+                        end_time: startTime + 180000, // 3 minutes in ms
+                        duration_seconds: 180, // 3 minutes
+                        base_xp_earned: xpPerSession,
+                        bonus_xp: 0,
+                        total_xp_earned: xpPerSession,
+                        environmental_context: undefined,
+                        gaming_context: undefined,
+                        track_title: track?.title,
+                        track_artist: track?.artist,
+                        track_image_url: track?.image_url
+                    });
+                }
+
+                logger.info('Store', 'Adding fake sessions for testing', { trackUuid, count, xpPerSession });
+                set((state) => ({
+                    sessionHistory: [...fakeSessions, ...state.sessionHistory] // New sessions first
+                }));
             }
         }),
         {

@@ -447,6 +447,14 @@
   text-align: center;
 }
 
+.session-timer-track-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  max-width: 100%;
+}
+
 .session-timer-track-title {
   font-size: 0.75rem;
   font-weight: 600;
@@ -2579,6 +2587,11 @@
 
   .session-timer-track-info {
     margin-top: 0.5rem;
+  }
+
+  .session-timer-track-title-row {
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
 
   .session-timer-track-title {
