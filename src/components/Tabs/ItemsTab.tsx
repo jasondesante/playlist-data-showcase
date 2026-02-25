@@ -87,6 +87,7 @@ import {
   Info,
   Code
 } from 'lucide-react';
+import { useCharacterStore } from '../../store/characterStore';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
 import { useItemCreator, type CustomItemFormData } from '../../hooks/useItemCreator';
@@ -220,6 +221,9 @@ function getAmmunitionWeightDisplay(item: EnhancedInventoryItem): string {
 }
 
 export function ItemsTab() {
+  // Get character store for character selector
+  const { characters, setActiveCharacter } = useCharacterStore();
+
   // Use the hero equipment hook for all equipment operations
   const {
     activeCharacter,
@@ -310,6 +314,13 @@ export function ItemsTab() {
 
   // Ref for click outside detection
   const itemDetailRef = useRef<HTMLDivElement>(null);
+
+  // Handle character selection change
+  const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSeed = e.target.value;
+    setActiveCharacter(selectedSeed);
+    showToast(`Switched to ${characters.find(c => c.seed === selectedSeed)?.name || 'character'}`, 'success');
+  };
 
   // Click outside handler to collapse item details
   useEffect(() => {
@@ -1557,17 +1568,43 @@ export function ItemsTab() {
     <div className="items-tab">
       {/* Header */}
       <div className="items-header">
-        <div className="items-header-icon">
-          <Backpack size={24} />
+        <div className="items-header-left">
+          <div className="items-header-icon">
+            <Backpack size={24} />
+          </div>
+          <div className="items-header-text">
+            <h2 className="items-header-title">Items</h2>
+            <p className="items-header-subtitle">
+              {activeCharacter
+                ? `Managing equipment for ${activeCharacter.name}`
+                : 'Manage your hero\'s equipment, spawn loot, and create custom items'}
+            </p>
+          </div>
         </div>
-        <div className="items-header-text">
-          <h2 className="items-header-title">Items</h2>
-          <p className="items-header-subtitle">
-            {activeCharacter
-              ? `Managing equipment for ${activeCharacter.name}`
-              : 'Manage your hero\'s equipment, spawn loot, and create custom items'}
-          </p>
-        </div>
+
+        {/* Character Selector - Inline in header when there are multiple characters */}
+        {characters.length > 1 && activeCharacter && (
+          <div className="items-header-selector">
+            <div className="items-selector-info">
+              <User size={18} className="items-selector-icon" />
+              <span className="items-selector-label">Active Character</span>
+            </div>
+            <div className="items-select-wrapper">
+              <select
+                className="items-character-select"
+                onChange={handleCharacterChange}
+                value={activeCharacter.seed}
+              >
+                {characters.map((char) => (
+                  <option key={char.seed} value={char.seed}>
+                    {char.name} - Lv {char.level} {char.race} {char.class}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="items-select-chevron" />
+            </div>
+          </div>
+        )}
       </div>
 
       {!activeCharacter ? (

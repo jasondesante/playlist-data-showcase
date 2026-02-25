@@ -340,9 +340,13 @@ export function EnchantmentModal({
                 <span>Select an enchantment to apply to this item. Multiple enchantments can stack.</span>
               </div>
 
-              {/* Enchantment Grid */}
-              <div className="enchantment-grid">
-                {Object.entries(availableEnchantments).map(([id, mod]) => {
+              {/* Standard Enchantment Grid */}
+              <div className="enchantment-section">
+                <h3 className="enchantment-section-title">
+                  <span>Standard Enchantments</span>
+                </h3>
+                <div className="enchantment-grid">
+                  {Object.entries(availableEnchantments).map(([id, mod]) => {
                   const info = getEnchantmentDisplayInfo(id, mod);
                   const isApplied = isModificationApplied(id);
                   const isThisLoading = loadingEnchantmentId === id;
@@ -378,16 +382,24 @@ export function EnchantmentModal({
                   );
                 })}
               </div>
+              </div>
 
-              {/* Combo enchantments for weapons */}
-              {itemType === 'weapon' && Object.keys(ALL_ENCHANTMENTS).length > 0 && (
-                <div className="enchantment-section">
-                  <h3 className="enchantment-section-title">
-                    <Sparkles size={14} />
-                    <span>Legendary Enchantments</span>
-                  </h3>
-                  <div className="enchantment-grid">
-                    {Object.entries(ALL_ENCHANTMENTS).map(([id, mod]) => {
+              {/* Combo enchantments for weapons - filter out duplicates from standard enchantments */}
+              {itemType === 'weapon' && (() => {
+                // Get IDs of standard enchantments to filter out duplicates
+                const standardEnchantmentIds = new Set(Object.keys(availableEnchantments).map(id => id.toLowerCase()));
+                // Filter ALL_ENCHANTMENTS to only show combo/legendary enchantments not in standard
+                const legendaryEnchantments = Object.entries(ALL_ENCHANTMENTS).filter(
+                  ([id]) => !standardEnchantmentIds.has(id.toLowerCase())
+                );
+                return legendaryEnchantments.length > 0 && (
+                  <div className="enchantment-section">
+                    <h3 className="enchantment-section-title">
+                      <Sparkles size={14} />
+                      <span>Legendary Enchantments</span>
+                    </h3>
+                    <div className="enchantment-grid">
+                      {legendaryEnchantments.map(([id, mod]) => {
                       const info = getEnchantmentDisplayInfo(id, mod);
                       const isApplied = isModificationApplied(id);
                       const isThisLoading = loadingEnchantmentId === id;
@@ -424,7 +436,8 @@ export function EnchantmentModal({
                     })}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Stat Boosts Section */}
               <div className="enchantment-section">

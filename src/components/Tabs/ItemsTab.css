@@ -106,6 +106,73 @@
   color: var(--color-text-secondary);
 }
 
+/* Character Selector in Header */
+.items-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.items-header-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.items-selector-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.items-selector-icon {
+  opacity: 0.8;
+}
+
+.items-selector-label {
+  font-weight: 500;
+}
+
+.items-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.items-character-select {
+  appearance: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+}
+
+.items-character-select:hover {
+  border-color: var(--color-primary);
+}
+
+.items-character-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha);
+}
+
+.items-select-chevron {
+  position: absolute;
+  right: 0.5rem;
+  pointer-events: none;
+  color: var(--color-text-secondary);
+}
+
 /* ========================================
    SECTION CARDS
    ======================================== */
