@@ -146,24 +146,10 @@ export function RaceCreatorForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubraces, setShowSubraces] = useState(false);
 
-  // Default traits from the racialTraits category
-  const defaultTraits = useMemo(() => {
-    return availableTraits || [
-      'Darkvision',
-      'Draconic Ancestry',
-      'Dwarven Resilience',
-      'Elven Weapon Training',
-      'Fey Ancestry',
-      'Gnome Cunning',
-      'Halfling Luck',
-      'Hellish Resistance',
-      'Lucky',
-      'Menacing',
-      'Relentless Endurance',
-      'Savage Attacks',
-      'Stonecunning',
-      'Superior Darkvision'
-    ];
+  // Traits list from live registry (passed from DataViewerTab via ExtensionManager)
+  // Falls back to empty array if no traits are available yet
+  const traitsList = useMemo(() => {
+    return availableTraits || [];
   }, [availableTraits]);
 
   // Validate form
@@ -572,17 +558,23 @@ export function RaceCreatorForm({
         </span>
 
         <div className="race-creator-traits-grid">
-          {defaultTraits.map(trait => (
-            <label key={trait} className="race-creator-trait-option">
-              <input
-                type="checkbox"
-                checked={formData.traits.includes(trait)}
-                onChange={() => handleTraitToggle(trait)}
-                disabled={disabled}
-              />
-              <span>{trait}</span>
-            </label>
-          ))}
+          {traitsList.length === 0 ? (
+            <span className="race-creator-empty-message">
+              No traits available yet. Create racial traits using the Racial Trait Creator first.
+            </span>
+          ) : (
+            traitsList.map(trait => (
+              <label key={trait} className="race-creator-trait-option">
+                <input
+                  type="checkbox"
+                  checked={formData.traits.includes(trait)}
+                  onChange={() => handleTraitToggle(trait)}
+                  disabled={disabled}
+                />
+                <span>{trait}</span>
+              </label>
+            ))
+          )}
         </div>
 
         {formData.traits.length > 0 && (

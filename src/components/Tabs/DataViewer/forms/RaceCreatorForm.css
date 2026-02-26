@@ -171,6 +171,13 @@
   margin-top: 0.5rem;
 }
 
+.race-creator-empty-message {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 0.5rem;
+}
+
 .race-creator-trait-option {
   display: flex;
   align-items: center;

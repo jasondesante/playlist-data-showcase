@@ -2468,6 +2468,7 @@ export function DataViewerTab() {
           onCreate={handleCreateRace}
           onCancel={() => setShowRaceCreator(false)}
           submitButtonText="Create Race"
+          availableTraits={racialTraits.map(t => t.name)}
         />
       </ContentCreatorModal>
 

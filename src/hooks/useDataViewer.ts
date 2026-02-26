@@ -307,6 +307,9 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     /**
      * Load all racial traits from FeatureQuery
+     *
+     * Recomputes when lastDataChange changes (custom items added via Trait Creator)
+     * This ensures the RaceCreatorForm gets the latest available traits.
      */
     const racialTraits = useMemo(() => {
         try {
@@ -322,7 +325,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load racial traits', errorMessage);
             return [];
         }
-    }, [featureQuery]);
+        // Include lastDataChange as dependency to trigger re-computation when custom items are added
+    }, [featureQuery, lastDataChange]);
 
     /**
      * Load all races from RACE_DATA

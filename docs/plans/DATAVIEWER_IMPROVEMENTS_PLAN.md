@@ -315,14 +315,16 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 
 ## Phase 6: Bug Fixes - Data Refresh
 
-### 6.1 Fix RaceCreatorForm Traits List
-- [ ] Update RaceCreatorForm to fetch traits from ExtensionManager
-  - [ ] Remove hardcoded fallback trait list
-  - [ ] Use `manager.get('racialTraits')` to get all available traits
-  - [ ] Add useEffect to refresh traits when data changes
-- [ ] Update DataViewerTab to pass fresh traits data
-  - [ ] Pass `availableTraits` prop from live data
-  - [ ] Trigger re-render after trait creation
+### 6.1 Fix RaceCreatorForm Traits List ✅ DONE
+- [x] Update RaceCreatorForm to fetch traits from ExtensionManager
+  - [x] Remove hardcoded fallback trait list
+  - [x] Use live traits from FeatureQuery via useDataViewer hook
+  - [x] Add lastDataChange dependency to trigger re-computation when data changes
+- [x] Update DataViewerTab to pass fresh traits data
+  - [x] Pass `availableTraits` prop from live data
+  - [x] Trigger re-render after trait creation (via lastDataChange dependency in useDataViewer)
+- [x] Update useDataViewer hook
+  - [x] Add lastDataChange dependency to racialTraits useMemo (similar to equipment)
 
 ### 6.2 Fix Racial Traits List Refresh
 - [ ] Investigate why refresh button doesn't update racial traits list
