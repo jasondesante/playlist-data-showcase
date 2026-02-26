@@ -413,7 +413,18 @@ This ensures all category lists update immediately when:
 ## Phase 8: Testing & Documentation
 
 ### 8.1 Integration Testing
-- [ ] Test image fields in all creator forms
+- [x] Test image fields in all creator forms ✅ DONE
+  - **Verified:** All 7 creator forms have ImageFieldInput properly integrated:
+    - EquipmentCreatorForm: Uses `itemIcon`/`itemImage` state, wired to ImageFieldInput, included in formData submission
+    - SpellCreatorForm: Uses `formData.icon`/`formData.image`, has `handleIconChange`/`handleImageChange`, included in submission
+    - SkillCreatorForm: Same pattern as SpellCreatorForm
+    - ClassFeatureCreatorForm: Same pattern, properly includes icon/image in featureItem
+    - RacialTraitCreatorForm: Same pattern, properly includes icon/image in traitItem
+    - RaceCreatorForm: Same pattern, properly includes icon/image in raceData
+    - ClassCreatorForm: Same pattern, properly includes icon/image in classData
+  - **ImageFieldInput component:** URL validation, preview thumbnail, external link button, error handling
+  - **CSS styling:** All forms have `-images-section` and `-images-grid` CSS classes properly defined
+  - **Build:** TypeScript compiles with no errors
 - [ ] Test box type creation and opening
 - [ ] Test modal flows for skills and equipment
 - [ ] Test structured dropdowns with custom options
