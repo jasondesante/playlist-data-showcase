@@ -232,10 +232,10 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Handle advanced options section within modal
 - [x] Test creation flow end-to-end
 
-### 4.3 Update ItemsTab to Use Modal
-- [ ] Verify ItemsTab equipment creator still works
-- [ ] Ensure consistent modal behavior across both tabs
-- [ ] May need to pass modal control props to shared form
+### 4.3 Update ItemsTab to Use Modal ✅ DONE
+- [x] Verify ItemsTab equipment creator still works
+- [x] Ensure consistent modal behavior across both tabs
+- [x] May need to pass modal control props to shared form (used ContentCreatorModal with EquipmentCreatorForm)
 
 ---
 

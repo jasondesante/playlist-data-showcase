@@ -94,6 +94,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { showToast } from '../ui/Toast';
 import { EnchantmentModal, type ItemEquipmentType } from '../modals/EnchantmentModal';
+import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import { DetailRow, type DetailRowProperty } from '../ui/DetailRow';
 import { EquipmentCreatorForm } from '../shared/EquipmentCreatorForm';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
@@ -268,7 +269,9 @@ export function ItemsTab() {
   // Section collapse states
   const [isEquipmentExpanded, setIsEquipmentExpanded] = useState(true);
   const [isLootBoxExpanded, setIsLootBoxExpanded] = useState(false);
-  const [isCreatorExpanded, setIsCreatorExpanded] = useState(false);
+
+  // Equipment creator modal state (Phase 4.3 - Modal Conversion)
+  const [showEquipmentCreatorModal, setShowEquipmentCreatorModal] = useState(false);
 
   // Loot Box state
   const [spawnMode, setSpawnMode] = useState<SpawnMode>('random');
@@ -2014,11 +2017,11 @@ export function ItemsTab() {
             )}
           </Card>
 
-          {/* Custom Item Creator Section */}
+          {/* Custom Item Creator Section - Button to open Modal (Phase 4.3) */}
           <Card className="items-section items-section-creator">
             <CardHeader
               className="items-section-header"
-              onClick={() => setIsCreatorExpanded(!isCreatorExpanded)}
+              onClick={() => setShowEquipmentCreatorModal(true)}
             >
               <div className="items-section-header-content">
                 <Wand2 className="items-section-icon items-section-icon-creator" size={20} />
@@ -2029,68 +2032,85 @@ export function ItemsTab() {
                   </CardDescription>
                 </div>
               </div>
-              {isCreatorExpanded ? (
-                <ChevronUp className="items-section-chevron" size={20} />
-              ) : (
-                <ChevronDown className="items-section-chevron" size={20} />
-              )}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEquipmentCreatorModal(true);
+                }}
+                leftIcon={Plus}
+              >
+                Create Item
+              </Button>
             </CardHeader>
 
-            {isCreatorExpanded && (
+            {/* Last Created Item - shown below the header */}
+            {lastCreatedItem && (
               <div className="items-section-content">
-                {/* Equipment Creator Form - Shared Component */}
-                <EquipmentCreatorForm
-                  onSubmit={async (formData, equipment) => {
-                    if (!activeCharacter) {
-                      showToast('No character selected', 'error');
-                      return;
-                    }
-
-                    // Add item to character using the hook
-                    const result = await addItemToCharacter(equipment, formData.quantity, formData.autoEquip);
-
-                    if (result.success) {
-                      showToast(result.message || `Created and added ${formData.name}!`, 'success');
-                    } else {
-                      showToast(result.error || `Failed to create ${formData.name}`, 'error');
-                    }
-                  }}
-                  showPreview={true}
-                  showAdvancedOptions={true}
-                  showAutoEquip={true}
-                />
-
-                {/* Last Created Item */}
-                {lastCreatedItem && (
-                  <div className="item-creator-last-created">
-                    <h4 className="item-creator-last-created-title">
-                      <Save size={16} />
-                      Last Created Item
-                    </h4>
-                    <div className="item-creator-json-dump">
-                      <RawJsonDump
-                        data={lastCreatedItem}
-                        title="Created Item Data (Raw)"
-                        defaultOpen={false}
-                      />
-                    </div>
-                    <div style={{ marginTop: '0.75rem' }}>
-                      <Button
-                        variant="outline"
-                        size="md"
-                        onClick={clearLastCreated}
-                        leftIcon={Trash}
-                      >
-                        Clear Last Created
-                      </Button>
-                    </div>
+                <div className="item-creator-last-created">
+                  <h4 className="item-creator-last-created-title">
+                    <Save size={16} />
+                    Last Created Item
+                  </h4>
+                  <div className="item-creator-json-dump">
+                    <RawJsonDump
+                      data={lastCreatedItem}
+                      title="Created Item Data (Raw)"
+                      defaultOpen={false}
+                    />
                   </div>
-                )}
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      onClick={clearLastCreated}
+                      leftIcon={Trash}
+                    >
+                      Clear Last Created
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </Card>
         </>
       )}
+
+      {/* Equipment Creator Modal (Phase 4.3 - Consistent with DataViewerTab) */}
+      <ContentCreatorModal
+        isOpen={showEquipmentCreatorModal}
+        onClose={() => setShowEquipmentCreatorModal(false)}
+        title="Create Custom Item"
+        subtitle="Add a new weapon, armor, item, or box to your inventory"
+        icon={Wand2}
+        showFooter={false}
+        width="lg"
+      >
+        <EquipmentCreatorForm
+          onSubmit={async (formData, equipment) => {
+            if (!activeCharacter) {
+              showToast('No character selected', 'error');
+              return;
+            }
+
+            // Add item to character using the hook
+            const result = await addItemToCharacter(equipment, formData.quantity, formData.autoEquip);
+
+            if (result.success) {
+              showToast(result.message || `Created and added ${formData.name}!`, 'success');
+              setShowEquipmentCreatorModal(false);
+            } else {
+              showToast(result.error || `Failed to create ${formData.name}`, 'error');
+            }
+          }}
+          onCancel={() => setShowEquipmentCreatorModal(false)}
+          showPreview={true}
+          showAdvancedOptions={true}
+          showAutoEquip={true}
+          submitButtonText="Create & Add to Inventory"
+        />
+      </ContentCreatorModal>
 
       {/* Enchantment Modal */}
       <EnchantmentModal
