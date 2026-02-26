@@ -168,8 +168,8 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 5: Medium Complexity Content Types
 
 ### 5.1 Spell Creator
-- [ ] Create `src/components/Tabs/DataViewer/forms/SpellCreatorForm.tsx`
-  - [ ] Fields:
+- [x] Create `src/components/Tabs/DataViewer/forms/SpellCreatorForm.tsx`
+  - [x] Fields:
     - name (text, required)
     - level (select 0-9, required) - 0 = cantrip
     - school (select: 8 schools, required)
@@ -178,10 +178,10 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
     - components (multi-select: V/S/M)
     - duration (text, required)
     - description (textarea, required)
-  - [ ] Class assignment:
+  - [x] Class assignment:
     - All classes (`spells`)
     - Specific class (`spells.{className}`)
-  - [ ] Multi-select for class availability
+  - [x] Multi-select for class availability
 
 ### 5.2 Class Feature Creator
 - [ ] Create `src/components/Tabs/DataViewer/forms/ClassFeatureCreatorForm.tsx`

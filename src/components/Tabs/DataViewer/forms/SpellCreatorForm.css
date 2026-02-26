@@ -1,0 +1,408 @@
+/**
+ * SpellCreatorForm Component Styles
+ *
+ * Styles for the spell creator form.
+ * Part of DataViewerTab Custom Content Creation Upgrade - Phase 5.1.
+ */
+
+.spell-creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* Section Styles */
+.spell-creator-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spell-creator-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.spell-creator-section-title svg {
+  color: var(--cute-purple);
+}
+
+/* Field Styles */
+.spell-creator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.spell-creator-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.spell-creator-required {
+  color: var(--destructive);
+  margin-left: 0.125rem;
+}
+
+.spell-creator-optional {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+/* Row Layout for Side-by-Side Fields */
+.spell-creator-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.spell-creator-row .spell-creator-field {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .spell-creator-row {
+    flex-direction: column;
+  }
+}
+
+/* Input Styles */
+.spell-creator-input,
+.spell-creator-select,
+.spell-creator-textarea {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spell-creator-input:focus,
+.spell-creator-select:focus,
+.spell-creator-textarea:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring-ring);
+}
+
+.spell-creator-input::placeholder,
+.spell-creator-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.spell-creator-input:disabled,
+.spell-creator-select:disabled,
+.spell-creator-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-bg-muted);
+}
+
+.spell-creator-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Hint Text */
+.spell-creator-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Components Selection */
+.spell-creator-components {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.spell-creator-component-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 90px;
+}
+
+.spell-creator-component-btn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--ring);
+}
+
+.spell-creator-component-btn.selected {
+  background: var(--cute-purple-bg);
+  border-color: var(--cute-purple);
+  color: var(--cute-purple);
+}
+
+.spell-creator-component-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spell-creator-component-letter {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.spell-creator-component-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.spell-creator-component-desc {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+}
+
+.spell-creator-component-btn.selected .spell-creator-component-desc {
+  color: var(--cute-purple);
+  opacity: 0.8;
+}
+
+/* Class Availability Section */
+.spell-creator-class-locked {
+  padding: 0.75rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.spell-creator-class-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spell-creator-classes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spell-creator-class-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spell-creator-class-btn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--ring);
+}
+
+.spell-creator-class-btn.selected {
+  background: var(--cute-blue-bg);
+  border-color: var(--cute-blue);
+  color: var(--cute-blue);
+}
+
+.spell-creator-class-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Errors */
+.spell-creator-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(0 60% 50% / 0.1);
+  border: 1px solid hsl(0 60% 50% / 0.3);
+  border-radius: 6px;
+}
+
+.spell-creator-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--destructive);
+}
+
+.spell-creator-error svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Actions */
+.spell-creator-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+/* Preview Section */
+.spell-creator-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--color-bg-subtle);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.spell-creator-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.spell-creator-preview-title svg {
+  color: var(--cute-gold);
+}
+
+.spell-creator-preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.spell-creator-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.spell-creator-preview-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.spell-creator-preview-badges {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.spell-creator-preview-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.spell-creator-preview-badge-secondary {
+  background: var(--color-bg-muted);
+  color: var(--color-text-secondary);
+}
+
+.spell-creator-preview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.spell-creator-preview-stat {
+  white-space: nowrap;
+}
+
+.spell-creator-preview-stat strong {
+  color: var(--color-text);
+}
+
+.spell-creator-preview-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.spell-creator-preview-classes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.spell-creator-preview-classes-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.spell-creator-preview-class {
+  padding: 0.125rem 0.5rem;
+  background: var(--cute-blue-bg);
+  color: var(--cute-blue);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .spell-creator-components {
+    flex-direction: column;
+  }
+
+  .spell-creator-component-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    min-width: auto;
+  }
+
+  .spell-creator-component-btn .spell-creator-component-desc {
+    margin-left: auto;
+  }
+
+  .spell-creator-actions {
+    flex-direction: column;
+  }
+
+  .spell-creator-actions button {
+    width: 100%;
+  }
+
+  .spell-creator-preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spell-creator-preview-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
