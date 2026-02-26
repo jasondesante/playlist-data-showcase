@@ -1,0 +1,324 @@
+/**
+ * SpawnModeControls Component Styles
+ *
+ * Styles for the spawn mode controls component including:
+ * - Mode selector buttons
+ * - Action buttons
+ * - Weight editor
+ * - Import/export controls
+ */
+
+/* ========================================
+   MAIN CONTAINER
+   ======================================== */
+
+.spawn-mode-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ========================================
+   MODE SECTION
+   ======================================== */
+
+.spawn-mode-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spawn-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spawn-mode-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-custom-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background: hsl(var(--cute-purple) / 0.15);
+  color: hsl(var(--cute-purple));
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+/* ========================================
+   MODE BUTTONS
+   ======================================== */
+
+.spawn-mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spawn-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spawn-mode-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-btn-active {
+  border-color: var(--color-primary);
+  background: hsl(var(--primary) / 0.1);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-btn-active:hover {
+  background: hsl(var(--primary) / 0.15);
+}
+
+.spawn-mode-btn-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.spawn-mode-btn-label {
+  white-space: nowrap;
+}
+
+/* ========================================
+   MODE DESCRIPTION
+   ======================================== */
+
+.spawn-mode-description {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.spawn-mode-description-indicator {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ========================================
+   ACTION BUTTONS
+   ======================================== */
+
+.spawn-mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ========================================
+   ADVANCED SECTION (WEIGHT EDITOR)
+   ======================================== */
+
+.spawn-mode-advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.spawn-mode-advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spawn-mode-advanced-toggle:hover {
+  background: var(--color-surface-dim);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-weight-count {
+  margin-left: auto;
+  padding: 0.125rem 0.375rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.spawn-mode-weight-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  animation: spawnModeSlideDown 0.2s ease-out;
+}
+
+@keyframes spawnModeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spawn-mode-weight-help {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.spawn-mode-weight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.spawn-mode-weight-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease;
+}
+
+.spawn-mode-weight-item:hover {
+  border-color: var(--color-primary);
+}
+
+.spawn-mode-weight-name {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spawn-mode-weight-input {
+  width: 5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-dim);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+  transition: border-color 0.2s ease;
+}
+
+.spawn-mode-weight-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.spawn-mode-weight-input::-webkit-inner-spin-button,
+.spawn-mode-weight-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* ========================================
+   IMPORT/EXPORT SECTION
+   ======================================== */
+
+.spawn-mode-import-export {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.spawn-mode-io-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spawn-mode-import-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-radius: var(--radius-md);
+  color: hsl(var(--destructive));
+  font-size: 0.75rem;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 480px) {
+  .spawn-mode-buttons {
+    flex-direction: column;
+  }
+
+  .spawn-mode-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .spawn-mode-actions {
+    flex-direction: column;
+  }
+
+  .spawn-mode-io-buttons {
+    flex-direction: column;
+  }
+
+  .spawn-mode-weight-input {
+    width: 4rem;
+  }
+}

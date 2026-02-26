@@ -46,18 +46,18 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Clear error messages for validation failures
 
 ### 1.4 Spawn Mode Controls Component
-- [ ] Create `src/components/Tabs/DataViewer/SpawnModeControls.tsx`
-  - [ ] Mode selector buttons (Relative/Absolute/Default/Replace)
-  - [ ] Current mode indicator badge
-  - [ ] Reset button for current category
-  - [ ] Reset All button
-  - [ ] Weight editor (expandable advanced section)
-  - [ ] Import/Export buttons:
-    - [ ] Export All button (master JSON with all custom content)
-    - [ ] Export Category button (per-category JSON)
-    - [ ] Import button with file picker
-    - [ ] Import validation and error handling
-- [ ] Create `src/components/Tabs/DataViewer/SpawnModeControls.css`
+- [x] Create `src/components/Tabs/DataViewer/SpawnModeControls.tsx`
+  - [x] Mode selector buttons (Relative/Absolute/Default/Replace)
+  - [x] Current mode indicator badge
+  - [x] Reset button for current category
+  - [x] Reset All button
+  - [x] Weight editor (expandable advanced section)
+  - [x] Import/Export buttons:
+    - [x] Export All button (master JSON with all custom content)
+    - [x] Export Category button (per-category JSON)
+    - [x] Import button with file picker
+    - [x] Import validation and error handling
+- [x] Create `src/components/Tabs/DataViewer/SpawnModeControls.css`
 
 ### 1.5 Custom Content Badge & Actions
 - [ ] Create `src/components/Tabs/DataViewer/CustomContentBadge.tsx`
