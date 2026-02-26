@@ -7,7 +7,7 @@
  * Features:
  * - Visual indicator showing "Custom" label
  * - Edit button (opens form modal with pre-populated data)
- * - Delete button (with confirmation dialog)
+ * - Delete button (with confirmation dialog using ConfirmDialog component)
  * - Duplicate button (creates copy of custom item)
  *
  * @see docs/plans/DATAVIEWER_CUSTOM_CONTENT_PLAN.md for implementation details
@@ -15,7 +15,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Pencil, Trash2, Copy, Star } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { ContentType } from '@/hooks/useContentCreator';
 import './CustomContentBadge.css';
 
@@ -125,82 +125,70 @@ export function CustomContentBadge({
     );
   }
 
-  // Full mode with confirmation dialog for delete
-  if (showConfirmDelete) {
-    return (
-      <div className={`custom-content-badge-delete-confirm ${className}`.trim()}>
-        <span className="custom-content-badge-confirm-text">Delete?</span>
-        <div className="custom-content-badge-confirm-actions">
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleConfirmDelete}
-            isLoading={isDeleting}
-          >
-            Yes
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancelDelete}
-            disabled={isDeleting}
-          >
-            No
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Full mode: badge with actions
+  // Full mode: badge with actions and confirmation dialog
   return (
-    <div className={`custom-content-badge custom-content-badge-${size} ${className}`.trim()}>
-      <span className="custom-content-badge-indicator">
-        <Star size={10} className="custom-content-badge-icon" />
-        <span className="custom-content-badge-label">Custom</span>
-      </span>
+    <>
+      <div className={`custom-content-badge custom-content-badge-${size} ${className}`.trim()}>
+        <span className="custom-content-badge-indicator">
+          <Star size={10} className="custom-content-badge-icon" />
+          <span className="custom-content-badge-label">Custom</span>
+        </span>
 
-      {showActions && (
-        <div className="custom-content-badge-actions">
-          {onEdit && (
-            <button
-              type="button"
-              className="custom-content-badge-action-btn"
-              onClick={handleEditClick}
-              title="Edit this item"
-              aria-label={`Edit ${itemName}`}
-            >
-              <Pencil size={12} />
-            </button>
-          )}
+        {showActions && (
+          <div className="custom-content-badge-actions">
+            {onEdit && (
+              <button
+                type="button"
+                className="custom-content-badge-action-btn"
+                onClick={handleEditClick}
+                title="Edit this item"
+                aria-label={`Edit ${itemName}`}
+              >
+                <Pencil size={12} />
+              </button>
+            )}
 
-          {onDuplicate && (
-            <button
-              type="button"
-              className="custom-content-badge-action-btn"
-              onClick={handleDuplicateClick}
-              disabled={isDuplicating}
-              title="Duplicate this item"
-              aria-label={`Duplicate ${itemName}`}
-            >
-              <Copy size={12} className={isDuplicating ? 'custom-content-badge-spinner' : ''} />
-            </button>
-          )}
+            {onDuplicate && (
+              <button
+                type="button"
+                className="custom-content-badge-action-btn"
+                onClick={handleDuplicateClick}
+                disabled={isDuplicating}
+                title="Duplicate this item"
+                aria-label={`Duplicate ${itemName}`}
+              >
+                <Copy size={12} className={isDuplicating ? 'custom-content-badge-spinner' : ''} />
+              </button>
+            )}
 
-          {onDelete && (
-            <button
-              type="button"
-              className="custom-content-badge-action-btn custom-content-badge-action-delete"
-              onClick={handleDeleteClick}
-              title="Delete this item"
-              aria-label={`Delete ${itemName}`}
-            >
-              <Trash2 size={12} />
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+            {onDelete && (
+              <button
+                type="button"
+                className="custom-content-badge-action-btn custom-content-badge-action-delete"
+                onClick={handleDeleteClick}
+                title="Delete this item"
+                aria-label={`Delete ${itemName}`}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Confirmation dialog for delete action */}
+      <ConfirmDialog
+        isOpen={showConfirmDelete}
+        title="Delete Custom Item"
+        message={`Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
+    </>
   );
 }
 

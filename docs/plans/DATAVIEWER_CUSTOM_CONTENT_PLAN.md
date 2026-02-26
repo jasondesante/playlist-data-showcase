@@ -68,11 +68,11 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Duplicate button (creates copy of custom item)
 
 ### 1.6 Confirmation Dialog Component
-- [ ] Create `src/components/ui/ConfirmDialog.tsx`
-  - [ ] Reusable confirmation modal
-  - [ ] Title, message, and action button text customization
-  - [ ] Destructive action styling (red button for delete/reset)
-  - [ ] Used for: delete item, reset category, reset all, import overwrite
+- [x] Create `src/components/ui/ConfirmDialog.tsx`
+  - [x] Reusable confirmation modal
+  - [x] Title, message, and action button text customization
+  - [x] Destructive action styling (red button for delete/reset)
+  - [x] Used for: delete item, reset category, reset all, import overwrite
 
 ---
 
