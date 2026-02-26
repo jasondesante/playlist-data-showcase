@@ -81,6 +81,7 @@ import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCr
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
 import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
 import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
+import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
 import { Plus, X } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
@@ -395,6 +396,7 @@ export function DataViewerTab() {
   const [showClassFeatureCreator, setShowClassFeatureCreator] = useState(false);
   const [showRacialTraitCreator, setShowRacialTraitCreator] = useState(false);
   const [showRaceCreator, setShowRaceCreator] = useState(false);
+  const [showClassCreator, setShowClassCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -760,6 +762,19 @@ export function DataViewerTab() {
   const handleCreateRace = useCallback((race: RaceFormData) => {
     logger.info('DataViewer', `Created race: ${race.name}`);
     setShowRaceCreator(false);
+    refreshData();
+  }, [refreshData]);
+
+  /**
+   * Handle creation of new class via ClassCreatorForm
+   * (Phase 6.2: Class Creation in DataViewerTab)
+   *
+   * Note: The ClassCreatorForm handles registration to both 'classes' and 'classes.data'
+   * internally. This handler just manages UI state and data refresh.
+   */
+  const handleCreateClass = useCallback((cls: ClassFormData) => {
+    logger.info('DataViewer', `Created class: ${cls.name}`);
+    setShowClassCreator(false);
     refreshData();
   }, [refreshData]);
 
@@ -1524,85 +1539,100 @@ export function DataViewerTab() {
   );
 
   // Render classes
+  // Phase 6.2: Added Create Class button
   const renderClasses = () => (
-    <div className="dataviewer-grid">
-      {(getFilteredData as ClassDataEntry[]).map((cls, index) => {
-        const className = cls.name || `Class-${index}`;
-        const isExpanded = expandedItems.has(className);
+    <div className="dataviewer-list">
+      {/* Class Creation Header (Phase 6.2) */}
+      <div className="dataviewer-section-header">
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setShowClassCreator(true)}
+          leftIcon={Plus}
+        >
+          Create Class
+        </Button>
+      </div>
 
-        return (
-          <div key={className} className="dataviewer-card">
-            <div
-              className="dataviewer-card-header"
-              onClick={() => toggleExpanded(className)}
-            >
-              <div className="dataviewer-card-header-content">
-                <Zap size={18} className="dataviewer-card-icon" />
-                <span className="dataviewer-card-title">{className}</span>
+      <div className="dataviewer-grid">
+        {(getFilteredData as ClassDataEntry[]).map((cls, index) => {
+          const className = cls.name || `Class-${index}`;
+          const isExpanded = expandedItems.has(className);
+
+          return (
+            <div key={className} className="dataviewer-card">
+              <div
+                className="dataviewer-card-header"
+                onClick={() => toggleExpanded(className)}
+              >
+                <div className="dataviewer-card-header-content">
+                  <Zap size={18} className="dataviewer-card-icon" />
+                  <span className="dataviewer-card-title">{className}</span>
+                </div>
+                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </div>
-              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </div>
 
-            <div className="dataviewer-card-meta">
-              <span className="dataviewer-card-stat">
-                <Target size={14} />
-                Hit Die: d{cls.hit_die}
-              </span>
-              {cls.is_spellcaster && (
-                <span className="dataviewer-card-stat dataviewer-card-stat-spellcaster">
-                  <Sparkles size={14} />
-                  Spellcaster
+              <div className="dataviewer-card-meta">
+                <span className="dataviewer-card-stat">
+                  <Target size={14} />
+                  Hit Die: d{cls.hit_die}
                 </span>
-              )}
-            </div>
+                {cls.is_spellcaster && (
+                  <span className="dataviewer-card-stat dataviewer-card-stat-spellcaster">
+                    <Sparkles size={14} />
+                    Spellcaster
+                  </span>
+                )}
+              </div>
 
-            {isExpanded && (
-              <div className="dataviewer-card-details">
-                {/* Class description */}
-                {cls.description && (
+              {isExpanded && (
+                <div className="dataviewer-card-details">
+                  {/* Class description */}
+                  {cls.description && (
+                    <div className="dataviewer-card-section">
+                      <div className="dataviewer-item-description">
+                        {cls.description}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="dataviewer-card-section">
-                    <div className="dataviewer-item-description">
-                      {cls.description}
+                    <span className="dataviewer-card-section-title">Primary Ability:</span>
+                    <span
+                      className="dataviewer-card-ability"
+                      style={{ color: ABILITY_COLORS[cls.primary_ability] }}
+                    >
+                      {cls.primary_ability}
+                    </span>
+                  </div>
+
+                  <div className="dataviewer-card-section">
+                    <span className="dataviewer-card-section-title">Saving Throws:</span>
+                    <div className="dataviewer-card-bonuses">
+                      {cls.saving_throws.map(save => (
+                        <span
+                          key={save}
+                          className="dataviewer-card-bonus"
+                          style={{ color: ABILITY_COLORS[save] }}
+                        >
+                          {save}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                )}
 
-                <div className="dataviewer-card-section">
-                  <span className="dataviewer-card-section-title">Primary Ability:</span>
-                  <span
-                    className="dataviewer-card-ability"
-                    style={{ color: ABILITY_COLORS[cls.primary_ability] }}
-                  >
-                    {cls.primary_ability}
-                  </span>
-                </div>
-
-                <div className="dataviewer-card-section">
-                  <span className="dataviewer-card-section-title">Saving Throws:</span>
-                  <div className="dataviewer-card-bonuses">
-                    {cls.saving_throws.map(save => (
-                      <span
-                        key={save}
-                        className="dataviewer-card-bonus"
-                        style={{ color: ABILITY_COLORS[save] }}
-                      >
-                        {save}
-                      </span>
-                    ))}
+                  <div className="dataviewer-card-section">
+                    <span className="dataviewer-card-section-title">Skill Choices:</span>
+                    <span className="dataviewer-card-text">
+                      Choose {cls.skill_count} from {cls.available_skills.length} skills
+                    </span>
                   </div>
                 </div>
-
-                <div className="dataviewer-card-section">
-                  <span className="dataviewer-card-section-title">Skill Choices:</span>
-                  <span className="dataviewer-card-text">
-                    Choose {cls.skill_count} from {cls.available_skills.length} skills
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 
@@ -2407,6 +2437,24 @@ export function DataViewerTab() {
           onCreate={handleCreateRace}
           onCancel={() => setShowRaceCreator(false)}
           submitButtonText="Create Race"
+        />
+      </ContentCreatorModal>
+
+      {/* Class Creator Modal (Phase 6.2) */}
+      <ContentCreatorModal
+        isOpen={showClassCreator}
+        onClose={() => setShowClassCreator(false)}
+        title="Create Custom Class"
+        subtitle="Add a new playable class"
+        icon={Zap}
+        showFooter={false}
+        width="lg"
+      >
+        <ClassCreatorForm
+          onCreate={handleCreateClass}
+          onCancel={() => setShowClassCreator(false)}
+          submitButtonText="Create Class"
+          availableSkills={skills.map(s => s.id)}
         />
       </ContentCreatorModal>
     </div>

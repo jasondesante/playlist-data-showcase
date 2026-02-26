@@ -237,29 +237,31 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Registers to both `races` and `races.data`
 
 ### 6.2 Class Creator Modal
-- [ ] Create `src/components/Tabs/DataViewer/forms/ClassCreatorForm.tsx`
-  - [ ] Basic info section:
+- [x] Create `src/components/Tabs/DataViewer/forms/ClassCreatorForm.tsx`
+  - [x] Basic info section:
     - name (text, required)
     - description (textarea, optional)
     - baseClass (select - for template inheritance, optional)
-  - [ ] Core stats section:
+  - [x] Core stats section:
     - hit_die (select: 6/8/10/12)
     - primary_ability (select: STR/DEX/CON/INT/WIS/CHA)
     - saving_throws (multi-select, 2 required)
-  - [ ] Skills section:
+  - [x] Skills section:
     - skill_count (number, default 2)
     - available_skills (multi-select from all skills)
     - has_expertise (checkbox)
     - expertise_count (number, if expertise enabled)
-  - [ ] Spellcasting section:
+  - [x] Spellcasting section:
     - is_spellcaster (checkbox)
-    - Spell list configuration (if spellcaster)
-  - [ ] Audio Preferences section (expandable):
+  - [x] Audio Preferences section (expandable):
     - primary (select: bass/treble/mid/amplitude/chaos)
     - secondary (optional select)
     - tertiary (optional select)
     - Individual weight sliders (bass, treble, mid, amplitude)
-  - [ ] Registers to both `classes` and `classes.data`
+  - [x] Registers to both `classes` and `classes.data`
+- [x] Create `src/components/Tabs/DataViewer/forms/ClassCreatorForm.css`
+- [x] Add "Create Class" button to DataViewerTab classes section
+- [x] Wire up ClassCreatorForm in DataViewerTab modal
 
 ### 6.3 Class Configuration Forms
 - [ ] Create `src/components/Tabs/DataViewer/forms/ClassConfigForm.tsx`
@@ -283,7 +285,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 
 ### 6.4 Add to DataViewerTab
 - [x] Add "Create Race" button to races section
-- [ ] Add "Create Class" button to classes section
+- [x] Add "Create Class" button to classes section
 - [ ] Add "Configure Class" button for existing classes
 - [x] All use modal pattern
 
