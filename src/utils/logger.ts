@@ -28,7 +28,8 @@ type LogCategory =
     | 'DataViewer'
     | 'PartyAnalysis'
     | 'ItemEnchantment'
-    | 'EnemyGenerator';
+    | 'EnemyGenerator'
+    | 'SpawnMode';
 
 
 

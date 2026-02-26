@@ -16,14 +16,14 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 1: Foundation & Infrastructure
 
 ### 1.1 Core Hooks
-- [ ] Create `src/hooks/useSpawnMode.ts`
-  - [ ] `getMode(category)` - Get current spawn mode
-  - [ ] `setMode(category, mode)` - Set spawn mode (relative/absolute/default/replace)
-  - [ ] `getWeights(category)` - Get spawn weights
-  - [ ] `setWeight(category, itemName, weight)` - Set individual weight
-  - [ ] `resetCategory(category)` - Reset to defaults
-  - [ ] `resetAll()` - Reset all categories
-  - [ ] `hasCustomData(category)` - Check for custom content
+- [x] Create `src/hooks/useSpawnMode.ts`
+  - [x] `getMode(category)` - Get current spawn mode
+  - [x] `setMode(category, mode)` - Set spawn mode (relative/absolute/default/replace)
+  - [x] `getWeights(category)` - Get spawn weights
+  - [x] `setWeight(category, itemName, weight)` - Set individual weight
+  - [x] `resetCategory(category)` - Reset to defaults
+  - [x] `resetAll()` - Reset all categories
+  - [x] `hasCustomData(category)` - Check for custom content
 
 - [ ] Create `src/hooks/useContentCreator.ts`
   - [ ] Generic content creation with validation
