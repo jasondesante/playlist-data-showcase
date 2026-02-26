@@ -253,32 +253,32 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] "Custom..." option that reveals text input
 - [x] Update SpellCreatorForm to use new components ✅ DONE
 
-### 5.2 Create Shared EffectsBuilder Component
-- [ ] Create `src/components/shared/EffectsBuilder.tsx`
-  - [ ] Type dropdown with 6 options:
+### 5.2 Create Shared EffectsBuilder Component ✅ DONE
+- [x] Create `src/components/shared/EffectsBuilder.tsx`
+  - [x] Type dropdown with 6 options:
     - `stat_bonus` - Ability score bonus
     - `skill_proficiency` - Grant proficiency/expertise
     - `ability_unlock` - Unlock special ability
     - `passive_modifier` - Constant bonus
     - `resource_grant` - Grant resource pool
     - `spell_slot_bonus` - Extra spell slots
-  - [ ] Target field - **FULL DYNAMIC DROPDOWNS from live registry** based on type:
+  - [x] Target field - **FULL DYNAMIC DROPDOWNS from live registry** based on type:
     - `stat_bonus`: STR/DEX/CON/INT/WIS/CHA dropdown (static - 6 abilities)
     - `skill_proficiency`: **LIVE from `manager.get('skills')`** - autocomplete
     - `ability_unlock`: Ability dropdown (darkvision, flight, etc.) - **fetch from available abilities in registry**
     - `passive_modifier`: Target dropdown (ac, speed, damage, etc.) - research all valid targets
     - `resource_grant`: Resource dropdown (rage, ki, etc.) - **LIVE from `manager.get('classes')` class resources**
     - `spell_slot_bonus`: Slot level dropdown (1-9) - static
-  - [ ] Value field - dynamic based on type:
+  - [x] Value field - dynamic based on type:
     - Number input for bonuses
     - Text input for special values
     - Checkbox for boolean values
-  - [ ] Condition field (optional text input)
-  - [ ] Add/remove effect buttons
-  - [ ] "Custom..." option to enter raw JSON for advanced users
-  - [ ] **Real-time validation** - warn if selected target no longer exists in registry
-  - [ ] **Refresh button** to reload all dropdown options from live registry
-- [ ] Create `EffectsBuilder.css` with clean styling
+  - [x] Condition field (optional text input)
+  - [x] Add/remove effect buttons
+  - [x] "Custom..." option to enter raw JSON for advanced users
+  - [x] **Real-time validation** - warn if selected target no longer exists in registry
+  - [x] **Refresh button** to reload all dropdown options from live registry
+- [x] Create `EffectsBuilder.css` with clean styling
 
 ### 5.3 Create Shared PrerequisitesBuilder Component
 - [ ] Create `src/components/shared/PrerequisitesBuilder.tsx`
