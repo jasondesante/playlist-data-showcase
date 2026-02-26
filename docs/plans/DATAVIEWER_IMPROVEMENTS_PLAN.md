@@ -242,9 +242,9 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 ## Phase 5: Structured Input Improvements
 
 ### 5.1 Spell Fields - Structured Choices
-- [ ] Create `CastingTimeSelect` component
-  - [ ] Dropdown with common values: "1 action", "1 bonus action", "1 reaction", "1 minute", "10 minutes", "1 hour"
-  - [ ] "Custom..." option that reveals text input
+- [x] Create `CastingTimeSelect` component ✅ DONE
+  - [x] Dropdown with common values: "1 action", "1 bonus action", "1 reaction", "1 minute", "10 minutes", "1 hour"
+  - [x] "Custom..." option that reveals text input
 - [ ] Create `RangeSelect` component
   - [ ] Dropdown with common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
   - [ ] "Custom..." option that reveals text input

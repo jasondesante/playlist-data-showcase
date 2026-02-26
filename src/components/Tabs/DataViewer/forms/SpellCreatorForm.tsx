@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
+import { CastingTimeSelect } from '@/components/shared/CastingTimeSelect';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './SpellCreatorForm.css';
 
@@ -339,8 +340,7 @@ export function SpellCreatorForm({
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
 
-  const handleCastingTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleCastingTimeChange = useCallback((value: string) => {
     setFormData(prev => ({ ...prev, casting_time: value }));
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
@@ -521,18 +521,14 @@ export function SpellCreatorForm({
 
         <div className="spell-creator-row">
           <div className="spell-creator-field">
-            <label className="spell-creator-label" htmlFor="spell-casting-time">
-              Casting Time <span className="spell-creator-required">*</span>
-            </label>
-            <input
-              id="spell-casting-time"
-              type="text"
+            <CastingTimeSelect
               value={formData.casting_time}
               onChange={handleCastingTimeChange}
-              placeholder="e.g., 1 action, 1 bonus action, 1 minute"
-              className="spell-creator-input"
+              label="Casting Time"
+              required
               disabled={disabled}
-              maxLength={50}
+              id="spell-casting-time"
+              showHint={false}
             />
           </div>
 
