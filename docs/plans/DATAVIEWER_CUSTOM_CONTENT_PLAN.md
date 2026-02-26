@@ -86,11 +86,12 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Integrate with useSpawnMode hook
 
 ### 2.2 Update DataViewerTab Lists
-- [ ] Update `src/components/Tabs/DataViewerTab.tsx`
-  - [ ] Each category list respects spawn mode
-  - [ ] When mode is "absolute", only show custom items
-  - [ ] Add CustomContentBadge to custom items
-  - [ ] Add edit/delete buttons for custom items
+- [x] Update `src/components/Tabs/DataViewerTab.tsx`
+  - [x] Each category list respects spawn mode
+  - [x] When mode is "absolute", only show custom items
+  - [x] Add CustomContentBadge to custom items
+  - [x] Add edit/delete buttons for custom items
+  - [x] Add SpawnModeControls component to each category section
 
 ---
 

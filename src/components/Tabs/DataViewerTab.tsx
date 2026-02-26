@@ -40,7 +40,7 @@
  * @see src/components/ui/EffectDisplay.tsx for the reusable effects list component
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Database,
   Search,
@@ -70,6 +70,10 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { EffectList, type FeatureEffect } from '../ui/EffectDisplay';
 import { useDataViewerStore } from '../../store/dataViewerStore';
+import { logger } from '../../utils/logger';
+import { CustomContentBadge } from './DataViewer/CustomContentBadge';
+import { SpawnModeControls } from './DataViewer/SpawnModeControls';
+import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
 
@@ -361,11 +365,17 @@ export function DataViewerTab() {
     refreshData,
     getSpellSchools,
     getEquipmentRarities,
-    getEquipmentTags
+    getEquipmentTags,
+    getFilteredItems,
+    isCustomItem,
+    getSpawnModeForCategory
   } = useDataViewer();
 
   // Get Data Viewer store actions
   const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased, lastEquipmentCount } = useDataViewerStore();
+
+  // Content creator hook for edit/delete/duplicate operations
+  const { deleteContent, duplicateContent } = useContentCreator();
 
   // State
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
@@ -413,10 +423,14 @@ export function DataViewerTab() {
   };
 
   // Get filtered data based on active category and filters
+  // Phase 2.2: Apply spawn mode filtering first, then apply search/category filters
   const getFilteredData = useMemo(() => {
+    // First, apply spawn mode filtering (e.g., absolute mode shows only custom items)
+    const spawnFilteredData = getFilteredItems(activeCategory);
+
     switch (activeCategory) {
       case 'spells': {
-        let filtered = spells;
+        let filtered = spawnFilteredData as RegisteredSpell[];
         if (spellLevelFilter !== 'all') {
           filtered = filterSpellsByLevel(filtered, spellLevelFilter);
         }
@@ -426,17 +440,17 @@ export function DataViewerTab() {
         return filterByName(filtered, searchTerm);
       }
       case 'skills':
-        return filterByName(skills, searchTerm);
+        return filterByName(spawnFilteredData as CustomSkill[], searchTerm);
       case 'classFeatures':
-        return filterByName(classFeatures, searchTerm);
+        return filterByName(spawnFilteredData as ClassFeature[], searchTerm);
       case 'racialTraits':
-        return filterByName(racialTraits, searchTerm);
+        return filterByName(spawnFilteredData as RacialTrait[], searchTerm);
       case 'races':
-        return filterByName(races, searchTerm);
+        return filterByName(spawnFilteredData as RaceDataEntry[], searchTerm);
       case 'classes':
-        return filterByName(classes, searchTerm);
+        return filterByName(spawnFilteredData as ClassDataEntry[], searchTerm);
       case 'equipment': {
-        let filtered = equipment;
+        let filtered = spawnFilteredData as Equipment[];
         if (equipmentTypeFilter !== 'all') {
           filtered = filterEquipmentByType(filtered, equipmentTypeFilter);
         }
@@ -450,20 +464,13 @@ export function DataViewerTab() {
         return filterByName(filtered, searchTerm);
       }
       case 'appearance':
-        return filterByName(appearance, searchTerm);
+        return filterByName(spawnFilteredData as AppearanceCategoryData[], searchTerm);
       default:
         return [];
     }
   }, [
     activeCategory,
-    spells,
-    skills,
-    classFeatures,
-    racialTraits,
-    races,
-    classes,
-    equipment,
-    appearance,
+    getFilteredItems,
     searchTerm,
     spellLevelFilter,
     spellSchoolFilter,
@@ -477,6 +484,73 @@ export function DataViewerTab() {
     filterEquipmentByRarity,
     filterEquipmentByTag
   ]);
+
+  // ==========================================
+  // Custom Content Handlers (Phase 2.2)
+  // ==========================================
+
+  /**
+   * Map DataCategory to ContentType for use with content creator
+   */
+  const getContentType = (category: DataCategory): ContentType => {
+    switch (category) {
+      case 'spells': return 'spells';
+      case 'skills': return 'skills';
+      case 'classFeatures': return 'classFeatures';
+      case 'racialTraits': return 'racialTraits';
+      case 'races': return 'races';
+      case 'classes': return 'classes';
+      case 'equipment': return 'equipment';
+      case 'appearance': return 'appearance.bodyTypes';
+      default: return 'equipment';
+    }
+  };
+
+  /**
+   * Handle edit of a custom item
+   * Note: Actual edit forms will be added in later phases (Phase 3+)
+   */
+  const handleEditItem = useCallback((category: DataCategory, itemName: string) => {
+    logger.info('DataViewer', `Edit requested for ${category}/${itemName}`);
+    // TODO: Open edit modal - will be implemented in Phase 3+ with creator forms
+    // For now, just log the action
+  }, []);
+
+  /**
+   * Handle delete of a custom item
+   */
+  const handleDeleteItem = useCallback(async (category: DataCategory, itemName: string) => {
+    const contentType = getContentType(category);
+    const result = deleteContent(contentType, itemName);
+    if (result.success) {
+      logger.info('DataViewer', `Deleted ${category}/${itemName}`);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to delete ${category}/${itemName}: ${result.error}`);
+    }
+  }, [deleteContent, refreshData]);
+
+  /**
+   * Handle duplicate of an item (creates a custom copy)
+   */
+  const handleDuplicateItem = useCallback(async (category: DataCategory, itemName: string) => {
+    const contentType = getContentType(category);
+    const newName = `${itemName} (Copy)`;
+    const result = duplicateContent(contentType, itemName, newName);
+    if (result.success) {
+      logger.info('DataViewer', `Duplicated ${category}/${itemName} as ${newName}`);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to duplicate ${category}/${itemName}: ${result.error}`);
+    }
+  }, [duplicateContent, refreshData]);
+
+  /**
+   * Check if an item is custom (for showing the badge)
+   */
+  const checkIsCustomItem = useCallback((category: DataCategory, itemName: string): boolean => {
+    return isCustomItem(category, itemName);
+  }, [isCustomItem]);
 
   // Render category selector
   const renderCategorySelector = () => (
@@ -1470,6 +1544,7 @@ export function DataViewerTab() {
         const rarityColor = RARITY_COLORS[item.rarity || 'common'] || RARITY_COLORS.common;
         const rarityBg = RARITY_BG_COLORS[item.rarity || 'common'] || RARITY_BG_COLORS.common;
         const spawnWeightBadge = formatSpawnWeight(item.spawnWeight);
+        const isCustom = checkIsCustomItem('equipment', item.name);
 
         return (
           <div
@@ -1489,6 +1564,18 @@ export function DataViewerTab() {
                   <span className="dataviewer-badge dataviewer-badge-secondary">
                     {item.type}
                   </span>
+                  {/* Custom Content Badge (Phase 2.2) */}
+                  {isCustom && (
+                    <CustomContentBadge
+                      category="equipment"
+                      itemName={item.name}
+                      onEdit={() => handleEditItem('equipment', item.name)}
+                      onDelete={() => handleDeleteItem('equipment', item.name)}
+                      onDuplicate={() => handleDuplicateItem('equipment', item.name)}
+                      showActions={isExpanded}
+                      size="sm"
+                    />
+                  )}
                 </div>
               </div>
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -1687,14 +1774,44 @@ export function DataViewerTab() {
       );
     }
 
+    // Get spawn mode for current category for SpawnModeControls
+    const currentSpawnMode = getSpawnModeForCategory(activeCategory);
+
+    // Render spawn mode controls for the current category
+    const renderSpawnModeControls = () => (
+      <div className="dataviewer-spawn-controls">
+        <SpawnModeControls
+          category={activeCategory as any}
+          categoryLabel={CATEGORY_CONFIG[activeCategory]?.label}
+          showWeightEditor={true}
+          showImportExport={true}
+          onModeChange={(category, mode) => {
+            logger.info('DataViewer', `Spawn mode changed for ${category}: ${mode}`);
+            refreshData();
+          }}
+          onResetCategory={(category) => {
+            logger.info('DataViewer', `Category reset: ${category}`);
+            refreshData();
+          }}
+          onResetAll={() => {
+            logger.info('DataViewer', 'All categories reset');
+            refreshData();
+          }}
+        />
+      </div>
+    );
+
     if (getFilteredData.length === 0) {
       return (
         <div className="dataviewer-empty">
           <Database size={48} className="dataviewer-empty-icon" />
           <span className="dataviewer-empty-title">No items found</span>
           <span className="dataviewer-empty-message">
-            Try adjusting your search or filters
+            {currentSpawnMode === 'absolute'
+              ? 'No custom items in this category. Switch to "Relative" mode to see all items.'
+              : 'Try adjusting your search or filters'}
           </span>
+          {renderSpawnModeControls()}
         </div>
       );
     }
@@ -1707,18 +1824,44 @@ export function DataViewerTab() {
             <div className="dataviewer-items">
               {(getFilteredData as RegisteredSpell[]).map(renderSpellCard)}
             </div>
+            {renderSpawnModeControls()}
           </div>
         );
       case 'skills':
-        return renderSkills();
+        return (
+          <>
+            {renderSkills()}
+            {renderSpawnModeControls()}
+          </>
+        );
       case 'classFeatures':
-        return renderClassFeatures();
+        return (
+          <>
+            {renderClassFeatures()}
+            {renderSpawnModeControls()}
+          </>
+        );
       case 'racialTraits':
-        return renderRacialTraits();
+        return (
+          <>
+            {renderRacialTraits()}
+            {renderSpawnModeControls()}
+          </>
+        );
       case 'races':
-        return renderRaces();
+        return (
+          <>
+            {renderRaces()}
+            {renderSpawnModeControls()}
+          </>
+        );
       case 'classes':
-        return renderClasses();
+        return (
+          <>
+            {renderClasses()}
+            {renderSpawnModeControls()}
+          </>
+        );
       case 'equipment':
         return (
           <div className="dataviewer-list">
@@ -1726,10 +1869,16 @@ export function DataViewerTab() {
             <div className="dataviewer-items">
               {renderEquipment()}
             </div>
+            {renderSpawnModeControls()}
           </div>
         );
       case 'appearance':
-        return renderAppearance();
+        return (
+          <>
+            {renderAppearance()}
+            {renderSpawnModeControls()}
+          </>
+        );
       default:
         return null;
     }
