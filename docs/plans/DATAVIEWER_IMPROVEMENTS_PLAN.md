@@ -168,7 +168,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Add `icon` and `image` fields to EquipmentCreatorForm ✅ DONE
 - [x] Add `icon` and `image` fields to SpellCreatorForm ✅ DONE
 - [x] Add `icon` and `image` fields to SkillCreatorForm ✅ DONE
-- [ ] Add `icon` and `image` fields to ClassFeatureCreatorForm
+- [x] Add `icon` and `image` fields to ClassFeatureCreatorForm ✅ DONE
 - [ ] Add `icon` and `image` fields to RacialTraitCreatorForm
 - [ ] Add `icon` and `image` fields to RaceCreatorForm (race data)
 - [ ] Add `icon` and `image` fields to ClassCreatorForm (class data)

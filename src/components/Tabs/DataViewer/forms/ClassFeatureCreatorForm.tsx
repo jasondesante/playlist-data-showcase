@@ -29,8 +29,10 @@ import {
   ChevronUp,
   Zap,
   Target,
-  Trash2
+  Trash2,
+  ImageIcon
 } from 'lucide-react';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './ClassFeatureCreatorForm.css';
@@ -104,6 +106,8 @@ export interface ClassFeatureFormData {
   description: string;
   effects: FeatureEffect[];
   prerequisites: FeaturePrerequisites;
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -148,7 +152,9 @@ function getDefaultFormData(): ClassFeatureFormData {
     type: 'passive',
     description: '',
     effects: [],
-    prerequisites: {}
+    prerequisites: {},
+    icon: '',
+    image: ''
   };
 }
 
@@ -323,6 +329,16 @@ export function ClassFeatureCreatorForm({
         }
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        featureItem.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        featureItem.image = formData.image.trim();
+      }
+
       // Determine the actual content type
       const actualContentType = contentType.startsWith('classFeatures.') ? 'classFeatures' : contentType;
 
@@ -439,6 +455,18 @@ export function ClassFeatureCreatorForm({
       };
     });
   }, []);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Cancel handler
   const handleCancel = useCallback(() => {
@@ -619,6 +647,38 @@ export function ClassFeatureCreatorForm({
           <span className="class-feature-hint" id="feature-description-hint">
             {2000 - formData.description.length} characters remaining
           </span>
+        </div>
+      </div>
+
+      {/* Images Section */}
+      <div className="class-feature-section class-feature-images-section" role="group" aria-labelledby="feature-images-section-title">
+        <h4 className="class-feature-section-title" id="feature-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="class-feature-optional">(optional)</span>
+        </h4>
+        <div className="class-feature-images-grid">
+          <div className="class-feature-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Feature Icon"
+              placeholder="e.g., assets/icons/second_wind.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="class-feature-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Feature Image"
+              placeholder="e.g., assets/features/second_wind.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
         </div>
       </div>
 
@@ -834,10 +894,36 @@ export function ClassFeatureCreatorForm({
             Preview
           </h4>
           <div className="class-feature-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="class-feature-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="class-feature-preview-header">
-              <span className="class-feature-preview-name" style={{ color: typeColor }}>
-                {formData.name}
-              </span>
+              <div className="class-feature-preview-name-row">
+                {formData.icon && (
+                  <img
+                    src={formData.icon}
+                    alt=""
+                    className="class-feature-preview-icon"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="class-feature-preview-name" style={{ color: typeColor }}>
+                  {formData.name}
+                </span>
+              </div>
               <div className="class-feature-preview-badges">
                 <span className="class-feature-preview-badge" style={{ backgroundColor: typeColor }}>
                   {formData.type}
