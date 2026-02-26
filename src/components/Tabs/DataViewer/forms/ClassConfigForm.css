@@ -1,0 +1,533 @@
+/**
+ * ClassConfigForm Component Styles
+ *
+ * Styles for the class configuration form.
+ * Part of DataViewerTab Custom Content Creation Upgrade - Phase 6.3.
+ */
+
+.class-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* Tab Navigation */
+.class-config-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.class-config-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.class-config-tab:hover:not(:disabled) {
+  background: var(--color-bg-subtle-hover, hsl(0 0% 0% / 0.05));
+  color: var(--color-text);
+}
+
+.class-config-tab-active {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--cute-purple, hsl(280 60% 50%));
+}
+
+.class-config-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tab Content */
+.class-config-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.class-config-description {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Field Styles */
+.class-config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.class-config-field-inline {
+  flex: 1;
+}
+
+.class-config-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.class-config-required {
+  color: var(--destructive);
+  margin-left: 0.125rem;
+}
+
+.class-config-count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+/* Input Styles */
+.class-config-input,
+.class-config-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.class-config-input:focus,
+.class-config-select:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring-ring);
+}
+
+.class-config-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.class-config-input:disabled,
+.class-config-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-bg-muted);
+}
+
+.class-config-input-number {
+  width: 80px;
+  text-align: center;
+}
+
+/* Row Layout */
+.class-config-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Hint Text */
+.class-config-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Checkbox */
+.class-config-checkbox {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--cute-purple, hsl(280 60% 50%));
+}
+
+/* Skills Grid */
+.class-config-skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.class-config-skill-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.class-config-skill-option:hover {
+  background: var(--color-bg-subtle);
+}
+
+.class-config-skill-option input:checked + span {
+  color: var(--cute-purple, hsl(280 60% 50%));
+  font-weight: 500;
+}
+
+.class-config-skill-option:has(input:checked) {
+  border-color: var(--cute-purple, hsl(280 60% 50%));
+  background: hsl(280 60% 50% / 0.1);
+}
+
+.class-config-skill-option input {
+  cursor: pointer;
+  accent-color: var(--cute-purple, hsl(280 60% 50%));
+}
+
+/* Spells Grid */
+.class-config-spells-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.class-config-spell-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.class-config-spell-option:hover {
+  background: var(--color-bg-subtle);
+}
+
+.class-config-spell-option input:checked + span {
+  color: var(--cute-purple, hsl(280 60% 50%));
+  font-weight: 500;
+}
+
+.class-config-spell-option:has(input:checked) {
+  border-color: var(--cute-purple, hsl(280 60% 50%));
+  background: hsl(280 60% 50% / 0.1);
+}
+
+.class-config-spell-option input{
+  cursor: pointer;
+  accent-color: var(--cute-purple, hsl(280 60% 50%));
+}
+
+/* Expertise Count */
+.class-config-expertise-count {
+  margin-left: 0.5rem;
+}
+
+/* Advanced Section */
+.class-config-advanced {
+  margin-top: 0.5rem;
+}
+
+.class-config-advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.class-config-advanced-toggle:hover {
+  color: var(--color-text);
+}
+
+.class-config-advanced-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Weight Sliders */
+.class-config-weights-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.class-config-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.class-config-weight-skill {
+  width: 120px;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+}
+
+.class-config-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  accent-color: var(--cute-purple, hsl(280 60% 50%));
+}
+
+.class-config-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cute-purple, hsl(280 60% 50%));
+  cursor: pointer;
+}
+
+.class-config-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cute-purple, hsl(280 60% 50%));
+  cursor: pointer;
+  border: none;
+}
+
+.class-config-weight-value {
+  width: 40px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Spell Slots Table */
+.class-config-slots-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--color-bg-subtle);
+}
+
+.class-config-slots-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.class-config-slots-table th,
+.class-config-slots-table td {
+  padding: 0.375rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.class-config-slots-table th:last-child,
+.class-config-slots-table td:last-child {
+  border-right: none;
+}
+
+.class-config-slots-table tr:last-child td {
+  border-bottom: none;
+}
+
+.class-config-slots-table th {
+  background: var(--color-bg-muted);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.class-config-slots-level {
+  font-weight: 600;
+  background: var(--color-bg-muted);
+}
+
+.class-config-slot-input {
+  width: 40px;
+  padding: 0.25rem;
+  text-align: center;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--color-text);
+}
+
+.class-config-slot-input:focus {
+  outline: none;
+  border-color: var(--ring);
+}
+
+/* Equipment Rows */
+.class-config-equipment-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.class-config-equipment-row .class-config-input {
+  flex: 1;
+}
+
+.class-config-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 1px solid var(--destructive);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--destructive);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.class-config-remove-btn:hover:not(:disabled) {
+  background: hsl(0 60% 50% / 0.1);
+}
+
+.class-config-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Errors */
+.class-config-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(0 60% 50% / 0.1);
+  border: 1px solid hsl(0 60% 50% / 0.3);
+  border-radius: 6px;
+}
+
+.class-config-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--destructive);
+}
+
+.class-config-error svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Actions */
+.class-config-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .class-config-tabs {
+    flex-wrap: wrap;
+  }
+
+  .class-config-tab {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .class-config-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .class-config-skills-grid,
+  .class-config-spells-grid {
+    gap: 0.375rem;
+    padding: 0.375rem;
+  }
+
+  .class-config-skill-option,
+  .class-config-spell-option {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .class-config-slots-table-wrapper {
+    font-size: 0.75rem;
+  }
+
+  .class-config-slot-input {
+    width: 32px;
+    padding: 0.125rem;
+    font-size: 0.6875rem;
+  }
+
+  .class-config-actions {
+    flex-direction: column;
+  }
+
+  .class-config-actions button {
+    width: 100%;
+  }
+
+  .class-config-weight-row {
+    flex-wrap: wrap;
+  }
+
+  .class-config-weight-skill {
+    width: 100%;
+  }
+
+  .class-config-slider {
+    flex: 1;
+    min-width: 120px;
+  }
+}

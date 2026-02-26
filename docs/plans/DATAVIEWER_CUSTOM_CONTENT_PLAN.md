@@ -264,8 +264,8 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Wire up ClassCreatorForm in DataViewerTab modal
 
 ### 6.3 Class Configuration Forms
-- [ ] Create `src/components/Tabs/DataViewer/forms/ClassConfigForm.tsx`
-  - [ ] Tabbed interface for class configuration:
+- [x] Create `src/components/Tabs/DataViewer/forms/ClassConfigForm.tsx`
+  - [x] Tabbed interface for class configuration:
     - **Skill Lists** (`skillLists.{className}`):
       - Class selector
       - Multi-select of available skills
@@ -282,11 +282,12 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
       - Weapons array
       - Armor array
       - Items array
+- [x] Create `src/components/Tabs/DataViewer/forms/ClassConfigForm.css`
 
 ### 6.4 Add to DataViewerTab
 - [x] Add "Create Race" button to races section
 - [x] Add "Create Class" button to classes section
-- [ ] Add "Configure Class" button for existing classes
+- [x] Add "Configure Class" button for existing classes
 - [x] All use modal pattern
 
 ---

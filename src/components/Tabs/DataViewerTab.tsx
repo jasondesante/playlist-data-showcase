@@ -62,7 +62,8 @@ import {
   Eye,
   Palette,
   User,
-  Smile
+  Smile,
+  Settings
 } from 'lucide-react';
 import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, isEnhancedEquipment } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
@@ -82,6 +83,7 @@ import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer
 import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
 import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
 import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
+import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
 import { Plus, X } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
@@ -397,6 +399,7 @@ export function DataViewerTab() {
   const [showRacialTraitCreator, setShowRacialTraitCreator] = useState(false);
   const [showRaceCreator, setShowRaceCreator] = useState(false);
   const [showClassCreator, setShowClassCreator] = useState(false);
+  const [showClassConfig, setShowClassConfig] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -1540,6 +1543,7 @@ export function DataViewerTab() {
 
   // Render classes
   // Phase 6.2: Added Create Class button
+  // Phase 6.3: Added Configure Class button
   const renderClasses = () => (
     <div className="dataviewer-list">
       {/* Class Creation Header (Phase 6.2) */}
@@ -1551,6 +1555,14 @@ export function DataViewerTab() {
           leftIcon={Plus}
         >
           Create Class
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowClassConfig(true)}
+          leftIcon={Settings}
+        >
+          Configure Class
         </Button>
       </div>
 
@@ -2455,6 +2467,29 @@ export function DataViewerTab() {
           onCancel={() => setShowClassCreator(false)}
           submitButtonText="Create Class"
           availableSkills={skills.map(s => s.id)}
+        />
+      </ContentCreatorModal>
+
+      {/* Class Config Modal (Phase 6.3) */}
+      <ContentCreatorModal
+        isOpen={showClassConfig}
+        onClose={() => setShowClassConfig(false)}
+        title="Configure Class Data"
+        subtitle="Manage skill lists, spell lists, spell slots, and starting equipment"
+        icon={Settings}
+        showFooter={false}
+        width="lg"
+      >
+        <ClassConfigForm
+          onSave={(config) => {
+            logger.info('DataViewer', `Saved class config: ${config.type} for ${config.data.class}`);
+            setShowClassConfig(false);
+            refreshData();
+          }}
+          onCancel={() => setShowClassConfig(false)}
+          availableSkills={skills.map(s => s.id)}
+          availableSpells={spells.map(s => s.name)}
+          availableEquipment={equipment.map(e => e.name)}
         />
       </ContentCreatorModal>
     </div>

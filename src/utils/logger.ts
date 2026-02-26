@@ -31,7 +31,8 @@ type LogCategory =
     | 'EnemyGenerator'
     | 'SpawnMode'
     | 'ContentCreator'
-    | 'ContentValidation';
+    | 'ContentValidation'
+    | 'ClassConfigForm';
 
 
 
