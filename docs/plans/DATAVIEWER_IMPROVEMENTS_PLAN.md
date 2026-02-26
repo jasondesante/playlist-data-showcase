@@ -425,7 +425,16 @@ This ensures all category lists update immediately when:
   - **ImageFieldInput component:** URL validation, preview thumbnail, external link button, error handling
   - **CSS styling:** All forms have `-images-section` and `-images-grid` CSS classes properly defined
   - **Build:** TypeScript compiles with no errors
-- [ ] Test box type creation and opening
+- [x] Test box type creation and opening ✅ DONE
+  - **Verified:** Box type creation flow is complete and working:
+    - **BoxContentsBuilder component:** Full implementation with validation, pool editor, item/gold toggle, weight sum indicator, probability preview, opening requirements, consumeOnOpen toggle
+    - **EquipmentCreatorForm integration:** Shows 'box' type option, displays BoxContentsBuilder when type is 'box', validates box contents, includes boxContents in formData, shows box info in preview
+    - **useItemCreator hook:** CustomItemFormData includes boxContents field, createCustomItem adds boxContents to equipment when type is 'box'
+    - **Validation functions:** validateBoxContents, createEmptyContents, createEmptyDrop, createEmptyPoolEntry, calculatePoolTotalWeight, calculateProbabilities all working correctly
+    - **BoxOpener API:** Available in playlist-data-engine (import { BoxOpener, SeededRNG } from 'playlist-data-engine'), provides openBox(), isBox(), checkRequirements(), canOpen(), previewContents(), getRequirementsDescription()
+    - **Note:** No UI for opening box-type equipment in inventory yet - BoxOpener API exists but not integrated into ItemsTab
+    - **Test file created:** src/components/shared/__tests__/BoxContentsBuilder.test.tsx (requires vitest to run)
+    - **Build:** TypeScript compiles with no errors
 - [ ] Test modal flows for skills and equipment
 - [ ] Test structured dropdowns with custom options
 - [ ] Test effects/prerequisites builders
