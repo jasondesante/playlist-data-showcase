@@ -457,9 +457,9 @@ export function RacialTraitCreatorForm({
   return (
     <div className="racial-trait-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="racial-trait-section">
-        <h4 className="racial-trait-section-title">
-          <Feather size={16} />
+      <div className="racial-trait-section" role="group" aria-labelledby="trait-basic-section-title">
+        <h4 className="racial-trait-section-title" id="trait-basic-section-title">
+          <Feather size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -476,8 +476,9 @@ export function RacialTraitCreatorForm({
             className="racial-trait-input"
             disabled={disabled}
             maxLength={100}
+            aria-describedby="trait-name-hint"
           />
-          <span className="racial-trait-hint">
+          <span className="racial-trait-hint" id="trait-name-hint">
             {100 - formData.name.length} characters remaining
           </span>
         </div>
@@ -496,6 +497,7 @@ export function RacialTraitCreatorForm({
               className="racial-trait-input"
               disabled={disabled}
               maxLength={50}
+              aria-describedby="trait-id-hint"
             />
             <label className="racial-trait-checkbox-label">
               <input
@@ -507,7 +509,7 @@ export function RacialTraitCreatorForm({
               Auto
             </label>
           </div>
-          <span className="racial-trait-hint">
+          <span className="racial-trait-hint" id="trait-id-hint">
             Unique identifier (lowercase_with_underscores)
           </span>
         </div>
@@ -523,6 +525,7 @@ export function RacialTraitCreatorForm({
               onChange={handleRaceChange}
               className="racial-trait-select"
               disabled={disabled || isRaceSpecific}
+              aria-describedby={isRaceSpecific ? 'trait-race-locked-hint' : undefined}
             >
               <option value="">Select a race...</option>
               {racesList.map(raceName => (
@@ -560,9 +563,9 @@ export function RacialTraitCreatorForm({
       </div>
 
       {/* Description Section */}
-      <div className="racial-trait-section">
-        <h4 className="racial-trait-section-title">
-          <FileText size={16} />
+      <div className="racial-trait-section" role="group" aria-labelledby="trait-desc-section-title">
+        <h4 className="racial-trait-section-title" id="trait-desc-section-title">
+          <FileText size={16} aria-hidden="true" />
           Description <span className="racial-trait-required">*</span>
         </h4>
 
@@ -576,8 +579,9 @@ export function RacialTraitCreatorForm({
             disabled={disabled}
             maxLength={2000}
             rows={5}
+            aria-describedby="trait-description-hint"
           />
-          <span className="racial-trait-hint">
+          <span className="racial-trait-hint" id="trait-description-hint">
             {2000 - formData.description.length} characters remaining
           </span>
         </div>
@@ -590,14 +594,16 @@ export function RacialTraitCreatorForm({
           className="racial-trait-advanced-btn"
           onClick={() => setShowAdvanced(!showAdvanced)}
           disabled={disabled}
+          aria-expanded={showAdvanced}
+          aria-controls="racial-trait-advanced-section"
         >
-          {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {showAdvanced ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
           Advanced Options (Effects & Prerequisites)
         </button>
       </div>
 
       {showAdvanced && (
-        <div className="racial-trait-advanced-section">
+        <div className="racial-trait-advanced-section" id="racial-trait-advanced-section">
           {/* Effects Section */}
           <div className="racial-trait-section">
             <h4 className="racial-trait-section-title">
@@ -757,16 +763,16 @@ export function RacialTraitCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="racial-trait-errors">
+        <div className="racial-trait-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="racial-trait-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="racial-trait-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -800,9 +806,9 @@ export function RacialTraitCreatorForm({
 
       {/* Preview Section */}
       {formData.name.trim() && (
-        <div className="racial-trait-preview">
+        <div className="racial-trait-preview" role="status" aria-live="polite" aria-label="Racial trait preview">
           <h4 className="racial-trait-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="racial-trait-preview-content">

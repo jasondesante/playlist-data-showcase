@@ -479,9 +479,9 @@ export function ClassCreatorForm({
   return (
     <div className="class-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="class-creator-section">
-        <h4 className="class-creator-section-title">
-          <Feather size={16} />
+      <div className="class-creator-section" role="group" aria-labelledby="class-basic-section-title">
+        <h4 className="class-creator-section-title" id="class-basic-section-title">
+          <Feather size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -498,8 +498,9 @@ export function ClassCreatorForm({
             className="class-creator-input"
             disabled={disabled}
             maxLength={50}
+            aria-describedby="class-name-hint"
           />
-          <span className="class-creator-hint">
+          <span className="class-creator-hint" id="class-name-hint">
             {50 - formData.name.length} characters remaining
           </span>
         </div>
@@ -517,8 +518,9 @@ export function ClassCreatorForm({
             disabled={disabled}
             maxLength={500}
             rows={3}
+            aria-describedby="class-description-hint"
           />
-          <span className="class-creator-hint">
+          <span className="class-creator-hint" id="class-description-hint">
             {500 - formData.description.length} characters remaining
           </span>
         </div>
@@ -533,13 +535,14 @@ export function ClassCreatorForm({
             onChange={handleBaseClassChange}
             className="class-creator-select"
             disabled={disabled}
+            aria-describedby="class-baseclass-hint"
           >
             <option value="">None (define from scratch)</option>
             {allClasses.map(cls => (
               <option key={cls} value={cls}>{cls}</option>
             ))}
           </select>
-          <span className="class-creator-hint">
+          <span className="class-creator-hint" id="class-baseclass-hint">
             {isUsingTemplate
               ? `Inherits properties from ${formData.baseClass}. Specify only what you want to override.`
               : 'Select a base class to inherit properties from an existing class.'}
@@ -548,9 +551,9 @@ export function ClassCreatorForm({
       </div>
 
       {/* Core Stats Section */}
-      <div className="class-creator-section">
-        <h4 className="class-creator-section-title">
-          <Zap size={16} />
+      <div className="class-creator-section" role="group" aria-labelledby="class-stats-section-title">
+        <h4 className="class-creator-section-title" id="class-stats-section-title">
+          <Zap size={16} aria-hidden="true" />
           Core Stats {!isUsingTemplate && <span className="class-creator-required">*</span>}
           {isUsingTemplate && <span className="class-creator-optional">(Overrides)</span>}
         </h4>
@@ -597,7 +600,7 @@ export function ClassCreatorForm({
             Saving Throws {!isUsingTemplate && <span className="class-creator-required">*</span>}
             <span className="class-creator-count">({savingThrowsCount}/2 selected)</span>
           </label>
-          <div className="class-creator-saving-throws-grid">
+          <div className="class-creator-saving-throws-grid" role="group" aria-label="Saving throw proficiencies">
             {VALID_ABILITIES.map(ability => {
               const isSelected = formData.saving_throws.includes(ability);
               const isDisabled2 = !isSelected && savingThrowsCount >= 2;
@@ -608,6 +611,8 @@ export function ClassCreatorForm({
                   className={`class-creator-saving-throw ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleSavingThrowToggle(ability)}
                   disabled={disabled || isDisabled2}
+                  aria-pressed={isSelected}
+                  aria-label={`${ability} saving throw ${isSelected ? 'selected' : 'not selected'}`}
                 >
                   {ability}
                 </button>
@@ -722,16 +727,18 @@ export function ClassCreatorForm({
           className="class-creator-advanced-btn"
           onClick={() => setShowAudioPrefs(!showAudioPrefs)}
           disabled={disabled}
+          aria-expanded={showAudioPrefs}
+          aria-controls="class-creator-audio-section"
         >
-          {showAudioPrefs ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          <Music size={16} />
+          {showAudioPrefs ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+          <Music size={16} aria-hidden="true" />
           Audio Preferences {showAudioPrefs && '(Advanced)'}
         </button>
       </div>
 
       {/* Audio Preferences Section */}
       {showAudioPrefs && (
-        <div className="class-creator-advanced-section">
+        <div className="class-creator-advanced-section" id="class-creator-audio-section">
           <div className="class-creator-audio-hint">
             Configure audio affinity for class suggestions. When the music has certain characteristics,
             the ClassSuggester will favor classes with matching audio preferences.
@@ -798,8 +805,11 @@ export function ClassCreatorForm({
             <div className="class-creator-weight-sliders">
               {(['bass', 'treble', 'mid', 'amplitude'] as const).map(trait => (
                 <div key={trait} className="class-creator-weight-slider">
-                  <label className="class-creator-weight-label">{trait}</label>
+                  <label className="class-creator-weight-label" htmlFor={`audio-weight-${trait}`}>
+                    {trait}
+                  </label>
                   <input
+                    id={`audio-weight-${trait}`}
                     type="range"
                     min="0"
                     max="10"
@@ -808,8 +818,12 @@ export function ClassCreatorForm({
                     onChange={(e) => handleAudioPrefChange(trait, parseFloat(e.target.value) || undefined)}
                     disabled={disabled}
                     className="class-creator-slider"
+                    aria-label={`${trait} audio weight`}
+                    aria-valuenow={formData.audio_preferences[trait] ?? 0}
+                    aria-valuemin={0}
+                    aria-valuemax={10}
                   />
-                  <span className="class-creator-weight-value">
+                  <span className="class-creator-weight-value" aria-live="off">
                     {formData.audio_preferences[trait]?.toFixed(1) || '0.0'}
                   </span>
                 </div>
@@ -824,16 +838,16 @@ export function ClassCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="class-creator-errors">
+        <div className="class-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="class-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="class-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -867,9 +881,9 @@ export function ClassCreatorForm({
 
       {/* Preview Section */}
       {formData.name.trim() && (
-        <div className="class-creator-preview">
+        <div className="class-creator-preview" role="status" aria-live="polite" aria-label="Class preview">
           <h4 className="class-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="class-creator-preview-content">

@@ -412,9 +412,9 @@ export function SpellCreatorForm({
   return (
     <div className="spell-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="spell-creator-section">
-        <h4 className="spell-creator-section-title">
-          <Wand2 size={16} />
+      <div className="spell-creator-section" role="group" aria-labelledby="spell-basic-section-title">
+        <h4 className="spell-creator-section-title" id="spell-basic-section-title">
+          <Wand2 size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -431,8 +431,9 @@ export function SpellCreatorForm({
             className="spell-creator-input"
             disabled={disabled}
             maxLength={100}
+            aria-describedby="spell-name-hint"
           />
-          <span className="spell-creator-hint">
+          <span className="spell-creator-hint" id="spell-name-hint">
             {100 - formData.name.length} characters remaining
           </span>
         </div>
@@ -468,6 +469,7 @@ export function SpellCreatorForm({
               onChange={handleSchoolChange}
               className="spell-creator-select"
               disabled={disabled}
+              aria-describedby="spell-school-hint"
             >
               {VALID_SCHOOLS.map(school => (
                 <option key={school} value={school}>
@@ -475,7 +477,7 @@ export function SpellCreatorForm({
                 </option>
               ))}
             </select>
-            <span className="spell-creator-hint">
+            <span className="spell-creator-hint" id="spell-school-hint">
               {SCHOOL_CONFIG[formData.school]?.description}
             </span>
           </div>
@@ -483,9 +485,9 @@ export function SpellCreatorForm({
       </div>
 
       {/* Casting Details Section */}
-      <div className="spell-creator-section">
-        <h4 className="spell-creator-section-title">
-          <Target size={16} />
+      <div className="spell-creator-section" role="group" aria-labelledby="spell-casting-section-title">
+        <h4 className="spell-creator-section-title" id="spell-casting-section-title">
+          <Target size={16} aria-hidden="true" />
           Casting Details
         </h4>
 
@@ -546,7 +548,7 @@ export function SpellCreatorForm({
           <label className="spell-creator-label">
             Components <span className="spell-creator-optional">(Select all that apply)</span>
           </label>
-          <div className="spell-creator-components">
+          <div className="spell-creator-components" role="group" aria-label="Spell components">
             {VALID_COMPONENTS.map(component => {
               const isSelected = formData.components.includes(component);
               const config = COMPONENT_CONFIG[component];
@@ -557,6 +559,8 @@ export function SpellCreatorForm({
                   className={`spell-creator-component-btn ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleComponentToggle(component)}
                   disabled={disabled}
+                  aria-pressed={isSelected}
+                  aria-label={`${config.name} (${config.description})`}
                 >
                   <span className="spell-creator-component-letter">{component}</span>
                   <span className="spell-creator-component-name">{config.name}</span>
@@ -569,9 +573,9 @@ export function SpellCreatorForm({
       </div>
 
       {/* Description Section */}
-      <div className="spell-creator-section">
-        <h4 className="spell-creator-section-title">
-          <FileText size={16} />
+      <div className="spell-creator-section" role="group" aria-labelledby="spell-desc-section-title">
+        <h4 className="spell-creator-section-title" id="spell-desc-section-title">
+          <FileText size={16} aria-hidden="true" />
           Description <span className="spell-creator-required">*</span>
         </h4>
 
@@ -585,17 +589,18 @@ export function SpellCreatorForm({
             disabled={disabled}
             maxLength={2000}
             rows={5}
+            aria-describedby="spell-description-hint"
           />
-          <span className="spell-creator-hint">
+          <span className="spell-creator-hint" id="spell-description-hint">
             {2000 - formData.description.length} characters remaining
           </span>
         </div>
       </div>
 
       {/* Class Availability Section */}
-      <div className="spell-creator-section">
-        <h4 className="spell-creator-section-title">
-          <Users size={16} />
+      <div className="spell-creator-section" role="group" aria-labelledby="spell-classes-section-title">
+        <h4 className="spell-creator-section-title" id="spell-classes-section-title">
+          <Users size={16} aria-hidden="true" />
           Class Availability <span className="spell-creator-optional">(Optional)</span>
         </h4>
 
@@ -626,7 +631,7 @@ export function SpellCreatorForm({
               </Button>
             </div>
 
-            <div className="spell-creator-classes-grid">
+            <div className="spell-creator-classes-grid" role="group" aria-label="Class availability">
               {classesList.map(className => {
                 const isSelected = formData.classes.includes(className);
                 return (
@@ -636,6 +641,8 @@ export function SpellCreatorForm({
                     className={`spell-creator-class-btn ${isSelected ? 'selected' : ''}`}
                     onClick={() => handleClassToggle(className)}
                     disabled={disabled}
+                    aria-pressed={isSelected}
+                    aria-label={`${className} ${isSelected ? 'selected' : 'not selected'}`}
                   >
                     {className}
                   </button>
@@ -654,16 +661,16 @@ export function SpellCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="spell-creator-errors">
+        <div className="spell-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="spell-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="spell-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -697,9 +704,9 @@ export function SpellCreatorForm({
 
       {/* Preview Section */}
       {formData.name.trim() && (
-        <div className="spell-creator-preview">
+        <div className="spell-creator-preview" role="status" aria-live="polite" aria-label="Spell preview">
           <h4 className="spell-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="spell-creator-preview-content">

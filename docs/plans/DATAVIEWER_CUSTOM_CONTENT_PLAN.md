@@ -321,7 +321,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Success feedback (toast notifications)
 - [x] Responsive design for all new components (verified 2026-02-26 - all forms have responsive CSS at breakpoints 768px, 640px, 600px, 480px, 360px)
 - [x] Keyboard navigation support (verified 2026-02-26 - focus trap in modals, Enter key submission in forms, Enter/Escape in ConfirmDialog)
-- [ ] Accessibility (ARIA labels, focus management)
+- [x] Accessibility (ARIA labels, focus management) (verified 2026-02-26 - all forms have role="group" with aria-labelledby, aria-describedby connects hints to inputs, aria-hidden on decorative icons, aria-live="polite" on preview sections, proper labeling on ability grids and dynamic lists)
 
 ### 8.2 Integration Testing
 - [ ] Equipment creation in DataViewerTab appears in ItemsTab

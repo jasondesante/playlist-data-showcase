@@ -343,9 +343,9 @@ export function SkillCreatorForm({
   return (
     <div className="skill-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="skill-creator-section">
-        <h4 className="skill-creator-section-title">
-          <Swords size={16} />
+      <div className="skill-creator-section" role="group" aria-labelledby="skill-basic-section-title">
+        <h4 className="skill-creator-section-title" id="skill-basic-section-title">
+          <Swords size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -362,8 +362,9 @@ export function SkillCreatorForm({
             className="skill-creator-input"
             disabled={disabled}
             maxLength={50}
+            aria-describedby="skill-name-hint"
           />
-          <span className="skill-creator-hint">
+          <span className="skill-creator-hint" id="skill-name-hint">
             {50 - formData.name.length} characters remaining
           </span>
         </div>
@@ -381,17 +382,18 @@ export function SkillCreatorForm({
             className="skill-creator-input skill-creator-input-mono"
             disabled={disabled}
             maxLength={40}
+            aria-describedby="skill-id-hint"
           />
-          <span className="skill-creator-hint">
+          <span className="skill-creator-hint" id="skill-id-hint">
             Auto-generated from name. Must be lowercase_with_underscores format.
           </span>
         </div>
       </div>
 
       {/* Ability Section */}
-      <div className="skill-creator-section">
-        <h4 className="skill-creator-section-title">
-          <Zap size={16} />
+      <div className="skill-creator-section" role="group" aria-labelledby="skill-ability-section-title">
+        <h4 className="skill-creator-section-title" id="skill-ability-section-title">
+          <Zap size={16} aria-hidden="true" />
           Associated Ability
         </h4>
 
@@ -405,6 +407,7 @@ export function SkillCreatorForm({
             onChange={handleAbilityChange}
             className="skill-creator-select"
             disabled={disabled || isAbilitySpecific}
+            aria-describedby="skill-ability-hint"
           >
             {VALID_ABILITIES.map(ability => (
               <option key={ability} value={ability}>
@@ -412,7 +415,7 @@ export function SkillCreatorForm({
               </option>
             ))}
           </select>
-          <span className="skill-creator-hint">
+          <span className="skill-creator-hint" id="skill-ability-hint">
             {isAbilitySpecific
               ? `Locked to ${lockedAbility} (ability-specific category)`
               : ABILITY_CONFIG[formData.ability].description}
@@ -421,9 +424,9 @@ export function SkillCreatorForm({
       </div>
 
       {/* Description Section */}
-      <div className="skill-creator-section">
-        <h4 className="skill-creator-section-title">
-          <FileText size={16} />
+      <div className="skill-creator-section" role="group" aria-labelledby="skill-desc-section-title">
+        <h4 className="skill-creator-section-title" id="skill-desc-section-title">
+          <FileText size={16} aria-hidden="true" />
           Description <span className="skill-creator-optional">(Optional)</span>
         </h4>
 
@@ -437,17 +440,18 @@ export function SkillCreatorForm({
             disabled={disabled}
             maxLength={500}
             rows={3}
+            aria-describedby="skill-description-hint"
           />
-          <span className="skill-creator-hint">
+          <span className="skill-creator-hint" id="skill-description-hint">
             {500 - formData.description.length} characters remaining
           </span>
         </div>
       </div>
 
       {/* Categories Section */}
-      <div className="skill-creator-section">
-        <h4 className="skill-creator-section-title">
-          <Tag size={16} />
+      <div className="skill-creator-section" role="group" aria-labelledby="skill-categories-section-title">
+        <h4 className="skill-creator-section-title" id="skill-categories-section-title">
+          <Tag size={16} aria-hidden="true" />
           Categories <span className="skill-creator-optional">(Optional)</span>
         </h4>
 
@@ -458,15 +462,16 @@ export function SkillCreatorForm({
 
           {/* Selected categories */}
           {formData.categories.length > 0 && (
-            <div className="skill-creator-categories-selected">
+            <div className="skill-creator-categories-selected" role="list" aria-label="Selected categories">
               {formData.categories.map(cat => (
-                <span key={cat} className="skill-creator-category-tag">
+                <span key={cat} className="skill-creator-category-tag" role="listitem">
                   {cat}
                   <button
                     type="button"
                     className="skill-creator-category-remove"
                     onClick={() => handleRemoveCategory(cat)}
                     disabled={disabled}
+                    aria-label={`Remove ${cat} category`}
                   >
                     ×
                   </button>
@@ -486,6 +491,7 @@ export function SkillCreatorForm({
               className="skill-creator-input skill-creator-category-input"
               disabled={disabled}
               maxLength={30}
+              aria-label="New category name"
             />
             <Button
               variant="outline"
@@ -507,6 +513,7 @@ export function SkillCreatorForm({
                 className="skill-creator-suggestion-btn"
                 onClick={() => handleAddCategory(cat)}
                 disabled={disabled}
+                aria-label={`Add ${cat} category`}
               >
                 +{cat}
               </button>
@@ -516,9 +523,9 @@ export function SkillCreatorForm({
       </div>
 
       {/* Options Section */}
-      <div className="skill-creator-section">
-        <h4 className="skill-creator-section-title">
-          <Shield size={16} />
+      <div className="skill-creator-section" role="group" aria-labelledby="skill-options-section-title">
+        <h4 className="skill-creator-section-title" id="skill-options-section-title">
+          <Shield size={16} aria-hidden="true" />
           Options
         </h4>
 
@@ -530,10 +537,11 @@ export function SkillCreatorForm({
               onChange={handleArmorPenaltyChange}
               disabled={disabled}
               className="skill-creator-checkbox"
+              aria-describedby="armor-penalty-description"
             />
             <span className="skill-creator-checkbox-text">
               <strong>Armor Penalty</strong>
-              <span className="skill-creator-checkbox-description">
+              <span className="skill-creator-checkbox-description" id="armor-penalty-description">
                 Check if this skill has a penalty when wearing armor (like Stealth with heavy armor)
               </span>
             </span>
@@ -543,16 +551,16 @@ export function SkillCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="skill-creator-errors">
+        <div className="skill-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="skill-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="skill-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -586,9 +594,9 @@ export function SkillCreatorForm({
 
       {/* Preview Section */}
       {formData.name.trim() && (
-        <div className="skill-creator-preview">
+        <div className="skill-creator-preview" role="status" aria-live="polite" aria-label="Skill preview">
           <h4 className="skill-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="skill-creator-preview-content">

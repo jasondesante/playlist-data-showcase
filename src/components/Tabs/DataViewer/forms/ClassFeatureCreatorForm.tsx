@@ -469,9 +469,9 @@ export function ClassFeatureCreatorForm({
   return (
     <div className="class-feature-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="class-feature-section">
-        <h4 className="class-feature-section-title">
-          <Shield size={16} />
+      <div className="class-feature-section" role="group" aria-labelledby="feature-basic-section-title">
+        <h4 className="class-feature-section-title" id="feature-basic-section-title">
+          <Shield size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -488,8 +488,9 @@ export function ClassFeatureCreatorForm({
             className="class-feature-input"
             disabled={disabled}
             maxLength={100}
+            aria-describedby="feature-name-hint"
           />
-          <span className="class-feature-hint">
+          <span className="class-feature-hint" id="feature-name-hint">
             {100 - formData.name.length} characters remaining
           </span>
         </div>
@@ -508,6 +509,7 @@ export function ClassFeatureCreatorForm({
               className="class-feature-input"
               disabled={disabled}
               maxLength={50}
+              aria-describedby="feature-id-hint"
             />
             <label className="class-feature-checkbox-label">
               <input
@@ -519,7 +521,7 @@ export function ClassFeatureCreatorForm({
               Auto
             </label>
           </div>
-          <span className="class-feature-hint">
+          <span className="class-feature-hint" id="feature-id-hint">
             Unique identifier (lowercase_with_underscores)
           </span>
         </div>
@@ -535,6 +537,7 @@ export function ClassFeatureCreatorForm({
               onChange={handleClassChange}
               className="class-feature-select"
               disabled={disabled || isClassSpecific}
+              aria-describedby={isClassSpecific ? 'feature-class-locked-hint' : undefined}
             >
               <option value="">Select a class...</option>
               {classesList.map(className => (
@@ -544,7 +547,7 @@ export function ClassFeatureCreatorForm({
               ))}
             </select>
             {isClassSpecific && (
-              <span className="class-feature-hint class-feature-locked-hint">
+              <span className="class-feature-hint class-feature-locked-hint" id="feature-class-locked-hint">
                 Locked to {lockedClass} (class-specific category)
               </span>
             )}
@@ -579,6 +582,7 @@ export function ClassFeatureCreatorForm({
               onChange={handleTypeChange}
               className="class-feature-select"
               disabled={disabled}
+              aria-describedby="feature-type-hint"
             >
               {VALID_FEATURE_TYPES.map(type => (
                 <option key={type} value={type}>
@@ -586,7 +590,7 @@ export function ClassFeatureCreatorForm({
                 </option>
               ))}
             </select>
-            <span className="class-feature-hint">
+            <span className="class-feature-hint" id="feature-type-hint">
               {FEATURE_TYPE_CONFIG[formData.type]?.description}
             </span>
           </div>
@@ -594,9 +598,9 @@ export function ClassFeatureCreatorForm({
       </div>
 
       {/* Description Section */}
-      <div className="class-feature-section">
-        <h4 className="class-feature-section-title">
-          <FileText size={16} />
+      <div className="class-feature-section" role="group" aria-labelledby="feature-desc-section-title">
+        <h4 className="class-feature-section-title" id="feature-desc-section-title">
+          <FileText size={16} aria-hidden="true" />
           Description <span className="class-feature-required">*</span>
         </h4>
 
@@ -610,8 +614,9 @@ export function ClassFeatureCreatorForm({
             disabled={disabled}
             maxLength={2000}
             rows={5}
+            aria-describedby="feature-description-hint"
           />
-          <span className="class-feature-hint">
+          <span className="class-feature-hint" id="feature-description-hint">
             {2000 - formData.description.length} characters remaining
           </span>
         </div>
@@ -624,14 +629,16 @@ export function ClassFeatureCreatorForm({
           className="class-feature-advanced-btn"
           onClick={() => setShowAdvanced(!showAdvanced)}
           disabled={disabled}
+          aria-expanded={showAdvanced}
+          aria-controls="class-feature-advanced-section"
         >
-          {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {showAdvanced ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
           Advanced Options (Effects & Prerequisites)
         </button>
       </div>
 
       {showAdvanced && (
-        <div className="class-feature-advanced-section">
+        <div className="class-feature-advanced-section" id="class-feature-advanced-section">
           {/* Effects Section */}
           <div className="class-feature-section">
             <h4 className="class-feature-section-title">
@@ -778,16 +785,16 @@ export function ClassFeatureCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="class-feature-errors">
+        <div className="class-feature-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="class-feature-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="class-feature-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}

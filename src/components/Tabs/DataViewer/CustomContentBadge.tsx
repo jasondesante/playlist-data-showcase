@@ -121,8 +121,9 @@ export function CustomContentBadge({
       <span
         className={`custom-content-badge custom-content-badge-${size} custom-content-badge-compact ${className}`.trim()}
         title="Custom content"
+        aria-label="Custom content item"
       >
-        <Star size={10} className="custom-content-badge-icon" />
+        <Star size={10} className="custom-content-badge-icon" aria-hidden="true" />
         <span className="custom-content-badge-label">Custom</span>
       </span>
     );
@@ -133,7 +134,7 @@ export function CustomContentBadge({
     <>
       <div className={`custom-content-badge custom-content-badge-${size} ${className}`.trim()}>
         <span className="custom-content-badge-indicator">
-          <Star size={10} className="custom-content-badge-icon" />
+          <Star size={10} className="custom-content-badge-icon" aria-hidden="true" />
           <span className="custom-content-badge-label">Custom</span>
         </span>
 
@@ -147,7 +148,7 @@ export function CustomContentBadge({
                 title="Edit this item"
                 aria-label={`Edit ${itemName}`}
               >
-                <Pencil size={12} />
+                <Pencil size={12} aria-hidden="true" />
               </button>
             )}
 
@@ -159,8 +160,9 @@ export function CustomContentBadge({
                 disabled={isDuplicating}
                 title="Duplicate this item"
                 aria-label={`Duplicate ${itemName}`}
+                aria-disabled={isDuplicating}
               >
-                <Copy size={12} className={isDuplicating ? 'custom-content-badge-spinner' : ''} />
+                <Copy size={12} className={isDuplicating ? 'custom-content-badge-spinner' : ''} aria-hidden="true" />
               </button>
             )}
 
@@ -172,7 +174,7 @@ export function CustomContentBadge({
                 title="Delete this item"
                 aria-label={`Delete ${itemName}`}
               >
-                <Trash2 size={12} />
+                <Trash2 size={12} aria-hidden="true" />
               </button>
             )}
           </div>

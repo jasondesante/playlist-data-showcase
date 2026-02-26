@@ -393,9 +393,9 @@ export function RaceCreatorForm({
   return (
     <div className="race-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
-      <div className="race-creator-section">
-        <h4 className="race-creator-section-title">
-          <Feather size={16} />
+      <div className="race-creator-section" role="group" aria-labelledby="race-basic-section-title">
+        <h4 className="race-creator-section-title" id="race-basic-section-title">
+          <Feather size={16} aria-hidden="true" />
           Basic Info
         </h4>
 
@@ -412,8 +412,9 @@ export function RaceCreatorForm({
             className="race-creator-input"
             disabled={disabled}
             maxLength={50}
+            aria-describedby="race-name-hint"
           />
-          <span className="race-creator-hint">
+          <span className="race-creator-hint" id="race-name-hint">
             {50 - formData.name.length} characters remaining
           </span>
         </div>
@@ -431,8 +432,9 @@ export function RaceCreatorForm({
             disabled={disabled}
             maxLength={1000}
             rows={3}
+            aria-describedby="race-description-hint"
           />
-          <span className="race-creator-hint">
+          <span className="race-creator-hint" id="race-description-hint">
             {1000 - formData.description.length} characters remaining
           </span>
         </div>
@@ -450,26 +452,28 @@ export function RaceCreatorForm({
             max={120}
             className="race-creator-input race-creator-input-speed"
             disabled={disabled}
+            aria-describedby="race-speed-hint"
           />
-          <span className="race-creator-hint">
+          <span className="race-creator-hint" id="race-speed-hint">
             Default is 30 ft for medium creatures
           </span>
         </div>
       </div>
 
       {/* Ability Bonuses Section */}
-      <div className="race-creator-section">
-        <h4 className="race-creator-section-title">
-          <Zap size={16} />
+      <div className="race-creator-section" role="group" aria-labelledby="race-abilities-section-title">
+        <h4 className="race-creator-section-title" id="race-abilities-section-title">
+          <Zap size={16} aria-hidden="true" />
           Ability Bonuses
         </h4>
 
         <div className="race-creator-field">
-          <div className="race-creator-abilities-grid">
+          <div className="race-creator-abilities-grid" role="group" aria-label="Ability bonus inputs">
             {VALID_ABILITIES.map(ability => (
               <div key={ability} className="race-creator-ability-input">
-                <label>{ability}</label>
+                <label htmlFor={`race-ability-${ability}`}>{ability}</label>
                 <input
+                  id={`race-ability-${ability}`}
                   type="number"
                   min={0}
                   max={4}
@@ -477,11 +481,12 @@ export function RaceCreatorForm({
                   onChange={(e) => handleAbilityBonusChange(ability, e.target.value)}
                   placeholder="0"
                   disabled={disabled}
+                  aria-label={`${ability} bonus`}
                 />
               </div>
             ))}
           </div>
-          <div className="race-creator-bonus-total">
+          <div className="race-creator-bonus-total" aria-live="polite">
             Total Bonus Points: <strong>{totalBonuses}</strong>/6
             {totalBonuses > 6 && (
               <span className="race-creator-bonus-warning">
@@ -547,16 +552,18 @@ export function RaceCreatorForm({
           className="race-creator-advanced-btn"
           onClick={() => setShowSubraces(!showSubraces)}
           disabled={disabled}
+          aria-expanded={showSubraces}
+          aria-controls="race-creator-subraces-section"
         >
-          {showSubraces ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          <Users size={16} />
+          {showSubraces ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+          <Users size={16} aria-hidden="true" />
           Subraces {formData.subraces.length > 0 && `(${formData.subraces.length})`}
         </button>
       </div>
 
       {/* Subraces Section */}
       {showSubraces && (
-        <div className="race-creator-advanced-section">
+        <div className="race-creator-advanced-section" id="race-creator-subraces-section">
           <div className="race-creator-subraces-hint">
             Add subraces to provide variants with different ability bonuses.
             For example, "High Elf" and "Wood Elf" could be subraces of "Elf".
@@ -632,16 +639,16 @@ export function RaceCreatorForm({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="race-creator-errors">
+        <div className="race-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="race-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="race-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -675,9 +682,9 @@ export function RaceCreatorForm({
 
       {/* Preview Section */}
       {formData.name.trim() && (
-        <div className="race-creator-preview">
+        <div className="race-creator-preview" role="status" aria-live="polite" aria-label="Race preview">
           <h4 className="race-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="race-creator-preview-content">

@@ -286,9 +286,9 @@ export function AppearanceOptionCreator({
   return (
     <div className="appearance-option-creator" onKeyDown={handleKeyDown}>
       {/* Category Selector */}
-      <div className="appearance-creator-section">
-        <h4 className="appearance-creator-section-title">
-          <Palette size={16} />
+      <div className="appearance-creator-section" role="group" aria-labelledby="appearance-category-section-title">
+        <h4 className="appearance-creator-section-title" id="appearance-category-section-title">
+          <Palette size={16} aria-hidden="true" />
           Category
         </h4>
         <div className="appearance-creator-field">
@@ -301,6 +301,7 @@ export function AppearanceOptionCreator({
             onChange={handleCategoryChange}
             className="appearance-creator-select"
             disabled={disabled}
+            aria-describedby="appearance-category-hint"
           >
             {APPEARANCE_CATEGORIES.map(cat => (
               <option key={cat.key} value={cat.key}>
@@ -308,14 +309,14 @@ export function AppearanceOptionCreator({
               </option>
             ))}
           </select>
-          <span className="appearance-creator-hint">{categoryConfig.description}</span>
+          <span className="appearance-creator-hint" id="appearance-category-hint">{categoryConfig.description}</span>
         </div>
       </div>
 
       {/* Value Input */}
-      <div className="appearance-creator-section">
-        <h4 className="appearance-creator-section-title">
-          <CategoryIcon size={16} />
+      <div className="appearance-creator-section" role="group" aria-labelledby="appearance-value-section-title">
+        <h4 className="appearance-creator-section-title" id="appearance-value-section-title">
+          <CategoryIcon size={16} aria-hidden="true" />
           {isColorCategory ? 'Color Value' : 'Option Value'}
         </h4>
 
@@ -333,6 +334,7 @@ export function AppearanceOptionCreator({
                   onChange={handleColorChange}
                   className="appearance-creator-color-picker"
                   disabled={disabled}
+                  aria-describedby="color-picker-hint"
                 />
                 <input
                   type="text"
@@ -347,9 +349,10 @@ export function AppearanceOptionCreator({
                   className="appearance-creator-hex-input"
                   disabled={disabled}
                   maxLength={7}
+                  aria-label="Hex color value"
                 />
               </div>
-              <span className="appearance-creator-hint">Enter hex color (e.g., #4A90D9) or use the picker</span>
+              <span className="appearance-creator-hint" id="color-picker-hint">Enter hex color (e.g., #4A90D9) or use the picker</span>
             </div>
 
             {/* Color Preview */}
@@ -380,8 +383,9 @@ export function AppearanceOptionCreator({
               className="appearance-creator-input"
               disabled={disabled}
               maxLength={50}
+              aria-describedby="text-value-hint"
             />
-            <span className="appearance-creator-hint">
+            <span className="appearance-creator-hint" id="text-value-hint">
               {50 - textValue.length} characters remaining
             </span>
           </div>
@@ -390,16 +394,16 @@ export function AppearanceOptionCreator({
 
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
-        <div className="appearance-creator-errors">
+        <div className="appearance-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="appearance-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
           {lastError && !formErrors.includes(lastError) && (
             <div className="appearance-creator-error">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} aria-hidden="true" />
               <span>{lastError}</span>
             </div>
           )}
@@ -433,9 +437,9 @@ export function AppearanceOptionCreator({
 
       {/* Preview Section (for text values) */}
       {showPreview && !isColorCategory && textValue.trim() && (
-        <div className="appearance-creator-preview">
+        <div className="appearance-creator-preview" role="status" aria-live="polite" aria-label="Preview of the appearance option">
           <h4 className="appearance-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div className="appearance-creator-preview-content">

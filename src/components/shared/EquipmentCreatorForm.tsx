@@ -266,8 +266,8 @@ export function EquipmentCreatorForm({
   return (
     <div className="equipment-creator-form">
       {/* Basic Info */}
-      <div className="equipment-creator-section">
-        <h4 className="equipment-creator-section-title">Basic Information</h4>
+      <div className="equipment-creator-section" role="group" aria-labelledby="equipment-basic-section-title">
+        <h4 className="equipment-creator-section-title" id="equipment-basic-section-title">Basic Information</h4>
         <div className="equipment-creator-grid">
           {/* Item Name */}
           <div className="equipment-creator-field equipment-creator-field-full">
@@ -288,14 +288,16 @@ export function EquipmentCreatorForm({
           {/* Item Type */}
           <div className="equipment-creator-field">
             <label className="equipment-creator-label">Item Type <span className="equipment-creator-default">default: item</span></label>
-            <div className="equipment-creator-type-selector">
+            <div className="equipment-creator-type-selector" role="group" aria-label="Item type selection">
               <button
                 type="button"
                 className={`equipment-creator-type-btn ${itemType === 'weapon' ? 'equipment-creator-type-btn-active' : ''}`}
                 onClick={() => setItemType('weapon')}
                 disabled={disabled}
+                aria-pressed={itemType === 'weapon'}
+                aria-label="Weapon type"
               >
-                <Sword size={16} />
+                <Sword size={16} aria-hidden="true" />
                 <span>Weapon</span>
               </button>
               <button
@@ -303,8 +305,10 @@ export function EquipmentCreatorForm({
                 className={`equipment-creator-type-btn ${itemType === 'armor' ? 'equipment-creator-type-btn-active' : ''}`}
                 onClick={() => setItemType('armor')}
                 disabled={disabled}
+                aria-pressed={itemType === 'armor'}
+                aria-label="Armor type"
               >
-                <Shield size={16} />
+                <Shield size={16} aria-hidden="true" />
                 <span>Armor</span>
               </button>
               <button
@@ -312,8 +316,10 @@ export function EquipmentCreatorForm({
                 className={`equipment-creator-type-btn ${itemType === 'item' ? 'equipment-creator-type-btn-active' : ''}`}
                 onClick={() => setItemType('item')}
                 disabled={disabled}
+                aria-pressed={itemType === 'item'}
+                aria-label="Item type"
               >
-                <Package size={16} />
+                <Package size={16} aria-hidden="true" />
                 <span>Item</span>
               </button>
             </div>
@@ -378,9 +384,9 @@ export function EquipmentCreatorForm({
 
       {/* Weapon-specific fields */}
       {itemType === 'weapon' && (
-        <div className="equipment-creator-section">
-          <h4 className="equipment-creator-section-title">
-            <Sword size={16} />
+        <div className="equipment-creator-section" role="group" aria-labelledby="equipment-weapon-section-title">
+          <h4 className="equipment-creator-section-title" id="equipment-weapon-section-title">
+            <Sword size={16} aria-hidden="true" />
             Weapon Properties <span className="equipment-creator-optional">(optional)</span>
           </h4>
           <div className="equipment-creator-grid">
@@ -396,8 +402,9 @@ export function EquipmentCreatorForm({
                 placeholder="e.g., 1d8, 2d6"
                 className="equipment-creator-input"
                 disabled={disabled}
+                aria-describedby="damage-dice-hint"
               />
-              <span className="equipment-creator-hint">Format: 1d8, 2d6, etc.</span>
+              <span className="equipment-creator-hint" id="damage-dice-hint">Format: 1d8, 2d6, etc.</span>
             </div>
 
             <div className="equipment-creator-field">
@@ -432,9 +439,9 @@ export function EquipmentCreatorForm({
 
       {/* Armor-specific fields */}
       {itemType === 'armor' && (
-        <div className="equipment-creator-section">
-          <h4 className="equipment-creator-section-title">
-            <Shield size={16} />
+        <div className="equipment-creator-section" role="group" aria-labelledby="equipment-armor-section-title">
+          <h4 className="equipment-creator-section-title" id="equipment-armor-section-title">
+            <Shield size={16} aria-hidden="true" />
             Armor Properties <span className="equipment-creator-optional">(optional)</span>
           </h4>
           <div className="equipment-creator-grid">
@@ -452,8 +459,9 @@ export function EquipmentCreatorForm({
                 placeholder="e.g., 2"
                 className="equipment-creator-input"
                 disabled={disabled}
+                aria-describedby="ac-bonus-hint"
               />
-              <span className="equipment-creator-hint">Base AC provided by armor</span>
+              <span className="equipment-creator-hint" id="ac-bonus-hint">Base AC provided by armor</span>
             </div>
           </div>
         </div>
@@ -467,14 +475,16 @@ export function EquipmentCreatorForm({
             className="equipment-creator-advanced-options-toggle"
             onClick={() => setIsAdvancedOptionsExpanded(!isAdvancedOptionsExpanded)}
             disabled={disabled}
+            aria-expanded={isAdvancedOptionsExpanded}
+            aria-controls="equipment-creator-advanced-options-content"
           >
-            <Info size={16} />
+            <Info size={16} aria-hidden="true" />
             <span>Advanced Options</span>
-            {isAdvancedOptionsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {isAdvancedOptionsExpanded ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
           </button>
 
           {isAdvancedOptionsExpanded && (
-            <div className="equipment-creator-advanced-options-content">
+            <div className="equipment-creator-advanced-options-content" id="equipment-creator-advanced-options-content">
               <p className="equipment-creator-advanced-options-intro">
                 The UI above covers basic item creation. The <code>playlist-data-engine</code> API
                 supports additional properties for more advanced items:
@@ -569,10 +579,10 @@ ExtensionManager.getInstance()
 
       {/* Validation Errors */}
       {formErrors.length > 0 && (
-        <div className="equipment-creator-errors">
+        <div className="equipment-creator-errors" role="alert" aria-live="assertive">
           {formErrors.map((error, index) => (
             <div key={index} className="equipment-creator-error">
-              <X size={14} />
+              <X size={14} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ))}
@@ -605,9 +615,9 @@ ExtensionManager.getInstance()
 
       {/* Preview Section */}
       {showPreview && previewItem && (
-        <div className="equipment-creator-preview">
+        <div className="equipment-creator-preview" role="status" aria-live="polite" aria-label="Equipment preview">
           <h4 className="equipment-creator-preview-title">
-            <Sparkles size={16} />
+            <Sparkles size={16} aria-hidden="true" />
             Preview
           </h4>
           <div

@@ -357,14 +357,14 @@ export function SpawnModeControls({
             <span>Spawn Mode</span>
           </div>
           {hasCustom && (
-            <span className="spawn-mode-custom-badge">
+            <span className="spawn-mode-custom-badge" aria-label={`${categoryInfo.customCount} custom items`}>
               {categoryInfo.customCount} custom
             </span>
           )}
         </div>
 
         {/* Mode Buttons */}
-        <div className="spawn-mode-buttons">
+        <div className="spawn-mode-buttons" role="group" aria-label="Spawn mode selection">
           {(Object.keys(MODE_CONFIG) as SpawnMode[]).map((mode) => {
             const config = MODE_CONFIG[mode];
             const isActive = currentMode === mode;
@@ -376,10 +376,13 @@ export function SpawnModeControls({
                 className={`spawn-mode-btn ${isActive ? 'spawn-mode-btn-active' : ''}`}
                 onClick={() => handleModeChange(mode)}
                 title={config.description}
+                aria-pressed={isActive}
+                aria-label={`${config.label} mode: ${config.description}`}
               >
                 <span
                   className="spawn-mode-btn-indicator"
                   style={{ backgroundColor: config.color }}
+                  aria-hidden="true"
                 />
                 <span className="spawn-mode-btn-label">{config.label}</span>
               </button>
@@ -388,10 +391,11 @@ export function SpawnModeControls({
         </div>
 
         {/* Current Mode Description */}
-        <div className="spawn-mode-description">
+        <div className="spawn-mode-description" role="status" aria-live="polite">
           <span
             className="spawn-mode-description-indicator"
             style={{ backgroundColor: modeConfig.color }}
+            aria-hidden="true"
           />
           <span>{modeConfig.description}</span>
         </div>
@@ -425,27 +429,34 @@ export function SpawnModeControls({
             type="button"
             className="spawn-mode-advanced-toggle"
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            aria-expanded={isAdvancedOpen}
+            aria-controls="spawn-mode-weight-editor-panel"
           >
-            <Weight size={14} />
+            <Weight size={14} aria-hidden="true" />
             <span>Weight Editor</span>
             <span className="spawn-mode-weight-count">
               {weightEntries.length} items
             </span>
-            {isAdvancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {isAdvancedOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
           </button>
 
           {isAdvancedOpen && (
-            <div className="spawn-mode-weight-editor">
-              <p className="spawn-mode-weight-help">
+            <div className="spawn-mode-weight-editor" id="spawn-mode-weight-editor-panel">
+              <p className="spawn-mode-weight-help" id="spawn-mode-weight-help-text">
                 Adjust spawn weights (0 = never spawns, 1.0 = default, higher = more common)
               </p>
-              <div className="spawn-mode-weight-list">
+              <div className="spawn-mode-weight-list" role="group" aria-label="Spawn weight controls">
                 {weightEntries.map(([itemName, weight]) => (
                   <div key={itemName} className="spawn-mode-weight-item">
-                    <span className="spawn-mode-weight-name" title={itemName}>
+                    <label
+                      className="spawn-mode-weight-name"
+                      title={itemName}
+                      htmlFor={`weight-input-${itemName.replace(/[^a-zA-Z0-9]/g, '_')}`}
+                    >
                       {itemName}
-                    </span>
+                    </label>
                     <input
+                      id={`weight-input-${itemName.replace(/[^a-zA-Z0-9]/g, '_')}`}
                       type="number"
                       min="0"
                       max="10"
@@ -453,6 +464,8 @@ export function SpawnModeControls({
                       value={weight}
                       onChange={(e) => handleWeightChange(itemName, parseFloat(e.target.value) || 0)}
                       className="spawn-mode-weight-input"
+                      aria-label={`Weight for ${itemName}`}
+                      aria-describedby="spawn-mode-weight-help-text"
                     />
                   </div>
                 ))}
@@ -504,22 +517,22 @@ export function SpawnModeControls({
           </div>
 
           {importError && (
-            <div className="spawn-mode-import-error">
-              <AlertTriangle size={14} />
+            <div className="spawn-mode-import-error" role="alert" aria-live="assertive">
+              <AlertTriangle size={14} aria-hidden="true" />
               <span>{importError}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="spawn-mode-success">
-              <CheckCircle size={14} />
+            <div className="spawn-mode-success" role="status" aria-live="polite">
+              <CheckCircle size={14} aria-hidden="true" />
               <span>{successMessage}</span>
             </div>
           )}
 
           {feedbackMessage && (
-            <div className="spawn-mode-feedback">
-              <Info size={14} />
+            <div className="spawn-mode-feedback" role="status" aria-live="polite">
+              <Info size={14} aria-hidden="true" />
               <span>{feedbackMessage}</span>
             </div>
           )}
