@@ -6,3 +6,6 @@
 
 export { SpawnModeControls } from './SpawnModeControls';
 export type { SpawnModeControlsProps } from './SpawnModeControls';
+
+export { CustomContentBadge } from './CustomContentBadge';
+export type { CustomContentBadgeProps } from './CustomContentBadge';

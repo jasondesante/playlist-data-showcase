@@ -1,0 +1,192 @@
+/**
+ * CustomContentBadge Component Styles
+ *
+ * Styles for the custom content badge and action buttons.
+ * Part of DataViewerTab Custom Content Creation Upgrade - Phase 1.5.
+ */
+
+/* ========================================
+   BADGE CONTAINER
+   ======================================== */
+
+.custom-content-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--cute-purple) / 0.1);
+  border: 1px solid hsl(var(--cute-purple) / 0.3);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.custom-content-badge:hover {
+  background: hsl(var(--cute-purple) / 0.15);
+  border-color: hsl(var(--cute-purple) / 0.5);
+}
+
+/* Size variants */
+.custom-content-badge-sm {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.6875rem;
+}
+
+.custom-content-badge-md {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* ========================================
+   COMPACT MODE (BADGE ONLY)
+   ======================================== */
+
+.custom-content-badge-compact {
+  gap: 0.25rem;
+}
+
+/* ========================================
+   BADGE INDICATOR
+   ======================================== */
+
+.custom-content-badge-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.custom-content-badge-icon {
+  color: hsl(var(--cute-purple));
+  flex-shrink: 0;
+}
+
+.custom-content-badge-label {
+  color: hsl(var(--cute-purple));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ========================================
+   ACTION BUTTONS
+   ======================================== */
+
+.custom-content-badge-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-left: 0.25rem;
+  padding-left: 0.375rem;
+  border-left: 1px solid hsl(var(--cute-purple) / 0.3);
+}
+
+.custom-content-badge-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.custom-content-badge-action-btn:hover {
+  background: hsl(var(--cute-purple) / 0.2);
+  color: hsl(var(--cute-purple));
+}
+
+.custom-content-badge-action-btn:active {
+  transform: scale(0.95);
+}
+
+.custom-content-badge-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Delete button - special styling */
+.custom-content-badge-action-delete:hover {
+  background: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive));
+}
+
+/* ========================================
+   DELETE CONFIRMATION
+   ======================================== */
+
+.custom-content-badge-delete-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-radius: var(--radius-md);
+  animation: customBadgeFadeIn 0.15s ease-out;
+}
+
+@keyframes customBadgeFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.custom-content-badge-confirm-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--destructive));
+}
+
+.custom-content-badge-confirm-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ========================================
+   SPINNER ANIMATION
+   ======================================== */
+
+.custom-content-badge-spinner {
+  animation: customBadgeSpin 1s linear infinite;
+}
+
+@keyframes customBadgeSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 480px) {
+  .custom-content-badge {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .custom-content-badge-actions {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    padding-top: 0.25rem;
+    border-top: 1px solid hsl(var(--cute-purple) / 0.3);
+    width: 100%;
+    justify-content: center;
+  }
+}

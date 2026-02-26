@@ -60,12 +60,12 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Create `src/components/Tabs/DataViewer/SpawnModeControls.css`
 
 ### 1.5 Custom Content Badge & Actions
-- [ ] Create `src/components/Tabs/DataViewer/CustomContentBadge.tsx`
-  - [ ] Visual indicator for custom items
-  - [ ] Show "Custom" label
-  - [ ] Edit button (opens form modal with pre-populated data)
-  - [ ] Delete button (with confirmation dialog)
-  - [ ] Duplicate button (creates copy of custom item)
+- [x] Create `src/components/Tabs/DataViewer/CustomContentBadge.tsx`
+  - [x] Visual indicator for custom items
+  - [x] Show "Custom" label
+  - [x] Edit button (opens form modal with pre-populated data)
+  - [x] Delete button (with confirmation dialog)
+  - [x] Duplicate button (creates copy of custom item)
 
 ### 1.6 Confirmation Dialog Component
 - [ ] Create `src/components/ui/ConfirmDialog.tsx`
