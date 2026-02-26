@@ -145,15 +145,15 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Validation for color format
 
 ### 4.2 Skill Creator
-- [ ] Create `src/components/Tabs/DataViewer/forms/SkillCreatorForm.tsx`
-  - [ ] Fields:
+- [x] Create `src/components/Tabs/DataViewer/forms/SkillCreatorForm.tsx`
+  - [x] Fields:
     - id (text, lowercase_with_underscores)
     - name (text, required)
     - ability (select: STR/DEX/CON/INT/WIS/CHA)
     - description (textarea, optional)
     - categories (multi-select, optional)
     - armorPenalty (checkbox, optional)
-  - [ ] Support for ability-specific skills (`skills.{ability}`)
+  - [x] Support for ability-specific skills (`skills.{ability}`)
 
 ### 4.3 Add to DataViewerTab
 - [x] Update DataViewerTab for appearance section
