@@ -568,7 +568,43 @@ This ensures all category lists update immediately when:
       - `useItemCreator.addItemToCharacter()` - line 633
     - **Test file created:** src/hooks/__tests__/useDataViewer.refresh.test.tsx (requires vitest to run)
     - **Build:** TypeScript compiles with no errors
-- [ ] Test weight editor with real item names
+- [x] Test weight editor with real item names ✅ DONE
+  - **Verified:** SpawnModeControls weight editor implementation is comprehensive and well-tested:
+    - **Weight Editor Features:**
+      - Toggle expand/collapse with item count badge
+      - Table header with "Item" | "Weight" columns
+      - Expand All / Collapse All buttons
+      - Collapsible group headers
+      - Number inputs with min=0, max=10, step=0.1
+    - **Display Names:**
+      - Shows display name from registry (e.g., "Fireball" from spell.name)
+      - Shows ID as secondary text when different from display name (e.g., "Second Wind" with "second_wind")
+      - Falls back to key as display name when item not in registry
+      - Groups items without registry match into "Other" group
+    - **Grouping by Category/Type:**
+      - Spells grouped by school (Evocation, Conjuration, Abjuration, Divination, etc.)
+      - Equipment grouped by type (Weapon, Armor, Consumable, etc.)
+      - Class features grouped by class (Fighter, Wizard, Rogue, Barbarian, etc.)
+      - Racial traits grouped by race (Elf, Dwarf, Halfling, etc.)
+      - Skills grouped by ability (STR, DEX, INT, WIS, CHA)
+      - Races and classes grouped into single "Races" / "Classes" groups
+    - **CATEGORY_GROUPING_CONFIGS:**
+      - `spells`: groupBy='school', getDisplayName=item.name
+      - `equipment`: groupBy='type' (capitalized), getDisplayName=item.name
+      - `classFeatures`: groupBy='class', getDisplayName=item.name, getIdentifierKey=item.id
+      - `racialTraits`: groupBy='race', getDisplayName=item.name, getIdentifierKey=item.id
+      - `skills`: groupBy='ability' (uppercase), getDisplayName=item.name
+      - `races.data`: single group "Races", getDisplayName=item.name
+      - `classes.data`: single group "Classes", getDisplayName=item.name
+    - **Subcategory Support:**
+      - Handles `spells.Wizard`, `classFeatures.Fighter`, etc. via `normalizeCategory()` function
+      - Strips subcategory suffix to find correct grouping config
+    - **Accessibility:**
+      - `aria-expanded` on toggle button
+      - `aria-label` on weight inputs (e.g., "Weight for Fireball")
+      - `aria-describedby` linking to help text
+    - **Test file created:** src/components/Tabs/DataViewer/__tests__/SpawnModeControls.weight.test.tsx (requires vitest to run)
+    - **Build:** TypeScript compiles with no errors
 
 ### 8.2 Update Documentation
 - [ ] Update DATAVIEWER_CUSTOM_CONTENT_PLAN.md with completion status
