@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/Button';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
 import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
+import { showToast } from '@/components/ui/Toast';
 import './SpawnModeControls.css';
 
 /**
@@ -150,6 +151,7 @@ export function SpawnModeControls({
     if (window.confirm(`Reset all custom data for "${categoryLabel || category}"? This cannot be undone.`)) {
       resetCategory(category);
       onResetCategory?.(category);
+      showToast(`Reset ${categoryLabel || category} to defaults`, 'success');
     }
   }, [category, categoryLabel, resetCategory, onResetCategory]);
 
@@ -158,6 +160,7 @@ export function SpawnModeControls({
     if (window.confirm('Reset ALL custom data across ALL categories? This cannot be undone.')) {
       resetAll();
       onResetAll?.();
+      showToast('Reset all categories to defaults', 'success');
     }
   }, [resetAll, onResetAll]);
 
@@ -179,6 +182,7 @@ export function SpawnModeControls({
 
       if (!customItems || customItems.length === 0) {
         setFeedbackMessage('No custom items to export for this category.');
+        showToast('No custom items to export', 'info');
         return;
       }
 
@@ -202,10 +206,12 @@ export function SpawnModeControls({
       URL.revokeObjectURL(url);
 
       setSuccessMessage(`Exported ${customItems.length} items successfully.`);
+      showToast(`Exported ${customItems.length} items from ${categoryLabel || category}`, 'success');
       logger.info('DataViewer', `Exported ${customItems.length} items from ${category}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to export custom content.';
       setImportError(errorMessage);
+      showToast(`Export failed: ${errorMessage}`, 'error');
       logger.error('DataViewer', 'Export failed', error);
     } finally {
       setIsExporting(false);
@@ -243,6 +249,7 @@ export function SpawnModeControls({
 
       if (totalItems === 0) {
         setFeedbackMessage('No custom items found across any category.');
+        showToast('No custom items to export', 'info');
         return;
       }
 
@@ -257,6 +264,7 @@ export function SpawnModeControls({
       URL.revokeObjectURL(url);
 
       setSuccessMessage(`Exported ${totalItems} items from all categories successfully.`);
+      showToast(`Exported ${totalItems} items from all categories`, 'success');
       logger.info('DataViewer', 'Exported all custom content');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to export custom content.';
@@ -318,10 +326,12 @@ export function SpawnModeControls({
       manager.register(importCategory as any, data.items, { validate: true });
 
       setSuccessMessage(`Successfully imported ${data.items.length} items to ${importCategory}.`);
+      showToast(`Imported ${data.items.length} items to ${importCategory}`, 'success');
       logger.info('DataViewer', `Imported ${data.items.length} items to ${importCategory}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setImportError(errorMessage);
+      showToast(`Import failed: ${errorMessage}`, 'error');
       logger.error('DataViewer', 'Import failed', error);
     } finally {
       setIsImporting(false);

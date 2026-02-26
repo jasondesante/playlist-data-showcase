@@ -318,7 +318,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Consistent styling across all forms
 - [x] Loading states for all async operations (verified - all forms use isSubmitting, export/import use isExporting/isImporting, badge actions use isDeleting/isDuplicating)
 - [x] Error handling with user-friendly messages (replaced all alert() calls with inline success/error/feedback messages in SpawnModeControls)
-- [ ] Success feedback (toast notifications)
+- [x] Success feedback (toast notifications)
 - [ ] Responsive design for all new components
 - [ ] Keyboard navigation support
 - [ ] Accessibility (ARIA labels, focus management)

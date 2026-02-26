@@ -16,6 +16,7 @@
 import React, { useState, useCallback } from 'react';
 import { Pencil, Trash2, Copy, Star } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { showToast } from '@/components/ui/Toast';
 import type { ContentType } from '@/hooks/useContentCreator';
 import './CustomContentBadge.css';
 
@@ -90,6 +91,7 @@ export function CustomContentBadge({
     setIsDeleting(true);
     try {
       await onDelete?.(category, itemName);
+      showToast(`Deleted "${itemName}"`, 'success');
       setShowConfirmDelete(false);
     } finally {
       setIsDeleting(false);
@@ -107,6 +109,7 @@ export function CustomContentBadge({
     setIsDuplicating(true);
     try {
       await onDuplicate?.(category, itemName);
+      showToast(`Duplicated "${itemName}"`, 'success');
     } finally {
       setIsDuplicating(false);
     }

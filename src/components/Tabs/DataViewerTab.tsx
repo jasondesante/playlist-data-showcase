@@ -72,6 +72,7 @@ import { Card, CardHeader } from '../ui/Card';
 import { EffectList, type FeatureEffect } from '../ui/EffectDisplay';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import { logger } from '../../utils/logger';
+import { showToast } from '../ui/Toast';
 import { CustomContentBadge } from './DataViewer/CustomContentBadge';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
@@ -545,9 +546,11 @@ export function DataViewerTab() {
     const result = deleteContent(contentType, itemName);
     if (result.success) {
       logger.info('DataViewer', `Deleted ${category}/${itemName}`);
+      showToast(`Deleted "${itemName}" successfully`, 'success');
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to delete ${category}/${itemName}: ${result.error}`);
+      showToast(`Failed to delete "${itemName}"`, 'error');
     }
   }, [deleteContent, refreshData]);
 
@@ -560,9 +563,11 @@ export function DataViewerTab() {
     const result = duplicateContent(contentType, itemName, newName);
     if (result.success) {
       logger.info('DataViewer', `Duplicated ${category}/${itemName} as ${newName}`);
+      showToast(`Duplicated "${itemName}" as "${newName}"`, 'success');
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to duplicate ${category}/${itemName}: ${result.error}`);
+      showToast(`Failed to duplicate "${itemName}"`, 'error');
     }
   }, [duplicateContent, refreshData]);
 
@@ -582,10 +587,12 @@ export function DataViewerTab() {
 
     if (result.success) {
       logger.info('DataViewer', `Created equipment: ${equipment.name}`);
+      showToast(`Created equipment "${equipment.name}"`, 'success');
       setShowEquipmentCreator(false);
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
+      showToast(`Failed to create equipment: ${result.error}`, 'error');
     }
   }, [createContent, refreshData]);
 
@@ -595,6 +602,7 @@ export function DataViewerTab() {
    */
   const handleCreateAppearanceOption = useCallback((category: ContentType, value: string) => {
     logger.info('DataViewer', `Created appearance option: ${value} in ${category}`);
+    showToast(`Added "${value}" to ${category.replace('appearance.', '')}`, 'success');
     setAppearanceCreatorCategory(null);
     refreshData();
   }, [refreshData]);
@@ -625,10 +633,12 @@ export function DataViewerTab() {
 
     if (result.success) {
       logger.info('DataViewer', `Created skill: ${skill.name}`);
+      showToast(`Created skill "${skill.name}"`, 'success');
       setShowSkillCreator(false);
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create skill: ${result.error}`);
+      showToast(`Failed to create skill: ${result.error}`, 'error');
     }
   }, [createContent, refreshData]);
 
@@ -657,10 +667,12 @@ export function DataViewerTab() {
 
     if (result.success) {
       logger.info('DataViewer', `Created spell: ${spell.name}`);
+      showToast(`Created spell "${spell.name}"`, 'success');
       setShowSpellCreator(false);
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create spell: ${result.error}`);
+      showToast(`Failed to create spell: ${result.error}`, 'error');
     }
   }, [createContent, refreshData]);
 
@@ -699,10 +711,12 @@ export function DataViewerTab() {
 
     if (result.success) {
       logger.info('DataViewer', `Created class feature: ${feature.name}`);
+      showToast(`Created class feature "${feature.name}"`, 'success');
       setShowClassFeatureCreator(false);
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create class feature: ${result.error}`);
+      showToast(`Failed to create class feature: ${result.error}`, 'error');
     }
   }, [createContent, refreshData]);
 
@@ -748,10 +762,12 @@ export function DataViewerTab() {
 
     if (result.success) {
       logger.info('DataViewer', `Created racial trait: ${trait.name}`);
+      showToast(`Created racial trait "${trait.name}"`, 'success');
       setShowRacialTraitCreator(false);
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create racial trait: ${result.error}`);
+      showToast(`Failed to create racial trait: ${result.error}`, 'error');
     }
   }, [createContent, refreshData]);
 
@@ -764,6 +780,7 @@ export function DataViewerTab() {
    */
   const handleCreateRace = useCallback((race: RaceFormData) => {
     logger.info('DataViewer', `Created race: ${race.name}`);
+    showToast(`Created race "${race.name}"`, 'success');
     setShowRaceCreator(false);
     refreshData();
   }, [refreshData]);
@@ -777,6 +794,7 @@ export function DataViewerTab() {
    */
   const handleCreateClass = useCallback((cls: ClassFormData) => {
     logger.info('DataViewer', `Created class: ${cls.name}`);
+    showToast(`Created class "${cls.name}"`, 'success');
     setShowClassCreator(false);
     refreshData();
   }, [refreshData]);
