@@ -1210,3 +1210,32 @@
   color: var(--color-primary);
 }
 
+/* ========================================
+   APPEARANCE CREATOR SECTION (Phase 4.1)
+   ======================================== */
+
+.dataviewer-appearance-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dataviewer-appearance-creator {
+  margin-bottom: 1rem;
+  animation: dataviewerAppearanceCreatorFadeIn 0.2s ease-out;
+}
+
+@keyframes dataviewerAppearanceCreatorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

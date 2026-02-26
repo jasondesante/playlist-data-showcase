@@ -132,17 +132,17 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 4: Simple Content Types
 
 ### 4.1 Appearance Options Creator
-- [ ] Create `src/components/Tabs/DataViewer/forms/AppearanceOptionCreator.tsx`
-  - [ ] Support all appearance categories:
+- [x] Create `src/components/Tabs/DataViewer/forms/AppearanceOptionCreator.tsx`
+  - [x] Support all appearance categories:
     - `appearance.bodyTypes` - text input
     - `appearance.skinTones` - color picker (#RRGGBB)
     - `appearance.hairColors` - color picker
     - `appearance.hairStyles` - text input
     - `appearance.eyeColors` - color picker
     - `appearance.facialFeatures` - text input
-  - [ ] Category selector dropdown
-  - [ ] Dynamic form based on category type
-  - [ ] Validation for color format
+  - [x] Category selector dropdown
+  - [x] Dynamic form based on category type
+  - [x] Validation for color format
 
 ### 4.2 Skill Creator
 - [ ] Create `src/components/Tabs/DataViewer/forms/SkillCreatorForm.tsx`
@@ -156,9 +156,9 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [ ] Support for ability-specific skills (`skills.{ability}`)
 
 ### 4.3 Add to DataViewerTab
-- [ ] Update DataViewerTab for appearance section
-  - [ ] Add "Add" button per appearance category
-  - [ ] Inline form or modal for adding options
+- [x] Update DataViewerTab for appearance section
+  - [x] Add "Add" button per appearance category
+  - [x] Inline form or modal for adding options
 - [ ] Update DataViewerTab for skills section
   - [ ] Add "Create Skill" button
   - [ ] Modal with SkillCreatorForm

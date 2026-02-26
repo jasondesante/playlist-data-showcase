@@ -75,6 +75,7 @@ import { CustomContentBadge } from './DataViewer/CustomContentBadge';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
+import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
 import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -383,6 +384,7 @@ export function DataViewerTab() {
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
   const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
   const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
+  const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
@@ -570,6 +572,16 @@ export function DataViewerTab() {
       logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
     }
   }, [createContent, refreshData]);
+
+  /**
+   * Handle creation of new appearance option via AppearanceOptionCreator
+   * (Phase 4.1: Appearance Options Creator)
+   */
+  const handleCreateAppearanceOption = useCallback((category: ContentType, value: string) => {
+    logger.info('DataViewer', `Created appearance option: ${value} in ${category}`);
+    setAppearanceCreatorCategory(null);
+    refreshData();
+  }, [refreshData]);
 
   // Render category selector
   const renderCategorySelector = () => (
@@ -1709,12 +1721,15 @@ export function DataViewerTab() {
    * - Hair styles (short, long, braided, etc.)
    * - Eye colors (hex color swatches)
    * - Facial features (scars, tattoos, piercings, etc.)
+   *
+   * Phase 4.1: Added inline AppearanceOptionCreator per category
    */
   const renderAppearance = () => (
     <div className="dataviewer-grid">
       {(getFilteredData as AppearanceCategoryData[]).map(category => {
         const isExpanded = expandedItems.has(category.key);
         const CategoryIcon = getAppearanceIcon(category.icon);
+        const isCreatingOption = appearanceCreatorCategory === category.key;
 
         return (
           <div key={category.key} className="dataviewer-card">
@@ -1742,6 +1757,35 @@ export function DataViewerTab() {
 
             {isExpanded && (
               <div className="dataviewer-card-details">
+                {/* Add Option Button */}
+                <div className="dataviewer-appearance-actions">
+                  <Button
+                    variant={isCreatingOption ? 'outline' : 'ghost'}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAppearanceCreatorCategory(isCreatingOption ? null : category.key);
+                    }}
+                    leftIcon={isCreatingOption ? X : Plus}
+                  >
+                    {isCreatingOption ? 'Cancel' : 'Add Option'}
+                  </Button>
+                </div>
+
+                {/* Inline Creator Form */}
+                {isCreatingOption && (
+                  <div className="dataviewer-appearance-creator">
+                    <AppearanceOptionCreator
+                      initialCategory={category.key as ContentType}
+                      onCreate={handleCreateAppearanceOption}
+                      onCancel={() => setAppearanceCreatorCategory(null)}
+                      submitButtonText="Add to Category"
+                      showPreview={true}
+                    />
+                  </div>
+                )}
+
+                {/* Options List */}
                 <div className="dataviewer-appearance-options">
                   {category.options.map((option, idx) => {
                     // Check if this is a color value
