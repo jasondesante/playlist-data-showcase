@@ -334,11 +334,24 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] Call notifyDataChanged() after cache invalidation to trigger useMemo re-computation
 - [x] Update DataViewerTab refresh handler (no changes needed - uses refreshData from hook)
 
-### 6.3 General Data Refresh Audit
-- [ ] Test refresh button for all categories
-- [ ] Verify lists update immediately after creating custom content
-- [ ] Ensure no tab switch required to see new data
-- [ ] Check ExtensionManager state vs local cache sync
+### 6.3 General Data Refresh Audit ✅ DONE
+- [x] Test refresh button for all categories
+- [x] Verify lists update immediately after creating custom content
+- [x] Ensure no tab switch required to see new data
+- [x] Check ExtensionManager state vs local cache sync
+
+**Fix Applied:** Added `lastDataChange` dependency to all useMemo hooks in useDataViewer.ts:
+- `spells` - was missing dependency, now has `[spellQuery, lastDataChange]`
+- `skills` - was missing dependency, now has `[skillQuery, lastDataChange]`
+- `classFeatures` - was missing dependency, now has `[featureQuery, lastDataChange]`
+- `races` - was missing dependency, now has `[featureQuery, lastDataChange]`
+- `classes` - was missing dependency, now has `[lastDataChange]`
+- `racialTraits` - already had `[featureQuery, lastDataChange]` ✅
+- `equipment` - already had `[lastDataChange]` ✅
+
+This ensures all category lists update immediately when:
+1. User clicks the refresh button (calls `refreshData()` → `notifyDataChanged()`)
+2. User creates custom content (calls `notifyDataChanged()`)
 
 ---
 

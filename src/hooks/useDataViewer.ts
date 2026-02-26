@@ -263,6 +263,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     /**
      * Load all spells from SpellQuery
+     *
+     * Recomputes when lastDataChange changes (custom items added or refresh triggered)
      */
     const spells = useMemo(() => {
         try {
@@ -272,10 +274,13 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load spells', errorMessage);
             return [];
         }
-    }, [spellQuery]);
+        // Include lastDataChange as dependency to trigger re-computation on refresh
+    }, [spellQuery, lastDataChange]);
 
     /**
      * Load all skills from SkillQuery
+     *
+     * Recomputes when lastDataChange changes (custom items added or refresh triggered)
      */
     const skills = useMemo(() => {
         try {
@@ -285,10 +290,13 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load skills', errorMessage);
             return [];
         }
-    }, [skillQuery]);
+        // Include lastDataChange as dependency to trigger re-computation on refresh
+    }, [skillQuery, lastDataChange]);
 
     /**
      * Load all class features from FeatureQuery
+     *
+     * Recomputes when lastDataChange changes (custom items added or refresh triggered)
      */
     const classFeatures = useMemo(() => {
         try {
@@ -304,7 +312,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load class features', errorMessage);
             return [];
         }
-    }, [featureQuery]);
+        // Include lastDataChange as dependency to trigger re-computation on refresh
+    }, [featureQuery, lastDataChange]);
 
     /**
      * Load all racial traits from FeatureQuery
@@ -396,10 +405,13 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load races', errorMessage);
             return [];
         }
-    }, [featureQuery]);
+        // Include lastDataChange as dependency to trigger re-computation on refresh
+    }, [featureQuery, lastDataChange]);
 
     /**
      * Load all classes from CLASS_DATA
+     *
+     * Recomputes when lastDataChange changes (refresh triggered)
      */
     const classes = useMemo(() => {
         try {
@@ -422,7 +434,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load classes', errorMessage);
             return [];
         }
-    }, []);
+        // Include lastDataChange as dependency to trigger re-computation on refresh
+    }, [lastDataChange]);
 
     /**
      * Load all equipment from ExtensionManager (includes default + custom items)
