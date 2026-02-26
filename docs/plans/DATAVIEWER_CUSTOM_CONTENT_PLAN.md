@@ -79,11 +79,11 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 2: Spawn Mode Filtering
 
 ### 2.1 Extend useDataViewer Hook
-- [ ] Update `src/hooks/useDataViewer.ts`
-  - [ ] Add `getCustomItems(category)` - Get only custom items
-  - [ ] Add `getDefaultItems(category)` - Get only default items
-  - [ ] Add `getFilteredItems(category)` - Filter based on spawn mode
-  - [ ] Integrate with useSpawnMode hook
+- [x] Update `src/hooks/useDataViewer.ts`
+  - [x] Add `getCustomItems(category)` - Get only custom items
+  - [x] Add `getDefaultItems(category)` - Get only default items
+  - [x] Add `getFilteredItems(category)` - Filter based on spawn mode
+  - [x] Integrate with useSpawnMode hook
 
 ### 2.2 Update DataViewerTab Lists
 - [ ] Update `src/components/Tabs/DataViewerTab.tsx`

@@ -16,6 +16,7 @@ import {
     type Race,
     ensureAppearanceDefaultsInitialized
 } from 'playlist-data-engine';
+import { useSpawnMode, type SpawnMode, type SpawnCategory } from './useSpawnMode';
 
 /**
  * Type guard to check if an equipment item has enhanced properties.
@@ -204,6 +205,16 @@ export interface UseDataViewerReturn {
     getEquipmentRarities: () => string[];
     /** Get all unique equipment tags for filtering */
     getEquipmentTags: () => string[];
+    /** Get only custom items for a category */
+    getCustomItems: (category: DataCategory) => RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[];
+    /** Get only default items for a category */
+    getDefaultItems: (category: DataCategory) => RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[];
+    /** Get filtered items based on spawn mode (absolute mode shows only custom items) */
+    getFilteredItems: (category: DataCategory) => RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[];
+    /** Get spawn mode for a category */
+    getSpawnModeForCategory: (category: DataCategory) => SpawnMode;
+    /** Check if an item is custom (vs default) */
+    isCustomItem: (category: DataCategory, itemName: string) => boolean;
 }
 
 /**
@@ -763,6 +774,278 @@ export const useDataViewer = (): UseDataViewerReturn => {
         }
     }, [spellQuery, skillQuery, featureQuery]);
 
+    // ==========================================
+    // Spawn Mode Integration
+    // ==========================================
+
+    /**
+     * Get the spawn mode hook for filtering
+     */
+    const { getMode } = useSpawnMode();
+
+    /**
+     * Map DataCategory to SpawnCategory for use with spawn mode functions
+     */
+    const getSpawnCategory = useCallback((category: DataCategory): SpawnCategory => {
+        // Most categories map directly, appearance is special
+        if (category === 'appearance') {
+            return 'appearance.bodyTypes'; // Default to body types for appearance mode
+        }
+        return category as SpawnCategory;
+    }, []);
+
+    /**
+     * Get spawn mode for a category
+     */
+    const getSpawnModeForCategory = useCallback((category: DataCategory): SpawnMode => {
+        const spawnCategory = getSpawnCategory(category);
+        return getMode(spawnCategory) ?? 'relative';
+    }, [getSpawnCategory, getMode]);
+
+    /**
+     * Get only custom items for a category
+     *
+     * Returns items that were registered as custom content via ExtensionManager.
+     * Uses getCustom() to retrieve only user-added items.
+     *
+     * @param category - The data category to get custom items for
+     * @returns Array of custom items (empty if no custom items)
+     */
+    const getCustomItems = useCallback((category: DataCategory): RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[] => {
+        try {
+            const manager = ExtensionManager.getInstance();
+
+            switch (category) {
+                case 'equipment':
+                    return manager.getCustom('equipment') as Equipment[] ?? [];
+
+                case 'spells':
+                    // Spells are managed through SpellQuery, check for custom via source field
+                    return spells.filter(spell => spell.source === 'custom');
+
+                case 'skills':
+                    // Skills are managed through SkillQuery, check for custom via source field
+                    return skills.filter(skill => skill.source === 'custom');
+
+                case 'classFeatures':
+                    // Class features are managed through FeatureQuery, check for custom via source field
+                    return classFeatures.filter(feature => feature.source === 'custom');
+
+                case 'racialTraits':
+                    // Racial traits are managed through FeatureQuery, check for custom via source field
+                    return racialTraits.filter(trait => trait.source === 'custom');
+
+                case 'races':
+                    // Races: custom races are registered in ExtensionManager
+                    const customRaceNames = manager.getCustom('races') as string[] ?? [];
+                    return races.filter(race => customRaceNames.includes(race.name));
+
+                case 'classes':
+                    // Classes: custom classes are registered in ExtensionManager
+                    const customClassNames = manager.getCustom('classes') as string[] ?? [];
+                    return classes.filter(cls => customClassNames.includes(cls.name));
+
+                case 'appearance':
+                    // Appearance: for simplicity, return all custom appearance options
+                    // This is a simplified approach; in practice you might want per-category tracking
+                    const customBodyTypes = manager.getCustom('appearance.bodyTypes') as string[] ?? [];
+                    const customSkinTones = manager.getCustom('appearance.skinTones') as string[] ?? [];
+                    const customHairColors = manager.getCustom('appearance.hairColors') as string[] ?? [];
+                    const customHairStyles = manager.getCustom('appearance.hairStyles') as string[] ?? [];
+                    const customEyeColors = manager.getCustom('appearance.eyeColors') as string[] ?? [];
+                    const customFacialFeatures = manager.getCustom('appearance.facialFeatures') as string[] ?? [];
+
+                    // Return categories that have custom items
+                    return appearance.filter(cat => {
+                        switch (cat.key) {
+                            case 'appearance.bodyTypes':
+                                return customBodyTypes.length > 0;
+                            case 'appearance.skinTones':
+                                return customSkinTones.length > 0;
+                            case 'appearance.hairColors':
+                                return customHairColors.length > 0;
+                            case 'appearance.hairStyles':
+                                return customHairStyles.length > 0;
+                            case 'appearance.eyeColors':
+                                return customEyeColors.length > 0;
+                            case 'appearance.facialFeatures':
+                                return customFacialFeatures.length > 0;
+                            default:
+                                return false;
+                        }
+                    });
+
+                default:
+                    return [];
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            logger.error('DataViewer', `Failed to get custom items for ${category}`, errorMessage);
+            return [];
+        }
+    }, [spells, skills, classFeatures, racialTraits, races, classes, equipment, appearance]);
+
+    /**
+     * Get only default items for a category
+     *
+     * Returns items that are part of the default data set (not user-added).
+     * Uses getDefaults() from ExtensionManager where available.
+     *
+     * @param category - The data category to get default items for
+     * @returns Array of default items
+     */
+    const getDefaultItems = useCallback((category: DataCategory): RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[] => {
+        try {
+            const manager = ExtensionManager.getInstance();
+
+            switch (category) {
+                case 'equipment':
+                    return manager.getDefaults('equipment') as Equipment[] ?? Object.values(DEFAULT_EQUIPMENT);
+
+                case 'spells':
+                    // Spells with source !== 'custom' are defaults
+                    return spells.filter(spell => spell.source !== 'custom');
+
+                case 'skills':
+                    // Skills with source !== 'custom' are defaults
+                    return skills.filter(skill => skill.source !== 'custom');
+
+                case 'classFeatures':
+                    // Class features with source !== 'custom' are defaults
+                    return classFeatures.filter(feature => feature.source !== 'custom');
+
+                case 'racialTraits':
+                    // Racial traits with source !== 'custom' are defaults
+                    return racialTraits.filter(trait => trait.source !== 'custom');
+
+                case 'races':
+                    // Default races (not in custom list)
+                    const customRaceNames = manager.getCustom('races') as string[] ?? [];
+                    return races.filter(race => !customRaceNames.includes(race.name));
+
+                case 'classes':
+                    // Default classes (not in custom list)
+                    const customClassNames = manager.getCustom('classes') as string[] ?? [];
+                    return classes.filter(cls => !customClassNames.includes(cls.name));
+
+                case 'appearance':
+                    // Appearance: return all appearance data since defaults are always present
+                    return appearance;
+
+                default:
+                    return [];
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            logger.error('DataViewer', `Failed to get default items for ${category}`, errorMessage);
+            // Fallback to returning all items
+            return getDataByCategory(category);
+        }
+    }, [spells, skills, classFeatures, racialTraits, races, classes, equipment, appearance, getDataByCategory]);
+
+    /**
+     * Get filtered items based on spawn mode
+     *
+     * Returns items filtered according to the current spawn mode:
+     * - `relative`: All items (default + custom) - no filtering
+     * - `absolute`: Only custom items (defaults excluded)
+     * - `default`: All items with equal weight - no filtering
+     * - `replace`: Only custom items (after clear)
+     *
+     * @param category - The data category to get filtered items for
+     * @returns Filtered array based on spawn mode
+     */
+    const getFilteredItems = useCallback((category: DataCategory): RegisteredSpell[] | CustomSkill[] | ClassFeature[] | RacialTrait[] | RaceDataEntry[] | ClassDataEntry[] | Equipment[] | AppearanceCategoryData[] => {
+        const mode = getSpawnModeForCategory(category);
+
+        // Absolute and replace modes: only show custom items
+        if (mode === 'absolute' || mode === 'replace') {
+            const customItems = getCustomItems(category);
+            // If no custom items exist, return empty (not defaults)
+            if (customItems.length === 0) {
+                logger.debug('DataViewer', `${category} in ${mode} mode has no custom items, returning empty`);
+                return [];
+            }
+            logger.debug('DataViewer', `${category} in ${mode} mode: showing ${customItems.length} custom items`);
+            return customItems;
+        }
+
+        // Relative and default modes: show all items
+        return getDataByCategory(category);
+    }, [getSpawnModeForCategory, getCustomItems, getDataByCategory]);
+
+    /**
+     * Check if an item is custom (vs default)
+     *
+     * Determines whether a specific item was added as custom content
+     * or is part of the default data set.
+     *
+     * @param category - The data category the item belongs to
+     * @param itemName - The name/ID of the item to check
+     * @returns true if the item is custom, false if default
+     */
+    const isCustomItem = useCallback((category: DataCategory, itemName: string): boolean => {
+        try {
+            const manager = ExtensionManager.getInstance();
+
+            switch (category) {
+                case 'equipment': {
+                    const customEquipment = manager.getCustom('equipment') as Equipment[] ?? [];
+                    return customEquipment.some(item => item.name === itemName);
+                }
+
+                case 'spells':
+                    return spells.some(spell => spell.name === itemName && spell.source === 'custom');
+
+                case 'skills':
+                    return skills.some(skill => (skill.name === itemName || skill.id === itemName) && skill.source === 'custom');
+
+                case 'classFeatures':
+                    return classFeatures.some(feature => (feature.name === itemName || feature.id === itemName) && feature.source === 'custom');
+
+                case 'racialTraits':
+                    return racialTraits.some(trait => (trait.name === itemName || trait.id === itemName) && trait.source === 'custom');
+
+                case 'races': {
+                    const customRaceNames = manager.getCustom('races') as string[] ?? [];
+                    return customRaceNames.includes(itemName);
+                }
+
+                case 'classes': {
+                    const customClassNames = manager.getCustom('classes') as string[] ?? [];
+                    return customClassNames.includes(itemName);
+                }
+
+                case 'appearance': {
+                    // Check all appearance categories
+                    const appearanceCategories = [
+                        'appearance.bodyTypes',
+                        'appearance.skinTones',
+                        'appearance.hairColors',
+                        'appearance.hairStyles',
+                        'appearance.eyeColors',
+                        'appearance.facialFeatures'
+                    ] as const;
+
+                    for (const cat of appearanceCategories) {
+                        const customItems = manager.getCustom(cat as any) as string[] ?? [];
+                        if (customItems.includes(itemName)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                default:
+                    return false;
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            logger.error('DataViewer', `Failed to check if ${itemName} is custom in ${category}`, errorMessage);
+            return false;
+        }
+    }, [spells, skills, classFeatures, racialTraits]);
+
     return {
         isLoading,
         error,
@@ -789,6 +1072,11 @@ export const useDataViewer = (): UseDataViewerReturn => {
         getSpellSchools,
         getEquipmentTypes,
         getEquipmentRarities,
-        getEquipmentTags
+        getEquipmentTags,
+        getCustomItems,
+        getDefaultItems,
+        getFilteredItems,
+        getSpawnModeForCategory,
+        isCustomItem
     };
 };
