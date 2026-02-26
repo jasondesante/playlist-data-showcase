@@ -245,9 +245,9 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Create `CastingTimeSelect` component ✅ DONE
   - [x] Dropdown with common values: "1 action", "1 bonus action", "1 reaction", "1 minute", "10 minutes", "1 hour"
   - [x] "Custom..." option that reveals text input
-- [ ] Create `RangeSelect` component
-  - [ ] Dropdown with common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
-  - [ ] "Custom..." option that reveals text input
+- [x] Create `RangeSelect` component ✅ DONE
+  - [x] Dropdown with common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
+  - [x] "Custom..." option that reveals text input
 - [ ] Create `DurationSelect` component
   - [ ] Dropdown with common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
   - [ ] "Custom..." option that reveals text input
@@ -434,8 +434,8 @@ src/
 │   │   ├── PrerequisitesBuilder.css
 │   │   ├── BoxContentsBuilder.tsx        # New: Box drops editor
 │   │   ├── BoxContentsBuilder.css
-│   │   ├── CastingTimeSelect.tsx         # New: Structured casting time
-│   │   ├── RangeSelect.tsx               # New: Structured range
+│   │   ├── CastingTimeSelect.tsx         # Structured casting time ✅ DONE
+│   │   ├── RangeSelect.tsx               # Structured range ✅ DONE
 │   │   ├── DurationSelect.tsx            # New: Structured duration
 │   │   ├── EquipmentCreatorForm.tsx      # Modified: Box type, images, advanced UI
 │   │   └── EquipmentCreatorForm.css
