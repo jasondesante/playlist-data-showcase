@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
-import { useDataViewerStore } from '@/store/dataViewerStore';
+import { useDataViewerStore, type SpawnMode as StoreSpawnMode } from '@/store/dataViewerStore';
 
 /**
  * Spawn mode types for ExtensionManager content registration.
@@ -195,8 +195,16 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
     // Version counter for triggering re-renders
     const [version, setVersion] = useState(0);
 
-    // Get the data viewer store for notifications
-    const { notifyDataChanged } = useDataViewerStore();
+    // Get the data viewer store for notifications and persistence
+    const {
+        notifyDataChanged,
+        getSpawnMode: getStoreSpawnMode,
+        setSpawnMode: setStoreSpawnMode,
+        getSpawnWeights: getStoreSpawnWeights,
+        setSpawnWeights: setStoreSpawnWeights,
+        resetSpawnMode: resetStoreSpawnMode,
+        resetAllSpawnModes: resetAllStoreSpawnModes
+    } = useDataViewerStore();
 
     /**
      * Get the ExtensionManager singleton instance
@@ -212,22 +220,31 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
 
     /**
      * Get the current spawn mode for a category
+     * Priority: ExtensionManager runtime > Store persisted value
      */
     const getMode = useCallback((category: SpawnCategory): SpawnMode | undefined => {
         try {
-            return manager.getMode(category as any) as SpawnMode | undefined;
+            const managerMode = manager.getMode(category as any) as SpawnMode | undefined;
+            if (managerMode) return managerMode;
+            // Fallback to store for persisted value
+            return getStoreSpawnMode(category) as SpawnMode | undefined;
         } catch (error) {
             logger.warn('SpawnMode', `Failed to get mode for ${category}`, { error: String(error) });
-            return undefined;
+            // Try store as fallback
+            return getStoreSpawnMode(category) as SpawnMode | undefined;
         }
-    }, [manager]);
+    }, [manager, getStoreSpawnMode]);
 
     /**
      * Set the spawn mode for a category
+     * Updates both ExtensionManager and store for persistence
      */
     const setMode = useCallback((category: SpawnCategory, mode: SpawnMode): void => {
         try {
+            // Update ExtensionManager
             manager.setMode(category as any, mode);
+            // Update store for persistence
+            setStoreSpawnMode(category, mode as StoreSpawnMode);
             logger.info('SpawnMode', `Set mode for ${category} to ${mode}`);
             bumpVersion();
             notifyDataChanged();
@@ -235,28 +252,38 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', `Failed to set mode for ${category}`, { error: String(error) });
             throw error;
         }
-    }, [manager, bumpVersion, notifyDataChanged]);
+    }, [manager, setStoreSpawnMode, bumpVersion, notifyDataChanged]);
 
     /**
      * Get spawn weights for a category
+     * Priority: ExtensionManager runtime > Store persisted value
      */
     const getWeights = useCallback((category: SpawnCategory): SpawnWeights => {
         try {
-            return manager.getWeights(category as any) || {};
+            const managerWeights = manager.getWeights(category as any);
+            if (managerWeights && Object.keys(managerWeights).length > 0) {
+                return managerWeights;
+            }
+            // Fallback to store for persisted weights
+            return getStoreSpawnWeights(category);
         } catch (error) {
             logger.warn('SpawnMode', `Failed to get weights for ${category}`, { error: String(error) });
-            return {};
+            return getStoreSpawnWeights(category);
         }
-    }, [manager]);
+    }, [manager, getStoreSpawnWeights]);
 
     /**
      * Set spawn weight for a specific item in a category
+     * Updates both ExtensionManager and store for persistence
      */
     const setWeight = useCallback((category: SpawnCategory, itemName: string, weight: number): void => {
         try {
             const currentWeights = getWeights(category);
             const newWeights = { ...currentWeights, [itemName]: weight };
+            // Update ExtensionManager
             manager.setWeights(category as any, newWeights);
+            // Update store for persistence
+            setStoreSpawnWeights(category, newWeights);
             logger.debug('SpawnMode', `Set weight for ${itemName} in ${category} to ${weight}`);
             bumpVersion();
             notifyDataChanged();
@@ -264,14 +291,18 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', `Failed to set weight for ${itemName} in ${category}`, { error: String(error) });
             throw error;
         }
-    }, [manager, getWeights, bumpVersion, notifyDataChanged]);
+    }, [manager, getWeights, setStoreSpawnWeights, bumpVersion, notifyDataChanged]);
 
     /**
      * Set multiple spawn weights for a category at once
+     * Updates both ExtensionManager and store for persistence
      */
     const setWeights = useCallback((category: SpawnCategory, weights: SpawnWeights): void => {
         try {
+            // Update ExtensionManager
             manager.setWeights(category as any, weights);
+            // Update store for persistence
+            setStoreSpawnWeights(category, weights);
             logger.debug('SpawnMode', `Set weights for ${category}`, { weightCount: Object.keys(weights).length });
             bumpVersion();
             notifyDataChanged();
@@ -279,14 +310,18 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', `Failed to set weights for ${category}`, { error: String(error) });
             throw error;
         }
-    }, [manager, bumpVersion, notifyDataChanged]);
+    }, [manager, setStoreSpawnWeights, bumpVersion, notifyDataChanged]);
 
     /**
      * Reset a category to its default state
+     * Clears both ExtensionManager and store
      */
     const resetCategory = useCallback((category: SpawnCategory): void => {
         try {
+            // Reset ExtensionManager
             manager.reset(category as any);
+            // Clear from store
+            resetStoreSpawnMode(category);
             logger.info('SpawnMode', `Reset category ${category} to defaults`);
             bumpVersion();
             notifyDataChanged();
@@ -294,14 +329,18 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', `Failed to reset category ${category}`, { error: String(error) });
             throw error;
         }
-    }, [manager, bumpVersion, notifyDataChanged]);
+    }, [manager, resetStoreSpawnMode, bumpVersion, notifyDataChanged]);
 
     /**
      * Reset all categories to their default state
+     * Clears both ExtensionManager and store
      */
     const resetAll = useCallback((): void => {
         try {
+            // Reset ExtensionManager
             manager.resetAll();
+            // Clear all from store
+            resetAllStoreSpawnModes();
             logger.info('SpawnMode', 'Reset all categories to defaults');
             bumpVersion();
             notifyDataChanged();
@@ -309,7 +348,7 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', 'Failed to reset all categories', { error: String(error) });
             throw error;
         }
-    }, [manager, bumpVersion, notifyDataChanged]);
+    }, [manager, resetAllStoreSpawnModes, bumpVersion, notifyDataChanged]);
 
     /**
      * Check if a category has any custom data

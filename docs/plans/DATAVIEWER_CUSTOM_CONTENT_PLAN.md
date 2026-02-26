@@ -32,10 +32,10 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Support for all category types
 
 ### 1.2 State Management
-- [ ] Update `src/store/dataViewerStore.ts`
-  - [ ] Add spawn mode state per category
-  - [ ] Track which categories have custom content
-  - [ ] Add custom content counts
+- [x] Update `src/store/dataViewerStore.ts`
+  - [x] Add spawn mode state per category
+  - [x] Track which categories have custom content
+  - [x] Add custom content counts
 
 ### 1.3 Validation Utilities
 - [ ] Create `src/utils/contentValidation.ts`
