@@ -326,14 +326,13 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Update useDataViewer hook
   - [x] Add lastDataChange dependency to racialTraits useMemo (similar to equipment)
 
-### 6.2 Fix Racial Traits List Refresh
-- [ ] Investigate why refresh button doesn't update racial traits list
-- [ ] Update useDataViewer hook
-  - [ ] Add dependency on custom data changes
-  - [ ] Invalidate FeatureQuery cache on refresh
-- [ ] Update DataViewerTab refresh handler
-  - [ ] Force re-fetch of all category data
-  - [ ] Clear memoization caches if needed
+### 6.2 Fix Racial Traits List Refresh ✅ DONE
+- [x] Investigate why refresh button doesn't update racial traits list
+- [x] Update useDataViewer hook
+  - [x] Add dependency on custom data changes (already had lastDataChange dependency)
+  - [x] Invalidate FeatureQuery cache on refresh (already had invalidateCache calls)
+  - [x] Call notifyDataChanged() after cache invalidation to trigger useMemo re-computation
+- [x] Update DataViewerTab refresh handler (no changes needed - uses refreshData from hook)
 
 ### 6.3 General Data Refresh Audit
 - [ ] Test refresh button for all categories

@@ -259,6 +259,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     // Subscribe to data viewer store to detect when custom items are added
     const lastDataChange = useDataViewerStore(state => state.lastDataChange);
+    const notifyDataChanged = useDataViewerStore(state => state.notifyDataChanged);
 
     /**
      * Load all spells from SpellQuery
@@ -768,6 +769,10 @@ export const useDataViewer = (): UseDataViewerReturn => {
             skillQuery.invalidateCache();
             featureQuery.invalidateCache();
 
+            // Trigger lastDataChange update to force useMemo hooks to re-compute
+            // This ensures all category data is refreshed with the invalidated caches
+            notifyDataChanged();
+
             logger.info('DataViewer', 'Refreshed all data from queries');
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
@@ -776,7 +781,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [spellQuery, skillQuery, featureQuery]);
+    }, [spellQuery, skillQuery, featureQuery, notifyDataChanged]);
 
     // ==========================================
     // Spawn Mode Integration
