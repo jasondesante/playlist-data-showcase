@@ -326,7 +326,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ### 8.2 Integration Testing
 - [x] Equipment creation in DataViewerTab appears in ItemsTab (verified 2026-02-26 - integration test created at src/__tests__/equipmentIntegration.test.ts, 11 tests pass confirming: ExtensionManager registration, EquipmentSpawnHelper spawning, lookup by name, spawn mode filtering)
 - [x] Spawn mode "absolute" filters to custom only (verified 2026-02-26 - integration test created at src/__tests__/spawnModeFilteringIntegration.test.ts, 19 tests pass confirming: mode setting/getting, custom vs default identification via getCustom()/getDefaults(), absolute/replace/relative mode filtering pattern, EquipmentSpawnHelper integration, cross-category mode independence)
-- [ ] Spawn mode reset returns all default items
+- [x] Spawn mode reset returns all default items (verified 2026-02-26 - added 2 new tests to spawnModeFilteringIntegration.test.ts, now 21 tests total confirming: defaults persist through reset() without re-initialization, getDefaults() returns all original items after reset, get() returns only defaults after custom items cleared, reset is idempotent across multiple cycles)
 - [ ] Custom class with audio_preferences works with ClassSuggester
 - [ ] Custom race with subraces generates characters correctly
 - [ ] Class-specific spells appear only for that class

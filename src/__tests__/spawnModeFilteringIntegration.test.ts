@@ -332,6 +332,113 @@ describe('Spawn Mode Filtering: Absolute Mode Shows Only Custom Items', () => {
             const defaults = manager.getDefaults('equipment') as EnhancedEquipment[];
             expect(defaults.some(e => e.name === 'Longsword')).toBe(true);
         });
+
+        it('should return all default items after reset without re-initialization', () => {
+            /**
+             * Phase 8.2 Integration Testing
+             * Task: Spawn mode reset returns all default items
+             *
+             * This test verifies that reset() preserves the default data.
+             * The defaultData map is NOT cleared by reset() - only custom items are removed.
+             * Therefore, getDefaults() should return all original defaults immediately after reset.
+             */
+            const manager = ExtensionManager.getInstance();
+
+            // Get original default count before any modifications
+            const originalDefaults = manager.getDefaults('equipment') as EnhancedEquipment[];
+            const originalDefaultCount = originalDefaults.length;
+            const originalDefaultNames = originalDefaults.map(e => e.name);
+
+            // Register multiple custom items
+            const customItems: EnhancedEquipment[] = [
+                { ...TEST_CUSTOM_EQUIPMENT, name: 'Reset Test Item 1' },
+                { ...TEST_CUSTOM_EQUIPMENT, name: 'Reset Test Item 2', type: 'armor' },
+                { ...TEST_CUSTOM_EQUIPMENT, name: 'Reset Test Item 3', type: 'item' }
+            ];
+            manager.register('equipment', customItems, { mode: 'relative' });
+
+            // Set mode to absolute
+            manager.setMode('equipment', 'absolute');
+
+            // Verify custom items exist
+            const customBeforeReset = manager.getCustom('equipment') as EnhancedEquipment[];
+            expect(customBeforeReset.length).toBe(3);
+
+            // Verify combined list has defaults + custom
+            const combinedBeforeReset = manager.get('equipment') as EnhancedEquipment[];
+            expect(combinedBeforeReset.length).toBe(originalDefaultCount + 3);
+
+            // === ACT: Reset the category ===
+            manager.reset('equipment');
+
+            // === ASSERTIONS: Defaults should be immediately available ===
+
+            // 1. getDefaults() should return ALL original default items
+            //    (no re-initialization needed - defaults persist through reset)
+            const defaultsAfterReset = manager.getDefaults('equipment') as EnhancedEquipment[];
+            expect(defaultsAfterReset.length).toBe(originalDefaultCount);
+
+            // 2. All original default names should still be present
+            for (const name of originalDefaultNames) {
+                expect(defaultsAfterReset.some(e => e.name === name)).toBe(true);
+            }
+
+            // 3. Known default items should be present
+            expect(defaultsAfterReset.some(e => e.name === 'Longsword')).toBe(true);
+            expect(defaultsAfterReset.some(e => e.name === 'Leather Armor')).toBe(true);
+            expect(defaultsAfterReset.some(e => e.name === 'Shield')).toBe(true);
+
+            // 4. get() should now return only defaults (since custom items were cleared)
+            const combinedAfterReset = manager.get('equipment') as EnhancedEquipment[];
+            expect(combinedAfterReset.length).toBe(originalDefaultCount);
+
+            // 5. Custom items should be completely removed
+            const customAfterReset = manager.getCustom('equipment') as EnhancedEquipment[];
+            expect(customAfterReset.length).toBe(0);
+
+            // 6. Custom item names should NOT be in the combined list
+            expect(combinedAfterReset.some(e => e.name === 'Reset Test Item 1')).toBe(false);
+            expect(combinedAfterReset.some(e => e.name === 'Reset Test Item 2')).toBe(false);
+            expect(combinedAfterReset.some(e => e.name === 'Reset Test Item 3')).toBe(false);
+
+            // 7. Mode should be cleared
+            const mode = manager.getMode('equipment');
+            expect(mode === undefined || mode === 'relative').toBe(true);
+        });
+
+        it('should preserve defaults across multiple reset cycles', () => {
+            /**
+             * Additional test to ensure reset is idempotent and defaults persist
+             * through multiple register/reset cycles.
+             */
+            const manager = ExtensionManager.getInstance();
+
+            // Get original defaults
+            const originalDefaults = manager.getDefaults('equipment') as EnhancedEquipment[];
+            const originalDefaultCount = originalDefaults.length;
+
+            // Perform multiple register/reset cycles
+            for (let cycle = 0; cycle < 3; cycle++) {
+                // Register custom items
+                manager.register('equipment', [
+                    { ...TEST_CUSTOM_EQUIPMENT, name: `Cycle ${cycle} Item` }
+                ], { mode: 'relative' });
+
+                // Set mode
+                manager.setMode('equipment', 'absolute');
+
+                // Verify custom exists
+                expect(manager.getCustom('equipment').length).toBeGreaterThan(0);
+
+                // Reset
+                manager.reset('equipment');
+
+                // Defaults should still be present with same count
+                const defaults = manager.getDefaults('equipment') as EnhancedEquipment[];
+                expect(defaults.length).toBe(originalDefaultCount);
+                expect(defaults.some(e => e.name === 'Longsword')).toBe(true);
+            }
+        });
     });
 
     describe('Integration with EquipmentSpawnHelper', () => {
