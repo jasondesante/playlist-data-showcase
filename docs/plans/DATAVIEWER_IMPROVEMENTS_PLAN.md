@@ -158,12 +158,12 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 **Priority: HIGH - Implement before modals (Phase 4)**
 
 ### 2.1 Add Image Fields to All Creator Forms
-- [ ] Create shared `ImageFieldInput` component
-  - [ ] URL input field with validation
-  - [ ] Preview thumbnail
-  - [ ] **URL/path mode ONLY** (base64/embedded mode NOT supported by engine - confirmed in Task 1.1)
-  - [ ] Note: "Images are not uploaded to internet - provide URL or relative path"
-  - [ ] Valid URL prefixes hint: `http://`, `https://`, `/`, `assets/`
+- [x] Create shared `ImageFieldInput` component ✅ DONE
+  - [x] URL input field with validation
+  - [x] Preview thumbnail
+  - [x] **URL/path mode ONLY** (base64/embedded mode NOT supported by engine - confirmed in Task 1.1)
+  - [x] Note: "Images are not uploaded to internet - provide URL or relative path"
+  - [x] Valid URL prefixes hint: `http://`, `https://`, `/`, `assets/`
 - [x] ~~Research: Check if data engine supports embedded images (base64) natively~~ **DONE - NOT SUPPORTED**
 - [ ] Add `icon` and `image` fields to EquipmentCreatorForm
 - [ ] Add `icon` and `image` fields to SpellCreatorForm
