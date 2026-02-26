@@ -184,8 +184,8 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Multi-select for class availability
 
 ### 5.2 Class Feature Creator
-- [ ] Create `src/components/Tabs/DataViewer/forms/ClassFeatureCreatorForm.tsx`
-  - [ ] Fields:
+- [x] Create `src/components/Tabs/DataViewer/forms/ClassFeatureCreatorForm.tsx`
+  - [x] Fields:
     - id (text, auto-generated from name)
     - name (text, required)
     - class (select from existing + custom classes)
@@ -194,7 +194,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
     - description (textarea, required)
     - effects (complex array - use effects builder pattern)
     - prerequisites (optional)
-  - [ ] Support for class-specific features (`classFeatures.{className}`)
+  - [x] Support for class-specific features (`classFeatures.{className}`)
 
 ### 5.3 Racial Trait Creator
 - [ ] Create `src/components/Tabs/DataViewer/forms/RacialTraitCreatorForm.tsx`
