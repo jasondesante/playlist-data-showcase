@@ -28,8 +28,10 @@ import {
   ChevronUp,
   Zap,
   Target,
-  Trash2
+  Trash2,
+  ImageIcon
 } from 'lucide-react';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './RacialTraitCreatorForm.css';
@@ -94,6 +96,8 @@ export interface RacialTraitFormData {
   description: string;
   effects: RacialTraitEffect[];
   prerequisites: RacialTraitPrerequisites;
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -137,7 +141,9 @@ function getDefaultFormData(): RacialTraitFormData {
     subrace: '',
     description: '',
     effects: [],
-    prerequisites: {}
+    prerequisites: {},
+    icon: '',
+    image: ''
   };
 }
 
@@ -312,6 +318,16 @@ export function RacialTraitCreatorForm({
         }
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        traitItem.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        traitItem.image = formData.image.trim();
+      }
+
       // Determine the actual content type
       const actualContentType = contentType.startsWith('racialTraits.') ? 'racialTraits' : contentType;
 
@@ -430,6 +446,18 @@ export function RacialTraitCreatorForm({
       };
     });
   }, []);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Cancel handler
   const handleCancel = useCallback(() => {
@@ -584,6 +612,38 @@ export function RacialTraitCreatorForm({
           <span className="racial-trait-hint" id="trait-description-hint">
             {2000 - formData.description.length} characters remaining
           </span>
+        </div>
+      </div>
+
+      {/* Images Section */}
+      <div className="racial-trait-section racial-trait-images-section" role="group" aria-labelledby="trait-images-section-title">
+        <h4 className="racial-trait-section-title" id="trait-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="racial-trait-optional">(optional)</span>
+        </h4>
+        <div className="racial-trait-images-grid">
+          <div className="racial-trait-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Trait Icon"
+              placeholder="e.g., assets/icons/darkvision.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="racial-trait-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Trait Image"
+              placeholder="e.g., assets/traits/darkvision.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
         </div>
       </div>
 
@@ -812,10 +872,36 @@ export function RacialTraitCreatorForm({
             Preview
           </h4>
           <div className="racial-trait-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="racial-trait-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="racial-trait-preview-header">
-              <span className="racial-trait-preview-name">
-                {formData.name}
-              </span>
+              <div className="racial-trait-preview-name-row">
+                {formData.icon && (
+                  <img
+                    src={formData.icon}
+                    alt=""
+                    className="racial-trait-preview-icon"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="racial-trait-preview-name">
+                  {formData.name}
+                </span>
+              </div>
               <div className="racial-trait-preview-badges">
                 <span className="racial-trait-preview-badge racial-trait-preview-badge-race">
                   {formData.race || 'No Race'}
