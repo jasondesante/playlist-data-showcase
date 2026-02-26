@@ -197,8 +197,8 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Support for class-specific features (`classFeatures.{className}`)
 
 ### 5.3 Racial Trait Creator
-- [ ] Create `src/components/Tabs/DataViewer/forms/RacialTraitCreatorForm.tsx`
-  - [ ] Fields:
+- [x] Create `src/components/Tabs/DataViewer/forms/RacialTraitCreatorForm.tsx`
+  - [x] Fields:
     - id (text)
     - name (text, required)
     - race (select from existing + custom races)
@@ -206,7 +206,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
     - description (textarea, required)
     - effects (complex array)
     - prerequisites (optional, can include subrace requirement)
-  - [ ] Support for race-specific traits (`racialTraits.{raceName}`)
+  - [x] Support for race-specific traits (`racialTraits.{raceName}`)
 
 ### 5.4 Add to DataViewerTab
 - [ ] Add "Create Spell" button to spells section
