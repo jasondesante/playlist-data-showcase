@@ -12,6 +12,7 @@
  * - Skills section: skill_count, available_skills, has_expertise, expertise_count
  * - Spellcasting section: is_spellcaster checkbox
  * - Audio Preferences section: primary/secondary/tertiary traits + weight sliders
+ * - Images section: icon and image URL fields with preview
  * - Registers to both 'classes' and 'classes.data' categories
  * - Live validation with error display
  *
@@ -28,8 +29,10 @@ import {
   ChevronUp,
   Zap,
   Music,
-  Shield
+  Shield,
+  ImageIcon
 } from 'lucide-react';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator } from '@/hooks/useContentCreator';
 import './ClassCreatorForm.css';
@@ -122,6 +125,8 @@ export interface ClassFormData {
   expertise_count: number;
   is_spellcaster: boolean;
   audio_preferences: AudioPreferences;
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -160,7 +165,9 @@ function getDefaultFormData(): ClassFormData {
     has_expertise: false,
     expertise_count: 0,
     is_spellcaster: false,
-    audio_preferences: {}
+    audio_preferences: {},
+    icon: '',
+    image: ''
   };
 }
 
@@ -316,6 +323,16 @@ export function ClassCreatorForm({
         classData.audio_preferences = formData.audio_preferences;
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        classData.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        classData.image = formData.image.trim();
+      }
+
       // Register class name in 'classes' category
       const nameResult = createContent(
         'classes',
@@ -446,6 +463,18 @@ export function ClassCreatorForm({
       }
     }));
   }, []);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Cancel handler
   const handleCancel = useCallback(() => {
@@ -639,6 +668,38 @@ export function ClassCreatorForm({
           <span className="class-creator-hint">
             Enable if this class can cast spells
           </span>
+        </div>
+      </div>
+
+      {/* Images Section */}
+      <div className="class-creator-section class-creator-images-section" role="group" aria-labelledby="class-images-section-title">
+        <h4 className="class-creator-section-title" id="class-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="class-creator-optional">(optional)</span>
+        </h4>
+        <div className="class-creator-images-grid">
+          <div className="class-creator-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Class Icon"
+              placeholder="e.g., assets/icons/necromancer.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="class-creator-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Class Image"
+              placeholder="e.g., assets/classes/necromancer.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
         </div>
       </div>
 
@@ -887,10 +948,36 @@ export function ClassCreatorForm({
             Preview
           </h4>
           <div className="class-creator-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="class-creator-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="class-creator-preview-header">
-              <span className="class-creator-preview-name">
-                {formData.name}
-              </span>
+              <div className="class-creator-preview-name-row">
+                {formData.icon && (
+                  <img
+                    src={formData.icon}
+                    alt=""
+                    className="class-creator-preview-icon"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="class-creator-preview-name">
+                  {formData.name}
+                </span>
+              </div>
               <div className="class-creator-preview-badges">
                 <span className="class-creator-preview-badge class-creator-preview-badge-hitdie">
                   d{formData.hit_die}
