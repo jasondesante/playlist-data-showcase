@@ -496,7 +496,39 @@ This ensures all category lists update immediately when:
       - Responsive design for mobile (lines 182-204 in each CSS file)
     - **Test file created:** src/components/shared/__tests__/StructuredSelects.test.tsx
     - **Build:** TypeScript compiles with no errors
-- [ ] Test effects/prerequisites builders
+- [x] Test effects/prerequisites builders ✅ DONE
+  - **Verified:** EffectsBuilder and PrerequisitesBuilder components are properly implemented and integrated:
+    - **EffectsBuilder component (Phase 5.2):**
+      - 6 effect types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, resource_grant, spell_slot_bonus
+      - Dynamic target dropdowns based on effect type (abilities, skills from registry, ability unlocks, passive targets, resources, spell levels)
+      - Dynamic value inputs (number, text, checkbox) based on effect type
+      - Condition field (optional) for conditional effects
+      - Add/remove effect buttons with collapsible effect items
+      - Custom JSON mode for advanced users
+      - Real-time validation with warnings
+      - Refresh button to reload dropdown options from live registry
+      - Exports: createEmptyEffect, EFFECT_TYPES, ABILITIES, ABILITY_UNLOCKS, PASSIVE_MODIFIER_TARGETS, SPELL_SLOT_LEVELS
+    - **PrerequisitesBuilder component (Phase 5.3):**
+      - 9 prerequisite types: level, abilities, class, race, subrace, features, skills, spells, custom
+      - ALL dropdowns populated from LIVE registry data (classes, races, skills, spells, features, traits)
+      - Dynamic subrace dropdown based on selected race
+      - Multi-select for features, skills, spells with removable chips
+      - Ability score grid (6 abilities with values 1-30)
+      - Custom JSON mode for advanced users
+      - Real-time validation with warnings
+      - Refresh button to reload dropdown options from registry
+      - Exports: createEmptyPrerequisites, PREREQUISITE_TYPES
+    - **Integration with creator forms:**
+      - RacialTraitCreatorForm: Uses EffectsBuilder and PrerequisitesBuilder in Advanced Options section (lines 726-742)
+      - ClassFeatureCreatorForm: Uses EffectsBuilder and PrerequisitesBuilder in Advanced Options section (lines 674-689)
+      - Both forms properly pass value/onChange props, handle updates via callbacks, include effects/prereqs in form data
+      - Both forms show effects and prerequisites in the preview section
+    - **Test file created:** src/components/shared/__tests__/EffectsAndPrerequisites.test.tsx
+      - Tests for EffectsBuilder: rendering, type selection, target dropdowns, value inputs, add/remove, custom JSON, validation
+      - Tests for PrerequisitesBuilder: rendering, adding types, level/abilities/class/race/subrace/features/skills/spells/custom prereqs, multi-select, custom JSON, validation
+      - Integration tests for form data structure compatibility
+    - **CSS styling:** EffectsBuilder.css and PrerequisitesBuilder.css exist with complete styling
+    - **Build:** TypeScript compiles with no errors
 - [ ] Test dynamic subrace dropdown
 - [ ] Test data refresh for all categories
 - [ ] Test weight editor with real item names
