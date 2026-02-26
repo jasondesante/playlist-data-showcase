@@ -511,6 +511,57 @@
   font-weight: 500;
 }
 
+/* Images Section */
+.race-creator-images-section {
+  /* Inherit section styles */
+}
+
+.race-creator-images-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .race-creator-images-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Preview Icon and Image */
+.race-creator-preview-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.race-creator-preview-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.race-creator-preview-image {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.race-creator-preview-image img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .race-creator-abilities-grid {

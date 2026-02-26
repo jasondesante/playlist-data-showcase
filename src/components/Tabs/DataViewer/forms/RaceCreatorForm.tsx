@@ -28,8 +28,10 @@ import {
   Zap,
   Users,
   Trash2,
-  Shield
+  Shield,
+  ImageIcon
 } from 'lucide-react';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator } from '@/hooks/useContentCreator';
 import './RaceCreatorForm.css';
@@ -64,6 +66,8 @@ export interface RaceFormData {
   ability_bonuses: AbilityBonuses;
   traits: string[];
   subraces: SubraceEntry[];
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -94,7 +98,9 @@ function getDefaultFormData(): RaceFormData {
     speed: 30,
     ability_bonuses: {},
     traits: [],
-    subraces: []
+    subraces: [],
+    icon: '',
+    image: ''
   };
 }
 
@@ -233,6 +239,16 @@ export function RaceCreatorForm({
         raceData.subraces = formData.subraces.map(s => s.name.trim()).filter(Boolean);
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        raceData.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        raceData.image = formData.image.trim();
+      }
+
       // Register race name in 'races' category
       const nameResult = createContent(
         'races',
@@ -363,6 +379,18 @@ export function RaceCreatorForm({
       })
     }));
   }, []);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Cancel handler
   const handleCancel = useCallback(() => {
@@ -497,6 +525,38 @@ export function RaceCreatorForm({
           <span className="race-creator-hint">
             Most races have +2 to one ability and +1 to another (3 total)
           </span>
+        </div>
+      </div>
+
+      {/* Images Section */}
+      <div className="race-creator-section race-creator-images-section" role="group" aria-labelledby="race-images-section-title">
+        <h4 className="race-creator-section-title" id="race-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="race-creator-optional">(optional)</span>
+        </h4>
+        <div className="race-creator-images-grid">
+          <div className="race-creator-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Race Icon"
+              placeholder="e.g., assets/icons/dragonkin.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="race-creator-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Race Image"
+              placeholder="e.g., assets/races/dragonkin.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
         </div>
       </div>
 
@@ -688,10 +748,36 @@ export function RaceCreatorForm({
             Preview
           </h4>
           <div className="race-creator-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="race-creator-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="race-creator-preview-header">
-              <span className="race-creator-preview-name">
-                {formData.name}
-              </span>
+              <div className="race-creator-preview-name-row">
+                {formData.icon && (
+                  <img
+                    src={formData.icon}
+                    alt=""
+                    className="race-creator-preview-icon"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="race-creator-preview-name">
+                  {formData.name}
+                </span>
+              </div>
               <div className="race-creator-preview-badges">
                 <span className="race-creator-preview-badge race-creator-preview-badge-speed">
                   {formData.speed} ft

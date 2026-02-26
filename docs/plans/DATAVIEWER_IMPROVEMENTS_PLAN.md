@@ -170,7 +170,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Add `icon` and `image` fields to SkillCreatorForm ✅ DONE
 - [x] Add `icon` and `image` fields to ClassFeatureCreatorForm ✅ DONE
 - [x] Add `icon` and `image` fields to RacialTraitCreatorForm ✅ DONE
-- [ ] Add `icon` and `image` fields to RaceCreatorForm (race data)
+- [x] Add `icon` and `image` fields to RaceCreatorForm (race data) ✅ DONE
 - [ ] Add `icon` and `image` fields to ClassCreatorForm (class data)
 
 ### 2.2 Add Batch Image Tools to SpawnModeControls
