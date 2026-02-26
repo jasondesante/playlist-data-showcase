@@ -33,6 +33,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { CastingTimeSelect } from '@/components/shared/CastingTimeSelect';
+import { RangeSelect } from '@/components/shared/RangeSelect';
+import { DurationSelect } from '@/components/shared/DurationSelect';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './SpellCreatorForm.css';
 
@@ -345,14 +347,12 @@ export function SpellCreatorForm({
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
 
-  const handleRangeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleRangeChange = useCallback((value: string) => {
     setFormData(prev => ({ ...prev, range: value }));
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
 
-  const handleDurationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleDurationChange = useCallback((value: string) => {
     setFormData(prev => ({ ...prev, duration: value }));
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
@@ -533,36 +533,28 @@ export function SpellCreatorForm({
           </div>
 
           <div className="spell-creator-field">
-            <label className="spell-creator-label" htmlFor="spell-range">
-              Range <span className="spell-creator-required">*</span>
-            </label>
-            <input
-              id="spell-range"
-              type="text"
+            <RangeSelect
               value={formData.range}
               onChange={handleRangeChange}
-              placeholder="e.g., 120 feet, Touch, Self"
-              className="spell-creator-input"
+              label="Range"
+              required
               disabled={disabled}
-              maxLength={50}
+              id="spell-range"
+              showHint={false}
             />
           </div>
         </div>
 
         <div className="spell-creator-row">
           <div className="spell-creator-field">
-            <label className="spell-creator-label" htmlFor="spell-duration">
-              Duration <span className="spell-creator-required">*</span>
-            </label>
-            <input
-              id="spell-duration"
-              type="text"
+            <DurationSelect
               value={formData.duration}
               onChange={handleDurationChange}
-              placeholder="e.g., Instantaneous, 1 minute, 1 hour"
-              className="spell-creator-input"
+              label="Duration"
+              required
               disabled={disabled}
-              maxLength={50}
+              id="spell-duration"
+              showHint={false}
             />
           </div>
         </div>

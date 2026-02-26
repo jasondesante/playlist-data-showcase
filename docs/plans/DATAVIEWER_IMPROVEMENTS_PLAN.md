@@ -251,7 +251,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Create `DurationSelect` component ✅ DONE
   - [x] Dropdown with common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
   - [x] "Custom..." option that reveals text input
-- [ ] Update SpellCreatorForm to use new components
+- [x] Update SpellCreatorForm to use new components ✅ DONE
 
 ### 5.2 Create Shared EffectsBuilder Component
 - [ ] Create `src/components/shared/EffectsBuilder.tsx`
