@@ -280,22 +280,22 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] **Refresh button** to reload all dropdown options from live registry
 - [x] Create `EffectsBuilder.css` with clean styling
 
-### 5.3 Create Shared PrerequisitesBuilder Component
-- [ ] Create `src/components/shared/PrerequisitesBuilder.tsx`
-  - [ ] **ALL dropdowns populated from LIVE registry data (updates as content is created):**
-  - [ ] Level prerequisite - number input
-  - [ ] Abilities prerequisite - 6 inputs for STR/DEX/CON/INT/WIS/CHA (static)
-  - [ ] Class prerequisite - **LIVE from `manager.get('classes')`**
-  - [ ] Race prerequisite - **LIVE from `manager.get('races')`**
-  - [ ] Subrace prerequisite - **DYNAMIC from selected race's subraces (live data)**
-  - [ ] Features prerequisite - **LIVE multi-select from `manager.get('classFeatures')` + `manager.get('racialTraits')`**
-  - [ ] Skills prerequisite - **LIVE multi-select from `manager.get('skills')`**
-  - [ ] Spells prerequisite - **LIVE multi-select from `manager.get('spells')`**
-  - [ ] Custom prerequisite - text input for description
-  - [ ] Add/remove prerequisite buttons
-  - [ ] "Custom..." option for advanced users
-  - [ ] **Refresh button** to reload all dropdown options from registry
-- [ ] Create `PrerequisitesBuilder.css` with clean styling
+### 5.3 Create Shared PrerequisitesBuilder Component ✅ DONE
+- [x] Create `src/components/shared/PrerequisitesBuilder.tsx`
+  - [x] **ALL dropdowns populated from LIVE registry data (updates as content is created):**
+  - [x] Level prerequisite - number input
+  - [x] Abilities prerequisite - 6 inputs for STR/DEX/CON/INT/WIS/CHA (static)
+  - [x] Class prerequisite - **LIVE from `manager.get('classes')`**
+  - [x] Race prerequisite - **LIVE from `manager.get('races')`**
+  - [x] Subrace prerequisite - **DYNAMIC from selected race's subraces (live data)**
+  - [x] Features prerequisite - **LIVE multi-select from `manager.get('classFeatures')` + `manager.get('racialTraits')`**
+  - [x] Skills prerequisite - **LIVE multi-select from `manager.get('skills')`**
+  - [x] Spells prerequisite - **LIVE multi-select from `manager.get('spells')`**
+  - [x] Custom prerequisite - text input for description
+  - [x] Add/remove prerequisite buttons
+  - [x] "Custom..." option for advanced users (via Custom JSON toggle)
+  - [x] **Refresh button** to reload all dropdown options from registry
+- [x] Create `PrerequisitesBuilder.css` with clean styling
 
 ### 5.4 Update Forms to Use Shared Components
 - [ ] Update RacialTraitCreatorForm to use EffectsBuilder and PrerequisitesBuilder
