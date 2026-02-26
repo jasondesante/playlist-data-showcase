@@ -98,34 +98,34 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 3: Equipment Creation (Shared Component)
 
 ### 3.1 Extract EquipmentCreatorForm from ItemsTab
-- [ ] Create `src/components/shared/EquipmentCreatorForm.tsx`
-  - [ ] Extract form logic from ItemsTab.tsx (~lines 2105-2400)
-  - [ ] Include all existing fields:
+- [x] Create `src/components/shared/EquipmentCreatorForm.tsx`
+  - [x] Extract form logic from ItemsTab.tsx (~lines 2105-2400)
+  - [x] Include all existing fields:
     - name, type, rarity, weight, quantity
     - damageDice, damageType (weapons)
     - acBonus (armor)
     - autoEquip option
-  - [ ] Include advanced options:
+  - [x] Include advanced options:
     - properties array
     - grantsFeatures
     - grantsSkills
     - grantsSpells
     - tags
     - spawnWeight
-- [ ] Create `src/components/shared/EquipmentCreatorForm.css`
+- [x] Create `src/components/shared/EquipmentCreatorForm.css`
 
 ### 3.2 Update ItemsTab to Use Shared Form
-- [ ] Update `src/components/Tabs/ItemsTab.tsx`
-  - [ ] Import shared EquipmentCreatorForm
-  - [ ] Replace inline creator with shared component
-  - [ ] Maintain all existing functionality
+- [x] Update `src/components/Tabs/ItemsTab.tsx`
+  - [x] Import shared EquipmentCreatorForm
+  - [x] Replace inline creator with shared component
+  - [x] Maintain all existing functionality
 
 ### 3.3 Add Equipment Creation to DataViewerTab
-- [ ] Update `src/components/Tabs/DataViewerTab.tsx`
-  - [ ] Add "Create Equipment" button in equipment section header
-  - [ ] Wire up shared EquipmentCreatorForm
-  - [ ] Add SpawnModeControls below equipment list
-  - [ ] Connect to useContentCreator hook
+- [x] Update `src/components/Tabs/DataViewerTab.tsx`
+  - [x] Add "Create Equipment" button in equipment section header
+  - [x] Wire up shared EquipmentCreatorForm
+  - [x] Add SpawnModeControls below equipment list
+  - [x] Connect to useContentCreator hook
 
 ---
 

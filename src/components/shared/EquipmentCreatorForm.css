@@ -1,0 +1,549 @@
+/* ========================================
+   EQUIPMENT CREATOR FORM
+   Shared component extracted from ItemsTab
+   ======================================== */
+
+.equipment-creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.equipment-creator-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.equipment-creator-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.equipment-creator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.equipment-creator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.equipment-creator-field-full {
+  grid-column: 1 / -1;
+}
+
+.equipment-creator-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-required {
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.equipment-creator-optional {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 0.25rem;
+}
+
+.equipment-creator-default {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.equipment-creator-input,
+.equipment-creator-select {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.equipment-creator-input:focus,
+.equipment-creator-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.1);
+}
+
+.equipment-creator-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.equipment-creator-input:disabled,
+.equipment-creator-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-surface-dim);
+}
+
+.equipment-creator-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Type Selector */
+.equipment-creator-type-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.equipment-creator-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.equipment-creator-type-btn:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-type-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.equipment-creator-type-btn-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.equipment-creator-type-btn-active:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Checkbox */
+.equipment-creator-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.equipment-creator-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.equipment-creator-checkbox input[type="checkbox"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Validation Errors */
+.equipment-creator-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.3);
+  border-radius: var(--radius-md);
+}
+
+.equipment-creator-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+/* Actions */
+.equipment-creator-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Preview Section */
+.equipment-creator-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.equipment-creator-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.equipment-creator-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.equipment-creator-preview-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.equipment-creator-preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.equipment-creator-preview-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.equipment-creator-preview-stat-label {
+  color: var(--color-text-secondary);
+}
+
+/* Preview Properties Summary */
+.equipment-creator-preview-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-top: 0.5rem;
+}
+
+.equipment-creator-preview-properties-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.equipment-creator-preview-properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.equipment-creator-preview-property-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.equipment-creator-preview-property-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.equipment-creator-preview-property-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.equipment-creator-preview-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.equipment-creator-preview-tag-user {
+  background: hsl(210 80% 95%);
+  color: hsl(210 80% 30%);
+  border-color: hsl(210 80% 80%);
+}
+
+.equipment-creator-preview-tag-default {
+  background: hsl(0 0% 95%);
+  color: hsl(0 0% 45%);
+  border-color: hsl(0 0% 85%);
+}
+
+.equipment-creator-preview-tag-optional {
+  background: hsl(45 100% 95%);
+  color: hsl(45 80% 30%);
+  border-color: hsl(45 100% 80%);
+  font-style: italic;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .equipment-creator-preview-tag-user {
+  background: hsl(210 50% 20%);
+  color: hsl(210 80% 75%);
+  border-color: hsl(210 50% 35%);
+}
+
+[data-theme="dark"] .equipment-creator-preview-tag-default {
+  background: hsl(0 0% 18%);
+  color: hsl(0 0% 55%);
+  border-color: hsl(0 0% 28%);
+}
+
+[data-theme="dark"] .equipment-creator-preview-tag-optional {
+  background: hsl(45 50% 15%);
+  color: hsl(45 80% 65%);
+  border-color: hsl(45 50% 30%);
+}
+
+/* ========================================
+   EQUIPMENT CREATOR ADVANCED OPTIONS
+   ======================================== */
+
+.equipment-creator-advanced-options {
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.equipment-creator-advanced-options-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.equipment-creator-advanced-options-toggle:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.equipment-creator-advanced-options-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.equipment-creator-advanced-options-toggle svg:first-child {
+  color: hsl(210 80% 50%);
+}
+
+.equipment-creator-advanced-options-toggle span {
+  flex: 1;
+  text-align: left;
+}
+
+.equipment-creator-advanced-options-toggle svg:last-child {
+  color: var(--color-text-secondary);
+}
+
+.equipment-creator-advanced-options-content {
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.equipment-creator-advanced-options-intro {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.equipment-creator-advanced-options-intro code {
+  padding: 0.125rem 0.375rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: hsl(260 60% 50%);
+}
+
+.equipment-creator-advanced-options-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.equipment-creator-advanced-option {
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.equipment-creator-advanced-option h5 {
+  margin: 0 0 0.375rem 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(260 60% 50%);
+  font-family: monospace;
+}
+
+.equipment-creator-advanced-option p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.equipment-creator-advanced-option-types {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.equipment-creator-advanced-options-code {
+  margin-bottom: 1rem;
+}
+
+.equipment-creator-advanced-options-code h5 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-advanced-options-code h5 svg {
+  color: hsl(210 80% 50%);
+}
+
+.equipment-creator-code-block {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: hsl(220 20% 10%);
+  border: 1px solid hsl(220 20% 20%);
+  border-radius: var(--radius-sm);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: hsl(220 10% 85%);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.equipment-creator-advanced-options-docs {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, hsl(45 90% 50% / 0.1), hsl(38 90% 50% / 0.05));
+  border: 1px solid hsl(45 90% 50% / 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.equipment-creator-advanced-options-docs code {
+  padding: 0.125rem 0.375rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: hsl(45 90% 40%);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 640px) {
+  .equipment-creator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-creator-type-selector {
+    flex-direction: column;
+  }
+
+  .equipment-creator-type-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .equipment-creator-actions {
+    flex-direction: column;
+  }
+
+  .equipment-creator-actions button {
+    width: 100%;
+  }
+
+  /* Advanced Options Responsive */
+  .equipment-creator-advanced-options-list {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-creator-code-block {
+    font-size: 0.6875rem;
+  }
+}

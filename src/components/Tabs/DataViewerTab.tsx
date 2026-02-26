@@ -74,6 +74,8 @@ import { logger } from '../../utils/logger';
 import { CustomContentBadge } from './DataViewer/CustomContentBadge';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
+import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
+import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
 
@@ -375,11 +377,12 @@ export function DataViewerTab() {
   const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased, lastEquipmentCount } = useDataViewerStore();
 
   // Content creator hook for edit/delete/duplicate operations
-  const { deleteContent, duplicateContent } = useContentCreator();
+  const { deleteContent, duplicateContent, createContent } = useContentCreator();
 
   // State
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
   const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
+  const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
 
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
@@ -551,6 +554,22 @@ export function DataViewerTab() {
   const checkIsCustomItem = useCallback((category: DataCategory, itemName: string): boolean => {
     return isCustomItem(category, itemName);
   }, [isCustomItem]);
+
+  /**
+   * Handle creation of new equipment via EquipmentCreatorForm
+   * (Phase 3.3: Equipment Creation in DataViewerTab)
+   */
+  const handleCreateEquipment = useCallback(async (_formData: EquipmentCreatorFormData, equipment: Equipment) => {
+    const result = createContent('equipment', equipment as unknown as Record<string, unknown>, { mode: 'relative' });
+
+    if (result.success) {
+      logger.info('DataViewer', `Created equipment: ${equipment.name}`);
+      setShowEquipmentCreator(false);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
+    }
+  }, [createContent, refreshData]);
 
   // Render category selector
   const renderCategorySelector = () => (
@@ -1865,6 +1884,37 @@ export function DataViewerTab() {
       case 'equipment':
         return (
           <div className="dataviewer-list">
+            {/* Equipment Creation Header */}
+            <div className="dataviewer-section-header">
+              <Button
+                variant={showEquipmentCreator ? 'outline' : 'primary'}
+                size="sm"
+                onClick={() => setShowEquipmentCreator(!showEquipmentCreator)}
+                leftIcon={showEquipmentCreator ? X : Plus}
+              >
+                {showEquipmentCreator ? 'Cancel' : 'Create Equipment'}
+              </Button>
+            </div>
+
+            {/* Equipment Creator Form (Phase 3.3) */}
+            {showEquipmentCreator && (
+              <Card className="dataviewer-creator-card">
+                <CardHeader>
+                  <h3 className="dataviewer-creator-title">
+                    <Plus size={18} />
+                    Create Custom Equipment
+                  </h3>
+                </CardHeader>
+                <EquipmentCreatorForm
+                  onSubmit={handleCreateEquipment}
+                  showPreview={true}
+                  showAdvancedOptions={true}
+                  showAutoEquip={false}
+                  submitButtonText="Create Equipment"
+                />
+              </Card>
+            )}
+
             {renderEquipmentFilters()}
             <div className="dataviewer-items">
               {renderEquipment()}

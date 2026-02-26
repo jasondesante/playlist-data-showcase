@@ -79,18 +79,15 @@ import {
   Plus,
   PlusCircle,
   Trash,
-  Loader2,
-  Wand2,
-  Hammer,
   Save,
   Zap,
-  Info,
-  Code
+  Wand2,
+  Loader2
 } from 'lucide-react';
 import { useCharacterStore } from '../../store/characterStore';
 import { useHeroEquipment } from '../../hooks/useHeroEquipment';
 import { useLootBox } from '../../hooks/useLootBox';
-import { useItemCreator, type CustomItemFormData } from '../../hooks/useItemCreator';
+import { useItemCreator } from '../../hooks/useItemCreator';
 import { useItemEnchantment, type EnchantmentOperationResult } from '../../hooks/useItemEnchantment';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
@@ -98,6 +95,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { showToast } from '../ui/Toast';
 import { EnchantmentModal, type ItemEquipmentType } from '../modals/EnchantmentModal';
 import { DetailRow, type DetailRowProperty } from '../ui/DetailRow';
+import { EquipmentCreatorForm } from '../shared/EquipmentCreatorForm';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
 import type { EnhancedInventoryItem, EnhancedEquipment, EquipmentModification } from 'playlist-data-engine';
 import './ItemsTab.css';
@@ -151,7 +149,6 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
 
 type SpawnMode = 'random' | 'rarity' | 'hoard' | 'magic';
 type RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
-type ItemTypeOption = 'weapon' | 'armor' | 'item';
 
 /**
  * Format rarity for display (snake_case to Title Case)
@@ -252,11 +249,8 @@ export function ItemsTab() {
 
   // Use the item creator hook
   const {
-    isLoading: isCreatorLoading,
     lastCreatedItem,
-    validateItemData,
-    createCustomItem,
-    createAndAddItem,
+    addItemToCharacter,
     clearLastCreated
   } = useItemCreator();
 
@@ -290,18 +284,6 @@ export function ItemsTab() {
   // Track spawn errors for visual display
   const [spawnError, setSpawnError] = useState<string | null>(null);
 
-  // Item Creator form state
-  const [itemName, setItemName] = useState('');
-  const [itemType, setItemType] = useState<ItemTypeOption>('weapon');
-  const [itemRarity, setItemRarity] = useState<RarityOption>('common');
-  const [itemWeight, setItemWeight] = useState(1);
-  const [itemQuantity, setItemQuantity] = useState(1);
-  const [damageDice, setDamageDice] = useState('');
-  const [damageType, setDamageType] = useState('slashing');
-  const [acBonus, setAcBonus] = useState<number | ''>('');
-  const [autoEquip, setAutoEquip] = useState(false);
-  const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [isAdvancedOptionsExpanded, setIsAdvancedOptionsExpanded] = useState(false);
 
   // Expanded item details state (for modification display)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -1180,76 +1162,6 @@ export function ItemsTab() {
     );
   };
 
-  // Handle item creation
-  const handleCreateItem = async () => {
-    if (!activeCharacter) {
-      showToast('⚠️ No character selected', 'warning');
-      return;
-    }
-
-    // Build form data
-    const formData: CustomItemFormData = {
-      name: itemName,
-      type: itemType,
-      rarity: itemRarity,
-      weight: itemWeight,
-      quantity: itemQuantity,
-      ...(itemType === 'weapon' && damageDice && {
-        damageDice,
-        damageType
-      }),
-      ...(itemType === 'armor' && acBonus !== '' && {
-        acBonus: Number(acBonus)
-      })
-    };
-
-    // Validate
-    const validation = validateItemData(formData);
-    if (!validation.valid) {
-      setFormErrors(validation.errors);
-      showToast(validation.errors[0], 'error');
-      return;
-    }
-
-    setFormErrors([]);
-
-    // Create and add item
-    const result = await createAndAddItem(formData, autoEquip);
-
-    if (result.success) {
-      showToast(result.message || `✅ Created and added ${itemName}!`, 'success');
-      // Clear form
-      setItemName('');
-      setDamageDice('');
-      setAcBonus('');
-    } else {
-      showToast(result.error || `❌ Failed to create ${itemName || 'item'}`, 'error');
-    }
-  };
-
-  // Generate preview item
-  const previewItem: EnhancedEquipment | null = useMemo(() => {
-    if (!itemName.trim()) return null;
-
-    const formData: CustomItemFormData = {
-      name: itemName,
-      type: itemType,
-      rarity: itemRarity,
-      weight: itemWeight,
-      quantity: itemQuantity,
-      ...(itemType === 'weapon' && damageDice && {
-        damageDice,
-        damageType
-      }),
-      ...(itemType === 'armor' && acBonus !== '' && {
-        acBonus: Number(acBonus)
-      })
-    };
-
-    const result = createCustomItem(formData);
-    return result.success ? result.equipment || null : null;
-  }, [itemName, itemType, itemRarity, itemWeight, damageDice, damageType, acBonus, itemQuantity, createCustomItem]);
-
   // Render empty state when no character is selected
   const renderNoCharacterState = () => (
     <div className="items-empty-state">
@@ -2126,468 +2038,27 @@ export function ItemsTab() {
 
             {isCreatorExpanded && (
               <div className="items-section-content">
-                {/* Item Creator Form */}
-                <div className="item-creator-form">
-                  {/* Basic Info */}
-                  <div className="item-creator-section">
-                    <h4 className="item-creator-section-title">Basic Information</h4>
-                    <div className="item-creator-grid">
-                      {/* Item Name */}
-                      <div className="item-creator-field item-creator-field-full">
-                        <label className="item-creator-label" htmlFor="item-name">
-                          Item Name <span className="item-creator-required">*</span>
-                        </label>
-                        <input
-                          id="item-name"
-                          type="text"
-                          value={itemName}
-                          onChange={(e) => setItemName(e.target.value)}
-                          placeholder="e.g., Sword of Flames"
-                          className="item-creator-input"
-                        />
-                      </div>
+                {/* Equipment Creator Form - Shared Component */}
+                <EquipmentCreatorForm
+                  onSubmit={async (formData, equipment) => {
+                    if (!activeCharacter) {
+                      showToast('No character selected', 'error');
+                      return;
+                    }
 
-                      {/* Item Type */}
-                      <div className="item-creator-field">
-                        <label className="item-creator-label">Item Type <span className="item-creator-default">default: item</span></label>
-                        <div className="item-creator-type-selector">
-                          <button
-                            type="button"
-                            className={`item-creator-type-btn ${itemType === 'weapon' ? 'item-creator-type-btn-active' : ''}`}
-                            onClick={() => setItemType('weapon')}
-                          >
-                            <Sword size={16} />
-                            <span>Weapon</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={`item-creator-type-btn ${itemType === 'armor' ? 'item-creator-type-btn-active' : ''}`}
-                            onClick={() => setItemType('armor')}
-                          >
-                            <Shield size={16} />
-                            <span>Armor</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={`item-creator-type-btn ${itemType === 'item' ? 'item-creator-type-btn-active' : ''}`}
-                            onClick={() => setItemType('item')}
-                          >
-                            <Package size={16} />
-                            <span>Item</span>
-                          </button>
-                        </div>
-                      </div>
+                    // Add item to character using the hook
+                    const result = await addItemToCharacter(equipment, formData.quantity, formData.autoEquip);
 
-                      {/* Rarity */}
-                      <div className="item-creator-field">
-                        <label className="item-creator-label" htmlFor="item-rarity">
-                          Rarity <span className="item-creator-default">default: common</span>
-                        </label>
-                        <select
-                          id="item-rarity"
-                          value={itemRarity}
-                          onChange={(e) => setItemRarity(e.target.value as RarityOption)}
-                          className="item-creator-select"
-                        >
-                          <option value="common">Common</option>
-                          <option value="uncommon">Uncommon</option>
-                          <option value="rare">Rare</option>
-                          <option value="very_rare">Very Rare</option>
-                          <option value="legendary">Legendary</option>
-                        </select>
-                      </div>
-
-                      {/* Weight */}
-                      <div className="item-creator-field">
-                        <label className="item-creator-label" htmlFor="item-weight">
-                          Weight (lb) <span className="item-creator-optional">optional</span>
-                        </label>
-                        <input
-                          id="item-weight"
-                          type="number"
-                          min="0"
-                          max="1000"
-                          step="0.1"
-                          value={itemWeight}
-                          onChange={(e) => setItemWeight(parseFloat(e.target.value) || 0)}
-                          className="item-creator-input"
-                        />
-                      </div>
-
-                      {/* Quantity */}
-                      <div className="item-creator-field">
-                        <label className="item-creator-label" htmlFor="item-quantity">
-                          Quantity <span className="item-creator-default">default: 1</span>
-                        </label>
-                        <input
-                          id="item-quantity"
-                          type="number"
-                          min="1"
-                          max="9999"
-                          value={itemQuantity}
-                          onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
-                          className="item-creator-input"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Weapon-specific fields */}
-                  {itemType === 'weapon' && (
-                    <div className="item-creator-section">
-                      <h4 className="item-creator-section-title">
-                        <Sword size={16} />
-                        Weapon Properties <span className="item-creator-optional">(optional)</span>
-                      </h4>
-                      <div className="item-creator-grid">
-                        <div className="item-creator-field">
-                          <label className="item-creator-label" htmlFor="damage-dice">
-                            Damage Dice <span className="item-creator-optional">optional</span>
-                          </label>
-                          <input
-                            id="damage-dice"
-                            type="text"
-                            value={damageDice}
-                            onChange={(e) => setDamageDice(e.target.value)}
-                            placeholder="e.g., 1d8, 2d6"
-                            className="item-creator-input"
-                          />
-                          <span className="item-creator-hint">Format: 1d8, 2d6, etc.</span>
-                        </div>
-
-                        <div className="item-creator-field">
-                          <label className="item-creator-label" htmlFor="damage-type">
-                            Damage Type <span className="item-creator-default">default: slashing</span>
-                          </label>
-                          <select
-                            id="damage-type"
-                            value={damageType}
-                            onChange={(e) => setDamageType(e.target.value)}
-                            className="item-creator-select"
-                          >
-                            <option value="slashing">Slashing</option>
-                            <option value="piercing">Piercing</option>
-                            <option value="bludgeoning">Bludgeoning</option>
-                            <option value="fire">Fire</option>
-                            <option value="cold">Cold</option>
-                            <option value="lightning">Lightning</option>
-                            <option value="acid">Acid</option>
-                            <option value="poison">Poison</option>
-                            <option value="necrotic">Necrotic</option>
-                            <option value="radiant">Radiant</option>
-                            <option value="force">Force</option>
-                            <option value="psychic">Psychic</option>
-                            <option value="thunder">Thunder</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Armor-specific fields */}
-                  {itemType === 'armor' && (
-                    <div className="item-creator-section">
-                      <h4 className="item-creator-section-title">
-                        <Shield size={16} />
-                        Armor Properties <span className="item-creator-optional">(optional)</span>
-                      </h4>
-                      <div className="item-creator-grid">
-                        <div className="item-creator-field">
-                          <label className="item-creator-label" htmlFor="ac-bonus">
-                            AC Bonus <span className="item-creator-optional">optional</span>
-                          </label>
-                          <input
-                            id="ac-bonus"
-                            type="number"
-                            min="0"
-                            max="20"
-                            value={acBonus}
-                            onChange={(e) => setAcBonus(e.target.value === '' ? '' : parseInt(e.target.value))}
-                            placeholder="e.g., 2"
-                            className="item-creator-input"
-                          />
-                          <span className="item-creator-hint">Base AC provided by armor</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Advanced Options Info */}
-                  <div className="item-creator-section item-creator-advanced-options">
-                    <button
-                      type="button"
-                      className="item-creator-advanced-options-toggle"
-                      onClick={() => setIsAdvancedOptionsExpanded(!isAdvancedOptionsExpanded)}
-                    >
-                      <Info size={16} />
-                      <span>Advanced Options</span>
-                      {isAdvancedOptionsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
-
-                    {isAdvancedOptionsExpanded && (
-                      <div className="item-creator-advanced-options-content">
-                        <p className="item-creator-advanced-options-intro">
-                          The UI above covers basic item creation. The <code>playlist-data-engine</code> API
-                          supports additional properties for more advanced items:
-                        </p>
-
-                        <div className="item-creator-advanced-options-list">
-                          <div className="item-creator-advanced-option">
-                            <h5>properties[]</h5>
-                            <p>Equipment properties like stat bonuses, skill proficiencies, damage bonuses, and passive modifiers.</p>
-                            <span className="item-creator-advanced-option-types">
-                              Types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, special_property, damage_bonus, stat_requirement
-                            </span>
-                          </div>
-
-                          <div className="item-creator-advanced-option">
-                            <h5>grantsFeatures[]</h5>
-                            <p>Feature IDs or inline feature definitions granted when the item is equipped.</p>
-                          </div>
-
-                          <div className="item-creator-advanced-option">
-                            <h5>grantsSkills[]</h5>
-                            <p>Skill proficiencies granted when equipped. Format: {'{ skillId, level: "proficient" | "expertise" }'}</p>
-                          </div>
-
-                          <div className="item-creator-advanced-option">
-                            <h5>grantsSpells[]</h5>
-                            <p>Spells granted when equipped. Format: {'{ spellId, level?, uses?, recharge? }'}</p>
-                          </div>
-
-                          <div className="item-creator-advanced-option">
-                            <h5>tags[]</h5>
-                            <p>Search and filter tags for categorization (e.g., ["magic", "dwarven", "cursed"]).</p>
-                          </div>
-
-                          <div className="item-creator-advanced-option">
-                            <h5>spawnWeight</h5>
-                            <p>Weight for random loot generation. Default is 0 (won&apos;t spawn randomly). Set higher for common items.</p>
-                          </div>
-                        </div>
-
-                        <div className="item-creator-advanced-options-code">
-                          <h5>
-                            <Code size={14} />
-                            Programmatic Example
-                          </h5>
-                          <pre className="item-creator-code-block">
-{`import { ExtensionManager } from 'playlist-data-engine';
-
-const flamingSword = {
-  name: 'Flaming Sword',
-  type: 'weapon',
-  rarity: 'rare',
-  weight: 3,
-  damage: { dice: '1d8', damageType: 'slashing' },
-  properties: [{
-    type: 'damage_bonus',
-    target: 'fire',
-    value: '1d6',
-    description: '+1d6 fire damage'
-  }],
-  grantsFeatures: ['fire_resistance'],
-  tags: ['magic', 'fire']
-};
-
-ExtensionManager.getInstance()
-  .register('equipment', [flamingSword]);`}
-                          </pre>
-                        </div>
-
-                        <p className="item-creator-advanced-options-docs">
-                          See <code>docs/engine/docs/EQUIPMENT_SYSTEM.md</code> for full API documentation.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Options */}
-                  <div className="item-creator-section">
-                    <label className="item-creator-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={autoEquip}
-                        onChange={(e) => setAutoEquip(e.target.checked)}
-                      />
-                      <span>Auto-equip when added to character</span>
-                    </label>
-                  </div>
-
-                  {/* Validation Errors */}
-                  {formErrors.length > 0 && (
-                    <div className="item-creator-errors">
-                      {formErrors.map((error, index) => (
-                        <div key={index} className="item-creator-error">
-                          <X size={14} />
-                          <span>{error}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Create Button */}
-                  <div className="item-creator-actions">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={handleCreateItem}
-                      isLoading={isCreatorLoading}
-                      leftIcon={isCreatorLoading ? Loader2 : Hammer}
-                      disabled={!itemName.trim()}
-                    >
-                      {isCreatorLoading ? 'Creating...' : 'Create & Add to Hero'}
-                    </Button>
-
-                    {lastCreatedItem && (
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={clearLastCreated}
-                        leftIcon={Trash}
-                      >
-                        Clear Last Created
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Preview Section */}
-                {previewItem && (
-                  <div className="item-creator-preview">
-                    <h4 className="item-creator-preview-title">
-                      <Sparkles size={16} />
-                      Preview
-                    </h4>
-                    <div
-                      className="item-creator-preview-card"
-                      style={{
-                        backgroundColor: RARITY_BG_COLORS[previewItem.rarity] || RARITY_BG_COLORS.common,
-                        borderColor: RARITY_BORDER_COLORS[previewItem.rarity] || RARITY_BORDER_COLORS.common
-                      }}
-                    >
-                      <div className="item-creator-preview-header">
-                        {(() => {
-                          const TypeIcon = getEquipmentTypeIcon(previewItem.type);
-                          return <TypeIcon size={18} style={{ color: RARITY_COLORS[previewItem.rarity] || RARITY_COLORS.common }} />;
-                        })()}
-                        <span
-                          className="item-creator-preview-name"
-                          style={{ color: RARITY_COLORS[previewItem.rarity] || RARITY_COLORS.common }}
-                        >
-                          {previewItem.name}
-                        </span>
-                      </div>
-                      <div className="item-creator-preview-meta">
-                        <span style={{ color: RARITY_COLORS[previewItem.rarity] || RARITY_COLORS.common }}>
-                          {formatRarity(previewItem.rarity)}
-                        </span>
-                        <span>•</span>
-                        <span>{previewItem.type.charAt(0).toUpperCase() + previewItem.type.slice(1)}</span>
-                        <span>•</span>
-                        <span>{previewItem.weight} lb</span>
-                      </div>
-                      {previewItem.damage && (
-                        <div className="item-creator-preview-stat">
-                          <span className="item-creator-preview-stat-label">Damage:</span>
-                          <span>{previewItem.damage.dice} {previewItem.damage.damageType}</span>
-                        </div>
-                      )}
-                      {previewItem.acBonus !== undefined && (
-                        <div className="item-creator-preview-stat">
-                          <span className="item-creator-preview-stat-label">AC Bonus:</span>
-                          <span>+{previewItem.acBonus}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Properties Summary */}
-                    <div className="item-creator-preview-properties">
-                      <h5 className="item-creator-preview-properties-title">
-                        <Zap size={14} />
-                        Properties Applied
-                      </h5>
-                      <div className="item-creator-preview-properties-list">
-                        {/* User-defined properties */}
-                        <div className="item-creator-preview-property-group">
-                          <span className="item-creator-preview-property-group-label">From Form:</span>
-                          <div className="item-creator-preview-property-tags">
-                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                              name: "{previewItem.name}"
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                              type: {previewItem.type}
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                              rarity: {previewItem.rarity}
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                              weight: {previewItem.weight}
-                            </span>
-                            {previewItem.damage && (
-                              <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                                damage: {previewItem.damage.dice} ({previewItem.damage.damageType})
-                              </span>
-                            )}
-                            {previewItem.acBonus !== undefined && (
-                              <span className="item-creator-preview-tag item-creator-preview-tag-user">
-                                acBonus: +{previewItem.acBonus}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Default values */}
-                        <div className="item-creator-preview-property-group">
-                          <span className="item-creator-preview-property-group-label">Defaults:</span>
-                          <div className="item-creator-preview-property-tags">
-                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
-                              source: "custom"
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
-                              spawnWeight: 0
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-default">
-                              tags: ["custom"]
-                            </span>
-                            {!previewItem.damage && previewItem.type === 'weapon' && (
-                              <span className="item-creator-preview-tag item-creator-preview-tag-default">
-                                damage: (none)
-                              </span>
-                            )}
-                            {previewItem.acBonus === undefined && previewItem.type === 'armor' && (
-                              <span className="item-creator-preview-tag item-creator-preview-tag-default">
-                                acBonus: (none)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Advanced/Optional fields available */}
-                        <div className="item-creator-preview-property-group">
-                          <span className="item-creator-preview-property-group-label">
-                            <Info size={12} />
-                            Advanced (via API):
-                          </span>
-                          <div className="item-creator-preview-property-tags">
-                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
-                              properties[]
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
-                              grantsFeatures[]
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
-                              grantsSkills[]
-                            </span>
-                            <span className="item-creator-preview-tag item-creator-preview-tag-optional">
-                              grantsSpells[]
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    if (result.success) {
+                      showToast(result.message || `Created and added ${formData.name}!`, 'success');
+                    } else {
+                      showToast(result.error || `Failed to create ${formData.name}`, 'error');
+                    }
+                  }}
+                  showPreview={true}
+                  showAdvancedOptions={true}
+                  showAutoEquip={true}
+                />
 
                 {/* Last Created Item */}
                 {lastCreatedItem && (
@@ -2602,6 +2073,16 @@ ExtensionManager.getInstance()
                         title="Created Item Data (Raw)"
                         defaultOpen={false}
                       />
+                    </div>
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <Button
+                        variant="outline"
+                        size="md"
+                        onClick={clearLastCreated}
+                        leftIcon={Trash}
+                      >
+                        Clear Last Created
+                      </Button>
                     </div>
                   </div>
                 )}
