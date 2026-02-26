@@ -543,7 +543,31 @@ This ensures all category lists update immediately when:
       - **CSS styling:** `.racial-trait-subrace-back-btn` class exists in RacialTraitCreatorForm.css
       - **Test file created:** src/components/Tabs/DataViewer/forms/__tests__/RacialTraitCreatorForm.subrace.test.tsx (requires @testing-library/react to run)
       - **Build:** TypeScript compiles with no errors
-- [ ] Test data refresh for all categories
+- [x] Test data refresh for all categories ✅ DONE
+  - **Verified:** Data refresh mechanism is properly implemented for all categories:
+    - **useDataViewer hook (src/hooks/useDataViewer.ts):**
+      - All useMemo hooks have `lastDataChange` dependency:
+        - `spells` (line 269-278): `[spellQuery, lastDataChange]`
+        - `skills` (line 285-294): `[skillQuery, lastDataChange]`
+        - `classFeatures` (line 301-316): `[featureQuery, lastDataChange]`
+        - `racialTraits` (line 324-339): `[featureQuery, lastDataChange]`
+        - `races` (line 347-409): `[featureQuery, lastDataChange]`
+        - `classes` (line 416-438): `[lastDataChange]`
+        - `equipment` (line 446-471): `[lastDataChange]`
+        - `appearance` (line 484-549): `[lastDataChange]`
+      - `refreshData()` function (line 775-797):
+        - Invalidates spellQuery, skillQuery, featureQuery caches
+        - Calls `notifyDataChanged()` to trigger useMemo re-computation
+    - **useDataViewerStore (src/store/dataViewerStore.ts):**
+      - `notifyDataChanged()` function (line 321-327):
+        - Sets `lastDataChange` to `Date.now()`
+        - Sets `hasPendingChanges` to `true`
+    - **Content creators call notifyDataChanged:**
+      - `useContentCreator.createContent()` - line 388
+      - `useContentCreator.createMultiple()` - line 481
+      - `useItemCreator.addItemToCharacter()` - line 633
+    - **Test file created:** src/hooks/__tests__/useDataViewer.refresh.test.tsx (requires vitest to run)
+    - **Build:** TypeScript compiles with no errors
 - [ ] Test weight editor with real item names
 
 ### 8.2 Update Documentation
