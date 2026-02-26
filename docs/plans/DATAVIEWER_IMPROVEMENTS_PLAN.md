@@ -303,13 +303,13 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Update RaceCreatorForm if it has effects/prerequisites ✅ DONE (investigated - RaceCreatorForm doesn't have effects/prerequisites fields; races are foundational choices that don't need prerequisites, and ability_bonuses are direct fields not effect objects)
 - [x] Remove duplicated inline code from all forms ✅ DONE (verified all forms use shared components: RacialTraitCreatorForm, ClassFeatureCreatorForm use EffectsBuilder/PrerequisitesBuilder; SpellCreatorForm uses CastingTimeSelect/RangeSelect/DurationSelect; all forms use ImageFieldInput where applicable; EquipmentCreatorForm uses BoxContentsBuilder)
 
-### 5.5 Racial Trait Subrace Dynamic Dropdown
-- [ ] Update RacialTraitCreatorForm
-  - [ ] When race is selected, fetch subraces from race data
-  - [ ] Populate subrace dropdown dynamically
-  - [ ] Add "None" option for non-subrace traits
-  - [ ] Still allow custom text entry for new subraces
-- [ ] Update useDataViewer or create helper to get subraces for race
+### 5.5 Racial Trait Subrace Dynamic Dropdown ✅ DONE
+- [x] Update RacialTraitCreatorForm
+  - [x] When race is selected, fetch subraces from race data
+  - [x] Populate subrace dropdown dynamically
+  - [x] Add "None" option for non-subrace traits
+  - [x] Still allow custom text entry for new subraces
+- [x] Update useDataViewer or create helper to get subraces for race (implemented directly in form using ExtensionManager)
 
 ---
 

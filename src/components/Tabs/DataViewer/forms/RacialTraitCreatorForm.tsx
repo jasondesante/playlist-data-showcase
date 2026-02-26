@@ -28,6 +28,7 @@ import {
   ChevronUp,
   ImageIcon
 } from 'lucide-react';
+import { ExtensionManager } from 'playlist-data-engine';
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { EffectsBuilder, type Effect } from '@/components/shared/EffectsBuilder';
 import { PrerequisitesBuilder, type Prerequisites } from '@/components/shared/PrerequisitesBuilder';
@@ -163,6 +164,10 @@ export function RacialTraitCreatorForm({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [autoGenerateId, setAutoGenerateId] = useState(!initialData?.id);
 
+  // Subrace dropdown state
+  const [subracesByRace, setSubracesByRace] = useState<Record<string, string[]>>({});
+  const [isCustomSubrace, setIsCustomSubrace] = useState(false);
+
   // Determine if this is a race-specific content type (e.g., 'racialTraits.Elf')
   const raceSpecificMatch = contentType.match(/^racialTraits\.(.+)$/);
   const isRaceSpecific = !!raceSpecificMatch;
@@ -174,6 +179,49 @@ export function RacialTraitCreatorForm({
     // Could also fetch custom races from ExtensionManager here
     return baseRaces;
   }, [availableRaces]);
+
+  // Load subraces data from ExtensionManager
+  const loadSubracesData = useCallback(() => {
+    try {
+      const manager = ExtensionManager.getInstance();
+      const racesDataRaw = manager.get('races.data') || [];
+      const newSubracesByRace: Record<string, string[]> = {};
+      if (Array.isArray(racesDataRaw)) {
+        racesDataRaw.forEach((rd: { race?: string; subraces?: string[] }) => {
+          if (rd.race && rd.subraces && Array.isArray(rd.subraces)) {
+            newSubracesByRace[rd.race] = rd.subraces;
+          }
+        });
+      }
+      setSubracesByRace(newSubracesByRace);
+    } catch (error) {
+      console.warn('Failed to load subraces data for RacialTraitCreatorForm:', error);
+    }
+  }, []);
+
+  // Load subraces data on mount
+  useEffect(() => {
+    loadSubracesData();
+  }, [loadSubracesData]);
+
+  // Get available subraces for the current race
+  const availableSubraces = useMemo(() => {
+    if (formData.race && subracesByRace[formData.race]) {
+      return subracesByRace[formData.race];
+    }
+    return [];
+  }, [formData.race, subracesByRace]);
+
+  // Reset custom subrace mode when race changes
+  useEffect(() => {
+    // If the current subrace value is not in the available subraces and not empty,
+    // keep it as custom. Otherwise, reset custom mode.
+    if (formData.subrace && !availableSubraces.includes(formData.subrace)) {
+      setIsCustomSubrace(true);
+    } else {
+      setIsCustomSubrace(false);
+    }
+  }, [formData.race, availableSubraces, formData.subrace]);
 
   // Lock race selection if content type is race-specific
   useEffect(() => {
@@ -532,19 +580,71 @@ export function RacialTraitCreatorForm({
             <label className="racial-trait-label" htmlFor="trait-subrace">
               Subrace <span className="racial-trait-optional">(Optional)</span>
             </label>
-            <input
-              id="trait-subrace"
-              type="text"
-              value={formData.subrace}
-              onChange={handleSubraceChange}
-              placeholder="e.g., High Elf, Hill Dwarf"
-              className="racial-trait-input"
-              disabled={disabled}
-              maxLength={50}
-            />
-            <span className="racial-trait-hint">
-              Leave empty for base race trait
-            </span>
+            {availableSubraces.length > 0 && !isCustomSubrace ? (
+              <>
+                <select
+                  id="trait-subrace"
+                  value={formData.subrace}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '__custom__') {
+                      setIsCustomSubrace(true);
+                      setFormData(prev => ({ ...prev, subrace: '' }));
+                    } else {
+                      setFormData(prev => ({ ...prev, subrace: value }));
+                    }
+                    if (formErrors.length > 0) setFormErrors([]);
+                  }}
+                  className="racial-trait-select"
+                  disabled={disabled}
+                >
+                  <option value="">None (base race trait)</option>
+                  {availableSubraces.map(subrace => (
+                    <option key={subrace} value={subrace}>
+                      {subrace}
+                    </option>
+                  ))}
+                  <option value="__custom__">Custom...</option>
+                </select>
+                <span className="racial-trait-hint">
+                  Subraces loaded from {formData.race} data
+                </span>
+              </>
+            ) : (
+              <>
+                <input
+                  id="trait-subrace"
+                  type="text"
+                  value={formData.subrace}
+                  onChange={handleSubraceChange}
+                  placeholder="e.g., High Elf, Hill Dwarf"
+                  className="racial-trait-input"
+                  disabled={disabled}
+                  maxLength={50}
+                />
+                {availableSubraces.length > 0 && (
+                  <button
+                    type="button"
+                    className="racial-trait-subrace-back-btn"
+                    onClick={() => {
+                      setIsCustomSubrace(false);
+                      setFormData(prev => ({ ...prev, subrace: '' }));
+                    }}
+                    disabled={disabled}
+                  >
+                    <ChevronDown size={14} aria-hidden="true" style={{ transform: 'rotate(-90deg)' }} />
+                    Back to list
+                  </button>
+                )}
+                <span className="racial-trait-hint">
+                  {availableSubraces.length > 0
+                    ? 'Enter custom subrace name'
+                    : formData.race
+                      ? 'No subraces defined for this race - enter custom value'
+                      : 'Select a race first to see available subraces'}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

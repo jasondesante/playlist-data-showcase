@@ -143,6 +143,30 @@
   color: var(--cute-purple);
 }
 
+/* Subrace Back Button */
+.racial-trait-subrace-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--cute-purple);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.racial-trait-subrace-back-btn:hover {
+  color: var(--color-text);
+}
+
+.racial-trait-subrace-back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ID Row with Checkbox */
 .racial-trait-id-row {
   display: flex;
