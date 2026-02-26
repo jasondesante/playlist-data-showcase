@@ -81,6 +81,7 @@ import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCr
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
 import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
 import { Plus, X } from 'lucide-react';
+import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
 
@@ -1029,6 +1030,7 @@ export function DataViewerTab() {
 
   // Render class features grouped by class
   // Task 5.1: Updated to show feature effects when expanded
+  // Phase 5.4 (updated): Now uses modal pattern
   const renderClassFeatures = () => {
     const grouped = groupClassFeaturesByClass(getFilteredData as ClassFeature[]);
     const classNames = Object.keys(grouped).sort();
@@ -1038,31 +1040,14 @@ export function DataViewerTab() {
         {/* Class Feature Creation Header (Phase 5.4) */}
         <div className="dataviewer-section-header">
           <Button
-            variant={showClassFeatureCreator ? 'outline' : 'primary'}
+            variant="primary"
             size="sm"
-            onClick={() => setShowClassFeatureCreator(!showClassFeatureCreator)}
-            leftIcon={showClassFeatureCreator ? X : Plus}
+            onClick={() => setShowClassFeatureCreator(true)}
+            leftIcon={Plus}
           >
-            {showClassFeatureCreator ? 'Cancel' : 'Create Feature'}
+            Create Feature
           </Button>
         </div>
-
-        {/* Class Feature Creator Form (Phase 5.4) */}
-        {showClassFeatureCreator && (
-          <Card className="dataviewer-creator-card">
-            <CardHeader>
-              <h3 className="dataviewer-creator-title">
-                <Plus size={18} />
-                Create Custom Class Feature
-              </h3>
-            </CardHeader>
-            <ClassFeatureCreatorForm
-              onCreate={handleCreateClassFeature}
-              onCancel={() => setShowClassFeatureCreator(false)}
-              submitButtonText="Create Feature"
-            />
-          </Card>
-        )}
 
         <div className="dataviewer-grouped-list">
           {classNames.map(className => (
@@ -1216,7 +1201,8 @@ export function DataViewerTab() {
 
   // Render racial traits grouped by race
   // Task 5.2: Updated to show trait effects, description, and prerequisites when expanded
-  // Phase 5.4: Added Create Trait button and form
+  // Phase 5.4: Added Create Trait button
+  // Phase 5.4 (updated): Now uses modal pattern
   const renderRacialTraits = () => {
     const grouped = groupRacialTraitsByRace(getFilteredData as RacialTrait[]);
     const raceNames = Object.keys(grouped).sort();
@@ -1226,31 +1212,14 @@ export function DataViewerTab() {
         {/* Racial Trait Creation Header (Phase 5.4) */}
         <div className="dataviewer-section-header">
           <Button
-            variant={showRacialTraitCreator ? 'outline' : 'primary'}
+            variant="primary"
             size="sm"
-            onClick={() => setShowRacialTraitCreator(!showRacialTraitCreator)}
-            leftIcon={showRacialTraitCreator ? X : Plus}
+            onClick={() => setShowRacialTraitCreator(true)}
+            leftIcon={Plus}
           >
-            {showRacialTraitCreator ? 'Cancel' : 'Create Trait'}
+            Create Trait
           </Button>
         </div>
-
-        {/* Racial Trait Creator Form (Phase 5.4) */}
-        {showRacialTraitCreator && (
-          <Card className="dataviewer-creator-card">
-            <CardHeader>
-              <h3 className="dataviewer-creator-title">
-                <Plus size={18} />
-                Create Custom Racial Trait
-              </h3>
-            </CardHeader>
-            <RacialTraitCreatorForm
-              onCreate={handleCreateRacialTrait}
-              onCancel={() => setShowRacialTraitCreator(false)}
-              submitButtonText="Create Trait"
-            />
-          </Card>
-        )}
 
         <div className="dataviewer-grouped-list">
           {raceNames.map(raceName => (
@@ -2146,31 +2115,14 @@ export function DataViewerTab() {
             {/* Spell Creation Header (Phase 5.4) */}
             <div className="dataviewer-section-header">
               <Button
-                variant={showSpellCreator ? 'outline' : 'primary'}
+                variant="primary"
                 size="sm"
-                onClick={() => setShowSpellCreator(!showSpellCreator)}
-                leftIcon={showSpellCreator ? X : Plus}
+                onClick={() => setShowSpellCreator(true)}
+                leftIcon={Plus}
               >
-                {showSpellCreator ? 'Cancel' : 'Create Spell'}
+                Create Spell
               </Button>
             </div>
-
-            {/* Spell Creator Form (Phase 5.4) */}
-            {showSpellCreator && (
-              <Card className="dataviewer-creator-card">
-                <CardHeader>
-                  <h3 className="dataviewer-creator-title">
-                    <Plus size={18} />
-                    Create Custom Spell
-                  </h3>
-                </CardHeader>
-                <SpellCreatorForm
-                  onCreate={handleCreateSpell}
-                  onCancel={() => setShowSpellCreator(false)}
-                  submitButtonText="Create Spell"
-                />
-              </Card>
-            )}
 
             {renderSpellFilters()}
             <div className="dataviewer-items">
@@ -2364,6 +2316,52 @@ export function DataViewerTab() {
           defaultOpen={false}
         />
       </div>
+
+      {/* Content Creator Modals (Phase 5.4 - Modal Pattern) */}
+      <ContentCreatorModal
+        isOpen={showSpellCreator}
+        onClose={() => setShowSpellCreator(false)}
+        title="Create Custom Spell"
+        subtitle="Add a new spell to the game"
+        icon={Sparkles}
+        showFooter={false}
+      >
+        <SpellCreatorForm
+          onCreate={handleCreateSpell}
+          onCancel={() => setShowSpellCreator(false)}
+          submitButtonText="Create Spell"
+        />
+      </ContentCreatorModal>
+
+      <ContentCreatorModal
+        isOpen={showClassFeatureCreator}
+        onClose={() => setShowClassFeatureCreator(false)}
+        title="Create Custom Class Feature"
+        subtitle="Add a new feature for a class"
+        icon={Award}
+        showFooter={false}
+      >
+        <ClassFeatureCreatorForm
+          onCreate={handleCreateClassFeature}
+          onCancel={() => setShowClassFeatureCreator(false)}
+          submitButtonText="Create Feature"
+        />
+      </ContentCreatorModal>
+
+      <ContentCreatorModal
+        isOpen={showRacialTraitCreator}
+        onClose={() => setShowRacialTraitCreator(false)}
+        title="Create Custom Racial Trait"
+        subtitle="Add a new trait for a race"
+        icon={User}
+        showFooter={false}
+      >
+        <RacialTraitCreatorForm
+          onCreate={handleCreateRacialTrait}
+          onCancel={() => setShowRacialTraitCreator(false)}
+          submitButtonText="Create Trait"
+        />
+      </ContentCreatorModal>
     </div>
   );
 }

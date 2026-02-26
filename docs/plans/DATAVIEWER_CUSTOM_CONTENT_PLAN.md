@@ -212,7 +212,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Add "Create Spell" button to spells section
 - [x] Add "Create Feature" button to class features section
 - [x] Add "Create Trait" button to racial traits section
-- [ ] All use modal pattern with ContentCreatorModal
+- [x] All use modal pattern with ContentCreatorModal
 
 ---
 
@@ -292,20 +292,20 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 7: Content Creator Modal
 
 ### 7.1 Generic Modal Wrapper
-- [ ] Create `src/components/modals/ContentCreatorModal.tsx`
-  - [ ] Pattern from EnchantmentModal.tsx:
+- [x] Create `src/components/modals/ContentCreatorModal.tsx`
+  - [x] Pattern from EnchantmentModal.tsx:
     - Full-screen overlay with backdrop blur
     - Slide-in animation
     - Close on backdrop click and Escape key
-  - [ ] Generic props:
+  - [x] Generic props:
     - title
     - category type
     - Form component to render
     - onSubmit handler
     - initialData (for editing)
-  - [ ] Form validation display
-  - [ ] Create/Cancel buttons with loading states
-  - [ ] Success feedback (toast or inline message)
+  - [x] Form validation display
+  - [x] Create/Cancel buttons with loading states
+  - [x] Success feedback (toast or inline message)
 
 ---
 
