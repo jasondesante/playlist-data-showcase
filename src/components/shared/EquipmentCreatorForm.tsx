@@ -16,7 +16,7 @@
  * @see useItemCreator - Hook for item creation logic
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Sword,
   Shield,
@@ -28,15 +28,25 @@ import {
   X,
   Code,
   ImageIcon,
-  Box
+  Box,
+  Plus,
+  Trash2,
+  RefreshCw,
+  Zap,
+  BookOpen,
+  Award,
+  Tag,
+  Weight
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ImageFieldInput } from './ImageFieldInput';
 import { BoxContentsBuilder } from './BoxContentsBuilder';
 import type {
   EnhancedEquipment,
-  BoxContents
+  BoxContents,
+  EquipmentProperty
 } from 'playlist-data-engine';
+import { ExtensionManager } from 'playlist-data-engine';
 import {
   useItemCreator,
   type CustomItemFormData,
@@ -152,6 +162,67 @@ function formatRarity(rarity: string): string {
 }
 
 /**
+ * Equipment property types for the builder
+ */
+export const EQUIPMENT_PROPERTY_TYPES = [
+  { value: 'stat_bonus', label: 'Stat Bonus', description: 'Ability score bonus (STR, DEX, etc.)' },
+  { value: 'skill_proficiency', label: 'Skill Proficiency', description: 'Grant proficiency or expertise' },
+  { value: 'ability_unlock', label: 'Ability Unlock', description: 'Unlock special ability (darkvision, etc.)' },
+  { value: 'passive_modifier', label: 'Passive Modifier', description: 'Constant bonus (AC, speed, etc.)' },
+  { value: 'special_property', label: 'Special Property', description: 'Game-specific property' },
+  { value: 'damage_bonus', label: 'Damage Bonus', description: 'Extra damage of a type' },
+  { value: 'stat_requirement', label: 'Stat Requirement', description: 'Minimum stat to use item' },
+] as const;
+
+/**
+ * Local equipment property interface (allows partial properties for form editing)
+ */
+interface LocalEquipmentProperty {
+  type: string;
+  target: string;
+  value?: string | number | boolean;
+  description?: string;
+}
+
+/**
+ * Common tag suggestions for equipment
+ */
+const TAG_SUGGESTIONS = [
+  'magic', 'rare', 'cursed', 'consumable', 'attunement', 'artifact',
+  'dwarven', 'elven', 'holy', 'unholy', 'elemental', 'nature',
+  'divine', 'arcane', 'martial', 'simple', 'finesse', 'versatile',
+  'two-handed', 'ranged', 'melee', 'light', 'medium', 'heavy',
+  'shield', 'focus', 'amulet', 'ring', 'cloak', 'boots', 'helm'
+];
+
+/**
+ * Granted skill interface
+ */
+interface GrantedSkill {
+  skillId: string;
+  level: 'proficient' | 'expertise';
+}
+
+/**
+ * Granted spell interface
+ */
+interface GrantedSpell {
+  spellId: string;
+  level?: number;
+  uses?: number;
+  recharge?: string;
+}
+
+/**
+ * Registry data for dropdowns
+ */
+interface RegistryData {
+  features: Array<{ id: string; name: string; type: string }>;
+  skills: Array<{ id: string; name: string }>;
+  spells: Array<{ id: string; name: string; level: number }>;
+}
+
+/**
  * EquipmentCreatorForm Component
  *
  * A reusable form for creating and editing equipment items.
@@ -194,25 +265,127 @@ export function EquipmentCreatorForm({
   const [isAdvancedOptionsExpanded, setIsAdvancedOptionsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Advanced options state
+  const [properties, setProperties] = useState<LocalEquipmentProperty[]>(initialData?.properties || []);
+  const [grantsFeatures, setGrantsFeatures] = useState<string[]>(initialData?.grantsFeatures || []);
+  const [grantsSkills, setGrantsSkills] = useState<GrantedSkill[]>(initialData?.grantsSkills || []);
+  const [grantsSpells, setGrantsSpells] = useState<GrantedSpell[]>(initialData?.grantsSpells || []);
+  const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+  const [spawnWeight, setSpawnWeight] = useState<number>(0);
+
+  // Registry data for dropdowns
+  const [registryData, setRegistryData] = useState<RegistryData>({
+    features: [],
+    skills: [],
+    spells: []
+  });
+
+  // Collapsible sections state
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  // Load registry data
+  const loadRegistryData = useCallback(() => {
+    try {
+      const manager = ExtensionManager.getInstance();
+
+      // Load features (class features + racial traits)
+      const classFeatures = (manager.get('classFeatures') || []) as Array<{ id?: string; name: string; class?: string }>;
+      const racialTraits = (manager.get('racialTraits') || []) as Array<{ id?: string; name: string; race?: string }>;
+
+      const featuresData = [
+        ...classFeatures.map(f => ({
+          id: f.id || f.name.toLowerCase().replace(/\s+/g, '_'),
+          name: f.name,
+          type: 'class'
+        })),
+        ...racialTraits.map(t => ({
+          id: t.id || t.name.toLowerCase().replace(/\s+/g, '_'),
+          name: t.name,
+          type: 'racial'
+        }))
+      ];
+
+      // Load skills
+      const skills = (manager.get('skills') || []) as Array<{ id?: string; name: string }>;
+      const skillsData = skills.map(s => ({
+        id: s.id || s.name.toLowerCase().replace(/\s+/g, '_'),
+        name: s.name
+      }));
+
+      // Load spells
+      const spells = (manager.get('spells') || []) as Array<{ name: string; level?: number }>;
+      const spellsData = spells.map(s => ({
+        id: s.name.toLowerCase().replace(/\s+/g, '_'),
+        name: s.name,
+        level: s.level || 0
+      }));
+
+      setRegistryData({
+        features: featuresData,
+        skills: skillsData,
+        spells: spellsData
+      });
+    } catch (error) {
+      console.warn('Failed to load registry data:', error);
+    }
+  }, []);
+
+  // Load registry data on mount
+  useEffect(() => {
+    loadRegistryData();
+  }, [loadRegistryData]);
+
+  // Toggle section expansion
+  const toggleSection = useCallback((section: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
+      return next;
+    });
+  }, []);
+
   // Build form data object
-  const formData: EquipmentCreatorFormData = useMemo(() => ({
-    name: itemName,
-    type: itemType,
-    rarity: itemRarity,
-    weight: itemWeight,
-    quantity: itemQuantity,
-    ...(itemType === 'weapon' && damageDice && {
-      damageDice,
-      damageType
-    }),
-    ...(itemType === 'armor' && acBonus !== '' && {
-      acBonus: Number(acBonus)
-    }),
-    ...(itemType === 'box' && boxContents && { boxContents }),
-    autoEquip,
-    ...(itemIcon.trim() && { icon: itemIcon.trim() }),
-    ...(itemImage.trim() && { image: itemImage.trim() })
-  }), [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage, boxContents]);
+  const formData: EquipmentCreatorFormData = useMemo(() => {
+    // Convert local properties to EquipmentProperty format (filter out incomplete properties)
+    const validProperties = properties
+      .filter(p => p.type && p.target)
+      .map(p => ({
+        type: p.type as EquipmentProperty['type'],
+        target: p.target,
+        ...(p.value !== undefined && { value: p.value }),
+        ...(p.description && { description: p.description })
+      })) as EquipmentProperty[];
+
+    return {
+      name: itemName,
+      type: itemType,
+      rarity: itemRarity,
+      weight: itemWeight,
+      quantity: itemQuantity,
+      ...(itemType === 'weapon' && damageDice && {
+        damageDice,
+        damageType
+      }),
+      ...(itemType === 'armor' && acBonus !== '' && {
+        acBonus: Number(acBonus)
+      }),
+      ...(itemType === 'box' && boxContents && { boxContents }),
+      autoEquip,
+      ...(itemIcon.trim() && { icon: itemIcon.trim() }),
+      ...(itemImage.trim() && { image: itemImage.trim() }),
+      // Advanced options
+      ...(validProperties.length > 0 && { properties: validProperties }),
+      ...(grantsFeatures.length > 0 && { grantsFeatures }),
+      ...(grantsSkills.length > 0 && { grantsSkills: grantsSkills as Array<{ skillId: string; level: 'proficient' | 'expertise' }> }),
+      ...(grantsSpells.length > 0 && { grantsSpells: grantsSpells as Array<{ spellId: string; level?: number; uses?: number; recharge?: string }> }),
+      ...(tags.length > 0 && { tags }),
+      spawnWeight
+    };
+  }, [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage, boxContents, properties, grantsFeatures, grantsSkills, grantsSpells, tags, spawnWeight]);
 
   // Notify parent of form changes
   useEffect(() => {
@@ -269,6 +442,13 @@ export function EquipmentCreatorForm({
         setItemIcon('');
         setItemImage('');
         setBoxContents(undefined);
+        // Clear advanced options
+        setProperties([]);
+        setGrantsFeatures([]);
+        setGrantsSkills([]);
+        setGrantsSpells([]);
+        setTags([]);
+        setSpawnWeight(0);
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
@@ -557,7 +737,7 @@ export function EquipmentCreatorForm({
         </div>
       )}
 
-      {/* Advanced Options Info */}
+      {/* Advanced Options */}
       {showAdvancedOptions && (
         <div className="equipment-creator-section equipment-creator-advanced-options">
           <button
@@ -568,59 +748,568 @@ export function EquipmentCreatorForm({
             aria-expanded={isAdvancedOptionsExpanded}
             aria-controls="equipment-creator-advanced-options-content"
           >
-            <Info size={16} aria-hidden="true" />
+            <Zap size={16} aria-hidden="true" />
             <span>Advanced Options</span>
+            <span className="equipment-creator-advanced-options-count">
+              ({properties.length + grantsFeatures.length + grantsSkills.length + grantsSpells.length + tags.length} configured)
+            </span>
             {isAdvancedOptionsExpanded ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
           </button>
 
           {isAdvancedOptionsExpanded && (
             <div className="equipment-creator-advanced-options-content" id="equipment-creator-advanced-options-content">
-              <p className="equipment-creator-advanced-options-intro">
-                The UI above covers basic item creation. The <code>playlist-data-engine</code> API
-                supports additional properties for more advanced items:
-              </p>
-
-              <div className="equipment-creator-advanced-options-list">
-                <div className="equipment-creator-advanced-option">
-                  <h5>properties[]</h5>
-                  <p>Equipment properties like stat bonuses, skill proficiencies, damage bonuses, and passive modifiers.</p>
-                  <span className="equipment-creator-advanced-option-types">
-                    Types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, special_property, damage_bonus, stat_requirement
+              {/* Properties Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('properties')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('properties')}
+                >
+                  <Zap size={14} aria-hidden="true" />
+                  <span>Equipment Properties</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {properties.length}
                   </span>
-                </div>
-
-                <div className="equipment-creator-advanced-option">
-                  <h5>grantsFeatures[]</h5>
-                  <p>Feature IDs or inline feature definitions granted when the item is equipped.</p>
-                </div>
-
-                <div className="equipment-creator-advanced-option">
-                  <h5>grantsSkills[]</h5>
-                  <p>Skill proficiencies granted when equipped. Format: {'{ skillId, level: "proficient" | "expertise" }'}</p>
-                </div>
-
-                <div className="equipment-creator-advanced-option">
-                  <h5>grantsSpells[]</h5>
-                  <p>Spells granted when equipped. Format: {'{ spellId, level?, uses?, recharge? }'}</p>
-                </div>
-
-                <div className="equipment-creator-advanced-option">
-                  <h5>tags[]</h5>
-                  <p>Search and filter tags for categorization (e.g., ["magic", "dwarven", "cursed"]).</p>
-                </div>
-
-                <div className="equipment-creator-advanced-option">
-                  <h5>spawnWeight</h5>
-                  <p>Weight for random loot generation. Default is 0 (won&apos;t spawn randomly). Set higher for common items.</p>
-                </div>
+                  {expandedSections.has('properties') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('properties') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Add properties like stat bonuses, skill proficiencies, and damage bonuses.
+                    </p>
+                    <div className="equipment-creator-properties-list">
+                      {properties.map((prop, index) => (
+                        <div key={index} className="equipment-creator-property-item">
+                          <div className="equipment-creator-property-header">
+                            <span className="equipment-creator-property-number">Property {index + 1}</span>
+                            <button
+                              type="button"
+                              className="equipment-creator-property-remove"
+                              onClick={() => setProperties(prev => prev.filter((_, i) => i !== index))}
+                              disabled={disabled}
+                              title="Remove property"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="equipment-creator-property-fields">
+                            <div className="equipment-creator-field">
+                              <label className="equipment-creator-label">Type</label>
+                              <select
+                                value={prop.type}
+                                onChange={(e) => {
+                                  const newProps = [...properties];
+                                  newProps[index] = { type: e.target.value, target: '' };
+                                  setProperties(newProps);
+                                }}
+                                className="equipment-creator-select equipment-creator-select-sm"
+                                disabled={disabled}
+                              >
+                                <option value="">Select type...</option>
+                                {EQUIPMENT_PROPERTY_TYPES.map(t => (
+                                  <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                            {prop.type && (
+                              <div className="equipment-creator-field">
+                                <label className="equipment-creator-label">Target</label>
+                                <input
+                                  type="text"
+                                  value={prop.target || ''}
+                                  onChange={(e) => {
+                                    const newProps = [...properties];
+                                    newProps[index] = { ...newProps[index], target: e.target.value };
+                                    setProperties(newProps);
+                                  }}
+                                  placeholder={prop.type === 'stat_bonus' ? 'STR, DEX, etc.' : prop.type === 'passive_modifier' ? 'ac, speed, etc.' : 'Target'}
+                                  className="equipment-creator-input equipment-creator-input-sm"
+                                  disabled={disabled}
+                                />
+                              </div>
+                            )}
+                            {prop.type && prop.target && (
+                              <div className="equipment-creator-field">
+                                <label className="equipment-creator-label">Value</label>
+                                <input
+                                  type={prop.type === 'stat_bonus' || prop.type === 'passive_modifier' ? 'number' : 'text'}
+                                  value={typeof prop.value === 'boolean' ? '' : (prop.value ?? '')}
+                                  onChange={(e) => {
+                                    const newProps = [...properties];
+                                    let val: string | number | undefined;
+                                    if (prop.type === 'stat_bonus' || prop.type === 'passive_modifier') {
+                                      val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                    } else {
+                                      val = e.target.value || undefined;
+                                    }
+                                    newProps[index] = { ...newProps[index], value: val };
+                                    setProperties(newProps);
+                                  }}
+                                  placeholder={prop.type === 'stat_bonus' ? 'e.g., 2' : prop.type === 'damage_bonus' ? 'e.g., 1d6' : 'Value'}
+                                  className="equipment-creator-input equipment-creator-input-sm"
+                                  disabled={disabled}
+                                />
+                              </div>
+                            )}
+                            {prop.type && prop.target && (
+                              <div className="equipment-creator-field equipment-creator-field-full">
+                                <label className="equipment-creator-label">Description (optional)</label>
+                                <input
+                                  type="text"
+                                  value={prop.description || ''}
+                                  onChange={(e) => {
+                                    const newProps = [...properties];
+                                    newProps[index] = { ...newProps[index], description: e.target.value || undefined };
+                                    setProperties(newProps);
+                                  }}
+                                  placeholder="e.g., +2 Strength bonus"
+                                  className="equipment-creator-input equipment-creator-input-sm"
+                                  disabled={disabled}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="equipment-creator-add-btn"
+                      onClick={() => setProperties(prev => [...prev, { type: '', target: '' }])}
+                      disabled={disabled}
+                    >
+                      <Plus size={14} />
+                      Add Property
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="equipment-creator-advanced-options-code">
-                <h5>
-                  <Code size={14} />
-                  Programmatic Example
-                </h5>
-                <pre className="equipment-creator-code-block">
+              {/* Grants Features Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('grantsFeatures')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('grantsFeatures')}
+                >
+                  <Award size={14} aria-hidden="true" />
+                  <span>Grants Features</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {grantsFeatures.length}
+                  </span>
+                  {expandedSections.has('grantsFeatures') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('grantsFeatures') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Features from the registry that are granted when this item is equipped.
+                    </p>
+                    <div className="equipment-creator-multiselect">
+                      <div className="equipment-creator-multiselect-header">
+                        <button
+                          type="button"
+                          className="equipment-creator-refresh-btn"
+                          onClick={loadRegistryData}
+                          disabled={disabled}
+                          title="Refresh from registry"
+                        >
+                          <RefreshCw size={12} />
+                        </button>
+                      </div>
+                      <div className="equipment-creator-chips">
+                        {grantsFeatures.map((featureId, index) => {
+                          const feature = registryData.features.find(f => f.id === featureId);
+                          return (
+                            <span key={index} className="equipment-creator-chip">
+                              {feature?.name || featureId}
+                              <button
+                                type="button"
+                                className="equipment-creator-chip-remove"
+                                onClick={() => setGrantsFeatures(prev => prev.filter((_, i) => i !== index))}
+                                disabled={disabled}
+                              >
+                                <X size={10} />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <div className="equipment-creator-multiselect-input-row">
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value && !grantsFeatures.includes(e.target.value)) {
+                              setGrantsFeatures(prev => [...prev, e.target.value]);
+                            }
+                          }}
+                          className="equipment-creator-select equipment-creator-select-sm"
+                          disabled={disabled}
+                        >
+                          <option value="">Add feature...</option>
+                          {registryData.features
+                            .filter(f => !grantsFeatures.includes(f.id))
+                            .map(f => (
+                              <option key={f.id} value={f.id}>{f.name} ({f.type})</option>
+                            ))}
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Or enter custom ID..."
+                          className="equipment-creator-input equipment-creator-input-sm"
+                          disabled={disabled}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const value = (e.target as HTMLInputElement).value.trim();
+                              if (value && !grantsFeatures.includes(value)) {
+                                setGrantsFeatures(prev => [...prev, value]);
+                                (e.target as HTMLInputElement).value = '';
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Grants Skills Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('grantsSkills')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('grantsSkills')}
+                >
+                  <BookOpen size={14} aria-hidden="true" />
+                  <span>Grants Skills</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {grantsSkills.length}
+                  </span>
+                  {expandedSections.has('grantsSkills') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('grantsSkills') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Skill proficiencies granted when this item is equipped.
+                    </p>
+                    <div className="equipment-creator-skills-list">
+                      {grantsSkills.map((skill, index) => {
+                        const skillData = registryData.skills.find(s => s.id === skill.skillId);
+                        return (
+                          <div key={index} className="equipment-creator-skill-item">
+                            <span className="equipment-creator-skill-name">
+                              {skillData?.name || skill.skillId}
+                            </span>
+                            <select
+                              value={skill.level}
+                              onChange={(e) => {
+                                const newSkills = [...grantsSkills];
+                                newSkills[index] = { ...newSkills[index], level: e.target.value as 'proficient' | 'expertise' };
+                                setGrantsSkills(newSkills);
+                              }}
+                              className="equipment-creator-select equipment-creator-select-xs"
+                              disabled={disabled}
+                            >
+                              <option value="proficient">Proficient</option>
+                              <option value="expertise">Expertise</option>
+                            </select>
+                            <button
+                              type="button"
+                              className="equipment-creator-skill-remove"
+                              onClick={() => setGrantsSkills(prev => prev.filter((_, i) => i !== index))}
+                              disabled={disabled}
+                              title="Remove skill"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="equipment-creator-multiselect-input-row">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value && !grantsSkills.some(s => s.skillId === e.target.value)) {
+                            setGrantsSkills(prev => [...prev, { skillId: e.target.value, level: 'proficient' }]);
+                          }
+                        }}
+                        className="equipment-creator-select equipment-creator-select-sm"
+                        disabled={disabled}
+                      >
+                        <option value="">Add skill...</option>
+                        {registryData.skills
+                          .filter(s => !grantsSkills.some(gs => gs.skillId === s.id))
+                          .map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Grants Spells Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('grantsSpells')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('grantsSpells')}
+                >
+                  <Sparkles size={14} aria-hidden="true" />
+                  <span>Grants Spells</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {grantsSpells.length}
+                  </span>
+                  {expandedSections.has('grantsSpells') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('grantsSpells') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Spells granted when this item is equipped, with uses and recharge options.
+                    </p>
+                    <div className="equipment-creator-spells-list">
+                      {grantsSpells.map((spell, index) => {
+                        const spellData = registryData.spells.find(s => s.id === spell.spellId);
+                        return (
+                          <div key={index} className="equipment-creator-spell-item">
+                            <div className="equipment-creator-spell-header">
+                              <span className="equipment-creator-spell-name">
+                                {spellData?.name || spell.spellId}
+                              </span>
+                              <button
+                                type="button"
+                                className="equipment-creator-spell-remove"
+                                onClick={() => setGrantsSpells(prev => prev.filter((_, i) => i !== index))}
+                                disabled={disabled}
+                                title="Remove spell"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <div className="equipment-creator-spell-options">
+                              <div className="equipment-creator-field">
+                                <label className="equipment-creator-label equipment-creator-label-xs">Uses</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={spell.uses ?? ''}
+                                  onChange={(e) => {
+                                    const newSpells = [...grantsSpells];
+                                    newSpells[index] = { ...newSpells[index], uses: e.target.value ? parseInt(e.target.value) : undefined };
+                                    setGrantsSpells(newSpells);
+                                  }}
+                                  placeholder="∞"
+                                  className="equipment-creator-input equipment-creator-input-xs"
+                                  disabled={disabled}
+                                />
+                              </div>
+                              <div className="equipment-creator-field">
+                                <label className="equipment-creator-label equipment-creator-label-xs">Recharge</label>
+                                <select
+                                  value={spell.recharge || ''}
+                                  onChange={(e) => {
+                                    const newSpells = [...grantsSpells];
+                                    newSpells[index] = { ...newSpells[index], recharge: e.target.value || undefined };
+                                    setGrantsSpells(newSpells);
+                                  }}
+                                  className="equipment-creator-select equipment-creator-select-xs"
+                                  disabled={disabled}
+                                >
+                                  <option value="">None</option>
+                                  <option value="short_rest">Short Rest</option>
+                                  <option value="long_rest">Long Rest</option>
+                                  <option value="dawn">Dawn</option>
+                                  <option value="daily">Daily</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="equipment-creator-multiselect-input-row">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value && !grantsSpells.some(s => s.spellId === e.target.value)) {
+                            setGrantsSpells(prev => [...prev, { spellId: e.target.value }]);
+                          }
+                        }}
+                        className="equipment-creator-select equipment-creator-select-sm"
+                        disabled={disabled}
+                      >
+                        <option value="">Add spell...</option>
+                        {registryData.spells
+                          .filter(s => !grantsSpells.some(gs => gs.spellId === s.id))
+                          .sort((a, b) => a.level - b.level)
+                          .map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.name} (Level {s.level})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tags Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('tags')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('tags')}
+                >
+                  <Tag size={14} aria-hidden="true" />
+                  <span>Tags</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {tags.length}
+                  </span>
+                  {expandedSections.has('tags') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('tags') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Tags for categorization, search, and filtering.
+                    </p>
+                    <div className="equipment-creator-chips">
+                      {tags.map((tag, index) => (
+                        <span key={index} className="equipment-creator-chip">
+                          {tag}
+                          <button
+                            type="button"
+                            className="equipment-creator-chip-remove"
+                            onClick={() => setTags(prev => prev.filter((_, i) => i !== index))}
+                            disabled={disabled}
+                          >
+                            <X size={10} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="equipment-creator-multiselect-input-row">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value && !tags.includes(e.target.value)) {
+                            setTags(prev => [...prev, e.target.value]);
+                          }
+                        }}
+                        className="equipment-creator-select equipment-creator-select-sm"
+                        disabled={disabled}
+                      >
+                        <option value="">Add tag...</option>
+                        {TAG_SUGGESTIONS.filter(t => !tags.includes(t)).map(t => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        placeholder="Or custom tag..."
+                        className="equipment-creator-input equipment-creator-input-sm"
+                        disabled={disabled}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const value = (e.target as HTMLInputElement).value.trim().toLowerCase().replace(/\s+/g, '_');
+                            if (value && !tags.includes(value)) {
+                              setTags(prev => [...prev, value]);
+                              (e.target as HTMLInputElement).value = '';
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Spawn Weight Section */}
+              <div className="equipment-creator-advanced-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('spawnWeight')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('spawnWeight')}
+                >
+                  <Weight size={14} aria-hidden="true" />
+                  <span>Spawn Weight</span>
+                  <span className="equipment-creator-advanced-section-count">
+                    {spawnWeight}
+                  </span>
+                  {expandedSections.has('spawnWeight') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('spawnWeight') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <p className="equipment-creator-advanced-section-hint">
+                      Weight for random loot generation. Higher values = more common in random loot.
+                    </p>
+                    <div className="equipment-creator-spawnweight-row">
+                      <div className="equipment-creator-field">
+                        <label className="equipment-creator-label">Spawn Weight</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={spawnWeight}
+                          onChange={(e) => setSpawnWeight(parseFloat(e.target.value) || 0)}
+                          className="equipment-creator-input equipment-creator-input-sm"
+                          disabled={disabled}
+                        />
+                      </div>
+                      <div className="equipment-creator-spawnweight-info">
+                        <span className="equipment-creator-spawnweight-label">
+                          {spawnWeight === 0 ? (
+                            <><X size={12} /> Never spawns randomly (game-only)</>
+                          ) : spawnWeight < 0.5 ? (
+                            <>Very rare spawn (like legendary items)</>
+                          ) : spawnWeight < 1 ? (
+                            <>Rare spawn (like very_rare items)</>
+                          ) : spawnWeight === 1 ? (
+                            <>Normal spawn (like common items)</>
+                          ) : (
+                            <>Common spawn (higher than normal)</>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Documentation Reference (collapsed by default) */}
+              <div className="equipment-creator-advanced-section equipment-creator-docs-section">
+                <button
+                  type="button"
+                  className="equipment-creator-advanced-section-toggle"
+                  onClick={() => toggleSection('docs')}
+                  disabled={disabled}
+                  aria-expanded={expandedSections.has('docs')}
+                >
+                  <Info size={14} aria-hidden="true" />
+                  <span>API Documentation</span>
+                  {expandedSections.has('docs') ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedSections.has('docs') && (
+                  <div className="equipment-creator-advanced-section-content">
+                    <div className="equipment-creator-advanced-options-code">
+                      <h5>
+                        <Code size={14} />
+                        Programmatic Example
+                      </h5>
+                      <pre className="equipment-creator-code-block">
 {`import { ExtensionManager } from 'playlist-data-engine';
 
 const flamingSword = {
@@ -641,12 +1330,14 @@ const flamingSword = {
 
 ExtensionManager.getInstance()
   .register('equipment', [flamingSword]);`}
-                </pre>
+                      </pre>
+                    </div>
+                    <p className="equipment-creator-advanced-options-docs">
+                      See <code>docs/engine/docs/EQUIPMENT_SYSTEM.md</code> for full API documentation.
+                    </p>
+                  </div>
+                )}
               </div>
-
-              <p className="equipment-creator-advanced-options-docs">
-                See <code>docs/engine/docs/EQUIPMENT_SYSTEM.md</code> for full API documentation.
-              </p>
             </div>
           )}
         </div>
@@ -825,8 +1516,131 @@ ExtensionManager.getInstance()
                         image: set
                       </span>
                     )}
+                    {/* Advanced Properties */}
+                    {properties.length > 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        properties: {properties.length}
+                      </span>
+                    )}
+                    {grantsFeatures.length > 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        grantsFeatures: {grantsFeatures.length}
+                      </span>
+                    )}
+                    {grantsSkills.length > 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        grantsSkills: {grantsSkills.length}
+                      </span>
+                    )}
+                    {grantsSpells.length > 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        grantsSpells: {grantsSpells.length}
+                      </span>
+                    )}
+                    {tags.length > 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        tags: {tags.length}
+                      </span>
+                    )}
+                    {spawnWeight !== 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        spawnWeight: {spawnWeight}
+                      </span>
+                    )}
                   </div>
                 </div>
+
+                {/* Advanced Properties Detail */}
+                {properties.length > 0 && (
+                  <div className="equipment-creator-preview-property-group">
+                    <span className="equipment-creator-preview-property-group-label">
+                      Equipment Properties
+                    </span>
+                    <div className="equipment-creator-preview-property-tags">
+                      {properties.filter(p => p.type && p.target).map((prop, idx) => (
+                        <span key={idx} className="equipment-creator-preview-tag equipment-creator-preview-tag-advanced">
+                          {prop.type}: {prop.target}{prop.value !== undefined ? ` = ${prop.value}` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Granted Features */}
+                {grantsFeatures.length > 0 && (
+                  <div className="equipment-creator-preview-property-group">
+                    <span className="equipment-creator-preview-property-group-label">
+                      Grants Features
+                    </span>
+                    <div className="equipment-creator-preview-property-tags">
+                      {grantsFeatures.map((featureId, idx) => {
+                        const feature = registryData.features.find(f => f.id === featureId);
+                        return (
+                          <span key={idx} className="equipment-creator-preview-tag equipment-creator-preview-tag-advanced">
+                            {feature?.name || featureId}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Granted Skills */}
+                {grantsSkills.length > 0 && (
+                  <div className="equipment-creator-preview-property-group">
+                    <span className="equipment-creator-preview-property-group-label">
+                      Grants Skills
+                    </span>
+                    <div className="equipment-creator-preview-property-tags">
+                      {grantsSkills.map((skill, idx) => {
+                        const skillData = registryData.skills.find(s => s.id === skill.skillId);
+                        return (
+                          <span key={idx} className="equipment-creator-preview-tag equipment-creator-preview-tag-advanced">
+                            {skillData?.name || skill.skillId} ({skill.level})
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Granted Spells */}
+                {grantsSpells.length > 0 && (
+                  <div className="equipment-creator-preview-property-group">
+                    <span className="equipment-creator-preview-property-group-label">
+                      Grants Spells
+                    </span>
+                    <div className="equipment-creator-preview-property-tags">
+                      {grantsSpells.map((spell, idx) => {
+                        const spellData = registryData.spells.find(s => s.id === spell.spellId);
+                        return (
+                          <span key={idx} className="equipment-creator-preview-tag equipment-creator-preview-tag-advanced">
+                            {spellData?.name || spell.spellId}
+                            {spell.uses && ` (${spell.uses} uses`}
+                            {spell.recharge && ` / ${spell.recharge}`}
+                            {spell.uses && ')'}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {tags.length > 0 && (
+                  <div className="equipment-creator-preview-property-group">
+                    <span className="equipment-creator-preview-property-group-label">
+                      Tags
+                    </span>
+                    <div className="equipment-creator-preview-property-tags">
+                      {tags.map((tag, idx) => (
+                        <span key={idx} className="equipment-creator-preview-tag equipment-creator-preview-tag-advanced">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="equipment-creator-preview-property-group">
                   <span className="equipment-creator-preview-property-group-label">
@@ -846,9 +1660,11 @@ ExtensionManager.getInstance()
                     <span className="equipment-creator-preview-tag equipment-creator-preview-tag-default">
                       quantity: {itemQuantity}
                     </span>
-                    <span className="equipment-creator-preview-tag equipment-creator-preview-tag-default">
-                      spawnWeight: 0
-                    </span>
+                    {spawnWeight === 0 && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-default">
+                        spawnWeight: 0
+                      </span>
+                    )}
                   </div>
                 </div>
 

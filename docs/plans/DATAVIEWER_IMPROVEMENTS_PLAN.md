@@ -394,23 +394,19 @@ This ensures all category lists update immediately when:
   - [x] Add example: "Barbarian prefers bass-heavy music, Bard prefers treble-heavy music"
   - [x] Renamed section to "Music-Based Class Suggestions"
 
-### 7.3 Equipment Creator Advanced Options Restructure
-- [ ] Redesign EquipmentCreatorForm advanced options
-  - [ ] Keep educational text but make it collapsible
-  - [ ] Add actual UI inputs for each advanced property:
-    - [ ] **Properties** - Multi-select with common options:
-      - stat_bonus (with ability + value)
-      - skill_proficiency (with skill name)
-      - damage_bonus (with value)
-      - ac_bonus (with value)
-      - etc.
-    - [ ] **Grants Features** - Multi-select from available features + custom ID input
-    - [ ] **Grants Skills** - Multi-select from available skills + proficiency level
-    - [ ] **Grants Spells** - Multi-select from available spells + uses/recharge
-    - [ ] **Tags** - Tag input with suggestions (magic, rare, cursed, consumable, etc.)
-    - [ ] **Spawn Weight** - Number input with explanation
-  - [ ] Use accordions or tabs within advanced section
-  - [ ] Add validation and previews
+### 7.3 Equipment Creator Advanced Options Restructure ✅ DONE
+- [x] Redesign EquipmentCreatorForm advanced options
+  - [x] Keep educational text but make it collapsible
+  - [x] Add actual UI inputs for each advanced property:
+    - [x] **Properties** - Builder with type/target/value fields for stat_bonus, skill_proficiency, ability_unlock, passive_modifier, special_property, damage_bonus, stat_requirement
+    - [x] **Grants Features** - Multi-select from registry + custom ID input
+    - [x] **Grants Skills** - Multi-select from skills with proficiency/expertise level
+    - [x] **Grants Spells** - Multi-select from spells with uses and recharge options
+    - [x] **Tags** - Tag input with 35 common suggestions + custom tags
+    - [x] **Spawn Weight** - Number input with contextual explanation (never/rare/normal/common spawn)
+  - [x] Use collapsible accordion sections within advanced section
+  - [x] Update preview to show advanced properties in the Properties Summary
+  - [x] Add comprehensive CSS styling for all new components
 
 ---
 

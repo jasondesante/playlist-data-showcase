@@ -618,3 +618,456 @@
     font-size: 0.6875rem;
   }
 }
+
+/* ========================================
+   ADVANCED OPTIONS SECTIONS
+   ======================================== */
+
+.equipment-creator-advanced-options-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: 0.5rem;
+  font-weight: 400;
+}
+
+.equipment-creator-advanced-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.equipment-creator-advanced-section:last-child {
+  margin-bottom: 0;
+}
+
+.equipment-creator-advanced-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--color-surface-dim);
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.equipment-creator-advanced-section-toggle:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.equipment-creator-advanced-section-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.equipment-creator-advanced-section-toggle svg:first-child {
+  color: hsl(210 80% 50%);
+}
+
+.equipment-creator-advanced-section-toggle span {
+  flex: 1;
+  text-align: left;
+}
+
+.equipment-creator-advanced-section-toggle svg:last-child {
+  color: var(--color-text-secondary);
+}
+
+.equipment-creator-advanced-section-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-right: 0.5rem;
+}
+
+.equipment-creator-advanced-section-content {
+  padding: 0.875rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.equipment-creator-advanced-section-hint {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* Property Items */
+.equipment-creator-properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.equipment-creator-property-item {
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.625rem;
+}
+
+.equipment-creator-property-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.equipment-creator-property-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.equipment-creator-property-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.7);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.equipment-creator-property-remove:hover:not(:disabled) {
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.equipment-creator-property-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.equipment-creator-property-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+/* Size Variants */
+.equipment-creator-input-sm,
+.equipment-creator-select-sm {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+}
+
+.equipment-creator-input-xs,
+.equipment-creator-select-xs {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.equipment-creator-label-xs {
+  font-size: 0.7rem;
+}
+
+/* Chips (Tags/Multi-select) */
+.equipment-creator-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.equipment-creator-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: hsl(210 60% 95%);
+  border: 1px solid hsl(210 60% 80%);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: hsl(210 60% 30%);
+}
+
+[data-theme="dark"] .equipment-creator-chip {
+  background: hsl(210 40% 20%);
+  border-color: hsl(210 40% 35%);
+  color: hsl(210 60% 75%);
+}
+
+.equipment-creator-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.equipment-creator-chip-remove:hover {
+  opacity: 1;
+}
+
+/* Multiselect */
+.equipment-creator-multiselect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.equipment-creator-multiselect-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.equipment-creator-multiselect-input-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.equipment-creator-multiselect-input-row > * {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Skills List */
+.equipment-creator-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.equipment-creator-skill-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.equipment-creator-skill-name {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-skill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  background: transparent;
+  border: none;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.7);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.equipment-creator-skill-remove:hover {
+  opacity: 1;
+}
+
+/* Spells List */
+.equipment-creator-spells-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.equipment-creator-spell-item {
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+}
+
+.equipment-creator-spell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+}
+
+.equipment-creator-spell-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.equipment-creator-spell-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  background: transparent;
+  border: none;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.7);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.equipment-creator-spell-remove:hover {
+  opacity: 1;
+}
+
+.equipment-creator-spell-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.equipment-creator-spell-options .equipment-creator-field {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Spawn Weight */
+.equipment-creator-spawnweight-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.equipment-creator-spawnweight-row > .equipment-creator-field {
+  flex: 0 0 120px;
+}
+
+.equipment-creator-spawnweight-info {
+  flex: 1;
+  padding-top: 1.25rem;
+}
+
+.equipment-creator-spawnweight-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* Add Button */
+.equipment-creator-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--color-surface-dim);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.equipment-creator-add-btn:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.equipment-creator-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Refresh Button */
+.equipment-creator-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.equipment-creator-refresh-btn:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.equipment-creator-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Docs Section */
+.equipment-creator-docs-section {
+  margin-top: 1rem;
+  border-color: hsl(45 90% 50% / 0.3);
+}
+
+.equipment-creator-docs-section .equipment-creator-advanced-section-toggle {
+  background: hsl(45 90% 50% / 0.05);
+}
+
+.equipment-creator-docs-section .equipment-creator-advanced-section-toggle svg:first-child {
+  color: hsl(45 90% 50%);
+}
+
+/* Preview Advanced Tags */
+.equipment-creator-preview-tag-advanced {
+  background: hsl(150 60% 95%);
+  color: hsl(150 60% 30%);
+  border-color: hsl(150 60% 80%);
+}
+
+[data-theme="dark"] .equipment-creator-preview-tag-advanced {
+  background: hsl(150 40% 15%);
+  color: hsl(150 60% 65%);
+  border-color: hsl(150 40% 30%);
+}
+
+/* Responsive Advanced Options */
+@media (max-width: 640px) {
+  .equipment-creator-property-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-creator-multiselect-input-row {
+    flex-direction: column;
+  }
+
+  .equipment-creator-multiselect-input-row > * {
+    min-width: 100%;
+  }
+
+  .equipment-creator-spawnweight-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .equipment-creator-spawnweight-row > .equipment-creator-field {
+    flex: 1;
+  }
+
+  .equipment-creator-spawnweight-info {
+    padding-top: 0;
+  }
+}
