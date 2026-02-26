@@ -25,8 +25,10 @@ import {
   Sparkles,
   Plus,
   AlertCircle,
-  Zap
+  Zap,
+  ImageIcon
 } from 'lucide-react';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './SkillCreatorForm.css';
@@ -75,6 +77,8 @@ export interface SkillFormData {
   description: string;
   categories: string[];
   armorPenalty: boolean;
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -122,7 +126,9 @@ function getDefaultFormData(): SkillFormData {
     ability: 'INT',
     description: '',
     categories: [],
-    armorPenalty: false
+    armorPenalty: false,
+    icon: '',
+    image: ''
   };
 }
 
@@ -233,6 +239,16 @@ export function SkillCreatorForm({
         skillItem.armorPenalty = true;
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        skillItem.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        skillItem.image = formData.image.trim();
+      }
+
       const result = createContent(
         contentType,
         skillItem,
@@ -290,6 +306,18 @@ export function SkillCreatorForm({
   const handleArmorPenaltyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, armorPenalty: e.target.checked }));
   }, []);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Category management
   const handleAddCategory = useCallback((category: string) => {
@@ -549,6 +577,38 @@ export function SkillCreatorForm({
         </div>
       </div>
 
+      {/* Images Section */}
+      <div className="skill-creator-section skill-creator-images-section" role="group" aria-labelledby="skill-images-section-title">
+        <h4 className="skill-creator-section-title" id="skill-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="skill-creator-optional">(optional)</span>
+        </h4>
+        <div className="skill-creator-images-grid">
+          <div className="skill-creator-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Skill Icon"
+              placeholder="e.g., assets/icons/stealth.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="skill-creator-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Skill Image"
+              placeholder="e.g., assets/skills/stealth.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Validation Errors */}
       {(formErrors.length > 0 || lastError) && (
         <div className="skill-creator-errors" role="alert" aria-live="assertive">
@@ -600,7 +660,31 @@ export function SkillCreatorForm({
             Preview
           </h4>
           <div className="skill-creator-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="skill-creator-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="skill-creator-preview-skill">
+              {formData.icon && (
+                <img
+                  src={formData.icon}
+                  alt=""
+                  className="skill-creator-preview-icon"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              )}
               <span className="skill-creator-preview-name">{formData.name}</span>
               <span className="skill-creator-preview-ability">{formData.ability}</span>
             </div>

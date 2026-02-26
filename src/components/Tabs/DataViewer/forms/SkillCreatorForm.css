@@ -349,6 +349,57 @@
   line-height: 1.5;
 }
 
+/* Images Section */
+.skill-creator-images-section {
+  /* Inherit section styles */
+}
+
+.skill-creator-images-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .skill-creator-images-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Preview Icon and Image */
+.skill-creator-preview-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.skill-creator-preview-skill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skill-creator-preview-image {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.skill-creator-preview-image img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .skill-creator-category-input-row {

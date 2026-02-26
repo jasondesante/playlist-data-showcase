@@ -167,7 +167,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] ~~Research: Check if data engine supports embedded images (base64) natively~~ **DONE - NOT SUPPORTED**
 - [x] Add `icon` and `image` fields to EquipmentCreatorForm ✅ DONE
 - [x] Add `icon` and `image` fields to SpellCreatorForm ✅ DONE
-- [ ] Add `icon` and `image` fields to SkillCreatorForm
+- [x] Add `icon` and `image` fields to SkillCreatorForm ✅ DONE
 - [ ] Add `icon` and `image` fields to ClassFeatureCreatorForm
 - [ ] Add `icon` and `image` fields to RacialTraitCreatorForm
 - [ ] Add `icon` and `image` fields to RaceCreatorForm (race data)
