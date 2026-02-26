@@ -210,7 +210,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 
 ### 5.4 Add to DataViewerTab
 - [x] Add "Create Spell" button to spells section
-- [ ] Add "Create Feature" button to class features section
+- [x] Add "Create Feature" button to class features section
 - [ ] Add "Create Trait" button to racial traits section
 - [ ] All use modal pattern with ContentCreatorModal
 

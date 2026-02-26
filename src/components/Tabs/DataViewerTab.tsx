@@ -78,6 +78,7 @@ import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/E
 import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
+import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
 import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -388,6 +389,7 @@ export function DataViewerTab() {
   const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
   const [showSkillCreator, setShowSkillCreator] = useState(false);
   const [showSpellCreator, setShowSpellCreator] = useState(false);
+  const [showClassFeatureCreator, setShowClassFeatureCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -649,6 +651,48 @@ export function DataViewerTab() {
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create spell: ${result.error}`);
+    }
+  }, [createContent, refreshData]);
+
+  /**
+   * Handle creation of new class feature via ClassFeatureCreatorForm
+   * (Phase 5.4: Class Features Creation in DataViewerTab)
+   */
+  const handleCreateClassFeature = useCallback((feature: ClassFeatureFormData) => {
+    const featureItem: Record<string, unknown> = {
+      id: feature.id,
+      name: feature.name,
+      class: feature.class,
+      level: feature.level,
+      type: feature.type,
+      description: feature.description
+    };
+
+    // Add effects if specified
+    if (feature.effects.length > 0) {
+      featureItem.effects = feature.effects.filter(e => e.type && e.target);
+    }
+
+    // Add prerequisites if specified
+    if (feature.prerequisites.level !== undefined || feature.prerequisites.abilities) {
+      const prereqs: Record<string, unknown> = {};
+      if (feature.prerequisites.level !== undefined) {
+        prereqs.level = feature.prerequisites.level;
+      }
+      if (feature.prerequisites.abilities && Object.keys(feature.prerequisites.abilities).length > 0) {
+        prereqs.abilities = feature.prerequisites.abilities;
+      }
+      featureItem.prerequisites = prereqs;
+    }
+
+    const result = createContent('classFeatures', featureItem, { mode: 'relative' });
+
+    if (result.success) {
+      logger.info('DataViewer', `Created class feature: ${feature.name}`);
+      setShowClassFeatureCreator(false);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to create class feature: ${result.error}`);
     }
   }, [createContent, refreshData]);
 
@@ -939,8 +983,38 @@ export function DataViewerTab() {
     const classNames = Object.keys(grouped).sort();
 
     return (
-      <div className="dataviewer-grouped-list">
-        {classNames.map(className => (
+      <div className="dataviewer-list">
+        {/* Class Feature Creation Header (Phase 5.4) */}
+        <div className="dataviewer-section-header">
+          <Button
+            variant={showClassFeatureCreator ? 'outline' : 'primary'}
+            size="sm"
+            onClick={() => setShowClassFeatureCreator(!showClassFeatureCreator)}
+            leftIcon={showClassFeatureCreator ? X : Plus}
+          >
+            {showClassFeatureCreator ? 'Cancel' : 'Create Feature'}
+          </Button>
+        </div>
+
+        {/* Class Feature Creator Form (Phase 5.4) */}
+        {showClassFeatureCreator && (
+          <Card className="dataviewer-creator-card">
+            <CardHeader>
+              <h3 className="dataviewer-creator-title">
+                <Plus size={18} />
+                Create Custom Class Feature
+              </h3>
+            </CardHeader>
+            <ClassFeatureCreatorForm
+              onCreate={handleCreateClassFeature}
+              onCancel={() => setShowClassFeatureCreator(false)}
+              submitButtonText="Create Feature"
+            />
+          </Card>
+        )}
+
+        <div className="dataviewer-grouped-list">
+          {classNames.map(className => (
           <div key={className} className="dataviewer-group">
             <div className="dataviewer-group-header">
               <span className="dataviewer-group-title">{className}</span>
@@ -995,6 +1069,7 @@ export function DataViewerTab() {
             </div>
           </div>
         ))}
+        </div>
       </div>
     );
   };
