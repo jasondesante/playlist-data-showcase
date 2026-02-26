@@ -25,11 +25,11 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] `resetAll()` - Reset all categories
   - [x] `hasCustomData(category)` - Check for custom content
 
-- [ ] Create `src/hooks/useContentCreator.ts`
-  - [ ] Generic content creation with validation
-  - [ ] Integration with ExtensionManager.register()
-  - [ ] Error handling and success callbacks
-  - [ ] Support for all category types
+- [x] Create `src/hooks/useContentCreator.ts`
+  - [x] Generic content creation with validation
+  - [x] Integration with ExtensionManager.register()
+  - [x] Error handling and success callbacks
+  - [x] Support for all category types
 
 ### 1.2 State Management
 - [ ] Update `src/store/dataViewerStore.ts`

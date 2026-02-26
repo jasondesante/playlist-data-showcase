@@ -29,7 +29,8 @@ type LogCategory =
     | 'PartyAnalysis'
     | 'ItemEnchantment'
     | 'EnemyGenerator'
-    | 'SpawnMode';
+    | 'SpawnMode'
+    | 'ContentCreator';
 
 
 
