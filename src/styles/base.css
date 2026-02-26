@@ -123,6 +123,38 @@
   --space-5: var(--spacing-5);
   --space-6: var(--spacing-6);
   --space-8: var(--spacing-8);
+
+  /* ========================================
+     DATAVIEWER FORM VARIABLES
+     Consistent styling for content creator forms
+     ======================================== */
+
+  /* Text colors (aliases for DataViewer forms) */
+  --color-text: hsl(var(--foreground));
+  --color-text-muted: hsl(var(--muted-foreground));
+  /* Note: --color-text-secondary already defined above */
+
+  /* Background colors (aliases for DataViewer forms) */
+  --color-bg: hsl(var(--background));
+  --color-bg-muted: hsl(var(--muted));
+  --color-bg-subtle: hsl(var(--surface-1));
+  --color-bg-hover: hsl(var(--surface-hover));
+  --color-bg-subtle-hover: hsl(var(--surface-hover));
+
+  /* Input styling (alias for DataViewer forms) */
+  --input-bg: hsl(var(--input));
+
+  /* Focus ring (alias for DataViewer forms) */
+  --ring-ring: var(--ring);
+
+  /* Cute color solid variants (additional colors) */
+  --cute-blue: 210 80% 50%;
+  --cute-gold: 45 100% 40%;
+
+  /* Cute color background variants (with transparency for badges/tags) */
+  --cute-purple-bg: hsl(var(--cute-purple) / 0.15);
+  --cute-blue-bg: hsl(var(--cute-blue) / 0.15);
+  --cute-gold-bg: hsl(var(--cute-gold) / 0.15);
 }
 
 /* --------------------------------------------
