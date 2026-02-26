@@ -296,6 +296,43 @@
   font-size: 0.75rem;
 }
 
+.spawn-mode-success {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: hsl(var(--cute-green) / 0.1);
+  border: 1px solid hsl(var(--cute-green) / 0.3);
+  border-radius: var(--radius-md);
+  color: hsl(var(--cute-green));
+  font-size: 0.75rem;
+  animation: spawnModeFadeIn 0.3s ease-out;
+}
+
+.spawn-mode-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: hsl(var(--primary) / 0.1);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: 0.75rem;
+  animation: spawnModeFadeIn 0.3s ease-out;
+}
+
+@keyframes spawnModeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ========================================
    RESPONSIVE DESIGN
    ======================================== */

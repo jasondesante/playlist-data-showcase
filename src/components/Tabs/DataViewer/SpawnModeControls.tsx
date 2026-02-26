@@ -15,7 +15,7 @@
  * @see docs/plans/DATAVIEWER_CUSTOM_CONTENT_PLAN.md for implementation details
  */
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Settings,
   RotateCcw,
@@ -24,7 +24,9 @@ import {
   ChevronDown,
   ChevronUp,
   Weight,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
@@ -97,7 +99,24 @@ export function SpawnModeControls({
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-dismiss success and feedback messages after 4 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (feedbackMessage) {
+      const timer = setTimeout(() => setFeedbackMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedbackMessage]);
 
   const {
     getMode,
@@ -151,12 +170,15 @@ export function SpawnModeControls({
   // Handle export
   const handleExport = useCallback(async () => {
     setIsExporting(true);
+    setImportError(null);
+    setFeedbackMessage(null);
+    setSuccessMessage(null);
     try {
       const manager = ExtensionManager.getInstance();
       const customItems = manager.getCustom(category as any);
 
       if (!customItems || customItems.length === 0) {
-        alert('No custom items to export for this category.');
+        setFeedbackMessage('No custom items to export for this category.');
         return;
       }
 
@@ -179,10 +201,12 @@ export function SpawnModeControls({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      setSuccessMessage(`Exported ${customItems.length} items successfully.`);
       logger.info('DataViewer', `Exported ${customItems.length} items from ${category}`);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to export custom content.';
+      setImportError(errorMessage);
       logger.error('DataViewer', 'Export failed', error);
-      alert('Failed to export custom content.');
     } finally {
       setIsExporting(false);
     }
@@ -191,6 +215,9 @@ export function SpawnModeControls({
   // Handle export all
   const handleExportAll = useCallback(async () => {
     setIsExporting(true);
+    setImportError(null);
+    setFeedbackMessage(null);
+    setSuccessMessage(null);
     try {
       const manager = ExtensionManager.getInstance();
       const registeredCategories = manager.getRegisteredCategories();
@@ -201,6 +228,7 @@ export function SpawnModeControls({
         categories: {}
       };
 
+      let totalItems = 0;
       for (const cat of registeredCategories) {
         const customItems = manager.getCustom(cat as any);
         if (customItems && customItems.length > 0) {
@@ -209,7 +237,13 @@ export function SpawnModeControls({
             weights: getWeights(cat as SpawnCategory),
             items: customItems
           };
+          totalItems += customItems.length;
         }
+      }
+
+      if (totalItems === 0) {
+        setFeedbackMessage('No custom items found across any category.');
+        return;
       }
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -222,10 +256,12 @@ export function SpawnModeControls({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      setSuccessMessage(`Exported ${totalItems} items from all categories successfully.`);
       logger.info('DataViewer', 'Exported all custom content');
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to export custom content.';
+      setImportError(errorMessage);
       logger.error('DataViewer', 'Export all failed', error);
-      alert('Failed to export custom content.');
     } finally {
       setIsExporting(false);
     }
@@ -281,8 +317,8 @@ export function SpawnModeControls({
       // Register items
       manager.register(importCategory as any, data.items, { validate: true });
 
+      setSuccessMessage(`Successfully imported ${data.items.length} items to ${importCategory}.`);
       logger.info('DataViewer', `Imported ${data.items.length} items to ${importCategory}`);
-      alert(`Successfully imported ${data.items.length} items.`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setImportError(errorMessage);
@@ -461,6 +497,20 @@ export function SpawnModeControls({
             <div className="spawn-mode-import-error">
               <AlertTriangle size={14} />
               <span>{importError}</span>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="spawn-mode-success">
+              <CheckCircle size={14} />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          {feedbackMessage && (
+            <div className="spawn-mode-feedback">
+              <Info size={14} />
+              <span>{feedbackMessage}</span>
             </div>
           )}
         </div>
