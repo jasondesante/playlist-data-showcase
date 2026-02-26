@@ -79,6 +79,7 @@ import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCrea
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
+import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
 import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -390,6 +391,7 @@ export function DataViewerTab() {
   const [showSkillCreator, setShowSkillCreator] = useState(false);
   const [showSpellCreator, setShowSpellCreator] = useState(false);
   const [showClassFeatureCreator, setShowClassFeatureCreator] = useState(false);
+  const [showRacialTraitCreator, setShowRacialTraitCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -693,6 +695,55 @@ export function DataViewerTab() {
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create class feature: ${result.error}`);
+    }
+  }, [createContent, refreshData]);
+
+  /**
+   * Handle creation of new racial trait via RacialTraitCreatorForm
+   * (Phase 5.4: Racial Traits Creation in DataViewerTab)
+   */
+  const handleCreateRacialTrait = useCallback((trait: RacialTraitFormData) => {
+    const traitItem: Record<string, unknown> = {
+      id: trait.id,
+      name: trait.name,
+      race: trait.race,
+      description: trait.description,
+      source: 'custom'
+    };
+
+    // Add subrace if specified
+    if (trait.subrace.trim()) {
+      traitItem.subrace = trait.subrace.trim();
+    }
+
+    // Add effects if specified
+    if (trait.effects.length > 0) {
+      traitItem.effects = trait.effects.filter(e => e.type && e.target);
+    }
+
+    // Add prerequisites if specified
+    if (trait.prerequisites.level !== undefined || trait.prerequisites.subrace || trait.prerequisites.abilities) {
+      const prereqs: Record<string, unknown> = {};
+      if (trait.prerequisites.level !== undefined) {
+        prereqs.level = trait.prerequisites.level;
+      }
+      if (trait.prerequisites.subrace) {
+        prereqs.subrace = trait.prerequisites.subrace;
+      }
+      if (trait.prerequisites.abilities && Object.keys(trait.prerequisites.abilities).length > 0) {
+        prereqs.abilities = trait.prerequisites.abilities;
+      }
+      traitItem.prerequisites = prereqs;
+    }
+
+    const result = createContent('racialTraits', traitItem, { mode: 'relative' });
+
+    if (result.success) {
+      logger.info('DataViewer', `Created racial trait: ${trait.name}`);
+      setShowRacialTraitCreator(false);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to create racial trait: ${result.error}`);
     }
   }, [createContent, refreshData]);
 
@@ -1165,69 +1216,101 @@ export function DataViewerTab() {
 
   // Render racial traits grouped by race
   // Task 5.2: Updated to show trait effects, description, and prerequisites when expanded
+  // Phase 5.4: Added Create Trait button and form
   const renderRacialTraits = () => {
     const grouped = groupRacialTraitsByRace(getFilteredData as RacialTrait[]);
     const raceNames = Object.keys(grouped).sort();
 
     return (
-      <div className="dataviewer-grouped-list">
-        {raceNames.map(raceName => (
-          <div key={raceName} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span className="dataviewer-group-title">{raceName}</span>
-              <span className="dataviewer-group-count">({grouped[raceName].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[raceName].map(trait => {
-                const isExpanded = expandedItems.has(trait.id);
-                const hasEffects = trait.effects && trait.effects.length > 0;
-                const hasDescription = trait.description && trait.description.length > 0;
-                const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
-                const isExpandable = hasEffects || hasDescription || hasPrerequisites;
+      <div className="dataviewer-list">
+        {/* Racial Trait Creation Header (Phase 5.4) */}
+        <div className="dataviewer-section-header">
+          <Button
+            variant={showRacialTraitCreator ? 'outline' : 'primary'}
+            size="sm"
+            onClick={() => setShowRacialTraitCreator(!showRacialTraitCreator)}
+            leftIcon={showRacialTraitCreator ? X : Plus}
+          >
+            {showRacialTraitCreator ? 'Cancel' : 'Create Trait'}
+          </Button>
+        </div>
 
-                return (
-                  <div
-                    key={trait.id}
-                    className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
-                    onClick={() => isExpandable && toggleExpanded(trait.id)}
-                  >
-                    <div className="dataviewer-group-item-header">
-                      <span className="dataviewer-group-item-name">{trait.name}</span>
-                      <div className="dataviewer-item-badges">
-                        {trait.subrace && (
-                          <span className="dataviewer-badge dataviewer-badge-small dataviewer-badge-subrace">
-                            {trait.subrace}
-                          </span>
-                        )}
-                        {isExpandable && (
-                          isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                        )}
-                      </div>
-                    </div>
-                    {isExpanded && (
-                      <div className="dataviewer-group-item-details">
-                        {trait.description && (
-                          <div className="dataviewer-item-description">
-                            {trait.description}
-                          </div>
-                        )}
-                        {renderPrerequisites(trait.prerequisites)}
-                        {/* Task 5.3: Using reusable EffectsList component */}
-                        <div className="dataviewer-item-section">
-                          <EffectList
-                            effects={(trait.effects || []) as FeatureEffect[]}
-                            compact
-                            showStacking
-                          />
+        {/* Racial Trait Creator Form (Phase 5.4) */}
+        {showRacialTraitCreator && (
+          <Card className="dataviewer-creator-card">
+            <CardHeader>
+              <h3 className="dataviewer-creator-title">
+                <Plus size={18} />
+                Create Custom Racial Trait
+              </h3>
+            </CardHeader>
+            <RacialTraitCreatorForm
+              onCreate={handleCreateRacialTrait}
+              onCancel={() => setShowRacialTraitCreator(false)}
+              submitButtonText="Create Trait"
+            />
+          </Card>
+        )}
+
+        <div className="dataviewer-grouped-list">
+          {raceNames.map(raceName => (
+            <div key={raceName} className="dataviewer-group">
+              <div className="dataviewer-group-header">
+                <span className="dataviewer-group-title">{raceName}</span>
+                <span className="dataviewer-group-count">({grouped[raceName].length})</span>
+              </div>
+              <div className="dataviewer-group-items">
+                {grouped[raceName].map(trait => {
+                  const isExpanded = expandedItems.has(trait.id);
+                  const hasEffects = trait.effects && trait.effects.length > 0;
+                  const hasDescription = trait.description && trait.description.length > 0;
+                  const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
+                  const isExpandable = hasEffects || hasDescription || hasPrerequisites;
+
+                  return (
+                    <div
+                      key={trait.id}
+                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => isExpandable && toggleExpanded(trait.id)}
+                    >
+                      <div className="dataviewer-group-item-header">
+                        <span className="dataviewer-group-item-name">{trait.name}</span>
+                        <div className="dataviewer-item-badges">
+                          {trait.subrace && (
+                            <span className="dataviewer-badge dataviewer-badge-small dataviewer-badge-subrace">
+                              {trait.subrace}
+                            </span>
+                          )}
+                          {isExpandable && (
+                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                      {isExpanded && (
+                        <div className="dataviewer-group-item-details">
+                          {trait.description && (
+                            <div className="dataviewer-item-description">
+                              {trait.description}
+                            </div>
+                          )}
+                          {renderPrerequisites(trait.prerequisites)}
+                          {/* Task 5.3: Using reusable EffectsList component */}
+                          <div className="dataviewer-item-section">
+                            <EffectList
+                              effects={(trait.effects || []) as FeatureEffect[]}
+                              compact
+                              showStacking
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   };
