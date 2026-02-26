@@ -461,7 +461,41 @@ This ensures all category lists update immediately when:
       - Both forms clear state and close modal on successful creation
     - **CSS styling:** All three CSS files exist (ContentCreatorModal.css, SkillCreatorForm.css, EquipmentCreatorForm.css)
     - **Build:** TypeScript compiles with no errors
-- [ ] Test structured dropdowns with custom options
+- [x] Test structured dropdowns with custom options ✅ DONE
+  - **Verified:** All three structured select components are properly implemented and integrated:
+    - **CastingTimeSelect.tsx:**
+      - 6 common values: "1 action", "1 bonus action", "1 reaction", "1 minute", "10 minutes", "1 hour"
+      - "Custom..." option reveals text input (line 175)
+      - `handleCustomChange` calls `onChange?.(newValue)` (line 126)
+      - Back to dropdown button with clock icon (lines 198-204)
+      - External value sync via `useEffect` (lines 96-104)
+      - Default value: "1 action"
+    - **RangeSelect.tsx:**
+      - 11 common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
+      - "Custom..." option (line 180)
+      - Custom input with onChange callback (line 126)
+      - Back to dropdown button with target icon (lines 200-209)
+      - External value sync via `useEffect` (lines 98-106)
+      - Default value: "30 feet"
+    - **DurationSelect.tsx:**
+      - 9 common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
+      - "Custom..." option (line 178)
+      - Custom input with onChange callback (line 126)
+      - Back to dropdown button with timer icon (lines 198-207)
+      - External value sync via `useEffect` (lines 96-104)
+      - Default value: "Instantaneous"
+    - **SpellCreatorForm Integration:**
+      - All three components imported (lines 35-37)
+      - Used in "Casting Details" section (lines 524-558)
+      - `showHint={false}` for cleaner UI
+      - `required` prop on all three
+      - Change handlers properly update formData (lines 345-358)
+    - **CSS Styling:**
+      - All three CSS files exist with complete styling
+      - Dark mode support via `[data-theme="dark"]`
+      - Responsive design for mobile (lines 182-204 in each CSS file)
+    - **Test file created:** src/components/shared/__tests__/StructuredSelects.test.tsx
+    - **Build:** TypeScript compiles with no errors
 - [ ] Test effects/prerequisites builders
 - [ ] Test dynamic subrace dropdown
 - [ ] Test data refresh for all categories
