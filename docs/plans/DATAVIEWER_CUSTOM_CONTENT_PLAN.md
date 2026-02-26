@@ -324,7 +324,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Accessibility (ARIA labels, focus management) (verified 2026-02-26 - all forms have role="group" with aria-labelledby, aria-describedby connects hints to inputs, aria-hidden on decorative icons, aria-live="polite" on preview sections, proper labeling on ability grids and dynamic lists)
 
 ### 8.2 Integration Testing
-- [ ] Equipment creation in DataViewerTab appears in ItemsTab
+- [x] Equipment creation in DataViewerTab appears in ItemsTab (verified 2026-02-26 - integration test created at src/__tests__/equipmentIntegration.test.ts, 11 tests pass confirming: ExtensionManager registration, EquipmentSpawnHelper spawning, lookup by name, spawn mode filtering)
 - [ ] Spawn mode "absolute" filters to custom only
 - [ ] Spawn mode reset returns all default items
 - [ ] Custom class with audio_preferences works with ClassSuggester
