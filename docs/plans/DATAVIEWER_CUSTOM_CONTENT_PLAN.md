@@ -209,7 +209,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Support for race-specific traits (`racialTraits.{raceName}`)
 
 ### 5.4 Add to DataViewerTab
-- [ ] Add "Create Spell" button to spells section
+- [x] Add "Create Spell" button to spells section
 - [ ] Add "Create Feature" button to class features section
 - [ ] Add "Create Trait" button to racial traits section
 - [ ] All use modal pattern with ContentCreatorModal

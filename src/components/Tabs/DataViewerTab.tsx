@@ -77,6 +77,7 @@ import { useContentCreator, type ContentType } from '../../hooks/useContentCreat
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
 import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
+import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -386,6 +387,7 @@ export function DataViewerTab() {
   const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
   const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
   const [showSkillCreator, setShowSkillCreator] = useState(false);
+  const [showSpellCreator, setShowSpellCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -615,6 +617,38 @@ export function DataViewerTab() {
       refreshData();
     } else {
       logger.error('DataViewer', `Failed to create skill: ${result.error}`);
+    }
+  }, [createContent, refreshData]);
+
+  /**
+   * Handle creation of new spell via SpellCreatorForm
+   * (Phase 5.4: Spells Creation in DataViewerTab)
+   */
+  const handleCreateSpell = useCallback((spell: SpellFormData) => {
+    const spellItem: Record<string, unknown> = {
+      name: spell.name,
+      level: spell.level,
+      school: spell.school,
+      casting_time: spell.casting_time,
+      range: spell.range,
+      components: spell.components,
+      duration: spell.duration,
+      description: spell.description
+    };
+
+    // Add class availability if specified
+    if (spell.classes.length > 0) {
+      spellItem.classes = spell.classes;
+    }
+
+    const result = createContent('spells', spellItem, { mode: 'relative' });
+
+    if (result.success) {
+      logger.info('DataViewer', `Created spell: ${spell.name}`);
+      setShowSpellCreator(false);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to create spell: ${result.error}`);
     }
   }, [createContent, refreshData]);
 
@@ -1951,6 +1985,35 @@ export function DataViewerTab() {
       case 'spells':
         return (
           <div className="dataviewer-list">
+            {/* Spell Creation Header (Phase 5.4) */}
+            <div className="dataviewer-section-header">
+              <Button
+                variant={showSpellCreator ? 'outline' : 'primary'}
+                size="sm"
+                onClick={() => setShowSpellCreator(!showSpellCreator)}
+                leftIcon={showSpellCreator ? X : Plus}
+              >
+                {showSpellCreator ? 'Cancel' : 'Create Spell'}
+              </Button>
+            </div>
+
+            {/* Spell Creator Form (Phase 5.4) */}
+            {showSpellCreator && (
+              <Card className="dataviewer-creator-card">
+                <CardHeader>
+                  <h3 className="dataviewer-creator-title">
+                    <Plus size={18} />
+                    Create Custom Spell
+                  </h3>
+                </CardHeader>
+                <SpellCreatorForm
+                  onCreate={handleCreateSpell}
+                  onCancel={() => setShowSpellCreator(false)}
+                  submitButtonText="Create Spell"
+                />
+              </Card>
+            )}
+
             {renderSpellFilters()}
             <div className="dataviewer-items">
               {(getFilteredData as RegisteredSpell[]).map(renderSpellCard)}
