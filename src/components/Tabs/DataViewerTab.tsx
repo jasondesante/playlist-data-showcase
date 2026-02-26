@@ -2246,33 +2246,14 @@ export function DataViewerTab() {
             {/* Equipment Creation Header */}
             <div className="dataviewer-section-header">
               <Button
-                variant={showEquipmentCreator ? 'outline' : 'primary'}
+                variant="primary"
                 size="sm"
-                onClick={() => setShowEquipmentCreator(!showEquipmentCreator)}
-                leftIcon={showEquipmentCreator ? X : Plus}
+                onClick={() => setShowEquipmentCreator(true)}
+                leftIcon={Plus}
               >
-                {showEquipmentCreator ? 'Cancel' : 'Create Equipment'}
+                Create Equipment
               </Button>
             </div>
-
-            {/* Equipment Creator Form (Phase 3.3) */}
-            {showEquipmentCreator && (
-              <Card className="dataviewer-creator-card">
-                <CardHeader>
-                  <h3 className="dataviewer-creator-title">
-                    <Plus size={18} />
-                    Create Custom Equipment
-                  </h3>
-                </CardHeader>
-                <EquipmentCreatorForm
-                  onSubmit={handleCreateEquipment}
-                  showPreview={true}
-                  showAdvancedOptions={true}
-                  showAutoEquip={false}
-                  submitButtonText="Create Equipment"
-                />
-              </Card>
-            )}
 
             {renderEquipmentFilters()}
             <div className="dataviewer-items">
@@ -2420,6 +2401,26 @@ export function DataViewerTab() {
           onCreate={handleCreateSkill}
           onCancel={() => setShowSkillCreator(false)}
           submitButtonText="Create Skill"
+        />
+      </ContentCreatorModal>
+
+      {/* Equipment Creator Modal (Phase 4.2) */}
+      <ContentCreatorModal
+        isOpen={showEquipmentCreator}
+        onClose={() => setShowEquipmentCreator(false)}
+        title="Create Custom Equipment"
+        subtitle="Add a new weapon, armor, item, or box"
+        icon={Package}
+        showFooter={false}
+        width="lg"
+      >
+        <EquipmentCreatorForm
+          onSubmit={handleCreateEquipment}
+          onCancel={() => setShowEquipmentCreator(false)}
+          showPreview={true}
+          showAdvancedOptions={true}
+          showAutoEquip={false}
+          submitButtonText="Create Equipment"
         />
       </ContentCreatorModal>
 

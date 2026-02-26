@@ -223,14 +223,14 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Ensure modal has same styling as other creator modals
 - [x] Test creation flow end-to-end
 
-### 4.2 Convert EquipmentCreatorForm to Modal
-- [ ] Update DataViewerTab.tsx
-  - [ ] Add `showEquipmentCreatorModal` state
-  - [ ] Change "Create Equipment" button to open modal
-  - [ ] Create EquipmentCreatorModal wrapper or use ContentCreatorModal
-- [ ] Ensure modal has same styling as other creator modals
-- [ ] Handle advanced options section within modal
-- [ ] Test creation flow end-to-end
+### 4.2 Convert EquipmentCreatorForm to Modal ✅ DONE
+- [x] Update DataViewerTab.tsx
+  - [x] Add `showEquipmentCreatorModal` state (reused existing `showEquipmentCreator` state)
+  - [x] Change "Create Equipment" button to open modal
+  - [x] Create EquipmentCreatorModal wrapper or use ContentCreatorModal (used ContentCreatorModal)
+- [x] Ensure modal has same styling as other creator modals
+- [x] Handle advanced options section within modal
+- [x] Test creation flow end-to-end
 
 ### 4.3 Update ItemsTab to Use Modal
 - [ ] Verify ItemsTab equipment creator still works
