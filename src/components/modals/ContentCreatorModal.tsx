@@ -24,6 +24,23 @@ import { Button } from '@/components/ui/Button';
 import './ContentCreatorModal.css';
 
 /**
+ * Get all focusable elements within a container
+ */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selector = [
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'a[href]',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  return Array.from(container.querySelectorAll<HTMLElement>(selector))
+    .filter(el => el.offsetParent !== null); // Filter out hidden elements
+}
+
+/**
  * Props for ContentCreatorModal component
  */
 export interface ContentCreatorModalProps {
@@ -85,22 +102,53 @@ export function ContentCreatorModal({
     }
   }, [onClose]);
 
-  // Handle escape key
+  // Handle keyboard events (Escape, Tab for focus trap)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       onClose();
+      return;
+    }
+
+    // Focus trap: handle Tab key
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusableElements = getFocusableElements(modalRef.current);
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        // Shift+Tab: if on first element, go to last
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab: if on last element, go to first
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
     }
   }, [onClose]);
 
-  // Focus management
+  // Focus management and keyboard listener
   useEffect(() => {
     if (isOpen) {
       previousActiveElement.current = document.activeElement as HTMLElement;
-      // Add escape key listener
+      // Add keyboard listener
       document.addEventListener('keydown', handleKeyDown);
-      // Focus the modal
+      // Focus the first focusable element in the modal
       setTimeout(() => {
-        modalRef.current?.focus();
+        if (modalRef.current) {
+          const focusableElements = getFocusableElements(modalRef.current);
+          if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+          } else {
+            modalRef.current?.focus();
+          }
+        }
       }, 100);
     } else {
       document.removeEventListener('keydown', handleKeyDown);

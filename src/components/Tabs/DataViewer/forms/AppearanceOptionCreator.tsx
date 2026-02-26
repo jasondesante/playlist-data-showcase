@@ -266,6 +266,14 @@ export function AppearanceOptionCreator({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
@@ -276,7 +284,7 @@ export function AppearanceOptionCreator({
   const CategoryIcon = categoryConfig.icon;
 
   return (
-    <div className="appearance-option-creator">
+    <div className="appearance-option-creator" onKeyDown={handleKeyDown}>
       {/* Category Selector */}
       <div className="appearance-creator-section">
         <h4 className="appearance-creator-section-title">

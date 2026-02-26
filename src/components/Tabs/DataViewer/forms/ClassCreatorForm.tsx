@@ -452,6 +452,15 @@ export function ClassCreatorForm({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit (but not in textareas)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Submit on Enter (but not in textareas where it should add newlines)
+    if (e.key === 'Enter' && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
@@ -468,7 +477,7 @@ export function ClassCreatorForm({
   const isUsingTemplate = !!formData.baseClass;
 
   return (
-    <div className="class-creator-form">
+    <div className="class-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
       <div className="class-creator-section">
         <h4 className="class-creator-section-title">

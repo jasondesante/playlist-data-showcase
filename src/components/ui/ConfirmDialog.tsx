@@ -27,6 +27,23 @@ import { Button } from './Button';
 import './ConfirmDialog.css';
 
 /**
+ * Get all focusable elements within a container
+ */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selector = [
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'a[href]',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  return Array.from(container.querySelectorAll<HTMLElement>(selector))
+    .filter(el => el.offsetParent !== null); // Filter out hidden elements
+}
+
+/**
  * Props for ConfirmDialog component
  */
 export interface ConfirmDialogProps {
@@ -103,6 +120,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
 
   // Handle backdrop click
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -111,42 +129,70 @@ export function ConfirmDialog({
     }
   }, [canCloseOnBackdrop, onCancel]);
 
-  // Handle keyboard events
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && canCloseOnEscape) {
-      onCancel();
-    }
-  }, [canCloseOnEscape, onCancel]);
-
   // Handle confirm click
   const handleConfirmClick = useCallback(async () => {
     await onConfirm();
   }, [onConfirm]);
 
-  // Focus the confirm button when dialog opens
-  useEffect(() => {
-    if (isOpen && confirmButtonRef.current) {
-      // Small delay to ensure the dialog is visible before focusing
-      const timeoutId = setTimeout(() => {
-        confirmButtonRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen]);
-
-  // Trap focus within the dialog
+  // Keyboard handling: Escape, Enter, and Tab (focus trap)
   useEffect(() => {
     if (!isOpen) return;
 
+    // Store the previously focused element
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
     const handleDocumentKeyDown = (e: KeyboardEvent) => {
+      // Escape to close
       if (e.key === 'Escape' && canCloseOnEscape) {
         onCancel();
+        return;
+      }
+
+      // Enter to confirm (if not loading)
+      if (e.key === 'Enter' && !isLoading) {
+        e.preventDefault();
+        onConfirm();
+        return;
+      }
+
+      // Focus trap: handle Tab key
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusableElements = getFocusableElements(dialogRef.current);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          // Shift+Tab: if on first element, go to last
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab: if on last element, go to first
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
     document.addEventListener('keydown', handleDocumentKeyDown);
-    return () => document.removeEventListener('keydown', handleDocumentKeyDown);
-  }, [isOpen, canCloseOnEscape, onCancel]);
+
+    // Focus the confirm button when dialog opens
+    const timeoutId = setTimeout(() => {
+      confirmButtonRef.current?.focus();
+    }, 100);
+
+    return () => {
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+      clearTimeout(timeoutId);
+      // Restore focus when dialog closes
+      previousActiveElement.current?.focus();
+    };
+  }, [isOpen, canCloseOnEscape, onCancel, onConfirm, isLoading]);
 
   if (!isOpen) return null;
 
@@ -154,7 +200,6 @@ export function ConfirmDialog({
     <div
       className={`confirm-dialog-overlay ${className}`.trim()}
       onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"

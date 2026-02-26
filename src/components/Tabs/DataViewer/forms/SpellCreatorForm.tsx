@@ -388,6 +388,15 @@ export function SpellCreatorForm({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit (but not in textareas)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Submit on Enter (but not in textareas where it should add newlines)
+    if (e.key === 'Enter' && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
@@ -401,7 +410,7 @@ export function SpellCreatorForm({
   const schoolColor = SCHOOL_CONFIG[formData.school]?.color || 'var(--color-text-secondary)';
 
   return (
-    <div className="spell-creator-form">
+    <div className="spell-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
       <div className="spell-creator-section">
         <h4 className="spell-creator-section-title">

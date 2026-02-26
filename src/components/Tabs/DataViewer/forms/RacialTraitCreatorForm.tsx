@@ -436,6 +436,15 @@ export function RacialTraitCreatorForm({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit (but not in textareas)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Submit on Enter (but not in textareas where it should add newlines)
+    if (e.key === 'Enter' && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
@@ -446,7 +455,7 @@ export function RacialTraitCreatorForm({
   const canSubmit = formData.name.trim() && formData.id.trim() && formData.race && formData.description.trim();
 
   return (
-    <div className="racial-trait-creator-form">
+    <div className="racial-trait-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
       <div className="racial-trait-section">
         <h4 className="racial-trait-section-title">

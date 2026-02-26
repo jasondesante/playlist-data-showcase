@@ -621,6 +621,15 @@ export function ClassConfigForm({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit (but not in textareas)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Submit on Enter (but not in textareas where it should add newlines)
+    if (e.key === 'Enter' && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // ========================================
   // Render Functions
   // ========================================
@@ -1058,7 +1067,7 @@ export function ClassConfigForm({
   }, [activeTab, skillListData, spellListData, spellSlotsData, equipmentData]);
 
   return (
-    <div className="class-config-form">
+    <div className="class-config-form" onKeyDown={handleKeyDown}>
       {/* Tabs */}
       {renderTabs()}
 

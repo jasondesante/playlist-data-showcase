@@ -369,6 +369,15 @@ export function RaceCreatorForm({
     onCancel?.();
   }, [onCancel]);
 
+  // Handle Enter key to submit (but not in textareas)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Submit on Enter (but not in textareas where it should add newlines)
+    if (e.key === 'Enter' && !e.shiftKey && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
@@ -382,7 +391,7 @@ export function RaceCreatorForm({
   const totalBonuses = calculateTotalBonuses(formData.ability_bonuses);
 
   return (
-    <div className="race-creator-form">
+    <div className="race-creator-form" onKeyDown={handleKeyDown}>
       {/* Basic Info Section */}
       <div className="race-creator-section">
         <h4 className="race-creator-section-title">
