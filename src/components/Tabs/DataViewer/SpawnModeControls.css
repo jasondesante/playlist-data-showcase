@@ -334,6 +334,222 @@
 }
 
 /* ========================================
+   BATCH IMAGE TOOLS SECTION
+   ======================================== */
+
+.spawn-mode-batch-images {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.spawn-mode-batch-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spawn-mode-batch-toggle:hover {
+  background: var(--color-surface-dim);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-batch-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  animation: spawnModeSlideDown 0.2s ease-out;
+}
+
+.spawn-mode-batch-help {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.spawn-mode-batch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.spawn-mode-batch-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-batch-select {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.spawn-mode-batch-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.spawn-mode-batch-input {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  transition: border-color 0.2s ease;
+}
+
+.spawn-mode-batch-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.spawn-mode-batch-input-sm {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+}
+
+.spawn-mode-batch-hint {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.spawn-mode-batch-mode-buttons {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.spawn-mode-batch-mode-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.spawn-mode-batch-mode-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-batch-mode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spawn-mode-batch-mode-active {
+  border-color: var(--color-primary);
+  background: hsl(var(--primary) / 0.1);
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-batch-values {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spawn-mode-batch-values-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.spawn-mode-batch-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spawn-mode-batch-value-label {
+  min-width: 100px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.spawn-mode-batch-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  padding: 0.375rem 0.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+
+.spawn-mode-batch-preview svg {
+  color: var(--color-primary);
+}
+
+.spawn-mode-batch-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-radius: var(--radius-md);
+  color: hsl(var(--destructive));
+  font-size: 0.75rem;
+}
+
+.spawn-mode-batch-url-hint {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+
+.spawn-mode-batch-url-hint code {
+  background: var(--color-surface-dim);
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+  font-size: 0.625rem;
+}
+
+.spawn-mode-batch-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 
@@ -357,5 +573,30 @@
 
   .spawn-mode-weight-input {
     width: 4rem;
+  }
+
+  .spawn-mode-batch-mode-buttons {
+    flex-direction: column;
+  }
+
+  .spawn-mode-batch-mode-btn {
+    width: 100%;
+  }
+
+  .spawn-mode-batch-value-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--color-surface-dim);
+    border-radius: var(--radius-sm);
+  }
+
+  .spawn-mode-batch-value-label {
+    min-width: auto;
+  }
+
+  .spawn-mode-batch-input-sm {
+    width: 100%;
   }
 }

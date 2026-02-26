@@ -173,14 +173,14 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Add `icon` and `image` fields to RaceCreatorForm (race data) ✅ DONE
 - [x] Add `icon` and `image` fields to ClassCreatorForm (class data) ✅ DONE
 
-### 2.2 Add Batch Image Tools to SpawnModeControls
-- [ ] Add "Batch Add Images" expandable section
-  - [ ] Category selector (spells, equipment, races, classes, etc.)
-  - [ ] Property selector (for batchByCategory: school, rarity, etc.)
-  - [ ] Icon URL input (apply to all matching)
-  - [ ] Image URL input (apply to all matching)
-  - [ ] Preview affected items count
-  - [ ] Apply button with confirmation
+### 2.2 Add Batch Image Tools to SpawnModeControls ✅ DONE
+- [x] Add "Batch Add Images" expandable section
+  - [x] Category selector (spells, equipment, races, classes, etc.)
+  - [x] Property selector (for batchByCategory: school, rarity, etc.)
+  - [x] Icon URL input (apply to all matching)
+  - [x] Image URL input (apply to all matching)
+  - [x] Preview affected items count
+  - [x] Apply button with confirmation
 
 ---
 

@@ -26,13 +26,16 @@ import {
   Weight,
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
+  ImagePlus,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
 import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { showToast } from '@/components/ui/Toast';
+import { isValidUrlPrefix } from '@/components/shared/ImageFieldInput';
 import './SpawnModeControls.css';
 
 /**
@@ -59,6 +62,105 @@ const MODE_CONFIG: Record<SpawnMode, { label: string; description: string; color
     description: 'Clear previous custom data before registering',
     color: 'var(--destructive)'
   }
+};
+
+/**
+ * Categories that support batch image operations
+ */
+type BatchImageCategory = 'spells' | 'equipment' | 'races.data' | 'classes.data' | 'classFeatures' | 'racialTraits' | 'skills';
+
+/**
+ * Batch operation mode
+ */
+type BatchOperationMode = 'predicate' | 'property';
+
+/**
+ * Property configuration for batchByCategory
+ */
+interface PropertyConfig {
+  key: string;
+  label: string;
+  values: { value: string; label: string }[];
+}
+
+/**
+ * Category configuration for batch image operations
+ */
+const BATCH_IMAGE_CATEGORIES: { value: BatchImageCategory; label: string; hasProperties: boolean }[] = [
+  { value: 'spells', label: 'Spells', hasProperties: true },
+  { value: 'equipment', label: 'Equipment', hasProperties: true },
+  { value: 'races.data', label: 'Races', hasProperties: false },
+  { value: 'classes.data', label: 'Classes', hasProperties: false },
+  { value: 'classFeatures', label: 'Class Features', hasProperties: false },
+  { value: 'racialTraits', label: 'Racial Traits', hasProperties: false },
+  { value: 'skills', label: 'Skills', hasProperties: false }
+];
+
+/**
+ * Properties available for batchByCategory per category
+ */
+const CATEGORY_PROPERTIES: Record<BatchImageCategory, PropertyConfig[]> = {
+  'spells': [
+    {
+      key: 'school',
+      label: 'School',
+      values: [
+        { value: 'Abjuration', label: 'Abjuration' },
+        { value: 'Conjuration', label: 'Conjuration' },
+        { value: 'Divination', label: 'Divination' },
+        { value: 'Enchantment', label: 'Enchantment' },
+        { value: 'Evocation', label: 'Evocation' },
+        { value: 'Illusion', label: 'Illusion' },
+        { value: 'Necromancy', label: 'Necromancy' },
+        { value: 'Transmutation', label: 'Transmutation' }
+      ]
+    },
+    {
+      key: 'level',
+      label: 'Level',
+      values: [
+        { value: '0', label: 'Cantrip (0)' },
+        { value: '1', label: '1st Level' },
+        { value: '2', label: '2nd Level' },
+        { value: '3', label: '3rd Level' },
+        { value: '4', label: '4th Level' },
+        { value: '5', label: '5th Level' },
+        { value: '6', label: '6th Level' },
+        { value: '7', label: '7th Level' },
+        { value: '8', label: '8th Level' },
+        { value: '9', label: '9th Level' }
+      ]
+    }
+  ],
+  'equipment': [
+    {
+      key: 'rarity',
+      label: 'Rarity',
+      values: [
+        { value: 'common', label: 'Common' },
+        { value: 'uncommon', label: 'Uncommon' },
+        { value: 'rare', label: 'Rare' },
+        { value: 'very_rare', label: 'Very Rare' },
+        { value: 'legendary', label: 'Legendary' }
+      ]
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      values: [
+        { value: 'weapon', label: 'Weapon' },
+        { value: 'armor', label: 'Armor' },
+        { value: 'shield', label: 'Shield' },
+        { value: 'item', label: 'Item' },
+        { value: 'consumable', label: 'Consumable' }
+      ]
+    }
+  ],
+  'races.data': [],
+  'classes.data': [],
+  'classFeatures': [],
+  'racialTraits': [],
+  'skills': []
 };
 
 /**
@@ -103,6 +205,18 @@ export function SpawnModeControls({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Batch Image Tools state
+  const [isBatchImageOpen, setIsBatchImageOpen] = useState(false);
+  const [batchCategory, setBatchCategory] = useState<BatchImageCategory>('spells');
+  const [batchMode, setBatchMode] = useState<BatchOperationMode>('predicate');
+  const [batchProperty, setBatchProperty] = useState<string>('school');
+  const [batchIconUrl, setBatchIconUrl] = useState('');
+  const [batchImageUrl, setBatchImageUrl] = useState('');
+  const [batchPropertyValueMap, setBatchPropertyValueMap] = useState<Record<string, { icon?: string; image?: string }>>({});
+  const [isBatchApplying, setIsBatchApplying] = useState(false);
+  const [batchError, setBatchError] = useState<string | null>(null);
+  const [affectedCount, setAffectedCount] = useState<number | null>(null);
 
   // Auto-dismiss success and feedback messages after 4 seconds
   useEffect(() => {
@@ -169,6 +283,177 @@ export function SpawnModeControls({
     const clampedValue = Math.max(0, Math.min(10, value));
     setWeight(category, itemName, clampedValue);
   }, [category, setWeight]);
+
+  // ========================================
+  // BATCH IMAGE TOOLS HANDLERS
+  // ========================================
+
+  // Get available properties for selected category
+  const availableProperties = useMemo(() => {
+    return CATEGORY_PROPERTIES[batchCategory] || [];
+  }, [batchCategory]);
+
+  // Get property values for selected property
+  const propertyValues = useMemo(() => {
+    const propConfig = availableProperties.find(p => p.key === batchProperty);
+    return propConfig?.values || [];
+  }, [availableProperties, batchProperty]);
+
+  // Get count of affected items for preview
+  const updateAffectedCount = useCallback(() => {
+    try {
+      const manager = ExtensionManager.getInstance();
+      const items = manager.get(batchCategory as any);
+
+      if (!items || items.length === 0) {
+        setAffectedCount(0);
+        return;
+      }
+
+      if (batchMode === 'predicate') {
+        // For predicate mode, all items in category will be affected
+        setAffectedCount(items.length);
+      } else {
+        // For property mode, count items matching the selected property values
+        let count = 0;
+        for (const propValue of Object.keys(batchPropertyValueMap)) {
+          const matchingItems = items.filter((item: any) => String(item[batchProperty]) === propValue);
+          count += matchingItems.length;
+        }
+        setAffectedCount(count);
+      }
+    } catch (error) {
+      logger.warn('DataViewer', 'Failed to get affected count', { error: String(error) });
+      setAffectedCount(null);
+    }
+  }, [batchCategory, batchMode, batchProperty, batchPropertyValueMap]);
+
+  // Update affected count when batch settings change
+  useEffect(() => {
+    updateAffectedCount();
+  }, [updateAffectedCount]);
+
+  // Reset property value map when category or property changes
+  useEffect(() => {
+    setBatchPropertyValueMap({});
+    if (availableProperties.length > 0) {
+      setBatchProperty(availableProperties[0].key);
+    }
+  }, [batchCategory, availableProperties]);
+
+  // Handle property value map change
+  const handlePropertyValueMapChange = useCallback((propValue: string, field: 'icon' | 'image', url: string) => {
+    setBatchPropertyValueMap(prev => ({
+      ...prev,
+      [propValue]: {
+        ...prev[propValue],
+        [field]: url
+      }
+    }));
+  }, []);
+
+  // Validate batch URLs
+  const validateBatchUrls = useCallback((): string | null => {
+    if (batchMode === 'predicate') {
+      if (batchIconUrl && !isValidUrlPrefix(batchIconUrl)) {
+        return `Invalid icon URL. Must start with: http://, https://, /, or assets/`;
+      }
+      if (batchImageUrl && !isValidUrlPrefix(batchImageUrl)) {
+        return `Invalid image URL. Must start with: http://, https://, /, or assets/`;
+      }
+    } else {
+      // Property mode - validate all entered URLs
+      for (const [propValue, urls] of Object.entries(batchPropertyValueMap)) {
+        if (urls.icon && !isValidUrlPrefix(urls.icon)) {
+          return `Invalid icon URL for "${propValue}". Must start with: http://, https://, /, or assets/`;
+        }
+        if (urls.image && !isValidUrlPrefix(urls.image)) {
+          return `Invalid image URL for "${propValue}". Must start with: http://, https://, /, or assets/`;
+        }
+      }
+    }
+    return null;
+  }, [batchMode, batchIconUrl, batchImageUrl, batchPropertyValueMap]);
+
+  // Handle batch image apply
+  const handleBatchApply = useCallback(async () => {
+    // Validate URLs
+    const validationError = validateBatchUrls();
+    if (validationError) {
+      setBatchError(validationError);
+      showToast(validationError, 'error');
+      return;
+    }
+
+    // Check if we have something to apply
+    const hasIcon = batchMode === 'predicate' ? batchIconUrl.trim() : Object.values(batchPropertyValueMap).some(v => v.icon?.trim());
+    const hasImage = batchMode === 'predicate' ? batchImageUrl.trim() : Object.values(batchPropertyValueMap).some(v => v.image?.trim());
+    if (!hasIcon && !hasImage) {
+      setBatchError('Please enter at least one icon or image URL');
+      showToast('Please enter at least one icon or image URL', 'error');
+      return;
+    }
+
+    // Confirm action
+    const actionDescription = batchMode === 'predicate'
+      ? `Apply images to ALL items in "${batchCategory}"?`
+      : `Apply images to items in "${batchCategory}" by "${batchProperty}"?`;
+
+    if (!window.confirm(`${actionDescription}\n\nAffected items: ${affectedCount ?? 'unknown'}`)) {
+      return;
+    }
+
+    setIsBatchApplying(true);
+    setBatchError(null);
+
+    try {
+      const manager = ExtensionManager.getInstance();
+      let updatedCount = 0;
+
+      if (batchMode === 'predicate') {
+        // Use batchUpdateImages for predicate mode
+        const updates: { icon?: string; image?: string } = {};
+        if (batchIconUrl.trim()) updates.icon = batchIconUrl.trim();
+        if (batchImageUrl.trim()) updates.image = batchImageUrl.trim();
+
+        updatedCount = manager.batchUpdateImages(
+          batchCategory as any,
+          () => true, // Match all items
+          updates
+        );
+      } else {
+        // Use batchByCategory for property mode
+        const valueMap: Record<string, string | { icon?: string; image?: string }> = {};
+
+        for (const [propValue, urls] of Object.entries(batchPropertyValueMap)) {
+          if (urls.icon?.trim() || urls.image?.trim()) {
+            if (urls.icon?.trim() && urls.image?.trim()) {
+              valueMap[propValue] = { icon: urls.icon.trim(), image: urls.image.trim() };
+            } else if (urls.icon?.trim()) {
+              valueMap[propValue] = urls.icon.trim();
+            } else if (urls.image?.trim()) {
+              valueMap[propValue] = { image: urls.image.trim() };
+            }
+          }
+        }
+
+        if (Object.keys(valueMap).length > 0) {
+          updatedCount = manager.batchByCategory(batchCategory as any, batchProperty, valueMap);
+        }
+      }
+
+      setSuccessMessage(`Successfully updated images for ${updatedCount} items.`);
+      showToast(`Updated images for ${updatedCount} items in ${batchCategory}`, 'success');
+      logger.info('DataViewer', `Batch image update: ${updatedCount} items in ${batchCategory}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to apply batch images.';
+      setBatchError(errorMessage);
+      showToast(`Batch image failed: ${errorMessage}`, 'error');
+      logger.error('DataViewer', 'Batch image update failed', error);
+    } finally {
+      setIsBatchApplying(false);
+    }
+  }, [batchCategory, batchMode, batchProperty, batchIconUrl, batchImageUrl, batchPropertyValueMap, affectedCount, validateBatchUrls]);
 
   // Handle export
   const handleExport = useCallback(async () => {
@@ -534,6 +819,176 @@ export function SpawnModeControls({
             <div className="spawn-mode-feedback" role="status" aria-live="polite">
               <Info size={14} aria-hidden="true" />
               <span>{feedbackMessage}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Batch Image Tools Section */}
+      {showImportExport && (
+        <div className="spawn-mode-batch-images">
+          <button
+            type="button"
+            className="spawn-mode-batch-toggle"
+            onClick={() => setIsBatchImageOpen(!isBatchImageOpen)}
+            aria-expanded={isBatchImageOpen}
+            aria-controls="spawn-mode-batch-panel"
+          >
+            <ImagePlus size={14} aria-hidden="true" />
+            <span>Batch Image Tools</span>
+            {isBatchImageOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+          </button>
+
+          {isBatchImageOpen && (
+            <div className="spawn-mode-batch-panel" id="spawn-mode-batch-panel">
+              <p className="spawn-mode-batch-help">
+                Apply icons and images to multiple items at once using property-based matching.
+              </p>
+
+              {/* Category Selector */}
+              <div className="spawn-mode-batch-field">
+                <label className="spawn-mode-batch-label" htmlFor="batch-category">Category</label>
+                <select
+                  id="batch-category"
+                  className="spawn-mode-batch-select"
+                  value={batchCategory}
+                  onChange={(e) => setBatchCategory(e.target.value as BatchImageCategory)}
+                >
+                  {BATCH_IMAGE_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mode Selector */}
+              <div className="spawn-mode-batch-field">
+                <label className="spawn-mode-batch-label">Apply Mode</label>
+                <div className="spawn-mode-batch-mode-buttons">
+                  <button
+                    type="button"
+                    className={`spawn-mode-batch-mode-btn ${batchMode === 'predicate' ? 'spawn-mode-batch-mode-active' : ''}`}
+                    onClick={() => setBatchMode('predicate')}
+                  >
+                    All Items
+                  </button>
+                  <button
+                    type="button"
+                    className={`spawn-mode-batch-mode-btn ${batchMode === 'property' ? 'spawn-mode-batch-mode-active' : ''}`}
+                    onClick={() => setBatchMode('property')}
+                    disabled={availableProperties.length === 0}
+                    title={availableProperties.length === 0 ? 'No properties available for this category' : ''}
+                  >
+                    By Property
+                  </button>
+                </div>
+              </div>
+
+              {/* Property Selector (only for property mode) */}
+              {batchMode === 'property' && availableProperties.length > 0 && (
+                <div className="spawn-mode-batch-field">
+                  <label className="spawn-mode-batch-label" htmlFor="batch-property">Property</label>
+                  <select
+                    id="batch-property"
+                    className="spawn-mode-batch-select"
+                    value={batchProperty}
+                    onChange={(e) => setBatchProperty(e.target.value)}
+                  >
+                    {availableProperties.map(prop => (
+                      <option key={prop.key} value={prop.key}>{prop.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Predicate Mode: Single Icon/Image inputs */}
+              {batchMode === 'predicate' && (
+                <>
+                  <div className="spawn-mode-batch-field">
+                    <label className="spawn-mode-batch-label" htmlFor="batch-icon-url">Icon URL (optional)</label>
+                    <input
+                      id="batch-icon-url"
+                      type="text"
+                      className="spawn-mode-batch-input"
+                      value={batchIconUrl}
+                      onChange={(e) => setBatchIconUrl(e.target.value)}
+                      placeholder="e.g., assets/icons/item.png"
+                    />
+                    <span className="spawn-mode-batch-hint">Applied to all items in category</span>
+                  </div>
+                  <div className="spawn-mode-batch-field">
+                    <label className="spawn-mode-batch-label" htmlFor="batch-image-url">Image URL (optional)</label>
+                    <input
+                      id="batch-image-url"
+                      type="text"
+                      className="spawn-mode-batch-input"
+                      value={batchImageUrl}
+                      onChange={(e) => setBatchImageUrl(e.target.value)}
+                      placeholder="e.g., assets/images/item-full.png"
+                    />
+                    <span className="spawn-mode-batch-hint">Full-size image for detail views</span>
+                  </div>
+                </>
+              )}
+
+              {/* Property Mode: Value-based inputs */}
+              {batchMode === 'property' && propertyValues.length > 0 && (
+                <div className="spawn-mode-batch-values">
+                  <label className="spawn-mode-batch-label">Property Values</label>
+                  <div className="spawn-mode-batch-values-list">
+                    {propertyValues.map(pv => (
+                      <div key={pv.value} className="spawn-mode-batch-value-row">
+                        <span className="spawn-mode-batch-value-label">{pv.label}</span>
+                        <input
+                          type="text"
+                          className="spawn-mode-batch-input spawn-mode-batch-input-sm"
+                          value={batchPropertyValueMap[pv.value]?.icon || ''}
+                          onChange={(e) => handlePropertyValueMapChange(pv.value, 'icon', e.target.value)}
+                          placeholder="Icon URL"
+                        />
+                        <input
+                          type="text"
+                          className="spawn-mode-batch-input spawn-mode-batch-input-sm"
+                          value={batchPropertyValueMap[pv.value]?.image || ''}
+                          onChange={(e) => handlePropertyValueMapChange(pv.value, 'image', e.target.value)}
+                          placeholder="Image URL"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Affected Count Preview */}
+              <div className="spawn-mode-batch-preview">
+                <RefreshCw size={12} aria-hidden="true" />
+                <span>Affected items: {affectedCount !== null ? affectedCount : 'calculating...'}</span>
+              </div>
+
+              {/* Error Message */}
+              {batchError && (
+                <div className="spawn-mode-batch-error" role="alert">
+                  <AlertTriangle size={12} aria-hidden="true" />
+                  <span>{batchError}</span>
+                </div>
+              )}
+
+              {/* URL Validation Hint */}
+              <div className="spawn-mode-batch-url-hint">
+                Valid URL prefixes: <code>http://</code>, <code>https://</code>, <code>/</code>, <code>assets/</code>
+              </div>
+
+              {/* Apply Button */}
+              <div className="spawn-mode-batch-actions">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleBatchApply}
+                  isLoading={isBatchApplying}
+                  leftIcon={ImagePlus}
+                >
+                  Apply Batch Images
+                </Button>
+              </div>
             </div>
           )}
         </div>
