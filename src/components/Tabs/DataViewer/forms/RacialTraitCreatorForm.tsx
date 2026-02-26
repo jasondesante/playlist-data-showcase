@@ -26,12 +26,11 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  Zap,
-  Target,
-  Trash2,
   ImageIcon
 } from 'lucide-react';
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
+import { EffectsBuilder, type Effect } from '@/components/shared/EffectsBuilder';
+import { PrerequisitesBuilder, type Prerequisites } from '@/components/shared/PrerequisitesBuilder';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './RacialTraitCreatorForm.css';
@@ -67,23 +66,14 @@ const VALID_ABILITIES = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const;
 type Ability = typeof VALID_ABILITIES[number];
 
 /**
- * Effect structure for racial traits
+ * Effect structure for racial traits - re-export from EffectsBuilder for backwards compatibility
  */
-export interface RacialTraitEffect {
-  type: string;
-  target: string;
-  value?: string | number;
-  condition?: string;
-}
+export type RacialTraitEffect = Effect;
 
 /**
- * Prerequisites structure for racial traits
+ * Prerequisites structure for racial traits - re-export from PrerequisitesBuilder for backwards compatibility
  */
-export interface RacialTraitPrerequisites {
-  level?: number;
-  subrace?: string;
-  abilities?: Partial<Record<Ability, number>>;
-}
+export type RacialTraitPrerequisites = Prerequisites;
 
 /**
  * Racial trait form data structure
@@ -94,8 +84,8 @@ export interface RacialTraitFormData {
   race: string;
   subrace: string;
   description: string;
-  effects: RacialTraitEffect[];
-  prerequisites: RacialTraitPrerequisites;
+  effects: Effect[];
+  prerequisites: Prerequisites;
   icon?: string;
   image?: string;
 }
@@ -144,18 +134,6 @@ function getDefaultFormData(): RacialTraitFormData {
     prerequisites: {},
     icon: '',
     image: ''
-  };
-}
-
-/**
- * Get default effect
- */
-function getDefaultEffect(): RacialTraitEffect {
-  return {
-    type: '',
-    target: '',
-    value: undefined,
-    condition: ''
   };
 }
 
@@ -300,21 +278,47 @@ export function RacialTraitCreatorForm({
         traitItem.effects = formData.effects.filter(e => e.type && e.target);
       }
 
-      // Add prerequisites if any
+      // Add prerequisites if any (support all types from PrerequisitesBuilder)
       const hasPrereqs = formData.prerequisites.level !== undefined ||
         formData.prerequisites.subrace ||
-        formData.prerequisites.abilities;
+        formData.prerequisites.abilities ||
+        formData.prerequisites.class ||
+        formData.prerequisites.race ||
+        (formData.prerequisites.features && formData.prerequisites.features.length > 0) ||
+        (formData.prerequisites.skills && formData.prerequisites.skills.length > 0) ||
+        (formData.prerequisites.spells && formData.prerequisites.spells.length > 0) ||
+        formData.prerequisites.custom;
 
       if (hasPrereqs) {
         traitItem.prerequisites = {};
+        const prereqs = traitItem.prerequisites as Record<string, unknown>;
+
         if (formData.prerequisites.level !== undefined) {
-          (traitItem.prerequisites as Record<string, unknown>).level = formData.prerequisites.level;
+          prereqs.level = formData.prerequisites.level;
         }
         if (formData.prerequisites.subrace) {
-          (traitItem.prerequisites as Record<string, unknown>).subrace = formData.prerequisites.subrace;
+          prereqs.subrace = formData.prerequisites.subrace;
         }
         if (formData.prerequisites.abilities && Object.keys(formData.prerequisites.abilities).length > 0) {
-          (traitItem.prerequisites as Record<string, unknown>).abilities = formData.prerequisites.abilities;
+          prereqs.abilities = formData.prerequisites.abilities;
+        }
+        if (formData.prerequisites.class) {
+          prereqs.class = formData.prerequisites.class;
+        }
+        if (formData.prerequisites.race) {
+          prereqs.race = formData.prerequisites.race;
+        }
+        if (formData.prerequisites.features && formData.prerequisites.features.length > 0) {
+          prereqs.features = formData.prerequisites.features;
+        }
+        if (formData.prerequisites.skills && formData.prerequisites.skills.length > 0) {
+          prereqs.skills = formData.prerequisites.skills;
+        }
+        if (formData.prerequisites.spells && formData.prerequisites.spells.length > 0) {
+          prereqs.spells = formData.prerequisites.spells;
+        }
+        if (formData.prerequisites.custom) {
+          prereqs.custom = formData.prerequisites.custom;
         }
       }
 
@@ -390,62 +394,17 @@ export function RacialTraitCreatorForm({
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
 
-  // Effect handlers
-  const handleAddEffect = useCallback(() => {
-    setFormData(prev => ({
-      ...prev,
-      effects: [...prev.effects, getDefaultEffect()]
-    }));
-  }, []);
+  // Effects change handler - delegates to EffectsBuilder
+  const handleEffectsChange = useCallback((effects: Effect[]) => {
+    setFormData(prev => ({ ...prev, effects }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
-  const handleRemoveEffect = useCallback((index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      effects: prev.effects.filter((_, i) => i !== index)
-    }));
-  }, []);
-
-  const handleEffectChange = useCallback((index: number, field: keyof RacialTraitEffect, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      effects: prev.effects.map((effect, i) =>
-        i === index ? { ...effect, [field]: value } : effect
-      )
-    }));
-  }, []);
-
-  // Prerequisite handlers
-  const handlePrereqLevelChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
-    setFormData(prev => ({
-      ...prev,
-      prerequisites: { ...prev.prerequisites, level: value }
-    }));
-  }, []);
-
-  const handlePrereqSubraceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim() || undefined;
-    setFormData(prev => ({
-      ...prev,
-      prerequisites: { ...prev.prerequisites, subrace: value }
-    }));
-  }, []);
-
-  const handlePrereqAbilityChange = useCallback((ability: Ability, value: string) => {
-    const numValue = value ? parseInt(value, 10) : undefined;
-    setFormData(prev => {
-      const abilities = { ...prev.prerequisites.abilities };
-      if (numValue === undefined) {
-        delete abilities[ability];
-      } else {
-        abilities[ability] = numValue;
-      }
-      return {
-        ...prev,
-        prerequisites: { ...prev.prerequisites, abilities }
-      };
-    });
-  }, []);
+  // Prerequisites change handler - delegates to PrerequisitesBuilder
+  const handlePrerequisitesChange = useCallback((prerequisites: Prerequisites) => {
+    setFormData(prev => ({ ...prev, prerequisites }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
 
   // Icon change handler
   const handleIconChange = useCallback((value: string) => {
@@ -664,160 +623,22 @@ export function RacialTraitCreatorForm({
 
       {showAdvanced && (
         <div className="racial-trait-advanced-section" id="racial-trait-advanced-section">
-          {/* Effects Section */}
-          <div className="racial-trait-section">
-            <h4 className="racial-trait-section-title">
-              <Zap size={16} />
-              Effects <span className="racial-trait-optional">(Optional)</span>
-            </h4>
+          {/* Effects Section - Using shared EffectsBuilder */}
+          <EffectsBuilder
+            value={formData.effects}
+            onChange={handleEffectsChange}
+            disabled={disabled}
+            showHints={true}
+          />
 
-            <span className="racial-trait-hint">
-              Add structured effects for programmatic handling.
-            </span>
-
-            {formData.effects.length > 0 && (
-              <div className="racial-trait-effects-list">
-                {formData.effects.map((effect, index) => (
-                  <div key={index} className="racial-trait-effect-item">
-                    <div className="racial-trait-effect-header">
-                      <span className="racial-trait-effect-number">Effect {index + 1}</span>
-                      <button
-                        type="button"
-                        className="racial-trait-effect-remove"
-                        onClick={() => handleRemoveEffect(index)}
-                        disabled={disabled}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    <div className="racial-trait-effect-fields">
-                      <div className="racial-trait-field">
-                        <label className="racial-trait-label">Type</label>
-                        <input
-                          type="text"
-                          value={effect.type}
-                          onChange={(e) => handleEffectChange(index, 'type', e.target.value)}
-                          placeholder="e.g., stat_bonus, ability_unlock"
-                          className="racial-trait-input"
-                          disabled={disabled}
-                        />
-                      </div>
-                      <div className="racial-trait-field">
-                        <label className="racial-trait-label">Target</label>
-                        <input
-                          type="text"
-                          value={effect.target}
-                          onChange={(e) => handleEffectChange(index, 'target', e.target.value)}
-                          placeholder="e.g., speed, darkvision, languages"
-                          className="racial-trait-input"
-                          disabled={disabled}
-                        />
-                      </div>
-                      <div className="racial-trait-field">
-                        <label className="racial-trait-label">Value</label>
-                        <input
-                          type="text"
-                          value={effect.value ?? ''}
-                          onChange={(e) => handleEffectChange(index, 'value', e.target.value)}
-                          placeholder="e.g., +2, 60ft, advantage"
-                          className="racial-trait-input"
-                          disabled={disabled}
-                        />
-                      </div>
-                      <div className="racial-trait-field">
-                        <label className="racial-trait-label">Condition</label>
-                        <input
-                          type="text"
-                          value={effect.condition ?? ''}
-                          onChange={(e) => handleEffectChange(index, 'condition', e.target.value)}
-                          placeholder="e.g., when in dim light"
-                          className="racial-trait-input"
-                          disabled={disabled}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleAddEffect}
-              disabled={disabled}
-              leftIcon={Plus}
-            >
-              Add Effect
-            </Button>
-          </div>
-
-          {/* Prerequisites Section */}
-          <div className="racial-trait-section">
-            <h4 className="racial-trait-section-title">
-              <Target size={16} />
-              Prerequisites <span className="racial-trait-optional">(Optional)</span>
-            </h4>
-
-            <span className="racial-trait-hint">
-              Set requirements that must be met to gain this trait.
-            </span>
-
-            <div className="racial-trait-row">
-              <div className="racial-trait-field">
-                <label className="racial-trait-label">Minimum Level</label>
-                <select
-                  value={formData.prerequisites.level ?? ''}
-                  onChange={handlePrereqLevelChange}
-                  className="racial-trait-select"
-                  disabled={disabled}
-                >
-                  <option value="">None</option>
-                  {Array.from({ length: 19 }, (_, i) => i + 2).map(level => (
-                    <option key={level} value={level}>
-                      Level {level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="racial-trait-field">
-                <label className="racial-trait-label">Required Subrace</label>
-                <input
-                  type="text"
-                  value={formData.prerequisites.subrace ?? ''}
-                  onChange={handlePrereqSubraceChange}
-                  placeholder="e.g., High Elf, Drow"
-                  className="racial-trait-input"
-                  disabled={disabled}
-                  maxLength={50}
-                />
-              </div>
-            </div>
-
-            <div className="racial-trait-field">
-              <label className="racial-trait-label">Ability Requirements</label>
-              <div className="racial-trait-abilities-grid">
-                {VALID_ABILITIES.map(ability => (
-                  <div key={ability} className="racial-trait-ability-input">
-                    <label>{ability}</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={30}
-                      value={formData.prerequisites.abilities?.[ability] ?? ''}
-                      onChange={(e) => handlePrereqAbilityChange(ability, e.target.value)}
-                      placeholder="-"
-                      disabled={disabled}
-                    />
-                  </div>
-                ))}
-              </div>
-              <span className="racial-trait-hint">
-                Minimum ability scores required (leave empty for no requirement)
-              </span>
-            </div>
-          </div>
+          {/* Prerequisites Section - Using shared PrerequisitesBuilder */}
+          <PrerequisitesBuilder
+            value={formData.prerequisites}
+            onChange={handlePrerequisitesChange}
+            disabled={disabled}
+            showHints={true}
+            selectedRace={formData.race}
+          />
         </div>
       )}
 
@@ -934,11 +755,22 @@ export function RacialTraitCreatorForm({
                 ))}
               </div>
             )}
-            {(formData.prerequisites.level || formData.prerequisites.subrace || formData.prerequisites.abilities) && (
+            {(formData.prerequisites.level || formData.prerequisites.subrace || formData.prerequisites.abilities ||
+              formData.prerequisites.class || formData.prerequisites.race ||
+              (formData.prerequisites.features && formData.prerequisites.features.length > 0) ||
+              (formData.prerequisites.skills && formData.prerequisites.skills.length > 0) ||
+              (formData.prerequisites.spells && formData.prerequisites.spells.length > 0) ||
+              formData.prerequisites.custom) && (
               <div className="racial-trait-preview-prereqs">
                 <span className="racial-trait-preview-prereqs-label">Prerequisites:</span>
                 {formData.prerequisites.level && (
                   <span className="racial-trait-preview-prereq">Level {formData.prerequisites.level}</span>
+                )}
+                {formData.prerequisites.class && (
+                  <span className="racial-trait-preview-prereq">{formData.prerequisites.class}</span>
+                )}
+                {formData.prerequisites.race && (
+                  <span className="racial-trait-preview-prereq">{formData.prerequisites.race}</span>
                 )}
                 {formData.prerequisites.subrace && (
                   <span className="racial-trait-preview-prereq">{formData.prerequisites.subrace}</span>
@@ -948,6 +780,24 @@ export function RacialTraitCreatorForm({
                     {ability} {value}
                   </span>
                 ))}
+                {formData.prerequisites.features && formData.prerequisites.features.map((feature, i) => (
+                  <span key={`feature-${i}`} className="racial-trait-preview-prereq">
+                    {feature}
+                  </span>
+                ))}
+                {formData.prerequisites.skills && formData.prerequisites.skills.map((skill, i) => (
+                  <span key={`skill-${i}`} className="racial-trait-preview-prereq">
+                    {skill}
+                  </span>
+                ))}
+                {formData.prerequisites.spells && formData.prerequisites.spells.map((spell, i) => (
+                  <span key={`spell-${i}`} className="racial-trait-preview-prereq">
+                    {spell}
+                  </span>
+                ))}
+                {formData.prerequisites.custom && (
+                  <span className="racial-trait-preview-prereq">{formData.prerequisites.custom}</span>
+                )}
               </div>
             )}
           </div>

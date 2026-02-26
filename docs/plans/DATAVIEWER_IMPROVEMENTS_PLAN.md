@@ -298,7 +298,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Create `PrerequisitesBuilder.css` with clean styling
 
 ### 5.4 Update Forms to Use Shared Components
-- [ ] Update RacialTraitCreatorForm to use EffectsBuilder and PrerequisitesBuilder
+- [x] Update RacialTraitCreatorForm to use EffectsBuilder and PrerequisitesBuilder ✅ DONE
 - [ ] Update ClassFeatureCreatorForm to use EffectsBuilder and PrerequisitesBuilder
 - [ ] Update RaceCreatorForm if it has effects/prerequisites
 - [ ] Remove duplicated inline code from all forms
