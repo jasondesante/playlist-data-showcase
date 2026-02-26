@@ -13,8 +13,9 @@ Complete reference for the Playlist Data Engine's Advanced Equipment System.
 7. [Enchantment Library](#enchantment-library)
 8. [Magic Item System](#magic-item-system)
 9. [Custom Equipment](#custom-equipment)
-10. [API Reference](#api-reference)
-11. [Examples](#examples)
+10. [Box Equipment Type](#box-equipment-type)
+11. [API Reference](#api-reference)
+12. [Examples](#examples)
 
 ---
 
@@ -33,6 +34,7 @@ const flamingSword = {
     rarity: 'rare',
     weight: 3,
     damage: { dice: '1d8', damageType: 'slashing' },
+    icon: '/icons/weapons/flaming-sword.png',
     properties: [{
         type: 'damage_bonus',
         target: 'fire',
@@ -142,6 +144,8 @@ Primary equipment type with advanced properties support. Extends base equipment 
 | `spawnWeight` | number | Spawn weight (0 = game-only) |
 | `source` | `'default' \| 'custom'` | Source tracking |
 | `tags` | string[] | Search/filter tags |
+| `icon` | string | Optional icon URL for small UI display |
+| `image` | string | Optional image URL for larger display |
 
 For an example of the `EnhancedEquipment` interface, see [Example 1: Comprehensive Custom Item](#example-1-comprehensive-custom-item).
 
@@ -420,6 +424,594 @@ All custom equipment is automatically validated using `EquipmentValidator.valida
 
 ---
 
+## Box Equipment Type
+
+The `'box'` equipment type represents containers that hold other items. Boxes support both guaranteed containers (backpacks, adventure packs) and probability-based loot boxes. Boxes are stored in the character's `items[]` inventory and are not automatically opened.
+
+### Design Principles
+
+- **Unopened by Default**: Boxes are added to inventory unopened; your game code decides when to open them
+- **Deterministic**: Uses `SeededRNG` so the same seed always produces the same items
+- **Nested Support**: Opening a box that contains another box adds the inner box to inventory unopened
+- **Graceful Failure**: Items referenced in pools but not found in the registry are silently skipped with a warning
+
+### Box Interfaces
+
+**Location:** [src/core/types/Equipment.ts](../src/core/types/Equipment.ts)
+
+#### BoxDropPool
+
+A single entry in a drop pool — either an item or a gold reward.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `weight` | number | Yes | Probability weight (higher = more likely; pool weights should sum to 100) |
+| `itemName` | string | No | Item name to spawn (must exist in equipment registry) |
+| `quantity` | number | No | How many copies to add (default: 1); e.g., `quantity: 10` for 10 torches |
+| `gold` | number | No | Gold to award instead of an item (mutually exclusive with `itemName`) |
+
+#### BoxDrop
+
+Represents one "draw" from a pool — one item (or gold) selected from the array.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `pool` | `BoxDropPool[]` | Pool of possible outcomes; one entry is selected per drop |
+
+#### BoxContents
+
+The full configuration for what a box contains.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `drops` | `BoxDrop[]` | Yes | Each entry represents one draw; the box generates one result per drop |
+| `consumeOnOpen` | boolean | No | Whether the box is removed from inventory after opening (default: `true`) |
+| `openRequirements` | `BoxOpenRequirement[]` | No | Optional requirements that must be satisfied to open the box |
+
+#### BoxOpenRequirement
+
+A single requirement that must be met to open a box. Represents an item (and quantity) that must be consumed from inventory.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `itemName` | string | Yes | Item name that must be consumed (must exist in character inventory) |
+| `quantity` | number | No | Quantity of item required (default: 1) |
+
+#### BoxOpenError
+
+Error returned when box cannot be opened due to unmet requirements.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `code` | `'MISSING_ITEM' \| 'INSUFFICIENT_QUANTITY' \| 'NO_BOX_CONTENTS'` | Error code for programmatic handling |
+| `message` | string | Human-readable error message |
+| `requirement` | `BoxOpenRequirement` | The requirement that was not met (if applicable) |
+
+#### BoxOpenResult
+
+The result returned by `BoxOpener.openBox()`.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `success` | boolean | Whether the box was successfully opened |
+| `items` | `Equipment[]` | All items generated from the box (empty if not opened) |
+| `gold` | number | Total gold generated from gold drops |
+| `consumeBox` | boolean | Whether the box should be removed from inventory |
+| `error` | `BoxOpenError` | Error if box could not be opened (optional) |
+| `consumedItems` | `{ name: string; quantity: number }[]` | Items consumed to open the box (optional) |
+
+### BoxOpener Class
+
+**Location:** [src/core/equipment/BoxOpener.ts](../src/core/equipment/BoxOpener.ts)
+
+Static utility class for opening box-type equipment.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `openBox` | `(box: Equipment, rng: SeededRNG, inventory?: EnhancedInventoryItem[]): BoxOpenResult` | Open a box and generate all its contents; checks requirements if inventory provided |
+| `isBox` | `(equipment: Equipment): boolean` | Check if equipment is a valid (openable) box |
+| `checkRequirements` | `(box: Equipment, inventory: EnhancedInventoryItem[]): BoxOpenError \| null` | Check if box requirements are met; returns null if satisfied |
+| `canOpen` | `(box: Equipment, inventory: EnhancedInventoryItem[]): boolean` | Simple boolean check if box can be opened |
+| `getRequirementsDescription` | `(box: Equipment): string \| null` | Human-readable description of requirements |
+| `previewContents` | `(box: Equipment): { possibleItems, possibleGold, totalDrops, openRequirements? }` | List all possible outcomes without opening |
+
+#### openBox
+
+Iterates over every `BoxDrop` in `boxContents.drops`, selects one `BoxDropPool` entry using weighted random selection, and returns the aggregated result. If `inventory` is provided and the box has `openRequirements`, requirements are checked before opening.
+
+```typescript
+import { BoxOpener, SeededRNG } from 'playlist-data-engine';
+
+const rng = new SeededRNG('my-seed');
+const result = BoxOpener.openBox(explorersPack, rng);
+
+console.log(result.success);      // boolean — whether the box was opened
+console.log(result.items);         // Equipment[] — all generated items
+console.log(result.gold);          // number — total gold from gold drops
+console.log(result.consumeBox);  // boolean — whether to remove from inventory
+```
+
+#### isBox
+
+```typescript
+if (BoxOpener.isBox(item)) {
+    // item.type === 'box' && item.boxContents !== undefined
+}
+```
+
+#### previewContents
+
+Returns all *possible* outcomes without consuming RNG state. Useful for tooltips or shop previews. Also returns `openRequirements` if the box has any.
+
+```typescript
+const preview = BoxOpener.previewContents(goblinChest);
+// preview.possibleItems     → ['Shortsword', 'Leather Armor', "Thieves' Tools"]
+// preview.possibleGold      → { min: 0, max: 50 }
+// preview.totalDrops        → 1
+// preview.openRequirements  → [{ itemName: 'Iron Key' }] (if present)
+```
+
+#### checkRequirements
+
+Check if all box requirements are met by the given inventory. Returns `null` if all requirements are satisfied, or a `BoxOpenError` if not.
+
+```typescript
+const inventory = [{ name: 'Iron Key', quantity: 1, equipped: false }];
+const error = BoxOpener.checkRequirements(lockedChest, inventory);
+
+if (error) {
+    console.log(error.code);    // 'MISSING_ITEM' or 'INSUFFICIENT_QUANTITY'
+    console.log(error.message); // Human-readable error
+}
+```
+
+#### canOpen
+
+Simple boolean check useful for UI purposes (showing lock icons, enabling/disabling buttons).
+
+```typescript
+const inventory = [{ name: 'Iron Key', quantity: 1, equipped: false }];
+
+if (BoxOpener.canOpen(lockedChest, inventory)) {
+    console.log('You can open this chest!');
+}
+```
+
+#### getRequirementsDescription
+
+Returns a human-readable string describing what items are needed to open the box, useful for tooltips.
+
+```typescript
+const desc = BoxOpener.getRequirementsDescription(lockedChest);
+// "Requires: Iron Key"
+
+const multiDesc = BoxOpener.getRequirementsDescription(royalTreasuryBox);
+// "Requires: Golden Key, 200 Gold Coins"
+```
+
+### Guaranteed Containers
+
+Guaranteed containers have pools with exactly one entry (weight 100). Every item listed always drops. Adventure packs like Explorer's Pack are guaranteed containers.
+
+```typescript
+const explorersPack = {
+    name: "Explorer's Pack",
+    type: 'box',
+    rarity: 'common',
+    weight: 59,
+    icon: '/icons/containers/backpack.png',
+    boxContents: {
+        drops: [
+            { pool: [{ weight: 100, itemName: 'Backpack' }] },
+            { pool: [{ weight: 100, itemName: 'Bedroll' }] },
+            { pool: [{ weight: 100, itemName: 'Mess Kit' }] },
+            { pool: [{ weight: 100, itemName: 'Tinderbox' }] },
+            { pool: [{ weight: 100, itemName: 'Waterskin' }] },
+            { pool: [{ weight: 100, itemName: 'Rope' }] },
+            { pool: [{ weight: 100, itemName: 'Torch', quantity: 10 }] },
+            { pool: [{ weight: 100, itemName: 'Rations', quantity: 10 }] },
+        ]
+    },
+    tags: ['gear', 'pack', 'general'],
+    description: 'A backpack containing wilderness exploration gear.'
+};
+
+// Opens to: Backpack, Bedroll, Mess Kit, Tinderbox, Waterskin, Rope, 10×Torch, 10×Rations
+// Total: 26 items
+```
+
+### Loot Boxes (Probability-Based)
+
+Loot boxes have pools with multiple entries. One entry is chosen per drop based on weights.
+
+```typescript
+const goblinChest = {
+    name: 'Goblin Treasure Chest',
+    type: 'box',
+    rarity: 'uncommon',
+    weight: 5,
+    icon: '/icons/containers/chest.png',
+    boxContents: {
+        drops: [{
+            pool: [
+                { weight: 40, itemName: 'Shortsword' },
+                { weight: 30, itemName: 'Leather Armor' },
+                { weight: 20, itemName: "Thieves' Tools" },
+                { weight: 10, gold: 50 }
+            ]
+        }]
+    },
+    tags: ['loot', 'treasure', 'goblin'],
+    spawnWeight: 0.3,
+    description: 'A small chest containing goblin treasure.'
+};
+
+// Opens to one of: Shortsword (40%), Leather Armor (30%), Thieves' Tools (20%), or 50 gold (10%)
+```
+
+### Mixed Boxes (Guaranteed + Random)
+
+Combine guaranteed drops with random pools in the same box.
+
+```typescript
+const dragonHoard = {
+    name: 'Dragon Hoard Chest',
+    type: 'box',
+    rarity: 'rare',
+    weight: 10,
+    icon: '/icons/containers/treasure-chest.png',
+    image: '/images/equipment/dragon-hoard.png',
+    boxContents: {
+        drops: [
+            { pool: [{ weight: 100, gold: 500 }] },                    // Always 500 gold
+            { pool: [{ weight: 100, itemName: 'Potion of Healing' }] }, // Always a potion
+            {
+                pool: [                                                  // One random weapon/armor
+                    { weight: 35, itemName: 'Longsword +1' },
+                    { weight: 35, itemName: 'Chain Mail +1' },
+                    { weight: 20, itemName: 'Ring of Protection' },
+                    { weight: 10, itemName: 'Dragon Slayer Sword' }
+                ]
+            }
+        ]
+    },
+    tags: ['loot', 'treasure', 'dragon', 'boss'],
+    spawnWeight: 0.05,
+    description: "A chest from a dragon's hoard."
+};
+```
+
+### Quantity Parameter
+
+Use `quantity` on a pool entry to add multiple copies of the same item in one drop.
+
+```typescript
+const archersBox = {
+    name: "Archer's Supply Box",
+    type: 'box',
+    rarity: 'common',
+    weight: 2,
+    boxContents: {
+        drops: [
+            { pool: [{ weight: 100, itemName: 'Arrow', quantity: 20 }] },    // 20 arrows
+            { pool: [{ weight: 100, itemName: 'Bowstring', quantity: 3 }] }, // 3 bowstrings
+        ]
+    },
+    description: 'A box of archery supplies.'
+};
+// Opens to: 20×Arrow, 3×Bowstring (23 items total)
+```
+
+### Nested Box Behavior
+
+When a drop resolves to another box, that box is added to inventory **unopened**. The inner box is never recursively opened. This allows treasure caches that contain other containers.
+
+```typescript
+const treasureCache = {
+    name: 'Treasure Cache',
+    type: 'box',
+    rarity: 'uncommon',
+    weight: 8,
+    icon: '/icons/containers/cache.png',
+    boxContents: {
+        drops: [
+            { pool: [{ weight: 100, itemName: 'Goblin Treasure Chest' }] }, // adds chest unopened
+            { pool: [{ weight: 100, gold: 100 }] }
+        ]
+    },
+    description: 'A hidden cache containing a treasure chest and gold.'
+};
+// Opens to: Goblin Treasure Chest (unopened, in items[]) + 100 gold
+```
+
+### Opening Boxes on Characters
+
+Use `EquipmentSpawnHelper.openBoxForCharacter()` to open a box from a character's inventory. It removes the box (if `consumeOnOpen` is true) and adds all contents automatically.
+
+```typescript
+import { EquipmentSpawnHelper, SeededRNG } from 'playlist-data-engine';
+
+const rng = new SeededRNG('open-pack-seed');
+const outcome = EquipmentSpawnHelper.openBoxForCharacter(
+    character,
+    "Explorer's Pack",
+    rng
+);
+
+if (outcome) {
+    character = outcome.character;              // Updated character with contents added
+    console.log(outcome.result.items.length);   // Number of items added
+    console.log(outcome.result.gold);           // Gold awarded
+}
+```
+
+Returns `null` if the box is not found in the character's inventory.
+
+### Non-Consuming Boxes
+
+Set `consumeOnOpen: false` to keep the box in inventory after opening. Useful for containers like a Component Pouch that players open repeatedly.
+
+```typescript
+const componentPouch = {
+    name: 'Component Pouch',
+    type: 'box',
+    rarity: 'common',
+    weight: 2,
+    icon: '/icons/items/pouch.png',
+    boxContents: {
+        drops: [],            // Empty — no automatic contents
+        consumeOnOpen: false  // Stays in inventory
+    },
+    tags: ['gear', 'magic', 'spellcasting'],
+    description: 'A pouch for holding spell components.'
+};
+```
+
+### Opening Requirements
+
+Boxes can have optional **opening requirements** that must be satisfied before they can be opened. Requirements are items that get consumed from the character's inventory when the box is successfully opened.
+
+#### Basic Item Requirement
+
+A locked chest requiring a single key:
+
+```typescript
+const lockedChest = {
+    name: 'Locked Chest',
+    type: 'box',
+    rarity: 'uncommon',
+    weight: 10,
+    icon: '/icons/containers/locked-chest.png',
+    boxContents: {
+        openRequirements: [
+            { itemName: 'Iron Key' }  // Consumes 1 Iron Key when opened
+        ],
+        drops: [
+            { pool: [{ weight: 100, gold: 50 }] },
+            { pool: [
+                { weight: 50, itemName: 'Shortsword' },
+                { weight: 30, itemName: 'Leather Armor' },
+                { weight: 20, itemName: 'Medical Supply', quantity: 3 }
+            ]}
+        ]
+    },
+    description: 'A sturdy locked chest. Requires an Iron Key to open.'
+};
+```
+
+#### Gold Coin Requirement
+
+Gold requirements use `"Gold Coin"` as the item name with a quantity:
+
+```typescript
+const gildedStrongbox = {
+    name: 'Gilded Strongbox',
+    type: 'box',
+    rarity: 'rare',
+    weight: 15,
+    boxContents: {
+        openRequirements: [
+            { itemName: 'Gold Coin', quantity: 100 }  // Consumes 100 Gold Coins
+        ],
+        drops: [
+            { pool: [{ weight: 100, gold: 250 }] },
+            { pool: [
+                { weight: 40, itemName: 'Longsword' },
+                { weight: 30, itemName: 'Chain Mail' },
+                { weight: 20, itemName: 'Scale Mail' }
+            ]}
+        ]
+    },
+    description: 'A gilded strongbox with a magical lock. Consumes 100 Gold Coins to unlock.'
+};
+```
+
+#### Quantity-Based Requirement
+
+Some boxes require multiple of the same item:
+
+```typescript
+const thievesCache = {
+    name: "Thieves' Cache",
+    type: 'box',
+    rarity: 'uncommon',
+    weight: 5,
+    boxContents: {
+        openRequirements: [
+            { itemName: 'Lockpick', quantity: 3 }  // Consumes 3 Lockpicks
+        ],
+        drops: [
+            { pool: [{ weight: 100, gold: 75 }] },
+            { pool: [
+                { weight: 50, itemName: "Thieves' Tools" },
+                { weight: 30, itemName: 'Dagger' },
+                { weight: 20, itemName: 'Disguise Kit' }
+            ]}
+        ]
+    },
+    description: 'A hidden cache with a complex lock. Requires 3 lockpicks to crack.'
+};
+```
+
+#### Multiple Requirements
+
+Boxes can require multiple different items simultaneously. ALL requirements must be satisfied:
+
+```typescript
+const royalTreasuryBox = {
+    name: 'Royal Treasury Box',
+    type: 'box',
+    rarity: 'very_rare',
+    weight: 20,
+    boxContents: {
+        openRequirements: [
+            { itemName: 'Golden Key' },              // Need 1 Golden Key
+            { itemName: 'Gold Coin', quantity: 200 } // AND 200 Gold Coins
+        ],
+        drops: [
+            { pool: [{ weight: 100, gold: 1000 }] },
+            { pool: [
+                { weight: 30, itemName: 'Plate Armor' },
+                { weight: 25, itemName: 'Chain Mail' },
+                { weight: 25, itemName: 'Greataxe' },
+                { weight: 20, itemName: 'Longsword' }
+            ]}
+        ]
+    },
+    description: 'A royal treasury box sealed with powerful magic. Requires a Golden Key and 200 Gold Coins.'
+};
+```
+
+#### Checking Requirements Before Opening
+
+Use `BoxOpener.checkRequirements()` to validate if a character can open a box:
+
+```typescript
+import { BoxOpener, SeededRNG } from 'playlist-data-engine';
+
+const inventory = [
+    { name: 'Iron Key', quantity: 1, equipped: false },
+    { name: 'Gold Coin', quantity: 150, equipped: false }
+];
+
+// Check if requirements are met
+const error = BoxOpener.checkRequirements(lockedChest, inventory);
+
+if (error) {
+    console.log(`Cannot open: ${error.message}`);
+    // error.code → 'MISSING_ITEM' or 'INSUFFICIENT_QUANTITY'
+    // error.requirement → The specific unmet requirement
+}
+```
+
+#### Opening with Requirements
+
+When opening a box with `BoxOpener.openBox()`, provide the inventory to enable requirement checking:
+
+```typescript
+const rng = new SeededRNG('loot-seed');
+
+// With inventory - requirements are checked
+const result = BoxOpener.openBox(lockedChest, rng, inventory);
+
+if (result.success) {
+    console.log('Box opened!');
+    console.log('Items received:', result.items);
+    console.log('Items consumed:', result.consumedItems);
+    // consumedItems → [{ name: 'Iron Key', quantity: 1 }]
+} else {
+    console.log('Failed to open:', result.error?.message);
+}
+
+// Without inventory - requirements are skipped (backward compatible)
+const legacyResult = BoxOpener.openBox(lockedChest, rng);
+// Always succeeds regardless of requirements
+```
+
+#### Character Integration with EquipmentSpawnHelper
+
+When using `EquipmentSpawnHelper.openBoxForCharacter()`, requirements are automatically checked and items consumed from the character's inventory:
+
+```typescript
+import { EquipmentSpawnHelper, SeededRNG } from 'playlist-data-engine';
+
+const rng = new SeededRNG('character-loot');
+const outcome = EquipmentSpawnHelper.openBoxForCharacter(character, 'Locked Chest', rng);
+
+if (outcome) {
+    character = outcome.character;  // Updated with consumed requirements and new items
+    console.log('Items:', outcome.result.items);
+    console.log('Gold:', outcome.result.gold);
+    console.log('Consumed:', outcome.result.consumedItems);
+} else {
+    console.log('Box not found in inventory');
+}
+
+// If requirements not met, outcome.result.success will be false
+// and outcome.result.error will contain the failure reason
+```
+
+#### Error Handling
+
+When a box cannot be opened, the result includes an error object:
+
+```typescript
+interface BoxOpenError {
+    code: 'MISSING_ITEM' | 'INSUFFICIENT_QUANTITY' | 'NO_BOX_CONTENTS';
+    message: string;
+    requirement?: BoxOpenRequirement;
+}
+
+// Example error handling
+const result = BoxOpener.openBox(box, rng, inventory);
+
+if (!result.success && result.error) {
+    switch (result.error.code) {
+        case 'MISSING_ITEM':
+            console.log(`You don't have any ${result.error.requirement?.itemName}`);
+            break;
+        case 'INSUFFICIENT_QUANTITY':
+            console.log(`Not enough ${result.error.requirement?.itemName}`);
+            break;
+        case 'NO_BOX_CONTENTS':
+            console.log('This box is empty');
+            break;
+    }
+}
+```
+
+#### UI Helper Methods
+
+BoxOpener provides convenience methods for UI integration:
+
+```typescript
+// Boolean check for enabling/disabling open button
+const canOpen = BoxOpener.canOpen(box, character.equipment.items);
+
+// Human-readable requirement description for tooltips
+const desc = BoxOpener.getRequirementsDescription(box);
+// "Requires: Iron Key"
+// "Requires: Golden Key, 200 Gold Coins"
+// null (if no requirements)
+
+// Preview contents with requirements included
+const preview = BoxOpener.previewContents(box);
+// preview.openRequirements → [{ itemName: 'Iron Key' }] or undefined
+```
+
+### Registering Custom Box Items
+
+Register box items through `ExtensionManager` like any other equipment. Boxes with `spawnWeight > 0` can appear in random loot.
+
+```typescript
+import { ExtensionManager } from 'playlist-data-engine';
+
+const manager = ExtensionManager.getInstance();
+manager.register('equipment', [goblinChest, dragonHoard, treasureCache]);
+```
+
+---
+
 ## API Reference
 
 **For complete API documentation with all method signatures**, see [DATA_ENGINE_REFERENCE.md - Equipment System](../DATA_ENGINE_REFERENCE.md#equipment-system).
@@ -433,6 +1025,7 @@ All custom equipment is automatically validated using `EquipmentValidator.valida
 | `EquipmentModifier` | [src/core/equipment/EquipmentModifier.ts](../src/core/equipment/EquipmentModifier.ts) | Enchant, curse, upgrade, and modify equipment |
 | `EquipmentSpawnHelper` | [src/core/equipment/EquipmentSpawnHelper.ts](../src/core/equipment/EquipmentSpawnHelper.ts) | Batch spawn equipment by rarity, tags, or templates |
 | `EquipmentGenerator` | [src/core/generation/EquipmentGenerator.ts](../src/core/generation/EquipmentGenerator.ts) | Manage inventory and starting gear |
+| `BoxOpener` | [src/core/equipment/BoxOpener.ts](../src/core/equipment/BoxOpener.ts) | Open box-type items and generate their contents |
 
 ### EquipmentEffectApplier
 
@@ -494,6 +1087,18 @@ All custom equipment is automatically validated using `EquipmentValidator.valida
 - `spawnRandom(count, rng, options?)` - Spawn random equipment (respects weights)
 - `spawnTreasureHoard(cr, rng)` - Spawn treasure hoard by CR
 - `addToCharacter(character, items, equip?)` - Add spawned items to character
+- `openBoxForCharacter(character, boxName, rng)` - Open a box, remove from inventory, add contents
+
+### BoxOpener
+
+**Location:** [src/core/equipment/BoxOpener.ts](../src/core/equipment/BoxOpener.ts)
+
+Static class for opening box-type equipment. See [Box Equipment Type](#box-equipment-type) for full documentation.
+
+**Key Methods:**
+- `openBox(box, rng)` - Open a box and return `BoxOpenResult` (items + gold + consumeBox flag)
+- `isBox(equipment)` - Return `true` if `equipment.type === 'box'` and `boxContents` is set
+- `previewContents(box)` - Return all possible items and gold range without consuming RNG state
 
 ### FeatureQuery (Equipment-Related)
 
@@ -905,6 +1510,8 @@ const cloakOfTheElder: EnhancedEquipment = {
     type: 'item',
     rarity: 'very_rare',
     weight: 1,
+    icon: '/icons/items/cloak-elder.png',
+    image: '/images/equipment/cloak-of-the-elder.png',
 
     // Stat bonuses: increases ability scores
     properties: [

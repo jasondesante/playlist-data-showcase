@@ -9,6 +9,8 @@ Complete guide to the combat system in the Playlist Data Engine.
 1. [Combat System](#combat-system)
    - [Enemy Generation](#enemy-generation)
    - [Treasure](#treasure)
+   - [Box Rewards](#box-rewards)
+     - [Locked Box Rewards](#locked-box-rewards)
    - [Spell Casting](#spell-casting)
    - [Combat Actions](#combat-actions)
    - [HP Management](#hp-management)
@@ -180,13 +182,13 @@ const combat = new CombatEngine({
   treasure: { gold: { min: 1000, max: 5000 } }
 });
 
-// Custom items
+// Custom items (weapons, armor, or any Equipment type including boxes)
 const combat = new CombatEngine({
   treasure: {
     gold: 100,
     items: [
-      { id: 'sword-1', name: 'Longsword +1', type: 'weapon' },
-      { id: 'potion-1', name: 'Health Potion', type: 'consumable' }
+      { id: 'sword-1', name: 'Longsword +1', type: 'weapon', rarity: 'uncommon', weight: 3 },
+      { id: 'potion-1', name: 'Potion of Healing', type: 'item', rarity: 'common', weight: 0.5 }
     ]
   }
 });
@@ -198,9 +200,306 @@ const combat = new CombatEngine({ seed: 'goblin-lair-001' });
 The `treasure` config supports:
 - `gold: number` - Fixed amount (always rewards exactly this much)
 - `gold: { min, max }` - Random range (uses seed for determinism)
-- `items: any[]` - Custom item rewards
+- `items: Equipment[]` - Custom item rewards (weapons, armor, items, or **boxes**)
 
 > **Note:** Treasure rewards are not automatically distributed to any character. The combat engine reports what was earned; it's up to your game to handle inventory management, gold splitting among party members, or whether loot is awarded at all.
+
+### Box Rewards
+
+Boxes are a special `'box'` equipment type that contain other items. They can be awarded as treasure and are passed through the combat system **unopened** — your game code decides when and how to open them.
+
+#### Awarding Boxes as Treasure
+
+```typescript
+import { CombatEngine } from 'playlist-data-engine';
+
+// Award a box directly in treasure config
+const combat = new CombatEngine({
+  seed: 'goblin-cave-007',
+  treasure: {
+    gold: 50,
+    items: [
+      {
+        id: 'goblin-chest-1',
+        name: 'Goblin Treasure Chest',
+        type: 'box',
+        rarity: 'uncommon',
+        weight: 5,
+        boxContents: {
+          drops: [{
+            pool: [
+              { weight: 40, itemName: 'Shortsword' },
+              { weight: 30, itemName: 'Leather Armor' },
+              { weight: 20, itemName: "Thieves' Tools" },
+              { weight: 10, gold: 50 }
+            ]
+          }]
+        },
+        tags: ['loot', 'treasure', 'goblin'],
+        description: 'A small chest from a goblin hoard.'
+      }
+    ]
+  }
+});
+```
+
+#### Opening Box Rewards After Combat
+
+After combat ends, use `EquipmentSpawnHelper.openBoxForCharacter()` to open any boxes in the character's inventory:
+
+```typescript
+import {
+  CombatEngine,
+  EquipmentSpawnHelper,
+  SeededRNG
+} from 'playlist-data-engine';
+
+// Combat ends - check result for awarded items
+const combatResult = combat.getCombatResult(combatInstance);
+if (combatResult) {
+  // Add awarded items to the character's inventory first
+  for (const item of combatResult.treasureAwarded.items) {
+    EquipmentSpawnHelper.addToCharacter(character, item);
+  }
+
+  // Now open any boxes the character received
+  const rng = new SeededRNG('open-rewards');
+  const openResult = EquipmentSpawnHelper.openBoxForCharacter(
+    character,
+    'Goblin Treasure Chest',
+    rng
+  );
+
+  if (openResult) {
+    character = openResult.character; // Updated character (box removed, contents added)
+    console.log(`Gold from chest: ${openResult.result.gold}`);
+    console.log(`Items from chest: ${openResult.result.items.map(i => i.name).join(', ')}`);
+  }
+}
+```
+
+#### Box Behavior in Combat Rewards
+
+- **Boxes are always awarded unopened.** The combat engine never auto-opens boxes.
+- **Nested boxes stay nested.** If a box contains another box, the inner box is added to inventory unopened.
+- **Consumed on open by default.** When opened, boxes are removed from inventory unless `consumeOnOpen: false` is set.
+- **Deterministic.** Opening with the same seed and box produces identical contents every time.
+- **Locked boxes require items to open.** Boxes with `openRequirements` need specific items (keys, gold coins, etc.) to be consumed from inventory when opened.
+
+#### Locked Box Rewards
+
+Some treasure boxes have **opening requirements** — items that must be consumed from the character's inventory before the box can be opened. This adds strategic decisions: should the player open a locked chest now, save the key for later, or trade the unopened chest?
+
+##### Awarding Locked Boxes as Loot
+
+Locked boxes are configured with `openRequirements` in their `boxContents`:
+
+```typescript
+import { CombatEngine } from 'playlist-data-engine';
+
+// A locked chest that requires a key to open
+const lockedDungeonChest = {
+  id: 'dungeon-chest-001',
+  name: 'Dungeon Chest',
+  type: 'box' as const,
+  rarity: 'uncommon' as const,
+  weight: 10,
+  boxContents: {
+    openRequirements: [
+      { itemName: 'Iron Key' }  // Consumes 1 Iron Key when opened
+    ],
+    drops: [
+      { pool: [{ weight: 100, gold: 100 }] },
+      { pool: [
+        { weight: 40, itemName: 'Longsword' },
+        { weight: 35, itemName: 'Chain Mail' },
+        { weight: 25, itemName: 'Medical Supply', quantity: 3 }
+      ]}
+    ]
+  },
+  tags: ['loot', 'treasure', 'locked', 'dungeon'],
+  description: 'A heavy iron-bound chest. Requires an Iron Key to open.'
+};
+
+const combat = new CombatEngine({
+  seed: 'dungeon-boss-001',
+  treasure: {
+    gold: { min: 50, max: 150 },
+    items: [lockedDungeonChest]
+  }
+});
+```
+
+##### Handling Locked Box Opens After Combat
+
+When a character tries to open a locked box from combat rewards, requirements are checked automatically:
+
+```typescript
+import {
+  CombatEngine,
+  EquipmentSpawnHelper,
+  BoxOpener,
+  SeededRNG
+} from 'playlist-data-engine';
+
+// After combat - add items to inventory first
+const combatResult = combat.getCombatResult(combatInstance);
+if (combatResult) {
+  // Add all awarded items to character inventory
+  for (const item of combatResult.treasureAwarded.items) {
+    EquipmentSpawnHelper.addToCharacter(character, item);
+  }
+}
+
+// Later, when player wants to open the chest
+const rng = new SeededRNG('open-chest');
+const outcome = EquipmentSpawnHelper.openBoxForCharacter(
+  character,
+  'Dungeon Chest',
+  rng
+);
+
+if (outcome) {
+  if (outcome.result.success) {
+    character = outcome.character;
+    console.log('Chest opened!');
+    console.log('Gold received:', outcome.result.gold);
+    console.log('Items received:', outcome.result.items.map(i => i.name));
+    console.log('Items consumed:', outcome.result.consumedItems);
+    // → Items consumed: [{ name: 'Iron Key', quantity: 1 }]
+  } else {
+    // Requirements not met
+    console.log('Cannot open:', outcome.result.error?.message);
+    // → "Cannot open: Missing required item: Iron Key"
+  }
+}
+```
+
+##### Checking Requirements Before Opening
+
+Use `BoxOpener.canOpen()` to check if the character has the required items:
+
+```typescript
+// Check if character can open the box (for UI: enable/disable button)
+const canOpen = BoxOpener.canOpen(
+  dungeonChest,
+  character.equipment.items
+);
+
+if (!canOpen) {
+  // Show what's needed
+  const desc = BoxOpener.getRequirementsDescription(dungeonChest);
+  console.log(desc); // "Requires: Iron Key"
+}
+
+// Get detailed error info if requirements not met
+const error = BoxOpener.checkRequirements(dungeonChest, character.equipment.items);
+if (error) {
+  console.log(error.code);    // 'MISSING_ITEM' or 'INSUFFICIENT_QUANTITY'
+  console.log(error.message); // Human-readable message
+}
+```
+
+##### Multiple Requirements
+
+Boxes can require multiple different items. All requirements must be satisfied:
+
+```typescript
+const royalTreasuryBox = {
+  name: 'Royal Treasury Box',
+  type: 'box' as const,
+  rarity: 'very_rare' as const,
+  weight: 20,
+  boxContents: {
+    openRequirements: [
+      { itemName: 'Golden Key' },           // 1 Golden Key
+      { itemName: 'Gold Coin', quantity: 200 } // 200 Gold Coins
+    ],
+    drops: [
+      { pool: [{ weight: 100, gold: 1000 }] },
+      { pool: [
+        { weight: 30, itemName: 'Plate Armor' },
+        { weight: 25, itemName: 'Greataxe' },
+        { weight: 25, itemName: 'Longsword' },
+        { weight: 20, itemName: 'Chain Mail' }
+      ]}
+    ]
+  },
+  description: 'A royal treasury box. Requires a Golden Key and 200 Gold Coins.'
+};
+
+// Preview requirements for UI
+const preview = BoxOpener.previewContents(royalTreasuryBox);
+console.log(preview.openRequirements);
+// → [{ itemName: 'Golden Key' }, { itemName: 'Gold Coin', quantity: 200 }]
+```
+
+##### Strategic Loot Design
+
+Consider these patterns when designing locked box rewards:
+
+| Box Type | Requirements | Use Case |
+|----------|--------------|----------|
+| Key-locked | Single key item | Standard treasure rooms, miniboss drops |
+| Gold-locked | Gold Coins (quantity) | Gambling-style boxes, shops |
+| Multi-locked | Key + Gold | High-value boss loot, rare treasures |
+| Quantity-locked | Multiple of same item | Skill-based rewards (e.g., 3 Lockpicks) |
+
+> **See also:** [EQUIPMENT_SYSTEM.md — Opening Requirements](EQUIPMENT_SYSTEM.md#opening-requirements) for complete documentation of `BoxOpenRequirement`, `BoxOpenError`, and all `BoxOpener` methods.
+
+#### Checking if a Reward Is a Box
+
+```typescript
+import { BoxOpener } from 'playlist-data-engine';
+
+for (const item of combatResult.treasureAwarded.items) {
+  if (BoxOpener.isBox(item)) {
+    console.log(`${item.name} is a box — open it to see contents`);
+
+    // Preview possible contents without opening
+    const preview = BoxOpener.previewContents(item);
+    console.log(`Possible items: ${preview.possibleItems.join(', ')}`);
+    console.log(`Gold range: ${preview.possibleGold.min}–${preview.possibleGold.max}`);
+    console.log(`Number of drops: ${preview.totalDrops}`);
+  }
+}
+```
+
+#### Example: Boss Loot Box Configuration
+
+```typescript
+// Dragon hoard - guaranteed gold + rare item drop
+const dragonHoard = {
+  id: 'dragon-hoard-1',
+  name: 'Dragon Hoard Chest',
+  type: 'box' as const,
+  rarity: 'rare' as const,
+  weight: 10,
+  boxContents: {
+    drops: [
+      { pool: [{ weight: 100, gold: 500 }] },                          // Always 500 gold
+      { pool: [{ weight: 100, itemName: 'Potion of Healing' }] },      // Always a potion
+      {
+        pool: [                                                          // Random rare item
+          { weight: 35, itemName: 'Longsword +1' },
+          { weight: 35, itemName: 'Chain Mail +1' },
+          { weight: 20, itemName: 'Ring of Protection' },
+          { weight: 10, itemName: 'Dragon Slayer Sword' }
+        ]
+      }
+    ]
+  },
+  tags: ['loot', 'treasure', 'dragon', 'boss'],
+  description: "A chest from a dragon's hoard."
+};
+
+const combat = new CombatEngine({
+  seed: 'dragon-fight-001',
+  treasure: { items: [dragonHoard] }
+});
+```
+
+> **See also:** [EQUIPMENT_SYSTEM.md — Box Equipment Type](EQUIPMENT_SYSTEM.md#box-equipment-type) for complete `BoxDropPool`, `BoxDrop`, `BoxContents`, and `BoxOpenResult` interface documentation.
 
 ### Spell Casting
 

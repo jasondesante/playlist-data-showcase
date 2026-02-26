@@ -10,20 +10,29 @@ Complete API reference for the Playlist Data Engine. Contains all type definitio
 1. [Quick Export Reference](#quick-export-reference)
 2. [Data Types](#data-types)
 3. [Core Modules](#core-modules)
-4. [Progression System](#progression-system)
-5. [Configuration](#configuration)
-6. [Environmental Sensors](#environmental-sensors)
-7. [Gaming Integration](#gaming-integration)
-8. [Combat System](#combat-system)
-9. [Enemy Generation](#enemy-generation)
-10. [Equipment System](#equipment-system)
+4. [Beat Detection](#beat-detection)
+   - [BeatMapGenerator](#beatmapgenerator)
+   - [BeatStream](#beatstream)
+   - [OnsetStrengthEnvelope](#onsetstrengthenvelope)
+   - [BeatTracker](#beattracker)
+   - [TempoDetector](#tempodetector)
+   - [DownbeatDetector](#downbeatdetector)
+   - [Beat Detection Utilities](#beat-detection-utilities)
+5. [Progression System](#progression-system)
+6. [Configuration](#configuration)
+7. [Environmental Sensors](#environmental-sensors)
+8. [Gaming Integration](#gaming-integration)
+9. [Combat System](#combat-system)
+10. [Enemy Generation](#enemy-generation)
+11. [Equipment System](#equipment-system)
    - [Equipment Types](#equipment-types)
    - [EquipmentEffectApplier](#equipmenteffectapplier)
    - [EquipmentValidator](#equipmentvalidator)
    - [Equipment Generator](#equipment-generator)
    - [Equipment Modifier](#equipment-modifier)
    - [Equipment Spawn Helper](#equipment-spawn-helper)
-10. [Extensibility System](#extensibility-system)
+   - [BoxOpener](#boxopener)
+12. [Extensibility System](#extensibility-system)
     - [ExtensionManager](#extensionmanager)
     - [FeatureQuery](#featurequery)
     - [FeatureValidator](#featurevalidator)
@@ -39,7 +48,7 @@ Complete API reference for the Playlist Data Engine. Contains all type definitio
     - [Custom Classes](#custom-classes)
 
     **For spawn rates, CharacterGenerator extensions, validation rules, and advanced patterns, see [EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)**
-11. [Cross-References](#cross-references)
+13. [Cross-References](#cross-references)
 
 ---
 
@@ -107,6 +116,7 @@ A concise overview of all main exports from the library, organized by category.
 | `EquipmentEffectApplier` | Apply/remove equipment effects when equipping/unequipping | [Equipment System](#equipment-system) |
 | `EquipmentModifier` | Enchant, curse, upgrade, and modify equipment | [Equipment System](#equipment-system) |
 | `EquipmentSpawnHelper` | Batch spawn equipment by rarity, tags, or templates | [Equipment System](#equipment-system) |
+| `BoxOpener` | Open box-type items and generate their contents | [Equipment System](#boxopener) |
 
 **Additional Equipment:** Predefined enchantment library, 38+ pre-built magic items, templates — see [Equipment System](#equipment-system) and [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md)
 
@@ -131,6 +141,21 @@ A concise overview of all main exports from the library, organized by category.
 | `EnemyGenerator` | Generate enemies and encounters | [Enemy Generation](#enemy-generation) |
 | `PartyAnalyzer` | Analyze party strength for encounters | [Enemy Generation](#enemy-generation) |
 
+### Beat Detection
+
+| Export | Description | Section |
+|--------|-------------|---------|
+| `BeatMapGenerator` | Generate beat maps from audio (Ellis DP algorithm) | [Beat Detection](#beat-detection) |
+| `BeatStream` | Real-time beat event streaming synchronized with audio | [Beat Detection](#beat-detection) |
+| `OnsetStrengthEnvelope` | Perceptual onset strength envelope calculation (Mel spectrogram) | [Beat Detection](#beat-detection) |
+| `BeatTracker` | Dynamic Programming beat tracking (Ellis algorithm) | [Beat Detection](#beat-detection) |
+| `TempoDetector` | Global tempo estimation with perceptual weighting | [Beat Detection](#beat-detection) |
+| `DownbeatDetector` | Identify measure boundaries by intensity patterns | [Beat Detection](#beat-detection) |
+
+**Beat Utilities:** `hzToMel`, `melToHz`, `resampleAudio`, `createMelFilterbank`, `highPassFilter`, `gaussianSmooth`, `calculateStdDev`, `performBeatFFT`, `performSTFT` — see [Beat Detection Utilities](#beat-detection-utilities)
+
+**Beat Constants:** `DEFAULT_BEATMAP_GENERATOR_OPTIONS`, `DEFAULT_BEATSTREAM_OPTIONS`, `BEAT_ACCURACY_THRESHOLDS`, `BEAT_DETECTION_VERSION`, `BEAT_DETECTION_ALGORITHM`
+
 ### Utilities
 
 | Export | Description | Section |
@@ -142,6 +167,7 @@ A concise overview of all main exports from the library, organized by category.
 | `SeededRNG` | Deterministic random number generator | [Utilities](#utilities) |
 | `Logger` / `createLogger` / `LogLevel` | Centralized logging utility | [Utilities](#utilities) |
 | `SensorDashboard` / `display*Diagnostics()` | Diagnostic dashboard for sensors | [Utilities](#utilities) |
+| `ImageValidator` | Validate icon/image URL fields | [Utilities](#utilities) |
 
 **Validation Schemas:** `PlaylistTrackSchema`, `ServerlessPlaylistSchema`, `AudioProfileSchema`, `AbilityScoresSchema`, `CharacterSheetSchema` — see [Utilities](#utilities)
 
@@ -165,7 +191,11 @@ All TypeScript types are exported, including:
 
 **Equipment Types:** `EnhancedEquipment` (primary), `Equipment` (legacy), `InventoryItem`, `EquipmentProperty`, `EquipmentCondition`, `EquipmentModification`, `EnhancedInventoryItem`, `EquipmentMiniFeature`, `SpawnRandomOptions`, `TreasureHoardResult` — see [Equipment System](#equipment-system)
 
+**Box Types:** `BoxDropPool`, `BoxDrop`, `BoxContents`, `BoxOpenResult`, `BoxOpenRequirement`, `BoxOpenError` — see [BoxOpener](#boxopener)
+
 **Enemy Types:** `EnemyCategory`, `EnemyRarity`, `EnemyArchetype`, `EnemyMixMode`, `EncounterDifficulty`, `SignatureAbility`, `AudioPreference`, `EnemyTemplate`, `RarityConfig`, `EnemyGenerationOptions`, `EncounterGenerationOptions`, `EnemyMetadata`, `EnemyFeature` — see [Enemy Generation](#enemy-generation)
+
+**Beat Detection Types:** `Beat`, `BeatMap`, `BeatMapMetadata`, `BeatEvent`, `BeatEventType`, `BeatStreamCallback`, `AudioSyncState`, `BeatMapGeneratorOptions`, `BeatStreamOptions`, `BeatMapJSON`, `BeatAccuracy`, `ButtonPressResult`, `TempoEstimate`, `OSEConfig`, `BeatTrackerConfig`, `TempoDetectorConfig`, `DownbeatDetectorConfig`, `DownbeatDetectionResult`, `BeatMapGenerationProgress` — see [Beat Detection](#beat-detection) and [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)
 
 **Game Data:** `RACE_DATA`, `CLASS_DATA`, `SPELL_DATABASE`, `XP_THRESHOLDS` — see [Game Data Reference](#game-data-reference)
 
@@ -413,6 +443,8 @@ Spell representation for casting.
 | duration | string? | Duration |
 | components | string[]? | Components (V, S, M) |
 | description | string? | Spell description |
+| icon | string? | Optional icon URL for small UI display |
+| image | string? | Optional image URL for larger display |
 | damage_dice | string? | Damage dice |
 | damage_type | string? | Damage type |
 | attack_roll | boolean? | Requires attack roll? |
@@ -927,6 +959,39 @@ Centralized logging utility with configurable log levels and diagnostic modes.
 | `LogEntry` | Single log entry structure (timestamp, level, context, message, data) |
 | `LoggerConfig` | Configuration options (level, includeTimestamp, includeContext, customHandler) |
 
+#### ImageValidator
+
+*Location: [src/core/utils/ImageValidator.ts](src/core/utils/ImageValidator.ts)*
+
+*Also known as: Image URL validator, icon validator, image field validation*
+
+Validates icon and image URL fields for all entity types. Ensures URLs follow allowed formats before storage.
+
+**Valid URL Prefixes:** `http://`, `https://`, `/`, `assets/`
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `isValidImageUrl(url)` | `boolean` | Check if URL string is a valid format |
+| `validateImageUrl(value, fieldName)` | `ImageValidationResult` | Validate single image field (returns errors array) |
+| `validateImageFields(obj)` | `string[]` | Validate both icon and image fields on an object |
+| `getValidImagePrefixes()` | `ReadonlyArray<string>` | Get list of valid URL prefixes |
+
+**Types**
+
+| Type | Description |
+|------|-------------|
+| `ImageValidationResult` | Validation result with `valid: boolean` and `errors: string[]` |
+
+**Usage Example:**
+```typescript
+import { validateImageFields } from '@playlist-data-engine/core';
+
+const errors = validateImageFields({ icon: '/assets/icon.png', image: 'https://example.com/image.png' });
+if (errors.length > 0) {
+    console.error('Invalid image URLs:', errors);
+}
+```
+
 #### Sensor Dashboard
 
 *Location: [src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
@@ -1009,6 +1074,8 @@ Retrieves data from default constants and custom extensions registered via Exten
 | `speed` | `number` | Base walking speed in feet |
 | `traits` | `string[]` | Racial trait names/IDs |
 | `subraces` | `string[]` (optional) | Available subraces |
+| `icon` | `string` (optional) | Icon URL for small UI display |
+| `image` | `string` (optional) | Image URL for larger display |
 
 **ClassDataEntry**
 *Also known as: Class definition, job stats*
@@ -1027,6 +1094,8 @@ Retrieves data from default constants and custom extensions registered via Exten
 | `expertise_count` | `number` (optional) | Number of expertise choices |
 | `baseClass` | `Class` (optional) | Base class for template inheritance |
 | `audio_preferences` | `object` (optional) | Audio preferences for affinity |
+| `icon` | `string` (optional) | Icon URL for small UI display |
+| `image` | `string` (optional) | Image URL for larger display |
 
 **Template Inheritance:** Custom classes with `baseClass` inherit properties from base D&D 5e classes. Custom properties override base properties. `available_skills` replaces (not merges) the base list.
 
@@ -1323,6 +1392,264 @@ Generates RPG-style character names from track metadata using 7 naming formats w
 |--------|-------------|
 | `generateName(seed: string, track: PlaylistTrack, audioProfile: AudioProfile, characterClass: Class, deterministic?: boolean): string` | Generates name using weighted formats: Class Title (20%), Adjective Construct (20%), Clan Construct (10%), Descriptive Epithet (20%), Compound Adjective (15%), Artist-Inspired (10%), Mononym Subtitle (5%) |
 | `cleanTitle(title: string): string` | Removes "(Official Video)", "[Remix]", "ft.", track numbers, file extensions |
+
+---
+
+## Beat Detection
+
+Beat detection system based on the Ellis Dynamic Programming algorithm. Provides pre-analysis beat map generation and real-time beat event streaming synchronized with audio playback.
+
+**For comprehensive documentation including usage examples, see [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)**
+
+### Beat Types
+
+**Location:** `src/core/types/BeatMap.ts`
+
+| Type | Description | Key Properties |
+|------|-------------|----------------|
+| `Beat` | Single detected beat | `timestamp`, `beatInMeasure`, `isDownbeat`, `measureNumber`, `intensity`, `confidence` |
+| `BeatMap` | Complete beat map for a track | `audioId`, `duration`, `beats`, `bpm`, `metadata` |
+| `BeatMapMetadata` | Algorithm settings used | `version`, `algorithm`, `minBpm`, `maxBpm`, `dpAlpha`, `hopSizeMs`, `melBands` |
+| `BeatEvent` | Event emitted during playback | `beat`, `currentBpm`, `audioTime`, `timeUntilBeat`, `type` |
+| `AudioSyncState` | Synchronization state for debugging | `audioContextTime`, `audioElementTime`, `drift`, `isSynchronized`, `outputLatency` |
+| `TempoEstimate` | Tempo detection result | `primaryBpm`, `secondaryBpm`, `primaryWeight`, `secondaryWeight`, `isDuple`, `targetIntervalSeconds` |
+| `BeatMapGeneratorOptions` | Configuration for generation | `minBpm`, `maxBpm`, `intensityThreshold`, `hopSizeMs`, `dpAlpha`, `melBands`, `tempoCenter`, `tempoWidth` |
+| `BeatStreamOptions` | Configuration for streaming | `anticipationTime`, `userOffsetMs`, `compensateOutputLatency`, `timingTolerance` |
+| `ButtonPressResult` | Button press accuracy result | `accuracy`, `offset`, `matchedBeat`, `absoluteOffset` |
+
+### BeatMapGenerator
+
+**Location:** `src/core/analysis/beat/BeatMapGenerator.ts`
+
+Generates beat maps from audio using the Ellis DP algorithm. Analyzes entire track to detect beats and identify downbeats.
+
+**Constructor:**
+
+```typescript
+constructor(options?: BeatMapGeneratorOptions)
+```
+
+**Options (with defaults):**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `minBpm` | 60 | Minimum BPM to detect |
+| `maxBpm` | 180 | Maximum BPM to detect |
+| `intensityThreshold` | 0.3 | Intensity threshold for beat detection |
+| `noiseFloorThreshold` | 0.1 | Minimum threshold to prevent noise detection |
+| `hopSizeMs` | 10 | Milliseconds between FFT frames |
+| `fftSize` | 2048 | FFT window size in samples |
+| `rollingBpmWindowSize` | 8 | Number of beats for rolling BPM calculation |
+| `dpAlpha` | 680 | Ellis balance factor for tempo consistency |
+| `melBands` | 40 | Number of Mel frequency bands for OSE |
+| `highPassCutoff` | 0.4 | Hz, removes DC offset from OSE |
+| `gaussianSmoothMs` | 20 | Gaussian smoothing window for OSE |
+| `tempoCenter` | 0.5 | Seconds, center of tempo perception bias (120 BPM) |
+| `tempoWidth` | 1.4 | Octaves, width of tempo perception weighting |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `generateBeatMap(audioUrl: string, audioId: string, progressCallback?: ProgressCallback): Promise<BeatMap>` | Generate beat map from audio URL |
+| `generateBeatMapFromBuffer(audioBuffer: AudioBuffer, audioId: string, progressCallback?: ProgressCallback): Promise<BeatMap>` | Generate beat map from AudioBuffer |
+| `getProgress(): BeatMapGenerationProgress` | Get current generation progress |
+| `cancel(): void` | Cancel ongoing generation |
+| `static toJSON(beatMap: BeatMap): string` | Export beat map as JSON string |
+| `static fromJSON(json: string): BeatMap` | Load beat map from JSON string |
+| `static saveToFile(beatMap: BeatMap, path: string): Promise<void>` | Save beat map to disk (Node.js only) |
+| `static loadFromFile(path: string): Promise<BeatMap>` | Load beat map from disk (Node.js only) |
+
+### BeatStream
+
+**Location:** `src/core/analysis/beat/BeatStream.ts`
+
+Real-time beat event streaming synchronized with audio playback. Emits upcoming, exact, and passed beat events.
+
+**Constructor:**
+
+```typescript
+constructor(beatMap: BeatMap, audioContext: AudioContext, options?: BeatStreamOptions)
+```
+
+**Options (with defaults):**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `anticipationTime` | 2.0 | Time before beat to emit 'upcoming' event (seconds) |
+| `userOffsetMs` | 0 | Player-calibrated audio/visual offset |
+| `compensateOutputLatency` | true | Auto-adjust using AudioContext.outputLatency |
+| `timingTolerance` | 0.01 | Synchronization tolerance (10ms) |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `subscribe(callback: BeatStreamCallback): () => void` | Subscribe to beat events, returns unsubscribe function |
+| `start(): void` | Start streaming beat events |
+| `stop(): void` | Stop streaming beat events |
+| `seek(time: number): void` | Seek to a specific time in seconds |
+| `getUpcomingBeats(count: number): Beat[]` | Get next N beats for pre-rendering animations |
+| `getBeatAtTime(time: number): Beat \| null` | Get beat at specific time |
+| `getSyncState(): AudioSyncState` | Get current synchronization state for debugging |
+| `getCurrentBpm(): number` | Get current BPM calculated from recent beat intervals |
+| `checkButtonPress(timestamp: number): ButtonPressResult` | Check button press accuracy against nearest beat |
+| `getLastBeatAccuracy(): ButtonPressResult \| null` | Get accuracy of last button press |
+
+**Accuracy Levels:** Perfect (±10ms), Great (±25ms), Good (±50ms), Miss
+
+### OnsetStrengthEnvelope
+
+**Location:** `src/core/analysis/beat/OnsetStrengthEnvelope.ts`
+
+Calculates perceptual onset strength envelope using Mel spectrogram as described in Ellis Section 3.1.
+
+**Constructor:**
+
+```typescript
+constructor(config?: OSEConfig)
+```
+
+**Config Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `targetSampleRate` | 8000 | Target sample rate for resampling |
+| `fftWindowSize` | 32 | FFT window size in milliseconds |
+| `hopSizeMs` | 10 | Hop size in milliseconds |
+| `melBands` | 40 | Number of Mel frequency bands |
+| `highPassCutoff` | 0.4 | High-pass filter cutoff in Hz |
+| `gaussianSmoothMs` | 20 | Gaussian smoothing window in ms |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `calculate(audioBuffer: AudioBuffer): OSEResult` | Calculate onset strength envelope from audio buffer |
+
+**OSEResult:**
+
+| Property | Description |
+|----------|-------------|
+| `envelope` | Float32Array of onset strength values |
+| `sampleRate` | Sample rate of the envelope |
+| `frameCount` | Number of frames |
+| `hopSize` | Hop size in samples |
+
+### BeatTracker
+
+**Location:** `src/core/analysis/beat/BeatTracker.ts`
+
+Dynamic Programming beat tracker implementing the Ellis algorithm. Finds globally optimal beat sequence.
+
+**Constructor:**
+
+```typescript
+constructor(config?: BeatTrackerConfig)
+```
+
+**Config Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `dpAlpha` | 680 | Ellis balance factor |
+| `minPredecessorRatio` | 0.5 | Minimum predecessor ratio (τp/2) |
+| `maxPredecessorRatio` | 2.0 | Maximum predecessor ratio (2τp) |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `trackBeats(onsetEnvelope: Float32Array, tempoEstimate: TempoEstimate, config?: { hopSize: number, sampleRate: number }): BeatTrackingResult` | Track beats using DP algorithm |
+
+**BeatTrackingResult:**
+
+| Property | Description |
+|----------|-------------|
+| `beats` | Array of Beat objects |
+| `rawBeatIndices` | Frame indices of detected beats |
+| `scores` | Cumulative scores at each beat |
+
+### TempoDetector
+
+**Location:** `src/core/analysis/beat/TempoDetector.ts`
+
+Estimates global tempo using autocorrelation with perceptual weighting (Ellis Section 3.2).
+
+**Constructor:**
+
+```typescript
+constructor(config?: TempoDetectorConfig)
+```
+
+**Config Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `tempoCenter` | 0.5 | Tempo center in seconds (120 BPM) |
+| `tempoWidth` | 1.4 | Tempo width in octaves |
+| `minBpm` | 60 | Minimum BPM |
+| `maxBpm` | 180 | Maximum BPM |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `estimateTempo(onsetEnvelope: Float32Array, hopSize: number): TempoEstimate` | Estimate tempo from onset envelope |
+
+### DownbeatDetector
+
+**Location:** `src/core/analysis/beat/DownbeatDetector.ts`
+
+Identifies measure boundaries by analyzing intensity patterns and autocorrelation.
+
+**Constructor:**
+
+```typescript
+constructor(config?: DownbeatDetectorConfig)
+```
+
+**Config Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `measureLengths` | [2, 3, 4, 6] | Measure lengths to try |
+| `minIntensityDifference` | 0.1 | Minimum intensity difference for downbeat |
+| `patternWeight` | 0.5 | Weight for pattern analysis vs autocorrelation |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `detectDownbeats(beats: Beat[]): DownbeatDetectionResult` | Detect downbeats in beat array |
+
+### Beat Detection Utilities
+
+**Location:** `src/core/analysis/beat/utils/audioUtils.ts`
+
+| Function | Description |
+|----------|-------------|
+| `hzToMel(hz: number): number` | Convert Hz to Mel scale: `2595 * log10(1 + f/700)` |
+| `melToHz(mel: number): number` | Convert Mel to Hz: `700 * (10^(m/2595) - 1)` |
+| `resampleAudio(buffer: AudioBuffer, targetRate: number): ResampledAudio` | Resample audio to target sample rate |
+| `createMelFilterbank(numBands: number, fftSize: number, sampleRate: number): Float32Array[]` | Create Mel filterbank (triangular filters) |
+| `highPassFilter(signal: Float32Array, cutoff: number, sampleRate: number): Float32Array` | Apply high-pass filter to signal |
+| `gaussianSmooth(signal: Float32Array, windowMs: number, sampleRate: number): Float32Array` | Gaussian smoothing on signal |
+| `calculateStdDev(signal: Float32Array): number` | Calculate standard deviation of signal |
+| `performFFT(samples: Float32Array): Float32Array` | Perform FFT on audio samples |
+| `performSTFT(samples: Float32Array, fftSize: number, hopSize: number): STFTResult` | Perform Short-Time Fourier Transform |
+
+### Beat Detection Constants
+
+**Location:** `src/core/types/BeatMap.ts`
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `DEFAULT_BEATMAP_GENERATOR_OPTIONS` | See above | Default BeatMapGenerator options |
+| `DEFAULT_BEATSTREAM_OPTIONS` | See above | Default BeatStream options |
+| `BEAT_ACCURACY_THRESHOLDS` | `{ perfect: 0.010, great: 0.025, good: 0.050 }` | Accuracy thresholds in seconds |
+| `BEAT_DETECTION_VERSION` | `'1.0.0'` | Algorithm version |
+| `BEAT_DETECTION_ALGORITHM` | `'ellis-dp-v1'` | Algorithm identifier |
 
 ---
 
@@ -2817,13 +3144,17 @@ Conditional property triggers:
 | Type | Description | Location |
 |------|-------------|----------|
 | `EquipmentProperty` | Single property with type, target, value, optional condition | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
-| `EnhancedEquipment` | Full equipment definition with properties, features, skills, spells, damage, AC | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `EnhancedEquipment` | Full equipment definition with properties, features, skills, spells, damage, AC, icon, image | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `EquipmentModification` | Enchantment/curse applied to equipment with properties and additions | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `EnhancedInventoryItem` | Inventory item with quantity, equipped status, modifications | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `EffectApplicationResult` | Result of applying/removing equipment effects | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `EquipmentValidationResult` | Result of validating equipment data | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `SpawnRandomOptions` | Options for filtering random equipment spawns | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 | `TreasureHoardResult` | Result of generating treasure hoard | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `BoxDropPool` | Single entry in a box drop pool (weight, itemName, quantity, gold) | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `BoxDrop` | A single drop slot containing a weighted pool of possible items | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `BoxContents` | Box configuration (drops array and consumeOnOpen flag) | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
+| `BoxOpenResult` | Result of opening a box (items array, gold total, consumeBox flag) | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) |
 
 ### EquipmentEffectApplier
 *Also known as: Equipment effects manager, item bonus applier, equip/unequip handler*
@@ -2931,8 +3262,117 @@ Batch spawning utilities for equipment. Spawns from lists, by rarity, by tags, r
 | `spawnFromTemplate(templateId: string, baseItemName?: string)` | Spawn item from template ID (null if not found) |
 | `spawnTreasureHoard(cr: number, rng: SeededRNG)` | Spawn treasure hoard based on challenge rating |
 | `addToCharacter(character: CharacterSheet, items: EnhancedEquipment[], equip?: boolean)` | Add spawned equipment to character inventory |
+| `openBoxForCharacter(character: CharacterSheet, boxName: string, rng: SeededRNG)` | Open a named box in the character's inventory, remove it, add contents — see [BoxOpener](#boxopener) |
 
 For usage examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md#batch-spawning).
+
+### BoxOpener
+
+*Also known as: Loot box opener, pack unboxer, drop generator*
+
+**Location:** [src/core/equipment/BoxOpener.ts](src/core/equipment/BoxOpener.ts)
+
+Static utility class for opening `type: 'box'` equipment items and generating their contents. Supports guaranteed containers (like adventure packs), probability-based loot boxes, gold drops, quantity parameters for bulk items, and nested boxes (which are added unopened). All results are deterministic when given the same `SeededRNG` seed.
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `openBox(box: Equipment, rng: SeededRNG, inventory?: EnhancedInventoryItem[]): BoxOpenResult` | Open a box and generate its contents. If `inventory` provided and box has `openRequirements`, validates requirements first and consumes required items. Returns `success: false` with error if requirements not met. |
+| `checkRequirements(box: Equipment, inventory: EnhancedInventoryItem[]): BoxOpenError \| null` | Check if box opening requirements are met. Returns `null` if all requirements satisfied, or `BoxOpenError` with details of first unmet requirement. |
+| `canOpen(box: Equipment, inventory: EnhancedInventoryItem[]): boolean` | Simple boolean check for UI use. Returns `true` if box can be opened with given inventory. |
+| `getRequirementsDescription(box: Equipment): string \| null` | Get human-readable description of requirements. Returns `null` if no requirements, or string like "Requires: Iron Key" or "Requires: 3 Lockpicks". |
+| `isBox(equipment: Equipment): boolean` | Return `true` if the equipment has `type: 'box'` and a `boxContents` property. |
+| `previewContents(box: Equipment)` | Preview all possible items, gold range, and requirements without opening. Returns `{ possibleItems: string[], possibleGold: { min, max }, totalDrops: number, openRequirements?: BoxOpenRequirement[] }`. Useful for UI tooltips. |
+
+#### BoxOpenResult
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `success` | `boolean` | Whether the box was successfully opened. `false` if requirements not met. |
+| `items` | `BaseEquipment[]` | All items generated from the box drops (empty if not opened) |
+| `gold` | `number` | Total gold awarded from gold-type drops |
+| `consumeBox` | `boolean` | Whether the box should be removed from inventory (controlled by `boxContents.consumeOnOpen`) |
+| `error` | `BoxOpenError?` | Error details if box could not be opened (requirements not met) |
+| `consumedItems` | `{ name: string; quantity: number }[]?` | Items consumed from inventory to open the box (only when requirements exist) |
+
+#### Box Type Interfaces
+
+| Interface | Key Properties | Description |
+|-----------|---------------|-------------|
+| `BoxDropPool` | `weight`, `itemName?`, `quantity?`, `gold?` | Single entry in a drop pool. Weights in a pool should sum to 100. `itemName` and `gold` are mutually exclusive. |
+| `BoxDrop` | `pool: BoxDropPool[]` | One drop slot — exactly one entry from the pool is selected per drop. |
+| `BoxContents` | `drops: BoxDrop[]`, `consumeOnOpen?`, `openRequirements?` | Full box configuration. `consumeOnOpen` defaults to `true`. `openRequirements` is an optional array of items that must be consumed to open. |
+| `BoxOpenRequirement` | `itemName`, `quantity?` | A single requirement to open a box. `itemName` is the item to consume, `quantity` defaults to 1. Gold requirements use `"Gold Coin"` as itemName. |
+| `BoxOpenError` | `code`, `message`, `requirement?` | Error returned when box cannot be opened. `code` is `'MISSING_ITEM'`, `'INSUFFICIENT_QUANTITY'`, or `'NO_BOX_CONTENTS'`. |
+
+#### Usage Examples
+
+```typescript
+import { BoxOpener, EquipmentSpawnHelper, SeededRNG } from 'playlist-data-engine';
+
+const rng = new SeededRNG('my-seed');
+
+// --- Open a box directly ---
+const explorersPack = /* Equipment with type: 'box' */;
+const result = BoxOpener.openBox(explorersPack, rng);
+console.log(result.items);      // Generated Equipment[] (e.g., 26 items for Explorer's Pack)
+console.log(result.gold);       // Gold total (0 for packs, non-zero for treasure chests)
+console.log(result.consumeBox); // true (pack is consumed on open)
+
+// --- Check if an item is a box ---
+if (BoxOpener.isBox(someItem)) {
+    const preview = BoxOpener.previewContents(someItem);
+    console.log(preview.possibleItems);            // ['Backpack', 'Bedroll', ...]
+    console.log(preview.possibleGold);             // { min: 0, max: 0 }
+    console.log(preview.totalDrops);               // 8
+}
+
+// --- Open a box already in a character's inventory ---
+// (removes box from inventory, adds contents)
+EquipmentSpawnHelper.openBoxForCharacter(character, "Explorer's Pack", rng);
+
+// --- Locked boxes with requirements ---
+const inventory = character.equipment.items; // EnhancedInventoryItem[]
+
+// Check if a locked box can be opened
+const lockedChest = EquipmentSpawnHelper.getEquipmentDataStatic('Locked Chest');
+if (BoxOpener.canOpen(lockedChest, inventory)) {
+    // Open the locked box (consumes required item from inventory)
+    const result = BoxOpener.openBox(lockedChest, rng, inventory);
+    if (result.success) {
+        console.log('Box opened! Consumed:', result.consumedItems);
+        console.log('Got:', result.items.map(i => i.name));
+    }
+} else {
+    // Show user what's needed
+    console.log(BoxOpener.getRequirementsDescription(lockedChest));
+    // Output: "Requires: 1 Iron Key"
+}
+
+// Preview requirements without opening
+const preview = BoxOpener.previewContents(lockedChest);
+console.log(preview.openRequirements); // [{ itemName: 'Iron Key' }]
+
+// Check requirements programmatically
+const error = BoxOpener.checkRequirements(lockedChest, inventory);
+if (error) {
+    console.log(`Cannot open: ${error.message}`);
+    console.log(`Missing: ${error.requirement?.itemName}`);
+}
+```
+
+#### Box Behavior Rules
+
+- **Guaranteed containers**: Pools with a single entry (weight 100) always drop that item.
+- **Probability boxes**: Multiple pool entries with different weights — one is selected per drop.
+- **Nested boxes**: If a drop resolves to another `type: 'box'` item, it is added to inventory unopened (no recursive opening).
+- **Quantity**: `BoxDropPool.quantity` creates multiple copies of the same item in one drop (e.g., `quantity: 10` for Torch adds 10 torch items).
+- **Gold drops**: Use `gold` instead of `itemName` in a pool entry for a gold award.
+- **Deterministic**: Same seed + same box = same result every time.
+- **Opening requirements**: Boxes with `openRequirements` require consuming items from inventory. All requirements must be met (atomic operation). Gold requirements use `"Gold Coin"` as itemName with quantity.
+
+For comprehensive examples and all box definitions, see [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md#box-equipment-type).
 
 ### EquipmentGenerator
 *Also known as: Equipment manager, inventory system, gear handler, starting equipment provider*
@@ -3370,6 +3810,7 @@ Singleton registry for managing runtime customization of procedural generation l
 | Type | Description |
 |------|-------------|
 | `ExtensionCategory` | All extensible category names (equipment, spells, races, classes, skills, appearance, etc.) |
+| `ImageSupportedCategory` | Categories that support icon/image fields: `spells`, `skills`, `classFeatures`, `racialTraits`, `equipment`, `races.data`, `classes.data` |
 | `SpawnMode` | Spawn mode: `'relative'` | `'absolute'` | `'default'` | `'replace'` |
 | `ExtensionOptions` | Registration options: mode, weights, validate |
 | `RegistrationEntry` | Batch registration: category, items, options |
@@ -3400,6 +3841,10 @@ Singleton registry for managing runtime customization of procedural generation l
 | `validate(category, items)` | `ValidationResult` | Validate items against category schema |
 | `exportCustomData()` | `Record<string, any>` | Export all custom data |
 | `exportCustomDataForCategory(category)` | `any[]` | Export custom data for single category |
+| `batchAddIcons(category, iconMap, identifierKey?)` | `number` | Add icons to items matching names/IDs. Returns count updated. Validates URLs first. |
+| `batchAddImages(category, imageMap, identifierKey?)` | `number` | Add images to items matching names/IDs. Returns count updated. Validates URLs first. |
+| `batchUpdateImages(category, predicate, updates)` | `number` | Update icon/image on all items matching predicate. Returns count updated. |
+| `batchByCategory(category, property, valueToImageMap)` | `number` | Add icons/images by property value (e.g., school, rarity). Returns count updated. |
 
 ---
 
@@ -3411,6 +3856,49 @@ Singleton registry for managing runtime customization of procedural generation l
 | `absolute` | Only custom items can spawn (ignore defaults) | Themed content packs, complete replacement |
 | `default` | All items (default + custom) have equal weight | Disable custom spawn weights |
 | `replace` | Clear previous custom data before registering new items | Hot-reload content packs during development |
+
+**Image Supported Categories:**
+
+The following categories support `icon` and `image` fields for batch operations:
+
+| Category | Entity Type | Identifier Key |
+|----------|-------------|----------------|
+| `spells` | Spell | `name` or `id` |
+| `skills` | CustomSkill | `id` |
+| `classFeatures` | ClassFeature | `id` |
+| `racialTraits` | RacialTrait | `id` |
+| `equipment` | EnhancedEquipment | `name` |
+| `races.data` | RaceDataEntry | `name` (race name) |
+| `classes.data` | ClassDataEntry | `name` (class name) |
+
+**Batch Image Methods Usage:**
+```typescript
+const manager = ExtensionManager.getInstance();
+
+// Add icons to specific spells
+manager.batchAddIcons('spells', {
+    'Fireball': '/assets/spells/fireball.png',
+    'Magic Missile': '/assets/spells/magic-missile.png'
+});
+
+// Add same icon to all cantrips
+manager.batchUpdateImages('spells',
+    spell => spell.level === 0,
+    { icon: '/assets/spells/cantrip-icon.png' }
+);
+
+// Add icons by spell school
+manager.batchByCategory('spells', 'school', {
+    'Evocation': '/assets/icons/fire.png',
+    'Necromancy': '/assets/icons/skull.png'
+});
+
+// Add icons by equipment rarity
+manager.batchByCategory('equipment', 'rarity', {
+    'legendary': '/assets/icons/star-gold.png',
+    'very_rare': '/assets/icons/star-purple.png'
+});
+```
 
 ### FeatureQuery
 
@@ -3428,8 +3916,8 @@ Query and validation layer for class features and racial traits stored in Extens
 
 | Type | Location | Description |
 |------|----------|-------------|
-| `ClassFeature` | `src/core/features/FeatureQuery.ts` | Class feature with id, name, description, type, class, level, prerequisites, effects, source, tags, lore |
-| `RacialTrait` | `src/core/features/FeatureQuery.ts` | Racial trait with id, name, description, race, optional subrace, prerequisites, effects, source, tags, lore |
+| `ClassFeature` | `src/core/features/FeatureQuery.ts` | Class feature with id, name, description, type, class, level, prerequisites, effects, source, tags, lore, icon, image |
+| `RacialTrait` | `src/core/features/FeatureQuery.ts` | Racial trait with id, name, description, race, optional subrace, prerequisites, effects, source, tags, lore, icon, image |
 | `FeatureType` | `src/core/types/Character.ts` | Feature type: `'passive'` | `'active'` | `'resource'` | `'trigger'` |
 | `FeatureEffectType` | `src/core/types/Character.ts` | Effect type: `'stat_bonus'` | `'skill_proficiency'` | `'ability_unlock'` | `'passive_modifier'` | `'resource_grant'` | `'spell_slot_bonus'` |
 | `FeatureEffect` | `src/core/types/Character.ts` | Feature effect with type, target, value, optional condition, description |
@@ -3572,7 +4060,7 @@ Query and validation layer for character skills stored in ExtensionManager.
 
 | Type | Description | Location |
 |------|-------------|----------|
-| `CustomSkill` | Registered skill with ID, name, ability, source, prerequisites | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
+| `CustomSkill` | Registered skill with ID, name, ability, source, prerequisites, icon, image | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
 | `SkillPrerequisite` | Prerequisites for skills (level, abilities, class, race, skills, features, spells) | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
 | `SkillValidationResult` | Validation result with valid flag and errors array | [src/core/skills/SkillValidator.ts](src/core/skills/SkillValidator.ts) |
 | `SkillQueryStats` | Statistics about registered skills (totals, by ability, categories) | [src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts) |
@@ -3651,7 +4139,7 @@ Query and validation layer for spells stored in ExtensionManager.
 
 | Type | Description | Location |
 |------|-------------|----------|
-| `RegisteredSpell` | Registered spell with ID, name, level, school, source, prerequisites | [src/core/spells/SpellQuery.ts](src/core/spells/SpellQuery.ts) |
+| `RegisteredSpell` | Registered spell with ID, name, level, school, source, prerequisites, icon, image | [src/core/spells/SpellQuery.ts](src/core/spells/SpellQuery.ts) |
 | `Spell` | Base spell interface with name, level, school, properties | [src/core/spells/SpellTypes.ts](src/core/spells/SpellTypes.ts) |
 | `SpellPrerequisite` | Prerequisites for spells (level, abilities, class, features, spells, skills) | [src/core/spells/SpellTypes.ts](src/core/spells/SpellTypes.ts) |
 | `ValidationResult` | Validation result with valid flag, errors, and warnings | [src/core/spells/SpellValidator.ts](src/core/spells/SpellValidator.ts) |
