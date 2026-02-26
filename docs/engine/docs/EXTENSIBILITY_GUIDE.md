@@ -7,16 +7,17 @@ This guide explains how to extend the Playlist Data Engine with custom content. 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [ExtensionManager API](#extensionmanager-api)
-3. [Helper Functions](#helper-functions)
-4. [Spawn Rate System](#spawn-rate-system)
-5. [Category-Specific Examples](#category-specific-examples)
-6. [Content Packs](#content-packs)
-7. [Best Practices](#best-practices)
-8. [Validation](#validation)
-9. [Troubleshooting](#troubleshooting)
-10. [Reference](#reference)
-11. [Support](#support)
+2. [Using the UI (DataViewerTab)](#using-the-ui-dataviewertab)
+3. [ExtensionManager API](#extensionmanager-api)
+4. [Helper Functions](#helper-functions)
+5. [Spawn Rate System](#spawn-rate-system)
+6. [Category-Specific Examples](#category-specific-examples)
+7. [Content Packs](#content-packs)
+8. [Best Practices](#best-practices)
+9. [Validation](#validation)
+10. [Troubleshooting](#troubleshooting)
+11. [Reference](#reference)
+12. [Support](#support)
 
 ---
 
@@ -30,6 +31,214 @@ The extensibility system allows you to:
 - **Create content packs** that can be loaded at runtime
 
 **Location:** [src/core/extensions/ExtensionManager.ts](../src/core/extensions/ExtensionManager.ts)
+
+---
+
+## Using the UI (DataViewerTab)
+
+The application provides a graphical interface for creating and managing custom content through the **DataViewerTab**. This is the recommended approach for most users, as it provides visual feedback, validation, and eliminates the need to write code.
+
+### Accessing Content Creation
+
+1. Navigate to the **DataViewerTab** in the application
+2. Select a category from the tabs (Spells, Skills, Classes, Races, Equipment, Appearance, etc.)
+3. Click the appropriate **Create** button in the section header
+
+### Available Content Types
+
+| Content Type | Button | Description |
+|-------------|--------|-------------|
+| **Equipment** | "Create Equipment" | Weapons, armor, and items with properties, grants, and spawn weights |
+| **Spells** | "Create Spell" | Custom spells with level, school, casting time, and class availability |
+| **Skills** | "Create Skill" | Custom skills with ability modifier and categories |
+| **Class Features** | "Create Feature" | Class-specific abilities with effects and prerequisites |
+| **Racial Traits** | "Create Trait" | Race-specific traits with effects and subrace support |
+| **Races** | "Create Race" | Full race definition with ability bonuses, traits, and subraces |
+| **Classes** | "Create Class" | Complete class with hit die, saves, skills, spellcasting, and audio preferences |
+| **Appearance** | "Add" per category | Body types, skin tones, hair colors/styles, eye colors, facial features |
+
+### Creating Equipment
+
+1. Navigate to the **Equipment** tab
+2. Click **Create Equipment** button
+3. Fill in the required fields:
+   - **Name**: Unique identifier for the item
+   - **Type**: weapon, armor, or item
+   - **Rarity**: common, uncommon, rare, very_rare, legendary
+   - **Weight**: Carrying weight
+4. Optional advanced options:
+   - **Properties**: Special abilities (damage, stat bonuses, etc.)
+   - **grantsSkills**: Skills granted by this item
+   - **grantsSpells**: Spells granted with uses and recharge
+   - **grantsFeatures**: Features granted when equipped
+   - **Tags**: Categories for filtering
+   - **Spawn Weight**: How likely the item is to spawn (0 = never, 1 = normal)
+5. Click **Create Equipment** to register
+
+### Creating Spells
+
+1. Navigate to the **Spells** tab
+2. Click **Create Spell** button
+3. Fill in the required fields:
+   - **Name**: Spell name
+   - **Level**: 0 (cantrip) through 9
+   - **School**: Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation
+   - **Casting Time**: e.g., "1 action", "1 bonus action"
+   - **Range**: e.g., "60 feet", "Self", "Touch"
+   - **Duration**: e.g., "Instantaneous", "1 minute"
+   - **Components**: Verbal (V), Somatic (S), Material (M)
+   - **Description**: What the spell does
+4. **Class Availability**: Select which classes can use this spell (leave empty for all spellcasters)
+5. Click **Create Spell** to register
+
+### Creating Skills
+
+1. Navigate to the **Skills** tab
+2. Click **Create Skill** button
+3. Fill in the fields:
+   - **ID**: Unique identifier in `lowercase_with_underscores` format
+   - **Name**: Display name
+   - **Ability**: STR, DEX, CON, INT, WIS, or CHA
+   - **Description** (optional): What the skill covers
+   - **Categories** (optional): Tags like 'exploration', 'combat', 'social'
+   - **Armor Penalty** (optional): Whether armor affects this skill
+4. Click **Create Skill** to register
+
+### Creating Class Features
+
+1. Navigate to the **Class Features** tab
+2. Click **Create Feature** button
+3. Fill in the fields:
+   - **ID**: Unique identifier in `lowercase_with_underscores` format
+   - **Name**: Display name
+   - **Class**: Which class gets this feature
+   - **Level**: Level when the feature is gained
+   - **Type**: passive, active, or reaction
+   - **Description**: What the feature does
+   - **Effects**: Add effects like stat bonuses, skill proficiencies, ability unlocks
+   - **Prerequisites** (optional): Requirements to gain this feature
+4. Click **Create Feature** to register
+
+### Creating Racial Traits
+
+1. Navigate to the **Racial Traits** tab
+2. Click **Create Trait** button
+3. Fill in the fields:
+   - **ID**: Unique identifier in `lowercase_with_underscores` format
+   - **Name**: Display name
+   - **Race**: Which race gets this trait
+   - **Subrace** (optional): For subrace-specific traits
+   - **Description**: What the trait does
+   - **Effects**: Add effects like damage resistance, special abilities
+   - **Prerequisites** (optional): Requirements (can include subrace)
+4. Click **Create Trait** to register
+
+### Creating Races
+
+1. Navigate to the **Races** tab
+2. Click **Create Race** button
+3. Fill in the basic info:
+   - **Name**: Race name
+   - **Description** (optional): Lore and background
+   - **Speed**: Base movement speed (default 30)
+4. Set **Ability Bonuses**: Distribute points among STR, DEX, CON, INT, WIS, CHA
+5. Select **Traits**: Choose from existing racial traits or create new ones inline
+6. **Subraces** (optional): Add subrace names with their own ability bonuses and traits
+7. Click **Create Race** to register
+
+### Creating Classes
+
+1. Navigate to the **Classes** tab
+2. Click **Create Class** button
+3. Fill in the basic info:
+   - **Name**: Class name
+   - **Description** (optional): Flavor text
+   - **Base Class** (optional): Inherit from existing class template
+4. Set **Core Stats**:
+   - **Hit Die**: d6, d8, d10, or d12
+   - **Primary Ability**: Main ability score
+   - **Saving Throws**: Select exactly 2
+5. Configure **Skills**:
+   - **Skill Count**: Number of skills to choose
+   - **Available Skills**: Select from all skills
+   - **Expertise** (optional): Enable expertise selection
+6. **Spellcasting** (optional): Check if the class casts spells
+7. **Audio Preferences** (optional): Set audio generation preferences
+8. Click **Create Class** to register
+
+### Creating Appearance Options
+
+Appearance options are simple text or color values added per category:
+
+1. Navigate to the **Appearance** tab
+2. Find the desired category section
+3. Click **Add** button next to the category name
+4. Enter the value:
+   - **Text categories** (bodyTypes, hairStyles, facialFeatures): Enter descriptive text
+   - **Color categories** (skinTones, hairColors, eyeColors): Enter hex color (#RRGGBB) or use color picker
+5. Click **Add** to register
+
+### Managing Custom Content
+
+Custom items display a **"Custom" badge** with action buttons:
+
+| Action | Description |
+|--------|-------------|
+| **Edit** (pencil icon) | Opens the creation form pre-populated with the item's data |
+| **Duplicate** (copy icon) | Creates a copy of the item with "(Copy)" appended to the name |
+| **Delete** (trash icon) | Removes the custom item (requires confirmation) |
+
+### Spawn Mode Controls
+
+Each category section includes **Spawn Mode Controls** to manage how custom content is mixed with defaults:
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| **Relative** | Custom items added to default pool with weights | Add items to existing content |
+| **Absolute** | Only custom items can spawn | Themed content, complete replacement |
+| **Default** | All items have equal weight (1.0) | Reset spawn weights to default |
+| **Replace** | Clear previous custom data before registering | Hot-reload during development |
+
+#### Weight Editor
+
+Click **Advanced** in the Spawn Mode Controls to access the weight editor:
+- View all items and their current spawn weights
+- Adjust individual weights (0 = never spawns, 1 = normal, 2+ = more common)
+- Changes apply immediately
+
+### Import/Export
+
+Use the **Import/Export** buttons in Spawn Mode Controls:
+
+**Export:**
+- **Export Category**: Download JSON for the current category only
+- **Export All**: Download a master JSON file with all custom content
+
+**Import:**
+1. Click **Import** button
+2. Select a valid JSON file
+3. Review the content preview
+4. Choose to merge or replace existing content
+5. Click **Import** to add the content
+
+### Validation
+
+All forms include automatic validation:
+- Required fields are marked
+- Invalid values show inline error messages
+- Reference validation (e.g., checking if a trait ID exists)
+- Business rule validation (e.g., classes must have exactly 2 saving throws)
+
+### Tips
+
+1. **Start with Relative mode**: Add custom items alongside defaults
+2. **Use Absolute mode sparingly**: This hides all default content
+3. **Set spawn weights**: Control rarity (0.1 = rare, 1.0 = normal, 2.0 = common)
+4. **Export regularly**: Create backups of your custom content
+5. **Use duplicate**: Create variations without starting from scratch
+6. **Check validation errors**: They indicate why content wasn't registered
+
+---
 
 ### Supported Categories
 

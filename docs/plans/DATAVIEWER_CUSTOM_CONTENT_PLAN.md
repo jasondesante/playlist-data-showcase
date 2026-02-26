@@ -332,7 +332,7 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Class-specific spells appear only for that class (verified 2026-02-26 - integration test created at src/__tests__/classSpecificSpellsIntegration.test.ts, 23 tests pass confirming: ExtensionManager registration of spells with classes property, SpellQuery.getSpellsForClass() returns spells only for specified classes, spells without classes property are available to all spellcasters, multi-class spells appear for all specified classes, spells do NOT appear for classes not in their classes array, custom spells coexist with default spells, query stats correctly count custom spells)
 
 ### 8.3 Documentation
-- [ ] Update EXTENSIBILITY_GUIDE.md with UI instructions
+- [x] Update EXTENSIBILITY_GUIDE.md with UI instructions (completed 2026-02-26)
 - [ ] Add JSDoc comments to all new components
 - [ ] Add JSDoc comments to all new hooks
 
