@@ -297,11 +297,11 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] **Refresh button** to reload all dropdown options from registry
 - [x] Create `PrerequisitesBuilder.css` with clean styling
 
-### 5.4 Update Forms to Use Shared Components
+### 5.4 Update Forms to Use Shared Components ✅ DONE
 - [x] Update RacialTraitCreatorForm to use EffectsBuilder and PrerequisitesBuilder ✅ DONE
 - [x] Update ClassFeatureCreatorForm to use EffectsBuilder and PrerequisitesBuilder ✅ DONE
-- [ ] Update RaceCreatorForm if it has effects/prerequisites
-- [ ] Remove duplicated inline code from all forms
+- [x] Update RaceCreatorForm if it has effects/prerequisites ✅ DONE (investigated - RaceCreatorForm doesn't have effects/prerequisites fields; races are foundational choices that don't need prerequisites, and ability_bonuses are direct fields not effect objects)
+- [x] Remove duplicated inline code from all forms ✅ DONE (verified all forms use shared components: RacialTraitCreatorForm, ClassFeatureCreatorForm use EffectsBuilder/PrerequisitesBuilder; SpellCreatorForm uses CastingTimeSelect/RangeSelect/DurationSelect; all forms use ImageFieldInput where applicable; EquipmentCreatorForm uses BoxContentsBuilder)
 
 ### 5.5 Racial Trait Subrace Dynamic Dropdown
 - [ ] Update RacialTraitCreatorForm
