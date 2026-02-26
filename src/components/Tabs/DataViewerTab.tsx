@@ -85,7 +85,7 @@ import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/f
 import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
 import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
 import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Swords } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -987,6 +987,7 @@ export function DataViewerTab() {
 
   // Render skills grouped by ability
   // Phase 4.3: Added SkillCreatorForm for custom skill creation
+  // Phase 4.1: Converted to modal pattern
   const renderSkills = () => {
     const grouped = groupSkillsByAbility(getFilteredData as CustomSkill[]);
     const abilities = Object.keys(grouped).sort();
@@ -996,31 +997,14 @@ export function DataViewerTab() {
         {/* Skill Creation Header */}
         <div className="dataviewer-section-header">
           <Button
-            variant={showSkillCreator ? 'outline' : 'primary'}
+            variant="primary"
             size="sm"
-            onClick={() => setShowSkillCreator(!showSkillCreator)}
-            leftIcon={showSkillCreator ? X : Plus}
+            onClick={() => setShowSkillCreator(true)}
+            leftIcon={Plus}
           >
-            {showSkillCreator ? 'Cancel' : 'Create Skill'}
+            Create Skill
           </Button>
         </div>
-
-        {/* Skill Creator Form (Phase 4.3) */}
-        {showSkillCreator && (
-          <Card className="dataviewer-creator-card">
-            <CardHeader>
-              <h3 className="dataviewer-creator-title">
-                <Plus size={18} />
-                Create Custom Skill
-              </h3>
-            </CardHeader>
-            <SkillCreatorForm
-              onCreate={handleCreateSkill}
-              onCancel={() => setShowSkillCreator(false)}
-              submitButtonText="Create Skill"
-            />
-          </Card>
-        )}
 
         {/* Skills List */}
         <div className="dataviewer-grouped-list">
@@ -2420,6 +2404,22 @@ export function DataViewerTab() {
           onCreate={handleCreateSpell}
           onCancel={() => setShowSpellCreator(false)}
           submitButtonText="Create Spell"
+        />
+      </ContentCreatorModal>
+
+      {/* Skill Creator Modal (Phase 4.1) */}
+      <ContentCreatorModal
+        isOpen={showSkillCreator}
+        onClose={() => setShowSkillCreator(false)}
+        title="Create Custom Skill"
+        subtitle="Add a new skill for character proficiency"
+        icon={Swords}
+        showFooter={false}
+      >
+        <SkillCreatorForm
+          onCreate={handleCreateSkill}
+          onCancel={() => setShowSkillCreator(false)}
+          submitButtonText="Create Skill"
         />
       </ContentCreatorModal>
 

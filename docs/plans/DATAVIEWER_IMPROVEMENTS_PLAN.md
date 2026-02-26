@@ -215,13 +215,13 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 
 ## Phase 4: UI Consistency - Modal Conversion
 
-### 4.1 Convert SkillCreatorForm to Modal
-- [ ] Update DataViewerTab.tsx
-  - [ ] Add `showSkillCreatorModal` state
-  - [ ] Change "Create Skill" button to open modal
-  - [ ] Wrap SkillCreatorForm in ContentCreatorModal
-- [ ] Ensure modal has same styling as other creator modals
-- [ ] Test creation flow end-to-end
+### 4.1 Convert SkillCreatorForm to Modal ✅ DONE
+- [x] Update DataViewerTab.tsx
+  - [x] Add `showSkillCreatorModal` state (already existed as `showSkillCreator`)
+  - [x] Change "Create Skill" button to open modal
+  - [x] Wrap SkillCreatorForm in ContentCreatorModal
+- [x] Ensure modal has same styling as other creator modals
+- [x] Test creation flow end-to-end
 
 ### 4.2 Convert EquipmentCreatorForm to Modal
 - [ ] Update DataViewerTab.tsx
