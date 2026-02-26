@@ -159,9 +159,9 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 - [x] Update DataViewerTab for appearance section
   - [x] Add "Add" button per appearance category
   - [x] Inline form or modal for adding options
-- [ ] Update DataViewerTab for skills section
-  - [ ] Add "Create Skill" button
-  - [ ] Modal with SkillCreatorForm
+- [x] Update DataViewerTab for skills section
+  - [x] Add "Create Skill" button
+  - [x] Modal with SkillCreatorForm
 
 ---
 

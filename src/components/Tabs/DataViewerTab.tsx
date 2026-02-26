@@ -76,6 +76,7 @@ import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
 import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
+import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { Plus, X } from 'lucide-react';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -384,6 +385,7 @@ export function DataViewerTab() {
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
   const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
   const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
+  const [showSkillCreator, setShowSkillCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -583,6 +585,39 @@ export function DataViewerTab() {
     refreshData();
   }, [refreshData]);
 
+  /**
+   * Handle creation of new skill via SkillCreatorForm
+   * (Phase 4.3: Skills Creation in DataViewerTab)
+   */
+  const handleCreateSkill = useCallback((skill: SkillFormData) => {
+    const skillItem: Record<string, unknown> = {
+      id: skill.id,
+      name: skill.name,
+      ability: skill.ability
+    };
+
+    // Add optional fields
+    if (skill.description.trim()) {
+      skillItem.description = skill.description.trim();
+    }
+    if (skill.categories.length > 0) {
+      skillItem.categories = skill.categories;
+    }
+    if (skill.armorPenalty) {
+      skillItem.armorPenalty = true;
+    }
+
+    const result = createContent('skills', skillItem, { mode: 'relative' });
+
+    if (result.success) {
+      logger.info('DataViewer', `Created skill: ${skill.name}`);
+      setShowSkillCreator(false);
+      refreshData();
+    } else {
+      logger.error('DataViewer', `Failed to create skill: ${result.error}`);
+    }
+  }, [createContent, refreshData]);
+
   // Render category selector
   const renderCategorySelector = () => (
     <div className="dataviewer-category-selector">
@@ -770,62 +805,95 @@ export function DataViewerTab() {
   };
 
   // Render skills grouped by ability
+  // Phase 4.3: Added SkillCreatorForm for custom skill creation
   const renderSkills = () => {
     const grouped = groupSkillsByAbility(getFilteredData as CustomSkill[]);
     const abilities = Object.keys(grouped).sort();
 
     return (
-      <div className="dataviewer-grouped-list">
-        {abilities.map(ability => (
-          <div key={ability} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span
-                className="dataviewer-group-title"
-                style={{ color: ABILITY_COLORS[ability] || 'var(--color-text-primary)' }}
-              >
-                {ability}
-              </span>
-              <span className="dataviewer-group-count">({grouped[ability].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[ability].map(skill => {
-                const isExpanded = expandedItems.has(skill.id);
-                const hasDescription = skill.description && skill.description.length > 0;
+      <div className="dataviewer-list">
+        {/* Skill Creation Header */}
+        <div className="dataviewer-section-header">
+          <Button
+            variant={showSkillCreator ? 'outline' : 'primary'}
+            size="sm"
+            onClick={() => setShowSkillCreator(!showSkillCreator)}
+            leftIcon={showSkillCreator ? X : Plus}
+          >
+            {showSkillCreator ? 'Cancel' : 'Create Skill'}
+          </Button>
+        </div>
 
-                return (
-                  <div
-                    key={skill.id}
-                    className={`dataviewer-group-item ${hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
-                    onClick={() => hasDescription && toggleExpanded(skill.id)}
-                  >
-                    <div className="dataviewer-group-item-header">
-                      <span className="dataviewer-group-item-name">{skill.name}</span>
-                      <div className="dataviewer-item-badges">
-                        {skill.categories && skill.categories.length > 0 && (
-                          <div className="dataviewer-group-item-tags">
-                            {skill.categories.map(cat => (
-                              <span key={cat} className="dataviewer-tag dataviewer-tag-small">{cat}</span>
-                            ))}
-                          </div>
-                        )}
-                        {hasDescription && (
-                          isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                        )}
-                      </div>
-                    </div>
-                    {isExpanded && hasDescription && (
-                      <div className="dataviewer-group-item-details">
-                        <div className="dataviewer-item-description">
-                          {skill.description}
+        {/* Skill Creator Form (Phase 4.3) */}
+        {showSkillCreator && (
+          <Card className="dataviewer-creator-card">
+            <CardHeader>
+              <h3 className="dataviewer-creator-title">
+                <Plus size={18} />
+                Create Custom Skill
+              </h3>
+            </CardHeader>
+            <SkillCreatorForm
+              onCreate={handleCreateSkill}
+              onCancel={() => setShowSkillCreator(false)}
+              submitButtonText="Create Skill"
+            />
+          </Card>
+        )}
+
+        {/* Skills List */}
+        <div className="dataviewer-grouped-list">
+          {abilities.map(ability => (
+            <div key={ability} className="dataviewer-group">
+              <div className="dataviewer-group-header">
+                <span
+                  className="dataviewer-group-title"
+                  style={{ color: ABILITY_COLORS[ability] || 'var(--color-text-primary)' }}
+                >
+                  {ability}
+                </span>
+                <span className="dataviewer-group-count">({grouped[ability].length})</span>
+              </div>
+              <div className="dataviewer-group-items">
+                {grouped[ability].map(skill => {
+                  const isExpanded = expandedItems.has(skill.id);
+                  const hasDescription = skill.description && skill.description.length > 0;
+
+                  return (
+                    <div
+                      key={skill.id}
+                      className={`dataviewer-group-item ${hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => hasDescription && toggleExpanded(skill.id)}
+                    >
+                      <div className="dataviewer-group-item-header">
+                        <span className="dataviewer-group-item-name">{skill.name}</span>
+                        <div className="dataviewer-item-badges">
+                          {skill.categories && skill.categories.length > 0 && (
+                            <div className="dataviewer-group-item-tags">
+                              {skill.categories.map(cat => (
+                                <span key={cat} className="dataviewer-tag dataviewer-tag-small">{cat}</span>
+                              ))}
+                            </div>
+                          )}
+                          {hasDescription && (
+                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                      {isExpanded && hasDescription && (
+                        <div className="dataviewer-group-item-details">
+                          <div className="dataviewer-item-description">
+                            {skill.description}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   };
