@@ -267,6 +267,10 @@ export interface CustomItemFormData {
     grantsSpells?: Array<{ spellId: string; level?: number; uses?: number; recharge?: string }>;
     /** Tags for categorization */
     tags?: string[];
+    /** Icon URL for the item (small icon for lists/compact views) */
+    icon?: string;
+    /** Image URL for the item (full-size image for detail views) */
+    image?: string;
 }
 
 /**
@@ -488,6 +492,14 @@ export const useItemCreator = (): UseItemCreatorReturn => {
 
             if (data.grantsSpells && data.grantsSpells.length > 0) {
                 equipment.grantsSpells = data.grantsSpells;
+            }
+
+            // Add image fields (icon and image)
+            if (data.icon && data.icon.trim()) {
+                equipment.icon = data.icon.trim();
+            }
+            if (data.image && data.image.trim()) {
+                equipment.image = data.image.trim();
             }
 
             // Set spawn weight to 0 (custom items don't spawn randomly)

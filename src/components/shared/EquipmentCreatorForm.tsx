@@ -26,9 +26,11 @@ import {
   ChevronDown,
   Sparkles,
   X,
-  Code
+  Code,
+  ImageIcon
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { ImageFieldInput } from './ImageFieldInput';
 import type {
   EnhancedEquipment
 } from 'playlist-data-engine';
@@ -115,6 +117,8 @@ export interface EquipmentCreatorFormProps {
  */
 export interface EquipmentCreatorFormData extends CustomItemFormData {
   autoEquip?: boolean;
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -176,6 +180,8 @@ export function EquipmentCreatorForm({
   const [damageType, setDamageType] = useState(initialData?.damageType || 'slashing');
   const [acBonus, setAcBonus] = useState<number | ''>(initialData?.acBonus ?? '');
   const [autoEquip, setAutoEquip] = useState(initialData?.autoEquip ?? false);
+  const [itemIcon, setItemIcon] = useState(initialData?.icon || '');
+  const [itemImage, setItemImage] = useState(initialData?.image || '');
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isAdvancedOptionsExpanded, setIsAdvancedOptionsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -194,8 +200,10 @@ export function EquipmentCreatorForm({
     ...(itemType === 'armor' && acBonus !== '' && {
       acBonus: Number(acBonus)
     }),
-    autoEquip
-  }), [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip]);
+    autoEquip,
+    ...(itemIcon.trim() && { icon: itemIcon.trim() }),
+    ...(itemImage.trim() && { image: itemImage.trim() })
+  }), [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage]);
 
   // Notify parent of form changes
   useEffect(() => {
@@ -208,7 +216,7 @@ export function EquipmentCreatorForm({
 
     const result = createCustomItem(formData as CustomItemFormData);
     return result.success ? result.equipment || null : null;
-  }, [itemName, itemType, itemRarity, itemWeight, damageDice, damageType, acBonus, itemQuantity, createCustomItem, formData]);
+  }, [itemName, itemType, itemRarity, itemWeight, damageDice, damageType, acBonus, itemQuantity, itemIcon, itemImage, createCustomItem, formData]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -243,6 +251,8 @@ export function EquipmentCreatorForm({
         setItemName('');
         setDamageDice('');
         setAcBonus('');
+        setItemIcon('');
+        setItemImage('');
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
@@ -376,6 +386,38 @@ export function EquipmentCreatorForm({
               value={itemQuantity}
               onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
               className="equipment-creator-input"
+              disabled={disabled}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Image Fields Section */}
+      <div className="equipment-creator-section equipment-creator-images-section" role="group" aria-labelledby="equipment-images-section-title">
+        <h4 className="equipment-creator-section-title" id="equipment-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="equipment-creator-optional">(optional)</span>
+        </h4>
+        <div className="equipment-creator-images-grid">
+          <div className="equipment-creator-field">
+            <ImageFieldInput
+              value={itemIcon}
+              onChange={setItemIcon}
+              label="Item Icon"
+              placeholder="e.g., assets/icons/sword.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="equipment-creator-field">
+            <ImageFieldInput
+              value={itemImage}
+              onChange={setItemImage}
+              label="Item Image"
+              placeholder="e.g., assets/equipment/flaming-sword.png"
+              fieldType="image"
+              previewSize="md"
               disabled={disabled}
             />
           </div>
@@ -628,7 +670,18 @@ ExtensionManager.getInstance()
             }}
           >
             <div className="equipment-creator-preview-header">
-              {(() => {
+              {previewItem.icon ? (
+                <img
+                  src={previewItem.icon}
+                  alt={previewItem.name}
+                  className="equipment-creator-preview-icon"
+                  onError={(e) => {
+                    // Fallback to type icon on error
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              ) : (() => {
                 const TypeIcon = getEquipmentTypeIcon(previewItem.type);
                 return <TypeIcon size={18} style={{ color: RARITY_COLORS[previewItem.rarity] || RARITY_COLORS.common }} />;
               })()}
@@ -639,6 +692,19 @@ ExtensionManager.getInstance()
                 {previewItem.name}
               </span>
             </div>
+            {previewItem.image && (
+              <div className="equipment-creator-preview-image">
+                <img
+                  src={previewItem.image}
+                  alt={previewItem.name}
+                  onError={(e) => {
+                    // Hide broken image
+                    const target = e.target as HTMLImageElement;
+                    target.parentElement!.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="equipment-creator-preview-meta">
               <span style={{ color: RARITY_COLORS[previewItem.rarity] || RARITY_COLORS.common }}>
                 {formatRarity(previewItem.rarity)}
@@ -688,6 +754,16 @@ ExtensionManager.getInstance()
                     {previewItem.weight !== 1 && (
                       <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
                         weight: {previewItem.weight}
+                      </span>
+                    )}
+                    {previewItem.icon && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        icon: set
+                      </span>
+                    )}
+                    {previewItem.image && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        image: set
                       </span>
                     )}
                   </div>

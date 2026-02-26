@@ -165,7 +165,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] Note: "Images are not uploaded to internet - provide URL or relative path"
   - [x] Valid URL prefixes hint: `http://`, `https://`, `/`, `assets/`
 - [x] ~~Research: Check if data engine supports embedded images (base64) natively~~ **DONE - NOT SUPPORTED**
-- [ ] Add `icon` and `image` fields to EquipmentCreatorForm
+- [x] Add `icon` and `image` fields to EquipmentCreatorForm ✅ DONE
 - [ ] Add `icon` and `image` fields to SpellCreatorForm
 - [ ] Add `icon` and `image` fields to SkillCreatorForm
 - [ ] Add `icon` and `image` fields to ClassFeatureCreatorForm
