@@ -529,7 +529,20 @@ This ensures all category lists update immediately when:
       - Integration tests for form data structure compatibility
     - **CSS styling:** EffectsBuilder.css and PrerequisitesBuilder.css exist with complete styling
     - **Build:** TypeScript compiles with no errors
-- [ ] Test dynamic subrace dropdown
+- [x] Test dynamic subrace dropdown ✅ DONE
+    - **Verified:** RacialTraitCreatorForm dynamic subrace dropdown is properly implemented:
+      - **Data loading:** `loadSubracesData()` fetches from `manager.get('races.data')` and extracts subraces per race
+      - **Available subraces:** `availableSubraces` is memoized based on `formData.race` and `subracesByRace`
+      - **UI logic:**
+        - If `availableSubraces.length > 0` AND NOT `isCustomSubrace` → show dropdown with options + "Custom..."
+        - Otherwise → show text input with optional "Back to list" button
+      - **Custom mode handling:**
+        - Selecting `__custom__` option sets `isCustomSubrace=true` and clears subrace
+        - "Back to list" button sets `isCustomSubrace=false` and clears subrace
+      - **Hints:** Shows appropriate hints based on state ("Subraces loaded from X data", "No subraces defined for this race", etc.)
+      - **CSS styling:** `.racial-trait-subrace-back-btn` class exists in RacialTraitCreatorForm.css
+      - **Test file created:** src/components/Tabs/DataViewer/forms/__tests__/RacialTraitCreatorForm.subrace.test.tsx (requires @testing-library/react to run)
+      - **Build:** TypeScript compiles with no errors
 - [ ] Test data refresh for all categories
 - [ ] Test weight editor with real item names
 
