@@ -435,7 +435,32 @@ This ensures all category lists update immediately when:
     - **Note:** No UI for opening box-type equipment in inventory yet - BoxOpener API exists but not integrated into ItemsTab
     - **Test file created:** src/components/shared/__tests__/BoxContentsBuilder.test.tsx (requires vitest to run)
     - **Build:** TypeScript compiles with no errors
-- [ ] Test modal flows for skills and equipment
+- [x] Test modal flows for skills and equipment ✅ DONE
+  - **Verified:** Both Skill Creator and Equipment Creator modals are properly implemented:
+    - **Skill Creator Modal (Phase 4.1):**
+      - State: `showSkillCreator` (line 397 in DataViewerTab.tsx)
+      - Open button: "Create Skill" button with `onClick={() => setShowSkillCreator(true)}` (line 1002)
+      - Modal wrapper: ContentCreatorModal with proper props (isOpen, onClose, title, subtitle, icon)
+      - Form: SkillCreatorForm with onCreate and onCancel callbacks (lines 2400-2404)
+      - Handler: handleCreateSkill creates skill, shows toast, closes modal, refreshes data (lines 614-643)
+    - **Equipment Creator Modal (Phase 4.2):**
+      - State: `showEquipmentCreator` (line 396 in DataViewerTab.tsx)
+      - Open button: "Create Equipment" button with `onClick={() => setShowEquipmentCreator(true)}` (line 2251)
+      - Modal wrapper: ContentCreatorModal with width="lg" for wider form
+      - Form: EquipmentCreatorForm with onSubmit, onCancel, showPreview, showAdvancedOptions props (lines 2417-2424)
+      - Handler: handleCreateEquipment creates equipment, shows toast, closes modal, refreshes data (lines 585-597)
+    - **ContentCreatorModal behavior:**
+      - Opens when isOpen=true, returns null when false
+      - Closes on backdrop click, Escape key, and close button
+      - Focus management: focuses first element on open, restores focus on close
+      - Focus trap: Tab key cycles within modal
+      - Body scroll prevention when modal is open
+    - **Form submission:**
+      - SkillCreatorForm calls `onCreate?.(formData)` on success (line 262)
+      - EquipmentCreatorForm calls `await onSubmit(formData, result.equipment)` on success (line 436)
+      - Both forms clear state and close modal on successful creation
+    - **CSS styling:** All three CSS files exist (ContentCreatorModal.css, SkillCreatorForm.css, EquipmentCreatorForm.css)
+    - **Build:** TypeScript compiles with no errors
 - [ ] Test structured dropdowns with custom options
 - [ ] Test effects/prerequisites builders
 - [ ] Test dynamic subrace dropdown
