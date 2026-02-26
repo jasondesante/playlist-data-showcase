@@ -4,7 +4,8 @@ import {
     EnhancedInventoryItem,
     EquipmentProperty,
     EquipmentEffectApplier,
-    ExtensionManager
+    ExtensionManager,
+    BoxContents
 } from 'playlist-data-engine';
 import { useCharacterStore } from '@/store/characterStore';
 import { useDataViewerStore } from '@/store/dataViewerStore';
@@ -225,7 +226,7 @@ export function getAllCustomEquipment(): EnhancedEquipment[] {
  * Equipment type categories
  * (Re-defined here since not exported from playlist-data-engine main index)
  */
-export type EquipmentType = 'weapon' | 'armor' | 'item';
+export type EquipmentType = 'weapon' | 'armor' | 'item' | 'box';
 
 /**
  * Equipment rarity levels
@@ -239,7 +240,7 @@ export type EquipmentRarity = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'le
 export interface CustomItemFormData {
     /** Item name */
     name: string;
-    /** Item type (weapon, armor, or item) */
+    /** Item type (weapon, armor, item, or box) */
     type: EquipmentType;
     /** Item rarity */
     rarity: EquipmentRarity;
@@ -271,6 +272,8 @@ export interface CustomItemFormData {
     icon?: string;
     /** Image URL for the item (full-size image for detail views) */
     image?: string;
+    /** Box contents (for box type equipment) */
+    boxContents?: BoxContents;
 }
 
 /**
@@ -386,9 +389,9 @@ export const useItemCreator = (): UseItemCreatorReturn => {
         }
 
         // Validate type
-        const validTypes: EquipmentType[] = ['weapon', 'armor', 'item'];
+        const validTypes: EquipmentType[] = ['weapon', 'armor', 'item', 'box'];
         if (!validTypes.includes(data.type)) {
-            errors.push('Invalid item type. Must be weapon, armor, or item');
+            errors.push('Invalid item type. Must be weapon, armor, item, or box');
         }
 
         // Validate rarity
@@ -475,6 +478,11 @@ export const useItemCreator = (): UseItemCreatorReturn => {
             // Add armor-specific properties
             if (data.type === 'armor' && data.acBonus !== undefined) {
                 equipment.acBonus = data.acBonus;
+            }
+
+            // Add box-specific properties
+            if (data.type === 'box' && data.boxContents) {
+                equipment.boxContents = data.boxContents;
             }
 
             // Add optional properties

@@ -186,30 +186,30 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 
 ## Phase 3: New Features - Box Equipment Type
 
-### 3.1 Update EquipmentCreatorForm for Box Type
-- [ ] Add 'box' to equipment type selector
-- [ ] Create BoxContentsBuilder component
-  - [ ] Drops array editor (add/remove drops)
-  - [ ] Per-drop pool editor:
-    - [ ] Add/remove pool entries
-    - [ ] Each entry: weight (number), itemName OR gold (mutually exclusive), quantity (optional)
-    - [ ] Item name autocomplete from equipment registry
-    - [ ] Gold option toggle
-  - [ ] Weights should sum to 100 indicator
-  - [ ] Probability preview (show % for each pool entry)
-- [ ] Add Opening Requirements section (optional)
-  - [ ] Required item selector (from equipment registry)
-  - [ ] Quantity input
-- [ ] Add `consumeOnOpen` toggle (default: true)
-- [ ] Show preview of possible contents using `BoxOpener.previewContents()`
+### 3.1 Update EquipmentCreatorForm for Box Type ✅ DONE
+- [x] Add 'box' to equipment type selector
+- [x] Create BoxContentsBuilder component
+  - [x] Drops array editor (add/remove drops)
+  - [x] Per-drop pool editor:
+    - [x] Add/remove pool entries
+    - [x] Each entry: weight (number), itemName OR gold (mutually exclusive), quantity (optional)
+    - [x] Item name autocomplete from equipment registry
+    - [x] Gold option toggle
+  - [x] Weights should sum to 100 indicator
+  - [x] Probability preview (show % for each pool entry)
+- [x] Add Opening Requirements section (optional)
+  - [x] Required item selector (from equipment registry)
+  - [x] Quantity input
+- [x] Add `consumeOnOpen` toggle (default: true)
+- [x] Show preview of possible contents (displays drop count and requirement status in form preview)
 
-### 3.2 Update Validation for Box Type
-- [ ] Update `contentValidation.ts` to validate box contents
-  - [ ] At least one drop required
-  - [ ] Each pool entry must have weight > 0
-  - [ ] Each pool entry must have itemName OR gold (not both, not neither)
-  - [ ] Referenced items must exist in registry (warning only)
-- [ ] Update useItemCreator hook to handle box type
+### 3.2 Update Validation for Box Type ✅ DONE
+- [x] Update `BoxContentsBuilder` to validate box contents
+  - [x] At least one drop required
+  - [x] Each pool entry must have weight > 0
+  - [x] Each pool entry must have itemName OR gold (not both, not neither)
+  - [ ] Referenced items must exist in registry (warning only) - NOT IMPLEMENTED (deferred)
+- [x] Update useItemCreator hook to handle box type
 
 ---
 

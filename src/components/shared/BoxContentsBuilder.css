@@ -1,0 +1,685 @@
+/* ========================================
+   BOX CONTENTS BUILDER
+   Editor for loot box/container contents
+   ======================================== */
+
+.box-contents-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Header */
+.box-contents-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.box-contents-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.box-contents-title svg {
+  color: hsl(30 80% 50%);
+}
+
+.box-contents-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-contents-refresh-btn:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
+.box-contents-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Drops Container */
+.box-contents-drops {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual Drop */
+.box-drop {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.box-drop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-dim);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.box-drop-header:hover {
+  background: var(--color-surface-elevated);
+}
+
+.box-drop-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.box-drop-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.box-drop-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.box-drop-weight-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: hsl(45 90% 45%);
+}
+
+.box-drop-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.box-drop-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-drop-remove-btn:hover:not(:disabled) {
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.box-drop-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Drop Content */
+.box-drop-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Pool Entries */
+.box-pool-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.box-pool-entry {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+
+.box-pool-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.box-pool-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.box-pool-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.box-pool-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.1);
+}
+
+.box-pool-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-surface-dim);
+}
+
+/* Weight Field */
+.box-pool-weight {
+  width: 80px;
+}
+
+.box-pool-weight .box-pool-input {
+  width: 100%;
+}
+
+.box-pool-percentage {
+  font-size: 0.7rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Type Toggle */
+.box-pool-type {
+  width: auto;
+}
+
+.box-pool-type-toggle {
+  display: flex;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.box-pool-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-pool-type-btn:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.box-pool-type-btn.active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.box-pool-type-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Gold Field */
+.box-pool-gold {
+  width: 100px;
+}
+
+.box-pool-gold .box-pool-input {
+  width: 100%;
+}
+
+/* Item Field */
+.box-pool-item {
+  flex: 1;
+  min-width: 150px;
+}
+
+.box-pool-item-autocomplete {
+  position: relative;
+}
+
+.box-pool-item .box-pool-input {
+  width: 100%;
+}
+
+/* Item Suggestions Dropdown */
+.box-pool-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.box-pool-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.box-pool-suggestion:hover {
+  background: var(--color-surface-elevated);
+}
+
+.box-pool-suggestion-name {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.box-pool-suggestion-meta {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.box-pool-suggestion-empty {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Quantity Field */
+.box-pool-quantity {
+  width: 60px;
+}
+
+.box-pool-quantity .box-pool-input {
+  width: 100%;
+}
+
+/* Remove Entry Button */
+.box-pool-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin-bottom: 0.125rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-end;
+}
+
+.box-pool-remove-btn:hover:not(:disabled) {
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.box-pool-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Add Pool Entry Button */
+.box-pool-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-pool-add-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.05);
+}
+
+.box-pool-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Weight Sum Indicator */
+.box-pool-weight-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.box-pool-weight-indicator.valid {
+  background: hsl(120 50% 90%);
+  color: hsl(120 60% 30%);
+}
+
+.box-pool-weight-indicator.warning {
+  background: hsl(45 100% 90%);
+  color: hsl(45 80% 30%);
+}
+
+[data-theme="dark"] .box-pool-weight-indicator.valid {
+  background: hsl(120 40% 15%);
+  color: hsl(120 60% 65%);
+}
+
+[data-theme="dark"] .box-pool-weight-indicator.warning {
+  background: hsl(45 50% 15%);
+  color: hsl(45 80% 60%);
+}
+
+/* Add Drop Button */
+.box-contents-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-contents-add-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.05);
+}
+
+.box-contents-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* consumeOnOpen Toggle */
+.box-contents-consume {
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.box-contents-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.box-contents-checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.box-contents-checkbox input[type="checkbox"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.box-contents-checkbox-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-left: 0.25rem;
+}
+
+/* Opening Requirements Section */
+.box-contents-requirements {
+  padding: 1rem;
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.box-requirements-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.box-requirements-optional {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* Individual Requirement */
+.box-requirement {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.box-requirement-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.box-requirement-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.box-requirement-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.box-requirement-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.1);
+}
+
+.box-requirement-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.box-requirement-quantity {
+  width: 60px;
+  flex: 0 0 60px;
+}
+
+.box-requirement-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-requirement-remove-btn:hover:not(:disabled) {
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+.box-requirement-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Add Requirement Button */
+.box-requirements-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.box-requirements-add-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l) / 0.05);
+}
+
+.box-requirements-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Validation Errors */
+.box-contents-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.1);
+  border: 1px solid hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l) / 0.3);
+  border-radius: var(--radius-md);
+}
+
+.box-contents-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 640px) {
+  .box-pool-entry {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .box-pool-field {
+    width: 100% !important;
+  }
+
+  .box-pool-type-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .box-pool-remove-btn {
+    align-self: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  .box-requirement {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .box-requirement-field {
+    width: 100%;
+  }
+
+  .box-requirement-quantity {
+    width: 100%;
+    flex: 1;
+  }
+
+  .box-requirement-remove-btn {
+    align-self: flex-end;
+    margin-top: 0.5rem;
+  }
+}

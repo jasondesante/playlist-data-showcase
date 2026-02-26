@@ -560,6 +560,30 @@
 }
 
 /* ========================================
+   BOX SECTION
+   ======================================== */
+
+.equipment-creator-box-section {
+  background: var(--color-surface-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.equipment-creator-box-intro {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.equipment-creator-preview-box-req {
+  font-size: 0.75rem;
+  color: hsl(45 80% 45%);
+  margin-left: 0.5rem;
+}
+
+/* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 

@@ -27,12 +27,15 @@ import {
   Sparkles,
   X,
   Code,
-  ImageIcon
+  ImageIcon,
+  Box
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ImageFieldInput } from './ImageFieldInput';
+import { BoxContentsBuilder } from './BoxContentsBuilder';
 import type {
-  EnhancedEquipment
+  EnhancedEquipment,
+  BoxContents
 } from 'playlist-data-engine';
 import {
   useItemCreator,
@@ -77,7 +80,7 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
 /**
  * Equipment type categories
  */
-export type EquipmentType = 'weapon' | 'armor' | 'item';
+export type EquipmentType = 'weapon' | 'armor' | 'item' | 'box';
 
 /**
  * Equipment rarity levels
@@ -119,6 +122,7 @@ export interface EquipmentCreatorFormData extends CustomItemFormData {
   autoEquip?: boolean;
   icon?: string;
   image?: string;
+  boxContents?: BoxContents;
 }
 
 /**
@@ -130,6 +134,8 @@ function getEquipmentTypeIcon(type: string) {
       return Sword;
     case 'armor':
       return Shield;
+    case 'box':
+      return Box;
     default:
       return Package;
   }
@@ -182,6 +188,8 @@ export function EquipmentCreatorForm({
   const [autoEquip, setAutoEquip] = useState(initialData?.autoEquip ?? false);
   const [itemIcon, setItemIcon] = useState(initialData?.icon || '');
   const [itemImage, setItemImage] = useState(initialData?.image || '');
+  const [boxContents, setBoxContents] = useState<BoxContents | undefined>(initialData?.boxContents);
+  const [boxContentsValid, setBoxContentsValid] = useState(true);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isAdvancedOptionsExpanded, setIsAdvancedOptionsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,10 +208,11 @@ export function EquipmentCreatorForm({
     ...(itemType === 'armor' && acBonus !== '' && {
       acBonus: Number(acBonus)
     }),
+    ...(itemType === 'box' && boxContents && { boxContents }),
     autoEquip,
     ...(itemIcon.trim() && { icon: itemIcon.trim() }),
     ...(itemImage.trim() && { image: itemImage.trim() })
-  }), [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage]);
+  }), [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage, boxContents]);
 
   // Notify parent of form changes
   useEffect(() => {
@@ -224,6 +233,12 @@ export function EquipmentCreatorForm({
     const validation = validateItemData(formData as CustomItemFormData);
     if (!validation.valid) {
       setFormErrors(validation.errors);
+      return;
+    }
+
+    // Check box contents validation for box type
+    if (itemType === 'box' && !boxContentsValid) {
+      setFormErrors(['Box contents validation failed. Please check the configuration.']);
       return;
     }
 
@@ -253,6 +268,7 @@ export function EquipmentCreatorForm({
         setAcBonus('');
         setItemIcon('');
         setItemImage('');
+        setBoxContents(undefined);
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
@@ -331,6 +347,17 @@ export function EquipmentCreatorForm({
               >
                 <Package size={16} aria-hidden="true" />
                 <span>Item</span>
+              </button>
+              <button
+                type="button"
+                className={`equipment-creator-type-btn ${itemType === 'box' ? 'equipment-creator-type-btn-active' : ''}`}
+                onClick={() => setItemType('box')}
+                disabled={disabled}
+                aria-pressed={itemType === 'box'}
+                aria-label="Box type"
+              >
+                <Box size={16} aria-hidden="true" />
+                <span>Box</span>
               </button>
             </div>
           </div>
@@ -506,6 +533,27 @@ export function EquipmentCreatorForm({
               <span className="equipment-creator-hint" id="ac-bonus-hint">Base AC provided by armor</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Box-specific fields */}
+      {itemType === 'box' && (
+        <div className="equipment-creator-section equipment-creator-box-section" role="group" aria-labelledby="equipment-box-section-title">
+          <h4 className="equipment-creator-section-title" id="equipment-box-section-title">
+            <Box size={16} aria-hidden="true" />
+            Box Contents <span className="equipment-creator-required">*</span>
+          </h4>
+          <p className="equipment-creator-box-intro">
+            Configure what items or gold this box contains when opened.
+            Each drop generates one result from its pool based on weights.
+          </p>
+          <BoxContentsBuilder
+            value={boxContents}
+            onChange={setBoxContents}
+            onValidChange={setBoxContentsValid}
+            disabled={disabled}
+            showRequirements={true}
+          />
         </div>
       )}
 
@@ -724,6 +772,17 @@ ExtensionManager.getInstance()
               <div className="equipment-creator-preview-stat">
                 <span className="equipment-creator-preview-stat-label">AC Bonus:</span>
                 <span>+{previewItem.acBonus}</span>
+              </div>
+            )}
+            {previewItem.type === 'box' && boxContents && (
+              <div className="equipment-creator-preview-stat">
+                <span className="equipment-creator-preview-stat-label">Box Contents:</span>
+                <span>{boxContents.drops.length} {boxContents.drops.length === 1 ? 'drop' : 'drops'}</span>
+                {boxContents.openRequirements && boxContents.openRequirements.length > 0 && (
+                  <span className="equipment-creator-preview-box-req">
+                    (requires key item)
+                  </span>
+                )}
               </div>
             )}
 
