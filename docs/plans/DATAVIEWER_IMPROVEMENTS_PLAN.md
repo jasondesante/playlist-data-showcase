@@ -18,20 +18,20 @@ This plan addresses multiple improvements to the DataViewerTab and custom conten
 
 ## Phase 1: Research & Verification
 
-### 1.1 Verify Image Support Implementation
-- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3813-3899)
-  - [ ] Confirm `icon` and `image` fields work for all content types
-  - [ ] Verify URL validation (http://, https://, /, assets/)
-  - [ ] Test batch functions: `batchAddIcons()`, `batchAddImages()`, `batchUpdateImages()`, `batchByCategory()`
-- [ ] Read `docs/engine/docs/EXTENSIBILITY_GUIDE.md` (lines 733-806)
-  - [ ] Review batch image examples
-  - [ ] Confirm error handling for invalid URLs
-- [ ] **Research embedded image support (NICE TO HAVE):**
-  - [ ] Check if data engine accepts base64 encoded images natively
-  - [ ] Check if there are size limits or validation rules
-  - [ ] Test by manually adding base64 image to a data file
-  - [ ] Document max recommended size for embedded images
-  - [ ] NOTE: Only implement if engine supports natively - otherwise URL-only is acceptable
+### 1.1 Verify Image Support Implementation ✅ DONE
+- [x] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3813-3899)
+  - [x] Confirm `icon` and `image` fields work for all content types: **YES** - spells, skills, classFeatures, racialTraits, equipment, races.data, classes.data
+  - [x] Verify URL validation (http://, https://, /, assets/): **CONFIRMED** - only these 4 prefixes are valid
+  - [x] Test batch functions: `batchAddIcons()`, `batchAddImages()`, `batchUpdateImages()`, `batchByCategory()`: **ALL EXIST** - all return count of updated items
+- [x] Read `docs/engine/docs/EXTENSIBILITY_GUIDE.md` (lines 733-806)
+  - [x] Review batch image examples: **CONFIRMED** - examples show all 4 batch methods
+  - [x] Confirm error handling for invalid URLs: **CONFIRMED** - throws error with message about valid prefixes
+- [x] **Research embedded image support (NICE TO HAVE):**
+  - [x] Check if data engine accepts base64 encoded images natively: **NO** - only URL prefixes validated
+  - [x] Check if there are size limits or validation rules: **URL prefix validation only**
+  - [x] Test by manually adding base64 image to a data file: **SKIPPED** - not supported
+  - [x] Document max recommended size for embedded images: **N/A** - not supported
+  - [x] NOTE: Only implement if engine supports natively - otherwise URL-only is acceptable: **URL-ONLY IS ACCEPTABLE**
 
 ### 1.2 Verify Box Type Implementation
 - [ ] Read `docs/engine/docs/EQUIPMENT_SYSTEM.md` (lines 427-1012)
@@ -66,14 +66,10 @@ This plan addresses multiple improvements to the DataViewerTab and custom conten
 - [ ] Create shared `ImageFieldInput` component
   - [ ] URL input field with validation
   - [ ] Preview thumbnail
-  - [ ] **Two input modes (base64 is NICE TO HAVE if engine supports):**
-    - [ ] URL/path mode: external URL or relative path (PRIMARY)
-    - [ ] Embedded mode: file upload → base64 encoding (ONLY if engine natively supports)
-  - [ ] Toggle switch between URL and embedded modes (if embedded supported)
-  - [ ] Note: "Images are not uploaded to internet - provide URL or embed image data"
+  - [ ] **URL/path mode ONLY** (base64/embedded mode NOT supported by engine - confirmed in Task 1.1)
+  - [ ] Note: "Images are not uploaded to internet - provide URL or relative path"
   - [ ] Valid URL prefixes hint: `http://`, `https://`, `/`, `assets/`
-  - [ ] File size warning for embedded images (recommend < 100KB)
-- [ ] Research: Check if data engine supports embedded images (base64) natively
+- [x] ~~Research: Check if data engine supports embedded images (base64) natively~~ **DONE - NOT SUPPORTED**
 - [ ] Add `icon` and `image` fields to EquipmentCreatorForm
 - [ ] Add `icon` and `image` fields to SpellCreatorForm
 - [ ] Add `icon` and `image` fields to SkillCreatorForm
@@ -386,10 +382,10 @@ src/
 
 ## Design Decisions
 
-1. **Image Storage**: Support BOTH URL/path AND embedded base64 images (base64 is NICE TO HAVE if engine supports)
-   - URL mode: external links or relative paths (PRIMARY, recommended for most cases)
-   - Embedded mode: base64 encoded images stored directly in data (ONLY if engine natively supports)
-   - Warning shown for large embedded images (> 100KB recommended limit)
+1. **Image Storage**: URL/path ONLY (base64/embedded images NOT supported by data engine - confirmed in Task 1.1 research)
+   - URL mode: external links or relative paths (PRIMARY, only supported mode)
+   - Valid URL prefixes: `http://`, `https://`, `/`, `assets/`
+   - ~~Embedded mode: NOT SUPPORTED by engine~~
 2. **Structured + Custom**: All dropdowns have "Custom..." option for flexibility
 3. **Full Dynamic Dropdowns from Live Registry**: ALL selection dropdowns pull from live registry data (classes, races, skills, spells, features) - updates as content is created
 4. **Shared Components**: EffectsBuilder and PrerequisitesBuilder shared across all forms
