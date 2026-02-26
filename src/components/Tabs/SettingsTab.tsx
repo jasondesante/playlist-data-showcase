@@ -4,6 +4,7 @@ import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
 import { useSensorStore } from '@/store/sensorStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { logger } from '@/utils/logger';
 import { storage } from '@/utils/storage';
 import { isServerMode } from '@/utils/env';
@@ -217,6 +218,7 @@ export function SettingsTab() {
   const playlistStore = usePlaylistStore();
   const characterStore = useCharacterStore();
   const sensorStore = useSensorStore();
+  const sessionStore = useSessionStore();
   const [openWeatherKey, setOpenWeatherKey] = useState(settings.openWeatherApiKey);
   const [steamKey, setSteamKey] = useState(settings.steamApiKey);
   const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
@@ -521,6 +523,7 @@ export function SettingsTab() {
         playlistStore.clearPlaylist();
         characterStore.resetCharacters();
         sensorStore.resetAll();
+        sessionStore.clearHistory();
 
         storage.clear().then(() => {
           logger.info('Settings', 'LocalForage cleared successfully');

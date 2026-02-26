@@ -1,0 +1,424 @@
+# DataViewerTab & Custom Content Improvements Plan
+
+## Overview
+
+This plan addresses multiple improvements to the DataViewerTab and custom content creation features, including new engine features (images, box type), UI consistency (modals), structured input improvements, bug fixes, and UI/UX polish.
+
+**Recommended Implementation Order:**
+1. Phase 1: Research & Verification (required first)
+2. Phase 2: Image Support (HIGH PRIORITY - do before modals)
+3. Phase 3: Box Type (can parallel with Phase 2)
+4. Phase 4: Modal Conversion (after images)
+5. Phase 5: Structured Inputs (after modals for consistency)
+6. Phase 6: Bug Fixes (can start anytime)
+7. Phase 7: UI/UX Polish (after core features done)
+8. Phase 8: Testing & Documentation
+
+---
+
+## Phase 1: Research & Verification
+
+### 1.1 Verify Image Support Implementation
+- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3813-3899)
+  - [ ] Confirm `icon` and `image` fields work for all content types
+  - [ ] Verify URL validation (http://, https://, /, assets/)
+  - [ ] Test batch functions: `batchAddIcons()`, `batchAddImages()`, `batchUpdateImages()`, `batchByCategory()`
+- [ ] Read `docs/engine/docs/EXTENSIBILITY_GUIDE.md` (lines 733-806)
+  - [ ] Review batch image examples
+  - [ ] Confirm error handling for invalid URLs
+- [ ] **Research embedded image support (NICE TO HAVE):**
+  - [ ] Check if data engine accepts base64 encoded images natively
+  - [ ] Check if there are size limits or validation rules
+  - [ ] Test by manually adding base64 image to a data file
+  - [ ] Document max recommended size for embedded images
+  - [ ] NOTE: Only implement if engine supports natively - otherwise URL-only is acceptable
+
+### 1.2 Verify Box Type Implementation
+- [ ] Read `docs/engine/docs/EQUIPMENT_SYSTEM.md` (lines 427-1012)
+  - [ ] Confirm `type: 'box'` works correctly
+  - [ ] Verify `BoxContents`, `BoxDrop`, `BoxDropPool` interfaces
+  - [ ] Test BoxOpener API: `openBox()`, `isBox()`, `checkRequirements()`, `canOpen()`, `previewContents()`
+- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3269-3308)
+  - [ ] Verify box type in equipment documentation
+
+### 1.3 Research Effects & Prerequisites Options
+- [ ] Read `docs/engine/docs/PREREQUISITES.md`
+  - [ ] Document all valid prerequisite types (level, abilities, class, race, subrace, features, skills, spells, custom)
+  - [ ] Document all valid prerequisite values per type
+  - [ ] **List all data sources for dynamic dropdowns** (which registry keys to use)
+- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3920-3927)
+  - [ ] Document all 6 effect types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, resource_grant, spell_slot_bonus
+  - [ ] Document valid targets per effect type
+  - [ ] Document value formats per effect type
+  - [ ] **Create reference table for UI dropdown options per effect type**
+- [ ] Read through existing data files to catalog all possible values
+  - [ ] List all resources used by classes (rage, ki, sorcery points, etc.)
+  - [ ] List all passive modifier targets (ac, speed, damage, etc.)
+  - [ ] List all ability unlock options (darkvision, flight, etc.)
+
+---
+
+## Phase 2: New Features - Image Support
+
+**Priority: HIGH - Implement before modals (Phase 4)**
+
+### 2.1 Add Image Fields to All Creator Forms
+- [ ] Create shared `ImageFieldInput` component
+  - [ ] URL input field with validation
+  - [ ] Preview thumbnail
+  - [ ] **Two input modes (base64 is NICE TO HAVE if engine supports):**
+    - [ ] URL/path mode: external URL or relative path (PRIMARY)
+    - [ ] Embedded mode: file upload → base64 encoding (ONLY if engine natively supports)
+  - [ ] Toggle switch between URL and embedded modes (if embedded supported)
+  - [ ] Note: "Images are not uploaded to internet - provide URL or embed image data"
+  - [ ] Valid URL prefixes hint: `http://`, `https://`, `/`, `assets/`
+  - [ ] File size warning for embedded images (recommend < 100KB)
+- [ ] Research: Check if data engine supports embedded images (base64) natively
+- [ ] Add `icon` and `image` fields to EquipmentCreatorForm
+- [ ] Add `icon` and `image` fields to SpellCreatorForm
+- [ ] Add `icon` and `image` fields to SkillCreatorForm
+- [ ] Add `icon` and `image` fields to ClassFeatureCreatorForm
+- [ ] Add `icon` and `image` fields to RacialTraitCreatorForm
+- [ ] Add `icon` and `image` fields to RaceCreatorForm (race data)
+- [ ] Add `icon` and `image` fields to ClassCreatorForm (class data)
+
+### 2.2 Add Batch Image Tools to SpawnModeControls
+- [ ] Add "Batch Add Images" expandable section
+  - [ ] Category selector (spells, equipment, races, classes, etc.)
+  - [ ] Property selector (for batchByCategory: school, rarity, etc.)
+  - [ ] Icon URL input (apply to all matching)
+  - [ ] Image URL input (apply to all matching)
+  - [ ] Preview affected items count
+  - [ ] Apply button with confirmation
+
+---
+
+## Phase 3: New Features - Box Equipment Type
+
+### 3.1 Update EquipmentCreatorForm for Box Type
+- [ ] Add 'box' to equipment type selector
+- [ ] Create BoxContentsBuilder component
+  - [ ] Drops array editor (add/remove drops)
+  - [ ] Per-drop pool editor:
+    - [ ] Add/remove pool entries
+    - [ ] Each entry: weight (number), itemName OR gold (mutually exclusive), quantity (optional)
+    - [ ] Item name autocomplete from equipment registry
+    - [ ] Gold option toggle
+  - [ ] Weights should sum to 100 indicator
+  - [ ] Probability preview (show % for each pool entry)
+- [ ] Add Opening Requirements section (optional)
+  - [ ] Required item selector (from equipment registry)
+  - [ ] Quantity input
+- [ ] Add `consumeOnOpen` toggle (default: true)
+- [ ] Show preview of possible contents using `BoxOpener.previewContents()`
+
+### 3.2 Update Validation for Box Type
+- [ ] Update `contentValidation.ts` to validate box contents
+  - [ ] At least one drop required
+  - [ ] Each pool entry must have weight > 0
+  - [ ] Each pool entry must have itemName OR gold (not both, not neither)
+  - [ ] Referenced items must exist in registry (warning only)
+- [ ] Update useItemCreator hook to handle box type
+
+---
+
+## Phase 4: UI Consistency - Modal Conversion
+
+### 4.1 Convert SkillCreatorForm to Modal
+- [ ] Update DataViewerTab.tsx
+  - [ ] Add `showSkillCreatorModal` state
+  - [ ] Change "Create Skill" button to open modal
+  - [ ] Wrap SkillCreatorForm in ContentCreatorModal
+- [ ] Ensure modal has same styling as other creator modals
+- [ ] Test creation flow end-to-end
+
+### 4.2 Convert EquipmentCreatorForm to Modal
+- [ ] Update DataViewerTab.tsx
+  - [ ] Add `showEquipmentCreatorModal` state
+  - [ ] Change "Create Equipment" button to open modal
+  - [ ] Create EquipmentCreatorModal wrapper or use ContentCreatorModal
+- [ ] Ensure modal has same styling as other creator modals
+- [ ] Handle advanced options section within modal
+- [ ] Test creation flow end-to-end
+
+### 4.3 Update ItemsTab to Use Modal
+- [ ] Verify ItemsTab equipment creator still works
+- [ ] Ensure consistent modal behavior across both tabs
+- [ ] May need to pass modal control props to shared form
+
+---
+
+## Phase 5: Structured Input Improvements
+
+### 5.1 Spell Fields - Structured Choices
+- [ ] Create `CastingTimeSelect` component
+  - [ ] Dropdown with common values: "1 action", "1 bonus action", "1 reaction", "1 minute", "10 minutes", "1 hour"
+  - [ ] "Custom..." option that reveals text input
+- [ ] Create `RangeSelect` component
+  - [ ] Dropdown with common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
+  - [ ] "Custom..." option that reveals text input
+- [ ] Create `DurationSelect` component
+  - [ ] Dropdown with common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
+  - [ ] "Custom..." option that reveals text input
+- [ ] Update SpellCreatorForm to use new components
+
+### 5.2 Create Shared EffectsBuilder Component
+- [ ] Create `src/components/shared/EffectsBuilder.tsx`
+  - [ ] Type dropdown with 6 options:
+    - `stat_bonus` - Ability score bonus
+    - `skill_proficiency` - Grant proficiency/expertise
+    - `ability_unlock` - Unlock special ability
+    - `passive_modifier` - Constant bonus
+    - `resource_grant` - Grant resource pool
+    - `spell_slot_bonus` - Extra spell slots
+  - [ ] Target field - **FULL DYNAMIC DROPDOWNS from live registry** based on type:
+    - `stat_bonus`: STR/DEX/CON/INT/WIS/CHA dropdown (static - 6 abilities)
+    - `skill_proficiency`: **LIVE from `manager.get('skills')`** - autocomplete
+    - `ability_unlock`: Ability dropdown (darkvision, flight, etc.) - **fetch from available abilities in registry**
+    - `passive_modifier`: Target dropdown (ac, speed, damage, etc.) - research all valid targets
+    - `resource_grant`: Resource dropdown (rage, ki, etc.) - **LIVE from `manager.get('classes')` class resources**
+    - `spell_slot_bonus`: Slot level dropdown (1-9) - static
+  - [ ] Value field - dynamic based on type:
+    - Number input for bonuses
+    - Text input for special values
+    - Checkbox for boolean values
+  - [ ] Condition field (optional text input)
+  - [ ] Add/remove effect buttons
+  - [ ] "Custom..." option to enter raw JSON for advanced users
+  - [ ] **Real-time validation** - warn if selected target no longer exists in registry
+  - [ ] **Refresh button** to reload all dropdown options from live registry
+- [ ] Create `EffectsBuilder.css` with clean styling
+
+### 5.3 Create Shared PrerequisitesBuilder Component
+- [ ] Create `src/components/shared/PrerequisitesBuilder.tsx`
+  - [ ] **ALL dropdowns populated from LIVE registry data (updates as content is created):**
+  - [ ] Level prerequisite - number input
+  - [ ] Abilities prerequisite - 6 inputs for STR/DEX/CON/INT/WIS/CHA (static)
+  - [ ] Class prerequisite - **LIVE from `manager.get('classes')`**
+  - [ ] Race prerequisite - **LIVE from `manager.get('races')`**
+  - [ ] Subrace prerequisite - **DYNAMIC from selected race's subraces (live data)**
+  - [ ] Features prerequisite - **LIVE multi-select from `manager.get('classFeatures')` + `manager.get('racialTraits')`**
+  - [ ] Skills prerequisite - **LIVE multi-select from `manager.get('skills')`**
+  - [ ] Spells prerequisite - **LIVE multi-select from `manager.get('spells')`**
+  - [ ] Custom prerequisite - text input for description
+  - [ ] Add/remove prerequisite buttons
+  - [ ] "Custom..." option for advanced users
+  - [ ] **Refresh button** to reload all dropdown options from registry
+- [ ] Create `PrerequisitesBuilder.css` with clean styling
+
+### 5.4 Update Forms to Use Shared Components
+- [ ] Update RacialTraitCreatorForm to use EffectsBuilder and PrerequisitesBuilder
+- [ ] Update ClassFeatureCreatorForm to use EffectsBuilder and PrerequisitesBuilder
+- [ ] Update RaceCreatorForm if it has effects/prerequisites
+- [ ] Remove duplicated inline code from all forms
+
+### 5.5 Racial Trait Subrace Dynamic Dropdown
+- [ ] Update RacialTraitCreatorForm
+  - [ ] When race is selected, fetch subraces from race data
+  - [ ] Populate subrace dropdown dynamically
+  - [ ] Add "None" option for non-subrace traits
+  - [ ] Still allow custom text entry for new subraces
+- [ ] Update useDataViewer or create helper to get subraces for race
+
+---
+
+## Phase 6: Bug Fixes - Data Refresh
+
+### 6.1 Fix RaceCreatorForm Traits List
+- [ ] Update RaceCreatorForm to fetch traits from ExtensionManager
+  - [ ] Remove hardcoded fallback trait list
+  - [ ] Use `manager.get('racialTraits')` to get all available traits
+  - [ ] Add useEffect to refresh traits when data changes
+- [ ] Update DataViewerTab to pass fresh traits data
+  - [ ] Pass `availableTraits` prop from live data
+  - [ ] Trigger re-render after trait creation
+
+### 6.2 Fix Racial Traits List Refresh
+- [ ] Investigate why refresh button doesn't update racial traits list
+- [ ] Update useDataViewer hook
+  - [ ] Add dependency on custom data changes
+  - [ ] Invalidate FeatureQuery cache on refresh
+- [ ] Update DataViewerTab refresh handler
+  - [ ] Force re-fetch of all category data
+  - [ ] Clear memoization caches if needed
+
+### 6.3 General Data Refresh Audit
+- [ ] Test refresh button for all categories
+- [ ] Verify lists update immediately after creating custom content
+- [ ] Ensure no tab switch required to see new data
+- [ ] Check ExtensionManager state vs local cache sync
+
+---
+
+## Phase 7: UI/UX Polish
+
+### 7.1 Weight Editor Redesign
+- [ ] Redesign SpawnModeControls weight editor
+  - [ ] Show item **display name with ID fallback**
+    - [ ] Fetch actual items to get names from registry
+    - [ ] Map weight keys to item objects
+    - [ ] Show name as primary, ID as secondary text/tooltip
+    - [ ] Fall back to ID if no name exists
+  - [ ] **Group items by category/type** (same grouping as normal lists)
+    - [ ] Class features grouped by class
+    - [ ] Equipment grouped by type (weapon, armor, etc.)
+    - [ ] Spells grouped by school
+    - [ ] Races/traits in their natural groupings
+  - [ ] Compact row layout:
+    - [ ] Item name (left, takes most space)
+    - [ ] Weight input (right, narrow ~60px)
+    - [ ] Remove one layer of borders (row OR input border, not both)
+  - [ ] Use table-like layout for alignment
+  - [ ] Add header row: "Item" | "Weight"
+  - [ ] Collapsible group headers
+- [ ] Update SpawnModeControls.css
+  - [ ] Reduce nested border styling
+  - [ ] Cleaner input styling within rows
+  - [ ] Better spacing and typography
+  - [ ] Styling for grouped sections
+
+### 7.2 Class Creator Audio Preferences Clarity
+- [ ] Update ClassCreatorForm audio preferences section
+  - [ ] Add explanation text at top:
+    - "Audio preferences determine when this class is suggested based on music characteristics. Classes with matching audio preferences are more likely to be generated for songs with those traits."
+  - [ ] Add tooltips for each field:
+    - `primary`: "The main audio trait this class responds to"
+    - `secondary`: "Secondary trait (less weight than primary)"
+    - `tertiary`: "Tertiary trait (least weight)"
+    - Individual weights: "Override weight for specific frequency range"
+  - [ ] Add example: "Barbarian prefers bass-heavy music, Bard prefers treble"
+  - [ ] Consider renaming section to "Music-Based Class Suggestions"
+
+### 7.3 Equipment Creator Advanced Options Restructure
+- [ ] Redesign EquipmentCreatorForm advanced options
+  - [ ] Keep educational text but make it collapsible
+  - [ ] Add actual UI inputs for each advanced property:
+    - [ ] **Properties** - Multi-select with common options:
+      - stat_bonus (with ability + value)
+      - skill_proficiency (with skill name)
+      - damage_bonus (with value)
+      - ac_bonus (with value)
+      - etc.
+    - [ ] **Grants Features** - Multi-select from available features + custom ID input
+    - [ ] **Grants Skills** - Multi-select from available skills + proficiency level
+    - [ ] **Grants Spells** - Multi-select from available spells + uses/recharge
+    - [ ] **Tags** - Tag input with suggestions (magic, rare, cursed, consumable, etc.)
+    - [ ] **Spawn Weight** - Number input with explanation
+  - [ ] Use accordions or tabs within advanced section
+  - [ ] Add validation and previews
+
+---
+
+## Phase 8: Testing & Documentation
+
+### 8.1 Integration Testing
+- [ ] Test image fields in all creator forms
+- [ ] Test box type creation and opening
+- [ ] Test modal flows for skills and equipment
+- [ ] Test structured dropdowns with custom options
+- [ ] Test effects/prerequisites builders
+- [ ] Test dynamic subrace dropdown
+- [ ] Test data refresh for all categories
+- [ ] Test weight editor with real item names
+
+### 8.2 Update Documentation
+- [ ] Update DATAVIEWER_CUSTOM_CONTENT_PLAN.md with completion status
+- [ ] Document new shared components in code comments
+- [ ] Update EXTENSIBILITY_GUIDE.md UI section with new features
+- [ ] Add JSDoc to new components
+
+---
+
+## File Structure
+
+```
+src/
+├── components/
+│   ├── shared/
+│   │   ├── ImageFieldInput.tsx           # New: Image URL input with preview
+│   │   ├── ImageFieldInput.css
+│   │   ├── EffectsBuilder.tsx            # New: Shared effects component
+│   │   ├── EffectsBuilder.css
+│   │   ├── PrerequisitesBuilder.tsx      # New: Shared prerequisites component
+│   │   ├── PrerequisitesBuilder.css
+│   │   ├── BoxContentsBuilder.tsx        # New: Box drops editor
+│   │   ├── BoxContentsBuilder.css
+│   │   ├── CastingTimeSelect.tsx         # New: Structured casting time
+│   │   ├── RangeSelect.tsx               # New: Structured range
+│   │   ├── DurationSelect.tsx            # New: Structured duration
+│   │   ├── EquipmentCreatorForm.tsx      # Modified: Box type, images, advanced UI
+│   │   └── EquipmentCreatorForm.css
+│   ├── Tabs/
+│   │   └── DataViewer/
+│   │       ├── SpawnModeControls.tsx     # Modified: Weight editor, batch images
+│   │       ├── SpawnModeControls.css
+│   │       └── forms/
+│   │           ├── SkillCreatorForm.tsx  # Modified: Modal, images
+│   │           ├── SpellCreatorForm.tsx  # Modified: Structured fields, images
+│   │           ├── RaceCreatorForm.tsx   # Modified: Dynamic traits, images
+│   │           ├── RacialTraitCreatorForm.tsx  # Modified: Dynamic subrace, shared components
+│   │           ├── ClassFeatureCreatorForm.tsx # Modified: Shared components, images
+│   │           └── ClassCreatorForm.tsx  # Modified: Audio clarity, images
+│   └── modals/
+│       └── ContentCreatorModal.tsx       # May need updates for new forms
+└── hooks/
+    └── useDataViewer.ts                  # Modified: Better refresh, subrace helper
+```
+
+---
+
+## Critical Files Reference
+
+| File | Purpose |
+|------|---------|
+| `docs/engine/DATA_ENGINE_REFERENCE.md` | Engine API docs (images, batch, effects, box) |
+| `docs/engine/docs/EQUIPMENT_SYSTEM.md` | Box type documentation |
+| `docs/engine/docs/EXTENSIBILITY_GUIDE.md` | Batch image functions |
+| `docs/engine/docs/PREREQUISITES.md` | Prerequisite types reference |
+| `src/components/shared/EquipmentCreatorForm.tsx` | Equipment creator (needs box, images, advanced UI) |
+| `src/components/Tabs/DataViewer/forms/SkillCreatorForm.tsx` | Skill creator (needs modal) |
+| `src/components/Tabs/DataViewer/SpawnModeControls.tsx` | Weight editor (needs redesign) |
+| `src/components/Tabs/DataViewer/forms/RacialTraitCreatorForm.tsx` | Needs dynamic subrace |
+| `src/components/Tabs/DataViewer/forms/RaceCreatorForm.tsx` | Needs dynamic traits |
+| `src/hooks/useDataViewer.ts` | Data refresh fixes |
+
+---
+
+## Design Decisions
+
+1. **Image Storage**: Support BOTH URL/path AND embedded base64 images (base64 is NICE TO HAVE if engine supports)
+   - URL mode: external links or relative paths (PRIMARY, recommended for most cases)
+   - Embedded mode: base64 encoded images stored directly in data (ONLY if engine natively supports)
+   - Warning shown for large embedded images (> 100KB recommended limit)
+2. **Structured + Custom**: All dropdowns have "Custom..." option for flexibility
+3. **Full Dynamic Dropdowns from Live Registry**: ALL selection dropdowns pull from live registry data (classes, races, skills, spells, features) - updates as content is created
+4. **Shared Components**: EffectsBuilder and PrerequisitesBuilder shared across all forms
+5. **Modal Consistency**: All creators use modals (skills, equipment now join spells, features, etc.)
+6. **Weight Editor**: Show display names with ID fallback, compact layout, reduce nested borders, **group by category/type**
+7. **Dynamic Dropdowns**: Subraces update based on selected race, traits list refreshes properly
+8. **Implementation Priority**: Images first, then modals, then structured inputs
+
+---
+
+## Dependencies
+
+- ExtensionManager batch image functions (verified in docs)
+- BoxOpener API for box type (verified in docs)
+- Existing ContentCreatorModal pattern
+- useSpawnMode hook for weights
+- useDataViewer hook for data refresh
+
+---
+
+## Estimated Complexity
+
+| Phase | Complexity | Key Challenge |
+|-------|------------|---------------|
+| Phase 1: Research | Low | Documentation reading |
+| Phase 2: Images | Medium | Many forms to update |
+| Phase 3: Box Type | High | Complex BoxContentsBuilder UI |
+| Phase 4: Modals | Medium | Refactoring existing inline forms |
+| Phase 5: Structured Inputs | High | EffectsBuilder is complex |
+| Phase 6: Bug Fixes | Medium | Cache/state management |
+| Phase 7: Polish | Medium | Weight editor redesign |
+| Phase 8: Testing | Low | Verify all features |
