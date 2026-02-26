@@ -33,13 +33,22 @@ This plan addresses multiple improvements to the DataViewerTab and custom conten
   - [x] Document max recommended size for embedded images: **N/A** - not supported
   - [x] NOTE: Only implement if engine supports natively - otherwise URL-only is acceptable: **URL-ONLY IS ACCEPTABLE**
 
-### 1.2 Verify Box Type Implementation
-- [ ] Read `docs/engine/docs/EQUIPMENT_SYSTEM.md` (lines 427-1012)
-  - [ ] Confirm `type: 'box'` works correctly
-  - [ ] Verify `BoxContents`, `BoxDrop`, `BoxDropPool` interfaces
-  - [ ] Test BoxOpener API: `openBox()`, `isBox()`, `checkRequirements()`, `canOpen()`, `previewContents()`
-- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3269-3308)
-  - [ ] Verify box type in equipment documentation
+### 1.2 Verify Box Type Implementation ✅ DONE
+- [x] Read `docs/engine/docs/EQUIPMENT_SYSTEM.md` (lines 427-1012)
+  - [x] Confirm `type: 'box'` works correctly: **YES** - containers that hold other items, stored in inventory unopened
+  - [x] Verify `BoxContents`, `BoxDrop`, `BoxDropPool` interfaces: **CONFIRMED**
+    - `BoxDropPool`: weight (number), itemName (optional), quantity (optional), gold (optional - mutually exclusive with itemName)
+    - `BoxDrop`: pool: BoxDropPool[]
+    - `BoxContents`: drops: BoxDrop[], consumeOnOpen (boolean, default true), openRequirements (optional)
+  - [x] Test BoxOpener API: `openBox()`, `isBox()`, `checkRequirements()`, `canOpen()`, `previewContents()`: **ALL EXIST**
+    - `openBox(box, rng, inventory?)`: Opens box, returns BoxOpenResult with items, gold, consumeBox, error, consumedItems
+    - `isBox(equipment)`: Returns true if type === 'box' && boxContents !== undefined
+    - `checkRequirements(box, inventory)`: Returns null if satisfied, or BoxOpenError with code/message
+    - `canOpen(box, inventory)`: Simple boolean check for UI
+    - `previewContents(box)`: Returns possibleItems, possibleGold {min,max}, totalDrops, openRequirements
+    - `getRequirementsDescription(box)`: Human-readable string like "Requires: Iron Key"
+- [x] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3269-3308)
+  - [x] Verify box type in equipment documentation: **CONFIRMED** - all methods and interfaces documented with examples
 
 ### 1.3 Research Effects & Prerequisites Options
 - [ ] Read `docs/engine/docs/PREREQUISITES.md`
