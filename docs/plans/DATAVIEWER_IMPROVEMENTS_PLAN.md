@@ -357,30 +357,30 @@ This ensures all category lists update immediately when:
 
 ## Phase 7: UI/UX Polish
 
-### 7.1 Weight Editor Redesign
-- [ ] Redesign SpawnModeControls weight editor
-  - [ ] Show item **display name with ID fallback**
-    - [ ] Fetch actual items to get names from registry
-    - [ ] Map weight keys to item objects
-    - [ ] Show name as primary, ID as secondary text/tooltip
-    - [ ] Fall back to ID if no name exists
-  - [ ] **Group items by category/type** (same grouping as normal lists)
-    - [ ] Class features grouped by class
-    - [ ] Equipment grouped by type (weapon, armor, etc.)
-    - [ ] Spells grouped by school
-    - [ ] Races/traits in their natural groupings
-  - [ ] Compact row layout:
-    - [ ] Item name (left, takes most space)
-    - [ ] Weight input (right, narrow ~60px)
-    - [ ] Remove one layer of borders (row OR input border, not both)
-  - [ ] Use table-like layout for alignment
-  - [ ] Add header row: "Item" | "Weight"
-  - [ ] Collapsible group headers
-- [ ] Update SpawnModeControls.css
-  - [ ] Reduce nested border styling
-  - [ ] Cleaner input styling within rows
-  - [ ] Better spacing and typography
-  - [ ] Styling for grouped sections
+### 7.1 Weight Editor Redesign ✅ DONE
+- [x] Redesign SpawnModeControls weight editor
+  - [x] Show item **display name with ID fallback**
+    - [x] Fetch actual items to get names from registry
+    - [x] Map weight keys to item objects
+    - [x] Show name as primary, ID as secondary text/tooltip
+    - [x] Fall back to ID if no name exists
+  - [x] **Group items by category/type** (same grouping as normal lists)
+    - [x] Class features grouped by class
+    - [x] Equipment grouped by type (weapon, armor, etc.)
+    - [x] Spells grouped by school
+    - [x] Races/traits in their natural groupings
+  - [x] Compact row layout:
+    - [x] Item name (left, takes most space)
+    - [x] Weight input (right, narrow ~60px)
+    - [x] Remove one layer of borders (row OR input border, not both)
+  - [x] Use table-like layout for alignment
+  - [x] Add header row: "Item" | "Weight"
+  - [x] Collapsible group headers
+- [x] Update SpawnModeControls.css
+  - [x] Reduce nested border styling
+  - [x] Cleaner input styling within rows
+  - [x] Better spacing and typography
+  - [x] Styling for grouped sections
 
 ### 7.2 Class Creator Audio Preferences Clarity
 - [ ] Update ClassCreatorForm audio preferences section

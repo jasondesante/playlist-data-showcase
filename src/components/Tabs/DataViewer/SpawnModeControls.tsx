@@ -9,7 +9,7 @@
  * - Current mode indicator badge
  * - Reset button for current category
  * - Reset All button
- * - Weight editor (expandable advanced section)
+ * - Weight editor (expandable advanced section with grouped items)
  * - Import/Export buttons for custom content
  *
  * @see docs/plans/DATAVIEWER_CUSTOM_CONTENT_PLAN.md for implementation details
@@ -28,7 +28,8 @@ import {
   CheckCircle,
   Info,
   ImagePlus,
-  RefreshCw
+  RefreshCw,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
@@ -163,6 +164,126 @@ const CATEGORY_PROPERTIES: Record<BatchImageCategory, PropertyConfig[]> = {
   'skills': []
 };
 
+// ========================================
+// WEIGHT EDITOR TYPES & HELPERS
+// ========================================
+
+/**
+ * Item info for weight editor display
+ */
+interface WeightItemInfo {
+  /** Unique identifier (key in weights map) */
+  id: string;
+  /** Display name for the item */
+  displayName: string;
+  /** Grouping key for organizing items */
+  group: string;
+  /** Group display label */
+  groupLabel: string;
+  /** Current weight value */
+  weight: number;
+}
+
+/**
+ * Grouped items for display
+ */
+interface GroupedItems {
+  groupKey: string;
+  groupLabel: string;
+  items: WeightItemInfo[];
+}
+
+/**
+ * Category grouping configuration
+ */
+interface CategoryGroupingConfig {
+  /** Property to group by */
+  groupBy: string;
+  /** Function to extract group key from item */
+  getGroupKey: (item: any) => string;
+  /** Function to format group label */
+  formatGroupLabel?: (key: string) => string;
+  /** Function to get display name from item */
+  getDisplayName: (item: any) => string;
+  /** Function to get identifier key (matches weight key) */
+  getIdentifierKey: (item: any) => string;
+}
+
+/**
+ * Grouping configurations per category
+ */
+const CATEGORY_GROUPING_CONFIGS: Partial<Record<SpawnCategory, CategoryGroupingConfig>> = {
+  'spells': {
+    groupBy: 'school',
+    getGroupKey: (item) => item.school || 'Unknown',
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || item.id || 'Unknown',
+    getIdentifierKey: (item) => item.name || item.id
+  },
+  'equipment': {
+    groupBy: 'type',
+    getGroupKey: (item) => {
+      const type = item.type || 'item';
+      // Capitalize and format type
+      return type.charAt(0).toUpperCase() + type.slice(1);
+    },
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || 'Unknown',
+    getIdentifierKey: (item) => item.name
+  },
+  'classFeatures': {
+    groupBy: 'class',
+    getGroupKey: (item) => item.class || 'Unknown',
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || item.id || 'Unknown',
+    getIdentifierKey: (item) => item.id || item.name
+  },
+  'racialTraits': {
+    groupBy: 'race',
+    getGroupKey: (item) => item.race || 'Unknown',
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || item.id || 'Unknown',
+    getIdentifierKey: (item) => item.id || item.name
+  },
+  'skills': {
+    groupBy: 'ability',
+    getGroupKey: (item) => item.ability || 'Unknown',
+    formatGroupLabel: (key) => key ? key.toUpperCase() : 'Unknown',
+    getDisplayName: (item) => item.name || item.id || 'Unknown',
+    getIdentifierKey: (item) => item.id || item.name
+  },
+  'races.data': {
+    groupBy: 'name',
+    getGroupKey: () => 'Races',
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || 'Unknown',
+    getIdentifierKey: (item) => item.name
+  },
+  'classes.data': {
+    groupBy: 'name',
+    getGroupKey: () => 'Classes',
+    formatGroupLabel: (key) => key,
+    getDisplayName: (item) => item.name || 'Unknown',
+    getIdentifierKey: (item) => item.name
+  }
+};
+
+/**
+ * Map to SpawnCategory from similar keys
+ */
+function normalizeCategory(category: SpawnCategory): SpawnCategory | null {
+  // Direct mapping for known categories
+  if (CATEGORY_GROUPING_CONFIGS[category]) {
+    return category;
+  }
+  // Handle subcategory patterns like 'spells.Wizard', 'classFeatures.Barbarian'
+  if (category.startsWith('spells.')) return 'spells';
+  if (category.startsWith('classFeatures.')) return 'classFeatures';
+  if (category.startsWith('racialTraits.')) return 'racialTraits';
+  if (category.startsWith('skills.')) return 'skills';
+  return null;
+}
+
 /**
  * Props for SpawnModeControls component
  */
@@ -253,6 +374,128 @@ export function SpawnModeControls({
   const categoryInfo = useMemo(() => getCategoryInfo(category), [getCategoryInfo, category]);
   const hasCustom = hasCustomData(category);
   const weights = getWeights(category);
+
+  // ========================================
+  // WEIGHT EDITOR - GROUPED ITEMS
+  // ========================================
+
+  // State for collapsed groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Build grouped items for weight editor
+  const groupedWeightItems = useMemo((): GroupedItems[] => {
+    const weightEntries = Object.entries(weights);
+    if (weightEntries.length === 0) return [];
+
+    const normalizedCategory = normalizeCategory(category);
+    const config = normalizedCategory ? CATEGORY_GROUPING_CONFIGS[normalizedCategory] : null;
+
+    // Fetch items from registry to get display names and grouping info
+    let registryItems: any[] = [];
+    try {
+      const manager = ExtensionManager.getInstance();
+      // Map SpawnCategory to ExtensionManager category
+      const managerCategory = normalizedCategory || category;
+      registryItems = manager.get(managerCategory as any) || [];
+    } catch (e) {
+      logger.warn('SpawnMode', 'Failed to fetch registry items for weight editor', { error: String(e) });
+    }
+
+    // Build a map of identifier -> item for quick lookup
+    const itemMap = new Map<string, any>();
+    if (config && registryItems.length > 0) {
+      for (const item of registryItems) {
+        const key = config.getIdentifierKey(item);
+        if (key) {
+          itemMap.set(key, item);
+          // Also add lowercase key for case-insensitive matching
+          itemMap.set(key.toLowerCase(), item);
+        }
+      }
+    }
+
+    // Build weight item infos
+    const itemInfos: WeightItemInfo[] = weightEntries.map(([key, weight]) => {
+      // Try to find matching item in registry
+      const registryItem = itemMap.get(key) || itemMap.get(key.toLowerCase());
+
+      if (config && registryItem) {
+        // Use registry item for display
+        const displayName = config.getDisplayName(registryItem);
+        const groupKey = config.getGroupKey(registryItem);
+        const groupLabel = config.formatGroupLabel ? config.formatGroupLabel(groupKey) : groupKey;
+
+        return {
+          id: key,
+          displayName,
+          group: groupKey,
+          groupLabel,
+          weight
+        };
+      } else {
+        // Fallback: use key as both name and group
+        return {
+          id: key,
+          displayName: key,
+          group: 'Other',
+          groupLabel: 'Other',
+          weight
+        };
+      }
+    });
+
+    // Group items by group key
+    const groupMap = new Map<string, WeightItemInfo[]>();
+    for (const info of itemInfos) {
+      const existing = groupMap.get(info.group) || [];
+      existing.push(info);
+      groupMap.set(info.group, existing);
+    }
+
+    // Convert to sorted array of GroupedItems
+    const groups: GroupedItems[] = [];
+    for (const [groupKey, items] of groupMap.entries()) {
+      // Sort items within group alphabetically by display name
+      items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+      // Find group label from first item
+      const groupLabel = items[0]?.groupLabel || groupKey;
+
+      groups.push({
+        groupKey,
+        groupLabel,
+        items
+      });
+    }
+
+    // Sort groups alphabetically by label
+    groups.sort((a, b) => a.groupLabel.localeCompare(b.groupLabel));
+
+    return groups;
+  }, [category, weights]);
+
+  // Toggle group collapse
+  const toggleGroupCollapse = useCallback((groupKey: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) {
+        next.delete(groupKey);
+      } else {
+        next.add(groupKey);
+      }
+      return next;
+    });
+  }, []);
+
+  // Expand all groups
+  const expandAllGroups = useCallback(() => {
+    setCollapsedGroups(new Set());
+  }, []);
+
+  // Collapse all groups
+  const collapseAllGroups = useCallback(() => {
+    setCollapsedGroups(new Set(groupedWeightItems.map(g => g.groupKey)));
+  }, [groupedWeightItems]);
 
   // Handle mode change
   const handleModeChange = useCallback((newMode: SpawnMode) => {
@@ -627,10 +870,10 @@ export function SpawnModeControls({
     }
   }, [category, setMode, setWeights]);
 
-  // Get weight entries sorted by name
-  const weightEntries = useMemo(() => {
-    return Object.entries(weights).sort(([a], [b]) => a.localeCompare(b));
-  }, [weights]);
+  // Get total item count from grouped items
+  const totalItemCount = useMemo(() => {
+    return groupedWeightItems.reduce((sum, group) => sum + group.items.length, 0);
+  }, [groupedWeightItems]);
 
   return (
     <div className={`spawn-mode-controls ${className}`}>
@@ -708,7 +951,7 @@ export function SpawnModeControls({
       </div>
 
       {/* Advanced Section - Weight Editor */}
-      {showWeightEditor && weightEntries.length > 0 && (
+      {showWeightEditor && groupedWeightItems.length > 0 && (
         <div className="spawn-mode-advanced">
           <button
             type="button"
@@ -720,40 +963,100 @@ export function SpawnModeControls({
             <Weight size={14} aria-hidden="true" />
             <span>Weight Editor</span>
             <span className="spawn-mode-weight-count">
-              {weightEntries.length} items
+              {totalItemCount} items
             </span>
             {isAdvancedOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
           </button>
 
           {isAdvancedOpen && (
             <div className="spawn-mode-weight-editor" id="spawn-mode-weight-editor-panel">
-              <p className="spawn-mode-weight-help" id="spawn-mode-weight-help-text">
-                Adjust spawn weights (0 = never spawns, 1.0 = default, higher = more common)
-              </p>
+              <div className="spawn-mode-weight-header">
+                <p className="spawn-mode-weight-help" id="spawn-mode-weight-help-text">
+                  Adjust spawn weights (0 = never, 1.0 = default, higher = more common)
+                </p>
+                <div className="spawn-mode-weight-actions">
+                  <button
+                    type="button"
+                    className="spawn-mode-weight-action-btn"
+                    onClick={expandAllGroups}
+                    title="Expand all groups"
+                  >
+                    Expand All
+                  </button>
+                  <span className="spawn-mode-weight-action-divider">|</span>
+                  <button
+                    type="button"
+                    className="spawn-mode-weight-action-btn"
+                    onClick={collapseAllGroups}
+                    title="Collapse all groups"
+                  >
+                    Collapse All
+                  </button>
+                </div>
+              </div>
+
+              {/* Table header */}
+              <div className="spawn-mode-weight-table-header">
+                <span className="spawn-mode-weight-table-col-name">Item</span>
+                <span className="spawn-mode-weight-table-col-weight">Weight</span>
+              </div>
+
               <div className="spawn-mode-weight-list" role="group" aria-label="Spawn weight controls">
-                {weightEntries.map(([itemName, weight]) => (
-                  <div key={itemName} className="spawn-mode-weight-item">
-                    <label
-                      className="spawn-mode-weight-name"
-                      title={itemName}
-                      htmlFor={`weight-input-${itemName.replace(/[^a-zA-Z0-9]/g, '_')}`}
-                    >
-                      {itemName}
-                    </label>
-                    <input
-                      id={`weight-input-${itemName.replace(/[^a-zA-Z0-9]/g, '_')}`}
-                      type="number"
-                      min="0"
-                      max="10"
-                      step="0.1"
-                      value={weight}
-                      onChange={(e) => handleWeightChange(itemName, parseFloat(e.target.value) || 0)}
-                      className="spawn-mode-weight-input"
-                      aria-label={`Weight for ${itemName}`}
-                      aria-describedby="spawn-mode-weight-help-text"
-                    />
-                  </div>
-                ))}
+                {groupedWeightItems.map((group) => {
+                  const isCollapsed = collapsedGroups.has(group.groupKey);
+
+                  return (
+                    <div key={group.groupKey} className="spawn-mode-weight-group">
+                      {/* Group header */}
+                      <button
+                        type="button"
+                        className="spawn-mode-weight-group-header"
+                        onClick={() => toggleGroupCollapse(group.groupKey)}
+                        aria-expanded={!isCollapsed}
+                      >
+                        {isCollapsed ? (
+                          <ChevronRight size={12} aria-hidden="true" />
+                        ) : (
+                          <ChevronDown size={12} aria-hidden="true" />
+                        )}
+                        <span className="spawn-mode-weight-group-label">{group.groupLabel}</span>
+                        <span className="spawn-mode-weight-group-count">{group.items.length}</span>
+                      </button>
+
+                      {/* Group items */}
+                      {!isCollapsed && (
+                        <div className="spawn-mode-weight-group-items">
+                          {group.items.map((item) => (
+                            <div key={item.id} className="spawn-mode-weight-item">
+                              <label
+                                className="spawn-mode-weight-name"
+                                title={item.id !== item.displayName ? `${item.displayName} (${item.id})` : item.id}
+                                htmlFor={`weight-input-${item.id.replace(/[^a-zA-Z0-9]/g, '_')}`}
+                              >
+                                <span className="spawn-mode-weight-name-text">{item.displayName}</span>
+                                {item.id !== item.displayName && (
+                                  <span className="spawn-mode-weight-name-id">{item.id}</span>
+                                )}
+                              </label>
+                              <input
+                                id={`weight-input-${item.id.replace(/[^a-zA-Z0-9]/g, '_')}`}
+                                type="number"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                value={item.weight}
+                                onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value) || 0)}
+                                className="spawn-mode-weight-input"
+                                aria-label={`Weight for ${item.displayName}`}
+                                aria-describedby="spawn-mode-weight-help-text"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
