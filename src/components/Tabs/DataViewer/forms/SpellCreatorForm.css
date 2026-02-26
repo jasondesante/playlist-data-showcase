@@ -406,3 +406,54 @@
     gap: 0.25rem;
   }
 }
+
+/* Images Section */
+.spell-creator-images-section {
+  /* Inherit section styles */
+}
+
+.spell-creator-images-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .spell-creator-images-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Preview Icon and Image */
+.spell-creator-preview-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.spell-creator-preview-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spell-creator-preview-image {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.spell-creator-preview-image img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}

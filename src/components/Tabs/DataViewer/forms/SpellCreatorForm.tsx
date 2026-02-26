@@ -27,9 +27,11 @@ import {
   Users,
   Plus,
   AlertCircle,
-  Target
+  Target,
+  ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
 import './SpellCreatorForm.css';
 
@@ -108,6 +110,8 @@ export interface SpellFormData {
   duration: string;
   description: string;
   classes: string[];
+  icon?: string;
+  image?: string;
 }
 
 /**
@@ -143,7 +147,9 @@ function getDefaultFormData(): SpellFormData {
     components: ['V', 'S'],
     duration: 'Instantaneous',
     description: '',
-    classes: []
+    classes: [],
+    icon: '',
+    image: ''
   };
 }
 
@@ -272,6 +278,16 @@ export function SpellCreatorForm({
         spellItem.classes = formData.classes;
       }
 
+      // Add icon if specified
+      if (formData.icon?.trim()) {
+        spellItem.icon = formData.icon.trim();
+      }
+
+      // Add image if specified
+      if (formData.image?.trim()) {
+        spellItem.image = formData.image.trim();
+      }
+
       // Determine the actual content type
       // If specific classes are selected, we might register to those specific categories
       // But for now, we register to the general 'spells' category and include classes in the data
@@ -344,6 +360,18 @@ export function SpellCreatorForm({
   const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setFormData(prev => ({ ...prev, description: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Icon change handler
+  const handleIconChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, icon: value }));
+    if (formErrors.length > 0) setFormErrors([]);
+  }, [formErrors]);
+
+  // Image change handler
+  const handleImageChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, image: value }));
     if (formErrors.length > 0) setFormErrors([]);
   }, [formErrors]);
 
@@ -597,6 +625,38 @@ export function SpellCreatorForm({
         </div>
       </div>
 
+      {/* Images Section */}
+      <div className="spell-creator-section spell-creator-images-section" role="group" aria-labelledby="spell-images-section-title">
+        <h4 className="spell-creator-section-title" id="spell-images-section-title">
+          <ImageIcon size={16} aria-hidden="true" />
+          Images <span className="spell-creator-optional">(optional)</span>
+        </h4>
+        <div className="spell-creator-images-grid">
+          <div className="spell-creator-field">
+            <ImageFieldInput
+              value={formData.icon || ''}
+              onChange={handleIconChange}
+              label="Spell Icon"
+              placeholder="e.g., assets/icons/fireball.png"
+              fieldType="icon"
+              previewSize="sm"
+              disabled={disabled}
+            />
+          </div>
+          <div className="spell-creator-field">
+            <ImageFieldInput
+              value={formData.image || ''}
+              onChange={handleImageChange}
+              label="Spell Image"
+              placeholder="e.g., assets/spells/fireball.png"
+              fieldType="image"
+              previewSize="md"
+              disabled={disabled}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Class Availability Section */}
       <div className="spell-creator-section" role="group" aria-labelledby="spell-classes-section-title">
         <h4 className="spell-creator-section-title" id="spell-classes-section-title">
@@ -710,10 +770,36 @@ export function SpellCreatorForm({
             Preview
           </h4>
           <div className="spell-creator-preview-content">
+            {/* Show image if set */}
+            {formData.image && (
+              <div className="spell-creator-preview-image">
+                <img
+                  src={formData.image}
+                  alt={formData.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="spell-creator-preview-header">
-              <span className="spell-creator-preview-name" style={{ color: schoolColor }}>
-                {formData.name}
-              </span>
+              <div className="spell-creator-preview-name-row">
+                {formData.icon && (
+                  <img
+                    src={formData.icon}
+                    alt=""
+                    className="spell-creator-preview-icon"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="spell-creator-preview-name" style={{ color: schoolColor }}>
+                  {formData.name}
+                </span>
+              </div>
               <div className="spell-creator-preview-badges">
                 <span className="spell-creator-preview-badge" style={{ backgroundColor: schoolColor }}>
                   {formData.school}
