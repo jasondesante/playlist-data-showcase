@@ -248,9 +248,9 @@ Resources are defined in class features via `type: 'resource'` and granted via `
 - [x] Create `RangeSelect` component ✅ DONE
   - [x] Dropdown with common values: "Touch", "Self", "5 feet", "10 feet", "30 feet", "60 feet", "90 feet", "120 feet", "150 feet", "300 feet", "1 mile"
   - [x] "Custom..." option that reveals text input
-- [ ] Create `DurationSelect` component
-  - [ ] Dropdown with common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
-  - [ ] "Custom..." option that reveals text input
+- [x] Create `DurationSelect` component ✅ DONE
+  - [x] Dropdown with common values: "Instantaneous", "1 round", "1 minute", "10 minutes", "1 hour", "8 hours", "24 hours", "Until dispelled", "Concentration, up to 1 minute"
+  - [x] "Custom..." option that reveals text input
 - [ ] Update SpellCreatorForm to use new components
 
 ### 5.2 Create Shared EffectsBuilder Component

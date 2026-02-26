@@ -1,0 +1,204 @@
+/* ========================================
+   DURATION SELECT COMPONENT
+   Shared component for structured duration input
+   Part of DataViewerTab Improvements Plan - Phase 5.1
+   ======================================== */
+
+.duration-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* Label */
+.duration-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.duration-required {
+  color: var(--destructive);
+  margin-left: 0.125rem;
+}
+
+.duration-optional {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 0.25rem;
+}
+
+/* Input Wrapper (for dropdown) */
+.duration-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Icon */
+.duration-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Dropdown */
+.duration-dropdown {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  padding-left: 2.25rem; /* Space for icon */
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+.duration-dropdown:hover:not(:disabled) {
+  border-color: var(--ring);
+}
+
+.duration-dropdown:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring-ring);
+}
+
+.duration-dropdown:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-bg-muted);
+}
+
+/* Custom Input Wrapper */
+.duration-custom-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  position: relative;
+}
+
+/* Custom Input */
+.duration-custom-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  padding-left: 2.25rem; /* Space for icon */
+  padding-right: 2.5rem; /* Space for back button */
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.duration-custom-input:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring-ring);
+}
+
+.duration-custom-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.duration-custom-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-bg-muted);
+}
+
+/* Back to Dropdown Button */
+.duration-back-btn {
+  position: absolute;
+  right: 0.375rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.duration-back-btn:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+  border-color: var(--ring);
+}
+
+.duration-back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Hint Text */
+.duration-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.duration-hint-description {
+  /* Description styling */
+}
+
+.duration-hint-custom {
+  color: var(--cute-purple);
+  font-style: italic;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .duration-dropdown {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .duration-custom-wrapper {
+    flex-wrap: wrap;
+  }
+
+  .duration-custom-input {
+    padding-right: 0.75rem; /* Remove space for inline back button */
+  }
+
+  .duration-back-btn {
+    position: static;
+    transform: none;
+    margin-top: 0.375rem;
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .duration-back-btn::after {
+    content: "Back to dropdown";
+    font-size: 0.75rem;
+  }
+}
