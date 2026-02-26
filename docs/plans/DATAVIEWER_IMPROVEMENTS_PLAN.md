@@ -382,17 +382,17 @@ This ensures all category lists update immediately when:
   - [x] Better spacing and typography
   - [x] Styling for grouped sections
 
-### 7.2 Class Creator Audio Preferences Clarity
-- [ ] Update ClassCreatorForm audio preferences section
-  - [ ] Add explanation text at top:
+### 7.2 Class Creator Audio Preferences Clarity ✅ DONE
+- [x] Update ClassCreatorForm audio preferences section
+  - [x] Add explanation text at top:
     - "Audio preferences determine when this class is suggested based on music characteristics. Classes with matching audio preferences are more likely to be generated for songs with those traits."
-  - [ ] Add tooltips for each field:
-    - `primary`: "The main audio trait this class responds to"
+  - [x] Add tooltips for each field:
+    - `primary`: "The main audio trait this class responds to (highest priority)"
     - `secondary`: "Secondary trait (less weight than primary)"
-    - `tertiary`: "Tertiary trait (least weight)"
-    - Individual weights: "Override weight for specific frequency range"
-  - [ ] Add example: "Barbarian prefers bass-heavy music, Bard prefers treble"
-  - [ ] Consider renaming section to "Music-Based Class Suggestions"
+    - `tertiary`: "Tertiary trait (least weight, subtle influence)"
+    - Individual weights: "Override weight for specific frequency ranges when the trait system isn't enough"
+  - [x] Add example: "Barbarian prefers bass-heavy music, Bard prefers treble-heavy music"
+  - [x] Renamed section to "Music-Based Class Suggestions"
 
 ### 7.3 Equipment Creator Advanced Options Restructure
 - [ ] Redesign EquipmentCreatorForm advanced options

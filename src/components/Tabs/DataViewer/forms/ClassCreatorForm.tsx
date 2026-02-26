@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useContentCreator } from '@/hooks/useContentCreator';
 import './ClassCreatorForm.css';
 
@@ -781,7 +782,7 @@ export function ClassCreatorForm({
         </div>
       </div>
 
-      {/* Audio Preferences Toggle */}
+      {/* Music-Based Class Suggestions Toggle */}
       <div className="class-creator-advanced-toggle">
         <button
           type="button"
@@ -793,7 +794,7 @@ export function ClassCreatorForm({
         >
           {showAudioPrefs ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
           <Music size={16} aria-hidden="true" />
-          Audio Preferences {showAudioPrefs && '(Advanced)'}
+          Music-Based Class Suggestions {showAudioPrefs && '(Advanced)'}
         </button>
       </div>
 
@@ -801,14 +802,19 @@ export function ClassCreatorForm({
       {showAudioPrefs && (
         <div className="class-creator-advanced-section" id="class-creator-audio-section">
           <div className="class-creator-audio-hint">
-            Configure audio affinity for class suggestions. When the music has certain characteristics,
-            the ClassSuggester will favor classes with matching audio preferences.
+            <strong>How it works:</strong> Audio preferences determine when this class is suggested based on
+            music characteristics. Classes with matching audio preferences are more likely to be generated
+            for songs with those traits.
+          </div>
+          <div className="class-creator-audio-example">
+            <strong>Examples:</strong> Barbarian prefers bass-heavy music, Bard prefers treble-heavy music
           </div>
 
           <div className="class-creator-row">
             <div className="class-creator-field class-creator-field-inline">
               <label className="class-creator-label" htmlFor="audio-primary">
                 Primary Trait
+                <Tooltip content="The main audio trait this class responds to (highest priority)" />
               </label>
               <select
                 id="audio-primary"
@@ -827,6 +833,7 @@ export function ClassCreatorForm({
             <div className="class-creator-field class-creator-field-inline">
               <label className="class-creator-label" htmlFor="audio-secondary">
                 Secondary Trait
+                <Tooltip content="Secondary trait (less weight than primary)" />
               </label>
               <select
                 id="audio-secondary"
@@ -845,6 +852,7 @@ export function ClassCreatorForm({
             <div className="class-creator-field class-creator-field-inline">
               <label className="class-creator-label" htmlFor="audio-tertiary">
                 Tertiary Trait
+                <Tooltip content="Tertiary trait (least weight, subtle influence)" />
               </label>
               <select
                 id="audio-tertiary"
@@ -862,7 +870,10 @@ export function ClassCreatorForm({
           </div>
 
           <div className="class-creator-audio-weights">
-            <label className="class-creator-label">Individual Weight Sliders</label>
+            <label className="class-creator-label">
+              Individual Weight Sliders
+              <Tooltip content="Override weight for specific frequency ranges when the trait system isn't enough" />
+            </label>
             <div className="class-creator-weight-sliders">
               {(['bass', 'treble', 'mid', 'amplitude'] as const).map(trait => (
                 <div key={trait} className="class-creator-weight-slider">
