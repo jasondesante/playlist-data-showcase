@@ -80,6 +80,7 @@ import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCr
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
 import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
+import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
 import { Plus, X } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
@@ -393,6 +394,7 @@ export function DataViewerTab() {
   const [showSpellCreator, setShowSpellCreator] = useState(false);
   const [showClassFeatureCreator, setShowClassFeatureCreator] = useState(false);
   const [showRacialTraitCreator, setShowRacialTraitCreator] = useState(false);
+  const [showRaceCreator, setShowRaceCreator] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
@@ -747,6 +749,19 @@ export function DataViewerTab() {
       logger.error('DataViewer', `Failed to create racial trait: ${result.error}`);
     }
   }, [createContent, refreshData]);
+
+  /**
+   * Handle creation of new race via RaceCreatorForm
+   * (Phase 6.1: Race Creation in DataViewerTab)
+   *
+   * Note: The RaceCreatorForm handles registration to both 'races' and 'races.data'
+   * internally. This handler just manages UI state and data refresh.
+   */
+  const handleCreateRace = useCallback((race: RaceFormData) => {
+    logger.info('DataViewer', `Created race: ${race.name}`);
+    setShowRaceCreator(false);
+    refreshData();
+  }, [refreshData]);
 
   // Render category selector
   const renderCategorySelector = () => (
@@ -1397,8 +1412,22 @@ export function DataViewerTab() {
   };
 
   // Render races
+  // Phase 6.1: Added Create Race button
   const renderRaces = () => (
-    <div className="dataviewer-grid">
+    <div className="dataviewer-list">
+      {/* Race Creation Header (Phase 6.1) */}
+      <div className="dataviewer-section-header">
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setShowRaceCreator(true)}
+          leftIcon={Plus}
+        >
+          Create Race
+        </Button>
+      </div>
+
+      <div className="dataviewer-grid">
       {(getFilteredData as RaceDataEntry[]).map((race, index) => {
         const raceName = race.name || `Race-${index}`;
         const isExpanded = expandedItems.has(raceName);
@@ -1490,6 +1519,7 @@ export function DataViewerTab() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 
@@ -2360,6 +2390,23 @@ export function DataViewerTab() {
           onCreate={handleCreateRacialTrait}
           onCancel={() => setShowRacialTraitCreator(false)}
           submitButtonText="Create Trait"
+        />
+      </ContentCreatorModal>
+
+      {/* Race Creator Modal (Phase 6.1) */}
+      <ContentCreatorModal
+        isOpen={showRaceCreator}
+        onClose={() => setShowRaceCreator(false)}
+        title="Create Custom Race"
+        subtitle="Add a new playable race"
+        icon={Shield}
+        showFooter={false}
+        width="lg"
+      >
+        <RaceCreatorForm
+          onCreate={handleCreateRace}
+          onCancel={() => setShowRaceCreator(false)}
+          submitButtonText="Create Race"
         />
       </ContentCreatorModal>
     </div>

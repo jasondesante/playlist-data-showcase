@@ -1,0 +1,550 @@
+/**
+ * RaceCreatorForm Component Styles
+ *
+ * Styles for the race creator form.
+ * Part of DataViewerTab Custom Content Creation Upgrade - Phase 6.1.
+ */
+
+.race-creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* Section Styles */
+.race-creator-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.race-creator-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.race-creator-section-title svg {
+  color: var(--cute-green, hsl(120 60% 40%));
+}
+
+/* Field Styles */
+.race-creator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.race-creator-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.race-creator-required {
+  color: var(--destructive);
+  margin-left: 0.125rem;
+}
+
+.race-creator-optional {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+/* Input Styles */
+.race-creator-input,
+.race-creator-select,
+.race-creator-textarea {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.race-creator-input:focus,
+.race-creator-select:focus,
+.race-creator-textarea:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px var(--ring-ring);
+}
+
+.race-creator-input::placeholder,
+.race-creator-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.race-creator-input:disabled,
+.race-creator-select:disabled,
+.race-creator-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-bg-muted);
+}
+
+.race-creator-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.race-creator-input-speed {
+  width: 100px;
+}
+
+/* Hint Text */
+.race-creator-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Abilities Grid */
+.race-creator-abilities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.race-creator-abilities-grid-subrace {
+  gap: 0.5rem;
+}
+
+.race-creator-ability-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.race-creator-ability-input label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.race-creator-ability-input input {
+  width: 50px;
+  padding: 0.375rem;
+  font-size: 0.875rem;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  color: var(--color-text);
+}
+
+.race-creator-ability-input input:focus {
+  outline: none;
+  border-color: var(--ring);
+}
+
+/* Bonus Total */
+.race-creator-bonus-total {
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  margin-top: 0.25rem;
+}
+
+.race-creator-bonus-warning {
+  color: var(--cute-gold, hsl(45 100% 40%));
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+/* Traits Section */
+.race-creator-traits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.race-creator-trait-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.race-creator-trait-option:hover {
+  background: var(--color-bg-subtle);
+}
+
+.race-creator-trait-option input:checked + span {
+  color: var(--cute-green, hsl(120 60% 40%));
+  font-weight: 500;
+}
+
+.race-creator-trait-option:has(input:checked) {
+  border-color: var(--cute-green, hsl(120 60% 40%));
+  background: hsl(120 60% 40% / 0.1);
+}
+
+.race-creator-trait-option input {
+  cursor: pointer;
+}
+
+/* Selected Traits */
+.race-creator-selected-traits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+}
+
+.race-creator-selected-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.race-creator-trait-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--cute-green, hsl(120 60% 40%));
+  color: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.race-creator-trait-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.race-creator-trait-remove:hover {
+  opacity: 1;
+}
+
+/* Advanced Toggle */
+.race-creator-advanced-toggle {
+  margin-top: 0.25rem;
+}
+
+.race-creator-advanced-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.race-creator-advanced-btn:hover {
+  color: var(--color-text);
+}
+
+.race-creator-advanced-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.race-creator-advanced-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* Subraces */
+.race-creator-subraces-hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.race-creator-subraces-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.race-creator-subrace-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.race-creator-subrace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.race-creator-subrace-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.race-creator-subrace-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.race-creator-subrace-remove:hover {
+  color: var(--destructive);
+  background: hsl(0 60% 50% / 0.1);
+}
+
+.race-creator-subrace-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Errors */
+.race-creator-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(0 60% 50% / 0.1);
+  border: 1px solid hsl(0 60% 50% / 0.3);
+  border-radius: 6px;
+}
+
+.race-creator-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--destructive);
+}
+
+.race-creator-error svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+/* Actions */
+.race-creator-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+
+/* Preview Section */
+.race-creator-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--color-bg-subtle);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.race-creator-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.race-creator-preview-title svg {
+  color: var(--cute-gold);
+}
+
+.race-creator-preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.race-creator-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.race-creator-preview-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--cute-green, hsl(120 60% 40%));
+}
+
+.race-creator-preview-badges {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.race-creator-preview-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.race-creator-preview-badge-speed {
+  background: var(--cute-blue, hsl(210 80% 50%));
+}
+
+.race-creator-preview-badge-traits {
+  background: var(--cute-purple);
+}
+
+.race-creator-preview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.race-creator-preview-stat {
+  white-space: nowrap;
+}
+
+.race-creator-preview-stat strong {
+  color: var(--color-text);
+}
+
+.race-creator-preview-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.race-creator-preview-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.race-creator-preview-trait {
+  padding: 0.125rem 0.5rem;
+  background: hsl(120 60% 40% / 0.15);
+  color: var(--cute-green, hsl(120 60% 40%));
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.race-creator-preview-subraces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.race-creator-preview-subraces-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.race-creator-preview-subrace {
+  padding: 0.125rem 0.5rem;
+  background: var(--cute-gold-bg, hsl(45 100% 50% / 0.15));
+  color: var(--cute-gold, hsl(45 100% 40%));
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .race-creator-abilities-grid {
+    gap: 0.5rem;
+  }
+
+  .race-creator-ability-input input {
+    width: 40px;
+  }
+
+  .race-creator-traits-grid {
+    gap: 0.375rem;
+  }
+
+  .race-creator-trait-option {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .race-creator-actions {
+    flex-direction: column;
+  }
+
+  .race-creator-actions button {
+    width: 100%;
+  }
+
+  .race-creator-preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .race-creator-preview-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

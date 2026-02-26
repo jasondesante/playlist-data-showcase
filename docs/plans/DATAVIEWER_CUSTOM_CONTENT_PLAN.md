@@ -219,22 +219,22 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
 ## Phase 6: Complex Content Types
 
 ### 6.1 Race Creator Modal
-- [ ] Create `src/components/Tabs/DataViewer/forms/RaceCreatorForm.tsx`
-  - [ ] Basic info section:
+- [x] Create `src/components/Tabs/DataViewer/forms/RaceCreatorForm.tsx`
+  - [x] Basic info section:
     - name (text, required)
     - description (textarea, optional)
     - speed (number, default 30)
-  - [ ] Ability bonuses section:
+  - [x] Ability bonuses section:
     - STR/DEX/CON/INT/WIS/CHA inputs (numbers 0-4)
     - Visual display of total bonus points
-  - [ ] Traits section:
+  - [x] Traits section:
     - Multi-select from existing traits
     - Option to create new trait inline
-  - [ ] Subraces section (expandable):
+  - [x] Subraces section (expandable):
     - Subrace names (text array)
     - Per-subrace ability bonuses
     - Per-subrace traits
-  - [ ] Registers to both `races` and `races.data`
+  - [x] Registers to both `races` and `races.data`
 
 ### 6.2 Class Creator Modal
 - [ ] Create `src/components/Tabs/DataViewer/forms/ClassCreatorForm.tsx`
@@ -282,10 +282,10 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
       - Items array
 
 ### 6.4 Add to DataViewerTab
-- [ ] Add "Create Race" button to races section
+- [x] Add "Create Race" button to races section
 - [ ] Add "Create Class" button to classes section
 - [ ] Add "Configure Class" button for existing classes
-- [ ] All use modal pattern
+- [x] All use modal pattern
 
 ---
 
