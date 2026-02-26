@@ -38,12 +38,12 @@ Upgrade the DataViewerTab to support creating, editing, and managing ALL custom 
   - [x] Add custom content counts
 
 ### 1.3 Validation Utilities
-- [ ] Create `src/utils/contentValidation.ts`
-  - [ ] Structure validation (required fields, correct types)
-  - [ ] Reference validation (trait IDs, spell names, class names exist)
-  - [ ] Business rule validation (e.g., exactly 2 saving throws, valid hit die)
-  - [ ] Per-category validation functions
-  - [ ] Clear error messages for validation failures
+- [x] Create `src/utils/contentValidation.ts`
+  - [x] Structure validation (required fields, correct types)
+  - [x] Reference validation (trait IDs, spell names, class names exist)
+  - [x] Business rule validation (e.g., exactly 2 saving throws, valid hit die)
+  - [x] Per-category validation functions
+  - [x] Clear error messages for validation failures
 
 ### 1.4 Spawn Mode Controls Component
 - [ ] Create `src/components/Tabs/DataViewer/SpawnModeControls.tsx`

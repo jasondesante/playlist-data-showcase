@@ -3,6 +3,11 @@ import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useDataViewerStore } from '@/store/dataViewerStore';
 import type { SpawnMode } from './useSpawnMode';
+import {
+    validateContent,
+    type ContentCategory,
+    type ContentItem as ValidatedContentItem
+} from '@/utils/contentValidation';
 
 /**
  * Content types that can be created through the ExtensionManager.
@@ -218,221 +223,20 @@ export interface UseContentCreatorReturn {
 
 /**
  * Validate content structure for a specific category.
+ * Delegates to the centralized contentValidation utility.
  * Returns validation result with any errors found.
  */
 function validateContentForCategory(category: ContentType, item: ContentItem): ContentValidationResult {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Common validation for all categories
-    if (!item || typeof item !== 'object') {
-        errors.push('Item must be an object');
-        return { valid: false, errors, warnings };
-    }
-
-    // Category-specific validation
-    switch (category) {
-        case 'equipment':
-        case 'equipment.templates':
-            // Equipment requires: name, type, rarity, weight
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Equipment must have a valid "name" string');
-            }
-            if (!['weapon', 'armor', 'item'].includes(item.type as string)) {
-                errors.push('Equipment "type" must be "weapon", "armor", or "item"');
-            }
-            if (!['common', 'uncommon', 'rare', 'very_rare', 'legendary'].includes(item.rarity as string)) {
-                errors.push('Equipment "rarity" must be a valid rarity level');
-            }
-            if (typeof item.weight !== 'number' || item.weight < 0) {
-                errors.push('Equipment "weight" must be a non-negative number');
-            }
-            // Weapon-specific validation
-            if (item.type === 'weapon') {
-                if (item.damage && typeof item.damage !== 'object') {
-                    errors.push('Weapon "damage" must be an object with dice and damageType');
-                }
-            }
-            // Armor-specific validation
-            if (item.type === 'armor') {
-                if (item.acBonus !== undefined && typeof item.acBonus !== 'number') {
-                    errors.push('Armor "acBonus" must be a number');
-                }
-            }
-            break;
-
-        case 'appearance.bodyTypes':
-        case 'appearance.hairStyles':
-        case 'appearance.facialFeatures':
-            // Simple string values
-            if (typeof item !== 'string' && !item.value) {
-                errors.push('Appearance option must be a string or have a "value" property');
-            }
-            break;
-
-        case 'appearance.skinTones':
-        case 'appearance.hairColors':
-        case 'appearance.eyeColors':
-            // Color values (hex format)
-            const colorValue = typeof item === 'string' ? item : item.value;
-            if (!colorValue || typeof colorValue !== 'string') {
-                errors.push('Color option must be a string or have a "value" property');
-            } else if (!/^#[0-9A-Fa-f]{6}$/.test(colorValue)) {
-                warnings.push(`Color "${colorValue}" is not in standard hex format (#RRGGBB)`);
-            }
-            break;
-
-        case 'spells':
-            // Spells require: name, level, school
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Spell must have a valid "name" string');
-            }
-            if (typeof item.level !== 'number' || item.level < 0 || item.level > 9) {
-                errors.push('Spell "level" must be a number between 0 and 9');
-            }
-            const validSchools = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
-            if (!validSchools.includes(item.school as string)) {
-                errors.push(`Spell "school" must be one of: ${validSchools.join(', ')}`);
-            }
-            break;
-
-        case 'classFeatures':
-            // Class features require: id, name, description, type, class, level, source
-            if (!item.id || typeof item.id !== 'string') {
-                errors.push('Class feature must have a valid "id" string');
-            } else if (!/^[a-z][a-z0-9_]*$/.test(item.id as string)) {
-                errors.push('Class feature "id" must use lowercase_with_underscores format');
-            }
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Class feature must have a valid "name" string');
-            }
-            if (!item.description || typeof item.description !== 'string') {
-                errors.push('Class feature must have a valid "description" string');
-            }
-            if (!['passive', 'active', 'reaction'].includes(item.type as string)) {
-                errors.push('Class feature "type" must be "passive", "active", or "reaction"');
-            }
-            if (!item.class || typeof item.class !== 'string') {
-                errors.push('Class feature must have a valid "class" string');
-            }
-            if (typeof item.level !== 'number' || item.level < 1 || item.level > 20) {
-                errors.push('Class feature "level" must be a number between 1 and 20');
-            }
-            break;
-
-        case 'racialTraits':
-            // Racial traits require: id, name, description, race, source
-            if (!item.id || typeof item.id !== 'string') {
-                errors.push('Racial trait must have a valid "id" string');
-            } else if (!/^[a-z][a-z0-9_]*$/.test(item.id as string)) {
-                errors.push('Racial trait "id" must use lowercase_with_underscores format');
-            }
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Racial trait must have a valid "name" string');
-            }
-            if (!item.description || typeof item.description !== 'string') {
-                errors.push('Racial trait must have a valid "description" string');
-            }
-            if (!item.race || typeof item.race !== 'string') {
-                errors.push('Racial trait must have a valid "race" string');
-            }
-            break;
-
-        case 'skills':
-            // Skills require: id, name, ability, source
-            if (!item.id || typeof item.id !== 'string') {
-                errors.push('Skill must have a valid "id" string');
-            } else if (!/^[a-z][a-z0-9_]*$/.test(item.id as string)) {
-                errors.push('Skill "id" must use lowercase_with_underscores format');
-            }
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Skill must have a valid "name" string');
-            }
-            const validAbilities = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
-            if (!validAbilities.includes(item.ability as string)) {
-                errors.push(`Skill "ability" must be one of: ${validAbilities.join(', ')}`);
-            }
-            break;
-
-        case 'skillLists':
-            // Skill lists require: class, skillCount, availableSkills
-            if (!item.class || typeof item.class !== 'string') {
-                errors.push('Skill list must have a valid "class" string');
-            }
-            if (typeof item.skillCount !== 'number' || item.skillCount < 0) {
-                errors.push('Skill list "skillCount" must be a non-negative number');
-            }
-            if (!Array.isArray(item.availableSkills)) {
-                errors.push('Skill list must have an "availableSkills" array');
-            }
-            break;
-
-        case 'classes':
-        case 'classes.data':
-            // Classes require: name, hit_die, primary_ability, saving_throws
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Class must have a valid "name" string');
-            }
-            if (![6, 8, 10, 12].includes(item.hit_die as number)) {
-                errors.push('Class "hit_die" must be 6, 8, 10, or 12');
-            }
-            const validPrimaryAbilities = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
-            if (!validPrimaryAbilities.includes(item.primary_ability as string)) {
-                errors.push(`Class "primary_ability" must be one of: ${validPrimaryAbilities.join(', ')}`);
-            }
-            if (!Array.isArray(item.saving_throws)) {
-                errors.push('Class must have a "saving_throws" array');
-            } else if (item.saving_throws.length !== 2) {
-                warnings.push('Classes typically have exactly 2 saving throws');
-            }
-            break;
-
-        case 'races':
-        case 'races.data':
-            // Races require: name, ability_bonuses, speed, traits
-            if (!item.name || typeof item.name !== 'string') {
-                errors.push('Race must have a valid "name" string');
-            }
-            if (typeof item.speed !== 'number' || item.speed < 0) {
-                errors.push('Race "speed" must be a non-negative number');
-            }
-            break;
-
-        case 'classSpellLists':
-            // Spell lists require: class, cantrips, spells_by_level
-            if (!item.class || typeof item.class !== 'string') {
-                errors.push('Spell list must have a valid "class" string');
-            }
-            if (!Array.isArray(item.cantrips)) {
-                warnings.push('Spell list should have a "cantrips" array');
-            }
-            break;
-
-        case 'classSpellSlots':
-            // Spell slots require: class, slots (by level)
-            if (!item.class || typeof item.class !== 'string') {
-                errors.push('Spell slot config must have a valid "class" string');
-            }
-            break;
-
-        case 'classStartingEquipment':
-            // Starting equipment requires: class, weapons/armor/items
-            if (!item.class || typeof item.class !== 'string') {
-                errors.push('Starting equipment must have a valid "class" string');
-            }
-            break;
-
-        default:
-            // Unknown category - just check for name
-            if (!item.name && !item.id) {
-                warnings.push('Items typically have a "name" or "id" property');
-            }
-    }
+    // Use the centralized validation utility with reference and business rule validation enabled
+    const result = validateContent(category as ContentCategory, item as ValidatedContentItem, {
+        validateReferences: true,
+        validateBusinessRules: true
+    });
 
     return {
-        valid: errors.length === 0,
-        errors,
-        warnings
+        valid: result.valid,
+        errors: result.errors,
+        warnings: result.warnings
     };
 }
 

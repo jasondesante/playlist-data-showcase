@@ -30,7 +30,8 @@ type LogCategory =
     | 'ItemEnchantment'
     | 'EnemyGenerator'
     | 'SpawnMode'
-    | 'ContentCreator';
+    | 'ContentCreator'
+    | 'ContentValidation';
 
 
 
