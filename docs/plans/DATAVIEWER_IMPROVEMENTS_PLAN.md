@@ -50,20 +50,106 @@ This plan addresses multiple improvements to the DataViewerTab and custom conten
 - [x] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3269-3308)
   - [x] Verify box type in equipment documentation: **CONFIRMED** - all methods and interfaces documented with examples
 
-### 1.3 Research Effects & Prerequisites Options
-- [ ] Read `docs/engine/docs/PREREQUISITES.md`
-  - [ ] Document all valid prerequisite types (level, abilities, class, race, subrace, features, skills, spells, custom)
-  - [ ] Document all valid prerequisite values per type
-  - [ ] **List all data sources for dynamic dropdowns** (which registry keys to use)
-- [ ] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3920-3927)
-  - [ ] Document all 6 effect types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, resource_grant, spell_slot_bonus
-  - [ ] Document valid targets per effect type
-  - [ ] Document value formats per effect type
-  - [ ] **Create reference table for UI dropdown options per effect type**
-- [ ] Read through existing data files to catalog all possible values
-  - [ ] List all resources used by classes (rage, ki, sorcery points, etc.)
-  - [ ] List all passive modifier targets (ac, speed, damage, etc.)
-  - [ ] List all ability unlock options (darkvision, flight, etc.)
+### 1.3 Research Effects & Prerequisites Options ✅ DONE
+- [x] Read `docs/engine/docs/PREREQUISITES.md`
+  - [x] Document all valid prerequisite types (level, abilities, class, race, subrace, features, skills, spells, custom): **CONFIRMED** - All 9 types documented
+  - [x] Document all valid prerequisite values per type: **CONFIRMED** - See reference table below
+  - [x] **List all data sources for dynamic dropdowns** (which registry keys to use): **CONFIRMED** - See reference table below
+- [x] Read `docs/engine/DATA_ENGINE_REFERENCE.md` (lines 3920-3927)
+  - [x] Document all 6 effect types: stat_bonus, skill_proficiency, ability_unlock, passive_modifier, resource_grant, spell_slot_bonus: **CONFIRMED**
+  - [x] Document valid targets per effect type: **CONFIRMED** - See reference table below
+  - [x] Document value formats per effect type: **CONFIRMED** - See reference table below
+  - [x] **Create reference table for UI dropdown options per effect type**: **CONFIRMED** - See reference table below
+- [x] Read through existing data files to catalog all possible values
+  - [x] List all resources used by classes (rage, ki, sorcery points, etc.): **FOUND** - Resources defined in class features via `resource_grant` effects
+  - [x] List all passive modifier targets (ac, speed, damage, etc.): **CONFIRMED** - See reference table below
+  - [x] List all ability unlock options (darkvision, flight, etc.): **CONFIRMED** - See reference table below
+
+#### Prerequisite Types Reference Table
+
+| Prerequisite Type | Valid Values | Data Source for Dropdown | Notes |
+|------------------|--------------|--------------------------|-------|
+| `level` | number (1-20) | Static | Character level requirement |
+| `abilities` | `Partial<Record<Ability, number>>` | Static: STR, DEX, CON, INT, WIS, CHA | Minimum ability scores |
+| `class` | Class type | `manager.get('classes')` + `manager.get('classes.data')` | Specific class required |
+| `race` | Race type | `manager.get('races')` + `manager.get('races.data')` | Specific race required |
+| `subrace` | string | `manager.get('races.data')` → item.subraces[] | Dynamic based on selected race |
+| `features` | string[] (feature IDs) | `manager.get('classFeatures')` + `manager.get('racialTraits')` | Features that must be learned |
+| `skills` | string[] (skill IDs) | `manager.get('skills')` | Skills that must be proficient |
+| `spells` | string[] (spell names) | `manager.get('spells')` | Spells that must be known |
+| `custom` | string | N/A (free text) | Display only, not validated |
+
+#### Effect Types Reference Table
+
+| Effect Type | Target Options | Value Format | Data Source for Target Dropdown |
+|-------------|---------------|--------------|--------------------------------|
+| `stat_bonus` | STR, DEX, CON, INT, WIS, CHA | number (bonus amount) | Static - 6 abilities |
+| `skill_proficiency` | skill IDs | string (skill ID) or 'expertise' | `manager.get('skills')` - LIVE from registry |
+| `ability_unlock` | ability identifiers | boolean, string, or number | See ability unlock options below |
+| `passive_modifier` | modifier targets | number (bonus amount) | See passive modifier targets below |
+| `resource_grant` | resource identifiers | number (resource count/amount) | Derived from `manager.get('classFeatures')` where features have `type: 'resource'` |
+| `spell_slot_bonus` | slot level (1-9) | number (extra slots) | Static - spell levels 1-9 |
+
+#### Ability Unlock Options (for `ability_unlock` effect)
+
+| Target | Value Type | Description |
+|--------|------------|-------------|
+| `darkvision` | boolean | See in darkness |
+| `flight` | boolean | Ability to fly |
+| `fire_resistance` | boolean | Resistance to fire damage |
+| `damage_resistance` | string (element type) | Resistance to specified element |
+| `telepathy` | boolean | Mental communication |
+| `immunity` (poison, psychic, etc.) | boolean | Immunity to condition/damage |
+| `mage_armor` | boolean | Magical armor bonus |
+| `snow_movement` | boolean | No penalty in snow/ice |
+| `elemental_magic` | boolean | Attuned to element |
+| `long_jump` | boolean | Enhanced jumping |
+| `sleep_immunity` | boolean | Immunity to sleep |
+| Custom | any | Any custom ability identifier |
+
+#### Passive Modifier Targets (for `passive_modifier` effect)
+
+| Target | Value Type | Description |
+|--------|------------|-------------|
+| `ac` | number | Armor Class bonus |
+| `speed` | number | Movement speed bonus (feet) |
+| `initiative` | number | Initiative bonus |
+| `attack_roll` | number | Attack roll bonus |
+| `damage_roll` | number | Damage roll bonus |
+| `saving_throws` | number | Saving throw bonus |
+| `spell_save_dc` | number | Spell save DC bonus |
+| `spell_strike_damage` | number | Spell strike damage bonus |
+| `fire_resistance` | boolean | Fire resistance flag |
+| `cold_resistance` | boolean | Cold resistance flag |
+| `survival_cold_bonus` | number | Bonus to cold survival |
+| Custom | number/string | Any custom modifier target |
+
+#### Class Resources (examples from documentation)
+
+Resources are defined in class features via `type: 'resource'` and granted via `resource_grant` effects:
+- **Barbarian**: Rage (counts/rounds)
+- **Monk**: Ki points
+- **Sorcerer**: Sorcery points
+- **Bard**: Bardic Inspiration
+- **Paladin**: Lay on Hands, Channel Divinity
+- **Cleric**: Channel Divinity
+- **Druid**: Wild Shape
+
+**Note**: Resources are not stored in a central registry but defined per-class via features. UI should extract unique resource identifiers from all class features in `manager.get('classFeatures')` where `type === 'resource'`.
+
+#### ExtensionManager Registry Keys for Dynamic Dropdowns
+
+| Dropdown Purpose | Registry Key | Example Usage |
+|-----------------|--------------|---------------|
+| Classes | `manager.get('classes')` | Returns Class[] array |
+| Class Data | `manager.get('classes.data')` | Returns ClassDataEntry[] |
+| Races | `manager.get('races')` | Returns Race[] array |
+| Race Data | `manager.get('races.data')` | Returns RaceDataEntry[] with subraces |
+| Skills | `manager.get('skills')` | Returns CustomSkill[] array |
+| Spells | `manager.get('spells')` | Returns Spell[] array |
+| Class Features | `manager.get('classFeatures')` | Returns ClassFeature[] array |
+| Racial Traits | `manager.get('racialTraits')` | Returns RacialTrait[] array |
+| Equipment | `manager.get('equipment')` | Returns EnhancedEquipment[] array |
 
 ---
 
