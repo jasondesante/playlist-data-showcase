@@ -271,3 +271,81 @@
   cursor: not-allowed;
   box-shadow: none;
 }
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 640px) {
+  .beat-detection-settings {
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .beat-detection-settings-section {
+    gap: 0.25rem;
+  }
+
+  .beat-detection-settings-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-settings-value {
+    font-size: 0.625rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  /* Smaller slider thumbs for touch */
+  .beat-detection-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 12px;
+  }
+
+  .beat-detection-slider::-moz-range-thumb {
+    width: 18px;
+    height: 12px;
+  }
+
+  .beat-detection-slider-mark {
+    font-size: 0.4375rem;
+  }
+
+  /* Dual slider adjustments */
+  .beat-detection-slider--min::-webkit-slider-thumb,
+  .beat-detection-slider--max::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+  }
+
+  .beat-detection-slider--min::-moz-range-thumb,
+  .beat-detection-slider--max::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .beat-detection-slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 14px;
+  }
+
+  .beat-detection-slider::-moz-range-thumb {
+    width: 22px;
+    height: 14px;
+  }
+
+  .beat-detection-slider--min::-webkit-slider-thumb,
+  .beat-detection-slider--max::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  .beat-detection-slider--min::-moz-range-thumb,
+  .beat-detection-slider--max::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}

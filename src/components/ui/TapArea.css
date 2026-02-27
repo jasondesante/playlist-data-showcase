@@ -308,6 +308,32 @@
   }
 }
 
+/* Extra small screens */
+@media (max-width: 400px) {
+  .tap-area {
+    min-height: 6rem;
+    border-radius: 0.75rem;
+  }
+
+  .tap-area__text {
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .tap-area__hint {
+    font-size: 0.5625rem;
+  }
+
+  .tap-area__accuracy {
+    font-size: 1.25rem;
+  }
+
+  .tap-area__offset {
+    font-size: 0.75rem;
+    padding: 0.0625rem 0.375rem;
+  }
+}
+
 /* Touch device optimizations */
 @media (hover: none) and (pointer: coarse) {
   .tap-area {
@@ -322,6 +348,21 @@
 
   .tap-area__hint {
     font-size: 0.875rem;
+  }
+}
+
+/* Touch device + small screen */
+@media (hover: none) and (pointer: coarse) and (max-width: 640px) {
+  .tap-area {
+    min-height: 10rem;
+  }
+
+  .tap-area__text {
+    font-size: 2.5rem;
+  }
+
+  .tap-area__hint {
+    font-size: 0.75rem;
   }
 }
 
