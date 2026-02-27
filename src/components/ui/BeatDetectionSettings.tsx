@@ -7,7 +7,10 @@
  * - Tempo Center
  *
  * Uses the beatDetectionStore for state management.
+ *
+ * Part of Task 7.2: Includes note about tracks with no clear beat.
  */
+import { Info } from 'lucide-react';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
@@ -181,6 +184,14 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             <span className="beat-detection-slider-mark">~200 BPM</span>
           </div>
         </div>
+      </div>
+
+      {/* Note about tracks without clear beat (Task 7.2) */}
+      <div className="beat-detection-settings-note">
+        <Info className="beat-detection-settings-note-icon" />
+        <span className="beat-detection-settings-note-text">
+          Beat detection works best with rhythmic music. Ambient, classical, or non-percussive tracks may not produce reliable results.
+        </span>
       </div>
     </div>
   );

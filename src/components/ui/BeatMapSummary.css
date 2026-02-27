@@ -179,3 +179,94 @@
     margin-top: 0;
   }
 }
+
+/* ============================================
+   Task 7.2: Beat Quality Indicators
+   For tracks with no clear beat (ambient, classical)
+   ============================================ */
+
+/* Quality Badge in Header */
+.beat-map-summary-quality-badge {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-left: auto;
+}
+
+.beat-map-summary-quality-badge--low {
+  background: hsl(var(--warning) / 0.15);
+  color: hsl(var(--warning));
+  border: 1px solid hsl(var(--warning) / 0.3);
+}
+
+.beat-map-summary-quality-badge--unreliable {
+  background: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive) / 0.3);
+}
+
+/* Low Quality Warning (non-blocking) */
+.beat-map-summary-warning--low-quality {
+  background: hsl(45 100% 50% / 0.08);
+  border-color: hsl(45 100% 50% / 0.25);
+}
+
+.beat-map-summary-warning--low-quality .beat-map-summary-warning-icon {
+  color: hsl(45 100% 40%);
+}
+
+.beat-map-summary-warning--low-quality .beat-map-summary-warning-text {
+  color: hsl(45 100% 25%);
+}
+
+/* Beat Quality Details Section */
+.beat-map-quality-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-map-quality-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-map-quality-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.beat-map-quality-metric {
+  font-size: 0.6875rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground) / 0.8);
+}
+
+/* Warning Note Style */
+.beat-map-summary-note--warning {
+  color: hsl(var(--warning) / 0.9);
+}
+
+/* Responsive adjustments for quality indicators */
+@media (max-width: 480px) {
+  .beat-map-quality-metrics {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .beat-map-summary-quality-badge {
+    font-size: 0.5rem;
+    padding: 0.1rem 0.25rem;
+  }
+}
