@@ -372,18 +372,35 @@ export const useBeatStream = (
     /**
      * Sync with audio player when time changes.
      * This handles the case where the user seeks via the audio player controls.
+     * Also detects and corrects drift between BeatStream and audio player.
      */
     useEffect(() => {
         if (!isActive || !beatStreamRef.current) return;
 
-        // Check if the time has jumped significantly (seek event)
-        // The BeatStream will handle this internally via its own sync mechanism
-        // but we can also update our upcoming beats here
+        const beatStreamTime = beatStreamRef.current.getCurrentTime();
+        const drift = Math.abs(currentTime - beatStreamTime);
+        const DRIFT_THRESHOLD = 0.3; // 300ms - resync if drift exceeds this
+
+        // Detect significant drift or seek event
+        if (drift > DRIFT_THRESHOLD) {
+            logger.debug('BeatDetection', 'Correcting BeatStream drift', {
+                audioPlayerTime: currentTime,
+                beatStreamTime,
+                drift: drift * 1000, // ms
+            });
+            beatStreamRef.current.seek(currentTime);
+        }
+
         updateUpcomingBeats();
     }, [currentTime, isActive, updateUpcomingBeats]);
 
     /**
      * Auto-start/stop based on practice mode and playback state.
+     *
+     * CRITICAL: When starting the stream, we must sync to the audio player's
+     * current position. The BeatStream uses AudioContext.currentTime which
+     * starts from 0, but the HTML5 Audio element may already be at a different
+     * position (e.g., if practice mode starts mid-song).
      */
     useEffect(() => {
         if (!practiceModeActive || !beatMap) {
@@ -399,12 +416,20 @@ export const useBeatStream = (
             // Initialize and start when playback begins
             if (initializeStream()) {
                 startStream();
+                // CRITICAL: Sync BeatStream to current audio position immediately
+                // The BeatStream starts at time 0, but audio may be at any position
+                if (beatStreamRef.current && currentTime > 0) {
+                    beatStreamRef.current.seek(currentTime);
+                    logger.debug('BeatDetection', 'Synced BeatStream to audio position', {
+                        audioPosition: currentTime,
+                    });
+                }
             }
         } else if (!isPlaying && isActive) {
             // Stop when playback pauses/ends
             stopStream();
         }
-    }, [practiceModeActive, playbackState, beatMap, isActive, initializeStream, startStream, stopStream]);
+    }, [practiceModeActive, playbackState, beatMap, isActive, initializeStream, startStream, stopStream, currentTime]);
 
     /**
      * Cleanup on unmount.
