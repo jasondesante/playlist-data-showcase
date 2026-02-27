@@ -511,6 +511,17 @@
   line-height: 1.2;
 }
 
+.audio-analysis-error-message {
+  font-size: 0.75rem;
+  color: hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.1);
+  border: 1px solid hsl(var(--destructive) / 0.2);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
 /* ============================================
    RESULTS SECTION - Compact grid layout
    ============================================ */

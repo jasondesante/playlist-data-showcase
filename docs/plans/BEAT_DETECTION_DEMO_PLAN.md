@@ -70,16 +70,16 @@ All three elements (audio, visual beats, tap detection) work **together continuo
   - [x] Use existing EQ-style slider design patterns
 
 ### 2.3 Analysis Progress UI
-- [ ] Update primary action button for beat detection mode
-  - [ ] Show "Analyze Beats" when no beat map exists
-  - [ ] Show "Re-Analyze" when beat map exists
-  - [ ] Show progress percentage during generation
-- [ ] Progress phases display (from engine's `BeatMapGenerationProgress`):
-  - [ ] Phase: "Loading audio..."
-  - [ ] Phase: "Computing onset envelope..."
-  - [ ] Phase: "Detecting tempo..."
-  - [ ] Phase: "Tracking beats..."
-  - [ ] Phase: "Complete!"
+- [x] Update primary action button for beat detection mode
+  - [x] Show "Analyze Beats" when no beat map exists
+  - [x] Show "Re-Analyze" when beat map exists
+  - [x] Show progress percentage during generation
+- [x] Progress phases display (from engine's `BeatMapGenerationProgress`):
+  - [x] Phase: "Loading audio..."
+  - [x] Phase: "Computing onset envelope..."
+  - [x] Phase: "Detecting tempo..."
+  - [x] Phase: "Tracking beats..."
+  - [x] Phase: "Complete!"
 
 ### 2.4 Beat Map Summary (After Analysis)
 - [ ] Display after successful analysis

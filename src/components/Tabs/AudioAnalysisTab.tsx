@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
+import { useBeatDetection } from '../../hooks/useBeatDetection';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
@@ -56,6 +57,43 @@ export function AudioAnalysisTab() {
   // Timeline slider values
   const [timelineCount, setTimelineCount] = useState(20); // 5-100 data points
   const [timelineInterval, setTimelineInterval] = useState(2); // 1-10 seconds
+
+  // Beat detection hook for beat map generation
+  const {
+    generateBeatMap,
+    isGenerating: isBeatGenerating,
+    progress: beatProgress,
+    beatMap,
+    error: beatError,
+  } = useBeatDetection();
+
+  /**
+   * Map beat generation phases to human-readable labels
+   */
+  const getPhaseLabel = (phase: string): string => {
+    switch (phase) {
+      case 'loading':
+        return 'Loading audio...';
+      case 'preprocessing':
+        return 'Preprocessing...';
+      case 'ose_calculation':
+        return 'Computing onset envelope...';
+      case 'tempo_estimation':
+        return 'Detecting tempo...';
+      case 'beat_tracking':
+        return 'Tracking beats...';
+      case 'downbeat_detection':
+        return 'Detecting downbeats...';
+      case 'finalizing':
+        return 'Finalizing...';
+      case 'complete':
+        return 'Complete!';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Processing...';
+    }
+  };
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -200,6 +238,19 @@ export function AudioAnalysisTab() {
     }
   };
 
+  /**
+   * Handle beat map generation for beat detection mode.
+   * Uses the beat detection store to generate a beat map from the audio.
+   */
+  const handleBeatAnalysis = useCallback(async () => {
+    if (!selectedTrack?.audio_url) return;
+
+    // Use track ID or URL as audio ID for caching
+    const audioId = selectedTrack.id || selectedTrack.audio_url;
+
+    await generateBeatMap(selectedTrack.audio_url, audioId);
+  }, [selectedTrack, generateBeatMap]);
+
   const handleApplyMultipliers = async () => {
     if (!selectedTrack?.audio_url) return;
 
@@ -305,6 +356,15 @@ export function AudioAnalysisTab() {
 
   // Determine status indicator based on current state
   const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
+    // In beat mode, check beat map status
+    if (analysisMode === 'beat') {
+      if (beatMap) return 'healthy';
+      if (isBeatGenerating) return 'degraded';
+      if (beatError) return 'error';
+      if (selectedTrack) return 'degraded';
+      return 'error';
+    }
+    // Normal/timeline mode
     if (audioProfile) return 'healthy';
     if (isAnalyzing || isTimelineAnalyzing) return 'degraded';
     if (selectedTrack) return 'degraded';
@@ -312,6 +372,15 @@ export function AudioAnalysisTab() {
   };
 
   const getStatusLabel = (): string => {
+    // In beat mode, check beat map status
+    if (analysisMode === 'beat') {
+      if (beatMap) return 'Beat Map Ready';
+      if (isBeatGenerating) return 'Analyzing...';
+      if (beatError) return 'Error';
+      if (selectedTrack) return 'Ready';
+      return 'No Track';
+    }
+    // Normal/timeline mode
     if (audioProfile) return 'Analyzed';
     if (isTimelineAnalyzing) return 'Timeline...';
     if (isAnalyzing) return 'Analyzing...';
@@ -361,7 +430,7 @@ export function AudioAnalysisTab() {
                 ) : (
                   <Music className="audio-analysis-ready-fallback" />
                 )}
-                {isAnalyzing && (
+                {(isAnalyzing || isBeatGenerating) && (
                   <div className="audio-analysis-artwork-overlay">
                     <Sparkles className="audio-analysis-sparkle-icon" />
                   </div>
@@ -568,30 +637,56 @@ export function AudioAnalysisTab() {
 
               {/* Beat Detection Options Sub-component - shown when Beat mode is selected */}
               {analysisMode === 'beat' && (
-                <BeatDetectionSettings disabled={isAnalyzing || isTimelineAnalyzing} />
+                <BeatDetectionSettings disabled={isBeatGenerating} />
               )}
             </div>
 
             {/* 4. Action Section */}
             <div className="audio-analysis-action-integration">
-              <Button
-                onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}
-                disabled={isAnalyzing || isTimelineAnalyzing || playbackState !== 'playing'}
-                isLoading={isAnalyzing || isTimelineAnalyzing}
-                variant="primary"
-                size="lg"
-                className="audio-analysis-primary-action-button"
-                title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
-              >
-                {isAnalyzing || isTimelineAnalyzing
-                  ? `${progress}%`
-                  : audioProfile ? 'Re-Analyze' : 'Analyze Audio'}
-              </Button>
+              {analysisMode === 'beat' ? (
+                // Beat detection mode action
+                <>
+                  <Button
+                    onClick={handleBeatAnalysis}
+                    disabled={isBeatGenerating}
+                    isLoading={isBeatGenerating}
+                    variant="primary"
+                    size="lg"
+                    className="audio-analysis-primary-action-button"
+                  >
+                    {isBeatGenerating && beatProgress
+                      ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
+                      : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
+                  </Button>
+                  {beatError && (
+                    <div className="audio-analysis-error-message">
+                      {beatError}
+                    </div>
+                  )}
+                </>
+              ) : (
+                // Normal/Timeline mode action
+                <>
+                  <Button
+                    onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}
+                    disabled={isAnalyzing || isTimelineAnalyzing || playbackState !== 'playing'}
+                    isLoading={isAnalyzing || isTimelineAnalyzing}
+                    variant="primary"
+                    size="lg"
+                    className="audio-analysis-primary-action-button"
+                    title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
+                  >
+                    {isAnalyzing || isTimelineAnalyzing
+                      ? `${progress}%`
+                      : audioProfile ? 'Re-Analyze' : 'Analyze Audio'}
+                  </Button>
 
-              {playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
-                <div className="audio-analysis-playback-warning">
-                  Play audio to enable
-                </div>
+                  {playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
+                    <div className="audio-analysis-playback-warning">
+                      Play audio to enable
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
