@@ -337,6 +337,11 @@
   animation: pulse-icon 1s infinite;
 }
 
+.beat-practice-stream-icon--paused {
+  color: hsl(var(--cute-yellow));
+  animation: none;
+}
+
 @keyframes pulse-icon {
   0%, 100% {
     opacity: 1;

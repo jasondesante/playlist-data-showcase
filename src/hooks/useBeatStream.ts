@@ -124,12 +124,18 @@ export interface UseBeatStreamReturn {
     syncState: AudioSyncState | null;
     /** Whether the stream is currently active */
     isActive: boolean;
+    /** Whether the stream is paused (active but not animating) */
+    isPaused: boolean;
     /** Check tap accuracy against the nearest beat */
     checkTap: () => ButtonPressResult | null;
     /** Start the beat stream (call when practice mode begins) */
     startStream: () => void;
     /** Stop the beat stream (call when practice mode ends) */
     stopStream: () => void;
+    /** Pause the beat stream (lighter weight than stop, keeps beats visible) */
+    pauseStream: () => void;
+    /** Resume the beat stream after pause */
+    resumeStream: () => void;
     /** Seek to a specific time in the audio */
     seekStream: (time: number) => void;
     /** Get beats within a time range for visualization */
@@ -182,6 +188,7 @@ export const useBeatStream = (
     const [lastBeatEvent, setLastBeatEvent] = useState<BeatEvent | null>(null);
     const [syncState, setSyncState] = useState<AudioSyncState | null>(null);
     const [isActive, setIsActive] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
 
     // Refs for BeatStream and AudioContext
     const beatStreamRef = useRef<BeatStream | null>(null);
@@ -361,11 +368,51 @@ export const useBeatStream = (
         }
 
         setIsActive(false);
+        setIsPaused(false);
         setUpcomingBeats([]);
         setLastBeatEvent(null);
 
         logger.info('BeatDetection', 'Stream stopped');
     }, [stopAnimationLoop]);
+
+    /**
+     * Pause the beat stream (lighter weight than stop).
+     * Keeps the BeatStream active but stops the animation loop.
+     * Upcoming beats are preserved so timeline still shows something.
+     */
+    const pauseStream = useCallback(() => {
+        stopAnimationLoop();
+        setIsPaused(true);
+
+        logger.debug('BeatDetection', 'Stream paused');
+    }, [stopAnimationLoop]);
+
+    /**
+     * Resume the beat stream after pause.
+     * Re-syncs to current audio position and restarts animation loop.
+     */
+    const resumeStream = useCallback(() => {
+        if (!beatStreamRef.current || !isActive) {
+            return;
+        }
+
+        // Re-sync to current audio position in case of drift during pause
+        beatStreamRef.current.seek(currentTime);
+
+        // Update upcoming beats for current position
+        const beats = beatStreamRef.current.getUpcomingBeats(UPCOMING_BEATS_COUNT);
+        setUpcomingBeats(beats);
+
+        // Update current BPM
+        const bpm = beatStreamRef.current.getCurrentBpm();
+        setCurrentBpm(bpm);
+
+        // Restart animation loop
+        startAnimationLoop();
+        setIsPaused(false);
+
+        logger.debug('BeatDetection', 'Stream resumed', { currentTime });
+    }, [currentTime, isActive, startAnimationLoop]);
 
     /**
      * Seek to a specific time in the audio.
@@ -482,6 +529,11 @@ export const useBeatStream = (
      * current position. The BeatStream uses AudioContext.currentTime which
      * starts from 0, but the HTML5 Audio element may already be at a different
      * position (e.g., if practice mode starts mid-song).
+     *
+     * PAUSE/RESUME HANDLING:
+     * - When audio pauses: use pauseStream() to keep BeatStream active but stop animation
+     * - When audio resumes: use resumeStream() to restart animation and sync
+     * - This prevents visual glitches and maintains beat continuity
      */
     useEffect(() => {
         if (!practiceModeActive || !beatMap) {
@@ -494,7 +546,7 @@ export const useBeatStream = (
         const isPlaying = playbackState === 'playing';
 
         if (isPlaying && !isActive) {
-            // Initialize and start when playback begins
+            // Initialize and start when playback begins (first time)
             if (initializeStream()) {
                 startStream();
                 // CRITICAL: Sync BeatStream to current audio position immediately
@@ -506,11 +558,14 @@ export const useBeatStream = (
                     });
                 }
             }
-        } else if (!isPlaying && isActive) {
-            // Stop when playback pauses/ends
-            stopStream();
+        } else if (isPlaying && isActive && isPaused) {
+            // Resume from paused state
+            resumeStream();
+        } else if (!isPlaying && isActive && !isPaused) {
+            // Pause when playback pauses (but don't stop completely)
+            pauseStream();
         }
-    }, [practiceModeActive, playbackState, beatMap, isActive, initializeStream, startStream, stopStream, currentTime]);
+    }, [practiceModeActive, playbackState, beatMap, isActive, isPaused, initializeStream, startStream, stopStream, pauseStream, resumeStream, currentTime]);
 
     /**
      * Cleanup on unmount.
@@ -550,9 +605,12 @@ export const useBeatStream = (
         lastBeatEvent,
         syncState,
         isActive,
+        isPaused,
         checkTap,
         startStream,
         stopStream,
+        pauseStream,
+        resumeStream,
         seekStream,
         getBeatsInRange,
         getBeatAtTime,

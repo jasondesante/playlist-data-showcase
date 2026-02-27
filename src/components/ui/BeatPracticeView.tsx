@@ -56,6 +56,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     lastBeatEvent,
     checkTap,
     isActive: streamIsActive,
+    isPaused: streamIsPaused,
     seekStream,
   } = useBeatStream(beatMap, undefined, true);
 
@@ -356,10 +357,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       {/* Stream status indicator */}
       <div className="beat-practice-stream-status">
         <Activity
-          className={`beat-practice-stream-icon ${streamIsActive ? 'beat-practice-stream-icon--active' : ''}`}
+          className={`beat-practice-stream-icon ${streamIsActive && !streamIsPaused ? 'beat-practice-stream-icon--active' : ''} ${streamIsPaused ? 'beat-practice-stream-icon--paused' : ''}`}
         />
         <span className="beat-practice-stream-label">
-          {streamIsActive ? 'Beat stream active' : 'Beat stream inactive'}
+          {streamIsActive
+            ? (streamIsPaused ? 'Beat stream paused' : 'Beat stream active')
+            : 'Beat stream inactive'}
         </span>
       </div>
     </div>
