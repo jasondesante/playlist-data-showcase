@@ -20,11 +20,11 @@ All three elements (audio, visual beats, tap detection) work **together continuo
 ## Phase 1: Foundation & State Management
 
 ### 1.1 Type Definitions
-- [ ] Add beat detection types to `src/types/index.ts`
-  - [ ] Export `Beat`, `BeatMap`, `BeatMapMetadata`, `BeatEvent`, `BeatEventType` from engine
-  - [ ] Export `BeatMapGeneratorOptions`, `BeatStreamOptions` from engine
-  - [ ] Export `ButtonPressResult`, `BeatAccuracy`, `AudioSyncState` from engine
-  - [ ] Export `BeatMapGenerationProgress` from engine
+- [x] Add beat detection types to `src/types/index.ts`
+  - [x] Export `Beat`, `BeatMap`, `BeatMapMetadata`, `BeatEvent`, `BeatEventType` from engine
+  - [x] Export `BeatMapGeneratorOptions`, `BeatStreamOptions` from engine
+  - [x] Export `ButtonPressResult`, `BeatAccuracy`, `AudioSyncState` from engine
+  - [x] Export `BeatMapGenerationProgress` from engine
 
 ### 1.2 Beat Detection Store
 - [ ] Create `src/store/beatDetectionStore.ts`

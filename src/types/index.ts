@@ -17,6 +17,21 @@ export type {
     ColorPalette,
     FrequencyBands,
 
+    // Beat Detection
+    Beat,
+    BeatMap,
+    BeatMapMetadata,
+    BeatEvent,
+    BeatEventType,
+    BeatStreamCallback,
+    AudioSyncState,
+    BeatMapGeneratorOptions,
+    BeatStreamOptions,
+    BeatMapJSON,
+    BeatAccuracy,
+    ButtonPressResult,
+    BeatMapGenerationProgress,
+
     // Character
     CharacterSheet,
     AbilityScores,
