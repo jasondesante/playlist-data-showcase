@@ -61,15 +61,15 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 - [x] Add to hook's return interface
 
 ### Task 2.3: Add box item spawning support
-- [ ] Import `BoxOpener` and `BoxContents` types from `playlist-data-engine`
-- [ ] Implement `spawnBoxItem(boxConfig: BoxContents, openImmediately: boolean, seed?: string): Promise<LootBoxResult>`
+- [x] Import `BoxOpener` and `BoxContents` types from `playlist-data-engine`
+- [x] Implement `spawnBoxItem(boxConfig: BoxContents, openImmediately: boolean, seed?: string): Promise<LootBoxResult>`
   - If `openImmediately === false`:
     - Return the box as an equipment item with `type: 'box'`
     - Include `boxContents` property
   - If `openImmediately === true`:
     - Use `BoxOpener.openBox()` to generate contents
     - Return the opened items with calculated `totalValue`
-- [ ] Add to hook's return interface
+- [x] Add to hook's return interface
 
 ---
 

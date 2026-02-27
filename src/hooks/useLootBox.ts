@@ -4,7 +4,9 @@ import {
     EnhancedEquipment,
     SeededRNG,
     MAGIC_ITEMS,
-    getMagicItemsByRarity
+    getMagicItemsByRarity,
+    BoxOpener,
+    BoxContents
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { calculateTotalValue } from '@/utils/itemValue';
@@ -48,6 +50,8 @@ export interface UseLootBoxReturn {
     spawnFromList: (itemNames: string[], seed?: string) => Promise<LootBoxResult>;
     /** Spawn magic items, optionally filtered by rarity */
     spawnMagicItems: (count: number, rarity?: RarityOption, seed?: string) => Promise<LootBoxResult>;
+    /** Spawn a box item, either opened or unopened */
+    spawnBoxItem: (boxConfig: BoxContents, openImmediately: boolean, seed?: string) => Promise<LootBoxResult>;
     /** Get total count of magic items available */
     getMagicItemCount: () => number;
     /** Clear the spawned items */
@@ -85,6 +89,12 @@ export interface UseLootBoxReturn {
  * grant features, skills, or spells. Use `getMagicItemCount()` to see how many
  * magic items are available.
  *
+ * ## Box Items
+ *
+ * The `spawnBoxItem()` function spawns box items that can be opened or kept unopened.
+ * Boxes can contain items, gold, or both, with weighted probability pools.
+ * Use BoxContentsBuilder to create box configurations.
+ *
  * @example
  * ```tsx
  * const {
@@ -97,6 +107,7 @@ export interface UseLootBoxReturn {
  *   spawnByMultipleRarities,
  *   spawnFromList,
  *   spawnMagicItems,
+ *   spawnBoxItem,
  *   getMagicItemCount,
  *   clearSpawnedItems
  * } = useLootBox();
@@ -125,6 +136,14 @@ export interface UseLootBoxReturn {
  *
  * // Spawn only legendary magic items
  * const legendaryItems = await spawnMagicItems(2, 'legendary');
+ *
+ * // Spawn a box item unopened (player can open later)
+ * const boxConfig = { drops: [{ pool: [{ weight: 50, itemName: 'Longsword' }] }] };
+ * const unopenedBox = await spawnBoxItem(boxConfig, false);
+ *
+ * // Spawn and open a box immediately
+ * const openedBox = await spawnBoxItem(boxConfig, true);
+ * console.log(openedBox.items); // Items from inside the box
  *
  * // Clear spawned items to reset state
  * clearSpawnedItems();
@@ -433,6 +452,107 @@ export const useLootBox = (): UseLootBoxReturn => {
     }, [createRNG]);
 
     /**
+     * Spawn a box item, either opened or unopened
+     *
+     * If openImmediately is false, returns the box as an equipment item with type: 'box'
+     * and the boxContents property. If openImmediately is true, uses BoxOpener.openBox()
+     * to generate contents and returns the opened items with calculated totalValue.
+     *
+     * @param boxConfig - The box contents configuration
+     * @param openImmediately - Whether to open the box immediately or return it unopened
+     * @param seed - Optional seed for deterministic results
+     * @returns LootBoxResult with items and total value
+     */
+    const spawnBoxItem = useCallback(async (
+        boxConfig: BoxContents,
+        openImmediately: boolean,
+        seed?: string
+    ): Promise<LootBoxResult> => {
+        setIsLoading(true);
+
+        try {
+            const rng = createRNG(seed);
+
+            if (!openImmediately) {
+                // Return the box as an unopened equipment item
+                const boxItem: EnhancedEquipment = {
+                    name: 'Custom Loot Box',
+                    type: 'box',
+                    rarity: 'uncommon',
+                    weight: 1,
+                    boxContents: boxConfig
+                };
+
+                const result: LootBoxResult = {
+                    items: [boxItem],
+                    totalValue: 0 // Unopened box has no calculable value until opened
+                };
+
+                setSpawnedItems([boxItem]);
+                setLastHoardResult(result);
+
+                logger.info('LootBox', 'Spawned unopened box item', {
+                    seed: seed || 'random',
+                    openImmediately,
+                    drops: boxConfig.drops.length
+                });
+
+                return result;
+            }
+
+            // Open the box immediately using BoxOpener
+            // Create a synthetic box equipment for BoxOpener
+            const syntheticBox = {
+                name: 'Custom Loot Box',
+                type: 'box' as const,
+                boxContents: boxConfig
+            };
+
+            const openResult = BoxOpener.openBox(syntheticBox as any, rng);
+
+            if (!openResult.success) {
+                logger.warn('LootBox', 'Failed to open box', {
+                    error: openResult.error?.message
+                });
+                return { items: [], totalValue: 0 };
+            }
+
+            // Convert BaseEquipment[] to EnhancedEquipment[]
+            const items: EnhancedEquipment[] = openResult.items.map(item => ({
+                ...item,
+                rarity: (item as any).rarity || 'common'
+            })) as EnhancedEquipment[];
+
+            const totalValue = calculateTotalValue(items);
+
+            // Add gold value to total if any gold was dropped
+            const finalValue = totalValue + openResult.gold;
+
+            const result: LootBoxResult = { items, totalValue: finalValue };
+
+            setSpawnedItems(items);
+            setLastHoardResult(result);
+
+            logger.info('LootBox', `Spawned and opened box with ${items.length} items`, {
+                seed: seed || 'random',
+                openImmediately,
+                itemCount: items.length,
+                gold: openResult.gold,
+                totalValue: finalValue,
+                items: items.map(i => i.name)
+            });
+
+            return result;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('LootBox', 'Failed to spawn box item', { openImmediately, error: errorMessage });
+            return { items: [], totalValue: 0 };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [createRNG]);
+
+    /**
      * Get the total count of magic items available
      */
     const getMagicItemCount = useCallback((): number => {
@@ -458,6 +578,7 @@ export const useLootBox = (): UseLootBoxReturn => {
         spawnTreasureHoard,
         spawnFromList,
         spawnMagicItems,
+        spawnBoxItem,
         getMagicItemCount,
         clearSpawnedItems
     };
