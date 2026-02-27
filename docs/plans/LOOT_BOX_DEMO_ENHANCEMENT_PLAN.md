@@ -139,7 +139,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 - [x] Update condition for Add All button from `spawnedItems.length > 1` to `spawnedItems.length > 0`
 
 ### Task 3.5: Update handler functions
-- [ ] Update `handleSpawnByRarity()`:
+- [x] Update `handleSpawnByRarity()`:
   ```typescript
   const handleSpawnByRarity = async () => {
     if (selectedRarities.length === 0) {
@@ -159,7 +159,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
     // ... handle result
   };
   ```
-- [ ] Add new `handleSpawnBox()` handler:
+- [x] Add new `handleSpawnBox()` handler:
   ```typescript
   const handleSpawnBox = async () => {
     if (boxSourceType === 'existing' && !selectedBoxName) {
@@ -183,7 +183,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
     // ... handle result
   };
   ```
-- [ ] Update spawn button onClick to include `handleSpawnBox` for box mode
+- [x] Update spawn button onClick to include `handleSpawnBox` for box mode
 
 ---
 
