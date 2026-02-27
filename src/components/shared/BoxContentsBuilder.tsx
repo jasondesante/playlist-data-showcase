@@ -26,6 +26,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  AlertTriangle,
   Check,
   RefreshCw
 } from 'lucide-react';
@@ -150,6 +151,46 @@ function validateBoxContents(contents: BoxContents): { valid: boolean; errors: s
   });
 
   return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Check for items referenced in box contents that don't exist in the registry.
+ * Returns warnings (not errors) - these don't block form submission but alert the user.
+ *
+ * @param contents - The box contents to check
+ * @param equipmentItems - Array of equipment items from the registry
+ * @returns Array of warning messages
+ */
+function checkMissingItems(
+  contents: BoxContents,
+  equipmentItems: EquipmentItem[]
+): string[] {
+  const warnings: string[] = [];
+
+  // Create a Set of known item names for O(1) lookup
+  const knownItemNames = new Set(equipmentItems.map(item => item.name.toLowerCase()));
+
+  // Check pool entries for missing items
+  contents.drops?.forEach((drop, dropIndex) => {
+    drop.pool?.forEach((entry, poolIndex) => {
+      if (entry.itemName && entry.itemName.trim().length > 0) {
+        if (!knownItemNames.has(entry.itemName.toLowerCase())) {
+          warnings.push(`Drop ${dropIndex + 1}, Entry ${poolIndex + 1}: "${entry.itemName}" not found in registry`);
+        }
+      }
+    });
+  });
+
+  // Check opening requirements for missing items
+  contents.openRequirements?.forEach((req, reqIndex) => {
+    if (req.itemName && req.itemName.trim().length > 0) {
+      if (!knownItemNames.has(req.itemName.toLowerCase())) {
+        warnings.push(`Opening Requirement ${reqIndex + 1}: "${req.itemName}" not found in registry`);
+      }
+    }
+  });
+
+  return warnings;
 }
 
 /**
@@ -347,6 +388,12 @@ export function BoxContentsBuilder({
 
   // Validation
   const validation = useMemo(() => validateBoxContents(contents), [contents]);
+
+  // Warnings for missing items (doesn't block submission)
+  const warnings = useMemo(
+    () => checkMissingItems(contents, equipmentItems),
+    [contents, equipmentItems]
+  );
 
   return (
     <div className={`box-contents-builder ${className}`}>
@@ -682,6 +729,24 @@ export function BoxContentsBuilder({
           ))}
         </div>
       )}
+
+      {/* Warnings for missing items (doesn't block submission) */}
+      {warnings.length > 0 && (
+        <div className="box-contents-warnings">
+          <div className="box-contents-warnings-header">
+            <AlertTriangle size={14} />
+            <span>Missing Items Warning</span>
+          </div>
+          {warnings.map((warning, index) => (
+            <div key={index} className="box-contents-warning">
+              <span>{warning}</span>
+            </div>
+          ))}
+          <div className="box-contents-warnings-hint">
+            These items may not exist in the registry. You can still save, but the box may not work correctly.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -695,5 +760,6 @@ export {
   createEmptyPoolEntry,
   calculatePoolTotalWeight,
   calculateProbabilities,
-  validateBoxContents
+  validateBoxContents,
+  checkMissingItems
 };

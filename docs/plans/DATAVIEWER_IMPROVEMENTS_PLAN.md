@@ -208,7 +208,7 @@ Resources are defined in class features via `type: 'resource'` and granted via `
   - [x] At least one drop required
   - [x] Each pool entry must have weight > 0
   - [x] Each pool entry must have itemName OR gold (not both, not neither)
-  - [ ] Referenced items must exist in registry (warning only) - NOT IMPLEMENTED (deferred)
+  - [x] Referenced items must exist in registry (warning only) ✅ DONE
 - [x] Update useItemCreator hook to handle box type
 
 ---
