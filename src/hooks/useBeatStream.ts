@@ -283,12 +283,22 @@ export const useBeatStream = (
     /**
      * Update upcoming beats for visualization.
      * Called on each animation frame during playback.
+     *
+     * Also updates the current BPM continuously, which is important for
+     * tracks with irregular tempo where the rolling BPM should update
+     * even between beat events.
      */
     const updateUpcomingBeats = useCallback(() => {
         if (!beatStreamRef.current || !isActive) return;
 
         const beats = beatStreamRef.current.getUpcomingBeats(UPCOMING_BEATS_COUNT);
         setUpcomingBeats(beats);
+
+        // Update current BPM on every frame for smooth updates
+        // This is especially important for tracks with irregular tempo
+        // where the rolling BPM calculation needs to update continuously
+        const bpm = beatStreamRef.current.getCurrentBpm();
+        setCurrentBpm(bpm);
 
         // Update sync state for debugging
         const state = beatStreamRef.current.getSyncState();

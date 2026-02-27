@@ -159,8 +159,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       {/* BPM and Position Display */}
       <div className="beat-practice-stats">
         <div className="beat-practice-stat">
-          <span className="beat-practice-stat-value">{Math.round(currentBpm) || Math.round(beatMap.bpm)}</span>
-          <span className="beat-practice-stat-label">BPM</span>
+          <span className={`beat-practice-stat-value ${currentBpm > 0 ? 'beat-practice-stat-value--live' : ''}`}>
+            {Math.round(currentBpm) || Math.round(beatMap.bpm)}
+          </span>
+          <span className="beat-practice-stat-label">
+            BPM
+            {currentBpm > 0 && <span className="beat-practice-bpm-indicator">rolling</span>}
+          </span>
         </div>
         <div className="beat-practice-stat">
           <span className="beat-practice-stat-value">{formatTime(currentTime)}</span>
