@@ -323,13 +323,23 @@ export const useBeatStream = (
 
     /**
      * Check tap accuracy against the nearest beat.
+     *
+     * IMPORTANT: We use beatStream.getCurrentTime() which returns the BeatStream's
+     * internally calculated audio time (accounting for start time and latency compensation),
+     * NOT the raw AudioContext.currentTime. Beat timestamps are in seconds from audio start,
+     * so we need to compare against the BeatStream's calculated position, not the context's
+     * clock which started when the AudioContext was created.
      */
     const checkTap = useCallback((): ButtonPressResult | null => {
-        if (!beatStreamRef.current || !audioContextRef.current || !isActive) {
+        if (!beatStreamRef.current || !isActive) {
             return null;
         }
 
-        const result = beatStreamRef.current.checkButtonPress(audioContextRef.current.currentTime);
+        // Use BeatStream's calculated current time, which accounts for:
+        // - When playback started (startTime)
+        // - Latency compensation (output + base + user offset)
+        const currentTime = beatStreamRef.current.getCurrentTime();
+        const result = beatStreamRef.current.checkButtonPress(currentTime);
 
         logger.debug('BeatDetection', 'Tap checked', {
             accuracy: result.accuracy,
