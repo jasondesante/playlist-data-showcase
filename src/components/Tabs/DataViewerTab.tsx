@@ -610,37 +610,16 @@ export function DataViewerTab() {
   /**
    * Handle creation of new skill via SkillCreatorForm
    * (Phase 4.3: Skills Creation in DataViewerTab)
+   *
+   * Note: The SkillCreatorForm handles content creation internally via useContentCreator.
+   * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSkill = useCallback((skill: SkillFormData) => {
-    const skillItem: Record<string, unknown> = {
-      id: skill.id,
-      name: skill.name,
-      ability: skill.ability
-    };
-
-    // Add optional fields
-    if (skill.description.trim()) {
-      skillItem.description = skill.description.trim();
-    }
-    if (skill.categories.length > 0) {
-      skillItem.categories = skill.categories;
-    }
-    if (skill.armorPenalty) {
-      skillItem.armorPenalty = true;
-    }
-
-    const result = createContent('skills', skillItem, { mode: 'relative' });
-
-    if (result.success) {
-      logger.info('DataViewer', `Created skill: ${skill.name}`);
-      showToast(`Created skill "${skill.name}"`, 'success');
-      setShowSkillCreator(false);
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to create skill: ${result.error}`);
-      showToast(`Failed to create skill: ${result.error}`, 'error');
-    }
-  }, [createContent, refreshData]);
+    logger.info('DataViewer', `Created skill: ${skill.name}`);
+    showToast(`Created skill "${skill.name}"`, 'success');
+    setShowSkillCreator(false);
+    refreshData();
+  }, [refreshData]);
 
   /**
    * Handle creation of new spell via SpellCreatorForm
@@ -1023,12 +1002,13 @@ export function DataViewerTab() {
                 {grouped[ability].map(skill => {
                   const isExpanded = expandedItems.has(skill.id);
                   const hasDescription = skill.description && skill.description.length > 0;
+                  const isCustom = checkIsCustomItem('skills', skill.name);
 
                   return (
                     <div
                       key={skill.id}
-                      className={`dataviewer-group-item ${hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => hasDescription && toggleExpanded(skill.id)}
+                      className={`dataviewer-group-item ${hasDescription || isCustom ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => (hasDescription || isCustom) && toggleExpanded(skill.id)}
                     >
                       <div className="dataviewer-group-item-header">
                         <span className="dataviewer-group-item-name">{skill.name}</span>
@@ -1040,16 +1020,31 @@ export function DataViewerTab() {
                               ))}
                             </div>
                           )}
-                          {hasDescription && (
+                          {(hasDescription || isCustom) && (
                             isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
                           )}
                         </div>
                       </div>
-                      {isExpanded && hasDescription && (
+                      {isExpanded && (hasDescription || isCustom) && (
                         <div className="dataviewer-group-item-details">
-                          <div className="dataviewer-item-description">
-                            {skill.description}
-                          </div>
+                          {hasDescription && (
+                            <div className="dataviewer-item-description">
+                              {skill.description}
+                            </div>
+                          )}
+                          {isCustom && (
+                            <div className="dataviewer-item-actions">
+                              <CustomContentBadge
+                                category="skills"
+                                itemName={skill.name}
+                                onEdit={() => handleEditItem('skills', skill.name)}
+                                onDelete={() => handleDeleteItem('skills', skill.name)}
+                                onDuplicate={() => handleDuplicateItem('skills', skill.name)}
+                                showActions={true}
+                                size="sm"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

@@ -659,6 +659,14 @@
   border-top: 1px solid var(--color-border);
 }
 
+.dataviewer-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+}
+
 /* ========================================
    EFFECTS LIST (Task 5.1)
    ======================================== */

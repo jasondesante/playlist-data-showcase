@@ -259,6 +259,7 @@ export function EquipmentCreatorForm({
   const [autoEquip, setAutoEquip] = useState(initialData?.autoEquip ?? false);
   const [itemIcon, setItemIcon] = useState(initialData?.icon || '');
   const [itemImage, setItemImage] = useState(initialData?.image || '');
+  const [itemDescription, setItemDescription] = useState(initialData?.description || '');
   const [boxContents, setBoxContents] = useState<BoxContents | undefined>(initialData?.boxContents);
   const [boxContentsValid, setBoxContentsValid] = useState(true);
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -377,6 +378,7 @@ export function EquipmentCreatorForm({
       autoEquip,
       ...(itemIcon.trim() && { icon: itemIcon.trim() }),
       ...(itemImage.trim() && { image: itemImage.trim() }),
+      ...(itemDescription.trim() && { description: itemDescription.trim() }),
       // Advanced options
       ...(validProperties.length > 0 && { properties: validProperties }),
       ...(grantsFeatures.length > 0 && { grantsFeatures }),
@@ -385,7 +387,7 @@ export function EquipmentCreatorForm({
       ...(tags.length > 0 && { tags }),
       spawnWeight
     };
-  }, [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage, boxContents, properties, grantsFeatures, grantsSkills, grantsSpells, tags, spawnWeight]);
+  }, [itemName, itemType, itemRarity, itemWeight, itemQuantity, damageDice, damageType, acBonus, autoEquip, itemIcon, itemImage, itemDescription, boxContents, properties, grantsFeatures, grantsSkills, grantsSpells, tags, spawnWeight]);
 
   // Notify parent of form changes
   useEffect(() => {
@@ -398,7 +400,7 @@ export function EquipmentCreatorForm({
 
     const result = createCustomItem(formData as CustomItemFormData);
     return result.success ? result.equipment || null : null;
-  }, [itemName, itemType, itemRarity, itemWeight, damageDice, damageType, acBonus, itemQuantity, itemIcon, itemImage, createCustomItem, formData]);
+  }, [itemName, itemType, itemRarity, itemWeight, damageDice, damageType, acBonus, itemQuantity, itemIcon, itemImage, itemDescription, createCustomItem, formData]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -594,6 +596,22 @@ export function EquipmentCreatorForm({
               onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
               className="equipment-creator-input"
               disabled={disabled}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="equipment-creator-field equipment-creator-field-full">
+            <label className="equipment-creator-label" htmlFor="equipment-description">
+              Description <span className="equipment-creator-optional">(optional)</span>
+            </label>
+            <textarea
+              id="equipment-description"
+              value={itemDescription}
+              onChange={(e) => setItemDescription(e.target.value)}
+              placeholder="e.g., A finely crafted blade that glows with magical energy..."
+              className="equipment-creator-textarea"
+              disabled={disabled}
+              rows={3}
             />
           </div>
         </div>
@@ -1514,6 +1532,11 @@ ExtensionManager.getInstance()
                     {previewItem.image && (
                       <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
                         image: set
+                      </span>
+                    )}
+                    {previewItem.description && (
+                      <span className="equipment-creator-preview-tag equipment-creator-preview-tag-user">
+                        description: set
                       </span>
                     )}
                     {/* Advanced Properties */}

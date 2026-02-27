@@ -286,7 +286,7 @@ const DEFAULT_GENERATION_CONFIG: EnemyGenerationConfig = {
 
 /**
  * Custom item for treasure rewards
- * Aligned with playlist-data-engine EquipmentType ('weapon' | 'armor' | 'item')
+ * Aligned with playlist-data-engine EquipmentType ('weapon' | 'armor' | 'item' | 'box')
  */
 export interface TreasureCustomItem {
     /** Unique ID for the item in the list */
@@ -294,9 +294,13 @@ export interface TreasureCustomItem {
     /** Item name */
     name: string;
     /** Item type - aligned with playlist-data-engine EquipmentType */
-    type: 'weapon' | 'armor' | 'item';
+    type: 'weapon' | 'armor' | 'item' | 'box';
     /** Optional tags for categorization (e.g., 'consumable', 'gear', 'tools', 'magic') */
     tags?: string[];
+    /** Optional quantity (mainly for boxes) */
+    quantity?: number;
+    /** Box contents configuration (only for 'box' type) */
+    boxContents?: import('playlist-data-engine').BoxContents;
 }
 
 /**
@@ -350,7 +354,8 @@ const DEFAULT_TREASURE_CONFIG: TreasureGenerationConfig = {
 const TREASURE_ITEM_TYPES = [
     { value: 'weapon', label: 'Weapon' },
     { value: 'armor', label: 'Armor' },
-    { value: 'item', label: 'Item' }
+    { value: 'item', label: 'Item' },
+    { value: 'box', label: 'Loot Box' }
 ] as const;
 
 /**
@@ -372,7 +377,8 @@ function useTreasureItems(): Record<TreasureCustomItem['type'], TreasureItemEntr
         const itemsByType: Record<TreasureCustomItem['type'], TreasureItemEntry[]> = {
             weapon: [],
             armor: [],
-            item: []
+            item: [],
+            box: []
         };
 
         try {
@@ -396,6 +402,12 @@ function useTreasureItems(): Record<TreasureCustomItem['type'], TreasureItemEntr
                         });
                     } else if (eq.type === 'item') {
                         itemsByType.item.push({
+                            name: eq.name,
+                            rarity: eq.rarity as TreasureItemEntry['rarity'],
+                            tags: eq.tags
+                        });
+                    } else if (eq.type === 'box') {
+                        itemsByType.box.push({
                             name: eq.name,
                             rarity: eq.rarity as TreasureItemEntry['rarity'],
                             tags: eq.tags

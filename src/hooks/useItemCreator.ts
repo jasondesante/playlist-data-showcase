@@ -274,6 +274,8 @@ export interface CustomItemFormData {
     image?: string;
     /** Box contents (for box type equipment) */
     boxContents?: BoxContents;
+    /** User-facing description of this equipment */
+    description?: string;
 }
 
 /**
@@ -508,6 +510,11 @@ export const useItemCreator = (): UseItemCreatorReturn => {
             }
             if (data.image && data.image.trim()) {
                 equipment.image = data.image.trim();
+            }
+
+            // Add description if provided
+            if (data.description && data.description.trim()) {
+                equipment.description = data.description.trim();
             }
 
             // Set spawn weight to 0 (custom items don't spawn randomly)

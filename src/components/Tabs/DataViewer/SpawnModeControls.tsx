@@ -236,14 +236,16 @@ const CATEGORY_GROUPING_CONFIGS: Partial<Record<SpawnCategory, CategoryGroupingC
     getGroupKey: (item) => item.class || 'Unknown',
     formatGroupLabel: (key) => key,
     getDisplayName: (item) => item.name || item.id || 'Unknown',
-    getIdentifierKey: (item) => item.id || item.name
+    // Weight keys use item.name, so we must match by name
+    getIdentifierKey: (item) => item.name || item.id
   },
   'racialTraits': {
     groupBy: 'race',
     getGroupKey: (item) => item.race || 'Unknown',
     formatGroupLabel: (key) => key,
     getDisplayName: (item) => item.name || item.id || 'Unknown',
-    getIdentifierKey: (item) => item.id || item.name
+    // Weight keys use item.name, so we must match by name
+    getIdentifierKey: (item) => item.name || item.id
   },
   'skills': {
     groupBy: 'ability',
@@ -383,14 +385,12 @@ export function SpawnModeControls({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   // Build grouped items for weight editor
+  // Shows ALL items from registry, with weights applied where they exist (default 1.0)
   const groupedWeightItems = useMemo((): GroupedItems[] => {
-    const weightEntries = Object.entries(weights);
-    if (weightEntries.length === 0) return [];
-
     const normalizedCategory = normalizeCategory(category);
     const config = normalizedCategory ? CATEGORY_GROUPING_CONFIGS[normalizedCategory] : null;
 
-    // Fetch items from registry to get display names and grouping info
+    // Fetch ALL items from registry (default + custom)
     let registryItems: any[] = [];
     try {
       const manager = ExtensionManager.getInstance();
@@ -401,29 +401,17 @@ export function SpawnModeControls({
       logger.warn('SpawnMode', 'Failed to fetch registry items for weight editor', { error: String(e) });
     }
 
-    // Build a map of identifier -> item for quick lookup
-    const itemMap = new Map<string, any>();
-    if (config && registryItems.length > 0) {
-      for (const item of registryItems) {
+    if (registryItems.length === 0) return [];
+
+    // Build weight item infos from ALL registry items
+    const itemInfos: WeightItemInfo[] = registryItems.map((item) => {
+      if (config) {
         const key = config.getIdentifierKey(item);
-        if (key) {
-          itemMap.set(key, item);
-          // Also add lowercase key for case-insensitive matching
-          itemMap.set(key.toLowerCase(), item);
-        }
-      }
-    }
-
-    // Build weight item infos
-    const itemInfos: WeightItemInfo[] = weightEntries.map(([key, weight]) => {
-      // Try to find matching item in registry
-      const registryItem = itemMap.get(key) || itemMap.get(key.toLowerCase());
-
-      if (config && registryItem) {
-        // Use registry item for display
-        const displayName = config.getDisplayName(registryItem);
-        const groupKey = config.getGroupKey(registryItem);
+        const displayName = config.getDisplayName(item);
+        const groupKey = config.getGroupKey(item);
         const groupLabel = config.formatGroupLabel ? config.formatGroupLabel(groupKey) : groupKey;
+        // Use weight from weights if it exists, otherwise default to 1.0
+        const weight = weights[key] ?? 1.0;
 
         return {
           id: key,
@@ -433,12 +421,14 @@ export function SpawnModeControls({
           weight
         };
       } else {
-        // Fallback: use key as both name and group
+        // Fallback: use name property or item itself
+        const key = item.name || String(item);
+        const weight = weights[key] ?? 1.0;
         return {
           id: key,
           displayName: key,
-          group: 'Other',
-          groupLabel: 'Other',
+          group: 'Items',
+          groupLabel: 'Items',
           weight
         };
       }
