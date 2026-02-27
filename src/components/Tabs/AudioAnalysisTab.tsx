@@ -14,6 +14,7 @@ import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
+import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
@@ -71,6 +72,7 @@ export function AudioAnalysisTab() {
 
   // Beat detection store for practice mode
   const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
+  const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
 
   /**
@@ -263,6 +265,13 @@ export function AudioAnalysisTab() {
   const handleStartPracticeMode = useCallback(() => {
     startPracticeMode();
   }, [startPracticeMode]);
+
+  /**
+   * Handle exiting practice mode.
+   */
+  const handleExitPracticeMode = useCallback(() => {
+    stopPracticeMode();
+  }, [stopPracticeMode]);
 
   const handleApplyMultipliers = async () => {
     if (!selectedTrack?.audio_url) return;
@@ -682,6 +691,10 @@ export function AudioAnalysisTab() {
                       beatMap={beatMap}
                       onStartPractice={handleStartPracticeMode}
                     />
+                  )}
+                  {/* Beat Practice View - shown when practice mode is active */}
+                  {practiceModeActive && beatMap && (
+                    <BeatPracticeView onExit={handleExitPracticeMode} />
                   )}
                 </>
               ) : (

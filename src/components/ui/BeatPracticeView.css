@@ -1,0 +1,391 @@
+/* ============================================
+   BEAT PRACTICE VIEW - Practice Mode Container
+   Task 3.2: BeatPracticeView Component
+   ============================================ */
+
+.beat-practice-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.9), hsl(var(--surface-1) / 0.95));
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  margin-top: 0.75rem;
+  animation: beat-practice-fade-in 0.3s ease-out;
+}
+
+@keyframes beat-practice-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header Bar */
+.beat-practice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-practice-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-practice-header-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: hsl(var(--primary));
+}
+
+.beat-practice-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.beat-practice-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* BPM and Position Display */
+.beat-practice-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.beat-practice-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  background: hsl(var(--background) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-practice-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+  line-height: 1;
+}
+
+.beat-practice-stat-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+}
+
+/* Beat Timeline Visualization */
+.beat-practice-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.beat-practice-timeline-track {
+  position: relative;
+  height: 4rem;
+  background: linear-gradient(90deg, hsl(var(--surface-3)), hsl(var(--surface-2)));
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  overflow: hidden;
+}
+
+.beat-practice-now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.6);
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.beat-practice-now-line::before {
+  content: 'NOW';
+  position: absolute;
+  top: 0.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: hsl(var(--primary));
+  background: hsl(var(--background) / 0.8);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.125rem;
+}
+
+.beat-practice-beat-marker {
+  position: absolute;
+  top: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: hsl(var(--cute-yellow));
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.1s linear;
+  box-shadow: 0 0 6px hsl(var(--cute-yellow) / 0.5);
+}
+
+.beat-practice-beat-marker--downbeat {
+  width: 1rem;
+  height: 1rem;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.6);
+}
+
+.beat-practice-progress {
+  height: 4px;
+  background: hsl(var(--border) / 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.beat-practice-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+/* Playback Controls */
+.beat-practice-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.beat-practice-play-button {
+  min-width: 8rem;
+}
+
+/* Tap Area */
+.beat-practice-tap-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--cute-purple) / 0.1));
+  border: 2px dashed hsl(var(--border) / 0.5);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.beat-practice-tap-area:hover {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.15));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.beat-practice-tap-area--active {
+  border-style: solid;
+  border-color: hsl(var(--primary));
+}
+
+.beat-practice-tap-instruction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.beat-practice-tap-text {
+  font-size: 2rem;
+  font-weight: 900;
+  color: hsl(var(--primary));
+  letter-spacing: 0.1em;
+}
+
+.beat-practice-tap-hint {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Tap Feedback Overlay */
+.beat-practice-tap-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--feedback-color) / 0.2, var(--feedback-color) / 0.1);
+  border-radius: 1rem;
+  animation: tap-feedback-pulse 0.5s ease-out;
+}
+
+@keyframes tap-feedback-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.beat-practice-tap-accuracy {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--feedback-color);
+  letter-spacing: 0.1em;
+}
+
+.beat-practice-tap-offset {
+  font-size: 0.875rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground));
+}
+
+/* Statistics Panel */
+.beat-practice-stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: hsl(var(--background) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-practice-stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.beat-practice-stats-row:last-child {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.beat-practice-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.375rem;
+}
+
+.beat-practice-stat-item-value {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground));
+}
+
+.beat-practice-stat-item-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Color-coded stat items */
+.beat-practice-stat-item--perfect .beat-practice-stat-item-value {
+  color: #22c55e;
+}
+
+.beat-practice-stat-item--great .beat-practice-stat-item-value {
+  color: #eab308;
+}
+
+.beat-practice-stat-item--good .beat-practice-stat-item-value {
+  color: #f97316;
+}
+
+.beat-practice-stat-item--miss .beat-practice-stat-item-value {
+  color: #ef4444;
+}
+
+/* Stream Status */
+.beat-practice-stream-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: hsl(var(--surface-3) / 0.5);
+  border-radius: 0.375rem;
+}
+
+.beat-practice-stream-icon {
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.3s ease;
+}
+
+.beat-practice-stream-icon--active {
+  color: hsl(var(--cute-green));
+  animation: pulse-icon 1s infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.beat-practice-stream-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .beat-practice-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .beat-practice-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .beat-practice-tap-text {
+    font-size: 1.5rem;
+  }
+
+  .beat-practice-stats-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .beat-practice-stats-row:last-child {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
