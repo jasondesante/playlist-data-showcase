@@ -10,7 +10,7 @@
  */
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, type PersistStorage, type StorageValue } from 'zustand/middleware';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 import {
@@ -68,6 +68,8 @@ interface BeatDetectionState {
     tapHistory: TapResult[];
     /** Error message if generation failed */
     error: string | null;
+    /** Storage error message (e.g., quota exceeded) */
+    storageError: string | null;
 }
 
 interface BeatDetectionActions {
@@ -167,6 +169,18 @@ interface BeatDetectionActions {
      * Clear any error state.
      */
     clearError: () => void;
+
+    /**
+     * Clear storage error state.
+     */
+    clearStorageError: () => void;
+
+    /**
+     * Clear old cached beat maps to free up storage space.
+     * Removes the oldest cached beat maps.
+     * @param count - Number of old caches to remove (default: 1)
+     */
+    clearOldestCachedBeatMaps: (count?: number) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -198,11 +212,95 @@ const createInitialState = (): BeatDetectionState => ({
     practiceModeActive: false,
     tapHistory: [],
     error: null,
+    storageError: null,
 });
+
+/**
+ * Check if an error is a quota-related error.
+ */
+const isQuotaError = (error: unknown): boolean => {
+    if (!(error instanceof Error)) return false;
+    const message = error.message.toLowerCase();
+    return (
+        message.includes('quota') ||
+        message.includes('exceeded') ||
+        message.includes('space') ||
+        message.includes('full')
+    );
+};
+
+/**
+ * Custom PersistStorage implementation that wraps createJSONStorage with error handling.
+ */
+const createErrorHandlingStorage = <S>(
+    onError: (error: string) => void
+): PersistStorage<S> | undefined => {
+    // Create the base storage using createJSONStorage
+    const baseStorage = createJSONStorage<S>(() => ({
+        getItem: async (name: string): Promise<string | null> => {
+            try {
+                const value = await storage.getItem<string>(name);
+                return value ?? null;
+            } catch (error) {
+                logger.error('BeatDetection', 'Storage getItem error', { error });
+                return null;
+            }
+        },
+        setItem: async (name: string, value: string): Promise<void> => {
+            try {
+                await storage.setItem(name, value);
+            } catch (error) {
+                logger.error('BeatDetection', 'Storage setItem error', { error });
+                if (isQuotaError(error)) {
+                    onError('Storage quota exceeded. Some beat maps may not be saved. Try clearing old cached beat maps.');
+                } else {
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown storage error';
+                    onError(`Storage error: ${errorMessage}`);
+                }
+            }
+        },
+        removeItem: async (name: string): Promise<void> => {
+            try {
+                await storage.removeItem(name);
+            } catch (error) {
+                logger.error('BeatDetection', 'Storage removeItem error', { error });
+            }
+        },
+    }));
+
+    if (!baseStorage) return undefined;
+
+    // Wrap the setItem to handle errors
+    return {
+        getItem: baseStorage.getItem,
+        setItem: (name: string, value: StorageValue<S>) => {
+            try {
+                return baseStorage.setItem(name, value);
+            } catch (error) {
+                logger.error('BeatDetection', 'Storage setItem error', { error });
+                if (isQuotaError(error)) {
+                    onError('Storage quota exceeded. Some beat maps may not be saved. Try clearing old cached beat maps.');
+                } else {
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown storage error';
+                    onError(`Storage error: ${errorMessage}`);
+                }
+                return undefined;
+            }
+        },
+        removeItem: baseStorage.removeItem,
+    };
+};
+
+// Variable to hold the setStorageError function (set during store creation)
+let setStorageErrorFn: ((error: string | null) => void) | null = null;
 
 export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
     persist(
-        (set, get) => ({
+        (set, get) => {
+            // Store the set function for error handling
+            setStorageErrorFn = (error) => set({ storageError: error });
+
+            return {
             ...createInitialState(),
 
             actions: {
@@ -393,16 +491,46 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 clearError: () => {
                     set({ error: null });
                 },
+
+                clearStorageError: () => {
+                    set({ storageError: null });
+                },
+
+                clearOldestCachedBeatMaps: (count = 1) => {
+                    const state = get();
+                    const keys = Object.keys(state.cachedBeatMaps);
+                    if (keys.length === 0) return;
+
+                    // Remove the oldest entries (first N keys)
+                    const keysToRemove = keys.slice(0, Math.min(count, keys.length));
+                    logger.info('BeatDetection', 'Clearing oldest cached beat maps', {
+                        count: keysToRemove.length,
+                        keys: keysToRemove,
+                    });
+
+                    const newCachedBeatMaps = { ...state.cachedBeatMaps };
+                    keysToRemove.forEach((key) => {
+                        delete newCachedBeatMaps[key];
+                    });
+
+                    set({ cachedBeatMaps: newCachedBeatMaps });
+                },
             },
-        }),
+        };
+        },
         {
             name: 'beat-detection-storage',
-            storage: createJSONStorage(() => storage),
+            // Use custom storage that wraps the base storage with error handling
+            storage: createErrorHandlingStorage((error) => {
+                if (setStorageErrorFn) {
+                    setStorageErrorFn(error);
+                }
+            }),
             // Only persist cached beat maps and generator options
             partialize: (state) => ({
                 cachedBeatMaps: state.cachedBeatMaps,
                 generatorOptions: state.generatorOptions,
-            }),
+            }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => ({
                 ...currentState,
@@ -467,6 +595,12 @@ export const useTapHistory = () => useBeatDetectionStore((state) => state.tapHis
  */
 export const useCachedBeatMaps = () =>
     useBeatDetectionStore((state) => state.cachedBeatMaps);
+
+/**
+ * Selector to get storage error state.
+ */
+export const useStorageError = () =>
+    useBeatDetectionStore((state) => state.storageError);
 
 /**
  * Selector to get actions directly.

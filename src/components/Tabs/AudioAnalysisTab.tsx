@@ -73,7 +73,10 @@ export function AudioAnalysisTab() {
   // Beat detection store for practice mode
   const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
   const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
+  const clearStorageError = useBeatDetectionStore((state) => state.actions.clearStorageError);
+  const clearOldestCachedBeatMaps = useBeatDetectionStore((state) => state.actions.clearOldestCachedBeatMaps);
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
+  const storageError = useBeatDetectionStore((state) => state.storageError);
 
   /**
    * Map beat generation phases to human-readable labels
@@ -683,6 +686,31 @@ export function AudioAnalysisTab() {
                   {beatError && (
                     <div className="audio-analysis-error-message">
                       {beatError}
+                    </div>
+                  )}
+                  {/* Storage quota warning */}
+                  {storageError && (
+                    <div className="audio-analysis-storage-warning">
+                      <span className="audio-analysis-storage-warning-text">{storageError}</span>
+                      <div className="audio-analysis-storage-warning-actions">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            clearOldestCachedBeatMaps(3);
+                            clearStorageError();
+                          }}
+                        >
+                          Clear Old Caches
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearStorageError}
+                        >
+                          Dismiss
+                        </Button>
+                      </div>
                     </div>
                   )}
                   {/* Beat Map Summary - shown after successful analysis */}

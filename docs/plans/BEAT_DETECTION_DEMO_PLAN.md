@@ -202,26 +202,26 @@ This is the main feature where **audio playback + beat visualization + tap accur
   - [x] "Reset Stats" button
 
 ### 5.4 Keyboard Event Handling
-- [ ] Add global keyboard listener during practice mode
-  - [ ] Spacebar triggers tap
-  - [ ] Prevent default spacebar behavior (page scroll)
-  - [ ] Call `checkButtonPress()` with current AudioContext time
-  - [ ] Display result in TapArea
+- [x] Add global keyboard listener during practice mode
+  - [x] Spacebar triggers tap
+  - [x] Prevent default spacebar behavior (page scroll)
+  - [x] Call `checkButtonPress()` with current AudioContext time
+  - [x] Display result in TapArea
 
 ---
 
 ## Phase 6: Integration & Polish
 
 ### 6.1 AudioAnalysisTab Integration
-- [ ] Wire up beat detection mode in AudioAnalysisTab
-  - [ ] Mode selector with "Beat" option
-  - [ ] Settings panel (before analysis)
-  - [ ] Progress UI during analysis
-  - [ ] Summary + "Start Practice" button after analysis
-  - [ ] BeatPracticeView when practice mode is active
+- [x] Wire up beat detection mode in AudioAnalysisTab
+  - [x] Mode selector with "Beat" option
+  - [x] Settings panel (before analysis)
+  - [x] Progress UI during analysis
+  - [x] Summary + "Start Practice" button after analysis
+  - [x] BeatPracticeView when practice mode is active
 
 ### 6.2 Practice Mode Flow
-- [ ] Implement the full user flow:
+- [x] Implement the full user flow:
   1. User selects "Beat" mode
   2. User adjusts settings (optional)
   3. User clicks "Analyze Beats" (must be playing audio first)
@@ -236,23 +236,23 @@ This is the main feature where **audio playback + beat visualization + tap accur
   8. User can exit practice mode (returns to summary)
 
 ### 6.3 Audio-Beat Sync Critical Path
-- [ ] Ensure tight synchronization:
-  - [ ] Create AudioContext when practice mode starts
-  - [ ] BeatStream uses AudioContext.currentTime for timing
-  - [ ] Audio element time syncs to BeatStream via seek()
-  - [ ] Timeline visual position driven by BeatStream events
-  - [ ] Tap accuracy uses BeatStream.checkButtonPress(audioContextTime)
+- [x] Ensure tight synchronization:
+  - [x] Create AudioContext when practice mode starts
+  - [x] BeatStream uses AudioContext.currentTime for timing
+  - [x] Audio element time syncs to BeatStream via seek()
+  - [x] Timeline visual position driven by BeatStream events
+  - [x] Tap accuracy uses BeatStream.checkButtonPress(audioContextTime)
 
 ### 6.4 Error Handling
-- [ ] Handle audio URL fetch failures
-- [ ] Handle analysis cancellation
-- [ ] Handle localStorage quota exceeded
-- [ ] Display user-friendly error messages
+- [x] Handle audio URL fetch failures
+- [x] Handle analysis cancellation
+- [x] Handle localStorage quota exceeded
+- [x] Display user-friendly error messages
 
 ### 6.5 Loading States
 - [ ] Skeleton UI during initial load
-- [ ] Progress indicator during beat map generation
-- [ ] Disable controls appropriately during analysis
+- [x] Progress indicator during beat map generation
+- [x] Disable controls appropriately during analysis
 
 ---
 

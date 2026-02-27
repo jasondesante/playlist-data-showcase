@@ -522,6 +522,35 @@
   margin-top: 0.5rem;
 }
 
+/* Storage quota warning - Task 6.4 */
+.audio-analysis-storage-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: hsl(var(--warning));
+  background: hsl(var(--warning) / 0.1);
+  border: 1px solid hsl(var(--warning) / 0.2);
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.audio-analysis-storage-warning-text {
+  line-height: 1.4;
+}
+
+.audio-analysis-storage-warning-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.audio-analysis-storage-warning-actions .button {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+}
+
 /* ============================================
    RESULTS SECTION - Compact grid layout
    ============================================ */
