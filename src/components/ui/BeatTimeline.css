@@ -18,12 +18,20 @@
   cursor: default;
 }
 
-.beat-timeline-track--clickable {
-  cursor: pointer;
+.beat-timeline-track--draggable {
+  cursor: grab;
 }
 
-.beat-timeline-track--clickable:hover {
+.beat-timeline-track--draggable:hover {
   box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.beat-timeline-track--dragging {
+  cursor: grabbing;
+}
+
+.beat-timeline-track--dragging:hover {
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
 }
 
 /* Background Layers */
@@ -115,10 +123,12 @@
   }
 }
 
-/* Past beats (faded) */
+/* Past beats - keep visible as they scroll off screen */
 .beat-timeline-marker--past .beat-timeline-marker-dot {
-  opacity: 0.4;
-  filter: grayscale(0.5);
+  /* Subtle dimming but still visible */
+  opacity: 0.7;
+  /* Remove grayscale filter to keep color */
+  filter: none;
 }
 
 /* Upcoming beats (bright with glow) */

@@ -61,7 +61,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Beat stream hook for real-time sync
   const {
     currentBpm,
-    upcomingBeats,
     lastBeatEvent,
     checkTap,
     isActive: streamIsActive,
@@ -369,7 +368,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       <BeatTimeline
         beatMap={beatMap}
         currentTime={currentTime}
-        upcomingBeats={upcomingBeats}
         lastBeatEvent={lastBeatEvent}
         onSeek={handleSeek}
         anticipationWindow={2.0}

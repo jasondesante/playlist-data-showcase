@@ -11,6 +11,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage, type PersistStorage, type StorageValue } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 import {
@@ -650,13 +651,14 @@ export const useBeatMap = () => useBeatDetectionStore((state) => state.beatMap);
 
 /**
  * Selector to get generation state.
+ * Uses useShallow to prevent infinite loops from new object references.
  */
 export const useBeatMapGenerationState = () =>
-    useBeatDetectionStore((state) => ({
+    useBeatDetectionStore(useShallow((state) => ({
         isGenerating: state.isGenerating,
         progress: state.generationProgress,
         error: state.error,
-    }));
+    })));
 
 /**
  * Selector to get generator options.
@@ -666,12 +668,13 @@ export const useGeneratorOptions = () =>
 
 /**
  * Selector to get practice mode state.
+ * Uses useShallow to prevent infinite loops from new object references.
  */
 export const usePracticeModeState = () =>
-    useBeatDetectionStore((state) => ({
+    useBeatDetectionStore(useShallow((state) => ({
         isActive: state.practiceModeActive,
         tapHistory: state.tapHistory,
-    }));
+    })));
 
 /**
  * Selector to get tap history.
@@ -698,9 +701,10 @@ export const useBeatDetectionActions = () =>
 
 /**
  * Selector to compute tap statistics.
+ * Uses useShallow to prevent infinite loops from new object references.
  */
 export const useTapStatistics = () =>
-    useBeatDetectionStore((state) => {
+    useBeatDetectionStore(useShallow((state) => {
         const history = state.tapHistory;
         if (history.length === 0) {
             return {
@@ -762,4 +766,4 @@ export const useTapStatistics = () =>
             currentStreak,
             bestStreak,
         };
-    });
+    }));

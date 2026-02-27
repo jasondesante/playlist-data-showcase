@@ -288,8 +288,11 @@ export function AudioAnalysisTab() {
     // Use track ID or URL as audio ID for caching
     const audioId = selectedTrack.id || selectedTrack.audio_url;
 
-    await generateBeatMap(selectedTrack.audio_url, audioId);
-  }, [selectedTrack, generateBeatMap]);
+    // Force regenerate if we already have a beat map (re-analyze)
+    const forceRegenerate = !!beatMap;
+
+    await generateBeatMap(selectedTrack.audio_url, audioId, undefined, forceRegenerate);
+  }, [selectedTrack, generateBeatMap, beatMap]);
 
   /**
    * Handle starting practice mode after beat map generation.
@@ -474,7 +477,7 @@ export function AudioAnalysisTab() {
       {/* Primary Control Card - Cohesive Song Info + EQ + Analysis Action */}
       {selectedTrack && (
         <Card variant="elevated" padding="lg" className="audio-analysis-primary-card">
-          <div className="audio-analysis-primary-layout">
+          <div className={`audio-analysis-primary-layout${analysisMode === 'beat' ? ' audio-analysis-primary-layout--beat' : ''}`}>
 
             {/* 1. Song Display Section */}
             <div className="audio-analysis-song-display">
@@ -499,7 +502,8 @@ export function AudioAnalysisTab() {
               </div>
             </div>
 
-            {/* 2. Integrated EQ Section */}
+            {/* 2. Integrated EQ Section - Only shown for Normal/Timeline modes */}
+            {analysisMode !== 'beat' && (
             <div className="audio-analysis-eq-integration">
               <div className="audio-analysis-eq-header-row">
                 <div className="audio-analysis-eq-title-main">EQ</div>
@@ -568,6 +572,7 @@ export function AudioAnalysisTab() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* 3. Analysis Mode Selector */}
             <div className="audio-analysis-mode-card">
@@ -752,21 +757,6 @@ export function AudioAnalysisTab() {
                       </div>
                     </div>
                   )}
-                  {/* Beat Map Summary Skeleton - shown during generation */}
-                  {isBeatGenerating && !practiceModeActive && (
-                    <BeatMapSummarySkeleton />
-                  )}
-                  {/* Beat Map Summary - shown after successful analysis */}
-                  {beatMap && !isBeatGenerating && !practiceModeActive && (
-                    <BeatMapSummary
-                      beatMap={beatMap}
-                      onStartPractice={handleStartPracticeMode}
-                    />
-                  )}
-                  {/* Beat Practice View - shown when practice mode is active */}
-                  {practiceModeActive && beatMap && (
-                    <BeatPracticeView onExit={handleExitPracticeMode} />
-                  )}
                 </>
               ) : (
                 // Normal/Timeline mode action
@@ -795,6 +785,28 @@ export function AudioAnalysisTab() {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Beat Detection Results - Full-width section below primary card */}
+      {selectedTrack && analysisMode === 'beat' && !practiceModeActive && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-beat-results-card fade-in">
+          {/* Beat Map Summary Skeleton - shown during generation */}
+          {isBeatGenerating && (
+            <BeatMapSummarySkeleton />
+          )}
+          {/* Beat Map Summary - shown after successful analysis */}
+          {beatMap && !isBeatGenerating && (
+            <BeatMapSummary
+              beatMap={beatMap}
+              onStartPractice={handleStartPracticeMode}
+            />
+          )}
+        </Card>
+      )}
+
+      {/* Beat Practice View - Full-width immersive experience */}
+      {selectedTrack && analysisMode === 'beat' && practiceModeActive && beatMap && (
+        <BeatPracticeView onExit={handleExitPracticeMode} />
       )}
 
       {selectedTrack && audioProfile && (

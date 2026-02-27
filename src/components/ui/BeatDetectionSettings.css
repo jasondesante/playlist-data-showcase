@@ -177,8 +177,33 @@
 .beat-detection-dual-slider-track {
   position: relative;
   height: 4px;
+  border-radius: 2px;
+}
+
+/* Track background as pseudo-element to not interfere with child stacking */
+.beat-detection-dual-slider-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: hsl(var(--border) / 0.5);
   border-radius: 2px;
+  z-index: 0;
+}
+
+/* EQ-style slot markers explicitly on the track for the dual slider */
+.beat-detection-dual-slider-track::after {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+  background: repeating-linear-gradient(
+    to right,
+    hsl(var(--border) / 0.2) 0px,
+    hsl(var(--border) / 0.2) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Highlight the selected range between min and max */
@@ -195,20 +220,40 @@
   z-index: 1;
 }
 
+/* Container for slider inputs - positioned on top of the track */
+.beat-detection-dual-slider-inputs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  transform: translateY(-8px); /* Center on the 4px track */
+}
+
 /* Dual slider inputs - overlay them on the same track */
 .beat-detection-slider--min,
 .beat-detection-slider--max {
   -webkit-appearance: none;
   appearance: none;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 20px;
   background: transparent;
   pointer-events: none;
   margin: 0;
+}
+
+/* Sliders container is above the track - no individual z-index needed on sliders */
+.beat-detection-dual-slider-inputs {
   z-index: 3;
+}
+
+/* Hide the individual slot markers from the inputs because they overlap each other and cover the thumbs */
+.beat-detection-slider--min::before,
+.beat-detection-slider--max::before {
+  display: none !important;
 }
 
 .beat-detection-slider--min::-webkit-slider-thumb,
@@ -225,6 +270,8 @@
     0 0 8px hsl(var(--primary) / 0.5),
     0 0 0 2px hsl(var(--background));
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  z-index: 4;
 }
 
 .beat-detection-slider--min::-webkit-slider-thumb:hover,
@@ -246,7 +293,14 @@
   pointer-events: auto;
   box-shadow:
     0 0 8px hsl(var(--primary) / 0.5),
-    0 0 0 2px hsl(var(--background));
+    0 0 0 2px hsl(--background);
+}
+
+/* WebKit - hide the internal track for dual sliders */
+.beat-detection-slider--min::-webkit-slider-runnable-track,
+.beat-detection-slider--max::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
 }
 
 /* Firefox - hide the track for dual sliders */

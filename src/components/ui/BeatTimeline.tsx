@@ -23,14 +23,14 @@ interface BeatTimelineProps {
   beatMap: BeatMap;
   /** Current playback time in seconds (from audio player - used as reference) */
   currentTime: number;
-  /** Array of upcoming beats for visualization */
-  upcomingBeats: Beat[];
   /** The last beat event (for pulse animation trigger) */
   lastBeatEvent?: BeatEvent | null;
   /** Callback when user clicks on timeline to seek (optional) */
   onSeek?: (time: number) => void;
-  /** Anticipation window in seconds (default: 2.0) */
+  /** Anticipation window in seconds for future beats (default: 2.0) */
   anticipationWindow?: number;
+  /** Past window in seconds for showing beats that have passed (default: 4.0) */
+  pastWindow?: number;
   /** Whether the audio is currently playing (enables smooth animation) */
   isPlaying?: boolean;
   /** Optional AudioContext for precise timing (if available) */
@@ -48,10 +48,10 @@ interface BeatTimelineProps {
 export function BeatTimeline({
   beatMap,
   currentTime,
-  upcomingBeats,
   lastBeatEvent,
   onSeek,
   anticipationWindow = 2.0,
+  pastWindow = 4.0,
   isPlaying = false,
   audioContext: _audioContext,
 }: BeatTimelineProps) {
@@ -157,9 +157,10 @@ export function BeatTimeline({
 
   /**
    * Trigger pulse animation when a beat crosses the "now" line
+   * Only pulses when audio is actually playing
    */
   useEffect(() => {
-    if (lastBeatEvent?.type === 'exact') {
+    if (isPlaying && lastBeatEvent?.type === 'exact') {
       // Debounce rapid pulses
       const now = Date.now();
       if (now - lastPulseTimeRef.current > 100) {
@@ -167,43 +168,101 @@ export function BeatTimeline({
         setPulseKey((prev) => prev + 1);
       }
     }
-  }, [lastBeatEvent]);
+  }, [lastBeatEvent, isPlaying]);
+
+  // ========================================
+  // Drag-to-scrub functionality
+  // ========================================
+
+  // State for tracking drag
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Refs to track drag state (refs don't trigger re-renders)
+  const dragStartXRef = useRef<number>(0);
+  const dragStartTimeRef = useRef<number>(0);
 
   /**
-   * Handle click on timeline to seek
+   * Handle mouse down on track - start dragging
+   * Captures the initial click position and time
    */
-  const handleTrackClick = useCallback(
+  const handleMouseDown = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (!onSeek || !trackRef.current) return;
 
-      const rect = trackRef.current.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const trackWidth = rect.width;
+      event.preventDefault();
+      setIsDragging(true);
 
-      // Calculate the time relative to the center (now line)
-      // Center is smoothTime, left is smoothTime - anticipationWindow, right is smoothTime + anticipationWindow
-      const positionRatio = clickX / trackWidth;
-      const timeOffset = (positionRatio - 0.5) * anticipationWindow * 2;
-      const seekTime = Math.max(0, Math.min(beatMap.duration, smoothTime + timeOffset));
-
-      onSeek(seekTime);
+      // Capture the initial position and time
+      dragStartXRef.current = event.clientX;
+      dragStartTimeRef.current = smoothTime;
     },
-    [onSeek, smoothTime, anticipationWindow, beatMap.duration]
+    [onSeek, smoothTime]
   );
 
   /**
+   * Handle mouse move during drag
+   * Calculates delta from initial position and applies to initial time
+   */
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (!isDragging || !onSeek || !trackRef.current) return;
+
+      const rect = trackRef.current.getBoundingClientRect();
+      const trackWidth = rect.width;
+
+      // Calculate how far we've moved from the start position (in pixels)
+      const deltaX = event.clientX - dragStartXRef.current;
+
+      // Convert pixel delta to time delta (negated for intuitive drag direction)
+      // Full track width = anticipationWindow * 2 seconds
+      // Drag right = pull content from future = go backward in time
+      const timePerPixel = (anticipationWindow * 2) / trackWidth;
+      const deltaTime = -deltaX * timePerPixel;
+
+      // Apply delta to the initial time
+      const newTime = Math.max(0, Math.min(beatMap.duration, dragStartTimeRef.current + deltaTime));
+
+      onSeek(newTime);
+    },
+    [isDragging, onSeek, anticipationWindow, beatMap.duration]
+  );
+
+  /**
+   * Handle mouse up - end drag
+   */
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  /**
+   * Add/remove global mouse event listeners when dragging
+   */
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  /**
    * Calculate beat position on the timeline
+   * Uses consistent scaling (anticipationWindow) for both past and future beats
+   * to maintain consistent visual speed across the timeline.
    * Position 0 = left edge (smoothTime - anticipationWindow)
    * Position 0.5 = center/now line (smoothTime)
    * Position 1 = right edge (smoothTime + anticipationWindow)
+   *
+   * Note: pastWindow only affects visibility filtering, not position calculation,
+   * so beats maintain consistent speed as they scroll past center.
    */
   const calculateBeatPosition = useCallback(
     (beat: Beat): number => {
       const timeUntilBeat = beat.timestamp - smoothTime;
-      // Map from [-anticipationWindow, +anticipationWindow] to [0, 1]
-      // At timeUntilBeat = -anticipationWindow, position = 0 (left)
-      // At timeUntilBeat = 0, position = 0.5 (center/now)
-      // At timeUntilBeat = +anticipationWindow, position = 1 (right)
+      // Use the same scale for both sides to maintain consistent speed
       const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
       return position;
     },
@@ -212,7 +271,8 @@ export function BeatTimeline({
 
   /**
    * Get beats visible in the current window
-   * Uses upcomingBeats prop if provided, otherwise falls back to filtering beatMap
+   * Always uses the full beatMap to include both past and future beats
+   * Uses asymmetric windows: pastWindow for past beats, anticipationWindow for future
    */
   const getVisibleBeats = useCallback((): Array<{
     beat: Beat;
@@ -220,10 +280,12 @@ export function BeatTimeline({
     isPast: boolean;
     isUpcoming: boolean;
   }> => {
-    // Use the beats array - prefer upcomingBeats if available, otherwise filter from beatMap
-    const beatsToUse = upcomingBeats.length > 0 ? upcomingBeats : beatMap.beats;
+    // Always use the full beat map to get both past and future beats
+    // (upcomingBeats only contains future beats, which won't work for showing past beats)
+    const beatsToUse = beatMap.beats;
 
-    const minTime = smoothTime - anticipationWindow;
+    // Use asymmetric windows: more time for past beats to scroll off screen
+    const minTime = smoothTime - pastWindow;
     const maxTime = smoothTime + anticipationWindow;
 
     return beatsToUse
@@ -235,7 +297,7 @@ export function BeatTimeline({
         return { beat, position, isPast, isUpcoming };
       })
       .filter((item) => item.position >= 0 && item.position <= 1);
-  }, [upcomingBeats, beatMap.beats, smoothTime, anticipationWindow, calculateBeatPosition]);
+  }, [beatMap.beats, smoothTime, anticipationWindow, pastWindow, calculateBeatPosition]);
 
   const visibleBeats = getVisibleBeats();
 
@@ -244,8 +306,8 @@ export function BeatTimeline({
       {/* Timeline track */}
       <div
         ref={trackRef}
-        className={`beat-timeline-track ${onSeek ? 'beat-timeline-track--clickable' : ''}`}
-        onClick={handleTrackClick}
+        className={`beat-timeline-track ${onSeek ? 'beat-timeline-track--draggable' : ''} ${isDragging ? 'beat-timeline-track--dragging' : ''}`}
+        onMouseDown={handleMouseDown}
         role={onSeek ? 'slider' : undefined}
         aria-label="Beat timeline"
         aria-valuemin={0}
@@ -302,7 +364,7 @@ export function BeatTimeline({
         </div>
         <div className="beat-timeline-info-item">
           <span className="beat-timeline-info-label">Window</span>
-          <span className="beat-timeline-info-value">±{anticipationWindow.toFixed(1)}s</span>
+          <span className="beat-timeline-info-value">{pastWindow.toFixed(1)}s / {anticipationWindow.toFixed(1)}s</span>
         </div>
         {lastBeatEvent && (
           <div className="beat-timeline-info-item">

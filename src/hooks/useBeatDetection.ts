@@ -37,7 +37,7 @@ import {
  */
 export interface UseBeatDetectionReturn {
     /** Generate a beat map from an audio URL */
-    generateBeatMap: (audioUrl: string, audioId: string, options?: Partial<BeatMapGeneratorOptions>) => Promise<BeatMap | null>;
+    generateBeatMap: (audioUrl: string, audioId: string, options?: Partial<BeatMapGeneratorOptions>, forceRegenerate?: boolean) => Promise<BeatMap | null>;
     /** Cancel an ongoing beat map generation */
     cancelGeneration: () => void;
     /** Whether beat map generation is currently in progress */
@@ -103,12 +103,14 @@ export const useBeatDetection = (): UseBeatDetectionReturn => {
      * @param audioUrl - URL of the audio file to analyze
      * @param audioId - Unique identifier for the audio (used for caching)
      * @param options - Optional override for generator options
+     * @param forceRegenerate - If true, bypass cache and regenerate (default: false)
      * @returns The generated BeatMap, or null if generation failed
      */
     const generateBeatMap = useCallback(async (
         audioUrl: string,
         audioId: string,
-        options?: Partial<BeatMapGeneratorOptions>
+        options?: Partial<BeatMapGeneratorOptions>,
+        forceRegenerate: boolean = false
     ): Promise<BeatMap | null> => {
         if (!isMountedRef.current) {
             logger.warn('BeatDetection', 'generateBeatMap called after unmount');
@@ -119,11 +121,12 @@ export const useBeatDetection = (): UseBeatDetectionReturn => {
             audioUrl,
             audioId,
             hasOptions: !!options,
+            forceRegenerate,
         });
 
         try {
             // Use the store's generateBeatMap action which handles caching and progress
-            const result = await actions.generateBeatMap(audioUrl, audioId, options);
+            const result = await actions.generateBeatMap(audioUrl, audioId, options, forceRegenerate);
 
             if (result && isMountedRef.current) {
                 logger.info('BeatDetection', 'Beat map generation complete via hook', {
