@@ -24,6 +24,15 @@ import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
+import { logger } from '../../utils/logger';
+
+/**
+ * Minimum time between taps in milliseconds.
+ * Prevents accidental double-taps and spam tapping.
+ * 100ms is reasonable - faster than human reaction time but
+ * prevents most accidental rapid taps.
+ */
+const MIN_TAP_INTERVAL_MS = 100;
 
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
@@ -70,11 +79,49 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isDraggingProgress, setIsDraggingProgress] = useState(false);
 
+  // Ref for tap debouncing - tracks last tap timestamp
+  const lastTapTimeRef = useRef<number>(0);
+
+  // State for showing "TOO FAST" indicator
+  const [showTooFast, setShowTooFast] = useState(false);
+  const tooFastTimeoutRef = useRef<number | null>(null);
+
   /**
    * Handle tap action (spacebar or click)
+   * Includes debouncing to prevent rapid accidental taps.
    */
   const handleTap = useCallback(() => {
     if (!streamIsActive) return;
+
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapTimeRef.current;
+
+    // Check if tap is too fast (debounce check)
+    if (timeSinceLastTap < MIN_TAP_INTERVAL_MS) {
+      // Show "TOO FAST" indicator
+      setShowTooFast(true);
+
+      // Clear any existing timeout
+      if (tooFastTimeoutRef.current) {
+        clearTimeout(tooFastTimeoutRef.current);
+      }
+
+      // Hide indicator after a short delay
+      tooFastTimeoutRef.current = window.setTimeout(() => {
+        setShowTooFast(false);
+      }, 300);
+
+      // Log for debugging
+      logger.debug('BeatDetection', 'Tap rejected - too fast', {
+        timeSinceLastTap,
+        minInterval: MIN_TAP_INTERVAL_MS,
+      });
+
+      return; // Reject the tap
+    }
+
+    // Update last tap time
+    lastTapTimeRef.current = now;
 
     const result = checkTap();
     if (result) {
@@ -213,6 +260,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     }
   }, [isDraggingProgress, handleProgressMouseMove, handleProgressMouseUp]);
 
+  /**
+   * Cleanup for tooFast timeout on unmount
+   */
+  useEffect(() => {
+    return () => {
+      if (tooFastTimeoutRef.current) {
+        clearTimeout(tooFastTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Calculate progress percentage
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -349,6 +407,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         showFeedback={showFeedback}
         feedbackDuration={500}
         onFeedbackComplete={hideTapFeedback}
+        showTooFast={showTooFast}
       />
 
       {/* Tap Statistics - Using dedicated TapStats component */}

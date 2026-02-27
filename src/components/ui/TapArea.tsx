@@ -30,6 +30,8 @@ interface TapAreaProps {
   feedbackDuration?: number;
   /** Callback when feedback animation completes */
   onFeedbackComplete?: () => void;
+  /** Whether to show "TOO FAST" indicator (tap was debounced) */
+  showTooFast?: boolean;
   /** Optional className for additional styling */
   className?: string;
 }
@@ -79,6 +81,7 @@ export function TapArea({
   showFeedback = false,
   feedbackDuration = 500,
   onFeedbackComplete,
+  showTooFast = false,
   className = '',
 }: TapAreaProps) {
   // Track if we're currently pressed (for animation)
@@ -168,6 +171,7 @@ export function TapArea({
     isActive ? 'tap-area--active' : 'tap-area--inactive',
     isPressed ? 'tap-area--pressed' : '',
     showFeedback ? 'tap-area--feedback' : '',
+    showTooFast ? 'tap-area--too-fast' : '',
     className,
   ].filter(Boolean).join(' ');
 
@@ -181,6 +185,13 @@ export function TapArea({
       aria-label={`Tap to the beat${isActive ? '' : ' (inactive)'}`}
       aria-disabled={!isActive}
     >
+      {/* "TOO FAST" indicator - shown when tap is debounced */}
+      {showTooFast && (
+        <div className="tap-area__too-fast">
+          <span className="tap-area__too-fast-text">TOO FAST</span>
+        </div>
+      )}
+
       {/* Feedback overlay - shown when there's a tap result */}
       {showFeedback && lastTapResult && (
         <div

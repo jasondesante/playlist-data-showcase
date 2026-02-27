@@ -282,6 +282,70 @@
 }
 
 /* ============================================
+   "TOO FAST" Indicator (Debounce Feedback)
+   ============================================ */
+
+.tap-area--too-fast {
+  border-color: hsl(var(--cute-yellow));
+}
+
+.tap-area__too-fast {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--cute-yellow) / 0.25),
+    hsl(var(--cute-yellow) / 0.15)
+  );
+  border-radius: calc(1rem - 2px);
+  animation: too-fast-flash 0.3s ease-out;
+  pointer-events: none;
+}
+
+@keyframes too-fast-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tap-area__too-fast-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: hsl(var(--cute-yellow));
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 0 10px hsl(var(--cute-yellow) / 0.5),
+    0 2px 4px hsl(var(--background) / 0.5);
+  animation: too-fast-text-pop 0.2s ease-out;
+}
+
+@keyframes too-fast-text-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
    Responsive Adjustments
    ============================================ */
 
@@ -305,6 +369,10 @@
 
   .tap-area__offset {
     font-size: 0.8125rem;
+  }
+
+  .tap-area__too-fast-text {
+    font-size: 1.25rem;
   }
 }
 
@@ -331,6 +399,10 @@
   .tap-area__offset {
     font-size: 0.75rem;
     padding: 0.0625rem 0.375rem;
+  }
+
+  .tap-area__too-fast-text {
+    font-size: 1rem;
   }
 }
 
@@ -373,7 +445,9 @@
   .tap-area__feedback,
   .tap-area__accuracy,
   .tap-area__offset,
-  .tap-area__ripple {
+  .tap-area__ripple,
+  .tap-area__too-fast,
+  .tap-area__too-fast-text {
     animation: none;
     transition: none;
   }
