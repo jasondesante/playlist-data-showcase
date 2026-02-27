@@ -1932,12 +1932,11 @@ export function ItemsTab() {
                             className="lootbox-select"
                           >
                             <option value="">-- Select a box --</option>
-                            {/* Box items would be populated from equipment registry */}
                             {Object.values(DEFAULT_EQUIPMENT)
                               .filter(item => item.type === 'box' && item.boxContents)
                               .map(item => (
                                 <option key={item.name} value={item.name}>
-                                  {item.name}
+                                  {item.name} - {item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : 'No description'}
                                 </option>
                               ))}
                           </select>
@@ -2009,10 +2008,14 @@ export function ItemsTab() {
                   >
                     {isLootBoxLoading || isAnimating
                       ? 'Opening...'
+                      : spawnMode === 'random'
+                      ? 'Spawn Random Items'
+                      : spawnMode === 'rarity'
+                      ? 'Spawn by Rarity'
                       : spawnMode === 'hoard'
                       ? 'Open Treasure Hoard'
                       : spawnMode === 'magic'
-                      ? 'Open Magic Items'
+                      ? 'Spawn Magic Items'
                       : spawnMode === 'box'
                       ? (openBoxImmediately ? 'Spawn & Open Box' : 'Spawn Box')
                       : 'Open Loot Box'}
