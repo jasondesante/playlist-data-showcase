@@ -1,0 +1,273 @@
+/* ============================================
+   BEAT DETECTION SETTINGS - EQ-style Design
+   ============================================ */
+
+.beat-detection-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* Settings Section */
+.beat-detection-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.beat-detection-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.beat-detection-settings-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-detection-settings-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+/* Slider Container */
+.beat-detection-slider-container {
+  position: relative;
+}
+
+/* Base Slider Styles - EQ fader style */
+.beat-detection-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right,
+    hsl(var(--primary) / 0.5) 0%,
+    hsl(var(--primary) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) 100%
+  );
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  position: relative;
+}
+
+/* EQ-style slot markers on the slider track */
+.beat-detection-slider::before {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+  background: repeating-linear-gradient(
+    to right,
+    hsl(var(--border) / 0.2) 0px,
+    hsl(var(--border) / 0.2) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.beat-detection-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Slider thumb - The mixer fader */
+.beat-detection-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  cursor: grab;
+  margin-top: -3px;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.beat-detection-slider::-webkit-slider-thumb:hover {
+  transform: scaleY(1.2);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.7);
+}
+
+.beat-detection-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scaleY(1.1);
+}
+
+.beat-detection-slider::-moz-range-thumb {
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  border: none;
+  cursor: grab;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-detection-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: hsl(var(--border) / 0.5);
+  border-radius: 2px;
+}
+
+.beat-detection-slider::-moz-range-progress {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 2px;
+}
+
+/* Disabled state */
+.beat-detection-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.beat-detection-slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Slider marks */
+.beat-detection-slider-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding: 0 0.125rem;
+}
+
+.beat-detection-slider-mark {
+  font-size: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+/* ============================================
+   DUAL SLIDER FOR BPM RANGE
+   ============================================ */
+.beat-detection-dual-slider {
+  position: relative;
+  margin-top: 0.25rem;
+}
+
+.beat-detection-dual-slider-track {
+  position: relative;
+  height: 4px;
+  background: hsl(var(--border) / 0.5);
+  border-radius: 2px;
+}
+
+/* Highlight the selected range between min and max */
+.beat-detection-dual-slider-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+    hsl(var(--primary) / 0.6),
+    hsl(var(--cute-purple) / 0.6)
+  );
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Dual slider inputs - overlay them on the same track */
+.beat-detection-slider--min,
+.beat-detection-slider--max {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+  z-index: 3;
+}
+
+.beat-detection-slider--min::-webkit-slider-thumb,
+.beat-detection-slider--max::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow:
+    0 0 8px hsl(var(--primary) / 0.5),
+    0 0 0 2px hsl(var(--background));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.beat-detection-slider--min::-webkit-slider-thumb:hover,
+.beat-detection-slider--max::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow:
+    0 0 12px hsl(var(--primary) / 0.7),
+    0 0 0 2px hsl(var(--background));
+}
+
+.beat-detection-slider--min::-moz-range-thumb,
+.beat-detection-slider--max::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  border: none;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow:
+    0 0 8px hsl(var(--primary) / 0.5),
+    0 0 0 2px hsl(var(--background));
+}
+
+/* Firefox - hide the track for dual sliders */
+.beat-detection-slider--min::-moz-range-track,
+.beat-detection-slider--max::-moz-range-track {
+  background: transparent;
+}
+
+.beat-detection-slider--min::-moz-range-progress,
+.beat-detection-slider--max::-moz-range-progress {
+  background: transparent;
+}
+
+/* Disabled dual sliders */
+.beat-detection-slider--min:disabled,
+.beat-detection-slider--max:disabled {
+  opacity: 0.5;
+}
+
+.beat-detection-slider--min:disabled::-webkit-slider-thumb,
+.beat-detection-slider--max:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+  box-shadow: none;
+}

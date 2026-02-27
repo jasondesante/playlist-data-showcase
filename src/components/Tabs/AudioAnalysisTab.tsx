@@ -11,6 +11,7 @@ import { Card } from '../ui/Card';
 import { useTabContext } from '../../App';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
+import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { ColorExtractor } from 'playlist-data-engine';
 
 /**
@@ -563,6 +564,11 @@ export function AudioAnalysisTab() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Beat Detection Options Sub-component - shown when Beat mode is selected */}
+              {analysisMode === 'beat' && (
+                <BeatDetectionSettings disabled={isAnalyzing || isTimelineAnalyzing} />
               )}
             </div>
 
