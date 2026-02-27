@@ -119,19 +119,19 @@ This is the main feature where **audio playback + beat visualization + tap accur
     }`
 
 ### 3.2 BeatPracticeView Component (The Main Container)
-- [ ] Create `src/components/ui/BeatPracticeView.tsx`
-  - [ ] Full-width container for the practice experience
-  - [ ] Layout: Timeline visualization at top, tap area below
-  - [ ] Integrate with `useAudioPlayerStore` for playback state
-  - [ ] Integrate with `useBeatStream` for beat sync
-  - [ ] Handle keyboard events (spacebar for tap)
-  - [ ] Show current BPM and song position
+- [x] Create `src/components/ui/BeatPracticeView.tsx`
+  - [x] Full-width container for the practice experience
+  - [x] Layout: Timeline visualization at top, tap area below
+  - [x] Integrate with `useAudioPlayerStore` for playback state
+  - [x] Integrate with `useBeatStream` for beat sync
+  - [x] Handle keyboard events (spacebar for tap)
+  - [x] Show current BPM and song position
 
 ### 3.3 BeatPracticeView CSS
-- [ ] Create `src/components/ui/BeatPracticeView.css`
-  - [ ] Practice mode container styling
-  - [ ] BPM display
-  - [ ] Responsive layout
+- [x] Create `src/components/ui/BeatPracticeView.css`
+  - [x] Practice mode container styling
+  - [x] BPM display
+  - [x] Responsive layout
 
 ---
 
