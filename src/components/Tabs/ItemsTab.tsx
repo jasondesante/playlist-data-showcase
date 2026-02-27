@@ -2173,7 +2173,7 @@ export function ItemsTab() {
                     </div>
 
                     {/* Add All Button */}
-                    {activeCharacter && spawnedItems.length > 1 && (
+                    {activeCharacter && spawnedItems.length > 0 && (
                       <div className="lootbox-add-all">
                         <Button
                           variant="primary"

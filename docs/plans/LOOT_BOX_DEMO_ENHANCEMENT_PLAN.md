@@ -134,9 +134,9 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 - [x] Import `Coins` icon from lucide-react if not already imported
 
 ### Task 3.4: Keep both individual and add-all options
-- [ ] Keep the individual "Add to Hero" buttons on each item card (no changes)
-- [ ] Keep the "Add All X Items to Hero" button at the bottom
-- [ ] Update condition for Add All button from `spawnedItems.length > 1` to `spawnedItems.length > 0`
+- [x] Keep the individual "Add to Hero" buttons on each item card (no changes)
+- [x] Keep the "Add All X Items to Hero" button at the bottom
+- [x] Update condition for Add All button from `spawnedItems.length > 1` to `spawnedItems.length > 0`
 
 ### Task 3.5: Update handler functions
 - [ ] Update `handleSpawnByRarity()`:
