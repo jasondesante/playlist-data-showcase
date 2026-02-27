@@ -57,10 +57,10 @@ All three elements (audio, visual beats, tap detection) work **together continuo
 ## Phase 2: Beat Map Generation UI
 
 ### 2.1 Update AudioAnalysisTab Mode Selector
-- [ ] Add "Beat Detection" as third mode option alongside "Normal" and "Timeline"
-  - [ ] New icon: `Drum` or `Metronome` from lucide-react
-  - [ ] Label: "Beat"
-  - [ ] Description: "Rhythm detection"
+- [x] Add "Beat Detection" as third mode option alongside "Normal" and "Timeline"
+  - [x] New icon: `Drum` or `Metronome` from lucide-react
+  - [x] Label: "Beat"
+  - [x] Description: "Rhythm detection"
 
 ### 2.2 Beat Detection Settings Panel
 - [ ] Create settings sub-component shown when Beat Detection mode is selected (before analysis)
