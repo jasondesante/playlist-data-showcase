@@ -46,11 +46,11 @@ All three elements (audio, visual beats, tap detection) work **together continuo
   - [x] Implement localStorage persistence with track ID as key
 
 ### 1.3 Beat Detection Hook
-- [ ] Create `src/hooks/useBeatDetection.ts`
-  - [ ] Wrap `BeatMapGenerator` from engine
-  - [ ] Handle progress callbacks during generation
-  - [ ] Manage cancellation
-  - [ ] Return: `{ generateBeatMap, cancelGeneration, isGenerating, progress, beatMap, error }`
+- [x] Create `src/hooks/useBeatDetection.ts`
+  - [x] Wrap `BeatMapGenerator` from engine
+  - [x] Handle progress callbacks during generation
+  - [x] Manage cancellation
+  - [x] Return: `{ generateBeatMap, cancelGeneration, isGenerating, progress, beatMap, error }`
 
 ---
 
