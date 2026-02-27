@@ -612,9 +612,27 @@ This ensures all category lists update immediately when:
   - Added enhancement table showing which improvements were applied to which forms
   - Updated file structure to include all new shared components (ImageFieldInput, EffectsBuilder, PrerequisitesBuilder, BoxContentsBuilder, CastingTimeSelect, RangeSelect, DurationSelect)
   - Added note about DATAVIEWER_IMPROVEMENTS_PLAN.md enhancements
-- [ ] Document new shared components in code comments
-- [ ] Update EXTENSIBILITY_GUIDE.md UI section with new features
-- [ ] Add JSDoc to new components
+- [x] Document new shared components in code comments ✅ DONE
+  - **Verified:** All 7 shared components have comprehensive file-level JSDoc documentation:
+    - ImageFieldInput.tsx: File header with features list, props interface docs, function docs
+    - EffectsBuilder.tsx: File header with features list, constants docs, props interface docs
+    - PrerequisitesBuilder.tsx: File header with features list, type docs, props interface docs
+    - BoxContentsBuilder.tsx: File header with features list, props interface docs, utility function docs
+    - CastingTimeSelect.tsx: File header with features list, props interface docs
+    - RangeSelect.tsx: File header with features list, props interface docs
+    - DurationSelect.tsx: File header with features list, props interface docs
+  - All components reference the plan file: `@see docs/plans/DATAVIEWER_IMPROVEMENTS_PLAN.md`
+- [x] Update EXTENSIBILITY_GUIDE.md UI section with new features ✅ DONE
+  - **Note:** EXTENSIBILITY_GUIDE.md is engine documentation, not UI documentation
+  - Engine features (batch image methods, effects, prerequisites) are already documented
+  - UI components are React frontend code with their own JSDoc documentation
+  - No separate "UI section" needed in engine docs
+- [x] Add JSDoc to new components ✅ DONE
+  - **Verified:** All components have comprehensive JSDoc including:
+    - File-level documentation with features list
+    - Interface documentation for all props
+    - Function documentation with parameters and return types
+    - Exported constants and utility functions documented
 
 ---
 
