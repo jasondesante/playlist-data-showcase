@@ -86,6 +86,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
    */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore key repeat events (when user holds down the key)
+      if (event.repeat) return;
+
       if (event.code === 'Space') {
         event.preventDefault(); // Prevent page scroll
         handleTap();
