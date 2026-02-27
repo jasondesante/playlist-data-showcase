@@ -43,13 +43,13 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 ## Phase 2: Enhance useLootBox Hook
 
 ### Task 2.1: Add GP calculation to all spawn methods
-- [ ] Import `calculateTotalValue` from `@/utils/itemValue`
-- [ ] Update `LootBoxResult` interface documentation to note `totalValue` is now populated for all modes
-- [ ] Modify `spawnRandomItems()` to calculate and return `totalValue`
-- [ ] Modify `spawnByRarity()` to calculate and return `totalValue`
-- [ ] Modify `spawnFromList()` to calculate and return `totalValue`
-- [ ] Modify `spawnMagicItems()` to calculate and return `totalValue`
-- [ ] `spawnTreasureHoard()` already returns `totalValue` from engine (no change needed)
+- [x] Import `calculateTotalValue` from `@/utils/itemValue`
+- [x] Update `LootBoxResult` interface documentation to note `totalValue` is now populated for all modes
+- [x] Modify `spawnRandomItems()` to calculate and return `totalValue`
+- [x] Modify `spawnByRarity()` to calculate and return `totalValue`
+- [x] Modify `spawnFromList()` to calculate and return `totalValue`
+- [x] Modify `spawnMagicItems()` to calculate and return `totalValue`
+- [x] `spawnTreasureHoard()` already returns `totalValue` from engine (no change needed)
 
 ### Task 2.2: Add multi-rarity spawn support
 - [ ] Add new type `RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary'`

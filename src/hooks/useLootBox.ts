@@ -7,16 +7,17 @@ import {
     getMagicItemsByRarity
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
+import { calculateTotalValue } from '@/utils/itemValue';
 
 /**
- * Result interface for treasure hoard spawning
+ * Result interface for all loot box spawning methods
  */
 export interface LootBoxResult {
     /** Array of spawned equipment items */
     items: EnhancedEquipment[];
-    /** Total value of the hoard in gold pieces */
+    /** Total estimated value of all items in gold pieces (populated for all spawn modes) */
     totalValue?: number;
-    /** Challenge rating used for the hoard */
+    /** Challenge rating used for the hoard (only for treasure hoard mode) */
     cr?: number;
 }
 
@@ -146,8 +147,9 @@ export const useLootBox = (): UseLootBoxReturn => {
         try {
             const rng = createRNG(seed);
             const items = EquipmentSpawnHelper.spawnRandom(count, rng, { excludeZeroWeight: true });
+            const totalValue = calculateTotalValue(items);
 
-            const result: LootBoxResult = { items };
+            const result: LootBoxResult = { items, totalValue };
 
             setSpawnedItems(items);
             setLastHoardResult(result);
@@ -155,6 +157,7 @@ export const useLootBox = (): UseLootBoxReturn => {
             logger.info('LootBox', `Spawned ${items.length} random items`, {
                 count,
                 seed: seed || 'random',
+                totalValue,
                 items: items.map(i => ({ name: i.name, rarity: i.rarity }))
             });
 
@@ -181,8 +184,9 @@ export const useLootBox = (): UseLootBoxReturn => {
         try {
             const rng = createRNG(seed);
             const items = EquipmentSpawnHelper.spawnByRarity(rarity, count, rng);
+            const totalValue = calculateTotalValue(items);
 
-            const result: LootBoxResult = { items };
+            const result: LootBoxResult = { items, totalValue };
 
             setSpawnedItems(items);
             setLastHoardResult(result);
@@ -191,6 +195,7 @@ export const useLootBox = (): UseLootBoxReturn => {
                 rarity,
                 count,
                 seed: seed || 'random',
+                totalValue,
                 items: items.map(i => i.name)
             });
 
@@ -258,8 +263,9 @@ export const useLootBox = (): UseLootBoxReturn => {
             const spawned = EquipmentSpawnHelper.spawnFromList(itemNames, rng);
             // Filter out undefined values (items not found in database)
             const items = spawned.filter((item): item is EnhancedEquipment => item !== undefined);
+            const totalValue = calculateTotalValue(items);
 
-            const result: LootBoxResult = { items };
+            const result: LootBoxResult = { items, totalValue };
 
             setSpawnedItems(items);
             setLastHoardResult(result);
@@ -267,6 +273,7 @@ export const useLootBox = (): UseLootBoxReturn => {
             logger.info('LootBox', `Spawned ${items.length} items from list`, {
                 requested: itemNames,
                 spawned: items.map(i => i.name),
+                totalValue,
                 seed: seed || 'random'
             });
 
@@ -304,14 +311,15 @@ export const useLootBox = (): UseLootBoxReturn => {
 
             if (availableItems.length === 0) {
                 logger.warn('LootBox', 'No magic items available', { rarity, count });
-                return { items: [] };
+                return { items: [], totalValue: 0 };
             }
 
             // Shuffle and select items using seeded RNG
             const shuffled = [...availableItems].sort(() => rng.random() - 0.5);
             const selectedItems = shuffled.slice(0, Math.min(count, shuffled.length));
+            const totalValue = calculateTotalValue(selectedItems);
 
-            const result: LootBoxResult = { items: selectedItems };
+            const result: LootBoxResult = { items: selectedItems, totalValue };
 
             setSpawnedItems(selectedItems);
             setLastHoardResult(result);
@@ -320,6 +328,7 @@ export const useLootBox = (): UseLootBoxReturn => {
                 count,
                 rarity: rarity || 'any',
                 seed: seed || 'random',
+                totalValue,
                 items: selectedItems.map(i => ({ name: i.name, rarity: i.rarity }))
             });
 
@@ -327,7 +336,7 @@ export const useLootBox = (): UseLootBoxReturn => {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             logger.error('LootBox', 'Failed to spawn magic items', { count, rarity, error: errorMessage });
-            return { items: [] };
+            return { items: [], totalValue: 0 };
         } finally {
             setIsLoading(false);
         }
