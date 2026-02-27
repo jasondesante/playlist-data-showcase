@@ -97,8 +97,9 @@ import { EnchantmentModal, type ItemEquipmentType } from '../modals/EnchantmentM
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import { DetailRow, type DetailRowProperty } from '../ui/DetailRow';
 import { EquipmentCreatorForm } from '../shared/EquipmentCreatorForm';
+import { BoxContentsBuilder } from '../shared/BoxContentsBuilder';
 import { DEFAULT_EQUIPMENT } from 'playlist-data-engine';
-import type { EnhancedInventoryItem, EnhancedEquipment, EquipmentModification } from 'playlist-data-engine';
+import type { EnhancedInventoryItem, EnhancedEquipment, EquipmentModification, BoxContents } from 'playlist-data-engine';
 import './ItemsTab.css';
 
 /**
@@ -148,7 +149,7 @@ const RARITY_BORDER_COLORS: Record<string, string> = {
   'legendary': 'hsl(30 90% 50% / 0.5)'
 };
 
-type SpawnMode = 'random' | 'rarity' | 'hoard' | 'magic';
+type SpawnMode = 'random' | 'rarity' | 'hoard' | 'magic' | 'box';
 type RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
 
 /**
@@ -244,6 +245,7 @@ export function ItemsTab() {
     spawnByRarity,
     spawnTreasureHoard,
     spawnMagicItems,
+    spawnBoxItem,
     getMagicItemCount,
     clearSpawnedItems
   } = useLootBox();
@@ -286,6 +288,13 @@ export function ItemsTab() {
   const [lastSpawnMode, setLastSpawnMode] = useState<SpawnMode | null>(null);
   // Track spawn errors for visual display
   const [spawnError, setSpawnError] = useState<string | null>(null);
+
+  // Box mode state
+  const [boxSourceType, setBoxSourceType] = useState<'existing' | 'custom'>('custom');
+  const [selectedBoxName, setSelectedBoxName] = useState<string>('');
+  const [customBoxContents, setCustomBoxContents] = useState<BoxContents | null>(null);
+  const [openBoxImmediately, setOpenBoxImmediately] = useState(true);
+  const [customBoxValid, setCustomBoxValid] = useState(false);
 
 
   // Expanded item details state (for modification display)
@@ -565,6 +574,59 @@ export function ItemsTab() {
       const errorMsg = `No${rarityText} magic items found in the database.`;
       setSpawnError(errorMsg);
       showToast('❌ No magic items found', 'error');
+    }
+  };
+
+  // Handle spawning box items
+  const handleSpawnBox = async () => {
+    // Validate based on source type
+    if (boxSourceType === 'existing' && !selectedBoxName) {
+      showToast('⚠️ Select a box to spawn', 'warning');
+      return;
+    }
+    if (boxSourceType === 'custom' && !customBoxContents) {
+      showToast('⚠️ Configure box contents', 'warning');
+      return;
+    }
+    if (boxSourceType === 'custom' && !customBoxValid) {
+      showToast('⚠️ Box configuration is invalid', 'warning');
+      return;
+    }
+
+    setIsAnimating(true);
+    setSpawnError(null);
+    setLastSpawnMode('box');
+
+    // Get box configuration
+    let boxConfig: BoxContents;
+    if (boxSourceType === 'existing') {
+      // Get box contents from the equipment registry
+      const boxItem = DEFAULT_EQUIPMENT[selectedBoxName];
+      if (!boxItem || !boxItem.boxContents) {
+        const errorMsg = `Box "${selectedBoxName}" not found or has no contents`;
+        setSpawnError(errorMsg);
+        showToast('❌ Failed to spawn box', 'error');
+        setIsAnimating(false);
+        return;
+      }
+      boxConfig = boxItem.boxContents;
+    } else {
+      boxConfig = customBoxContents!;
+    }
+
+    const result = await spawnBoxItem(boxConfig, openBoxImmediately);
+    setIsAnimating(false);
+
+    if (result.items.length > 0) {
+      if (openBoxImmediately) {
+        showToast(`📦 Opened box with ${result.items.length} item${result.items.length !== 1 ? 's' : ''}!`, 'success');
+      } else {
+        showToast('📦 Spawned unopened box!', 'success');
+      }
+    } else {
+      const errorMsg = 'Box could not be spawned. Check box configuration.';
+      setSpawnError(errorMsg);
+      showToast('❌ Failed to spawn box', 'error');
     }
   };
 
@@ -1685,6 +1747,13 @@ export function ItemsTab() {
                     <Sparkles size={16} />
                     <span>Magic Items</span>
                   </button>
+                  <button
+                    className={`lootbox-mode-btn ${spawnMode === 'box' ? 'lootbox-mode-btn-active' : ''}`}
+                    onClick={() => setSpawnMode('box')}
+                  >
+                    <Package size={16} />
+                    <span>Box</span>
+                  </button>
                 </div>
 
                 {/* Spawn Controls */}
@@ -1793,6 +1862,95 @@ export function ItemsTab() {
                       </div>
                     </>
                   )}
+
+                  {spawnMode === 'box' && (
+                    <div className="lootbox-box-mode">
+                      {/* Box Source Toggle */}
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Box Source</label>
+                        <div className="lootbox-box-source-toggle">
+                          <button
+                            type="button"
+                            className={`lootbox-box-source-btn ${boxSourceType === 'existing' ? 'active' : ''}`}
+                            onClick={() => setBoxSourceType('existing')}
+                          >
+                            <Package size={14} />
+                            Existing Box
+                          </button>
+                          <button
+                            type="button"
+                            className={`lootbox-box-source-btn ${boxSourceType === 'custom' ? 'active' : ''}`}
+                            onClick={() => setBoxSourceType('custom')}
+                          >
+                            <PlusCircle size={14} />
+                            Custom Box
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Existing Box Dropdown */}
+                      {boxSourceType === 'existing' && (
+                        <div className="lootbox-control-group">
+                          <label className="lootbox-control-label">Select Box</label>
+                          <select
+                            value={selectedBoxName}
+                            onChange={(e) => setSelectedBoxName(e.target.value)}
+                            className="lootbox-select"
+                          >
+                            <option value="">-- Select a box --</option>
+                            {/* Box items would be populated from equipment registry */}
+                            {Object.values(DEFAULT_EQUIPMENT)
+                              .filter(item => item.type === 'box' && item.boxContents)
+                              .map(item => (
+                                <option key={item.name} value={item.name}>
+                                  {item.name}
+                                </option>
+                              ))}
+                          </select>
+                          {Object.values(DEFAULT_EQUIPMENT).filter(item => item.type === 'box' && item.boxContents).length === 0 && (
+                            <div className="lootbox-box-empty-hint">
+                              <span>No existing boxes in registry. Use Custom Box to build one.</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Custom Box Builder */}
+                      {boxSourceType === 'custom' && (
+                        <div className="lootbox-box-builder">
+                          <BoxContentsBuilder
+                            value={customBoxContents || undefined}
+                            onChange={setCustomBoxContents}
+                            onValidChange={setCustomBoxValid}
+                            showRequirements={false}
+                          />
+                        </div>
+                      )}
+
+                      {/* Open Immediately Toggle */}
+                      <div className="lootbox-control-group">
+                        <label className="lootbox-control-label">Spawn Mode</label>
+                        <div className="lootbox-box-open-toggle">
+                          <button
+                            type="button"
+                            className={`lootbox-box-open-btn ${!openBoxImmediately ? 'active' : ''}`}
+                            onClick={() => setOpenBoxImmediately(false)}
+                          >
+                            <Package size={14} />
+                            Spawn Unopened
+                          </button>
+                          <button
+                            type="button"
+                            className={`lootbox-box-open-btn ${openBoxImmediately ? 'active' : ''}`}
+                            onClick={() => setOpenBoxImmediately(true)}
+                          >
+                            <Zap size={14} />
+                            Spawn & Open
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Spawn Button */}
@@ -1807,7 +1965,9 @@ export function ItemsTab() {
                         ? handleSpawnByRarity
                         : spawnMode === 'hoard'
                         ? handleSpawnTreasureHoard
-                        : handleSpawnMagicItems
+                        : spawnMode === 'magic'
+                        ? handleSpawnMagicItems
+                        : handleSpawnBox
                     }
                     isLoading={isLootBoxLoading || isAnimating}
                     leftIcon={isLootBoxLoading || isAnimating ? Loader2 : Sparkles}
@@ -1819,6 +1979,8 @@ export function ItemsTab() {
                       ? 'Open Treasure Hoard'
                       : spawnMode === 'magic'
                       ? 'Open Magic Items'
+                      : spawnMode === 'box'
+                      ? (openBoxImmediately ? 'Spawn & Open Box' : 'Spawn Box')
                       : 'Open Loot Box'}
                   </Button>
 

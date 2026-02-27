@@ -76,20 +76,21 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 ## Phase 3: ItemsTab UI Changes
 
 ### Task 3.1: Add new "Box" spawn mode
-- [ ] Update `SpawnMode` type to include `'box'`
-- [ ] Add state variables:
+- [x] Update `SpawnMode` type to include `'box'`
+- [x] Add state variables:
   ```typescript
-  const [boxSourceType, setBoxSourceType] = useState<'existing' | 'custom'>('existing');
+  const [boxSourceType, setBoxSourceType] = useState<'existing' | 'custom'>('custom');
   const [selectedBoxName, setSelectedBoxName] = useState<string>('');
   const [customBoxContents, setCustomBoxContents] = useState<BoxContents | null>(null);
   const [openBoxImmediately, setOpenBoxImmediately] = useState(true);
+  const [customBoxValid, setCustomBoxValid] = useState(false);
   ```
-- [ ] Add "Box" button to mode selector with `Package` icon
-- [ ] Create UI controls for Box mode:
-  - [ ] Toggle: "Use Existing Box" vs "Build Custom Box"
-  - [ ] Existing Box: Dropdown populated with box items from equipment registry
-  - [ ] Custom Box: Inline BoxContentsBuilder component (reuse existing component)
-  - [ ] Toggle: "Spawn Unopened" vs "Spawn & Open" (showing as switch/checkbox)
+- [x] Add "Box" button to mode selector with `Package` icon
+- [x] Create UI controls for Box mode:
+  - [x] Toggle: "Use Existing Box" vs "Build Custom Box"
+  - [x] Existing Box: Dropdown populated with box items from equipment registry
+  - [x] Custom Box: Inline BoxContentsBuilder component (reuse existing component)
+  - [x] Toggle: "Spawn Unopened" vs "Spawn & Open" (showing as switch/checkbox)
 
 ### Task 3.2: Convert rarity dropdown to checkboxes
 - [ ] Change state from `selectedRarity: RarityOption` to `selectedRarities: RarityOption[]`
