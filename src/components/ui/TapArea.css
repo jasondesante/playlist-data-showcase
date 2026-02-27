@@ -1,0 +1,343 @@
+/* ============================================
+   TAP AREA - Tap Button with Accuracy Feedback
+   Task 5.1: TapArea Component
+   Task 5.2: TapArea CSS
+   ============================================ */
+
+/* CSS Custom Properties for accuracy colors */
+:root {
+  --tap-perfect: #22c55e;
+  --tap-great: #eab308;
+  --tap-good: #f97316;
+  --tap-miss: #ef4444;
+}
+
+/* Main tap area container */
+.tap-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 10rem;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.08),
+    hsl(var(--cute-purple) / 0.08)
+  );
+  border: 2px dashed hsl(var(--border) / 0.6);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+  user-select: none;
+  overflow: hidden;
+  outline: none;
+}
+
+/* Active state */
+.tap-area--active:hover {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.15),
+    hsl(var(--cute-purple) / 0.15)
+  );
+  border-color: hsl(var(--primary) / 0.6);
+}
+
+.tap-area--active:focus-visible {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
+}
+
+/* Inactive state */
+.tap-area--inactive {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Pressed state - scale down animation */
+.tap-area--pressed {
+  transform: scale(0.98);
+  border-style: solid;
+  border-color: hsl(var(--primary));
+}
+
+/* Feedback active state */
+.tap-area--feedback {
+  border-style: solid;
+}
+
+/* ============================================
+   Tap Instruction (default state)
+   ============================================ */
+
+.tap-area__instruction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.tap-area__text {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: hsl(var(--primary));
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 4px hsl(var(--primary) / 0.2);
+  animation: tap-text-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tap-text-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.tap-area__hint {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   Tap Feedback Overlay
+   ============================================ */
+
+.tap-area__feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: linear-gradient(
+    135deg,
+    var(--tap-feedback-color) / 0.25,
+    var(--tap-feedback-color) / 0.15
+  );
+  border-radius: calc(1rem - 2px);
+  animation: tap-feedback-in 0.15s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes tap-feedback-in {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Fade out animation (added via JS timeout) */
+.tap-area__feedback--fade-out {
+  animation: tap-feedback-out 0.2s ease-out forwards;
+}
+
+@keyframes tap-feedback-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tap-area__accuracy {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--tap-feedback-color);
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 0 10px var(--tap-feedback-color) / 0.5,
+    0 2px 4px hsl(var(--background) / 0.5);
+  animation: tap-accuracy-pop 0.3s ease-out;
+}
+
+@keyframes tap-accuracy-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.tap-area__offset {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.6);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  animation: tap-offset-fade 0.3s ease-out;
+}
+
+@keyframes tap-offset-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Press Ripple Effect
+   ============================================ */
+
+.tap-area__ripple {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    hsl(var(--primary) / 0.3) 0%,
+    hsl(var(--primary) / 0) 70%
+  );
+  animation: tap-ripple 0.4s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes tap-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Color-specific feedback enhancements
+   ============================================ */
+
+/* Perfect - Bright green glow */
+.tap-area__feedback[style*="#22c55e"] {
+  box-shadow:
+    inset 0 0 30px var(--tap-perfect) / 0.2,
+    0 0 20px var(--tap-perfect) / 0.3;
+}
+
+/* Great - Yellow glow */
+.tap-area__feedback[style*="#eab308"] {
+  box-shadow:
+    inset 0 0 30px var(--tap-great) / 0.2,
+    0 0 20px var(--tap-great) / 0.3;
+}
+
+/* Good - Orange glow */
+.tap-area__feedback[style*="#f97316"] {
+  box-shadow:
+    inset 0 0 30px var(--tap-good) / 0.2,
+    0 0 20px var(--tap-good) / 0.3;
+}
+
+/* Miss - Red glow with shake */
+.tap-area__feedback[style*="#ef4444"] {
+  box-shadow:
+    inset 0 0 30px var(--tap-miss) / 0.2,
+    0 0 20px var(--tap-miss) / 0.3;
+  animation: tap-feedback-shake 0.3s ease-out, tap-feedback-in 0.15s ease-out forwards;
+}
+
+@keyframes tap-feedback-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 640px) {
+  .tap-area {
+    min-height: 8rem;
+  }
+
+  .tap-area__text {
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+  }
+
+  .tap-area__hint {
+    font-size: 0.6875rem;
+  }
+
+  .tap-area__accuracy {
+    font-size: 1.5rem;
+  }
+
+  .tap-area__offset {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tap-area {
+    min-height: 12rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .tap-area__text {
+    font-size: 3rem;
+  }
+
+  .tap-area__hint {
+    font-size: 0.875rem;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tap-area,
+  .tap-area__text,
+  .tap-area__feedback,
+  .tap-area__accuracy,
+  .tap-area__offset,
+  .tap-area__ripple {
+    animation: none;
+    transition: none;
+  }
+
+  .tap-area--pressed {
+    transform: none;
+  }
+}

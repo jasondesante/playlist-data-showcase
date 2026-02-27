@@ -14,7 +14,7 @@
  *
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity } from 'lucide-react';
 import './BeatPracticeView.css';
 import { useBeatDetectionStore, useTapStatistics } from '../../store/beatDetectionStore';
@@ -22,7 +22,7 @@ import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
-import type { ButtonPressResult } from '@/types';
+import { TapArea, useTapFeedback } from './TapArea';
 
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
@@ -36,23 +36,6 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-/**
- * Get color for accuracy rating
- */
-function getAccuracyColor(accuracy: ButtonPressResult['accuracy']): string {
-  switch (accuracy) {
-    case 'perfect':
-      return 'var(--cute-green)';
-    case 'great':
-      return 'var(--cute-yellow)';
-    case 'good':
-      return 'var(--cute-orange)';
-    case 'miss':
-    default:
-      return 'var(--destructive)';
-  }
 }
 
 export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
@@ -76,10 +59,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     seekStream,
   } = useBeatStream(beatMap, undefined, true);
 
-  // Local state for tap feedback
-  const [lastTapResult, setLastTapResult] = useState<ButtonPressResult | null>(null);
-  const [showTapFeedback, setShowTapFeedback] = useState(false);
-  const tapFeedbackTimeoutRef = useRef<number | null>(null);
+  // Tap feedback hook for managing visual feedback
+  const { showFeedback, lastTapResult, showTapFeedback, hideTapFeedback } = useTapFeedback(500);
 
   // Ref for tap area to handle keyboard focus
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,21 +76,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Record in store
       recordTap(result);
 
-      // Show visual feedback
-      setLastTapResult(result);
-      setShowTapFeedback(true);
-
-      // Clear previous timeout
-      if (tapFeedbackTimeoutRef.current) {
-        clearTimeout(tapFeedbackTimeoutRef.current);
-      }
-
-      // Hide feedback after animation
-      tapFeedbackTimeoutRef.current = window.setTimeout(() => {
-        setShowTapFeedback(false);
-      }, 500);
+      // Show visual feedback using the hook
+      showTapFeedback(result);
     }
-  }, [checkTap, recordTap, streamIsActive]);
+  }, [checkTap, recordTap, streamIsActive, showTapFeedback]);
 
   /**
    * Handle keyboard events
@@ -156,17 +126,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     stopPracticeMode();
     onExit();
   }, [stopPracticeMode, onExit]);
-
-  /**
-   * Cleanup on unmount
-   */
-  useEffect(() => {
-    return () => {
-      if (tapFeedbackTimeoutRef.current) {
-        clearTimeout(tapFeedbackTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Don't render if no beat map
   if (!beatMap) {
@@ -244,37 +203,15 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         </Button>
       </div>
 
-      {/* Tap Area */}
-      <div
-        className={`beat-practice-tap-area ${showTapFeedback ? 'beat-practice-tap-area--active' : ''}`}
-        onClick={handleTap}
-        role="button"
-        tabIndex={0}
-        aria-label="Tap to the beat (or press spacebar)"
-      >
-        {/* Tap feedback overlay */}
-        {showTapFeedback && lastTapResult && (
-          <div
-            className="beat-practice-tap-feedback"
-            style={{ '--feedback-color': getAccuracyColor(lastTapResult.accuracy) } as React.CSSProperties}
-          >
-            <span className="beat-practice-tap-accuracy">
-              {lastTapResult.accuracy.toUpperCase()}
-            </span>
-            <span className="beat-practice-tap-offset">
-              {lastTapResult.offset >= 0 ? '+' : ''}{Math.round(lastTapResult.offset * 1000)}ms
-            </span>
-          </div>
-        )}
-
-        {/* Tap instruction */}
-        {!showTapFeedback && (
-          <div className="beat-practice-tap-instruction">
-            <span className="beat-practice-tap-text">TAP</span>
-            <span className="beat-practice-tap-hint">Press SPACE or click</span>
-          </div>
-        )}
-      </div>
+      {/* Tap Area - Using the dedicated TapArea component */}
+      <TapArea
+        onTap={handleTap}
+        isActive={streamIsActive}
+        lastTapResult={lastTapResult}
+        showFeedback={showFeedback}
+        feedbackDuration={500}
+        onFeedbackComplete={hideTapFeedback}
+      />
 
       {/* Tap Statistics */}
       <div className="beat-practice-stats-panel">
