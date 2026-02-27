@@ -1812,7 +1812,7 @@ export function ItemsTab() {
                         <label className="lootbox-control-label">Rarities</label>
                         <div className="lootbox-rarity-checkboxes">
                           {(['common', 'uncommon', 'rare', 'very_rare', 'legendary'] as RarityOption[]).map(rarity => (
-                            <label key={rarity} className="lootbox-rarity-checkbox">
+                            <label key={rarity} className="lootbox-rarity-checkbox" data-rarity={rarity}>
                               <input
                                 type="checkbox"
                                 checked={selectedRarities.includes(rarity)}

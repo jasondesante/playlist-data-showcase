@@ -1414,7 +1414,52 @@
 
 .lootbox-rarity-checkbox:has(input:checked) {
   background: var(--color-surface-hover);
-  border-color: currentColor;
+}
+
+/* Rarity-specific colors when checked */
+.lootbox-rarity-checkbox[data-rarity="common"]:has(input:checked) {
+  border-color: var(--color-text-secondary);
+  background: linear-gradient(135deg, var(--color-surface-hover), hsl(0 0% 50% / 0.1));
+}
+
+.lootbox-rarity-checkbox[data-rarity="common"]:has(input:checked) input[type="checkbox"] {
+  accent-color: var(--color-text-secondary);
+}
+
+.lootbox-rarity-checkbox[data-rarity="uncommon"]:has(input:checked) {
+  border-color: hsl(120 60% 40%);
+  background: linear-gradient(135deg, var(--color-surface-hover), hsl(120 60% 40% / 0.1));
+}
+
+.lootbox-rarity-checkbox[data-rarity="uncommon"]:has(input:checked) input[type="checkbox"] {
+  accent-color: hsl(120 60% 40%);
+}
+
+.lootbox-rarity-checkbox[data-rarity="rare"]:has(input:checked) {
+  border-color: hsl(210 80% 50%);
+  background: linear-gradient(135deg, var(--color-surface-hover), hsl(210 80% 50% / 0.1));
+}
+
+.lootbox-rarity-checkbox[data-rarity="rare"]:has(input:checked) input[type="checkbox"] {
+  accent-color: hsl(210 80% 50%);
+}
+
+.lootbox-rarity-checkbox[data-rarity="very_rare"]:has(input:checked) {
+  border-color: hsl(280 60% 50%);
+  background: linear-gradient(135deg, var(--color-surface-hover), hsl(280 60% 50% / 0.1));
+}
+
+.lootbox-rarity-checkbox[data-rarity="very_rare"]:has(input:checked) input[type="checkbox"] {
+  accent-color: hsl(280 60% 50%);
+}
+
+.lootbox-rarity-checkbox[data-rarity="legendary"]:has(input:checked) {
+  border-color: hsl(35 90% 50%);
+  background: linear-gradient(135deg, var(--color-surface-hover), hsl(35 90% 50% / 0.1));
+}
+
+.lootbox-rarity-checkbox[data-rarity="legendary"]:has(input:checked) input[type="checkbox"] {
+  accent-color: hsl(35 90% 50%);
 }
 
 /* Magic Items Info */

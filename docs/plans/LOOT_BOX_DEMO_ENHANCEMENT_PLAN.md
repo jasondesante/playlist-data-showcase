@@ -190,10 +190,10 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 ## Phase 4: CSS Styling
 
 ### Task 4.1: Add styles for rarity checkboxes
-- [ ] Add `.lootbox-rarity-checkboxes` container styles
-- [ ] Add `.lootbox-rarity-checkbox` individual checkbox styles
-- [ ] Style checkboxes with rarity colors when checked
-- [ ] Ensure proper spacing and alignment
+- [x] Add `.lootbox-rarity-checkboxes` container styles
+- [x] Add `.lootbox-rarity-checkbox` individual checkbox styles
+- [x] Style checkboxes with rarity colors when checked
+- [x] Ensure proper spacing and alignment
 
 ### Task 4.2: Add styles for box mode controls
 - [ ] Style box source toggle (existing vs custom)
