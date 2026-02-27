@@ -21,8 +21,8 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 ## Phase 1: GP Value Calculation Utility
 
 ### Task 1.1: Create itemValue.ts utility
-- [ ] Create new file `src/utils/itemValue.ts`
-- [ ] Implement `estimateItemValue(item: EnhancedEquipment): number`
+- [x] Create new file `src/utils/itemValue.ts`
+- [x] Implement `estimateItemValue(item: EnhancedEquipment): number`
   - Base values by rarity:
     - common: 50 gp
     - uncommon: 400 gp
@@ -34,7 +34,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
     - armor: ×1.5
     - heavy items (>20 lb): ×1.1
   - Return rounded integer
-- [ ] Implement `calculateTotalValue(items: EnhancedEquipment[]): number`
+- [x] Implement `calculateTotalValue(items: EnhancedEquipment[]): number`
   - Sum values from `estimateItemValue()` for all items
   - Return 0 for empty array
 
