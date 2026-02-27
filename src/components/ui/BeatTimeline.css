@@ -1,0 +1,300 @@
+/* ============================================
+   BEAT TIMELINE - Horizontal Scrolling Visualization
+   Task 4.1/4.2: BeatTimeline Component & CSS
+   ============================================ */
+
+.beat-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Timeline Track */
+.beat-timeline-track {
+  position: relative;
+  height: 5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: default;
+}
+
+.beat-timeline-track--clickable {
+  cursor: pointer;
+}
+
+.beat-timeline-track--clickable:hover {
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+/* Background Layers */
+.beat-timeline-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--surface-3)) 0%,
+    hsl(var(--surface-2)) 30%,
+    hsl(var(--surface-2)) 70%,
+    hsl(var(--surface-3)) 100%
+  );
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.4);
+}
+
+/* Past Region (left of now line) */
+.beat-timeline-past-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--background) / 0.3) 0%,
+    transparent 100%
+  );
+}
+
+/* Future Region (right of now line) */
+.beat-timeline-future-region {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.05) 100%
+  );
+}
+
+/* Beat Markers */
+.beat-timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.beat-timeline-marker-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  background: hsl(var(--cute-yellow));
+  border-radius: 50%;
+  box-shadow: 0 0 8px hsl(var(--cute-yellow) / 0.6);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Downbeat markers (larger, primary color) */
+.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  width: 1.25rem;
+  height: 1.25rem;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
+}
+
+/* Downbeat accent ring */
+.beat-timeline-marker-ring {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid hsl(var(--primary) / 0.4);
+  border-radius: 50%;
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ring-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.2;
+  }
+}
+
+/* Past beats (faded) */
+.beat-timeline-marker--past .beat-timeline-marker-dot {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+}
+
+/* Upcoming beats (bright with glow) */
+.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+  opacity: 1;
+  animation: beat-glow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes beat-glow {
+  from {
+    box-shadow: 0 0 8px hsl(var(--cute-yellow) / 0.6);
+  }
+  to {
+    box-shadow: 0 0 14px hsl(var(--cute-yellow) / 0.9);
+  }
+}
+
+.beat-timeline-marker--upcoming.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  animation-name: beat-glow-downbeat;
+}
+
+@keyframes beat-glow-downbeat {
+  from {
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
+  }
+  to {
+    box-shadow: 0 0 20px hsl(var(--primary) / 1);
+  }
+}
+
+/* "Now" Line */
+.beat-timeline-now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.beat-timeline-now-line-inner {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.8);
+}
+
+/* Pulse effect when beat hits */
+.beat-timeline-now-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: hsl(var(--primary) / 0.3);
+  animation: now-pulse 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes now-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+/* Now label */
+.beat-timeline-now-label {
+  position: absolute;
+  top: 0.375rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: hsl(var(--primary));
+  background: hsl(var(--background) / 0.9);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+/* Impact Zone - visual guide around the now line */
+.beat-timeline-impact-zone {
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  left: calc(50% - 1rem);
+  width: 2rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.1) 30%,
+    hsl(var(--primary) / 0.15) 50%,
+    hsl(var(--primary) / 0.1) 70%,
+    transparent 100%
+  );
+  border-radius: 0.5rem;
+  pointer-events: none;
+}
+
+/* Info Bar */
+.beat-timeline-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.beat-timeline-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-timeline-info-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-timeline-info-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground));
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .beat-timeline-track {
+    height: 4rem;
+  }
+
+  .beat-timeline-marker-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .beat-timeline-now-label {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .beat-timeline-info {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .beat-timeline-info-label {
+    font-size: 0.5625rem;
+  }
+
+  .beat-timeline-info-value {
+    font-size: 0.6875rem;
+  }
+}

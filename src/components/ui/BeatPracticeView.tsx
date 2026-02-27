@@ -21,6 +21,7 @@ import { useBeatDetectionStore, useTapStatistics } from '../../store/beatDetecti
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
+import { BeatTimeline } from './BeatTimeline';
 import type { ButtonPressResult } from '@/types';
 
 interface BeatPracticeViewProps {
@@ -69,6 +70,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const {
     currentBpm,
     upcomingBeats,
+    lastBeatEvent,
     checkTap,
     isActive: streamIsActive,
     seekStream,
@@ -209,43 +211,14 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       </div>
 
       {/* Beat Timeline Visualization */}
-      <div className="beat-practice-timeline">
-        <div className="beat-practice-timeline-track">
-          {/* "Now" line in center */}
-          <div className="beat-practice-now-line" />
-
-          {/* Render upcoming beats */}
-          {upcomingBeats.map((beat, index) => {
-            // Calculate position: beats scroll from right to left
-            // Position is relative to the anticipation window (2 seconds by default)
-            const timeUntilBeat = beat.timestamp - currentTime;
-            const anticipationWindow = 2.0; // seconds
-            const position = 1 - (timeUntilBeat / anticipationWindow);
-
-            // Only show beats that are within the anticipation window
-            if (position < 0 || position > 1) return null;
-
-            return (
-              <div
-                key={`${beat.timestamp}-${index}`}
-                className={`beat-practice-beat-marker ${beat.isDownbeat ? 'beat-practice-beat-marker--downbeat' : ''}`}
-                style={{
-                  left: `${position * 100}%`,
-                  opacity: beat.confidence || 1,
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* Timeline progress bar */}
-        <div className="beat-practice-progress">
-          <div
-            className="beat-practice-progress-fill"
-            style={{ width: `${(currentTime / duration) * 100}%` }}
-          />
-        </div>
-      </div>
+      <BeatTimeline
+        beatMap={beatMap}
+        currentTime={currentTime}
+        upcomingBeats={upcomingBeats}
+        lastBeatEvent={lastBeatEvent}
+        onSeek={handleSeek}
+        anticipationWindow={2.0}
+      />
 
       {/* Playback Controls */}
       <div className="beat-practice-controls">

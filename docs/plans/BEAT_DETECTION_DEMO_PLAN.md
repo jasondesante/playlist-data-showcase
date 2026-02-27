@@ -138,25 +138,25 @@ This is the main feature where **audio playback + beat visualization + tap accur
 ## Phase 4: Beat Timeline Visualization
 
 ### 4.1 BeatTimeline Component
-- [ ] Create `src/components/ui/BeatTimeline.tsx`
-  - [ ] Props: `beatMap`, `currentTime`, `upcomingBeats`, `onSeek?`
-  - [ ] **Horizontal scrolling track** - beats scroll from right to left
-  - [ ] **Fixed "Now" line** in the center - this is where beats "hit"
-  - [ ] Beat markers:
-    - [ ] Regular beats (small dots/markers)
-    - [ ] Downbeats (larger, different color - measure starts)
-    - [ ] Intensity visualization (opacity based on confidence)
-  - [ ] Visual pulse/flash when a beat crosses the "now" line
-  - [ ] Anticipation window (show beats coming up)
+- [x] Create `src/components/ui/BeatTimeline.tsx`
+  - [x] Props: `beatMap`, `currentTime`, `upcomingBeats`, `onSeek?`
+  - [x] **Horizontal scrolling track** - beats scroll from right to left
+  - [x] **Fixed "Now" line** in the center - this is where beats "hit"
+  - [x] Beat markers:
+    - [x] Regular beats (small dots/markers)
+    - [x] Downbeats (larger, different color - measure starts)
+    - [x] Intensity visualization (opacity based on confidence)
+  - [x] Visual pulse/flash when a beat crosses the "now" line
+  - [x] Anticipation window (show beats coming up)
 
 ### 4.2 BeatTimeline CSS
-- [ ] Create `src/components/ui/BeatTimeline.css`
-  - [ ] Timeline track with gradient background
-  - [ ] Beat markers (regular vs downbeat styling)
-  - [ ] "Now" line - prominent vertical indicator in center
-  - [ ] Beat pulse animation (when beat hits now line)
-  - [ ] Past beats (faded) vs upcoming beats (bright)
-  - [ ] Smooth scrolling animation
+- [x] Create `src/components/ui/BeatTimeline.css`
+  - [x] Timeline track with gradient background
+  - [x] Beat markers (regular vs downbeat styling)
+  - [x] "Now" line - prominent vertical indicator in center
+  - [x] Beat pulse animation (when beat hits now line)
+  - [x] Past beats (faded) vs upcoming beats (bright)
+  - [x] Smooth scrolling animation
 
 ### 4.3 Timeline Synchronization
 - [ ] Sync scroll position with audio playback time
