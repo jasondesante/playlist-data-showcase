@@ -103,6 +103,40 @@
   margin-top: 0.25rem;
 }
 
+.beat-map-summary-note--disabled {
+  color: hsl(var(--warning) / 0.9);
+}
+
+/* Warning Section (Task 7.2: Short track handling) */
+.beat-map-summary-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: hsl(var(--warning) / 0.1);
+  border: 1px solid hsl(var(--warning) / 0.3);
+  border-radius: 0.5rem;
+}
+
+.beat-map-summary-warning-icon {
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--warning));
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.beat-map-summary-warning-text {
+  font-size: 0.6875rem;
+  color: hsl(var(--warning) / 0.95);
+  line-height: 1.4;
+}
+
+/* Warning highlight for stat values */
+.beat-map-stat-value--warning {
+  color: hsl(var(--warning));
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .beat-map-summary-stats {

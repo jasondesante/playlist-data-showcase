@@ -693,6 +693,16 @@ export function AudioAnalysisTab() {
               {analysisMode === 'beat' && (
                 <BeatDetectionSettings disabled={isBeatGenerating} />
               )}
+
+              {/* Short track warning for beat detection - Task 7.2 */}
+              {analysisMode === 'beat' && !beatMap && !isBeatGenerating && duration > 0 && duration < 5 && (
+                <div className="audio-analysis-short-track-warning">
+                  <span className="audio-analysis-short-track-warning-icon">⚠️</span>
+                  <span className="audio-analysis-short-track-warning-text">
+                    This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 4. Action Section */}

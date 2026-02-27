@@ -269,7 +269,7 @@ This is the main feature where **audio playback + beat visualization + tap accur
 - [x] Practice mode start/stop works cleanly (Code review verified: Complete cleanup on exit - BeatStream stops, AudioContext closes, keyboard listeners removed, animation frames cancelled, timeouts cleared. Auto-start on play, auto-stop on pause. Proper sync to audio position on start. Handles rapid toggling and track changes correctly. Build passes with no TypeScript errors.)
 
 ### 7.2 Edge Cases
-- [ ] Very short tracks (< 10 seconds)
+- [x] Very short tracks (< 10 seconds) (Code review verified and IMPROVED: Added comprehensive handling for short tracks. BeatMapSummary now shows warning when track is < 5 seconds or has < 4 beats, disables "Start Practice Mode" button with insufficient beats. AudioAnalysisTab shows warning before analysis if track is < 5 seconds. CSS styles added for warning displays. Build passes with no TypeScript errors.)
 - [ ] Very long tracks (> 10 minutes)
 - [ ] Tracks with irregular tempo (does the rolling BPM update?)
 - [ ] Tracks with no clear beat (ambient, classical)
