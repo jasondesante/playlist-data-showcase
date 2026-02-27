@@ -95,22 +95,27 @@ All three elements (audio, visual beats, tap detection) work **together continuo
 This is the main feature where **audio playback + beat visualization + tap accuracy** all work together.
 
 ### 3.1 Beat Stream Hook (The Sync Engine)
-- [ ] Create `src/hooks/useBeatStream.ts`
-  - [ ] Initialize `BeatStream` from engine with the generated `BeatMap`
-  - [ ] Create/manage AudioContext for precise timing
-  - [ ] Subscribe to beat events: `upcoming`, `exact`, `passed`
-  - [ ] Sync with audio player's current time
-  - [ ] Track current BPM in real-time (rolling calculation)
-  - [ ] Handle `checkButtonPress()` for tap accuracy
-  - [ ] Handle seek events (when user jumps to different position)
-  - [ ] Return: `{
+- [x] Create `src/hooks/useBeatStream.ts`
+  - [x] Initialize `BeatStream` from engine with the generated `BeatMap`
+  - [x] Create/manage AudioContext for precise timing
+  - [x] Subscribe to beat events: `upcoming`, `exact`, `passed`
+  - [x] Sync with audio player's current time
+  - [x] Track current BPM in real-time (rolling calculation)
+  - [x] Handle `checkButtonPress()` for tap accuracy
+  - [x] Handle seek events (when user jumps to different position)
+  - [x] Return: `{
       currentBpm,
       upcomingBeats,
       lastBeatEvent,
       checkTap,
       startStream,
       stopStream,
-      seekStream
+      seekStream,
+      getBeatsInRange,
+      getBeatAtTime,
+      audioContext,
+      syncState,
+      isActive
     }`
 
 ### 3.2 BeatPracticeView Component (The Main Container)
