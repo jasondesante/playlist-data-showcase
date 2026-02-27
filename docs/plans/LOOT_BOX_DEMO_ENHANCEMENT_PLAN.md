@@ -266,7 +266,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 
 ### Outstanding
 - [x] Are there existing box items in the equipment registry to populate the dropdown? **Yes - Component Pouch, Healer's Kit, Backpack, etc.**
-- [ ] Should custom box configurations be saved/persisted between sessions?
+- [x] Should custom box configurations be saved/persisted between sessions? **No - This is a demo feature; users should use "Existing Box" dropdown for reusable configurations. Custom boxes are for quick testing.**
 
 ---
 
