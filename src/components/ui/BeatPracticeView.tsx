@@ -17,12 +17,13 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity } from 'lucide-react';
 import './BeatPracticeView.css';
-import { useBeatDetectionStore, useTapStatistics } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
+import { TapStats } from './TapStats';
 
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
@@ -43,7 +44,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const beatMap = useBeatDetectionStore((state) => state.beatMap);
   const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
   const recordTap = useBeatDetectionStore((state) => state.actions.recordTap);
-  const tapStats = useTapStatistics();
 
   // Audio player state
   const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
@@ -213,50 +213,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onFeedbackComplete={hideTapFeedback}
       />
 
-      {/* Tap Statistics */}
-      <div className="beat-practice-stats-panel">
-        <div className="beat-practice-stats-row">
-          <div className="beat-practice-stat-item">
-            <span className="beat-practice-stat-item-value">{tapStats.totalTaps}</span>
-            <span className="beat-practice-stat-item-label">Total</span>
-          </div>
-          <div className="beat-practice-stat-item beat-practice-stat-item--perfect">
-            <span className="beat-practice-stat-item-value">{tapStats.perfect}</span>
-            <span className="beat-practice-stat-item-label">Perfect</span>
-          </div>
-          <div className="beat-practice-stat-item beat-practice-stat-item--great">
-            <span className="beat-practice-stat-item-value">{tapStats.great}</span>
-            <span className="beat-practice-stat-item-label">Great</span>
-          </div>
-          <div className="beat-practice-stat-item beat-practice-stat-item--good">
-            <span className="beat-practice-stat-item-value">{tapStats.good}</span>
-            <span className="beat-practice-stat-item-label">Good</span>
-          </div>
-          <div className="beat-practice-stat-item beat-practice-stat-item--miss">
-            <span className="beat-practice-stat-item-value">{tapStats.miss}</span>
-            <span className="beat-practice-stat-item-label">Miss</span>
-          </div>
-        </div>
-
-        <div className="beat-practice-stats-row">
-          <div className="beat-practice-stat-item">
-            <span className="beat-practice-stat-item-value">{tapStats.averageOffset.toFixed(1)}ms</span>
-            <span className="beat-practice-stat-item-label">Avg Offset</span>
-          </div>
-          <div className="beat-practice-stat-item">
-            <span className="beat-practice-stat-item-value">{tapStats.standardDeviation.toFixed(1)}ms</span>
-            <span className="beat-practice-stat-item-label">Std Dev</span>
-          </div>
-          <div className="beat-practice-stat-item">
-            <span className="beat-practice-stat-item-value">{tapStats.currentStreak}</span>
-            <span className="beat-practice-stat-item-label">Streak</span>
-          </div>
-          <div className="beat-practice-stat-item">
-            <span className="beat-practice-stat-item-value">{tapStats.bestStreak}</span>
-            <span className="beat-practice-stat-item-label">Best</span>
-          </div>
-        </div>
-      </div>
+      {/* Tap Statistics - Using dedicated TapStats component */}
+      <TapStats />
 
       {/* Stream status indicator */}
       <div className="beat-practice-stream-status">

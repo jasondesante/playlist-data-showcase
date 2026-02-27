@@ -192,69 +192,6 @@
   color: hsl(var(--foreground));
 }
 
-/* Statistics Panel */
-.beat-practice-stats-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: hsl(var(--background) / 0.5);
-  border-radius: 0.5rem;
-  border: 1px solid hsl(var(--border) / 0.3);
-}
-
-.beat-practice-stats-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
-}
-
-.beat-practice-stats-row:last-child {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.beat-practice-stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.125rem;
-  padding: 0.5rem;
-  background: hsl(var(--surface-2) / 0.5);
-  border-radius: 0.375rem;
-}
-
-.beat-practice-stat-item-value {
-  font-size: 1rem;
-  font-weight: 700;
-  font-family: ui-monospace, monospace;
-  color: hsl(var(--foreground));
-}
-
-.beat-practice-stat-item-label {
-  font-size: 0.5625rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: hsl(var(--muted-foreground));
-}
-
-/* Color-coded stat items */
-.beat-practice-stat-item--perfect .beat-practice-stat-item-value {
-  color: #22c55e;
-}
-
-.beat-practice-stat-item--great .beat-practice-stat-item-value {
-  color: #eab308;
-}
-
-.beat-practice-stat-item--good .beat-practice-stat-item-value {
-  color: #f97316;
-}
-
-.beat-practice-stat-item--miss .beat-practice-stat-item-value {
-  color: #ef4444;
-}
-
 /* Stream Status */
 .beat-practice-stream-status {
   display: flex;
@@ -306,13 +243,5 @@
 
   .beat-practice-tap-text {
     font-size: 1.5rem;
-  }
-
-  .beat-practice-stats-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .beat-practice-stats-row:last-child {
-    grid-template-columns: repeat(2, 1fr);
   }
 }

@@ -192,14 +192,14 @@ This is the main feature where **audio playback + beat visualization + tap accur
     - [x] MISS: Red (#ef4444)
 
 ### 5.3 TapStats Component
-- [ ] Create `src/components/ui/TapStats.tsx`
-  - [ ] Running statistics display:
-    - [ ] Total taps
-    - [ ] Hit distribution (Perfect X, Great Y, Good Z, Miss N)
-    - [ ] Average offset (ms)
-    - [ ] Standard deviation (timing consistency)
-    - [ ] Current streak
-  - [ ] "Reset Stats" button
+- [x] Create `src/components/ui/TapStats.tsx`
+  - [x] Running statistics display:
+    - [x] Total taps
+    - [x] Hit distribution (Perfect X, Great Y, Good Z, Miss N)
+    - [x] Average offset (ms)
+    - [x] Standard deviation (timing consistency)
+    - [x] Current streak
+  - [x] "Reset Stats" button
 
 ### 5.4 Keyboard Event Handling
 - [ ] Add global keyboard listener during practice mode
