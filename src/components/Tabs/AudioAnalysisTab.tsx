@@ -9,6 +9,7 @@ import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { BeatMapSummarySkeleton } from '../ui/Skeleton';
 import { useTabContext } from '../../App';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
@@ -712,6 +713,10 @@ export function AudioAnalysisTab() {
                         </Button>
                       </div>
                     </div>
+                  )}
+                  {/* Beat Map Summary Skeleton - shown during generation */}
+                  {isBeatGenerating && !practiceModeActive && (
+                    <BeatMapSummarySkeleton />
                   )}
                   {/* Beat Map Summary - shown after successful analysis */}
                   {beatMap && !isBeatGenerating && !practiceModeActive && (

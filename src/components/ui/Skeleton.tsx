@@ -192,4 +192,123 @@ export const CardSkeleton = forwardRef<HTMLDivElement, CardSkeletonProps>(
 
 CardSkeleton.displayName = 'CardSkeleton';
 
+/**
+ * BeatDetectionSettingsSkeleton Component
+ *
+ * Skeleton placeholder for BeatDetectionSettings component during loading.
+ * Mimics the layout with BPM range sliders, intensity threshold, and tempo center.
+ */
+export interface BeatDetectionSettingsSkeletonProps extends HTMLAttributes<HTMLDivElement> {}
+
+export const BeatDetectionSettingsSkeleton = forwardRef<HTMLDivElement, BeatDetectionSettingsSkeletonProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('beat-detection-settings-skeleton', className)}
+        {...props}
+      >
+        {/* BPM Range Section */}
+        <div className="beat-detection-settings-skeleton-section">
+          <div className="beat-detection-settings-skeleton-header">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-label" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-value" />
+          </div>
+          <div className="beat-detection-settings-skeleton-slider">
+            <Skeleton variant="rounded" className="beat-detection-settings-skeleton-track" />
+          </div>
+          <div className="beat-detection-settings-skeleton-marks">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+          </div>
+        </div>
+
+        {/* Intensity Threshold Section */}
+        <div className="beat-detection-settings-skeleton-section">
+          <div className="beat-detection-settings-skeleton-header">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-label" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-value-small" />
+          </div>
+          <div className="beat-detection-settings-skeleton-slider">
+            <Skeleton variant="rounded" className="beat-detection-settings-skeleton-track" />
+          </div>
+          <div className="beat-detection-settings-skeleton-marks">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+          </div>
+        </div>
+
+        {/* Tempo Center Section */}
+        <div className="beat-detection-settings-skeleton-section">
+          <div className="beat-detection-settings-skeleton-header">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-label" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-value" />
+          </div>
+          <div className="beat-detection-settings-skeleton-slider">
+            <Skeleton variant="rounded" className="beat-detection-settings-skeleton-track" />
+          </div>
+          <div className="beat-detection-settings-skeleton-marks">
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+            <Skeleton variant="text" className="beat-detection-settings-skeleton-mark" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+
+BeatDetectionSettingsSkeleton.displayName = 'BeatDetectionSettingsSkeleton';
+
+/**
+ * BeatMapSummarySkeleton Component
+ *
+ * Skeleton placeholder for BeatMapSummary component during loading.
+ * Mimics the layout with BPM, beats, duration stats and action button.
+ */
+export interface BeatMapSummarySkeletonProps extends HTMLAttributes<HTMLDivElement> {}
+
+export const BeatMapSummarySkeleton = forwardRef<HTMLDivElement, BeatMapSummarySkeletonProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('beat-map-summary-skeleton', className)}
+        {...props}
+      >
+        {/* Header */}
+        <div className="beat-map-summary-skeleton-header">
+          <Skeleton variant="circular" className="beat-map-summary-skeleton-icon" />
+          <Skeleton variant="text" className="beat-map-summary-skeleton-title" />
+        </div>
+
+        {/* Stats Grid */}
+        <div className="beat-map-summary-skeleton-stats">
+          <div className="beat-map-summary-skeleton-stat">
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-value" />
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-label" />
+          </div>
+          <div className="beat-map-summary-skeleton-stat">
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-value" />
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-label" />
+          </div>
+          <div className="beat-map-summary-skeleton-stat">
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-value" />
+            <Skeleton variant="text" className="beat-map-summary-skeleton-stat-label" />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="beat-map-summary-skeleton-actions">
+          <Skeleton variant="rounded" className="beat-map-summary-skeleton-button" />
+          <Skeleton variant="text" className="beat-map-summary-skeleton-note" />
+        </div>
+      </div>
+    );
+  }
+);
+
+BeatMapSummarySkeleton.displayName = 'BeatMapSummarySkeleton';
+
 export default Skeleton;
