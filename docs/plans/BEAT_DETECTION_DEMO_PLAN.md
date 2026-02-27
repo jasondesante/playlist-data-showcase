@@ -270,7 +270,7 @@ This is the main feature where **audio playback + beat visualization + tap accur
 
 ### 7.2 Edge Cases
 - [x] Very short tracks (< 10 seconds) (Code review verified and IMPROVED: Added comprehensive handling for short tracks. BeatMapSummary now shows warning when track is < 5 seconds or has < 4 beats, disables "Start Practice Mode" button with insufficient beats. AudioAnalysisTab shows warning before analysis if track is < 5 seconds. CSS styles added for warning displays. Build passes with no TypeScript errors.)
-- [ ] Very long tracks (> 10 minutes)
+- [x] Very long tracks (> 10 minutes) (IMPLEMENTED: Three major improvements for long track handling: (1) Added info messages in BeatMapSummary for tracks > 10 minutes (warning) and > 30 minutes (stronger warning about performance). (2) Optimized useBeatStream.getBeatsInRange() with binary search for O(log n) beat lookups instead of O(n) linear filtering. (3) Added automatic cache eviction with MAX_CACHED_BEAT_MAPS=20 limit and LRU-style cacheOrder tracking. Store persists cacheOrder for proper eviction after page reload. Migration handles legacy caches without cacheOrder. Build passes with no TypeScript errors.)
 - [ ] Tracks with irregular tempo (does the rolling BPM update?)
 - [ ] Tracks with no clear beat (ambient, classical)
 - [ ] Seeking to different positions mid-song

@@ -63,6 +63,54 @@ const DEFAULT_BEAT_STREAM_OPTIONS: BeatStreamOptions = {
 const UPCOMING_BEATS_COUNT = 10;
 
 /**
+ * Find the index of the first beat at or after the given time using binary search.
+ * This is O(log n) instead of O(n) for finding beats in long tracks.
+ *
+ * @param beats - Array of beats sorted by timestamp
+ * @param time - The time to search for
+ * @returns Index of the first beat at or after the time, or beats.length if none
+ */
+function findFirstBeatAtOrAfter(beats: Beat[], time: number): number {
+    let left = 0;
+    let right = beats.length;
+
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (beats[mid].timestamp < time) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+
+    return left;
+}
+
+/**
+ * Find the index of the last beat at or before the given time using binary search.
+ * This is O(log n) instead of O(n) for finding beats in long tracks.
+ *
+ * @param beats - Array of beats sorted by timestamp
+ * @param time - The time to search for
+ * @returns Index of the last beat at or before the time, or -1 if none
+ */
+function findLastBeatAtOrBefore(beats: Beat[], time: number): number {
+    let left = -1;
+    let right = beats.length - 1;
+
+    while (left < right) {
+        const mid = Math.floor((left + right + 1) / 2);
+        if (beats[mid].timestamp > time) {
+            right = mid - 1;
+        } else {
+            left = mid;
+        }
+    }
+
+    return left;
+}
+
+/**
  * Return type for the useBeatStream hook.
  */
 export interface UseBeatStreamReturn {
@@ -352,13 +400,24 @@ export const useBeatStream = (
 
     /**
      * Get beats within a time range for visualization.
+     * Uses binary search for O(log n) performance with long tracks.
      */
     const getBeatsInRange = useCallback((startTime: number, endTime: number): Beat[] => {
-        if (!beatMap) return [];
+        if (!beatMap || beatMap.beats.length === 0) return [];
 
-        return beatMap.beats.filter(
-            (beat) => beat.timestamp >= startTime && beat.timestamp <= endTime
-        );
+        const beats = beatMap.beats;
+
+        // Use binary search to find the range bounds
+        const startIndex = findFirstBeatAtOrAfter(beats, startTime);
+        const endIndex = findLastBeatAtOrBefore(beats, endTime);
+
+        // If no beats in range
+        if (startIndex > endIndex || startIndex >= beats.length || endIndex < 0) {
+            return [];
+        }
+
+        // Return the slice of beats in the range
+        return beats.slice(startIndex, endIndex + 1);
     }, [beatMap]);
 
     /**

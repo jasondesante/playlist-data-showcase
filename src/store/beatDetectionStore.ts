@@ -51,6 +51,17 @@ const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     tempoWidth: 1.4,
 };
 
+/**
+ * Maximum number of beat maps to cache before automatic eviction.
+ * This prevents unbounded memory/storage growth for users who analyze many tracks.
+ */
+const MAX_CACHED_BEAT_MAPS = 20;
+
+/**
+ * Number of old caches to remove when the limit is reached.
+ */
+const EVICTION_COUNT = 5;
+
 interface BeatDetectionState {
     /** The currently loaded beat map (or null if none) */
     beatMap: BeatMap | null;
@@ -62,6 +73,8 @@ interface BeatDetectionState {
     generatorOptions: BeatMapGeneratorOptions;
     /** Cached beat maps indexed by audio ID for localStorage persistence */
     cachedBeatMaps: Record<string, BeatMap>;
+    /** Order of cache insertion (for LRU eviction) - stores audio IDs */
+    cacheOrder: string[];
     /** Whether practice mode is currently active */
     practiceModeActive: boolean;
     /** Running history of tap accuracy results */
@@ -209,6 +222,7 @@ const createInitialState = (): BeatDetectionState => ({
     generationProgress: null,
     generatorOptions: { ...DEFAULT_GENERATOR_OPTIONS },
     cachedBeatMaps: {},
+    cacheOrder: [],
     practiceModeActive: false,
     tapHistory: [],
     error: null,
@@ -227,6 +241,34 @@ const isQuotaError = (error: unknown): boolean => {
         message.includes('space') ||
         message.includes('full')
     );
+};
+
+/**
+ * Helper to perform automatic cache eviction if needed.
+ * Returns the new cachedBeatMaps and cacheOrder after potential eviction.
+ */
+const performAutoEvictionIfNeeded = (
+    cachedBeatMaps: Record<string, BeatMap>,
+    cacheOrder: string[]
+): { cachedBeatMaps: Record<string, BeatMap>; cacheOrder: string[]; evictedCount: number } => {
+    if (cacheOrder.length < MAX_CACHED_BEAT_MAPS) {
+        return { cachedBeatMaps, cacheOrder, evictedCount: 0 };
+    }
+
+    // Remove the oldest entries
+    const keysToRemove = cacheOrder.slice(0, EVICTION_COUNT);
+    const newCachedBeatMaps = { ...cachedBeatMaps };
+    keysToRemove.forEach((key) => {
+        delete newCachedBeatMaps[key];
+    });
+    const newCacheOrder = cacheOrder.slice(EVICTION_COUNT);
+
+    logger.info('BeatDetection', 'Auto-evicted old cached beat maps', {
+        evictedCount: keysToRemove.length,
+        remainingCount: newCacheOrder.length,
+    });
+
+    return { cachedBeatMaps: newCachedBeatMaps, cacheOrder: newCacheOrder, evictedCount: keysToRemove.length };
 };
 
 /**
@@ -356,14 +398,30 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             bpm: beatMap.bpm,
                         });
 
-                        // Cache the result
-                        const cachedBeatMaps = { ...get().cachedBeatMaps, [audioId]: beatMap };
+                        // Cache the result with automatic eviction
+                        const currentState = get();
+                        let { cachedBeatMaps, cacheOrder } = currentState;
+
+                        // If this audioId already exists, remove it from order (will be re-added at end)
+                        if (cachedBeatMaps[audioId]) {
+                            cacheOrder = cacheOrder.filter((id) => id !== audioId);
+                        }
+
+                        // Perform auto-eviction if needed
+                        const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
+                        cachedBeatMaps = evicted.cachedBeatMaps;
+                        cacheOrder = evicted.cacheOrder;
+
+                        // Add the new beat map
+                        cachedBeatMaps = { ...cachedBeatMaps, [audioId]: beatMap };
+                        cacheOrder = [...cacheOrder, audioId];
 
                         set({
                             beatMap,
                             isGenerating: false,
                             generationProgress: null,
                             cachedBeatMaps,
+                            cacheOrder,
                             error: null,
                         });
 
@@ -459,25 +517,41 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                 cacheBeatMap: (audioId, beatMap) => {
                     logger.info('BeatDetection', 'Caching beat map', { audioId });
-                    set((state) => ({
-                        cachedBeatMaps: {
-                            ...state.cachedBeatMaps,
-                            [audioId]: beatMap,
-                        },
-                    }));
+                    set((state) => {
+                        let { cachedBeatMaps, cacheOrder } = state;
+
+                        // If this audioId already exists, remove it from order (will be re-added at end)
+                        if (cachedBeatMaps[audioId]) {
+                            cacheOrder = cacheOrder.filter((id) => id !== audioId);
+                        }
+
+                        // Perform auto-eviction if needed
+                        const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
+                        cachedBeatMaps = evicted.cachedBeatMaps;
+                        cacheOrder = evicted.cacheOrder;
+
+                        // Add the new beat map
+                        return {
+                            cachedBeatMaps: { ...cachedBeatMaps, [audioId]: beatMap },
+                            cacheOrder: [...cacheOrder, audioId],
+                        };
+                    });
                 },
 
                 removeCachedBeatMap: (audioId) => {
                     logger.info('BeatDetection', 'Removing cached beat map', { audioId });
                     set((state) => {
                         const { [audioId]: removed, ...rest } = state.cachedBeatMaps;
-                        return { cachedBeatMaps: rest };
+                        return {
+                            cachedBeatMaps: rest,
+                            cacheOrder: state.cacheOrder.filter((id) => id !== audioId),
+                        };
                     });
                 },
 
                 clearAllCachedBeatMaps: () => {
                     logger.warn('BeatDetection', 'Clearing all cached beat maps');
-                    set({ cachedBeatMaps: {} });
+                    set({ cachedBeatMaps: {}, cacheOrder: [] });
                 },
 
                 getBeatMap: () => {
@@ -498,11 +572,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                 clearOldestCachedBeatMaps: (count = 1) => {
                     const state = get();
-                    const keys = Object.keys(state.cachedBeatMaps);
-                    if (keys.length === 0) return;
+                    if (state.cacheOrder.length === 0) return;
 
-                    // Remove the oldest entries (first N keys)
-                    const keysToRemove = keys.slice(0, Math.min(count, keys.length));
+                    // Remove the oldest entries (first N in cacheOrder)
+                    const keysToRemove = state.cacheOrder.slice(0, Math.min(count, state.cacheOrder.length));
                     logger.info('BeatDetection', 'Clearing oldest cached beat maps', {
                         count: keysToRemove.length,
                         keys: keysToRemove,
@@ -513,7 +586,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         delete newCachedBeatMaps[key];
                     });
 
-                    set({ cachedBeatMaps: newCachedBeatMaps });
+                    set({
+                        cachedBeatMaps: newCachedBeatMaps,
+                        cacheOrder: state.cacheOrder.slice(keysToRemove.length),
+                    });
                 },
             },
         };
@@ -526,23 +602,35 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setStorageErrorFn(error);
                 }
             }),
-            // Only persist cached beat maps and generator options
+            // Only persist cached beat maps, cache order, and generator options
             partialize: (state) => ({
                 cachedBeatMaps: state.cachedBeatMaps,
+                cacheOrder: state.cacheOrder,
                 generatorOptions: state.generatorOptions,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
-            merge: (persistedState, currentState) => ({
-                ...currentState,
-                cachedBeatMaps: (persistedState as any)?.cachedBeatMaps ?? currentState.cachedBeatMaps,
-                generatorOptions: (persistedState as any)?.generatorOptions ?? currentState.generatorOptions,
-            }),
+            merge: (persistedState, currentState) => {
+                const persisted = persistedState as any;
+                // If cacheOrder doesn't exist in persisted state, derive it from cachedBeatMaps keys
+                // This handles migration from older versions that didn't have cacheOrder
+                let cacheOrder = persisted?.cacheOrder;
+                if (!cacheOrder && persisted?.cachedBeatMaps) {
+                    cacheOrder = Object.keys(persisted.cachedBeatMaps);
+                }
+                return {
+                    ...currentState,
+                    cachedBeatMaps: persisted?.cachedBeatMaps ?? currentState.cachedBeatMaps,
+                    cacheOrder: cacheOrder ?? currentState.cacheOrder,
+                    generatorOptions: persisted?.generatorOptions ?? currentState.generatorOptions,
+                };
+            },
             // Callback after rehydration
             onRehydrateStorage: () => {
                 return (state) => {
                     if (state) {
                         logger.info('BeatDetection', 'Store rehydrated from storage', {
                             cachedBeatMapsCount: Object.keys(state.cachedBeatMaps).length,
+                            cacheOrderLength: state.cacheOrder.length,
                         });
                     }
                 };

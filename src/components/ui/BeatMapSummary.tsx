@@ -12,7 +12,7 @@
  * Part of Task 2.4: Beat Map Summary (After Analysis)
  * Part of Task 7.2: Edge Cases - Very short tracks (< 10 seconds)
  */
-import { Play, Music2, AlertTriangle } from 'lucide-react';
+import { Play, Music2, AlertTriangle, Info } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import type { BeatMap } from '@/types';
@@ -22,6 +22,12 @@ const MIN_TRACK_DURATION = 5;
 
 /** Minimum beats required for a meaningful practice session */
 const MIN_BEATS_FOR_PRACTICE = 4;
+
+/** Maximum track duration for optimal performance (10 minutes in seconds) */
+const LONG_TRACK_WARNING_THRESHOLD = 600;
+
+/** Very long track threshold (30 minutes in seconds) - may cause performance issues */
+const VERY_LONG_TRACK_THRESHOLD = 1800;
 
 interface BeatMapSummaryProps {
   /** The generated beat map */
@@ -65,6 +71,10 @@ export function BeatMapSummary({
   const hasInsufficientBeats = beatMap.beats.length < MIN_BEATS_FOR_PRACTICE;
   const canStartPractice = beatMap.beats.length >= MIN_BEATS_FOR_PRACTICE;
 
+  // Check for long track edge cases
+  const isLongTrack = beatMap.duration > LONG_TRACK_WARNING_THRESHOLD;
+  const isVeryLongTrack = beatMap.duration > VERY_LONG_TRACK_THRESHOLD;
+
   // Determine warning message
   let warningMessage: string | null = null;
   if (beatMap.beats.length === 0) {
@@ -73,6 +83,14 @@ export function BeatMapSummary({
     warningMessage = `Track is very short (${formatDuration(beatMap.duration)}). Beat detection works best with tracks longer than ${MIN_TRACK_DURATION} seconds.`;
   } else if (hasInsufficientBeats) {
     warningMessage = `Only ${beatMap.beats.length} beat${beatMap.beats.length === 1 ? '' : 's'} detected. Practice mode requires at least ${MIN_BEATS_FOR_PRACTICE} beats.`;
+  }
+
+  // Info message for long tracks (not a blocking warning)
+  let infoMessage: string | null = null;
+  if (isVeryLongTrack) {
+    infoMessage = `This is a very long track (${formatDuration(beatMap.duration)}). Performance may be reduced. Consider practicing with shorter sections.`;
+  } else if (isLongTrack) {
+    infoMessage = `Long track detected (${formatDuration(beatMap.duration)} with ${formatBeatCount(beatMap.beats.length)} beats). Practice mode will work but may use more memory.`;
   }
 
   return (
@@ -90,6 +108,14 @@ export function BeatMapSummary({
         <div className="beat-map-summary-warning">
           <AlertTriangle className="beat-map-summary-warning-icon" />
           <span className="beat-map-summary-warning-text">{warningMessage}</span>
+        </div>
+      )}
+
+      {/* Info message for long tracks */}
+      {infoMessage && !warningMessage && (
+        <div className="beat-map-summary-info">
+          <Info className="beat-map-summary-info-icon" />
+          <span className="beat-map-summary-info-text">{infoMessage}</span>
         </div>
       )}
 
