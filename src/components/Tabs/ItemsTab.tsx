@@ -243,6 +243,7 @@ export function ItemsTab() {
     lastHoardResult,
     spawnRandomItems,
     spawnByRarity,
+    spawnByMultipleRarities,
     spawnTreasureHoard,
     spawnMagicItems,
     spawnBoxItem,
@@ -278,7 +279,7 @@ export function ItemsTab() {
   // Loot Box state
   const [spawnMode, setSpawnMode] = useState<SpawnMode>('random');
   const [randomCount, setRandomCount] = useState(3);
-  const [selectedRarity, setSelectedRarity] = useState<RarityOption>('rare');
+  const [selectedRarities, setSelectedRarities] = useState<RarityOption[]>(['rare']);
   const [rarityCount, setRarityCount] = useState(3);
   const [hoardCR, setHoardCR] = useState(5);
   const [magicItemCount, setMagicItemCount] = useState(3);
@@ -308,6 +309,20 @@ export function ItemsTab() {
 
   // Ref for click outside detection
   const itemDetailRef = useRef<HTMLDivElement>(null);
+
+  // Toggle rarity selection for multi-rarity spawning
+  const toggleRarity = (rarity: RarityOption) => {
+    setSelectedRarities(prev => {
+      if (prev.includes(rarity)) {
+        // Don't allow deselecting the last rarity
+        if (prev.length === 1) {
+          return prev;
+        }
+        return prev.filter(r => r !== rarity);
+      }
+      return [...prev, rarity];
+    });
+  };
 
   // Handle character selection change
   const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -523,16 +538,31 @@ export function ItemsTab() {
 
   // Handle spawning by rarity
   const handleSpawnByRarity = async () => {
+    if (selectedRarities.length === 0) {
+      showToast('⚠️ Select at least one rarity', 'warning');
+      return;
+    }
+
     setIsAnimating(true);
     setSpawnError(null); // Clear previous error
     setLastSpawnMode('rarity');
-    const result = await spawnByRarity(selectedRarity, rarityCount);
+
+    const result = selectedRarities.length === 1
+      ? await spawnByRarity(selectedRarities[0], rarityCount)
+      : await spawnByMultipleRarities(selectedRarities, rarityCount);
+
     setIsAnimating(false);
 
     if (result.items.length > 0) {
-      showToast(`📦 Spawned ${result.items.length} ${formatRarity(selectedRarity)} item${result.items.length !== 1 ? 's' : ''}!`, 'success');
+      const rarityText = selectedRarities.length === 1
+        ? formatRarity(selectedRarities[0])
+        : `${selectedRarities.length} rarities`;
+      showToast(`📦 Spawned ${result.items.length} ${rarityText} item${result.items.length !== 1 ? 's' : ''}!`, 'success');
     } else {
-      const errorMsg = `No ${formatRarity(selectedRarity)} items found in the database.`;
+      const rarityText = selectedRarities.length === 1
+        ? formatRarity(selectedRarities[0])
+        : 'selected rarities';
+      const errorMsg = `No ${rarityText} items found in the database.`;
       setSpawnError(errorMsg);
       showToast('❌ Failed to spawn items', 'error');
     }
@@ -1778,18 +1808,21 @@ export function ItemsTab() {
                   {spawnMode === 'rarity' && (
                     <>
                       <div className="lootbox-control-group">
-                        <label className="lootbox-control-label">Rarity</label>
-                        <select
-                          value={selectedRarity}
-                          onChange={(e) => setSelectedRarity(e.target.value as RarityOption)}
-                          className="lootbox-select"
-                        >
-                          <option value="common">Common</option>
-                          <option value="uncommon">Uncommon</option>
-                          <option value="rare">Rare</option>
-                          <option value="very_rare">Very Rare</option>
-                          <option value="legendary">Legendary</option>
-                        </select>
+                        <label className="lootbox-control-label">Rarities</label>
+                        <div className="lootbox-rarity-checkboxes">
+                          {(['common', 'uncommon', 'rare', 'very_rare', 'legendary'] as RarityOption[]).map(rarity => (
+                            <label key={rarity} className="lootbox-rarity-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={selectedRarities.includes(rarity)}
+                                onChange={() => toggleRarity(rarity)}
+                              />
+                              <span style={{ color: RARITY_COLORS[rarity] }}>
+                                {formatRarity(rarity)}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                       <div className="lootbox-control-group">
                         <label className="lootbox-control-label">Count</label>

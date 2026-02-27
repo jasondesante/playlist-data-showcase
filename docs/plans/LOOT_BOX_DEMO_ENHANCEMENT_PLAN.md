@@ -93,9 +93,9 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
   - [x] Toggle: "Spawn Unopened" vs "Spawn & Open" (showing as switch/checkbox)
 
 ### Task 3.2: Convert rarity dropdown to checkboxes
-- [ ] Change state from `selectedRarity: RarityOption` to `selectedRarities: RarityOption[]`
-- [ ] Default to `['rare']` (single selection to start)
-- [ ] Replace `<select>` dropdown with checkbox group:
+- [x] Change state from `selectedRarity: RarityOption` to `selectedRarities: RarityOption[]`
+- [x] Default to `['rare']` (single selection to start)
+- [x] Replace `<select>` dropdown with checkbox group:
   ```tsx
   <div className="lootbox-rarity-checkboxes">
     {['common', 'uncommon', 'rare', 'very_rare', 'legendary'].map(rarity => (
@@ -112,7 +112,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
     ))}
   </div>
   ```
-- [ ] Implement `toggleRarity(rarity: RarityOption)` function
+- [x] Implement `toggleRarity(rarity: RarityOption)` function
   - Add to array if not present
   - Remove from array if present
   - Ensure at least one rarity remains selected (validation)
