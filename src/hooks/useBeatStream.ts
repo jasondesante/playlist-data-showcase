@@ -369,15 +369,27 @@ export const useBeatStream = (
 
     /**
      * Seek to a specific time in the audio.
+     * Updates upcoming beats even when stream is paused.
      */
     const seekStream = useCallback((time: number) => {
         if (!beatStreamRef.current) return;
 
         beatStreamRef.current.seek(time);
-        updateUpcomingBeats();
+
+        // Always update upcoming beats after seek, even when paused
+        // This ensures the timeline shows the correct beats at the new position
+        const beats = beatStreamRef.current.getUpcomingBeats(UPCOMING_BEATS_COUNT);
+        setUpcomingBeats(beats);
+
+        // Update current BPM and sync state
+        const bpm = beatStreamRef.current.getCurrentBpm();
+        setCurrentBpm(bpm);
+
+        const state = beatStreamRef.current.getSyncState();
+        setSyncState(state);
 
         logger.debug('BeatDetection', 'Seeked to time', { time });
-    }, [updateUpcomingBeats]);
+    }, []);
 
     /**
      * Check tap accuracy against the nearest beat.

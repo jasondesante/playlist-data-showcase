@@ -14,7 +14,7 @@
  *
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity } from 'lucide-react';
 import './BeatPracticeView.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
@@ -64,6 +64,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Ref for tap area to handle keyboard focus
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Refs for progress bar dragging
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const [isDraggingProgress, setIsDraggingProgress] = useState(false);
 
   /**
    * Handle tap action (spacebar or click)
@@ -130,6 +134,87 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     onExit();
   }, [stopPracticeMode, onExit]);
 
+  /**
+   * Calculate time from progress bar position
+   */
+  const getTimeFromPosition = useCallback((clientX: number): number => {
+    if (!progressBarRef.current || duration === 0) return 0;
+
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const relativeX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return relativeX * duration;
+  }, [duration]);
+
+  /**
+   * Handle progress bar mouse down - start drag
+   */
+  const handleProgressMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingProgress(true);
+    const time = getTimeFromPosition(e.clientX);
+    handleSeek(time);
+  }, [getTimeFromPosition, handleSeek]);
+
+  /**
+   * Handle progress bar mouse move during drag
+   */
+  const handleProgressMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDraggingProgress) return;
+    const time = getTimeFromPosition(e.clientX);
+    handleSeek(time);
+  }, [isDraggingProgress, getTimeFromPosition, handleSeek]);
+
+  /**
+   * Handle progress bar mouse up - end drag
+   */
+  const handleProgressMouseUp = useCallback(() => {
+    setIsDraggingProgress(false);
+  }, []);
+
+  /**
+   * Handle progress bar touch start
+   */
+  const handleProgressTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDraggingProgress(true);
+    const time = getTimeFromPosition(touch.clientX);
+    handleSeek(time);
+  }, [getTimeFromPosition, handleSeek]);
+
+  /**
+   * Handle progress bar touch move
+   */
+  const handleProgressTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDraggingProgress) return;
+    const touch = e.touches[0];
+    const time = getTimeFromPosition(touch.clientX);
+    handleSeek(time);
+  }, [isDraggingProgress, getTimeFromPosition, handleSeek]);
+
+  /**
+   * Handle progress bar touch end
+   */
+  const handleProgressTouchEnd = useCallback(() => {
+    setIsDraggingProgress(false);
+  }, []);
+
+  /**
+   * Add global mouse event listeners when dragging progress bar
+   */
+  useEffect(() => {
+    if (isDraggingProgress) {
+      window.addEventListener('mousemove', handleProgressMouseMove);
+      window.addEventListener('mouseup', handleProgressMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleProgressMouseMove);
+        window.removeEventListener('mouseup', handleProgressMouseUp);
+      };
+    }
+  }, [isDraggingProgress, handleProgressMouseMove, handleProgressMouseUp]);
+
+  // Calculate progress percentage
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   // Don't render if no beat map
   if (!beatMap) {
     return null;
@@ -174,6 +259,50 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         <div className="beat-practice-stat">
           <span className="beat-practice-stat-value">{formatTime(duration)}</span>
           <span className="beat-practice-stat-label">Duration</span>
+        </div>
+      </div>
+
+      {/* Progress Bar for Absolute Seeking */}
+      <div className="beat-practice-progress-container">
+        <div
+          ref={progressBarRef}
+          className={`beat-practice-progress-bar ${isDraggingProgress ? 'beat-practice-progress-bar--dragging' : ''}`}
+          onMouseDown={handleProgressMouseDown}
+          onTouchStart={handleProgressTouchStart}
+          onTouchMove={handleProgressTouchMove}
+          onTouchEnd={handleProgressTouchEnd}
+          role="slider"
+          aria-label="Song progress"
+          aria-valuemin={0}
+          aria-valuemax={duration}
+          aria-valuenow={currentTime}
+          tabIndex={0}
+        >
+          {/* Background track */}
+          <div className="beat-practice-progress-track" />
+
+          {/* Progress fill */}
+          <div
+            className="beat-practice-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+
+          {/* Beat markers on progress bar */}
+          <div className="beat-practice-progress-beats">
+            {beatMap.beats.filter((_, i) => i % Math.ceil(beatMap.beats.length / 50) === 0).map((beat, i) => (
+              <div
+                key={i}
+                className={`beat-practice-progress-beat ${beat.isDownbeat ? 'beat-practice-progress-beat--downbeat' : ''}`}
+                style={{ left: `${(beat.timestamp / duration) * 100}%` }}
+              />
+            ))}
+          </div>
+
+          {/* Playhead handle */}
+          <div
+            className="beat-practice-progress-handle"
+            style={{ left: `${progressPercent}%` }}
+          />
         </div>
       </div>
 

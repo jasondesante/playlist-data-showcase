@@ -132,6 +132,89 @@
   }
 }
 
+/* Progress Bar for Absolute Seeking */
+.beat-practice-progress-container {
+  padding: 0.5rem 0;
+}
+
+.beat-practice-progress-bar {
+  position: relative;
+  height: 2rem;
+  background: hsl(var(--background) / 0.5);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border) / 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.beat-practice-progress-bar:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+.beat-practice-progress-bar--dragging {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.beat-practice-progress-track {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, hsl(var(--surface-2)), hsl(var(--surface-3)));
+}
+
+.beat-practice-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.3), hsl(var(--primary) / 0.5));
+  transition: width 0.05s linear;
+  pointer-events: none;
+}
+
+.beat-practice-progress-beats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.beat-practice-progress-beat {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 6px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 1px;
+}
+
+.beat-practice-progress-beat--downbeat {
+  height: 10px;
+  width: 3px;
+  background: hsl(var(--primary) / 0.5);
+}
+
+.beat-practice-progress-handle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  box-shadow: 0 2px 6px hsl(var(--primary) / 0.4);
+  pointer-events: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.beat-practice-progress-bar:hover .beat-practice-progress-handle,
+.beat-practice-progress-bar--dragging .beat-practice-progress-handle {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 3px 10px hsl(var(--primary) / 0.5);
+}
+
 /* Beat Timeline Visualization is now in BeatTimeline.css */
 
 /* Playback Controls */
@@ -310,6 +393,15 @@
     padding: 0.0625rem 0.1875rem;
   }
 
+  .beat-practice-progress-bar {
+    height: 1.75rem;
+  }
+
+  .beat-practice-progress-handle {
+    width: 12px;
+    height: 12px;
+  }
+
   .beat-practice-controls {
     gap: 0.75rem;
     flex-wrap: wrap;
@@ -388,6 +480,25 @@
   .beat-practice-bpm-indicator {
     font-size: 0.375rem;
     padding: 0.0625rem 0.125rem;
+  }
+
+  .beat-practice-progress-bar {
+    height: 1.5rem;
+  }
+
+  .beat-practice-progress-handle {
+    width: 10px;
+    height: 10px;
+  }
+
+  .beat-practice-progress-beat {
+    width: 1px;
+    height: 4px;
+  }
+
+  .beat-practice-progress-beat--downbeat {
+    height: 8px;
+    width: 2px;
   }
 
   .beat-practice-tap-area {
