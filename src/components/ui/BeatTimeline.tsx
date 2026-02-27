@@ -9,8 +9,10 @@
  * - Intensity visualization (opacity based on confidence)
  * - Visual pulse/flash when a beat crosses the "now" line
  * - Anticipation window showing upcoming beats
+ * - Smooth 60fps animation using requestAnimationFrame
  *
  * Part of Task 4.1: BeatTimeline Component
+ * Part of Task 4.3: Timeline Synchronization
  */
 import { useEffect, useRef, useState, useCallback } from 'react';
 import './BeatTimeline.css';
@@ -19,7 +21,7 @@ import type { Beat, BeatMap, BeatEvent } from '@/types';
 interface BeatTimelineProps {
   /** The generated beat map */
   beatMap: BeatMap;
-  /** Current playback time in seconds */
+  /** Current playback time in seconds (from audio player - used as reference) */
   currentTime: number;
   /** Array of upcoming beats for visualization */
   upcomingBeats: Beat[];
@@ -29,6 +31,10 @@ interface BeatTimelineProps {
   onSeek?: (time: number) => void;
   /** Anticipation window in seconds (default: 2.0) */
   anticipationWindow?: number;
+  /** Whether the audio is currently playing (enables smooth animation) */
+  isPlaying?: boolean;
+  /** Optional AudioContext for precise timing (if available) */
+  audioContext?: AudioContext | null;
 }
 
 /**
@@ -36,6 +42,8 @@ interface BeatTimelineProps {
  *
  * Renders a horizontal timeline where beats scroll from right to left.
  * The "Now" line is fixed in the center, representing the current playback position.
+ *
+ * Uses requestAnimationFrame for smooth 60fps scrolling animation.
  */
 export function BeatTimeline({
   beatMap,
@@ -44,10 +52,108 @@ export function BeatTimeline({
   lastBeatEvent,
   onSeek,
   anticipationWindow = 2.0,
+  isPlaying = false,
+  audioContext: _audioContext,
 }: BeatTimelineProps) {
+  // _audioContext is available for future precise timing enhancements
+  void _audioContext; // Suppress unused variable warning
   const trackRef = useRef<HTMLDivElement>(null);
   const [pulseKey, setPulseKey] = useState(0);
   const lastPulseTimeRef = useRef<number>(0);
+
+  // ========================================
+  // Task 4.3: Smooth Animation with requestAnimationFrame
+  // ========================================
+
+  // Refs for smooth animation
+  const animationFrameRef = useRef<number | null>(null);
+
+  // Smooth time state - updated at 60fps during playback
+  const [smoothTime, setSmoothTime] = useState(currentTime);
+
+  // Track audio time and when it was last updated (for interpolation)
+  const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+    time: currentTime,
+    timestamp: performance.now(),
+  });
+  const isPlayingRef = useRef(isPlaying);
+
+  // Keep refs in sync with props
+  useEffect(() => {
+    // Update the reference point whenever currentTime changes from the audio player
+    lastAudioTimeRef.current = {
+      time: currentTime,
+      timestamp: performance.now(),
+    };
+  }, [currentTime]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  /**
+   * Animation loop for smooth scrolling.
+   * Uses requestAnimationFrame for 60fps updates.
+   * Interpolates time between audio player updates.
+   */
+  useEffect(() => {
+    if (!isPlaying) {
+      // When paused, just use the current time directly (no animation)
+      setSmoothTime(currentTime);
+      return;
+    }
+
+    /**
+     * The animation loop - runs at ~60fps
+     * Calculates interpolated time based on last known audio time
+     */
+    const animate = () => {
+      const now = performance.now();
+      const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioTimeRef.current;
+
+      // Calculate elapsed time since the last audio time update
+      const elapsedMs = now - lastUpdateTimestamp;
+      const elapsedSeconds = elapsedMs / 1000;
+
+      // Interpolate the current playback time
+      const interpolatedTime = lastAudioTime + elapsedSeconds;
+
+      // Clamp to beat map duration
+      const clampedTime = Math.min(interpolatedTime, beatMap.duration);
+
+      // Update smooth time state
+      setSmoothTime(clampedTime);
+
+      // Continue animation if still playing
+      if (isPlayingRef.current && clampedTime < beatMap.duration) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    // Start the animation loop
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    // Cleanup on unmount or when playback stops
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, [isPlaying, beatMap.duration]);
+
+  /**
+   * Handle seek events - immediately jump to new position.
+   * This ensures smooth transition when user seeks to a different position.
+   */
+  useEffect(() => {
+    // When not playing, update smooth time directly
+    if (!isPlaying) {
+      setSmoothTime(currentTime);
+    }
+    // When playing, the animation loop will pick up the new time
+    // because lastAudioTimeRef is updated via the other effect
+  }, [currentTime, isPlaying]);
 
   /**
    * Trigger pulse animation when a beat crosses the "now" line
@@ -75,25 +181,25 @@ export function BeatTimeline({
       const trackWidth = rect.width;
 
       // Calculate the time relative to the center (now line)
-      // Center is currentTime, left is currentTime - anticipationWindow, right is currentTime + anticipationWindow
+      // Center is smoothTime, left is smoothTime - anticipationWindow, right is smoothTime + anticipationWindow
       const positionRatio = clickX / trackWidth;
       const timeOffset = (positionRatio - 0.5) * anticipationWindow * 2;
-      const seekTime = Math.max(0, Math.min(beatMap.duration, currentTime + timeOffset));
+      const seekTime = Math.max(0, Math.min(beatMap.duration, smoothTime + timeOffset));
 
       onSeek(seekTime);
     },
-    [onSeek, currentTime, anticipationWindow, beatMap.duration]
+    [onSeek, smoothTime, anticipationWindow, beatMap.duration]
   );
 
   /**
    * Calculate beat position on the timeline
-   * Position 0 = left edge (currentTime - anticipationWindow)
-   * Position 0.5 = center/now line (currentTime)
-   * Position 1 = right edge (currentTime + anticipationWindow)
+   * Position 0 = left edge (smoothTime - anticipationWindow)
+   * Position 0.5 = center/now line (smoothTime)
+   * Position 1 = right edge (smoothTime + anticipationWindow)
    */
   const calculateBeatPosition = useCallback(
     (beat: Beat): number => {
-      const timeUntilBeat = beat.timestamp - currentTime;
+      const timeUntilBeat = beat.timestamp - smoothTime;
       // Map from [-anticipationWindow, +anticipationWindow] to [0, 1]
       // At timeUntilBeat = -anticipationWindow, position = 0 (left)
       // At timeUntilBeat = 0, position = 0.5 (center/now)
@@ -101,7 +207,7 @@ export function BeatTimeline({
       const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
       return position;
     },
-    [currentTime, anticipationWindow]
+    [smoothTime, anticipationWindow]
   );
 
   /**
@@ -117,19 +223,19 @@ export function BeatTimeline({
     // Use the beats array - prefer upcomingBeats if available, otherwise filter from beatMap
     const beatsToUse = upcomingBeats.length > 0 ? upcomingBeats : beatMap.beats;
 
-    const minTime = currentTime - anticipationWindow;
-    const maxTime = currentTime + anticipationWindow;
+    const minTime = smoothTime - anticipationWindow;
+    const maxTime = smoothTime + anticipationWindow;
 
     return beatsToUse
       .filter((beat) => beat.timestamp >= minTime && beat.timestamp <= maxTime)
       .map((beat) => {
         const position = calculateBeatPosition(beat);
-        const isPast = beat.timestamp < currentTime - 0.05; // 50ms tolerance
-        const isUpcoming = beat.timestamp > currentTime + 0.05;
+        const isPast = beat.timestamp < smoothTime - 0.05; // 50ms tolerance
+        const isUpcoming = beat.timestamp > smoothTime + 0.05;
         return { beat, position, isPast, isUpcoming };
       })
       .filter((item) => item.position >= 0 && item.position <= 1);
-  }, [upcomingBeats, beatMap.beats, currentTime, anticipationWindow, calculateBeatPosition]);
+  }, [upcomingBeats, beatMap.beats, smoothTime, anticipationWindow, calculateBeatPosition]);
 
   const visibleBeats = getVisibleBeats();
 
@@ -144,7 +250,7 @@ export function BeatTimeline({
         aria-label="Beat timeline"
         aria-valuemin={0}
         aria-valuemax={beatMap.duration}
-        aria-valuenow={currentTime}
+        aria-valuenow={smoothTime}
         tabIndex={onSeek ? 0 : undefined}
       >
         {/* Background gradient */}

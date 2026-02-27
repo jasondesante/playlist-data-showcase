@@ -159,11 +159,11 @@ This is the main feature where **audio playback + beat visualization + tap accur
   - [x] Smooth scrolling animation
 
 ### 4.3 Timeline Synchronization
-- [ ] Sync scroll position with audio playback time
-  - [ ] Calculate position: `(currentTime - beat.timestamp) / anticipationWindow`
-  - [ ] Use `requestAnimationFrame` for smooth updates
-  - [ ] Handle pause/play (pause animation, resume smoothly)
-  - [ ] Handle seek (jump to new position)
+- [x] Sync scroll position with audio playback time
+  - [x] Calculate position: `(currentTime - beat.timestamp) / anticipationWindow`
+  - [x] Use `requestAnimationFrame` for smooth updates
+  - [x] Handle pause/play (pause animation, resume smoothly)
+  - [x] Handle seek (jump to new position)
 
 ---
 

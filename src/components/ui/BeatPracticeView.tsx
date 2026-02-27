@@ -218,6 +218,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         lastBeatEvent={lastBeatEvent}
         onSeek={handleSeek}
         anticipationWindow={2.0}
+        isPlaying={isPlaying}
+        audioContext={null}
       />
 
       {/* Playback Controls */}
