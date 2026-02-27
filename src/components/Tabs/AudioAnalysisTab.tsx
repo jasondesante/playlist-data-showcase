@@ -13,7 +13,9 @@ import { useTabContext } from '../../App';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
+import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { ColorExtractor } from 'playlist-data-engine';
+import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
 /**
  * AudioAnalysisTab Component
@@ -66,6 +68,10 @@ export function AudioAnalysisTab() {
     beatMap,
     error: beatError,
   } = useBeatDetection();
+
+  // Beat detection store for practice mode
+  const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
+  const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
 
   /**
    * Map beat generation phases to human-readable labels
@@ -250,6 +256,13 @@ export function AudioAnalysisTab() {
 
     await generateBeatMap(selectedTrack.audio_url, audioId);
   }, [selectedTrack, generateBeatMap]);
+
+  /**
+   * Handle starting practice mode after beat map generation.
+   */
+  const handleStartPracticeMode = useCallback(() => {
+    startPracticeMode();
+  }, [startPracticeMode]);
 
   const handleApplyMultipliers = async () => {
     if (!selectedTrack?.audio_url) return;
@@ -662,6 +675,13 @@ export function AudioAnalysisTab() {
                     <div className="audio-analysis-error-message">
                       {beatError}
                     </div>
+                  )}
+                  {/* Beat Map Summary - shown after successful analysis */}
+                  {beatMap && !isBeatGenerating && !practiceModeActive && (
+                    <BeatMapSummary
+                      beatMap={beatMap}
+                      onStartPractice={handleStartPracticeMode}
+                    />
                   )}
                 </>
               ) : (
