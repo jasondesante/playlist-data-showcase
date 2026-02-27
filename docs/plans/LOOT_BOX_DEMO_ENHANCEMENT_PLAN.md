@@ -52,13 +52,13 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
 - [x] `spawnTreasureHoard()` already returns `totalValue` from engine (no change needed)
 
 ### Task 2.2: Add multi-rarity spawn support
-- [ ] Add new type `RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary'`
-- [ ] Implement `spawnByMultipleRarities(rarities: RarityOption[], count: number, seed?: string): Promise<LootBoxResult>`
+- [x] Add new type `RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary'`
+- [x] Implement `spawnByMultipleRarities(rarities: RarityOption[], count: number, seed?: string): Promise<LootBoxResult>`
   - Validate at least one rarity selected
   - Distribute count evenly across selected rarities
   - Use weighted selection within each rarity pool
   - Calculate and return `totalValue`
-- [ ] Add to hook's return interface
+- [x] Add to hook's return interface
 
 ### Task 2.3: Add box item spawning support
 - [ ] Import `BoxOpener` and `BoxContents` types from `playlist-data-engine`

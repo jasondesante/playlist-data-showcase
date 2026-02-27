@@ -10,6 +10,11 @@ import { logger } from '@/utils/logger';
 import { calculateTotalValue } from '@/utils/itemValue';
 
 /**
+ * Rarity options for equipment spawning
+ */
+export type RarityOption = 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
+
+/**
  * Result interface for all loot box spawning methods
  */
 export interface LootBoxResult {
@@ -34,13 +39,15 @@ export interface UseLootBoxReturn {
     /** Spawn random items using weighted selection */
     spawnRandomItems: (count: number, seed?: string) => Promise<LootBoxResult>;
     /** Spawn items of a specific rarity */
-    spawnByRarity: (rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary', count: number, seed?: string) => Promise<LootBoxResult>;
+    spawnByRarity: (rarity: RarityOption, count: number, seed?: string) => Promise<LootBoxResult>;
+    /** Spawn items from multiple rarities, distributing count evenly */
+    spawnByMultipleRarities: (rarities: RarityOption[], count: number, seed?: string) => Promise<LootBoxResult>;
     /** Spawn a treasure hoard based on challenge rating */
     spawnTreasureHoard: (cr: number, seed?: string) => Promise<LootBoxResult>;
     /** Spawn specific items by name */
     spawnFromList: (itemNames: string[], seed?: string) => Promise<LootBoxResult>;
     /** Spawn magic items, optionally filtered by rarity */
-    spawnMagicItems: (count: number, rarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary', seed?: string) => Promise<LootBoxResult>;
+    spawnMagicItems: (count: number, rarity?: RarityOption, seed?: string) => Promise<LootBoxResult>;
     /** Get total count of magic items available */
     getMagicItemCount: () => number;
     /** Clear the spawned items */
@@ -87,6 +94,7 @@ export interface UseLootBoxReturn {
  *   spawnRandomItems,
  *   spawnTreasureHoard,
  *   spawnByRarity,
+ *   spawnByMultipleRarities,
  *   spawnFromList,
  *   spawnMagicItems,
  *   getMagicItemCount,
@@ -104,6 +112,9 @@ export interface UseLootBoxReturn {
  *
  * // Spawn 3 rare items
  * const rareItems = await spawnByRarity('rare', 3);
+ *
+ * // Spawn 5 items from a mix of rarities
+ * const mixedItems = await spawnByMultipleRarities(['uncommon', 'rare'], 5);
  *
  * // Spawn specific items by name
  * const specificItems = await spawnFromList(['Longsword', 'Plate Armor']);
@@ -175,7 +186,7 @@ export const useLootBox = (): UseLootBoxReturn => {
      * Spawn items of a specific rarity
      */
     const spawnByRarity = useCallback(async (
-        rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary',
+        rarity: RarityOption,
         count: number,
         seed?: string
     ): Promise<LootBoxResult> => {
@@ -208,6 +219,85 @@ export const useLootBox = (): UseLootBoxReturn => {
             setIsLoading(false);
         }
     }, [createRNG]);
+
+    /**
+     * Spawn items from multiple rarities, distributing count evenly across selected rarities
+     *
+     * @param rarities - Array of rarity options to spawn from
+     * @param count - Total number of items to spawn
+     * @param seed - Optional seed for deterministic results
+     * @returns LootBoxResult with items and total value
+     */
+    const spawnByMultipleRarities = useCallback(async (
+        rarities: RarityOption[],
+        count: number,
+        seed?: string
+    ): Promise<LootBoxResult> => {
+        // Validate at least one rarity selected
+        if (rarities.length === 0) {
+            logger.warn('LootBox', 'No rarities selected for multi-rarity spawn');
+            return { items: [], totalValue: 0 };
+        }
+
+        // If only one rarity, delegate to spawnByRarity
+        if (rarities.length === 1) {
+            return spawnByRarity(rarities[0], count, seed);
+        }
+
+        setIsLoading(true);
+
+        try {
+            const rng = createRNG(seed);
+            const allItems: EnhancedEquipment[] = [];
+
+            // Distribute count evenly across selected rarities
+            const baseCountPerRarity = Math.floor(count / rarities.length);
+            const remainder = count % rarities.length;
+
+            // Create a distribution array with counts for each rarity
+            const distribution = rarities.map((rarity, index) => ({
+                rarity,
+                count: baseCountPerRarity + (index < remainder ? 1 : 0)
+            }));
+
+            // Spawn items for each rarity
+            for (const { rarity, count: rarityCount } of distribution) {
+                if (rarityCount > 0) {
+                    // Create a unique seed for each rarity to ensure variety
+                    const raritySeed = seed ? `${seed}_${rarity}` : undefined;
+                    const rarityRng = createRNG(raritySeed);
+                    const items = EquipmentSpawnHelper.spawnByRarity(rarity, rarityCount, rarityRng);
+                    allItems.push(...items);
+                }
+            }
+
+            // Shuffle the combined items using the main RNG
+            const shuffledItems = allItems.sort(() => rng.random() - 0.5);
+            const totalValue = calculateTotalValue(shuffledItems);
+
+            const result: LootBoxResult = { items: shuffledItems, totalValue };
+
+            setSpawnedItems(shuffledItems);
+            setLastHoardResult(result);
+
+            logger.info('LootBox', `Spawned ${shuffledItems.length} items from multiple rarities`, {
+                rarities,
+                count,
+                distribution: distribution.map(d => `${d.rarity}:${d.count}`).join(', '),
+                seed: seed || 'random',
+                totalValue,
+                items: shuffledItems.map(i => ({ name: i.name, rarity: i.rarity }))
+            });
+
+            return result;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error('LootBox', 'Failed to spawn items by multiple rarities', { rarities, count, error: errorMessage });
+            return { items: [], totalValue: 0 };
+        } finally {
+            setIsLoading(false);
+        }
+    }, [createRNG, spawnByRarity]);
 
     /**
      * Spawn a treasure hoard based on challenge rating
@@ -296,7 +386,7 @@ export const useLootBox = (): UseLootBoxReturn => {
      */
     const spawnMagicItems = useCallback(async (
         count: number,
-        rarity?: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary',
+        rarity?: RarityOption,
         seed?: string
     ): Promise<LootBoxResult> => {
         setIsLoading(true);
@@ -364,6 +454,7 @@ export const useLootBox = (): UseLootBoxReturn => {
         lastHoardResult,
         spawnRandomItems,
         spawnByRarity,
+        spawnByMultipleRarities,
         spawnTreasureHoard,
         spawnFromList,
         spawnMagicItems,
