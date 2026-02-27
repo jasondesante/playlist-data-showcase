@@ -5,3 +5,4 @@ export * from './sensorStore';
 export * from './appStore';
 export * from './dataViewerStore';
 export * from './progressionConfigStore';
+export * from './beatDetectionStore';

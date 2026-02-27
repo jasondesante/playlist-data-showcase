@@ -27,23 +27,23 @@ All three elements (audio, visual beats, tap detection) work **together continuo
   - [x] Export `BeatMapGenerationProgress` from engine
 
 ### 1.2 Beat Detection Store
-- [ ] Create `src/store/beatDetectionStore.ts`
-  - [ ] State: `beatMap: BeatMap | null`
-  - [ ] State: `isGenerating: boolean`
-  - [ ] State: `generationProgress: BeatMapGenerationProgress | null`
-  - [ ] State: `generatorOptions: BeatMapGeneratorOptions` (with defaults)
-  - [ ] State: `cachedBeatMaps: Record<string, BeatMap>` (localStorage cache)
-  - [ ] State: `practiceModeActive: boolean` - whether we're in the interactive practice mode
-  - [ ] State: `tapHistory: TapResult[]` - running history of tap accuracy results
-  - [ ] Actions: `generateBeatMap(audioUrl, audioId, options?)`
-  - [ ] Actions: `cancelGeneration()`
-  - [ ] Actions: `setGeneratorOptions(options)`
-  - [ ] Actions: `clearBeatMap()`
-  - [ ] Actions: `startPracticeMode()` / `stopPracticeMode()`
-  - [ ] Actions: `recordTap(result)` - add tap result to history
-  - [ ] Actions: `clearTapHistory()`
-  - [ ] Actions: `loadCachedBeatMap(audioId)` / `cacheBeatMap(audioId, beatMap)`
-  - [ ] Implement localStorage persistence with track ID as key
+- [x] Create `src/store/beatDetectionStore.ts`
+  - [x] State: `beatMap: BeatMap | null`
+  - [x] State: `isGenerating: boolean`
+  - [x] State: `generationProgress: BeatMapGenerationProgress | null`
+  - [x] State: `generatorOptions: BeatMapGeneratorOptions` (with defaults)
+  - [x] State: `cachedBeatMaps: Record<string, BeatMap>` (localStorage cache)
+  - [x] State: `practiceModeActive: boolean` - whether we're in the interactive practice mode
+  - [x] State: `tapHistory: TapResult[]` - running history of tap accuracy results
+  - [x] Actions: `generateBeatMap(audioUrl, audioId, options?)`
+  - [x] Actions: `cancelGeneration()`
+  - [x] Actions: `setGeneratorOptions(options)`
+  - [x] Actions: `clearBeatMap()`
+  - [x] Actions: `startPracticeMode()` / `stopPracticeMode()`
+  - [x] Actions: `recordTap(result)` - add tap result to history
+  - [x] Actions: `clearTapHistory()`
+  - [x] Actions: `loadCachedBeatMap(audioId)` / `cacheBeatMap(audioId, beatMap)`
+  - [x] Implement localStorage persistence with track ID as key
 
 ### 1.3 Beat Detection Hook
 - [ ] Create `src/hooks/useBeatDetection.ts`

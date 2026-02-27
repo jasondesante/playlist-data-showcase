@@ -32,7 +32,8 @@ type LogCategory =
     | 'SpawnMode'
     | 'ContentCreator'
     | 'ContentValidation'
-    | 'ClassConfigForm';
+    | 'ClassConfigForm'
+    | 'BeatDetection';
 
 
 
