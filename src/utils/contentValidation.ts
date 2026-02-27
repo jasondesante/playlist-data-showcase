@@ -93,7 +93,7 @@ export const VALID_ABILITIES = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as con
 export type Ability = typeof VALID_ABILITIES[number];
 
 /** Valid equipment types */
-export const VALID_EQUIPMENT_TYPES = ['weapon', 'armor', 'item'] as const;
+export const VALID_EQUIPMENT_TYPES = ['weapon', 'armor', 'item', 'box'] as const;
 export type EquipmentType = typeof VALID_EQUIPMENT_TYPES[number];
 
 /** Valid equipment rarities */

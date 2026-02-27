@@ -10,6 +10,7 @@ import { CharacterCard } from '../ui/CharacterCard';
 import {
     SPELL_DATABASE,
     ExtensionManager,
+    PlaylistParser,
     type CharacterSheet,
     type EncounterGenerationOptions,
     type EnemyRarity,
@@ -19,6 +20,8 @@ import {
     type EnemyMixMode,
     type CombatConfig,
     type Equipment,
+    type BoxContents,
+    type BoxDropPool,
     getXPBudgetPerLevel,
     getXPForCR,
     getEncounterMultiplier,
@@ -27,7 +30,7 @@ import {
 } from 'playlist-data-engine';
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
-import type { PlaylistTrack } from '../../types';
+import type { PlaylistTrack, ServerlessPlaylist } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';
 import { EncounterSummaryPanel } from '../combat/EncounterSummaryPanel';
@@ -297,10 +300,8 @@ export interface TreasureCustomItem {
     type: 'weapon' | 'armor' | 'item' | 'box';
     /** Optional tags for categorization (e.g., 'consumable', 'gear', 'tools', 'magic') */
     tags?: string[];
-    /** Optional quantity (mainly for boxes) */
+    /** Optional quantity (for boxes) */
     quantity?: number;
-    /** Box contents configuration (only for 'box' type) */
-    boxContents?: import('playlist-data-engine').BoxContents;
 }
 
 /**
@@ -365,7 +366,21 @@ type TreasureItemEntry = {
     name: string;
     rarity: 'common' | 'uncommon' | 'rare' | 'very-rare' | 'legendary';
     tags?: string[];
+    /** Box contents (only for box type items) */
+    boxContents?: BoxContents;
 };
+
+/**
+ * Calculate probability percentage for each pool entry
+ */
+function calculatePoolProbabilities(pool: BoxDropPool[]): Array<{ entry: BoxDropPool; percentage: number }> {
+    const totalWeight = pool.reduce((sum, entry) => sum + (entry.weight || 0), 0);
+    if (totalWeight === 0) return pool.map(entry => ({ entry, percentage: 0 }));
+    return pool.map(entry => ({
+        entry,
+        percentage: Math.round((entry.weight / totalWeight) * 100)
+    }));
+}
 
 /**
  * Hook to load treasure items dynamically from the data engine
@@ -410,7 +425,8 @@ function useTreasureItems(): Record<TreasureCustomItem['type'], TreasureItemEntr
                         itemsByType.box.push({
                             name: eq.name,
                             rarity: eq.rarity as TreasureItemEntry['rarity'],
-                            tags: eq.tags
+                            tags: eq.tags,
+                            boxContents: eq.boxContents
                         });
                     }
                 });
@@ -740,6 +756,7 @@ export function CombatSimulatorTab() {
   // State: New custom item being added
   const [newItemName, setNewItemName] = useState('');
   const [newItemType, setNewItemType] = useState<TreasureCustomItem['type']>('item');
+  const [newItemQuantity, setNewItemQuantity] = useState(1);
 
   // Load treasure items from data engine (uses ExtensionManager)
   const treasureItemsDatabase = useTreasureItems();
@@ -767,7 +784,9 @@ export function CombatSimulatorTab() {
       name: newItemName.trim(),
       type: newItemType,
       // Include tags from database if available
-      ...(itemData?.tags && itemData.tags.length > 0 ? { tags: itemData.tags } : {})
+      ...(itemData?.tags && itemData.tags.length > 0 ? { tags: itemData.tags } : {}),
+      // Include quantity for boxes
+      ...(newItemType === 'box' ? { quantity: newItemQuantity } : {})
     };
 
     setTreasureConfig(prev => ({
@@ -778,9 +797,10 @@ export function CombatSimulatorTab() {
     // Reset input fields
     setNewItemName('');
     setNewItemType('item');
+    setNewItemQuantity(1);
 
-    logger.info('CombatSimulator', 'Added custom treasure item', { name: newItem.name, type: newItem.type, tags: newItem.tags });
-  }, [newItemName, newItemType, treasureItemsDatabase]);
+    logger.info('CombatSimulator', 'Added custom treasure item', { name: newItem.name, type: newItem.type, tags: newItem.tags, quantity: newItem.quantity });
+  }, [newItemName, newItemType, newItemQuantity, treasureItemsDatabase]);
 
   // Handler: Remove custom item from treasure
   const handleRemoveCustomItem = useCallback((itemId: string) => {
@@ -876,12 +896,14 @@ export function CombatSimulatorTab() {
       }
       // If goldMode is 'none', we don't set gold property
 
-      // Convert custom items (include tags if present)
+      // Convert custom items (include tags if present, and quantity for boxes)
       if (treasureConfig.customItems.length > 0) {
         engineTreasureConfig.items = treasureConfig.customItems.map(item => ({
           name: item.name,
           type: item.type,
-          ...(item.tags && item.tags.length > 0 ? { tags: item.tags } : {})
+          ...(item.tags && item.tags.length > 0 ? { tags: item.tags } : {}),
+          // Include quantity for boxes (default to 1)
+          ...(item.type === 'box' ? { quantity: item.quantity ?? 1 } : {})
         }));
       }
 
@@ -938,6 +960,66 @@ export function CombatSimulatorTab() {
 
   // Access playlist store for audio-influenced generation
   const { currentPlaylist } = usePlaylistStore();
+
+  // State: Custom playlist for enemy generation (separate from global store)
+  const [customEnemyPlaylist, setCustomEnemyPlaylist] = useState<ServerlessPlaylist | null>(null);
+  const [customPlaylistUrl, setCustomPlaylistUrl] = useState('');
+  const [isLoadingCustomPlaylist, setIsLoadingCustomPlaylist] = useState(false);
+  const [customPlaylistError, setCustomPlaylistError] = useState<string | null>(null);
+  const [useCustomPlaylist, setUseCustomPlaylist] = useState(false);
+
+  // Playlist parser instance for custom playlist
+  const [playlistParser] = useState(() => new PlaylistParser());
+
+  // Handler: Load custom playlist for enemy generation
+  const handleLoadCustomPlaylist = useCallback(async () => {
+    if (!customPlaylistUrl.trim()) return;
+
+    setIsLoadingCustomPlaylist(true);
+    setCustomPlaylistError(null);
+
+    try {
+      const trimmedInput = customPlaylistUrl.trim();
+      const isJson = trimmedInput.startsWith('{');
+
+      let playlist;
+
+      if (isJson) {
+        const json = JSON.parse(trimmedInput);
+        playlist = await playlistParser.parse(json);
+      } else {
+        // Fetch from Arweave
+        const response = await fetch(`https://arweave.net/${trimmedInput}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch playlist: ${response.status}`);
+        }
+        const json = await response.json();
+        playlist = await playlistParser.parse(json as Parameters<typeof playlistParser.parse>[0]);
+      }
+
+      setCustomEnemyPlaylist(playlist);
+      setUseCustomPlaylist(true);
+      logger.info('CombatSimulator', 'Loaded custom playlist for enemies', { name: playlist.name, tracks: playlist.tracks.length });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load custom playlist';
+      setCustomPlaylistError(errorMessage);
+      setCustomEnemyPlaylist(null);
+      logger.error('CombatSimulator', 'Failed to load custom playlist', errorMessage);
+    } finally {
+      setIsLoadingCustomPlaylist(false);
+    }
+  }, [customPlaylistUrl, playlistParser]);
+
+  // Handler: Clear custom playlist
+  const handleClearCustomPlaylist = useCallback(() => {
+    setCustomEnemyPlaylist(null);
+    setCustomPlaylistUrl('');
+    setUseCustomPlaylist(false);
+    setCustomPlaylistError(null);
+  }, []);
+
+  // Get the active playlist for enemy generation (custom or global)
+  const activeEnemyPlaylist = useCustomPlaylist && customEnemyPlaylist ? customEnemyPlaylist : currentPlaylist;
 
   // Hook for audio-influenced enemy generation (Phase 3.2)
   const audioEnemyGenerator = useAudioEnemyGeneration();
@@ -1184,9 +1266,9 @@ export function CombatSimulatorTab() {
 
   // Handler: Random selection of N songs
   const handleRandomAudioSelection = useCallback(() => {
-    if (!currentPlaylist?.tracks) return;
+    if (!activeEnemyPlaylist?.tracks) return;
 
-    const tracks = [...currentPlaylist.tracks];
+    const tracks = [...activeEnemyPlaylist.tracks];
     const count = Math.min(generationConfig.count, tracks.length);
 
     // Fisher-Yates shuffle and pick first N
@@ -1196,7 +1278,7 @@ export function CombatSimulatorTab() {
     }
 
     setSelectedAudioTracks(tracks.slice(0, count));
-  }, [currentPlaylist, generationConfig.count]);
+  }, [activeEnemyPlaylist, generationConfig.count]);
 
   // End of Phase 3.1 state management
   // ============================================================
@@ -2762,7 +2844,7 @@ export function CombatSimulatorTab() {
               <div className="combat-audio-header">
                 <div
                   className="combat-audio-title-row"
-                  onClick={() => currentPlaylist?.tracks?.length && handleToggleAudioInfluenced()}
+                  onClick={() => activeEnemyPlaylist?.tracks?.length && handleToggleAudioInfluenced()}
                 >
                   <span className="combat-audio-title">🎵 Audio-Influenced</span>
                   <label className="toggle-switch" onClick={(e) => e.stopPropagation()}>
@@ -2771,24 +2853,82 @@ export function CombatSimulatorTab() {
                       checked={audioInfluenced}
                       onChange={handleToggleAudioInfluenced}
                       className="toggle-checkbox"
-                      disabled={!currentPlaylist?.tracks?.length}
+                      disabled={!activeEnemyPlaylist?.tracks?.length}
                     />
                   </label>
                 </div>
-                {!currentPlaylist?.tracks?.length && (
+                {!activeEnemyPlaylist?.tracks?.length && (
                   <p className="combat-audio-warning">
                     Load a playlist first to enable audio-influenced generation
                   </p>
                 )}
-                {audioInfluenced && currentPlaylist?.tracks && (
+                {audioInfluenced && activeEnemyPlaylist?.tracks && (
                   <p className="combat-audio-hint">
                     Select songs to influence enemy generation. Audio characteristics will affect enemy types.
                   </p>
                 )}
               </div>
 
+              {/* Custom Playlist Input */}
+              {audioInfluenced && (
+                <div className="combat-audio-custom-playlist">
+                  <div className="combat-audio-custom-header">
+                    <span className="combat-audio-custom-label">
+                      Playlist Source: {useCustomPlaylist && customEnemyPlaylist ? customEnemyPlaylist.name : 'Default (Hero Playlist)'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setUseCustomPlaylist(!useCustomPlaylist)}
+                      className="combat-audio-toggle-custom"
+                      disabled={!customEnemyPlaylist}
+                      title={customEnemyPlaylist ? 'Toggle between custom and default playlist' : 'Load a custom playlist first'}
+                    >
+                      {useCustomPlaylist ? 'Use Default' : 'Use Custom'}
+                    </button>
+                  </div>
+                  <div className="combat-audio-custom-input-row">
+                    <input
+                      type="text"
+                      value={customPlaylistUrl}
+                      onChange={(e) => setCustomPlaylistUrl(e.target.value)}
+                      placeholder="Enter Arweave ID or paste JSON for custom enemy playlist..."
+                      className="combat-config-input combat-audio-custom-input"
+                      disabled={isLoadingCustomPlaylist}
+                    />
+                    {customEnemyPlaylist ? (
+                      <button
+                        type="button"
+                        onClick={handleClearCustomPlaylist}
+                        className="combat-audio-load-button combat-audio-clear-button"
+                        title="Clear custom playlist"
+                      >
+                        Clear
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleLoadCustomPlaylist}
+                        disabled={!customPlaylistUrl.trim() || isLoadingCustomPlaylist}
+                        className="combat-audio-load-button"
+                        title="Load custom playlist"
+                      >
+                        {isLoadingCustomPlaylist ? 'Loading...' : 'Load'}
+                      </button>
+                    )}
+                  </div>
+                  {customPlaylistError && (
+                    <p className="combat-audio-error">{customPlaylistError}</p>
+                  )}
+                  {customEnemyPlaylist && (
+                    <p className="combat-audio-success">
+                      ✓ Loaded: {customEnemyPlaylist.name} ({customEnemyPlaylist.tracks.length} tracks)
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Song Selector - shown when audio mode is enabled */}
-              {audioInfluenced && currentPlaylist?.tracks && (
+              {audioInfluenced && activeEnemyPlaylist?.tracks && (
                 <div className="combat-audio-selector">
                   <div className="combat-audio-selector-header">
                     <span className="combat-audio-selector-label">
@@ -2805,7 +2945,7 @@ export function CombatSimulatorTab() {
                   </div>
 
                   <div className="combat-audio-tracks-list">
-                    {currentPlaylist.tracks.map((track, index) => {
+                    {activeEnemyPlaylist.tracks.map((track, index) => {
                       const isSelected = selectedAudioTracks.some(
                         t => t.title === track.title && t.artist === track.artist
                       );
@@ -2981,7 +3121,12 @@ export function CombatSimulatorTab() {
                             {treasureConfig.customItems.map((item) => (
                               <div key={item.id} className="combat-treasure-item-chip">
                                 <span className="combat-treasure-item-type-badge">{item.type}</span>
-                                <span className="combat-treasure-item-name">{item.name}</span>
+                                <span className="combat-treasure-item-name">
+                                  {item.name}
+                                  {item.type === 'box' && item.quantity && item.quantity > 1 && (
+                                    <span className="combat-treasure-item-quantity"> ×{item.quantity}</span>
+                                  )}
+                                </span>
                                 {item.tags && item.tags.length > 0 && (
                                   <span className="combat-treasure-item-tags">
                                     {item.tags.slice(0, 2).map(tag => (
@@ -3011,8 +3156,11 @@ export function CombatSimulatorTab() {
                               <select
                                 value={newItemType}
                                 onChange={(e) => {
-                                  setNewItemType(e.target.value as TreasureCustomItem['type']);
+                                  const newType = e.target.value as TreasureCustomItem['type'];
+                                  setNewItemType(newType);
                                   setNewItemName(''); // Reset item name when type changes
+                                  // Reset quantity when changing type
+                                  setNewItemQuantity(1);
                                 }}
                                 className="combat-config-select"
                               >
@@ -3023,82 +3171,191 @@ export function CombatSimulatorTab() {
                             </div>
                             <div className="combat-treasure-field combat-treasure-add-name">
                               <label className="combat-config-label">Select Item</label>
-                              <select
-                                value={newItemName}
-                                onChange={(e) => setNewItemName(e.target.value)}
-                                className="combat-config-select"
-                              >
-                                <option value="">-- Choose an item --</option>
-                                {(() => {
-                                  const items = treasureItemsDatabase[newItemType];
 
-                                  // For 'item' type, group by primary tag for better organization
-                                  if (newItemType === 'item') {
-                                    const tagGroups: Record<string, string> = {
-                                      'consumable': 'Consumables',
-                                      'gear': 'Adventuring Gear',
-                                      'tools': 'Tools',
-                                      'magic': 'Magic Items'
+                              {/* For boxes, show a special list with contents preview */}
+                              {newItemType === 'box' ? (
+                                <div className="combat-treasure-box-list">
+                                  {treasureItemsDatabase.box.length === 0 ? (
+                                    <p className="combat-treasure-box-empty">No loot boxes available</p>
+                                  ) : (
+                                    treasureItemsDatabase.box.map((item) => {
+                                      const isSelected = newItemName === item.name;
+                                      const dropCount = item.boxContents?.drops?.length || 0;
+                                      return (
+                                        <button
+                                          key={item.name}
+                                          type="button"
+                                          onClick={() => setNewItemName(isSelected ? '' : item.name)}
+                                          className={`combat-treasure-box-item ${isSelected ? 'combat-treasure-box-item-selected' : ''}`}
+                                        >
+                                          <div className="combat-treasure-box-item-header">
+                                            <span className="combat-treasure-box-item-name">{item.name}</span>
+                                            <span className={`combat-treasure-box-item-rarity combat-rarity-${item.rarity}`}>
+                                              {item.rarity}
+                                            </span>
+                                          </div>
+                                          <div className="combat-treasure-box-item-preview">
+                                            {dropCount} drop{dropCount !== 1 ? 's' : ''}
+                                          </div>
+                                        </button>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              ) : (
+                                <select
+                                  value={newItemName}
+                                  onChange={(e) => setNewItemName(e.target.value)}
+                                  className="combat-config-select"
+                                >
+                                  <option value="">-- Choose an item --</option>
+                                  {(() => {
+                                    const items = treasureItemsDatabase[newItemType];
+
+                                    // For 'item' type, group by primary tag for better organization
+                                    if (newItemType === 'item') {
+                                      const tagGroups: Record<string, string> = {
+                                        'consumable': 'Consumables',
+                                        'gear': 'Adventuring Gear',
+                                        'tools': 'Tools',
+                                        'magic': 'Magic Items'
+                                      };
+
+                                      // Group items by their primary tag
+                                      const itemsByTag: Record<string, typeof items> = {};
+                                      items.forEach(item => {
+                                        const primaryTag = item.tags?.[0] || 'gear';
+                                        if (!itemsByTag[primaryTag]) itemsByTag[primaryTag] = [];
+                                        itemsByTag[primaryTag].push(item);
+                                      });
+
+                                      return Object.entries(tagGroups).map(([tag, label]) => {
+                                        const tagItems = itemsByTag[tag];
+                                        if (!tagItems || tagItems.length === 0) return null;
+
+                                        // Sort items within each tag group by rarity
+                                        const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'];
+                                        tagItems.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
+
+                                        return (
+                                          <optgroup key={tag} label={label}>
+                                            {tagItems.map(item => (
+                                              <option key={item.name} value={item.name}>{item.name}</option>
+                                            ))}
+                                          </optgroup>
+                                        );
+                                      });
+                                    }
+
+                                    // For weapon/armor, keep existing rarity-based grouping
+                                    const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'] as const;
+                                    const rarityLabels: Record<string, string> = {
+                                      'common': 'Common',
+                                      'uncommon': 'Uncommon',
+                                      'rare': 'Rare',
+                                      'very-rare': 'Very Rare',
+                                      'legendary': 'Legendary'
                                     };
 
-                                    // Group items by their primary tag
-                                    const itemsByTag: Record<string, typeof items> = {};
-                                    items.forEach(item => {
-                                      const primaryTag = item.tags?.[0] || 'gear';
-                                      if (!itemsByTag[primaryTag]) itemsByTag[primaryTag] = [];
-                                      itemsByTag[primaryTag].push(item);
-                                    });
-
-                                    return Object.entries(tagGroups).map(([tag, label]) => {
-                                      const tagItems = itemsByTag[tag];
-                                      if (!tagItems || tagItems.length === 0) return null;
-
-                                      // Sort items within each tag group by rarity
-                                      const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'];
-                                      tagItems.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
-
+                                    return rarityOrder.map(rarity => {
+                                      const itemsOfRarity = items.filter(item => item.rarity === rarity);
+                                      if (itemsOfRarity.length === 0) return null;
                                       return (
-                                        <optgroup key={tag} label={label}>
-                                          {tagItems.map(item => (
+                                        <optgroup key={rarity} label={rarityLabels[rarity]}>
+                                          {itemsOfRarity.map(item => (
                                             <option key={item.name} value={item.name}>{item.name}</option>
                                           ))}
                                         </optgroup>
                                       );
                                     });
-                                  }
-
-                                  // For weapon/armor, keep existing rarity-based grouping
-                                  const rarityOrder = ['common', 'uncommon', 'rare', 'very-rare', 'legendary'] as const;
-                                  const rarityLabels: Record<string, string> = {
-                                    'common': 'Common',
-                                    'uncommon': 'Uncommon',
-                                    'rare': 'Rare',
-                                    'very-rare': 'Very Rare',
-                                    'legendary': 'Legendary'
-                                  };
-
-                                  return rarityOrder.map(rarity => {
-                                    const itemsOfRarity = items.filter(item => item.rarity === rarity);
-                                    if (itemsOfRarity.length === 0) return null;
-                                    return (
-                                      <optgroup key={rarity} label={rarityLabels[rarity]}>
-                                        {itemsOfRarity.map(item => (
-                                          <option key={item.name} value={item.name}>{item.name}</option>
-                                        ))}
-                                      </optgroup>
-                                    );
-                                  });
-                                })()}
-                              </select>
+                                  })()}
+                                </select>
+                              )}
                             </div>
                           </div>
+
+                          {/* Box-specific options: quantity and contents preview */}
+                          {newItemType === 'box' && newItemName.trim() && (() => {
+                            const selectedBox = treasureItemsDatabase.box.find(b => b.name === newItemName);
+                            return (
+                            <div className="combat-treasure-box-options">
+                              <div className="combat-treasure-field combat-treasure-quantity-field">
+                                <label className="combat-config-label">Quantity</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="99"
+                                  value={newItemQuantity}
+                                  onChange={(e) => setNewItemQuantity(parseInt(e.target.value) || 1)}
+                                  className="combat-config-input combat-treasure-quantity-input"
+                                />
+                                <p className="combat-config-hint">Number of this loot box to award</p>
+                              </div>
+
+                              {/* Box Contents Preview */}
+                              {selectedBox?.boxContents && (
+                                <div className="combat-treasure-box-contents-preview">
+                                  <label className="combat-config-label">📦 Box Contents</label>
+                                  <div className="combat-treasure-box-drops">
+                                    {selectedBox.boxContents.drops.map((drop, dropIndex) => {
+                                      const probabilities = calculatePoolProbabilities(drop.pool);
+                                      const hasMultipleOptions = drop.pool.length > 1;
+
+                                      return (
+                                        <div key={dropIndex} className="combat-treasure-box-drop">
+                                          <div className="combat-treasure-box-drop-header">
+                                            <span className="combat-treasure-box-drop-number">Drop {dropIndex + 1}</span>
+                                            {hasMultipleOptions && (
+                                              <span className="combat-treasure-box-drop-random">🎲 Random</span>
+                                            )}
+                                          </div>
+                                          <div className="combat-treasure-box-drop-pool">
+                                            {probabilities.map(({ entry, percentage }, poolIndex) => (
+                                              <div key={poolIndex} className="combat-treasure-box-pool-entry">
+                                                <div className="combat-treasure-box-pool-bar">
+                                                  <div
+                                                    className="combat-treasure-box-pool-fill"
+                                                    style={{ width: `${percentage}%` }}
+                                                  />
+                                                </div>
+                                                <span className="combat-treasure-box-pool-item">
+                                                  {entry.itemName || `${entry.gold} gold`}
+                                                </span>
+                                                <span className="combat-treasure-box-pool-chance">
+                                                  {percentage}%
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Opening Requirements */}
+                                  {selectedBox.boxContents.openRequirements && selectedBox.boxContents.openRequirements.length > 0 && (
+                                    <div className="combat-treasure-box-requirements">
+                                      <span className="combat-treasure-box-requirements-label">🔒 Requires:</span>
+                                      {selectedBox.boxContents.openRequirements.map((req, reqIndex) => (
+                                        <span key={reqIndex} className="combat-treasure-box-requirement">
+                                          {req.itemName} ×{req.quantity}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                          })()}
+
                           <button
                             type="button"
                             onClick={handleAddCustomItem}
                             disabled={!newItemName.trim()}
                             className={`combat-treasure-add-button ${!newItemName.trim() ? 'combat-treasure-add-button-disabled' : ''}`}
                           >
-                            + Add Item
+                            + Add {newItemType === 'box' ? 'Loot Box' : 'Item'}
                           </button>
                         </div>
                       </div>
