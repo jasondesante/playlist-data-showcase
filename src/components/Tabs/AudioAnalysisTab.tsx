@@ -18,6 +18,7 @@ import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
+import { logger } from '../../utils/logger';
 
 /**
  * AudioAnalysisTab Component
@@ -76,8 +77,35 @@ export function AudioAnalysisTab() {
   const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
   const clearStorageError = useBeatDetectionStore((state) => state.actions.clearStorageError);
   const clearOldestCachedBeatMaps = useBeatDetectionStore((state) => state.actions.clearOldestCachedBeatMaps);
+  const loadCachedBeatMap = useBeatDetectionStore((state) => state.actions.loadCachedBeatMap);
+  const clearBeatMap = useBeatDetectionStore((state) => state.actions.clearBeatMap);
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
   const storageError = useBeatDetectionStore((state) => state.storageError);
+
+  /**
+   * Load cached beat map when the selected track changes.
+   * This ensures that previously analyzed tracks show their cached beat map
+   * immediately when selected, without requiring the user to click "Analyze Beats" again.
+   */
+  useEffect(() => {
+    // Only run when in beat mode or when track changes
+    if (!selectedTrack) {
+      return;
+    }
+
+    const audioId = selectedTrack.id || selectedTrack.audio_url;
+
+    // Try to load cached beat map for this track
+    const cached = loadCachedBeatMap(audioId);
+
+    if (cached) {
+      logger.info('BeatDetection', 'Loaded cached beat map for track', { audioId });
+    } else {
+      // Clear the current beat map if no cached version exists for this track
+      // This prevents showing stale beat map data from a previous track
+      clearBeatMap();
+    }
+  }, [selectedTrack?.id, selectedTrack?.audio_url, loadCachedBeatMap, clearBeatMap]);
 
   /**
    * Map beat generation phases to human-readable labels
