@@ -118,8 +118,8 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
   - Ensure at least one rarity remains selected (validation)
 
 ### Task 3.3: Display GP value for all modes
-- [ ] Move GP display outside the `spawnMode === 'hoard'` conditional
-- [ ] Update condition to show for any mode when `totalValue > 0`:
+- [x] Move GP display outside the `spawnMode === 'hoard'` conditional
+- [x] Update condition to show for any mode when `totalValue > 0`:
   ```tsx
   {lastHoardResult?.totalValue !== undefined && lastHoardResult.totalValue > 0 && (
     <div className="lootbox-total-value">
@@ -131,7 +131,7 @@ Enhance the ItemsTab loot box demo section to improve UI/UX and integrate the ne
     </div>
   )}
   ```
-- [ ] Import `Coins` icon from lucide-react if not already imported
+- [x] Import `Coins` icon from lucide-react if not already imported
 
 ### Task 3.4: Keep both individual and add-all options
 - [ ] Keep the individual "Add to Hero" buttons on each item card (no changes)

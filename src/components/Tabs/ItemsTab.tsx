@@ -76,6 +76,7 @@ import {
   Dices,
   Gem,
   Crown,
+  Coins,
   Plus,
   PlusCircle,
   Trash,
@@ -2030,12 +2031,12 @@ export function ItemsTab() {
                   )}
                 </div>
 
-                {/* Treasure Hoard Value Display */}
-                {lastHoardResult?.totalValue !== undefined && (
-                  <div className="lootbox-hoard-value">
-                    <Crown size={20} />
-                    <span className="lootbox-hoard-label">Treasure Value:</span>
-                    <span className="lootbox-hoard-amount">{lastHoardResult.totalValue} gp</span>
+                {/* Total Value Display - shown for all spawn modes */}
+                {lastHoardResult?.totalValue !== undefined && lastHoardResult.totalValue > 0 && (
+                  <div className="lootbox-total-value">
+                    <Coins size={20} />
+                    <span className="lootbox-value-label">Total Value:</span>
+                    <span className="lootbox-value-amount">{lastHoardResult.totalValue.toLocaleString()} gp</span>
                   </div>
                 )}
 

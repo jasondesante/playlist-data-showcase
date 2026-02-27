@@ -1551,8 +1551,8 @@
   color: hsl(var(--color-destructive-h) var(--color-destructive-s) var(--color-destructive-l));
 }
 
-/* Hoard Value Display */
-.lootbox-hoard-value {
+/* Total Value Display - used for all spawn modes */
+.lootbox-total-value {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1564,12 +1564,12 @@
   color: hsl(var(--cute-yellow));
 }
 
-.lootbox-hoard-label {
+.lootbox-value-label {
   font-size: 0.875rem;
   font-weight: 500;
 }
 
-.lootbox-hoard-amount {
+.lootbox-value-amount {
   font-size: 1rem;
   font-weight: 700;
 }
