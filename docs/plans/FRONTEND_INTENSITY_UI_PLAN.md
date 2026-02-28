@@ -75,10 +75,10 @@ Update the frontend to expose TWO separate controls for beat detection:
 ## Phase 3: Update BeatDetectionSettings Component
 
 ### 3.1 Replace Old Slider with Two New Sliders
-- [ ] In `src/components/ui/BeatDetectionSettings.tsx`:
-  - [ ] Remove old `intensityThreshold` slider
-  - [ ] Add new `sensitivity` slider (0.1-10.0)
-  - [ ] Add new `filter` slider (0.0-1.0)
+- [x] In `src/components/ui/BeatDetectionSettings.tsx`:
+  - [x] Remove old `intensityThreshold` slider
+  - [x] Add new `sensitivity` slider (0.1-10.0)
+  - [x] Add new `filter` slider (0.0-1.0)
 
 ### 3.2 Sensitivity Slider
 ```tsx

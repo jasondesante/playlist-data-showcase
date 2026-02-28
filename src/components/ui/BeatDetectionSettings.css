@@ -167,6 +167,15 @@
   opacity: 0.7;
 }
 
+/* Slider description text */
+.beat-detection-slider-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+  margin-top: 0.125rem;
+  font-style: italic;
+}
+
 /* ============================================
    DUAL SLIDER FOR BPM RANGE
    ============================================ */

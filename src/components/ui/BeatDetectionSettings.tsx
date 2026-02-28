@@ -3,7 +3,8 @@
  *
  * Settings panel for beat detection mode with EQ-style sliders for:
  * - BPM Range (min/max)
- * - Intensity Threshold
+ * - Sensitivity (0.1-10.0) - pre-processing, how aggressively beats are detected
+ * - Filter (0.0-1.0) - post-processing, removes weak beats
  * - Tempo Center
  *
  * Uses the beatDetectionStore for state management.
@@ -14,11 +15,12 @@ import { Info } from 'lucide-react';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
-// Default values for beat detection options
+// Default values for beat detection options (must match engine defaults)
 const DEFAULTS = {
   minBpm: 60,
   maxBpm: 180,
-  sensitivity: 0.3,
+  sensitivity: 1.0,  // Default: 1.0 (range 0.1-10.0)
+  filter: 0.0,       // Default: 0.0 (range 0.0-1.0)
   tempoCenter: 0.5,
 };
 
@@ -35,6 +37,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
   const maxBpm = generatorOptions.maxBpm ?? DEFAULTS.maxBpm;
   const sensitivity = generatorOptions.sensitivity ?? DEFAULTS.sensitivity;
+  const filter = generatorOptions.filter ?? DEFAULTS.filter;
   const tempoCenter = generatorOptions.tempoCenter ?? DEFAULTS.tempoCenter;
 
   // Handle BPM Range changes
@@ -50,9 +53,14 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
     setGeneratorOptions({ maxBpm: newMax });
   };
 
-  // Handle Sensitivity change (0.1 - 1.0)
+  // Handle Sensitivity change (0.1 - 10.0)
   const handleSensitivityChange = (value: number) => {
     setGeneratorOptions({ sensitivity: value });
+  };
+
+  // Handle Filter change (0.0 - 1.0)
+  const handleFilterChange = (value: number) => {
+    setGeneratorOptions({ filter: value });
   };
 
   // Handle Tempo Center change (0.3 - 0.7 seconds)
@@ -66,7 +74,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   // Calculate slider percentages for CSS styling
   const minBpmPercent = ((minBpm - 40) / 200) * 100;
   const maxBpmPercent = ((maxBpm - 40) / 200) * 100;
-  const sensitivityPercent = ((sensitivity - 0.1) / 0.9) * 100;
+  // Sensitivity range: 0.1 to 10.0 (use linear for now, could be logarithmic later)
+  const sensitivityPercent = ((sensitivity - 0.1) / 9.9) * 100;
+  // Filter range: 0.0 to 1.0
+  const filterPercent = (filter / 1.0) * 100;
 
   // Convert tempo center to BPM for display (BPM = 60 / seconds)
   const tempoBpm = Math.round(60 / tempoCenter);
@@ -138,12 +149,12 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
         </div>
       </div>
 
-      {/* Intensity Threshold Slider */}
+      {/* Sensitivity Slider (0.1 - 10.0) */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Sensitivity</span>
           <span className="beat-detection-settings-value">
-            {sensitivity.toFixed(2)}
+            {sensitivity.toFixed(1)}
           </span>
         </div>
 
@@ -151,18 +162,55 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           <input
             type="range"
             min="0.1"
-            max="1.0"
-            step="0.05"
+            max="10"
+            step="0.1"
             value={sensitivity}
             onChange={(e) => handleSensitivityChange(parseFloat(e.target.value))}
             className="beat-detection-slider"
             style={{ '--slider-value': `${sensitivityPercent}%` } as React.CSSProperties}
             disabled={disabled}
-            aria-label="Detection sensitivity"
+            aria-label="Beat detection sensitivity"
           />
           <div className="beat-detection-slider-marks">
-            <span className="beat-detection-slider-mark">Low</span>
-            <span className="beat-detection-slider-mark">High</span>
+            <span className="beat-detection-slider-mark">0.1</span>
+            <span className="beat-detection-slider-mark">1.0</span>
+            <span className="beat-detection-slider-mark">10</span>
+          </div>
+          <div className="beat-detection-slider-description">
+            Lower = fewer beats, Higher = more beats
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Slider (0.0 - 1.0) */}
+      <div className="beat-detection-settings-section">
+        <div className="beat-detection-settings-header">
+          <span className="beat-detection-settings-label">Filter</span>
+          <span className="beat-detection-settings-value">
+            {filter.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="beat-detection-slider-container">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={filter}
+            onChange={(e) => handleFilterChange(parseFloat(e.target.value))}
+            className="beat-detection-slider"
+            style={{ '--slider-value': `${filterPercent}%` } as React.CSSProperties}
+            disabled={disabled}
+            aria-label="Beat intensity filter"
+          />
+          <div className="beat-detection-slider-marks">
+            <span className="beat-detection-slider-mark">0 (all)</span>
+            <span className="beat-detection-slider-mark">0.5</span>
+            <span className="beat-detection-slider-mark">1.0</span>
+          </div>
+          <div className="beat-detection-slider-description">
+            Removes weak beats. 0 = keep all, 1 = only strongest
           </div>
         </div>
       </div>
