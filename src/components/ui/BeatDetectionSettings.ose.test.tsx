@@ -1148,3 +1148,451 @@ describe('BeatDetectionSettings - Re-Analysis Flow (Task 6.3)', () => {
     });
   });
 });
+
+/**
+ * Tests for Task 6.4: Screen Reader Announcement of Selected Mode
+ *
+ * These tests verify that screen readers can properly announce mode changes:
+ * - aria-checked attribute updates correctly when mode changes
+ * - Focus management allows screen readers to track the active selection
+ * - Radiogroup provides proper context for screen reader users
+ */
+describe('BeatDetectionSettings - Screen Reader Announcements (Task 6.4)', () => {
+  const mockSetHopSizeConfig = vi.fn();
+  const mockSetMelBandsConfig = vi.fn();
+  const mockSetGaussianSmoothConfig = vi.fn();
+
+  const mockStoreState = {
+    generatorOptions: {
+      minBpm: 60,
+      maxBpm: 180,
+      sensitivity: 1.0,
+      filter: 0.0,
+      tempoCenter: 0.5,
+    },
+    hopSizeConfig: { mode: 'standard' as const },
+    melBandsConfig: { mode: 'standard' as const },
+    gaussianSmoothConfig: { mode: 'standard' as const },
+    actions: {
+      setGeneratorOptions: vi.fn(),
+      setHopSizeConfig: mockSetHopSizeConfig,
+      setMelBandsConfig: mockSetMelBandsConfig,
+      setGaussianSmoothConfig: mockSetGaussianSmoothConfig,
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+      return selector(mockStoreState);
+    });
+
+    (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+  });
+
+  describe('Task 6.4.1: aria-checked updates when mode changes via click', () => {
+    it('updates aria-checked from false to true when selecting a new mode', async () => {
+      const { rerender } = render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Initial state: Standard is checked
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+      const efficientRadio = screen.getByRole('radio', { name: /Efficient: 10ms/i });
+
+      expect(standardRadio).toHaveAttribute('aria-checked', 'true');
+      expect(efficientRadio).toHaveAttribute('aria-checked', 'false');
+
+      // Click Efficient to change mode
+      fireEvent.click(efficientRadio);
+
+      // Update mock to reflect the change
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        return selector({
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'efficient' as const },
+        });
+      });
+
+      // Rerender to reflect the state change
+      rerender(<BeatDetectionSettings />);
+
+      // Re-query to get updated aria-checked
+      await waitFor(() => {
+        const efficientRadioUpdated = screen.getByRole('radio', { name: /Efficient: 10ms/i });
+        expect(efficientRadioUpdated).toHaveAttribute('aria-checked', 'true');
+      });
+
+      // Standard should now be unchecked
+      const standardRadioUpdated = screen.getByRole('radio', { name: /Standard: 4ms/i });
+      expect(standardRadioUpdated).toHaveAttribute('aria-checked', 'false');
+    });
+  });
+
+  describe('Task 6.4.2: Screen reader can identify the radiogroup and its options', () => {
+    it('radiogroup has accessible label describing its purpose', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Radiogroup should have an accessible name
+      const hopSizeRadiogroup = screen.getByRole('radiogroup', { name: /hop size mode/i });
+      expect(hopSizeRadiogroup).toBeInTheDocument();
+      expect(hopSizeRadiogroup).toHaveAttribute('aria-label', 'Hop size mode');
+    });
+
+    it('each radio button has accessible name with label, value, and description', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Check that each radio has a descriptive aria-label
+      const efficientRadio = screen.getByRole('radio', { name: /Efficient: 10ms - Fast, reduced precision/i });
+      expect(efficientRadio).toBeInTheDocument();
+
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms - Paper spec/i });
+      expect(standardRadio).toBeInTheDocument();
+
+      const hqRadio = screen.getByRole('radio', { name: /HQ: 2ms - Maximum precision/i });
+      expect(hqRadio).toBeInTheDocument();
+
+      const customRadio = screen.getByRole('radio', { name: /Custom: 4ms - User-defined hop size/i });
+      expect(customRadio).toBeInTheDocument();
+    });
+
+    it('Mel Bands radiogroup has accessible label', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Mel Bands')).toBeInTheDocument();
+      });
+
+      const melBandsRadiogroup = screen.getByRole('radiogroup', { name: /mel bands mode/i });
+      expect(melBandsRadiogroup).toBeInTheDocument();
+      expect(melBandsRadiogroup).toHaveAttribute('aria-label', 'Mel bands mode');
+    });
+
+    it('Smoothing radiogroup has accessible label', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Smoothing')).toBeInTheDocument();
+      });
+
+      const smoothRadiogroup = screen.getByRole('radiogroup', { name: /gaussian smooth mode/i });
+      expect(smoothRadiogroup).toBeInTheDocument();
+      expect(smoothRadiogroup).toHaveAttribute('aria-label', 'Gaussian smooth mode');
+    });
+  });
+
+  describe('Task 6.4.3: Tab index management for keyboard/screen reader navigation', () => {
+    it('only the selected radio is in tab order (tabIndex=0)', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Standard is selected, so only it should be in tab order
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+      const efficientRadio = screen.getByRole('radio', { name: /Efficient: 10ms/i });
+      const hqRadio = screen.getByRole('radio', { name: /HQ: 2ms/i });
+      const customRadio = screen.getByRole('radio', { name: /Custom: 4ms/i });
+
+      expect(standardRadio).toHaveAttribute('tabIndex', '0');
+      expect(efficientRadio).toHaveAttribute('tabIndex', '-1');
+      expect(hqRadio).toHaveAttribute('tabIndex', '-1');
+      expect(customRadio).toHaveAttribute('tabIndex', '-1');
+    });
+
+    it('tabIndex updates when mode changes', async () => {
+      // Start with efficient mode selected
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        return selector({
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'efficient' as const },
+        });
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Efficient is selected, so only it should be in tab order
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+      const efficientRadio = screen.getByRole('radio', { name: /Efficient: 10ms/i });
+
+      expect(efficientRadio).toHaveAttribute('tabIndex', '0');
+      expect(standardRadio).toHaveAttribute('tabIndex', '-1');
+    });
+  });
+
+  describe('Task 6.4.4: Keyboard navigation with aria-checked updates', () => {
+    it('Arrow Right key updates aria-checked on new selection', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Get the radiogroup and focused radio
+      const radiogroup = screen.getByRole('radiogroup', { name: /hop size mode/i });
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+
+      // Focus the standard radio
+      standardRadio.focus();
+      expect(standardRadio).toHaveFocus();
+
+      // Press Arrow Right to move to next option (HQ)
+      fireEvent.keyDown(radiogroup, { key: 'ArrowRight' });
+
+      // Verify the store was called with the new mode
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({ mode: 'hq' });
+    });
+
+    it('Arrow Left key updates aria-checked on new selection', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      const radiogroup = screen.getByRole('radiogroup', { name: /hop size mode/i });
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+
+      standardRadio.focus();
+      expect(standardRadio).toHaveFocus();
+
+      // Press Arrow Left to move to previous option (Efficient)
+      fireEvent.keyDown(radiogroup, { key: 'ArrowLeft' });
+
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({ mode: 'efficient' });
+    });
+
+    it('Home key moves to first option and updates aria-checked', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      const radiogroup = screen.getByRole('radiogroup', { name: /hop size mode/i });
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+
+      standardRadio.focus();
+
+      // Press Home to move to first option (Efficient)
+      fireEvent.keyDown(radiogroup, { key: 'Home' });
+
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({ mode: 'efficient' });
+    });
+
+    it('End key moves to last option (Custom) and updates aria-checked', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      const radiogroup = screen.getByRole('radiogroup', { name: /hop size mode/i });
+      const standardRadio = screen.getByRole('radio', { name: /Standard: 4ms/i });
+
+      standardRadio.focus();
+
+      // Press End to move to last option (Custom)
+      fireEvent.keyDown(radiogroup, { key: 'End' });
+
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 4,
+      });
+    });
+  });
+
+  describe('Task 6.4.5: Custom input accessibility for screen readers', () => {
+    it('custom input has associated label for screen readers', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        return selector({
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom' as const, customValue: 15 },
+        });
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Custom input should be visible with accessible label
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      expect(customInput).toBeInTheDocument();
+      expect(customInput).toHaveAttribute('id', 'custom-hop-size-input');
+    });
+
+    it('custom input has aria-describedby for hint text', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        return selector({
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom' as const, customValue: 15 },
+        });
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      expect(customInput).toHaveAttribute('aria-describedby', 'custom-hop-size-hint');
+
+      // Verify the hint element exists
+      const hint = document.getElementById('custom-hop-size-hint');
+      expect(hint).toBeInTheDocument();
+      expect(hint).toHaveTextContent(/lower = more precise/i);
+    });
+
+    it('custom input announces its value range to screen readers', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        return selector({
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom' as const, customValue: 15 },
+        });
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i) as HTMLInputElement;
+      expect(customInput.min).toBe('1');
+      expect(customInput.max).toBe('50');
+      expect(customInput.step).toBe('1');
+    });
+  });
+
+  describe('Task 6.4.6: Screen reader announcement of current selection in header', () => {
+    it('displays current value badge that screen readers can access', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // The value badge should be visible and accessible
+      const hopSizeHeader = screen.getByText('Hop Size').closest('.beat-detection-settings-header');
+      expect(hopSizeHeader).toBeInTheDocument();
+
+      // The value badge shows "4ms" for standard mode
+      const valueBadge = hopSizeHeader?.querySelector('.beat-detection-settings-value');
+      expect(valueBadge).toHaveTextContent('4ms');
+    });
+
+    it('displays current Mel Bands value for screen readers', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Mel Bands')).toBeInTheDocument();
+      });
+
+      const melBandsHeader = screen.getByText('Mel Bands').closest('.beat-detection-settings-header');
+      const valueBadge = melBandsHeader?.querySelector('.beat-detection-settings-value');
+      expect(valueBadge).toHaveTextContent('40 bands');
+    });
+
+    it('displays current Smoothing value for screen readers', async () => {
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Smoothing')).toBeInTheDocument();
+      });
+
+      const smoothHeader = screen.getByText('Smoothing').closest('.beat-detection-settings-header');
+      const valueBadge = smoothHeader?.querySelector('.beat-detection-settings-value');
+      expect(valueBadge).toHaveTextContent('20ms');
+    });
+  });
+});

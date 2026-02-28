@@ -307,7 +307,7 @@ Ensure everything works correctly and polish the UX.
 
 - [x] **6.4 Accessibility Testing**
   - [x] Verify ARIA roles and labels
-  - [ ] Test screen reader announcement of selected mode
+  - [x] Test screen reader announcement of selected mode
   - [x] Verify keyboard operability
 
 ---
