@@ -241,6 +241,87 @@
   pointer-events: none;
 }
 
+/* ============================================
+   TAP INDICATOR - Visual feedback when user taps
+   ============================================ */
+
+/* Tap indicator container - centered on NOW line */
+.beat-timeline-tap-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20; /* Higher than beat markers */
+  pointer-events: none;
+}
+
+/* Outer ring - expands outward (more prominent) */
+.beat-timeline-tap-ring {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 5px solid currentColor;
+  animation: tap-ring-expand 0.6s ease-out forwards;
+  box-shadow: 0 0 25px currentColor, 0 0 50px currentColor;
+}
+
+@keyframes tap-ring-expand {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Core dot - quick flash (more prominent) */
+.beat-timeline-tap-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: tap-core-flash 0.5s ease-out forwards;
+  box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+@keyframes tap-core-flash {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Accuracy color coding */
+.beat-timeline-tap-indicator--perfect {
+  color: hsl(142, 76%, 46%); /* Green */
+}
+
+.beat-timeline-tap-indicator--great {
+  color: hsl(48, 96%, 53%); /* Yellow/Gold */
+}
+
+.beat-timeline-tap-indicator--good {
+  color: hsl(38, 92%, 50%); /* Orange */
+}
+
+.beat-timeline-tap-indicator--miss {
+  color: hsl(0, 84%, 60%); /* Red */
+}
+
 /* Info Bar */
 .beat-timeline-info {
   display: flex;

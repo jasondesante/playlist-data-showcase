@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock } from 'lucide-react';
 import './BeatPracticeView.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
@@ -25,6 +25,7 @@ import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { logger } from '../../utils/logger';
+import type { BeatAccuracy } from 'playlist-data-engine';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -33,6 +34,22 @@ import { logger } from '../../utils/logger';
  * prevents most accidental rapid taps.
  */
 const MIN_TAP_INTERVAL_MS = 100;
+
+/**
+ * Debug info for a single tap - helps track input latency
+ */
+interface TapDebugInfo {
+  /** When the tap was registered (performance.now()) */
+  registeredAt: number;
+  /** Audio time at the moment of tap */
+  audioTime: number;
+  /** The beat that was matched */
+  beatTime: number;
+  /** Calculated offset in ms */
+  offsetMs: number;
+  /** Accuracy rating */
+  accuracy: BeatAccuracy;
+}
 
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
@@ -80,6 +97,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Ref for tap debouncing - tracks last tap timestamp
   const lastTapTimeRef = useRef<number>(0);
+
+  // State for tap visual feedback on timeline
+  const [tapVisualTime, setTapVisualTime] = useState<number>(0);
+
+  // Debug: track recent taps for timing analysis
+  const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
+  const MAX_DEBUG_HISTORY = 5;
+
+  // Track audio time for debug info
+  const audioTimeRef = useRef<number>(currentTime);
+  audioTimeRef.current = currentTime;
 
   // State for showing "TOO FAST" indicator
   const [showTooFast, setShowTooFast] = useState(false);
@@ -129,6 +157,19 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       // Show visual feedback using the hook
       showTapFeedback(result);
+
+      // Trigger timeline tap visual
+      setTapVisualTime(Date.now());
+
+      // Record debug info for timing analysis
+      const debugInfo: TapDebugInfo = {
+        registeredAt: performance.now(),
+        audioTime: audioTimeRef.current,
+        beatTime: result.matchedBeat.timestamp,
+        offsetMs: Math.round(result.offset * 1000),
+        accuracy: result.accuracy,
+      };
+      setTapDebugHistory(prev => [debugInfo, ...prev].slice(0, MAX_DEBUG_HISTORY));
     }
   }, [checkTap, recordTap, streamIsActive, showTapFeedback]);
 
@@ -369,6 +410,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         beatMap={beatMap}
         currentTime={currentTime}
         lastBeatEvent={lastBeatEvent}
+        lastTapTime={tapVisualTime}
+        lastTapAccuracy={lastTapResult?.accuracy ?? null}
         onSeek={handleSeek}
         anticipationWindow={2.0}
         isPlaying={isPlaying}
@@ -421,6 +464,35 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             ? (streamIsPaused ? 'Beat stream paused' : 'Beat stream active')
             : 'Beat stream inactive'}
         </span>
+      </div>
+
+      {/* Tap Timing Debug Panel - helps detect input latency */}
+      <div className="beat-practice-debug-panel">
+        <div className="beat-practice-debug-header">
+          <Clock className="beat-practice-debug-icon" />
+          <span>TAP TIMING DEBUG</span>
+          <span className="beat-practice-debug-hint">(shows last {MAX_DEBUG_HISTORY} taps)</span>
+        </div>
+        {tapDebugHistory.length === 0 ? (
+          <div className="beat-practice-debug-empty">Tap to see timing details...</div>
+        ) : (
+          <div className="beat-practice-debug-taps">
+            {tapDebugHistory.map((tap, i) => (
+              <div key={i} className={`beat-practice-debug-tap beat-practice-debug-tap--${tap.accuracy}`}>
+                <div className="beat-practice-debug-tap-main">
+                  <span className="beat-practice-debug-accuracy">{tap.accuracy.toUpperCase()}</span>
+                  <span className="beat-practice-debug-offset">
+                    {tap.offsetMs >= 0 ? '+' : ''}{tap.offsetMs}ms
+                  </span>
+                </div>
+                <div className="beat-practice-debug-tap-details">
+                  <span>Audio: {tap.audioTime.toFixed(3)}s</span>
+                  <span>Beat: {tap.beatTime.toFixed(3)}s</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

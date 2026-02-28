@@ -25,6 +25,10 @@ interface BeatTimelineProps {
   currentTime: number;
   /** The last beat event (for pulse animation trigger) */
   lastBeatEvent?: BeatEvent | null;
+  /** Timestamp of the last tap (for tap visual feedback) */
+  lastTapTime?: number;
+  /** The accuracy rating of the last tap (for color-coded feedback) */
+  lastTapAccuracy?: 'perfect' | 'great' | 'good' | 'miss' | null;
   /** Callback when user clicks on timeline to seek (optional) */
   onSeek?: (time: number) => void;
   /** Anticipation window in seconds for future beats (default: 2.0) */
@@ -49,6 +53,8 @@ export function BeatTimeline({
   beatMap,
   currentTime,
   lastBeatEvent,
+  lastTapTime,
+  lastTapAccuracy,
   onSeek,
   anticipationWindow = 2.0,
   pastWindow = 4.0,
@@ -60,6 +66,12 @@ export function BeatTimeline({
   const trackRef = useRef<HTMLDivElement>(null);
   const [pulseKey, setPulseKey] = useState(0);
   const lastPulseTimeRef = useRef<number>(0);
+
+  // ========================================
+  // Tap Visual Feedback State
+  // ========================================
+  const [tapPulseKey, setTapPulseKey] = useState(0);
+  const lastTapPulseRef = useRef<number>(0);
 
   // ========================================
   // Task 4.3: Smooth Animation with requestAnimationFrame
@@ -169,6 +181,22 @@ export function BeatTimeline({
       }
     }
   }, [lastBeatEvent, isPlaying]);
+
+  /**
+   * Trigger tap pulse animation when user taps
+   * Shows a visual indicator at the NOW line to help user
+   * see exactly when their tap was registered relative to beats.
+   */
+  useEffect(() => {
+    if (lastTapTime !== undefined && lastTapTime > 0) {
+      // Debounce rapid taps
+      const now = Date.now();
+      if (now - lastTapPulseRef.current > 50) {
+        lastTapPulseRef.current = now;
+        setTapPulseKey((prev) => prev + 1);
+      }
+    }
+  }, [lastTapTime]);
 
   // ========================================
   // Drag-to-scrub functionality
@@ -351,6 +379,17 @@ export function BeatTimeline({
           <div className="beat-timeline-now-pulse" />
           <span className="beat-timeline-now-label">NOW</span>
         </div>
+
+        {/* Tap indicator - appears when user taps */}
+        {lastTapTime !== undefined && lastTapTime > 0 && (
+          <div
+            className={`beat-timeline-tap-indicator beat-timeline-tap-indicator--${lastTapAccuracy || 'miss'}`}
+            key={`tap-${tapPulseKey}`}
+          >
+            <div className="beat-timeline-tap-ring" />
+            <div className="beat-timeline-tap-core" />
+          </div>
+        )}
 
         {/* Beat impact zone indicator */}
         <div className="beat-timeline-impact-zone" />

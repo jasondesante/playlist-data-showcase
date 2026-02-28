@@ -200,6 +200,31 @@ export const useBeatStream = (
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
 
+    // ========================================
+    // Interpolated Audio Time (matches BeatTimeline)
+    // ========================================
+    // Track when currentTime changes from the audio player for interpolation
+    const [lastAudioUpdate, setLastAudioUpdate] = useState<{ time: number; timestamp: number }>({
+        time: currentTime,
+        timestamp: performance.now(),
+    });
+
+    // Update interpolation reference when audio time changes
+    useEffect(() => {
+        setLastAudioUpdate({
+            time: currentTime,
+            timestamp: performance.now(),
+        });
+    }, [currentTime]);
+
+    // Ref to access lastAudioUpdate in callbacks without stale closure issues
+    const lastAudioUpdateRef = useRef(lastAudioUpdate);
+    lastAudioUpdateRef.current = lastAudioUpdate;
+
+    // Ref to check if playing in callbacks
+    const isPlayingRef = useRef(playbackState === 'playing');
+    isPlayingRef.current = playbackState === 'playing';
+
     /**
      * Create or get the AudioContext.
      * AudioContext must be created after a user gesture.
@@ -439,33 +464,59 @@ export const useBeatStream = (
     }, []);
 
     /**
+     * Get interpolated audio time matching the timeline's time reference.
+     * Uses performance.now() to interpolate between timeupdate events for 60fps precision.
+     *
+     * IMPORTANT: This MUST match the timing logic in BeatTimeline.tsx for tap accuracy
+     * to align with visual beat positions. Both use HTML5 Audio currentTime + interpolation.
+     */
+    const getInterpolatedTime = useCallback((): number => {
+        // When not playing, use the raw currentTime directly (no interpolation)
+        if (!isPlayingRef.current) {
+            return currentTime;
+        }
+
+        // Interpolate between last known audio time updates for smooth 60fps precision
+        const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioUpdateRef.current;
+        const elapsedMs = performance.now() - lastUpdateTimestamp;
+        const elapsedSeconds = elapsedMs / 1000;
+        const interpolated = lastAudioTime + elapsedSeconds;
+
+        // Clamp to track duration
+        return Math.min(beatMap?.duration ?? 0, interpolated);
+    }, [currentTime, beatMap?.duration]);
+
+    /**
      * Check tap accuracy against the nearest beat.
      *
-     * IMPORTANT: We use beatStream.getCurrentTime() which returns the BeatStream's
-     * internally calculated audio time (accounting for start time and latency compensation),
-     * NOT the raw AudioContext.currentTime. Beat timestamps are in seconds from audio start,
-     * so we need to compare against the BeatStream's calculated position, not the context's
-     * clock which started when the AudioContext was created.
+     * CRITICAL FIX: We use the audio player's interpolated time, which matches the
+     * timeline visualization's time reference. The beat timestamps are in seconds
+     * from audio start, same as audio.currentTime, so they're directly comparable.
+     * This ensures tap accuracy is consistent with visual beat positions.
+     *
+     * We do NOT use beatStream.getCurrentTime() because it includes latency
+     * compensation (outputLatency + baseLatency) which is meant for Web Audio
+     * scheduling, not HTML5 Audio playback. Since playback is via HTML5 Audio,
+     * audio.currentTime already represents the actual presentation time.
      */
     const checkTap = useCallback((): ButtonPressResult | null => {
         if (!beatStreamRef.current || !isActive) {
             return null;
         }
 
-        // Use BeatStream's calculated current time, which accounts for:
-        // - When playback started (startTime)
-        // - Latency compensation (output + base + user offset)
-        const currentTime = beatStreamRef.current.getCurrentTime();
-        const result = beatStreamRef.current.checkButtonPress(currentTime);
+        // Use interpolated audio player time, matching the timeline's time reference
+        const tapTime = getInterpolatedTime();
+        const result = beatStreamRef.current.checkButtonPress(tapTime);
 
         logger.debug('BeatDetection', 'Tap checked', {
             accuracy: result.accuracy,
             offset: result.offset * 1000, // Convert to ms
             beatTime: result.matchedBeat.timestamp,
+            tapTime,
         });
 
         return result;
-    }, [isActive]);
+    }, [isActive, getInterpolatedTime]);
 
     /**
      * Get beats within a time range for visualization.
