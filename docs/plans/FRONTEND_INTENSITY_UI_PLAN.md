@@ -139,18 +139,19 @@ Update the frontend to expose TWO separate controls for beat detection:
 ```
 
 ### 3.4 Update Event Handlers
-- [ ] Add `handleSensitivityChange`:
+- [x] Add `handleSensitivityChange`:
   ```typescript
   const handleSensitivityChange = (value: number) => {
       setGeneratorOptions({ sensitivity: value });
   };
   ```
-- [ ] Add `handleFilterChange`:
+- [x] Add `handleFilterChange`:
   ```typescript
   const handleFilterChange = (value: number) => {
       setGeneratorOptions({ filter: value });
   };
   ```
+  **Verified**: Both handlers already implemented in BeatDetectionSettings.tsx (lines 57-64)
 
 ### 3.5 Add Visual Indicators
 - [ ] Show when values differ from defaults:
