@@ -176,9 +176,9 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 - [x] Ensure changes propagate to BeatStream
 
 ### Task 5.3: Add Visual Feedback for Current Difficulty
-- [ ] Show current difficulty preset in header
-- [ ] Update debug panel to show active thresholds
-- [ ] Consider showing difficulty indicator during gameplay
+- [x] Show current difficulty preset in header
+- [x] Update debug panel to show active thresholds
+- [x] Consider showing difficulty indicator during gameplay
 
 ---
 

@@ -15,9 +15,9 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target } from 'lucide-react';
 import './BeatPracticeView.css';
-import { useBeatDetectionStore } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useDifficultyPreset, useAccuracyThresholds } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
@@ -26,7 +26,7 @@ import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { logger } from '../../utils/logger';
-import type { ExtendedBeatAccuracy } from '../../types';
+import type { ExtendedBeatAccuracy, DifficultyPreset } from '../../types';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -64,6 +64,31 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Get display info for a difficulty preset
+ */
+function getDifficultyDisplayInfo(preset: DifficultyPreset): { label: string; className: string } {
+  switch (preset) {
+    case 'easy':
+      return { label: 'Easy', className: 'beat-practice-difficulty--easy' };
+    case 'medium':
+      return { label: 'Medium', className: 'beat-practice-difficulty--medium' };
+    case 'hard':
+      return { label: 'Hard', className: 'beat-practice-difficulty--hard' };
+    case 'custom':
+      return { label: 'Custom', className: 'beat-practice-difficulty--custom' };
+    default:
+      return { label: 'Medium', className: 'beat-practice-difficulty--medium' };
+  }
+}
+
+/**
+ * Format threshold value for display (convert seconds to ms)
+ */
+function formatThresholdMs(seconds: number): string {
+  return `${Math.round(seconds * 1000)}ms`;
 }
 
 export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
@@ -116,6 +141,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // State for difficulty settings panel
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+
+  // Difficulty settings for visual feedback
+  const difficultyPreset = useDifficultyPreset();
+  const accuracyThresholds = useAccuracyThresholds();
 
   /**
    * Handle tap action (spacebar or click)
@@ -323,6 +352,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     return null;
   }
 
+  // Get difficulty display info
+  const difficultyInfo = getDifficultyDisplayInfo(difficultyPreset);
+
   return (
     <div className="beat-practice-view" ref={containerRef}>
       {/* Header Bar */}
@@ -330,6 +362,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         <div className="beat-practice-header-left">
           <Music className="beat-practice-header-icon" />
           <span className="beat-practice-title">Practice Mode</span>
+          <span className={`beat-practice-difficulty-badge ${difficultyInfo.className}`}>
+            {difficultyInfo.label}
+          </span>
         </div>
         <div className="beat-practice-header-right">
           <Button
@@ -487,6 +522,36 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <span>TAP TIMING DEBUG</span>
           <span className="beat-practice-debug-hint">(shows last {MAX_DEBUG_HISTORY} taps)</span>
         </div>
+
+        {/* Active Thresholds Display */}
+        <div className="beat-practice-debug-thresholds">
+          <div className="beat-practice-debug-thresholds-header">
+            <Target className="beat-practice-debug-thresholds-icon" />
+            <span>Active Thresholds</span>
+            <span className={`beat-practice-debug-thresholds-preset ${difficultyInfo.className}`}>
+              {difficultyInfo.label}
+            </span>
+          </div>
+          <div className="beat-practice-debug-thresholds-values">
+            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--perfect">
+              <span className="beat-practice-debug-threshold-label">Perfect</span>
+              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.perfect)}</span>
+            </div>
+            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--great">
+              <span className="beat-practice-debug-threshold-label">Great</span>
+              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.great)}</span>
+            </div>
+            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--good">
+              <span className="beat-practice-debug-threshold-label">Good</span>
+              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.good)}</span>
+            </div>
+            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--ok">
+              <span className="beat-practice-debug-threshold-label">OK</span>
+              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.ok)}</span>
+            </div>
+          </div>
+        </div>
+
         {tapDebugHistory.length === 0 ? (
           <div className="beat-practice-debug-empty">Tap to see timing details...</div>
         ) : (

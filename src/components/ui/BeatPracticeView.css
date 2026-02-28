@@ -59,6 +59,52 @@
   gap: 0.5rem;
 }
 
+/* ============================================
+   DIFFICULTY BADGE - Shows current difficulty in header
+   Task 5.3: Visual Feedback for Current Difficulty
+   ============================================ */
+
+.beat-practice-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  margin-left: 0.5rem;
+}
+
+/* Easy - Green */
+.beat-practice-difficulty--easy {
+  background: hsl(142 76% 36% / 0.15);
+  border-color: hsl(142 76% 36% / 0.4);
+  color: hsl(142 76% 45%);
+}
+
+/* Medium - Yellow/Orange */
+.beat-practice-difficulty--medium {
+  background: hsl(45 93% 47% / 0.15);
+  border-color: hsl(45 93% 47% / 0.4);
+  color: hsl(45 93% 50%);
+}
+
+/* Hard - Red */
+.beat-practice-difficulty--hard {
+  background: hsl(0 84% 60% / 0.15);
+  border-color: hsl(0 84% 60% / 0.4);
+  color: hsl(0 84% 65%);
+}
+
+/* Custom - Purple */
+.beat-practice-difficulty--custom {
+  background: hsl(271 91% 65% / 0.15);
+  border-color: hsl(271 91% 65% / 0.4);
+  color: hsl(271 91% 75%);
+}
+
 /* BPM and Position Display */
 .beat-practice-stats {
   display: grid;
@@ -641,4 +687,141 @@
 
 .beat-practice-debug-tap-details span {
   opacity: 0.7;
+}
+
+/* ============================================
+   ACTIVE THRESHOLDS DISPLAY
+   Task 5.3: Visual Feedback for Current Difficulty
+   ============================================ */
+
+.beat-practice-debug-thresholds {
+  margin-bottom: 0.75rem;
+  padding: 0.625rem;
+  background: hsl(var(--surface-1) / 0.5);
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.beat-practice-debug-thresholds-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-debug-thresholds-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--primary));
+}
+
+.beat-practice-debug-thresholds-preset {
+  margin-left: auto;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 0.1875rem;
+}
+
+.beat-practice-debug-thresholds-values {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.375rem;
+}
+
+.beat-practice-debug-threshold {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.375rem 0.25rem;
+  background: hsl(var(--surface-2));
+  border-radius: 0.25rem;
+  border-left: 2px solid currentColor;
+}
+
+.beat-practice-debug-threshold-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.125rem;
+}
+
+.beat-practice-debug-threshold-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+
+/* Threshold color coding */
+.beat-practice-debug-threshold--perfect {
+  color: hsl(142, 76%, 46%);
+}
+
+.beat-practice-debug-threshold--great {
+  color: hsl(48, 96%, 53%);
+}
+
+.beat-practice-debug-threshold--good {
+  color: hsl(38, 92%, 50%);
+}
+
+.beat-practice-debug-threshold--ok {
+  color: hsl(200, 80%, 55%);
+}
+
+/* 'ok' accuracy for debug tap display */
+.beat-practice-debug-tap--ok {
+  color: hsl(200, 80%, 55%);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS FOR THRESHOLDS
+   ============================================ */
+
+@media (max-width: 640px) {
+  .beat-practice-difficulty-badge {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.375rem;
+    margin-left: 0.375rem;
+  }
+
+  .beat-practice-debug-thresholds-values {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .beat-practice-debug-threshold {
+    padding: 0.25rem 0.125rem;
+  }
+
+  .beat-practice-debug-threshold-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-practice-debug-threshold-value {
+    font-size: 0.625rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .beat-practice-difficulty-badge {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .beat-practice-debug-thresholds-header {
+    font-size: 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  .beat-practice-debug-thresholds-preset {
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
 }
