@@ -185,9 +185,9 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 6: TapStats Updates
 
 ### Task 6.1: Update Statistics to Include 'Ok'
-- [ ] Update `src/components/ui/TapStats.tsx` to display 'ok' accuracy count
-- [ ] Update accuracy percentage calculations
-- [ ] Update color coding for 'ok' (light blue or similar)
+- [x] Update `src/components/ui/TapStats.tsx` to display 'ok' accuracy count
+- [x] Update accuracy percentage calculations
+- [x] Update color coding for 'ok' (light blue or similar)
 
 ### Task 6.2: Update TapArea Feedback
 - [ ] Update `src/components/ui/TapArea.tsx` to handle 'ok' accuracy

@@ -4,7 +4,7 @@
  * Displays running statistics for the beat detection practice mode.
  * Features:
  * - Total taps count
- * - Hit distribution (Perfect, Great, Good, Miss)
+ * - Hit distribution (Perfect, Great, Good, Ok, Miss)
  * - Average offset in milliseconds
  * - Standard deviation (timing consistency)
  * - Current streak
@@ -85,7 +85,7 @@ export function TapStats({
       {/* Main stats grid */}
       <div className="tap-stats__grid">
         {/* Hit distribution row */}
-        <div className="tap-stats__row">
+        <div className="tap-stats__row tap-stats__row--hits">
           <div className="tap-stats__item">
             <span className="tap-stats__value">{stats.totalTaps}</span>
             <span className="tap-stats__label">Total</span>
@@ -101,6 +101,10 @@ export function TapStats({
           <div className="tap-stats__item tap-stats__item--good">
             <span className="tap-stats__value">{stats.good}</span>
             <span className="tap-stats__label">Good</span>
+          </div>
+          <div className="tap-stats__item tap-stats__item--ok">
+            <span className="tap-stats__value">{stats.ok}</span>
+            <span className="tap-stats__label">Ok</span>
           </div>
           <div className="tap-stats__item tap-stats__item--miss">
             <span className="tap-stats__value">{stats.miss}</span>
