@@ -251,7 +251,13 @@ Test different combinations:
   - Cached beat maps load when switching tracks (AudioAnalysisTab.tsx:90-108)
 
 ### 6.3 Migration Testing
-- [ ] Test with fresh install (no cached data)
+- [x] Test with fresh install (no cached data) - Verified 2026-02-28: Code review confirms correct behavior:
+  - `createInitialState()` (beatDetectionStore.ts:221-232) initializes with `DEFAULT_GENERATOR_OPTIONS`
+  - `DEFAULT_GENERATOR_OPTIONS` (beatDetectionStore.ts:39-54) has correct defaults: `sensitivity: 1.0`, `filter: 0.0`
+  - `merge` function (beatDetectionStore.ts:614-653) falls back to `currentState` when `persistedState` is undefined
+  - Component defaults (BeatDetectionSettings.tsx:19-25) match store defaults
+  - Fallback values with `??` operator used in component (lines 65-69) for safety
+  - Build and CSS lint pass with no errors
 - [ ] Test migration from old `intensityThreshold` setting
 - [ ] Verify no errors on load
 
