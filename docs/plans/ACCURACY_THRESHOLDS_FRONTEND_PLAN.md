@@ -165,10 +165,10 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 5: Integration
 
 ### Task 5.1: Add Settings Button to BeatPracticeView
-- [ ] Update `src/components/ui/BeatPracticeView.tsx`
-  - [ ] Add settings/gear icon button
-  - [ ] Add state for panel open/close
-  - [ ] Render DifficultySettingsPanel
+- [x] Update `src/components/ui/BeatPracticeView.tsx`
+  - [x] Add settings/gear icon button
+  - [x] Add state for panel open/close
+  - [x] Render DifficultySettingsPanel
 
 ### Task 5.2: Connect to Store
 - [ ] Wire up DifficultySelector to beatDetectionStore

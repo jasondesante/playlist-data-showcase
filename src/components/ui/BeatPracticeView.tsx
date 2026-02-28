@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings } from 'lucide-react';
 import './BeatPracticeView.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
@@ -24,6 +24,7 @@ import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
+import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy } from '../../types';
 
@@ -112,6 +113,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for showing "TOO FAST" indicator
   const [showTooFast, setShowTooFast] = useState(false);
   const tooFastTimeoutRef = useRef<number | null>(null);
+
+  // State for difficulty settings panel
+  const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
 
   /**
    * Handle tap action (spacebar or click)
@@ -331,6 +335,16 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setIsSettingsPanelOpen(true)}
+            leftIcon={Settings}
+            aria-label="Open difficulty settings"
+            title="Difficulty Settings"
+          >
+            Settings
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleExit}
             leftIcon={X}
             aria-label="Exit practice mode"
@@ -494,6 +508,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           </div>
         )}
       </div>
+
+      {/* Difficulty Settings Panel */}
+      <DifficultySettingsPanel
+        isOpen={isSettingsPanelOpen}
+        onClose={() => setIsSettingsPanelOpen(false)}
+      />
     </div>
   );
 }
