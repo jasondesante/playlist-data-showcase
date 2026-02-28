@@ -67,7 +67,8 @@ Update the frontend to expose TWO separate controls for beat detection:
   - [x] Log migration for debugging
 
 ### 2.3 Update Selector Names
-- [ ] Rename any selectors that referenced `intensityThreshold`
+- [x] Rename any selectors that referenced `intensityThreshold`
+  - [x] Verified: No selectors needed renaming - the only `intensityThreshold` references are in the migration logic (for backward compatibility)
 
 ---
 
