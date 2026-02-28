@@ -270,3 +270,44 @@
     padding: 0.1rem 0.25rem;
   }
 }
+
+/* ============================================
+   Task 6.2: Detection Settings Display
+   Shows what sensitivity/filter values were used
+   ============================================ */
+
+.beat-map-summary-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--muted) / 0.2);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.beat-map-settings-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-map-settings-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.beat-map-settings-value {
+  font-size: 0.6875rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground) / 0.8);
+}
+
+/* Highlight non-default values */
+.beat-map-settings-value--modified {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}

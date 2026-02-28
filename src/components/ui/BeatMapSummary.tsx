@@ -264,6 +264,19 @@ export function BeatMapSummary({
         </div>
       </div>
 
+      {/* Detection Settings (from metadata) - Task 6.2 */}
+      <div className="beat-map-summary-settings">
+        <span className="beat-map-settings-label">Settings used:</span>
+        <div className="beat-map-settings-values">
+          <span className="beat-map-settings-value">
+            Sensitivity: {beatMap.metadata.sensitivity.toFixed(1)}
+          </span>
+          <span className="beat-map-settings-value">
+            Filter: {beatMap.metadata.filter.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
       {/* Beat Quality Indicators (for non-good quality) */}
       {beatQuality.quality !== 'good' && beatMap.beats.length >= 2 && (
         <div className="beat-map-quality-details">

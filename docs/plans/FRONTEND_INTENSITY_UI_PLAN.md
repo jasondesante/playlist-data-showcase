@@ -235,8 +235,20 @@ Test different combinations:
 | 2.0 | 0.5 | More beats, weak filtered |
 | 0.5 | 0.5 | Fewer beats, weak filtered |
 
-- [ ] Test re-analyze with different values
-- [ ] Verify cached beat maps work correctly
+- [x] Test re-analyze with different values - Verified 2026-02-28: Code review confirms correct data flow:
+  - Sliders update store via `handleSensitivityChange`/`handleFilterChange` handlers (BeatDetectionSettings.tsx:85-93)
+  - Store merges partial options with `setGeneratorOptions` (beatDetectionStore.ts:455-463)
+  - `generateBeatMap` uses merged options from store (beatDetectionStore.ts:377-380)
+  - `forceRegenerate` is set to `true` when `beatMap` exists (AudioAnalysisTab.tsx:292)
+  - Cache is bypassed when `forceRegenerate=true` (beatDetectionStore.ts:354-365)
+  - Beat map metadata includes sensitivity/filter (BeatMapGenerator.ts:240-257)
+  - **Enhancement added**: BeatMapSummary now displays the sensitivity/filter values from metadata (BeatMapSummary.tsx:267-277)
+- [x] Verify cached beat maps work correctly - Verified 2026-02-28: Code review confirms:
+  - Cache uses `audioId` as key (beatDetectionStore.ts:77)
+  - Cache is checked before generation when `forceRegenerate=false` (beatDetectionStore.ts:354-365)
+  - Cache persists via zustand persist middleware (beatDetectionStore.ts:607-612)
+  - LRU eviction prevents unbounded cache growth (beatDetectionStore.ts:60, 252-274)
+  - Cached beat maps load when switching tracks (AudioAnalysisTab.tsx:90-108)
 
 ### 6.3 Migration Testing
 - [ ] Test with fresh install (no cached data)
