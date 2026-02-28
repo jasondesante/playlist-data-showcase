@@ -376,12 +376,24 @@ Ensure everything works correctly and polish the UX.
 
 ## Success Criteria
 
-- [ ] Users can select Hop Size presets (Efficient/Standard/HQ/Custom)
-- [ ] Custom Hop Size shows a number input field (1-50ms range)
-- [ ] Users can select Mel Bands presets (Standard/Detailed/Maximum)
-- [ ] Users can select Gaussian Smooth presets (Minimal/Standard/Smooth)
-- [ ] "Re-Analyze Needed" indicator shows when settings differ from current beat map
-- [ ] Re-analyze applies new settings (same behavior as sensitivity/filter)
-- [ ] UI matches existing EQ-style design language
-- [ ] All controls are keyboard accessible
-- [ ] Settings persist across page reloads
+- [x] Users can select Hop Size presets (Efficient/Standard/HQ/Custom)
+- [x] Custom Hop Size shows a number input field (1-50ms range)
+- [x] Users can select Mel Bands presets (Standard/Detailed/Maximum)
+- [x] Users can select Gaussian Smooth presets (Minimal/Standard/Smooth)
+- [x] "Re-Analyze Needed" indicator shows when settings differ from current beat map
+- [x] Re-analyze applies new settings (same behavior as sensitivity/filter)
+- [x] UI matches existing EQ-style design language
+- [x] All controls are keyboard accessible
+- [x] Settings persist across page reloads
+
+### Verification Summary (Feb 28, 2026)
+
+All success criteria verified:
+- **Build**: Passes without errors
+- **Tests**: All 52 OSE tests pass (`BeatDetectionSettings.ose.test.tsx`)
+- **Types**: Properly imported from `playlist-data-engine`
+- **Store**: Full state management with `hopSizeConfig`, `melBandsConfig`, `gaussianSmoothConfig`
+- **Component**: Complete UI with toggle buttons, custom input, and re-analyze indicator
+- **CSS**: EQ-style design matching existing components
+- **Keyboard Navigation**: Full arrow key support with focus management
+- **Persistence**: Zustand persist middleware includes OSE configs
