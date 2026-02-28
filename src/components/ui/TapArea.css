@@ -256,6 +256,13 @@
     0 0 20px var(--tap-good) / 0.3;
 }
 
+/* Ok - Light blue/sky blue glow */
+.tap-area__feedback[style*="#38bdf8"] {
+  box-shadow:
+    inset 0 0 30px var(--tap-ok) / 0.2,
+    0 0 20px var(--tap-ok) / 0.3;
+}
+
 /* Miss - Red glow with shake */
 .tap-area__feedback[style*="#ef4444"] {
   box-shadow:
