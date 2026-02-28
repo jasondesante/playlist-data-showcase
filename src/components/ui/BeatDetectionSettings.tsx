@@ -1,15 +1,56 @@
 /**
  * BeatDetectionSettings Component
  *
- * Settings panel for beat detection mode with EQ-style sliders for:
- * - BPM Range (min/max)
- * - Sensitivity (0.1-10.0) - pre-processing, how aggressively beats are detected
- * - Filter (0.0-1.0) - post-processing, removes weak beats
- * - Tempo Center
+ * A settings panel for configuring beat detection parameters with EQ-style sliders.
+ * Provides real-time control over how the beat detection algorithm analyzes audio.
  *
- * Uses the beatDetectionStore for state management.
+ * @component
  *
- * Part of Task 7.2: Includes note about tracks with no clear beat.
+ * @description
+ * This component renders sliders for the following beat detection parameters:
+ *
+ * **Sensitivity** (0.1-10.0, default: 1.0)
+ * - Pre-processing parameter controlling beat detection aggressiveness
+ * - Uses logarithmic scale for natural slider feel (default at center)
+ * - Lower values = fewer beats (only strong beats)
+ * - Higher values = more beats (includes subtle beats)
+ *
+ * **Filter** (0.0-1.0, default: 0.0)
+ * - Post-processing parameter that removes weak beats after detection
+ * - Linear scale: 0 = keep all, 1 = only strongest
+ * - Works independently from sensitivity
+ *
+ * **BPM Range** (40-240, default: 60-180)
+ * - Min/Max dual sliders for expected tempo range
+ * - Helps algorithm focus on relevant tempo window
+ *
+ * **Tempo Center** (~86-200 BPM, default: ~120 BPM)
+ * - Bias for tempo detection toward a specific BPM
+ * - Useful for tracks with known tempo range
+ *
+ * @param {BeatDetectionSettingsProps} props - Component props
+ * @param {boolean} [props.disabled=false] - Whether the settings should be disabled
+ *
+ * @returns {JSX.Element} The settings panel with sliders and advanced options
+ *
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <BeatDetectionSettings />
+ *
+ * // Disabled during analysis
+ * <BeatDetectionSettings disabled={isAnalyzing} />
+ * ```
+ *
+ * @see {@link useBeatDetectionStore} - Zustand store for beat detection state
+ * @see {@link BeatMapGenerator} - Engine that uses these parameters
+ *
+ * @remarks
+ * - Component includes reset buttons for non-default values
+ * - Advanced settings (BPM Range, Tempo Center) are collapsible
+ * - Includes info note about tracks without clear beat patterns
+ * - Supports both mouse and touch interaction
+ * - Responsive design for mobile, tablet, and desktop viewports
  */
 import { Info, RotateCcw } from 'lucide-react';
 import './BeatDetectionSettings.css';
@@ -65,8 +106,16 @@ const sliderToSensitivity = (position: number): number => {
   return SENSITIVITY_MIN * Math.pow(10, (clampedPosition / 100) * SENSITIVITY_LOG_RANGE);
 };
 
+/**
+ * Props for the BeatDetectionSettings component.
+ */
 interface BeatDetectionSettingsProps {
-  /** Whether the settings should be disabled (e.g., during analysis) */
+  /**
+   * Whether the settings controls should be disabled.
+   * When true, all sliders and buttons are non-interactive.
+   * Typically used during audio analysis to prevent mid-analysis changes.
+   * @default false
+   */
   disabled?: boolean;
 }
 
