@@ -353,6 +353,8 @@ Configuration for beat streaming:
 | `userOffsetMs` | `number` | 0 | Player-calibrated audio/visual offset (ms) |
 | `compensateOutputLatency` | `boolean` | true | Auto-adjust using AudioContext.outputLatency |
 | `timingTolerance` | `number` | 0.01 | Synchronization tolerance (seconds, 10ms) |
+| `difficultyPreset` | `DifficultyPreset` | 'hard' | Difficulty preset for accuracy thresholds |
+| `customThresholds` | `Partial<AccuracyThresholds>` | {} | Custom thresholds (overrides preset) |
 
 **Source**: [src/core/types/BeatMap.ts](../src/core/types/BeatMap.ts)
 
@@ -722,19 +724,241 @@ function onPlayerButtonPress() {
   console.log(`Offset: ${result.offset * 1000}ms (${result.offset < 0 ? 'early' : 'late'})`);
   console.log(`Matched beat at: ${result.matchedBeat.timestamp}s`);
 
-  // Result.accuracy is one of: 'perfect' | 'great' | 'good' | 'miss'
+  // Result.accuracy is one of: 'perfect' | 'great' | 'good' | 'ok' | 'miss'
   return result;
 }
 ```
 
 #### Accuracy Levels
 
-| Level | Threshold | Description |
-|-------|-----------|-------------|
-| `perfect` | ±10ms | Perfect timing |
-| `great` | ±25ms | Very close |
-| `good` | ±50ms | Acceptable |
-| `miss` | >50ms | Missed the beat |
+| Level | Easy | Medium | Hard | Description |
+|-------|------|--------|------|-------------|
+| `perfect` | ±75ms | ±45ms | ±10ms | Perfect timing |
+| `great` | ±125ms | ±90ms | ±25ms | Very close |
+| `good` | ±175ms | ±135ms | ±50ms | Good timing |
+| `ok` | ±250ms | ±200ms | ±100ms | Acceptable |
+| `miss` | >250ms | >200ms | >100ms | Missed the beat |
+
+**Default**: Hard difficulty (original behavior for backward compatibility)
+
+See [Configuring Difficulty](#configuring-difficulty) for how to customize thresholds.
+
+#### Configuring Difficulty
+
+The beat detection system supports configurable difficulty through three presets and custom thresholds.
+
+##### Using Difficulty Presets
+
+```typescript
+import { AudioAnalyzer } from 'playlist-data-engine';
+
+const analyzer = new AudioAnalyzer();
+const audioContext = new AudioContext();
+
+const beatMap = await analyzer.generateBeatMap('song.mp3', 'track-001');
+
+// Easy mode - forgiving timing for casual players
+const easyStream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'easy'
+});
+
+// Medium mode - balanced difficulty
+const mediumStream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'medium'
+});
+
+// Hard mode - strict timing (default)
+const hardStream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'hard'
+});
+```
+
+##### Using Custom Thresholds
+
+For fine-grained control, you can override specific thresholds:
+
+```typescript
+import { AudioAnalyzer } from 'playlist-data-engine';
+
+const analyzer = new AudioAnalyzer();
+const audioContext = new AudioContext();
+
+const beatMap = await analyzer.generateBeatMap('song.mp3', 'track-001');
+
+// Override only specific thresholds (uses hard preset as base)
+const customStream = analyzer.createBeatStream(beatMap, audioContext, {
+  customThresholds: {
+    perfect: 0.050,  // ±50ms (more lenient perfect)
+    great: 0.100,    // ±100ms
+    good: 0.150,     // ±150ms
+    ok: 0.200,       // ±200ms
+  }
+});
+
+// Partial override - only change perfect and ok
+const partialStream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'medium',  // Base preset
+  customThresholds: {
+    perfect: 0.030,  // Stricter perfect (±30ms)
+  }
+});
+```
+
+##### Difficulty Preset Constants
+
+The preset thresholds are also exported as constants for direct access:
+
+```typescript
+import {
+  EASY_ACCURACY_THRESHOLDS,
+  MEDIUM_ACCURACY_THRESHOLDS,
+  HARD_ACCURACY_THRESHOLDS,
+  getAccuracyThresholdsForPreset,
+  type AccuracyThresholds,
+  type DifficultyPreset,
+} from 'playlist-data-engine';
+
+// Access preset values directly
+console.log(EASY_ACCURACY_THRESHOLDS);
+// { perfect: 0.075, great: 0.125, good: 0.175, ok: 0.250 }
+
+// Get thresholds for a preset programmatically
+const thresholds = getAccuracyThresholdsForPreset('medium');
+console.log(`Medium perfect window: ${thresholds.perfect * 1000}ms`);
+// "Medium perfect window: 45ms"
+
+// Get current thresholds from a BeatStream
+const stream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'easy'
+});
+const currentThresholds = stream.getAccuracyThresholds();
+```
+
+##### Validating Custom Thresholds
+
+Use `validateThresholds()` to validate custom thresholds before passing them to BeatStream. This helps catch configuration errors early and provides helpful error messages.
+
+```typescript
+import { validateThresholds, type AccuracyThresholds } from 'playlist-data-engine';
+
+// Validate custom thresholds before use
+const customThresholds: Partial<AccuracyThresholds> = {
+  perfect: 0.050,
+  great: 0.100,
+  good: 0.150,
+  ok: 0.200,
+};
+
+const result = validateThresholds(customThresholds);
+
+if (!result.valid) {
+  console.error('Invalid thresholds:', result.errors);
+  // Example errors:
+  // - "great (0.05) must be greater than perfect (0.1)"
+  // - "perfect must be positive, got -0.01"
+} else {
+  // Safe to use with BeatStream
+  const stream = analyzer.createBeatStream(beatMap, audioContext, {
+    customThresholds
+  });
+}
+```
+
+**Validation Rules:**
+- All threshold values must be positive numbers (including zero)
+- Thresholds must be in ascending order: `perfect < great < good < ok`
+- Partial thresholds are validated only for the values provided
+
+**Return Type:**
+```typescript
+interface ThresholdValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+```
+
+##### Changing Difficulty Mid-Stream
+
+Use `setDifficulty()` to change difficulty settings while the BeatStream is running. This enables adaptive difficulty gameplay where the game adjusts based on player performance.
+
+```typescript
+import { AudioAnalyzer } from 'playlist-data-engine';
+
+const analyzer = new AudioAnalyzer();
+const audioContext = new AudioContext();
+const beatMap = await analyzer.generateBeatMap('song.mp3', 'track-001');
+
+// Start with hard difficulty
+const stream = analyzer.createBeatStream(beatMap, audioContext, {
+  difficultyPreset: 'hard'
+});
+
+stream.start();
+
+// Later, adjust difficulty based on player performance
+function onPlayerPerformanceUpdate(accuracy: number) {
+  if (accuracy < 0.5) {
+    // Player struggling - switch to easy
+    stream.setDifficulty({ preset: 'easy' });
+  } else if (accuracy > 0.9) {
+    // Player doing great - switch to hard
+    stream.setDifficulty({ preset: 'hard' });
+  }
+}
+
+// You can also use custom thresholds
+stream.setDifficulty({
+  preset: 'medium',
+  customThresholds: { perfect: 0.060 }  // Looser perfect window
+});
+
+// Clear custom thresholds and use preset only
+stream.setDifficulty({ preset: 'easy', customThresholds: {} });
+```
+
+**Use Cases:**
+- **Adaptive difficulty**: Automatically adjust based on player performance
+- **Practice mode**: Let players try different difficulties without restarting
+- **Accessibility**: Allow players to adjust difficulty on the fly
+
+##### UI Integration Example
+
+Here's how you might integrate difficulty selection in a rhythm game UI:
+
+```typescript
+import {
+  AudioAnalyzer,
+  EASY_ACCURACY_THRESHOLDS,
+  MEDIUM_ACCURACY_THRESHOLDS,
+  HARD_ACCURACY_THRESHOLDS,
+} from 'playlist-data-engine';
+
+// Display preset options to the player
+const DIFFICULTY_OPTIONS = [
+  {
+    name: 'Easy',
+    preset: 'easy',
+    description: `Perfect: ±${EASY_ACCURACY_THRESHOLDS.perfect * 1000}ms`,
+  },
+  {
+    name: 'Medium',
+    preset: 'medium',
+    description: `Perfect: ±${MEDIUM_ACCURACY_THRESHOLDS.perfect * 1000}ms`,
+  },
+  {
+    name: 'Hard',
+    preset: 'hard',
+    description: `Perfect: ±${HARD_ACCURACY_THRESHOLDS.perfect * 1000}ms`,
+  },
+];
+
+// Create stream based on player selection
+function createGameStream(beatMap: BeatMap, audioContext: AudioContext, difficulty: DifficultyPreset) {
+  return analyzer.createBeatStream(beatMap, audioContext, {
+    difficultyPreset: difficulty
+  });
+}
+```
 
 #### Pre-rendering Beats
 
@@ -836,7 +1060,8 @@ This is the **data engine only** — no frontend/UI components. The data engine 
 
 The data engine provides:
 - Beat event stream (`upcoming`, `exact`, `passed`)
-- Button press accuracy detection (`perfect`, `great`, `good`, `miss`)
+- Button press accuracy detection (`perfect`, `great`, `good`, `ok`, `miss`)
+- Configurable difficulty presets (easy, medium, hard) and custom thresholds
 - Rolling BPM calculation
 - Beat pre-rendering data
 
