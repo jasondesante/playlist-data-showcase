@@ -20,14 +20,14 @@ Expose Onset Strength Envelope (OSE) parameters in the BeatDetectionSettings com
 
 Add frontend types to match the backend OSE parameter modes.
 
-- [ ] **1.1 Add OSE Parameter Types to `src/types/index.ts`**
-  - [ ] Add `HopSizeMode` type: `'efficient' | 'standard' | 'hq' | 'custom'`
-  - [ ] Add `HopSizeConfig` interface with `mode` and optional `customValue`
-  - [ ] Add `MelBandsMode` type: `'standard' | 'detailed' | 'maximum'`
-  - [ ] Add `MelBandsConfig` interface
-  - [ ] Add `GaussianSmoothMode` type: `'minimal' | 'standard' | 'smooth'`
-  - [ ] Add `GaussianSmoothConfig` interface
-  - [ ] Re-export types from `playlist-data-engine` when available
+- [x] **1.1 Add OSE Parameter Types to `src/types/index.ts**`
+  - [x] Add `HopSizeMode` type: `'efficient' | 'standard' | 'hq' | 'custom'`
+  - [x] Add `HopSizeConfig` interface with `mode` and optional `customValue`
+  - [x] Add `MelBandsMode` type: `'standard' | 'detailed' | 'maximum'`
+  - [x] Add `MelBandsConfig` interface
+  - [x] Add `GaussianSmoothMode` type: `'minimal' | 'standard' | 'smooth'`
+  - [x] Add `GaussianSmoothConfig` interface
+  - [ ] Re-export types from `playlist-data-engine` when available (deferred until engine exports types)
 
 - [ ] **1.2 Add OSE Preset Constants**
   - [ ] Add `HOP_SIZE_PRESETS` constant object

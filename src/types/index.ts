@@ -394,3 +394,70 @@ export function validateThresholds(thresholds: Partial<AccuracyThresholds>): {
         errors,
     };
 }
+
+// ============================================================
+// OSE (Onset Strength Envelope) Parameter Types
+// ============================================================
+
+/**
+ * Hop Size mode for beat detection analysis precision.
+ *
+ * - 'efficient': 10ms hop size - Fast, reduced precision
+ * - 'standard': 4ms hop size - Paper spec (default)
+ * - 'hq': 2ms hop size - Maximum precision
+ * - 'custom': User-defined hop size (1-50ms range)
+ *
+ * @see playlist-data-engine OSE_PARAMETER_MODES_PLAN.md
+ */
+export type HopSizeMode = 'efficient' | 'standard' | 'hq' | 'custom';
+
+/**
+ * Hop Size configuration for beat detection.
+ *
+ * When mode is 'custom', the customValue must be provided (1-50ms range).
+ * For preset modes, the value is determined by HOP_SIZE_PRESETS.
+ */
+export interface HopSizeConfig {
+    /** The selected hop size mode */
+    mode: HopSizeMode;
+    /** Custom hop size in milliseconds (only used when mode === 'custom', range: 1-50) */
+    customValue?: number;
+}
+
+/**
+ * Mel Bands mode for beat detection frequency resolution.
+ *
+ * - 'standard': 40 bands - Default
+ * - 'detailed': 64 bands - More frequency detail
+ * - 'maximum': 80 bands - Maximum frequency resolution
+ *
+ * @see playlist-data-engine OSE_PARAMETER_MODES_PLAN.md
+ */
+export type MelBandsMode = 'standard' | 'detailed' | 'maximum';
+
+/**
+ * Mel Bands configuration for beat detection.
+ */
+export interface MelBandsConfig {
+    /** The selected mel bands mode */
+    mode: MelBandsMode;
+}
+
+/**
+ * Gaussian Smoothing mode for beat detection peak clarity.
+ *
+ * - 'minimal': 10ms - Fast transients, less smoothing
+ * - 'standard': 20ms - Balanced (default)
+ * - 'smooth': 40ms - Cleaner peaks, more smoothing
+ *
+ * @see playlist-data-engine OSE_PARAMETER_MODES_PLAN.md
+ */
+export type GaussianSmoothMode = 'minimal' | 'standard' | 'smooth';
+
+/**
+ * Gaussian Smoothing configuration for beat detection.
+ */
+export interface GaussianSmoothConfig {
+    /** The selected gaussian smoothing mode */
+    mode: GaussianSmoothMode;
+}
