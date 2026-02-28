@@ -375,7 +375,7 @@ Test different combinations:
 - [x] Store updated with new parameters
 - [x] Sensitivity slider works (0.1-10 range)
 - [x] Filter slider works (0-1 range)
-- [ ] Both parameters affect beat detection correctly
+- [x] Both parameters affect beat detection correctly - Verified 2026-02-28: Fixed critical bug where `getGenerator()` used a singleton pattern that ignored option changes. Now creates a new BeatMapGenerator instance each time with current options, ensuring sensitivity/filter changes take effect on re-analysis. Build and tests pass.
 - [x] Advanced section implemented
 - [x] CSS styling complete (sensitivity + filter sliders)
 - [x] All tests pass (migration tests: 9/9 passing)

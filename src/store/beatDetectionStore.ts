@@ -202,17 +202,28 @@ interface BeatDetectionStoreState extends BeatDetectionState {
     actions: BeatDetectionActions;
 }
 
-// Singleton BeatMapGenerator instance (created on demand)
-let generatorInstance: BeatMapGenerator | null = null;
+/**
+ * Active generator instance for cancellation support.
+ * This is set during generation and cleared when complete.
+ */
+let activeGenerator: BeatMapGenerator | null = null;
 
 /**
- * Get or create the BeatMapGenerator instance.
+ * Create a BeatMapGenerator instance with the given options.
+ *
+ * Note: We create a new instance each time rather than using a singleton
+ * because the generator stores options in its constructor. If we used a
+ * singleton, changes to sensitivity/filter wouldn't take effect until
+ * the page was refreshed.
+ *
+ * Creating a new generator is cheap - it doesn't hold expensive state
+ * between generations, so this is safe for performance.
  */
 const getGenerator = (options: BeatMapGeneratorOptions): BeatMapGenerator => {
-    if (!generatorInstance) {
-        generatorInstance = new BeatMapGenerator(options);
-    }
-    return generatorInstance;
+    const generator = new BeatMapGenerator(options);
+    // Track as active for cancellation support
+    activeGenerator = generator;
+    return generator;
 };
 
 /**
@@ -427,6 +438,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 error: null,
                             });
 
+                            // Clear active generator reference
+                            activeGenerator = null;
+
                             return beatMap;
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -436,14 +450,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 generationProgress: null,
                                 error: errorMessage,
                             });
+                            // Clear active generator reference
+                            activeGenerator = null;
                             return null;
                         }
                     },
 
                     cancelGeneration: () => {
-                        const generator = generatorInstance;
-                        if (generator) {
-                            generator.cancel();
+                        if (activeGenerator) {
+                            activeGenerator.cancel();
+                            activeGenerator = null;
                             logger.info('BeatDetection', 'Beat map generation cancelled');
                         }
                         set({
