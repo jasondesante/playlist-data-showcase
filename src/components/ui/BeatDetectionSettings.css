@@ -119,6 +119,84 @@
   position: relative;
 }
 
+/* ============================================
+   TASK 5.1: SENSITIVITY SLIDER STYLING
+   Dynamic color based on value:
+   - < 1.0: Green (fewer beats detected)
+   - = 1.0: Primary (default)
+   - > 1.0: Amber (more beats detected)
+   ============================================ */
+
+.beat-detection-slider--sensitivity {
+  /* Dynamic color set via --slider-color custom property in component */
+  --slider-hue: var(--primary-hue, 250);
+  background: linear-gradient(to right,
+    hsl(var(--slider-color, var(--primary)) / 0.5) 0%,
+    hsl(var(--slider-color, var(--primary)) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) 100%
+  ) !important;
+}
+
+.beat-detection-slider--sensitivity::-webkit-slider-thumb {
+  background: hsl(var(--slider-color, var(--primary)));
+  box-shadow:
+    0 0 10px hsl(var(--slider-color, var(--primary)) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-detection-slider--sensitivity::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 15px hsl(var(--slider-color, var(--primary)) / 0.7);
+}
+
+.beat-detection-slider--sensitivity::-moz-range-thumb {
+  background: hsl(var(--slider-color, var(--primary)));
+  box-shadow:
+    0 0 10px hsl(var(--slider-color, var(--primary)) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-detection-slider--sensitivity::-moz-range-progress {
+  background: hsl(var(--slider-color, var(--primary)) / 0.5);
+}
+
+/* ============================================
+   TASK 5.1: FILTER SLIDER STYLING
+   Uses a distinct pinkish/magenta accent
+   ============================================ */
+
+.beat-detection-slider--filter {
+  --filter-color: var(--cute-pink, 330 80% 60%);
+  background: linear-gradient(to right,
+    hsl(var(--filter-color) / 0.5) 0%,
+    hsl(var(--filter-color) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) 100%
+  ) !important;
+}
+
+.beat-detection-slider--filter::-webkit-slider-thumb {
+  background: hsl(var(--filter-color));
+  box-shadow:
+    0 0 10px hsl(var(--filter-color) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-detection-slider--filter::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 15px hsl(var(--filter-color) / 0.7);
+}
+
+.beat-detection-slider--filter::-moz-range-thumb {
+  background: hsl(var(--filter-color));
+  box-shadow:
+    0 0 10px hsl(var(--filter-color) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-detection-slider--filter::-moz-range-progress {
+  background: hsl(var(--filter-color) / 0.5);
+}
+
 /* Base Slider Styles - EQ fader style */
 .beat-detection-slider {
   -webkit-appearance: none;

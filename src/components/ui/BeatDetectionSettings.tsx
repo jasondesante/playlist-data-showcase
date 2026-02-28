@@ -133,8 +133,11 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             step="0.1"
             value={sensitivity}
             onChange={(e) => handleSensitivityChange(parseFloat(e.target.value))}
-            className="beat-detection-slider"
-            style={{ '--slider-value': `${sensitivityPercent}%` } as React.CSSProperties}
+            className="beat-detection-slider beat-detection-slider--sensitivity"
+            style={{
+              '--slider-value': `${sensitivityPercent}%`,
+              '--slider-color': sensitivity < 1.0 ? 'var(--cute-green)' : sensitivity > 1.0 ? 'var(--cute-orange)' : 'var(--primary)',
+            } as React.CSSProperties}
             disabled={disabled}
             aria-label="Beat detection sensitivity"
           />
@@ -180,7 +183,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             step="0.05"
             value={filter}
             onChange={(e) => handleFilterChange(parseFloat(e.target.value))}
-            className="beat-detection-slider"
+            className="beat-detection-slider beat-detection-slider--filter"
             style={{ '--slider-value': `${filterPercent}%` } as React.CSSProperties}
             disabled={disabled}
             aria-label="Beat intensity filter"
