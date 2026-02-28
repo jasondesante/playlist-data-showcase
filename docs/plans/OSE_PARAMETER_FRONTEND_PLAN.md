@@ -292,10 +292,10 @@ Ensure everything works correctly and polish the UX.
   - [x] Verify custom input appears/disappears correctly
   - [x] Test keyboard navigation (arrow keys between options)
 
-- [ ] **6.2 Test Custom Value Validation**
-  - [ ] Test min/max clamping (1-50ms for hop size)
-  - [ ] Test invalid input handling
-  - [ ] Test decimal handling (should round to integer)
+- [x] **6.2 Test Custom Value Validation**
+  - [x] Test min/max clamping (1-50ms for hop size)
+  - [x] Test invalid input handling
+  - [x] Test decimal handling (should round to integer)
 
 - [ ] **6.3 Test Re-Analysis Flow**
   - [ ] Change OSE settings
@@ -305,10 +305,10 @@ Ensure everything works correctly and polish the UX.
   - [ ] Verify indicator clears after re-analysis
   - [ ] Verify cached beat map is replaced
 
-- [ ] **6.4 Accessibility Testing**
-  - [ ] Verify ARIA roles and labels
+- [x] **6.4 Accessibility Testing**
+  - [x] Verify ARIA roles and labels
   - [ ] Test screen reader announcement of selected mode
-  - [ ] Verify keyboard operability
+  - [x] Verify keyboard operability
 
 ---
 
