@@ -39,7 +39,8 @@ export interface TapResult extends ButtonPressResult {
 const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     minBpm: 60,
     maxBpm: 180,
-    sensitivity: 0.3,
+    sensitivity: 1.0,  // Pre-processing sensitivity (0.1-10.0)
+    filter: 0.0,       // Post-processing grid-alignment filter (0.0-1.0)
     noiseFloorThreshold: 0.1,
     hopSizeMs: 10,
     fftSize: 2048,

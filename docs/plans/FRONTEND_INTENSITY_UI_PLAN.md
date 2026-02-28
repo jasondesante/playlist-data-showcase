@@ -47,7 +47,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 ## Phase 2: Update Store
 
 ### 2.1 Update beatDetectionStore Defaults
-- [ ] In `src/store/beatDetectionStore.ts`, update default options:
+- [x] In `src/store/beatDetectionStore.ts`, update default options:
   ```typescript
   const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
       minBpm: 60,
