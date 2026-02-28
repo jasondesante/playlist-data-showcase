@@ -287,10 +287,10 @@ Wire up the UI to pass OSE parameters to the engine during beat map generation. 
 
 Ensure everything works correctly and polish the UX.
 
-- [ ] **6.1 Test Toggle Button Interactions**
-  - [ ] Verify mode selection updates store
-  - [ ] Verify custom input appears/disappears correctly
-  - [ ] Test keyboard navigation (arrow keys between options)
+- [x] **6.1 Test Toggle Button Interactions**
+  - [x] Verify mode selection updates store
+  - [x] Verify custom input appears/disappears correctly
+  - [x] Test keyboard navigation (arrow keys between options)
 
 - [ ] **6.2 Test Custom Value Validation**
   - [ ] Test min/max clamping (1-50ms for hop size)

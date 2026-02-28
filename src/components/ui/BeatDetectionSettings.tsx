@@ -321,6 +321,81 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const GAUSSIAN_SMOOTH_MODES: GaussianSmoothMode[] = ['minimal', 'standard', 'smooth'];
 
   // ============================================================
+  // TASK 6.1: Keyboard Navigation for Toggle Buttons
+  // ============================================================
+
+  /**
+   * All hop size modes including custom for keyboard navigation.
+   */
+  const ALL_HOP_SIZE_MODES: HopSizeMode[] = ['efficient', 'standard', 'hq', 'custom'];
+
+  /**
+   * Handle keyboard navigation for toggle button groups.
+   * Implements standard radiogroup behavior:
+   * - Arrow Left/Up: Move to previous option
+   * - Arrow Right/Down: Move to next option
+   * - Home: Move to first option
+   * - End: Move to last option
+   *
+   * @param e - The keyboard event
+   * @param modes - Array of mode values in order
+   * @param currentMode - The currently selected mode
+   * @param onChangeMode - Handler to change the mode
+   */
+  const createKeyboardNavHandler = <T extends string>(
+    modes: T[],
+    currentMode: T,
+    onChangeMode: (mode: T) => void
+  ) => (e: React.KeyboardEvent) => {
+    const currentIndex = modes.indexOf(currentMode);
+    let newIndex = currentIndex;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        e.preventDefault();
+        newIndex = currentIndex > 0 ? currentIndex - 1 : modes.length - 1;
+        break;
+      case 'ArrowRight':
+      case 'ArrowDown':
+        e.preventDefault();
+        newIndex = currentIndex < modes.length - 1 ? currentIndex + 1 : 0;
+        break;
+      case 'Home':
+        e.preventDefault();
+        newIndex = 0;
+        break;
+      case 'End':
+        e.preventDefault();
+        newIndex = modes.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    // Select the new mode
+    onChangeMode(modes[newIndex]);
+
+    // Focus the button for the new mode
+    // Use a data attribute to find the button
+    const container = e.currentTarget;
+    const buttons = container.querySelectorAll('[data-mode-index]');
+    const targetButton = buttons[newIndex] as HTMLElement;
+    if (targetButton) {
+      targetButton.focus();
+    }
+  };
+
+  /**
+   * Get tabIndex for toggle buttons in a radiogroup.
+   * Only the active button should be in the tab order (tabIndex=0).
+   * All other buttons should have tabIndex=-1.
+   */
+  const getToggleTabIndex = <T extends string>(mode: T, currentMode: T): number => {
+    return mode === currentMode ? 0 : -1;
+  };
+
+  // ============================================================
   // TASK 3.2: Custom Hop Size Input
   // ============================================================
 
@@ -652,15 +727,23 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   {getHopSizeDisplayValue()}
                 </span>
               </div>
-              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Hop size mode">
-                {HOP_SIZE_PRESET_MODES.map((mode) => (
+              <div
+                className="beat-detection-ose-toggles"
+                role="radiogroup"
+                aria-label="Hop size mode"
+                onKeyDown={createKeyboardNavHandler(ALL_HOP_SIZE_MODES, hopSizeConfig.mode, handleHopSizeModeChange)}
+              >
+                {HOP_SIZE_PRESET_MODES.map((mode, index) => (
                   <button
                     key={mode}
                     type="button"
+                    data-mode-index={index}
                     className={`beat-detection-ose-toggle ${hopSizeConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
                     onClick={() => handleHopSizeModeChange(mode)}
                     disabled={disabled}
-                    aria-pressed={hopSizeConfig.mode === mode}
+                    tabIndex={getToggleTabIndex(mode, hopSizeConfig.mode)}
+                    aria-checked={hopSizeConfig.mode === mode}
+                    role="radio"
                     aria-label={`${HOP_SIZE_PRESETS[mode].label}: ${HOP_SIZE_PRESETS[mode].value}ms - ${HOP_SIZE_PRESETS[mode].description}`}
                   >
                     <span className="beat-detection-ose-toggle-label">{HOP_SIZE_PRESETS[mode].label}</span>
@@ -670,10 +753,13 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                 {/* Custom mode button */}
                 <button
                   type="button"
+                  data-mode-index={3}
                   className={`beat-detection-ose-toggle ${hopSizeConfig.mode === 'custom' ? 'beat-detection-ose-toggle--active' : ''}`}
                   onClick={() => handleHopSizeModeChange('custom')}
                   disabled={disabled}
-                  aria-pressed={hopSizeConfig.mode === 'custom'}
+                  tabIndex={getToggleTabIndex('custom' as HopSizeMode, hopSizeConfig.mode)}
+                  aria-checked={hopSizeConfig.mode === 'custom'}
+                  role="radio"
                   aria-label={`Custom: ${hopSizeConfig.customValue ?? 4}ms - User-defined hop size`}
                 >
                   <span className="beat-detection-ose-toggle-label">Custom</span>
@@ -744,15 +830,23 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   {getMelBandsDisplayValue()}
                 </span>
               </div>
-              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Mel bands mode">
-                {MEL_BANDS_MODES.map((mode) => (
+              <div
+                className="beat-detection-ose-toggles"
+                role="radiogroup"
+                aria-label="Mel bands mode"
+                onKeyDown={createKeyboardNavHandler(MEL_BANDS_MODES, melBandsConfig.mode, handleMelBandsModeChange)}
+              >
+                {MEL_BANDS_MODES.map((mode, index) => (
                   <button
                     key={mode}
                     type="button"
+                    data-mode-index={index}
                     className={`beat-detection-ose-toggle ${melBandsConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
                     onClick={() => handleMelBandsModeChange(mode)}
                     disabled={disabled}
-                    aria-pressed={melBandsConfig.mode === mode}
+                    tabIndex={getToggleTabIndex(mode, melBandsConfig.mode)}
+                    aria-checked={melBandsConfig.mode === mode}
+                    role="radio"
                     aria-label={`${MEL_BANDS_PRESETS[mode].label}: ${MEL_BANDS_PRESETS[mode].value} bands - ${MEL_BANDS_PRESETS[mode].description}`}
                   >
                     <span className="beat-detection-ose-toggle-label">{MEL_BANDS_PRESETS[mode].label}</span>
@@ -787,15 +881,23 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   {getGaussianSmoothDisplayValue()}
                 </span>
               </div>
-              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Gaussian smooth mode">
-                {GAUSSIAN_SMOOTH_MODES.map((mode) => (
+              <div
+                className="beat-detection-ose-toggles"
+                role="radiogroup"
+                aria-label="Gaussian smooth mode"
+                onKeyDown={createKeyboardNavHandler(GAUSSIAN_SMOOTH_MODES, gaussianSmoothConfig.mode, handleGaussianSmoothModeChange)}
+              >
+                {GAUSSIAN_SMOOTH_MODES.map((mode, index) => (
                   <button
                     key={mode}
                     type="button"
+                    data-mode-index={index}
                     className={`beat-detection-ose-toggle ${gaussianSmoothConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
                     onClick={() => handleGaussianSmoothModeChange(mode)}
                     disabled={disabled}
-                    aria-pressed={gaussianSmoothConfig.mode === mode}
+                    tabIndex={getToggleTabIndex(mode, gaussianSmoothConfig.mode)}
+                    aria-checked={gaussianSmoothConfig.mode === mode}
+                    role="radio"
                     aria-label={`${GAUSSIAN_SMOOTH_PRESETS[mode].label}: ${GAUSSIAN_SMOOTH_PRESETS[mode].value}ms - ${GAUSSIAN_SMOOTH_PRESETS[mode].description}`}
                   >
                     <span className="beat-detection-ose-toggle-label">{GAUSSIAN_SMOOTH_PRESETS[mode].label}</span>
