@@ -245,6 +245,49 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
    */
   const HOP_SIZE_PRESET_MODES: Exclude<HopSizeMode, 'custom'>[] = ['efficient', 'standard', 'hq'];
 
+  // ============================================================
+  // TASK 3.2: Custom Hop Size Input
+  // ============================================================
+
+  /**
+   * Handle custom hop size value change.
+   * Validates and clamps the input to the valid range (1-50ms).
+   *
+   * @param value - The raw input value
+   */
+  const handleCustomHopSizeChange = (value: string) => {
+    // Parse the input value
+    const numValue = parseInt(value, 10);
+
+    // If empty or invalid, don't update (keep previous value)
+    if (isNaN(numValue)) {
+      return;
+    }
+
+    // Clamp to valid range (1-50ms)
+    const clampedValue = Math.max(1, Math.min(50, numValue));
+
+    // Update the config with the clamped custom value
+    setHopSizeConfig({
+      mode: 'custom',
+      customValue: clampedValue,
+    });
+  };
+
+  /**
+   * Handle blur event on custom input.
+   * Ensures the value is valid and clamped when focus leaves the input.
+   */
+  const handleCustomHopSizeBlur = () => {
+    const currentValue = hopSizeConfig.customValue ?? 4;
+    // Re-apply clamping on blur to catch any edge cases
+    const clampedValue = Math.max(1, Math.min(50, currentValue));
+    setHopSizeConfig({
+      mode: 'custom',
+      customValue: clampedValue,
+    });
+  };
+
   // Calculate slider percentages for CSS styling
   const minBpmPercent = ((minBpm - 40) / 200) * 100;
   const maxBpmPercent = ((maxBpm - 40) / 200) * 100;
@@ -562,6 +605,44 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   <span className="beat-detection-ose-toggle-value">{hopSizeConfig.customValue ?? 4}ms</span>
                 </button>
               </div>
+
+              {/* ============================================================
+               * TASK 3.2: Custom Hop Size Input
+               *
+               * Shows a number input field when "Custom" mode is selected.
+               * Validates input: min 1, max 50, step 1 (integers only).
+               * Displays value in ms with live update.
+               * ============================================================ */}
+              {hopSizeConfig.mode === 'custom' && (
+                <div className="beat-detection-ose-custom-input-container">
+                  <label
+                    htmlFor="custom-hop-size-input"
+                    className="beat-detection-ose-custom-input-label"
+                  >
+                    Custom value (1-50ms)
+                  </label>
+                  <div className="beat-detection-ose-custom-input-wrapper">
+                    <input
+                      id="custom-hop-size-input"
+                      type="number"
+                      min="1"
+                      max="50"
+                      step="1"
+                      value={hopSizeConfig.customValue ?? 4}
+                      onChange={(e) => handleCustomHopSizeChange(e.target.value)}
+                      onBlur={handleCustomHopSizeBlur}
+                      disabled={disabled}
+                      className="beat-detection-ose-custom-input"
+                      aria-label="Custom hop size in milliseconds"
+                      aria-describedby="custom-hop-size-hint"
+                    />
+                    <span className="beat-detection-ose-custom-input-unit">ms</span>
+                  </div>
+                  <span id="custom-hop-size-hint" className="beat-detection-ose-custom-input-hint">
+                    Lower = more precise, Higher = faster
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

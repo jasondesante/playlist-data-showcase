@@ -963,6 +963,100 @@
   margin-top: 0.125rem;
 }
 
+/* ============================================
+   TASK 4.2: CUSTOM INPUT STYLES
+   Number input field for custom hop size values
+   ============================================ */
+
+/* Custom input container - appears below toggles when Custom is selected */
+.beat-detection-ose-custom-input-container {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 0.375rem;
+}
+
+/* Label for custom input */
+.beat-detection-ose-custom-input-label {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.375rem;
+}
+
+/* Input wrapper for positioning the unit suffix */
+.beat-detection-ose-custom-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Number input field - EQ aesthetic */
+.beat-detection-ose-custom-input {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  transition: all 0.15s ease;
+  /* Remove default number input spinners */
+  -moz-appearance: textfield;
+}
+
+.beat-detection-ose-custom-input::-webkit-outer-spin-button,
+.beat-detection-ose-custom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.beat-detection-ose-custom-input:hover:not(:disabled) {
+  border-color: hsl(var(--border));
+}
+
+.beat-detection-ose-custom-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.beat-detection-ose-custom-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Validation error state */
+.beat-detection-ose-custom-input:invalid {
+  border-color: hsl(var(--destructive, 0 72% 51%));
+  box-shadow: 0 0 0 2px hsl(var(--destructive, 0 72% 51%) / 0.2);
+}
+
+/* Unit suffix (ms) */
+.beat-detection-ose-custom-input-unit {
+  font-size: 0.625rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+/* Hint text below input */
+.beat-detection-ose-custom-input-hint {
+  display: block;
+  font-size: 0.5rem;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+
 /* Responsive for OSE toggles - tablet */
 @media (min-width: 641px) and (max-width: 1024px) {
   .beat-detection-ose-section {
@@ -983,6 +1077,28 @@
   }
 
   .beat-detection-ose-toggle-value {
+    font-size: 0.4375rem;
+  }
+
+  /* Custom input responsive - tablet */
+  .beat-detection-ose-custom-input-container {
+    padding: 0.4375rem;
+  }
+
+  .beat-detection-ose-custom-input-label {
+    font-size: 0.4375rem;
+  }
+
+  .beat-detection-ose-custom-input {
+    padding: 0.3125rem 0.4375rem;
+    font-size: 0.6875rem;
+  }
+
+  .beat-detection-ose-custom-input-unit {
+    font-size: 0.5625rem;
+  }
+
+  .beat-detection-ose-custom-input-hint {
     font-size: 0.4375rem;
   }
 }
@@ -1011,6 +1127,34 @@
   .beat-detection-ose-toggle-value {
     font-size: 0.4375rem;
   }
+
+  /* Custom input responsive - mobile */
+  .beat-detection-ose-custom-input-container {
+    padding: 0.375rem;
+  }
+
+  .beat-detection-ose-custom-input-label {
+    font-size: 0.4375rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .beat-detection-ose-custom-input-wrapper {
+    gap: 0.25rem;
+  }
+
+  .beat-detection-ose-custom-input {
+    padding: 0.3125rem 0.375rem;
+    font-size: 0.625rem;
+  }
+
+  .beat-detection-ose-custom-input-unit {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-ose-custom-input-hint {
+    font-size: 0.4375rem;
+    margin-top: 0.1875rem;
+  }
 }
 
 /* Touch device optimizations for OSE toggles */
@@ -1022,5 +1166,16 @@
 
   .beat-detection-ose-toggle:active {
     transform: scale(0.98);
+  }
+
+  /* Custom input touch optimizations */
+  .beat-detection-ose-custom-input {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom on focus */
+    padding: 0.625rem 0.75rem;
+  }
+
+  .beat-detection-ose-custom-input-unit {
+    font-size: 0.75rem;
   }
 }

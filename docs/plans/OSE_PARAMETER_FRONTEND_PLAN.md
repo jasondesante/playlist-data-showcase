@@ -116,11 +116,11 @@ Add OSE parameter controls to the Advanced Settings section.
   - [x] Show active state styling on selected mode
   - [x] Display current value badge (e.g., "4ms")
 
-- [ ] **3.2 Add Custom Hop Size Input**
-  - [ ] Show number input field when "Custom" mode is selected
-  - [ ] Add validation: min 1, max 50, step 1
-  - [ ] Display value in ms with live update
-  - [ ] Add clamping logic to prevent invalid values
+- [x] **3.2 Add Custom Hop Size Input**
+  - [x] Show number input field when "Custom" mode is selected
+  - [x] Add validation: min 1, max 50, step 1
+  - [x] Display value in ms with live update
+  - [x] Add clamping logic to prevent invalid values
 
 - [ ] **3.3 Add Mel Bands Control Section**
   - [ ] Add section header with label "Mel Bands" and description "Frequency resolution"
@@ -195,10 +195,10 @@ Add EQ-style CSS for OSE parameter toggle buttons and custom input.
   - [x] Add active state styling (primary color, glow effect)
   - [x] Add hover and focus states
 
-- [ ] **4.2 Add Custom Input Styles**
-  - [ ] Style number input field with EQ aesthetic
-  - [ ] Add consistent sizing and spacing
-  - [ ] Style validation states (error if out of range)
+- [x] **4.2 Add Custom Input Styles**
+  - [x] Style number input field with EQ aesthetic
+  - [x] Add consistent sizing and spacing
+  - [x] Style validation states (error if out of range)
 
 - [x] **4.3 Add Section Divider**
   - [x] Add visual separator between existing Advanced settings and OSE settings
