@@ -690,6 +690,113 @@
 }
 
 /* ============================================
+   TAP OFFSET VISUAL COMPARISON
+   Task 7.1: Visual comparison of tap offset vs thresholds
+   ============================================ */
+
+.beat-practice-debug-tap-visual {
+  margin-top: 0.375rem;
+}
+
+.beat-practice-debug-threshold-bar {
+  position: relative;
+  height: 0.5rem;
+  background: hsl(var(--surface-3));
+  border-radius: 0.25rem;
+  overflow: visible;
+}
+
+/* Threshold zones - layered from outside in */
+.beat-practice-debug-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+/* Miss zone (left side - early) */
+.beat-practice-debug-zone--miss-left {
+  left: 0;
+  right: 50%;
+  background: hsl(0, 84%, 60% / 0.2);
+  border-radius: 0.25rem 0 0 0.25rem;
+}
+
+/* Miss zone (right side - late) - pseudo element */
+.beat-practice-debug-zone--miss-left::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 100%;
+  background: hsl(0, 84%, 60% / 0.2);
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+/* OK zone */
+.beat-practice-debug-zone--ok {
+  background: hsl(200, 80%, 55% / 0.25);
+  border-radius: 0;
+}
+
+/* Good zone */
+.beat-practice-debug-zone--good {
+  background: hsl(38, 92%, 50% / 0.3);
+  border-radius: 0;
+}
+
+/* Great zone */
+.beat-practice-debug-zone--great {
+  background: hsl(48, 96%, 53% / 0.35);
+  border-radius: 0;
+}
+
+/* Perfect zone (center) */
+.beat-practice-debug-zone--perfect {
+  background: hsl(142, 76%, 46% / 0.4);
+  border-radius: 0;
+  z-index: 1;
+}
+
+/* Center line - represents exact beat time */
+.beat-practice-debug-center-line {
+  position: absolute;
+  top: -0.125rem;
+  bottom: -0.125rem;
+  left: 50%;
+  width: 2px;
+  background: hsl(var(--foreground) / 0.6);
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+/* Tap position marker */
+.beat-practice-debug-tap-marker {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  width: 3px;
+  background: hsl(var(--foreground));
+  transform: translateX(-50%);
+  border-radius: 1px;
+  z-index: 3;
+  box-shadow: 0 0 4px hsl(var(--foreground) / 0.5);
+}
+
+/* Scale labels */
+.beat-practice-debug-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.125rem;
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground) / 0.6);
+}
+
+.beat-practice-debug-scale span {
+  font-family: ui-monospace, monospace;
+}
+
+/* ============================================
    ACTIVE THRESHOLDS DISPLAY
    Task 5.3: Visual Feedback for Current Difficulty
    ============================================ */
@@ -806,6 +913,14 @@
 
   .beat-practice-debug-threshold-value {
     font-size: 0.625rem;
+  }
+
+  .beat-practice-debug-threshold-bar {
+    height: 0.375rem;
+  }
+
+  .beat-practice-debug-scale {
+    font-size: 0.4375rem;
   }
 }
 

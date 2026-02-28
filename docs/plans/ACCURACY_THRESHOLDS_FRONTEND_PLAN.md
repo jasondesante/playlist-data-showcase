@@ -199,10 +199,10 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 7: Debug Panel Enhancements
 
 ### Task 7.1: Show Active Thresholds in Debug Panel
-- [ ] Update debug panel in `BeatPracticeView.tsx`
-- [ ] Display current threshold values
-- [ ] Show which preset is active (or "Custom")
-- [ ] Add visual comparison of tap offset vs thresholds
+- [x] Update debug panel in `BeatPracticeView.tsx`
+- [x] Display current threshold values
+- [x] Show which preset is active (or "Custom")
+- [x] Add visual comparison of tap offset vs thresholds
 
 ---
 
