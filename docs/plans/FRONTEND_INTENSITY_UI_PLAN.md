@@ -219,7 +219,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 - [x] Sensitivity slider shows correct range (0.1-10)
 - [x] Filter slider shows correct range (0-1)
 - [x] Default values are correct (sensitivity=1.0, filter=0.0) - Verified 2026-02-28: Both store (beatDetectionStore.ts:42-43) and component (BeatDetectionSettings.tsx:22-23) have matching defaults
-- [ ] Sliders update store correctly
+- [x] Sliders update store correctly - Verified 2026-02-28: Data flow traced: Slider onChange → Handler (handleSensitivityChange/handleFilterChange) → setGeneratorOptions() → Store merge → Persisted via partialize(). Both handlers call setGeneratorOptions correctly. Sensitivity uses logarithmic conversion, filter passes value directly.
 - [ ] Reset buttons work
 - [ ] Advanced section collapses/expands
 
