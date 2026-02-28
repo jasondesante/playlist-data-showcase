@@ -280,7 +280,7 @@ src/
 ## Success Criteria
 
 - [x] User can select between Easy/Medium/Hard/Custom presets
-- [ ] Preset selection immediately affects tap accuracy evaluation
+- [x] Preset selection immediately affects tap accuracy evaluation
 - [ ] Custom threshold editor allows fine-tuning all 4 levels
 - [ ] Current difficulty is clearly visible during gameplay
 - [ ] Statistics correctly track 'ok' accuracy
