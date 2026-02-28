@@ -22,6 +22,12 @@ import {
     AccuracyThresholds,
     getAccuracyThresholdsForPreset,
     ExtendedButtonPressResult,
+    HopSizeConfig,
+    MelBandsConfig,
+    GaussianSmoothConfig,
+    HOP_SIZE_PRESETS,
+    MEL_BANDS_PRESETS,
+    GAUSSIAN_SMOOTH_PRESETS,
 } from '@/types';
 import { BeatMapGenerator } from 'playlist-data-engine';
 
@@ -36,8 +42,28 @@ export interface TapResult extends ExtendedButtonPressResult {
 }
 
 /**
+ * Default OSE mode configurations.
+ * These track the user's selected mode for each OSE parameter.
+ */
+const DEFAULT_HOP_SIZE_CONFIG: HopSizeConfig = {
+    mode: 'standard',
+};
+
+const DEFAULT_MEL_BANDS_CONFIG: MelBandsConfig = {
+    mode: 'standard',
+};
+
+const DEFAULT_GAUSSIAN_SMOOTH_CONFIG: GaussianSmoothConfig = {
+    mode: 'standard',
+};
+
+/**
  * Default options for beat map generation.
  * Matches the engine's defaults.
+ *
+ * Note: The raw numeric values (hopSizeMs, melBands, gaussianSmoothMs) are
+ * resolved from the OSE config modes by the helper functions before being
+ * passed to the engine. The OSE config objects track the user's selected modes.
  */
 const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     minBpm: 60,
@@ -45,13 +71,13 @@ const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     sensitivity: 1.0,  // Pre-processing sensitivity (0.1-10.0)
     filter: 0.0,       // Post-processing grid-alignment filter (0.0-1.0)
     noiseFloorThreshold: 0.1,
-    hopSizeMs: 10,
+    hopSizeMs: HOP_SIZE_PRESETS.standard.value,  // 4ms - resolved from 'standard' mode
     fftSize: 2048,
     rollingBpmWindowSize: 8,
     dpAlpha: 680,
-    melBands: 40,
+    melBands: MEL_BANDS_PRESETS.standard.value,  // 40 bands - resolved from 'standard' mode
     highPassCutoff: 0.4,
-    gaussianSmoothMs: 20,
+    gaussianSmoothMs: GAUSSIAN_SMOOTH_PRESETS.standard.value,  // 20ms - resolved from 'standard' mode
     tempoCenter: 0.5,
     tempoWidth: 1.4,
 };
@@ -95,8 +121,14 @@ interface BeatDetectionState {
     isGenerating: boolean;
     /** Current generation progress (null when not generating) */
     generationProgress: BeatMapGenerationProgress | null;
-    /** Options for beat map generation */
+    /** Options for beat map generation (raw numeric values passed to engine) */
     generatorOptions: BeatMapGeneratorOptions;
+    /** OSE Hop Size configuration (mode-based selection) */
+    hopSizeConfig: HopSizeConfig;
+    /** OSE Mel Bands configuration (mode-based selection) */
+    melBandsConfig: MelBandsConfig;
+    /** OSE Gaussian Smoothing configuration (mode-based selection) */
+    gaussianSmoothConfig: GaussianSmoothConfig;
     /** Cached beat maps indexed by audio ID for localStorage persistence */
     cachedBeatMaps: Record<string, BeatMap>;
     /** Order of cache insertion (for LRU eviction) - stores audio IDs */
@@ -140,6 +172,27 @@ interface BeatDetectionActions {
      * @param options - Partial options to merge with existing options
      */
     setGeneratorOptions: (options: Partial<BeatMapGeneratorOptions>) => void;
+
+    /**
+     * Set the hop size configuration.
+     * Updates both the config mode and resolves the numeric value in generatorOptions.
+     * @param config - The hop size configuration
+     */
+    setHopSizeConfig: (config: HopSizeConfig) => void;
+
+    /**
+     * Set the mel bands configuration.
+     * Updates both the config mode and resolves the numeric value in generatorOptions.
+     * @param config - The mel bands configuration
+     */
+    setMelBandsConfig: (config: MelBandsConfig) => void;
+
+    /**
+     * Set the gaussian smoothing configuration.
+     * Updates both the config mode and resolves the numeric value in generatorOptions.
+     * @param config - The gaussian smoothing configuration
+     */
+    setGaussianSmoothConfig: (config: GaussianSmoothConfig) => void;
 
     /**
      * Clear the current beat map and reset related state.
@@ -285,6 +338,9 @@ const createInitialState = (): BeatDetectionState => ({
     isGenerating: false,
     generationProgress: null,
     generatorOptions: { ...DEFAULT_GENERATOR_OPTIONS },
+    hopSizeConfig: { ...DEFAULT_HOP_SIZE_CONFIG },
+    melBandsConfig: { ...DEFAULT_MEL_BANDS_CONFIG },
+    gaussianSmoothConfig: { ...DEFAULT_GAUSSIAN_SMOOTH_CONFIG },
     cachedBeatMaps: {},
     cacheOrder: [],
     practiceModeActive: false,
@@ -530,6 +586,47 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         }));
                     },
 
+                    setHopSizeConfig: (config) => {
+                        logger.debug('BeatDetection', 'Updating hop size config', config);
+                        // Resolve the numeric value from config
+                        const hopSizeMs = config.mode === 'custom'
+                            ? (config.customValue ?? HOP_SIZE_PRESETS.standard.value)
+                            : HOP_SIZE_PRESETS[config.mode].value;
+                        set((state) => ({
+                            hopSizeConfig: config,
+                            generatorOptions: {
+                                ...state.generatorOptions,
+                                hopSizeMs,
+                            },
+                        }));
+                    },
+
+                    setMelBandsConfig: (config) => {
+                        logger.debug('BeatDetection', 'Updating mel bands config', config);
+                        // Resolve the numeric value from config
+                        const melBands = MEL_BANDS_PRESETS[config.mode].value;
+                        set((state) => ({
+                            melBandsConfig: config,
+                            generatorOptions: {
+                                ...state.generatorOptions,
+                                melBands,
+                            },
+                        }));
+                    },
+
+                    setGaussianSmoothConfig: (config) => {
+                        logger.debug('BeatDetection', 'Updating gaussian smooth config', config);
+                        // Resolve the numeric value from config
+                        const gaussianSmoothMs = GAUSSIAN_SMOOTH_PRESETS[config.mode].value;
+                        set((state) => ({
+                            gaussianSmoothConfig: config,
+                            generatorOptions: {
+                                ...state.generatorOptions,
+                                gaussianSmoothMs,
+                            },
+                        }));
+                    },
+
                     clearBeatMap: () => {
                         logger.info('BeatDetection', 'Clearing current beat map');
                         set({
@@ -714,6 +811,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 cachedBeatMaps: state.cachedBeatMaps,
                 cacheOrder: state.cacheOrder,
                 generatorOptions: state.generatorOptions,
+                hopSizeConfig: state.hopSizeConfig,
+                melBandsConfig: state.melBandsConfig,
+                gaussianSmoothConfig: state.gaussianSmoothConfig,
                 difficultySettings: state.difficultySettings,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
@@ -760,11 +860,80 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     };
                 }
 
+                // Handle OSE config migration
+                // If OSE configs exist in persisted state, use them
+                // Otherwise, infer from raw numeric values in generatorOptions
+                let hopSizeConfig = persisted?.hopSizeConfig;
+                if (!hopSizeConfig && generatorOptions?.hopSizeMs !== undefined) {
+                    // Infer mode from raw value
+                    const rawValue = generatorOptions.hopSizeMs;
+                    if (rawValue === HOP_SIZE_PRESETS.efficient.value) {
+                        hopSizeConfig = { mode: 'efficient' };
+                    } else if (rawValue === HOP_SIZE_PRESETS.standard.value) {
+                        hopSizeConfig = { mode: 'standard' };
+                    } else if (rawValue === HOP_SIZE_PRESETS.hq.value) {
+                        hopSizeConfig = { mode: 'hq' };
+                    } else {
+                        // Non-preset value = custom mode
+                        hopSizeConfig = { mode: 'custom', customValue: rawValue };
+                    }
+                    logger.info('BeatDetection', 'Migrated hopSizeMs to hopSizeConfig', {
+                        rawValue,
+                        mode: hopSizeConfig.mode,
+                    });
+                }
+                hopSizeConfig = hopSizeConfig ?? currentState.hopSizeConfig;
+
+                let melBandsConfig = persisted?.melBandsConfig;
+                if (!melBandsConfig && generatorOptions?.melBands !== undefined) {
+                    // Infer mode from raw value
+                    const rawValue = generatorOptions.melBands;
+                    if (rawValue === MEL_BANDS_PRESETS.standard.value) {
+                        melBandsConfig = { mode: 'standard' };
+                    } else if (rawValue === MEL_BANDS_PRESETS.detailed.value) {
+                        melBandsConfig = { mode: 'detailed' };
+                    } else if (rawValue === MEL_BANDS_PRESETS.maximum.value) {
+                        melBandsConfig = { mode: 'maximum' };
+                    } else {
+                        // Non-preset value = default to standard
+                        melBandsConfig = { mode: 'standard' };
+                    }
+                    logger.info('BeatDetection', 'Migrated melBands to melBandsConfig', {
+                        rawValue,
+                        mode: melBandsConfig.mode,
+                    });
+                }
+                melBandsConfig = melBandsConfig ?? currentState.melBandsConfig;
+
+                let gaussianSmoothConfig = persisted?.gaussianSmoothConfig;
+                if (!gaussianSmoothConfig && generatorOptions?.gaussianSmoothMs !== undefined) {
+                    // Infer mode from raw value
+                    const rawValue = generatorOptions.gaussianSmoothMs;
+                    if (rawValue === GAUSSIAN_SMOOTH_PRESETS.minimal.value) {
+                        gaussianSmoothConfig = { mode: 'minimal' };
+                    } else if (rawValue === GAUSSIAN_SMOOTH_PRESETS.standard.value) {
+                        gaussianSmoothConfig = { mode: 'standard' };
+                    } else if (rawValue === GAUSSIAN_SMOOTH_PRESETS.smooth.value) {
+                        gaussianSmoothConfig = { mode: 'smooth' };
+                    } else {
+                        // Non-preset value = default to standard
+                        gaussianSmoothConfig = { mode: 'standard' };
+                    }
+                    logger.info('BeatDetection', 'Migrated gaussianSmoothMs to gaussianSmoothConfig', {
+                        rawValue,
+                        mode: gaussianSmoothConfig.mode,
+                    });
+                }
+                gaussianSmoothConfig = gaussianSmoothConfig ?? currentState.gaussianSmoothConfig;
+
                 return {
                     ...currentState,
                     cachedBeatMaps: persisted?.cachedBeatMaps ?? currentState.cachedBeatMaps,
                     cacheOrder: cacheOrder ?? currentState.cacheOrder,
                     generatorOptions,
+                    hopSizeConfig,
+                    melBandsConfig,
+                    gaussianSmoothConfig,
                     difficultySettings,
                 };
             },
@@ -942,3 +1111,36 @@ export const useAccuracyThresholds = () =>
             difficultySettings.customThresholds
         );
     }));
+
+// ============================================================
+// OSE Config Selectors
+// ============================================================
+
+/**
+ * Selector to get the hop size configuration.
+ */
+export const useHopSizeConfig = () =>
+    useBeatDetectionStore((state) => state.hopSizeConfig);
+
+/**
+ * Selector to get the mel bands configuration.
+ */
+export const useMelBandsConfig = () =>
+    useBeatDetectionStore((state) => state.melBandsConfig);
+
+/**
+ * Selector to get the gaussian smoothing configuration.
+ */
+export const useGaussianSmoothConfig = () =>
+    useBeatDetectionStore((state) => state.gaussianSmoothConfig);
+
+/**
+ * Selector to get all OSE configurations.
+ * Uses useShallow to prevent infinite loops from new object references.
+ */
+export const useOseConfigs = () =>
+    useBeatDetectionStore(useShallow((state) => ({
+        hopSizeConfig: state.hopSizeConfig,
+        melBandsConfig: state.melBandsConfig,
+        gaussianSmoothConfig: state.gaussianSmoothConfig,
+    })));

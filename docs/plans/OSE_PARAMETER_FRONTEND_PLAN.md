@@ -85,11 +85,11 @@ export interface GaussianSmoothConfig {
 
 Update the beat detection store to handle OSE parameter modes. **No cache key changes needed** - works the same as existing sensitivity/filter settings.
 
-- [ ] **2.1 Update `BeatMapGeneratorOptions` Interface in Store**
-  - [ ] Add `hopSizeConfig?: HopSizeConfig` to generator options state
-  - [ ] Add `melBandsConfig?: MelBandsConfig` to generator options state
-  - [ ] Add `gaussianSmoothConfig?: GaussianSmoothConfig` to generator options state
-  - [ ] Update `DEFAULT_GENERATOR_OPTIONS` with default mode configs
+- [x] **2.1 Update `BeatMapGeneratorOptions` Interface in Store**
+  - [x] Add `hopSizeConfig?: HopSizeConfig` to generator options state
+  - [x] Add `melBandsConfig?: MelBandsConfig` to generator options state
+  - [x] Add `gaussianSmoothConfig?: GaussianSmoothConfig` to generator options state
+  - [x] Update `DEFAULT_GENERATOR_OPTIONS` with default mode configs
 
 - [ ] **2.2 Add Helper Functions for Mode-to-Value Conversion**
   - [ ] Add `resolveHopSizeMs(config: HopSizeConfig): number`
