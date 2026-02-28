@@ -11,7 +11,7 @@
  *
  * Part of Task 7.2: Includes note about tracks with no clear beat.
  */
-import { Info } from 'lucide-react';
+import { Info, RotateCcw } from 'lucide-react';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
@@ -69,6 +69,19 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const handleTempoCenterChange = (value: number) => {
     const invertedValue = 1.0 - value; // Invert: 0.3↔0.7
     setGeneratorOptions({ tempoCenter: invertedValue });
+  };
+
+  // Check if values differ from defaults (for visual indicators)
+  const isSensitivityDefault = sensitivity === DEFAULTS.sensitivity;
+  const isFilterDefault = filter === DEFAULTS.filter;
+
+  // Reset handlers - restore individual settings to defaults
+  const handleSensitivityReset = () => {
+    setGeneratorOptions({ sensitivity: DEFAULTS.sensitivity });
+  };
+
+  const handleFilterReset = () => {
+    setGeneratorOptions({ filter: DEFAULTS.filter });
   };
 
   // Calculate slider percentages for CSS styling
@@ -153,9 +166,23 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Sensitivity</span>
-          <span className="beat-detection-settings-value">
-            {sensitivity.toFixed(1)}
-          </span>
+          <div className="beat-detection-settings-header-right">
+            <span className={`beat-detection-settings-value ${!isSensitivityDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+              {sensitivity.toFixed(1)}
+            </span>
+            {!isSensitivityDefault && (
+              <button
+                type="button"
+                className="beat-detection-reset-btn"
+                onClick={handleSensitivityReset}
+                disabled={disabled}
+                aria-label="Reset sensitivity to default"
+                title="Reset to default (1.0)"
+              >
+                <RotateCcw className="beat-detection-reset-btn-icon" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="beat-detection-slider-container">
@@ -186,9 +213,23 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Filter</span>
-          <span className="beat-detection-settings-value">
-            {filter.toFixed(2)}
-          </span>
+          <div className="beat-detection-settings-header-right">
+            <span className={`beat-detection-settings-value ${!isFilterDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+              {filter.toFixed(2)}
+            </span>
+            {!isFilterDefault && (
+              <button
+                type="button"
+                className="beat-detection-reset-btn"
+                onClick={handleFilterReset}
+                disabled={disabled}
+                aria-label="Reset filter to default"
+                title="Reset to default (0.0)"
+              >
+                <RotateCcw className="beat-detection-reset-btn-icon" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="beat-detection-slider-container">

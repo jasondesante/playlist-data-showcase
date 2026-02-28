@@ -154,12 +154,13 @@ Update the frontend to expose TWO separate controls for beat detection:
   **Verified**: Both handlers already implemented in BeatDetectionSettings.tsx (lines 57-64)
 
 ### 3.5 Add Visual Indicators
-- [ ] Show when values differ from defaults:
+- [x] Show when values differ from defaults:
   ```typescript
   const isSensitivityDefault = sensitivity === 1.0;
   const isFilterDefault = filter === 0.0;
   ```
-- [ ] Add reset buttons for each slider when not at default
+- [x] Add reset buttons for each slider when not at default
+  **Verified**: Both visual indicators and reset buttons implemented in BeatDetectionSettings.tsx and BeatDetectionSettings.css
 
 ---
 
