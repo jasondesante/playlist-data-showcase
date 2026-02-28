@@ -55,6 +55,10 @@
 import { Info, RotateCcw } from 'lucide-react';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
+import {
+    HopSizeMode,
+    HOP_SIZE_PRESETS,
+} from '@/types';
 
 /**
  * Default values for beat detection options.
@@ -122,6 +126,8 @@ interface BeatDetectionSettingsProps {
 export function BeatDetectionSettings({ disabled = false }: BeatDetectionSettingsProps) {
   const generatorOptions = useBeatDetectionStore((state) => state.generatorOptions);
   const setGeneratorOptions = useBeatDetectionStore((state) => state.actions.setGeneratorOptions);
+  const hopSizeConfig = useBeatDetectionStore((state) => state.hopSizeConfig);
+  const setHopSizeConfig = useBeatDetectionStore((state) => state.actions.setHopSizeConfig);
 
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
@@ -195,6 +201,49 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const handleFilterReset = () => {
     setGeneratorOptions({ filter: DEFAULTS.filter });
   };
+
+  // ============================================================
+  // TASK 3.1: Hop Size Control
+  // ============================================================
+
+  /**
+   * Handle Hop Size mode change.
+   * Updates the hop size configuration with the selected mode.
+   *
+   * @param mode - The selected hop size mode
+   */
+  const handleHopSizeModeChange = (mode: HopSizeMode) => {
+    if (mode === 'custom') {
+      // For custom mode, preserve existing customValue or use default (4ms)
+      setHopSizeConfig({
+        mode,
+        customValue: hopSizeConfig.customValue ?? 4,
+      });
+    } else {
+      setHopSizeConfig({ mode });
+    }
+  };
+
+  /**
+   * Get the display value for the current hop size configuration.
+   * Shows the preset value or custom value in milliseconds.
+   */
+  const getHopSizeDisplayValue = (): string => {
+    if (hopSizeConfig.mode === 'custom') {
+      return `${hopSizeConfig.customValue ?? 4}ms`;
+    }
+    return `${HOP_SIZE_PRESETS[hopSizeConfig.mode].value}ms`;
+  };
+
+  /**
+   * Check if hop size is at default (standard mode).
+   */
+  const isHopSizeDefault = hopSizeConfig.mode === 'standard';
+
+  /**
+   * Preset modes for iteration (excludes 'custom' which is handled separately).
+   */
+  const HOP_SIZE_PRESET_MODES: Exclude<HopSizeMode, 'custom'>[] = ['efficient', 'standard', 'hq'];
 
   // Calculate slider percentages for CSS styling
   const minBpmPercent = ((minBpm - 40) / 200) * 100;
@@ -454,6 +503,64 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                 <span className="beat-detection-slider-mark">~86 BPM</span>
                 <span className="beat-detection-slider-mark">~120 BPM</span>
                 <span className="beat-detection-slider-mark">~200 BPM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================
+           * HOP SIZE CONTROL (Task 3.1)
+           *
+           * What it does: Controls the analysis precision for beat detection.
+           * Hop size determines how frequently the algorithm samples the audio
+           * during onset strength envelope computation.
+           *
+           * Modes:
+           * - Efficient (10ms): Fast, reduced precision - good for quick previews
+           * - Standard (4ms): Paper spec default - balanced for most use cases
+           * - HQ (2ms): Maximum precision - slower but more accurate
+           * - Custom (1-50ms): User-defined hop size for specific needs
+           *
+           * Effect on output:
+           * - Smaller hop size = more precise beat detection, longer analysis time
+           * - Larger hop size = faster analysis, potentially missing subtle beats
+           *
+           * Tier: 1 (Primary Control) - Most impactful OSE parameter
+           * ============================================================ */}
+          <div className="beat-detection-ose-section">
+            <div className="beat-detection-settings-section">
+              <div className="beat-detection-settings-header">
+                <span className="beat-detection-settings-label">Hop Size</span>
+                <span className={`beat-detection-settings-value ${!isHopSizeDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {getHopSizeDisplayValue()}
+                </span>
+              </div>
+              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Hop size mode">
+                {HOP_SIZE_PRESET_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    className={`beat-detection-ose-toggle ${hopSizeConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
+                    onClick={() => handleHopSizeModeChange(mode)}
+                    disabled={disabled}
+                    aria-pressed={hopSizeConfig.mode === mode}
+                    aria-label={`${HOP_SIZE_PRESETS[mode].label}: ${HOP_SIZE_PRESETS[mode].value}ms - ${HOP_SIZE_PRESETS[mode].description}`}
+                  >
+                    <span className="beat-detection-ose-toggle-label">{HOP_SIZE_PRESETS[mode].label}</span>
+                    <span className="beat-detection-ose-toggle-value">{HOP_SIZE_PRESETS[mode].value}ms</span>
+                  </button>
+                ))}
+                {/* Custom mode button */}
+                <button
+                  type="button"
+                  className={`beat-detection-ose-toggle ${hopSizeConfig.mode === 'custom' ? 'beat-detection-ose-toggle--active' : ''}`}
+                  onClick={() => handleHopSizeModeChange('custom')}
+                  disabled={disabled}
+                  aria-pressed={hopSizeConfig.mode === 'custom'}
+                  aria-label={`Custom: ${hopSizeConfig.customValue ?? 4}ms - User-defined hop size`}
+                >
+                  <span className="beat-detection-ose-toggle-label">Custom</span>
+                  <span className="beat-detection-ose-toggle-value">{hopSizeConfig.customValue ?? 4}ms</span>
+                </button>
               </div>
             </div>
           </div>

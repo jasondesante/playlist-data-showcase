@@ -110,11 +110,11 @@ Update the beat detection store to handle OSE parameter modes. **No cache key ch
 
 Add OSE parameter controls to the Advanced Settings section.
 
-- [ ] **3.1 Add Hop Size Control Section**
-  - [ ] Add section header with label "Hop Size" and description "Analysis precision"
-  - [ ] Create EQ-style toggle button group with 4 options: Efficient, Standard, HQ, Custom
-  - [ ] Show active state styling on selected mode
-  - [ ] Display current value badge (e.g., "4ms")
+- [x] **3.1 Add Hop Size Control Section**
+  - [x] Add section header with label "Hop Size" and description "Analysis precision"
+  - [x] Create EQ-style toggle button group with 4 options: Efficient, Standard, HQ, Custom
+  - [x] Show active state styling on selected mode
+  - [x] Display current value badge (e.g., "4ms")
 
 - [ ] **3.2 Add Custom Hop Size Input**
   - [ ] Show number input field when "Custom" mode is selected
@@ -189,25 +189,25 @@ Add OSE parameter controls to the Advanced Settings section.
 
 Add EQ-style CSS for OSE parameter toggle buttons and custom input.
 
-- [ ] **4.1 Add OSE Toggle Button Styles**
-  - [ ] Style toggle button container (horizontal layout)
-  - [ ] Style individual toggle buttons matching existing EQ aesthetic
-  - [ ] Add active state styling (primary color, glow effect)
-  - [ ] Add hover and focus states
+- [x] **4.1 Add OSE Toggle Button Styles**
+  - [x] Style toggle button container (horizontal layout)
+  - [x] Style individual toggle buttons matching existing EQ aesthetic
+  - [x] Add active state styling (primary color, glow effect)
+  - [x] Add hover and focus states
 
 - [ ] **4.2 Add Custom Input Styles**
   - [ ] Style number input field with EQ aesthetic
   - [ ] Add consistent sizing and spacing
   - [ ] Style validation states (error if out of range)
 
-- [ ] **4.3 Add Section Divider**
-  - [ ] Add visual separator between existing Advanced settings and OSE settings
-  - [ ] Use subtle border or spacing
+- [x] **4.3 Add Section Divider**
+  - [x] Add visual separator between existing Advanced settings and OSE settings
+  - [x] Use subtle border or spacing
 
-- [ ] **4.4 Add Responsive Styles**
-  - [ ] Adjust toggle button sizes for tablet/mobile
-  - [ ] Stack toggles vertically on very small screens
-  - [ ] Adjust input field sizing
+- [x] **4.4 Add Responsive Styles**
+  - [x] Adjust toggle button sizes for tablet/mobile
+  - [x] Stack toggles vertically on very small screens
+  - [x] Adjust input field sizing
 
 ### CSS Classes
 

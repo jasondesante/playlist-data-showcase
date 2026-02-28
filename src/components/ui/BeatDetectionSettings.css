@@ -884,3 +884,143 @@
     padding-top: 0;
   }
 }
+
+/* ============================================
+   PHASE 4: OSE PARAMETER TOGGLE STYLES
+   EQ-style toggle buttons for Hop Size, Mel Bands, Gaussian Smooth
+   ============================================ */
+
+/* OSE Section Container - separates OSE settings from other advanced settings */
+.beat-detection-ose-section {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+}
+
+/* Toggle Button Container - horizontal layout for EQ-style buttons */
+.beat-detection-ose-toggles {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+/* Toggle Button - EQ-style push button */
+.beat-detection-ose-toggle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.375rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-detection-ose-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.beat-detection-ose-toggle:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-detection-ose-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state - primary color with glow effect */
+.beat-detection-ose-toggle--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
+.beat-detection-ose-toggle--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+  box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
+}
+
+/* Toggle button label - mode name */
+.beat-detection-ose-toggle-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Toggle button value - preset value */
+.beat-detection-ose-toggle-value {
+  font-size: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 0.125rem;
+}
+
+/* Responsive for OSE toggles - tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-detection-ose-section {
+    margin-top: 0.4375rem;
+    padding-top: 0.4375rem;
+  }
+
+  .beat-detection-ose-toggles {
+    gap: 0.3125rem;
+  }
+
+  .beat-detection-ose-toggle {
+    padding: 0.4375rem 0.3125rem;
+  }
+
+  .beat-detection-ose-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-ose-toggle-value {
+    font-size: 0.4375rem;
+  }
+}
+
+/* Responsive for OSE toggles - mobile */
+@media (max-width: 640px) {
+  .beat-detection-ose-section {
+    margin-top: 0.375rem;
+    padding-top: 0.375rem;
+  }
+
+  .beat-detection-ose-toggles {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .beat-detection-ose-toggle {
+    padding: 0.375rem 0.25rem;
+    min-width: calc(50% - 0.125rem);
+  }
+
+  .beat-detection-ose-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-ose-toggle-value {
+    font-size: 0.4375rem;
+  }
+}
+
+/* Touch device optimizations for OSE toggles */
+@media (hover: none) and (pointer: coarse) {
+  .beat-detection-ose-toggle {
+    min-height: 44px;
+    padding: 0.625rem 0.5rem;
+  }
+
+  .beat-detection-ose-toggle:active {
+    transform: scale(0.98);
+  }
+}
