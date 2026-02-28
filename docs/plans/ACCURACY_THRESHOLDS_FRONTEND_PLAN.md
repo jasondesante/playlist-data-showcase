@@ -121,7 +121,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   - [x] Show visual representation of threshold ranges
 
 ### Task 3.3: Create DifficultySettingsPanel Component
-- [ ] Create `src/components/ui/DifficultySettingsPanel.tsx`
+- [x] Create `src/components/ui/DifficultySettingsPanel.tsx`
   ```typescript
   interface DifficultySettingsPanelProps {
     isOpen: boolean;
@@ -130,10 +130,10 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 
   export function DifficultySettingsPanel({ isOpen, onClose }: DifficultySettingsPanelProps)
   ```
-  - [ ] Collapsible/expandable panel or modal
-  - [ ] Contains DifficultySelector
-  - [ ] Shows CustomThresholdEditor when "Custom" is selected
-  - [ ] Preview of current thresholds in a visual format
+  - [x] Collapsible/expandable panel or modal
+  - [x] Contains DifficultySelector
+  - [x] Shows CustomThresholdEditor when "Custom" is selected
+  - [x] Preview of current thresholds in a visual format
 
 ---
 
@@ -154,11 +154,11 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   - [x] Responsive layout
 
 ### Task 4.3: Add DifficultySettingsPanel Styles
-- [ ] Create `src/components/ui/DifficultySettingsPanel.css`
-  - [ ] Panel/modal styling
-  - [ ] Header with close button
-  - [ ] Content layout
-  - [ ] Animation for open/close
+- [x] Create `src/components/ui/DifficultySettingsPanel.css`
+  - [x] Panel/modal styling
+  - [x] Header with close button
+  - [x] Content layout
+  - [x] Animation for open/close
 
 ---
 
