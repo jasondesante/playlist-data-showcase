@@ -282,8 +282,8 @@ src/
 - [x] User can select between Easy/Medium/Hard/Custom presets
 - [x] Preset selection immediately affects tap accuracy evaluation
 - [x] Custom threshold editor allows fine-tuning all 4 levels
-- [ ] Current difficulty is clearly visible during gameplay
-- [ ] Statistics correctly track 'ok' accuracy
-- [ ] Debug panel shows active thresholds
-- [ ] Settings persist across page refresh (if implemented)
-- [ ] UI is intuitive and responsive
+- [x] Current difficulty is clearly visible during gameplay
+- [x] Statistics correctly track 'ok' accuracy
+- [x] Debug panel shows active thresholds
+- [x] Settings persist across page refresh (if implemented)
+- [x] UI is intuitive and responsive
