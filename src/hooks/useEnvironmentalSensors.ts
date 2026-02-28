@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { EnvironmentalSensors, BiomeType } from 'playlist-data-engine';
+import { EnvironmentalSensors, BiomeType, XPBonusSource, XpModifierBreakdown } from 'playlist-data-engine';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
 import { logger } from '@/utils/logger';
@@ -162,6 +162,18 @@ export const useEnvironmentalSensors = () => {
         if (!environmentalContext || !sensors) return 1.0;
         return sensors.calculateXPModifier();
     }, [environmentalContext, sensors]);
+
+    // Get detailed XP modifier breakdown from engine
+    // Includes active bonus sources with labels, icons, and values
+    const xpBreakdown = useMemo((): XpModifierBreakdown | null => {
+        if (!environmentalContext || !sensors) return null;
+        return sensors.getXpModifierBreakdown();
+    }, [environmentalContext, sensors]);
+
+    // Extract active bonus sources for UI display
+    const xpBonusSources = useMemo((): XPBonusSource[] => {
+        return xpBreakdown?.activeBonuses ?? [];
+    }, [xpBreakdown]);
 
     // Extract biome from environmental context
     // Biome is derived from location data and represents the environmental zone
@@ -390,5 +402,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext, checkWeatherStatus, updateDiagnosticsState]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBreakdown, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather };
 };

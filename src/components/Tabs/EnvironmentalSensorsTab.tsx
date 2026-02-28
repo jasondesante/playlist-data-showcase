@@ -321,7 +321,7 @@ function SevereWeatherAlertCard({
 
 export function EnvironmentalSensorsTab() {
   const { settings } = useAppStore();
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -616,21 +616,34 @@ export function EnvironmentalSensorsTab() {
                   data-tier={(() => {
                     if (xpModifier >= 2.0) return 'epic';
                     if (xpModifier >= 1.5) return 'high';
-                    if (xpModifier >= 1.25) return 'bonus';
+                    if (xpModifier > 1.0) return 'bonus';
                     return 'base';
                   })()}
                 >
                   {xpModifier.toFixed(2)}x
                 </span>
-                <span className="sensor-xp-label">
-                  {(() => {
-                    if (xpModifier >= 2.0) return 'Epic Environmental Bonus!';
-                    if (xpModifier >= 1.5) return 'High Environmental Bonus';
-                    if (xpModifier >= 1.25) return 'Environmental Bonus Active';
-                    return 'Base XP Rate';
-                  })()}
-                </span>
               </div>
+
+              {/* Active Bonus Badges - show when any bonus is active */}
+              {xpModifier > 1.0 && (
+                <div className="sensor-xp-bonus-badges">
+                  {xpBonusSources.length > 0 ? (
+                    xpBonusSources.map((source) => (
+                      <div key={source.id} className="sensor-xp-bonus-badge" title={source.label}>
+                        <span className="sensor-xp-bonus-icon">{source.icon}</span>
+                        <span className="sensor-xp-bonus-label">{source.label}</span>
+                        <span className="sensor-xp-bonus-value">+{Math.round(source.bonus * 100)}%</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="sensor-xp-bonus-badge">
+                      <span className="sensor-xp-bonus-icon">🌟</span>
+                      <span className="sensor-xp-bonus-label">Environmental Bonus</span>
+                      <span className="sensor-xp-bonus-value">+{Math.round((xpModifier - 1) * 100)}%</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="sensor-xp-tier-indicators">
                 <div className="sensor-xp-tier" data-active={xpModifier >= 1.0}>
