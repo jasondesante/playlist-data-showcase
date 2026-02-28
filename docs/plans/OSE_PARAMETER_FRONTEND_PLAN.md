@@ -127,10 +127,10 @@ Add OSE parameter controls to the Advanced Settings section.
   - [x] Create EQ-style toggle button group with 3 options: Standard, Detailed, Maximum
   - [x] Display current value badge (e.g., "40 bands")
 
-- [ ] **3.4 Add Gaussian Smooth Control Section**
-  - [ ] Add section header with label "Smoothing" and description "Peak clarity"
-  - [ ] Create EQ-style toggle button group with 3 options: Minimal, Standard, Smooth
-  - [ ] Display current value badge (e.g., "20ms")
+- [x] **3.4 Add Gaussian Smooth Control Section**
+  - [x] Add section header with label "Smoothing" and description "Peak clarity"
+  - [x] Create EQ-style toggle button group with 3 options: Minimal, Standard, Smooth
+  - [x] Display current value badge (e.g., "20ms")
 
 - [ ] **3.5 Add "Re-Analyze Needed" Indicator**
   - [ ] Track OSE config used to generate current beat map (store alongside beat map or in separate state)

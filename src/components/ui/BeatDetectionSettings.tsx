@@ -58,8 +58,10 @@ import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import {
     HopSizeMode,
     MelBandsMode,
+    GaussianSmoothMode,
     HOP_SIZE_PRESETS,
     MEL_BANDS_PRESETS,
+    GAUSSIAN_SMOOTH_PRESETS,
 } from '@/types';
 
 /**
@@ -132,6 +134,8 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const setHopSizeConfig = useBeatDetectionStore((state) => state.actions.setHopSizeConfig);
   const melBandsConfig = useBeatDetectionStore((state) => state.melBandsConfig);
   const setMelBandsConfig = useBeatDetectionStore((state) => state.actions.setMelBandsConfig);
+  const gaussianSmoothConfig = useBeatDetectionStore((state) => state.gaussianSmoothConfig);
+  const setGaussianSmoothConfig = useBeatDetectionStore((state) => state.actions.setGaussianSmoothConfig);
 
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
@@ -280,6 +284,38 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
    * All mel bands modes for iteration.
    */
   const MEL_BANDS_MODES: MelBandsMode[] = ['standard', 'detailed', 'maximum'];
+
+  // ============================================================
+  // TASK 3.4: Gaussian Smooth Control
+  // ============================================================
+
+  /**
+   * Handle Gaussian Smooth mode change.
+   * Updates the gaussian smooth configuration with the selected mode.
+   *
+   * @param mode - The selected gaussian smooth mode
+   */
+  const handleGaussianSmoothModeChange = (mode: GaussianSmoothMode) => {
+    setGaussianSmoothConfig({ mode });
+  };
+
+  /**
+   * Get the display value for the current gaussian smooth configuration.
+   * Shows the preset value in milliseconds.
+   */
+  const getGaussianSmoothDisplayValue = (): string => {
+    return `${GAUSSIAN_SMOOTH_PRESETS[gaussianSmoothConfig.mode].value}ms`;
+  };
+
+  /**
+   * Check if gaussian smooth is at default (standard mode).
+   */
+  const isGaussianSmoothDefault = gaussianSmoothConfig.mode === 'standard';
+
+  /**
+   * All gaussian smooth modes for iteration.
+   */
+  const GAUSSIAN_SMOOTH_MODES: GaussianSmoothMode[] = ['minimal', 'standard', 'smooth'];
 
   // ============================================================
   // TASK 3.2: Custom Hop Size Input
@@ -718,6 +754,49 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   >
                     <span className="beat-detection-ose-toggle-label">{MEL_BANDS_PRESETS[mode].label}</span>
                     <span className="beat-detection-ose-toggle-value">{MEL_BANDS_PRESETS[mode].value}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ============================================================
+             * GAUSSIAN SMOOTH CONTROL (Task 3.4)
+             *
+             * What it does: Controls the peak clarity for beat detection.
+             * Gaussian smoothing determines how much temporal smoothing is applied
+             * to the onset strength envelope.
+             *
+             * Modes:
+             * - Minimal (10ms): Fast transients - preserves sharp rhythmic details
+             * - Standard (20ms): Balanced - good for most music (default)
+             * - Smooth (40ms): Cleaner peaks - better for noisy or complex audio
+             *
+             * Effect on output:
+             * - Less smoothing = sharper peaks, may detect more false positives
+             * - More smoothing = cleaner peaks, may miss very fast transients
+             *
+             * Tier: 2 (Advanced Control) - For fine-tuning detection quality
+             * ============================================================ */}
+            <div className="beat-detection-settings-section">
+              <div className="beat-detection-settings-header">
+                <span className="beat-detection-settings-label">Smoothing</span>
+                <span className={`beat-detection-settings-value ${!isGaussianSmoothDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {getGaussianSmoothDisplayValue()}
+                </span>
+              </div>
+              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Gaussian smooth mode">
+                {GAUSSIAN_SMOOTH_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    className={`beat-detection-ose-toggle ${gaussianSmoothConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
+                    onClick={() => handleGaussianSmoothModeChange(mode)}
+                    disabled={disabled}
+                    aria-pressed={gaussianSmoothConfig.mode === mode}
+                    aria-label={`${GAUSSIAN_SMOOTH_PRESETS[mode].label}: ${GAUSSIAN_SMOOTH_PRESETS[mode].value}ms - ${GAUSSIAN_SMOOTH_PRESETS[mode].description}`}
+                  >
+                    <span className="beat-detection-ose-toggle-label">{GAUSSIAN_SMOOTH_PRESETS[mode].label}</span>
+                    <span className="beat-detection-ose-toggle-value">{GAUSSIAN_SMOOTH_PRESETS[mode].value}ms</span>
                   </button>
                 ))}
               </div>
