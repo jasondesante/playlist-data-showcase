@@ -218,7 +218,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 ### 6.1 Manual Testing Checklist
 - [x] Sensitivity slider shows correct range (0.1-10)
 - [x] Filter slider shows correct range (0-1)
-- [ ] Default values are correct (sensitivity=1.0, filter=0.0)
+- [x] Default values are correct (sensitivity=1.0, filter=0.0) - Verified 2026-02-28: Both store (beatDetectionStore.ts:42-43) and component (BeatDetectionSettings.tsx:22-23) have matching defaults
 - [ ] Sliders update store correctly
 - [ ] Reset buttons work
 - [ ] Advanced section collapses/expands
