@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
+import { usePlaylistStore } from '../../store/playlistStore';
+import { useSessionStore } from '../../store/sessionStore';
+import { useMastery } from '../../hooks/useMastery';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -12,9 +15,12 @@ import { UncappedProgressionPanel } from '../ui/UncappedProgressionPanel';
 import { showToast } from '../ui/Toast';
 import type { LevelUpDetail, Ability, CharacterSheet } from 'playlist-data-engine';
 import type { StatIncreaseStrategyType } from '../ui/StatStrategySelector';
-import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown, Swords, Hammer, Users } from 'lucide-react';
+import { TrendingUp, Heart, Shield, Star, Zap, Scroll, Sword, Compass, AlertTriangle, UserCircle2, ChevronDown, Swords, Hammer, Users, Headphones, Music, Crown } from 'lucide-react';
 import { MasteryBadge } from '../ui/MasteryBadge';
+import { MasteryProgressBar } from '../ui/MasteryProgressBar';
+import { PrestigeButton } from '../ui/PrestigeButton';
 import { PrestigeSystem } from '@/types';
+import type { ISessionTracker } from 'playlist-data-engine';
 import './CharacterLevelingTab.css';
 
 /**
@@ -55,8 +61,11 @@ import './CharacterLevelingTab.css';
  * ```
  */
 export function CharacterLevelingTab() {
-  const { getActiveCharacter, setActiveCharacter, characters, setCharacterStrategy, getCharacterStrategy } = useCharacterStore();
+  const { getActiveCharacter, setActiveCharacter, characters, setCharacterStrategy, getCharacterStrategy, getPrestigeInfo, canPrestige, prestigeCharacter } = useCharacterStore();
   const { addXPFromSource, applyPendingStatIncrease, updateStatStrategy } = useCharacterUpdater();
+  const { selectedTrack, audioProfile } = usePlaylistStore();
+  const { clearTrackSessions, getTrackXPTotal } = useSessionStore();
+  const { getMasteryInfo, getTrackListenCount } = useMastery();
   const [xpAmount, setXpAmount] = useState(100);
   const [currentXP, setCurrentXP] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -79,6 +88,32 @@ export function CharacterLevelingTab() {
   };
 
   const [statStrategy, setStatStrategy] = useState<StatIncreaseStrategyType>(getInitialStrategy);
+
+  // Create ISessionTracker adapter for engine methods (used by prestige system)
+  const sessionTrackerAdapter: ISessionTracker = useMemo(() => ({
+    getTrackListenCount: (trackUuid: string) => getTrackListenCount(trackUuid),
+    getTrackXPTotal: (trackUuid: string) => getTrackXPTotal(trackUuid),
+    clearTrackSessions: (trackUuid: string) => clearTrackSessions(trackUuid),
+  }), [getTrackListenCount, getTrackXPTotal, clearTrackSessions]);
+
+  // Get mastery info for the selected track (uses character's prestige level)
+  const masteryInfo = useMemo(() => {
+    if (!selectedTrack) return null;
+    const prestigeLevel = activeChar?.prestige_level ?? 0;
+    return getMasteryInfo(selectedTrack.id, prestigeLevel);
+  }, [selectedTrack, getMasteryInfo, activeChar?.prestige_level]);
+
+  // Get prestige info for the active character (for PrestigeButton)
+  const prestigeInfo = useMemo(() => {
+    if (!activeChar) return null;
+    return getPrestigeInfo(activeChar.seed, sessionTrackerAdapter);
+  }, [activeChar, getPrestigeInfo, sessionTrackerAdapter]);
+
+  // Check if character can prestige
+  const canPrestigeState = useMemo(() => {
+    if (!activeChar) return false;
+    return canPrestige(activeChar.seed, sessionTrackerAdapter);
+  }, [activeChar, canPrestige, sessionTrackerAdapter]);
 
   /**
    * Extract active stat effects from a character's equipment and feature effects.
@@ -391,6 +426,38 @@ export function CharacterLevelingTab() {
     console.log(`This strategy will be used for future level-ups only.`);
   };
 
+  // Handler for prestiging the character
+  const handlePrestige = () => {
+    if (!activeChar || !selectedTrack) return;
+
+    // Use audioProfile from store, or create a default one
+    const profile = audioProfile || {
+      bass_dominance: 0.5,
+      mid_dominance: 0.5,
+      treble_dominance: 0.5,
+      average_amplitude: 0.5,
+      analysis_metadata: {
+        duration_analyzed: 0,
+        full_buffer_analyzed: true,
+        sample_positions: [0],
+        analyzed_at: new Date().toISOString()
+      }
+    };
+
+    const result = prestigeCharacter(
+      activeChar.seed,
+      profile,
+      selectedTrack,
+      sessionTrackerAdapter
+    );
+
+    if (result.success) {
+      showToast(`👑 Prestiged to level ${result.newPrestigeLevel > 0 ? ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][result.newPrestigeLevel - 1] : ''}!`, 'success');
+    } else {
+      showToast(`❌ ${result.message}`, 'error');
+    }
+  };
+
   if (!activeChar) {
     // If there are characters but none active, show selector
     if (characters.length > 0) {
@@ -651,6 +718,81 @@ export function CharacterLevelingTab() {
             });
           })()}
         </div>
+      </Card>
+
+      {/* Track Mastery Card - Shows mastery progress for selected track */}
+      <Card variant="elevated" padding="lg" className="leveling-mastery-card">
+        <div className="leveling-mastery-header">
+          <Crown className="leveling-mastery-icon" size={20} />
+          <h3 className="leveling-mastery-title">Track Mastery</h3>
+        </div>
+
+        {!selectedTrack ? (
+          <div className="leveling-mastery-empty">
+            <Music size={32} className="leveling-mastery-empty-icon" />
+            <p className="leveling-mastery-empty-text">No track selected</p>
+            <p className="leveling-mastery-empty-hint">Select a track from the Playlist tab to view mastery progress</p>
+          </div>
+        ) : (
+          <div className="leveling-mastery-content">
+            {/* Track Info */}
+            <div className="leveling-mastery-track-info">
+              <div className="leveling-mastery-track-title-row">
+                <h4 className="leveling-mastery-track-title">{selectedTrack.title}</h4>
+                {masteryInfo && (masteryInfo.isMastered || masteryInfo.prestigeLevel > 0) && (
+                  <MasteryBadge
+                    isMastered={masteryInfo.isMastered}
+                    prestigeLevel={masteryInfo.prestigeLevel}
+                    prestigeRoman={masteryInfo.prestigeRoman}
+                    isMaxPrestige={masteryInfo.isMaxPrestige}
+                    size="sm"
+                  />
+                )}
+              </div>
+              <p className="leveling-mastery-track-artist">{selectedTrack.artist}</p>
+            </div>
+
+            {/* Mastery Progress */}
+            {masteryInfo && masteryInfo.listenCount > 0 && (
+              <>
+                <MasteryProgressBar
+                  listenCount={masteryInfo.listenCount}
+                  totalXP={masteryInfo.totalXP}
+                  playsThreshold={masteryInfo.playsThreshold}
+                  xpThreshold={masteryInfo.xpThreshold}
+                  isMastered={masteryInfo.isMastered}
+                  prestigeLevel={masteryInfo.prestigeLevel}
+                  prestigeRoman={masteryInfo.prestigeRoman}
+                  isMaxPrestige={masteryInfo.isMaxPrestige}
+                  compact={true}
+                />
+
+                <div className="leveling-mastery-listen-count">
+                  <Headphones size={12} />
+                  <span>Listened {masteryInfo.listenCount} time{masteryInfo.listenCount !== 1 ? 's' : ''}</span>
+                </div>
+
+                {/* Prestige Button */}
+                {canPrestigeState && prestigeInfo && activeChar && (
+                  <PrestigeButton
+                    canPrestige={canPrestigeState}
+                    prestigeInfo={prestigeInfo}
+                    character={activeChar}
+                    onPrestige={handlePrestige}
+                  />
+                )}
+              </>
+            )}
+
+            {/* No listens yet */}
+            {masteryInfo && masteryInfo.listenCount === 0 && (
+              <div className="leveling-mastery-no-listens">
+                <Headphones size={16} />
+                <span>Start a session with this track to begin earning mastery progress</span>
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Stat Strategy Settings (Leveling Tab Only) */}
