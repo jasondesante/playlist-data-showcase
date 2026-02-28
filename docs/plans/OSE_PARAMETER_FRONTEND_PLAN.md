@@ -91,11 +91,11 @@ Update the beat detection store to handle OSE parameter modes. **No cache key ch
   - [x] Add `gaussianSmoothConfig?: GaussianSmoothConfig` to generator options state
   - [x] Update `DEFAULT_GENERATOR_OPTIONS` with default mode configs
 
-- [ ] **2.2 Add Helper Functions for Mode-to-Value Conversion**
-  - [ ] Add `resolveHopSizeMs(config: HopSizeConfig): number`
-  - [ ] Add `resolveMelBands(config: MelBandsConfig): number`
-  - [ ] Add `resolveGaussianSmoothMs(config: GaussianSmoothConfig): number`
-  - [ ] These convert mode configs to actual numeric values for the engine
+- [x] **2.2 Add Helper Functions for Mode-to-Value Conversion**
+  - [x] Add `resolveHopSizeMs(config: HopSizeConfig): number`
+  - [x] Add `resolveMelBands(config: MelBandsConfig): number`
+  - [x] Add `resolveGaussianSmoothMs(config: GaussianSmoothConfig): number`
+  - [x] These convert mode configs to actual numeric values for the engine
 
 - [ ] **2.3 Update `generateBeatMap` to Use OSE Configs**
   - [ ] Resolve mode configs to numeric values before passing to engine
