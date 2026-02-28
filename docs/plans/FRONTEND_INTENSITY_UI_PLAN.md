@@ -36,11 +36,11 @@ Update the frontend to expose TWO separate controls for beat detection:
 - [x] Verify TypeScript compilation succeeds with new types
 
 ### 1.2 Update Type Re-exports
-- [ ] In `src/types/index.ts`, verify new types are re-exported:
-  - [ ] `sensitivity` option
-  - [ ] `filter` option
-- [ ] Remove any references to old `intensityThreshold` name
-- [ ] Run build to verify no type errors
+- [x] In `src/types/index.ts`, verify new types are re-exported:
+  - [x] `sensitivity` option
+  - [x] `filter` option
+- [x] Remove any references to old `intensityThreshold` name
+- [x] Run build to verify no type errors
 
 ---
 
