@@ -1,0 +1,195 @@
+/* ============================================
+   DIFFICULTY SELECTOR - Preset Button Group
+   Task 3.1: DifficultySelector Component
+   Task 4.1: DifficultySelector Styles
+   ============================================ */
+
+/* Main container */
+.difficulty-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Button group container */
+.difficulty-selector__buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Base button styles */
+.difficulty-selector__btn {
+  flex: 1;
+  min-width: 4.5rem;
+  padding: 0.625rem 1rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: hsl(var(--surface-2));
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+  outline: none;
+}
+
+.difficulty-selector__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px hsl(var(--foreground) / 0.1);
+}
+
+.difficulty-selector__btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.difficulty-selector__btn:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
+}
+
+.difficulty-selector__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button label */
+.difficulty-selector__btn-label {
+  display: block;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================
+   DIFFICULTY COLOR CODING
+   ============================================ */
+
+/* Easy - Green (forgiving) */
+.difficulty-selector__btn--easy {
+  border-color: hsl(142 76% 36% / 0.3);
+}
+
+.difficulty-selector__btn--easy:hover:not(:disabled) {
+  background: hsl(142 76% 36% / 0.15);
+  border-color: hsl(142 76% 36% / 0.5);
+}
+
+.difficulty-selector__btn--easy.difficulty-selector__btn--active {
+  background: hsl(142 76% 36% / 0.2);
+  border-color: hsl(142 76% 36%);
+  color: hsl(142 76% 45%);
+  box-shadow: 0 0 12px hsl(142 76% 36% / 0.3);
+}
+
+/* Medium - Yellow/Orange (balanced) */
+.difficulty-selector__btn--medium {
+  border-color: hsl(45 93% 47% / 0.3);
+}
+
+.difficulty-selector__btn--medium:hover:not(:disabled) {
+  background: hsl(45 93% 47% / 0.15);
+  border-color: hsl(45 93% 47% / 0.5);
+}
+
+.difficulty-selector__btn--medium.difficulty-selector__btn--active {
+  background: hsl(45 93% 47% / 0.2);
+  border-color: hsl(45 93% 47%);
+  color: hsl(45 93% 50%);
+  box-shadow: 0 0 12px hsl(45 93% 47% / 0.3);
+}
+
+/* Hard - Red (strict) */
+.difficulty-selector__btn--hard {
+  border-color: hsl(0 84% 60% / 0.3);
+}
+
+.difficulty-selector__btn--hard:hover:not(:disabled) {
+  background: hsl(0 84% 60% / 0.15);
+  border-color: hsl(0 84% 60% / 0.5);
+}
+
+.difficulty-selector__btn--hard.difficulty-selector__btn--active {
+  background: hsl(0 84% 60% / 0.2);
+  border-color: hsl(0 84% 60%);
+  color: hsl(0 84% 65%);
+  box-shadow: 0 0 12px hsl(0 84% 60% / 0.3);
+}
+
+/* Custom - Purple (special) */
+.difficulty-selector__btn--custom {
+  border-color: hsl(271 91% 65% / 0.3);
+}
+
+.difficulty-selector__btn--custom:hover:not(:disabled) {
+  background: hsl(271 91% 65% / 0.15);
+  border-color: hsl(271 91% 65% / 0.5);
+}
+
+.difficulty-selector__btn--custom.difficulty-selector__btn--active {
+  background: hsl(271 91% 65% / 0.2);
+  border-color: hsl(271 91% 65%);
+  color: hsl(271 91% 75%);
+  box-shadow: 0 0 12px hsl(271 91% 65% / 0.3);
+}
+
+/* ============================================
+   ACTIVE STATE ANIMATION
+   ============================================ */
+
+.difficulty-selector__btn--active {
+  animation: difficulty-btn-pop 0.2s ease-out;
+}
+
+@keyframes difficulty-btn-pop {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 480px) {
+  .difficulty-selector__buttons {
+    gap: 0.375rem;
+  }
+
+  .difficulty-selector__btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    min-width: 4rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .difficulty-selector__btn {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.75rem;
+    min-width: 3.5rem;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .difficulty-selector__btn {
+    transition: none;
+  }
+
+  .difficulty-selector__btn--active {
+    animation: none;
+  }
+}

@@ -322,6 +322,10 @@
   color: hsl(0, 84%, 60%); /* Red */
 }
 
+.beat-timeline-tap-indicator--ok {
+  color: hsl(199, 89%, 48%); /* Light Blue */
+}
+
 /* Info Bar */
 .beat-timeline-info {
   display: flex;

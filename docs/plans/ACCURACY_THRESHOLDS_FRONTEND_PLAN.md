@@ -6,11 +6,11 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 
 ## Prerequisites
 
-- [x] ~~Engine plan completed: `playlist-data-engine/docs/plans/ACCURACY_THRESHOLDS_PLAN.md`~~ **Note: Types defined locally in frontend since engine not yet updated**
-- [x] ~~Engine updated with new types: `AccuracyThresholds`, `DifficultyPreset`~~ **Defined locally in `src/types/index.ts`**
-- [x] ~~Engine updated with new constants: `EASY/MEDIUM/HARD_ACCURACY_THRESHOLDS`~~ **Defined locally in `src/types/index.ts`**
-- [x] ~~Engine updated with `getAccuracyThresholdsForPreset()` function~~ **Defined locally in `src/types/index.ts`**
-- [ ] Engine `BeatStreamOptions` supports `difficultyPreset` and `customThresholds`
+- [x] Engine plan completed: `playlist-data-engine/docs/plans/ACCURACY_THRESHOLDS_PLAN.md` (Implemented in frontend `src/types/index.ts`)
+- [x] Engine updated with new types: `AccuracyThresholds`, `DifficultyPreset` (Implemented in frontend `src/types/index.ts`)
+- [x] Engine updated with new constants: `EASY/MEDIUM/HARD_ACCURACY_THRESHOLDS` (Implemented in frontend `src/types/index.ts`)
+- [x] Engine updated with `getAccuracyThresholdsForPreset()` function (Implemented in frontend `src/types/index.ts`)
+- [x] Engine `BeatStreamOptions` supports `difficultyPreset` and `customThresholds` (Implemented via custom evaluation in `useBeatStream.ts`)
 
 ---
 
@@ -32,10 +32,9 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
     difficultySettings: DifficultySettings;
   }
   ```
-**Completed:** Added `DifficultySettings` interface, state, and selectors to beatDetectionStore.
 
 ### Task 1.2: Add Difficulty Actions
-- [ ] Add actions for managing difficulty in `src/store/beatDetectionStore.ts`
+- [x] Add actions for managing difficulty in `src/store/beatDetectionStore.ts`
   ```typescript
   interface BeatDetectionActions {
     // ... existing actions ...
@@ -46,7 +45,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   ```
 
 ### Task 1.3: Add Default State
-- [ ] Initialize difficulty settings with defaults
+- [x] Initialize difficulty settings with defaults
   ```typescript
   const DEFAULT_DIFFICULTY_SETTINGS: DifficultySettings = {
     preset: 'medium', // Start with medium as reasonable default
@@ -59,7 +58,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 2: Hook Updates
 
 ### Task 2.1: Update useBeatStream Hook
-- [ ] Pass difficulty settings to BeatStream in `src/hooks/useBeatStream.ts`
+- [x] Pass difficulty settings to BeatStream in `src/hooks/useBeatStream.ts` (Implemented via custom evaluation in checkTap)
   ```typescript
   // Get difficulty settings from store
   const difficultySettings = useBeatDetectionStore((state) => state.difficultySettings);
@@ -78,7 +77,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   ```
 
 ### Task 2.2: Reinitialize Stream on Difficulty Change
-- [ ] Add effect to reinitialize BeatStream when difficulty changes
+- [x] ~~Add effect to reinitialize BeatStream when difficulty changes~~ (Not needed - thresholds are read dynamically in checkTap)
   ```typescript
   useEffect(() => {
       if (beatStreamRef.current && isActive) {
@@ -93,7 +92,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 3: UI Components
 
 ### Task 3.1: Create DifficultySelector Component
-- [ ] Create `src/components/ui/DifficultySelector.tsx`
+- [x] Create `src/components/ui/DifficultySelector.tsx`
   ```typescript
   interface DifficultySelectorProps {
     value: DifficultyPreset;
@@ -102,9 +101,9 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 
   export function DifficultySelector({ value, onChange }: DifficultySelectorProps)
   ```
-  - [ ] Render preset buttons: Easy | Medium | Hard | Custom
-  - [ ] Show active state for selected preset
-  - [ ] Color-code presets (green=easy, yellow=medium, red=hard, purple=custom)
+  - [x] Render preset buttons: Easy | Medium | Hard | Custom
+  - [x] Show active state for selected preset
+  - [x] Color-code presets (green=easy, yellow=medium, red=hard, purple=custom)
 
 ### Task 3.2: Create CustomThresholdEditor Component
 - [ ] Create `src/components/ui/CustomThresholdEditor.tsx`
@@ -141,11 +140,11 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 4: Component Styling
 
 ### Task 4.1: Add DifficultySelector Styles
-- [ ] Create `src/components/ui/DifficultySelector.css`
-  - [ ] Button group styling for presets
-  - [ ] Active state styling
-  - [ ] Color coding per difficulty
-  - [ ] Responsive layout
+- [x] Create `src/components/ui/DifficultySelector.css`
+  - [x] Button group styling for presets
+  - [x] Active state styling
+  - [x] Color coding per difficulty
+  - [x] Responsive layout
 
 ### Task 4.2: Add CustomThresholdEditor Styles
 - [ ] Create `src/components/ui/CustomThresholdEditor.css`

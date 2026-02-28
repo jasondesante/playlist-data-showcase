@@ -28,7 +28,7 @@ interface BeatTimelineProps {
   /** Timestamp of the last tap (for tap visual feedback) */
   lastTapTime?: number;
   /** The accuracy rating of the last tap (for color-coded feedback) */
-  lastTapAccuracy?: 'perfect' | 'great' | 'good' | 'miss' | null;
+  lastTapAccuracy?: 'perfect' | 'great' | 'good' | 'ok' | 'miss' | null;
   /** Callback when user clicks on timeline to seek (optional) */
   onSeek?: (time: number) => void;
   /** Anticipation window in seconds for future beats (default: 2.0) */
