@@ -512,6 +512,118 @@
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
+/* Tablet viewport (641px - 1024px) - Task 6.4 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-detection-settings {
+    gap: 0.625rem;
+    margin-top: 0.625rem;
+    padding-top: 0.625rem;
+  }
+
+  .beat-detection-settings-section {
+    gap: 0.3125rem;
+  }
+
+  /* Slightly smaller labels on tablet */
+  .beat-detection-settings-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-settings-value {
+    font-size: 0.625rem;
+    padding: 0.0938rem 0.3125rem;
+  }
+
+  /* Slider thumbs - keep accessible size for touch tablets */
+  .beat-detection-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 11px;
+  }
+
+  .beat-detection-slider::-moz-range-thumb {
+    width: 18px;
+    height: 11px;
+  }
+
+  /* Dual slider thumbs - accessible for touch */
+  .beat-detection-slider--min::-webkit-slider-thumb,
+  .beat-detection-slider--max::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+  .beat-detection-slider--min::-moz-range-thumb,
+  .beat-detection-slider--max::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Ensure dual slider inputs area is large enough */
+  .beat-detection-dual-slider-inputs {
+    height: 24px;
+    transform: translateY(-10px);
+  }
+
+  /* Slider marks on tablet */
+  .beat-detection-slider-mark {
+    font-size: 0.4688rem;
+  }
+
+  /* Slider description on tablet */
+  .beat-detection-slider-description {
+    font-size: 0.4688rem;
+  }
+
+  /* Reset button on tablet */
+  .beat-detection-reset-btn {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .beat-detection-reset-btn-icon {
+    width: 0.6875rem;
+    height: 0.6875rem;
+  }
+
+  /* Advanced section on tablet */
+  .beat-detection-advanced {
+    margin-top: 0.4375rem;
+  }
+
+  .beat-detection-advanced-summary {
+    padding: 0.4375rem 0.5625rem;
+    min-height: 36px;
+  }
+
+  .beat-detection-advanced-summary-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-advanced-summary-icon {
+    font-size: 0.4688rem;
+  }
+
+  .beat-detection-advanced-content {
+    padding: 0.4375rem 0.5625rem;
+    padding-top: 0;
+  }
+
+  /* Note section on tablet */
+  .beat-detection-settings-note {
+    padding: 0.4375rem 0.5625rem;
+  }
+
+  .beat-detection-settings-note-icon {
+    width: 0.8125rem;
+    height: 0.8125rem;
+  }
+
+  .beat-detection-settings-note-text {
+    font-size: 0.5625rem;
+  }
+}
+
+/* Mobile viewport (up to 640px) */
 @media (max-width: 640px) {
   .beat-detection-settings {
     gap: 0.5rem;
