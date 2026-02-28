@@ -60,15 +60,11 @@ Update the frontend to expose TWO separate controls for beat detection:
   ```
 
 ### 2.2 Handle Migration from Old Settings
-- [ ] Add migration logic for users with old cached options:
-  ```typescript
-  // If loading old cache with intensityThreshold, migrate it
-  if (cachedOptions.intensityThreshold !== undefined) {
-      // Map old threshold to new filter (inverted)
-      cachedOptions.filter = 1 - cachedOptions.intensityThreshold;
-      delete cachedOptions.intensityThreshold;
-  }
-  ```
+- [x] Add migration logic for users with old cached options:
+  - [x] In `merge` function of persist middleware, check for `intensityThreshold`
+  - [x] Map old `intensityThreshold` to new `filter` parameter (same semantics)
+  - [x] Remove the deprecated property after migration
+  - [x] Log migration for debugging
 
 ### 2.3 Update Selector Names
 - [ ] Rename any selectors that referenced `intensityThreshold`

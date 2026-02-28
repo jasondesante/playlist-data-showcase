@@ -619,11 +619,36 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 if (!cacheOrder && persisted?.cachedBeatMaps) {
                     cacheOrder = Object.keys(persisted.cachedBeatMaps);
                 }
+
+                // Migrate generator options
+                let generatorOptions = persisted?.generatorOptions ?? currentState.generatorOptions;
+
+                // Handle migration from old intensityThreshold to new filter parameter
+                // Old intensityThreshold: 0 = most sensitive (most beats), 1 = least sensitive (fewest beats)
+                // New filter: 0 = keep all beats, 1 = only strongest beats
+                // Migration: filter = intensityThreshold (same semantics)
+                if (generatorOptions && generatorOptions.intensityThreshold !== undefined) {
+                    const oldThreshold = generatorOptions.intensityThreshold;
+                    // Only migrate if filter isn't already set (don't override user's new setting)
+                    if (generatorOptions.filter === undefined) {
+                        generatorOptions = {
+                            ...generatorOptions,
+                            filter: oldThreshold, // Map old threshold directly to filter
+                        };
+                    }
+                    // Remove the deprecated property
+                    delete generatorOptions.intensityThreshold;
+                    logger.info('BeatDetection', 'Migrated intensityThreshold to filter', {
+                        oldValue: oldThreshold,
+                        newValue: generatorOptions.filter,
+                    });
+                }
+
                 return {
                     ...currentState,
                     cachedBeatMaps: persisted?.cachedBeatMaps ?? currentState.cachedBeatMaps,
                     cacheOrder: cacheOrder ?? currentState.cacheOrder,
-                    generatorOptions: persisted?.generatorOptions ?? currentState.generatorOptions,
+                    generatorOptions,
                 };
             },
             // Callback after rehydration
