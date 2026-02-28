@@ -24,6 +24,34 @@ const DEFAULTS = {
   tempoCenter: 0.5,
 };
 
+// ============================================
+// TASK 5.2: Logarithmic scale for sensitivity
+// The sensitivity range (0.1-10.0) is large (100x),
+// so we use logarithmic mapping to make the slider feel natural.
+// This places the default (1.0) at the center of the slider.
+// ============================================
+const SENSITIVITY_MIN = 0.1;
+const SENSITIVITY_MAX = 10.0;
+const SENSITIVITY_LOG_RANGE = Math.log10(SENSITIVITY_MAX / SENSITIVITY_MIN); // log10(100) = 2
+
+/**
+ * Convert sensitivity value (0.1-10) to slider position (0-100)
+ * Using logarithmic scale: position = log10(sensitivity/0.1) / log10(100) * 100
+ */
+const sensitivityToSlider = (sensitivity: number): number => {
+  const clamped = Math.max(SENSITIVITY_MIN, Math.min(SENSITIVITY_MAX, sensitivity));
+  return (Math.log10(clamped / SENSITIVITY_MIN) / SENSITIVITY_LOG_RANGE) * 100;
+};
+
+/**
+ * Convert slider position (0-100) to sensitivity value (0.1-10)
+ * Using inverse logarithmic: sensitivity = 0.1 * 10^(position/100 * 2)
+ */
+const sliderToSensitivity = (position: number): number => {
+  const clampedPosition = Math.max(0, Math.min(100, position));
+  return SENSITIVITY_MIN * Math.pow(10, (clampedPosition / 100) * SENSITIVITY_LOG_RANGE);
+};
+
 interface BeatDetectionSettingsProps {
   /** Whether the settings should be disabled (e.g., during analysis) */
   disabled?: boolean;
@@ -53,9 +81,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
     setGeneratorOptions({ maxBpm: newMax });
   };
 
-  // Handle Sensitivity change (0.1 - 10.0)
-  const handleSensitivityChange = (value: number) => {
-    setGeneratorOptions({ sensitivity: value });
+  // Handle Sensitivity change (0.1 - 10.0) - with logarithmic slider mapping (Task 5.2)
+  const handleSensitivityChange = (sliderPosition: number) => {
+    const sensitivity = sliderToSensitivity(sliderPosition);
+    setGeneratorOptions({ sensitivity });
   };
 
   // Handle Filter change (0.0 - 1.0)
@@ -87,8 +116,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   // Calculate slider percentages for CSS styling
   const minBpmPercent = ((minBpm - 40) / 200) * 100;
   const maxBpmPercent = ((maxBpm - 40) / 200) * 100;
-  // Sensitivity range: 0.1 to 10.0 (use linear for now, could be logarithmic later)
-  const sensitivityPercent = ((sensitivity - 0.1) / 9.9) * 100;
+  // Sensitivity: Use logarithmic scale (Task 5.2) - position directly maps to percentage
+  const sensitivitySliderPosition = sensitivityToSlider(sensitivity);
+  const sensitivityPercent = sensitivitySliderPosition;
   // Filter range: 0.0 to 1.0
   const filterPercent = (filter / 1.0) * 100;
 
@@ -128,10 +158,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
         <div className="beat-detection-slider-container">
           <input
             type="range"
-            min="0.1"
-            max="10"
-            step="0.1"
-            value={sensitivity}
+            min="0"
+            max="100"
+            step="1"
+            value={sensitivitySliderPosition}
             onChange={(e) => handleSensitivityChange(parseFloat(e.target.value))}
             className="beat-detection-slider beat-detection-slider--sensitivity"
             style={{
@@ -141,7 +171,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             disabled={disabled}
             aria-label="Beat detection sensitivity"
           />
-          <div className="beat-detection-slider-marks">
+          <div className="beat-detection-slider-marks beat-detection-slider-marks--logarithmic">
             <span className="beat-detection-slider-mark">0.1</span>
             <span className="beat-detection-slider-mark">1.0</span>
             <span className="beat-detection-slider-mark">10</span>

@@ -316,6 +316,16 @@
   opacity: 0.7;
 }
 
+/* ============================================
+   TASK 5.2: LOGARITHMIC SLIDER MARKS
+   For sensitivity slider, the middle mark (1.0)
+   is the default and sits at exactly 50%.
+   ============================================ */
+.beat-detection-slider-marks--logarithmic .beat-detection-slider-mark:nth-child(2) {
+  color: hsl(var(--primary));
+  opacity: 1;
+}
+
 /* Slider description text */
 .beat-detection-slider-description {
   font-size: 0.5rem;

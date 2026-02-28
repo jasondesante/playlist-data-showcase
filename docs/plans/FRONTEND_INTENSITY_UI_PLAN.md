@@ -200,13 +200,16 @@ Update the frontend to expose TWO separate controls for beat detection:
 - [x] Style advanced section (already implemented)
 
 ### 5.2 Consider Logarithmic Scale for Sensitivity
-- [ ] The sensitivity range (0.1-10) is large
-- [ ] Consider CSS or JS to make slider feel more natural:
+- [x] The sensitivity range (0.1-10) is large
+- [x] Implement logarithmic mapping to make slider feel more natural:
   ```typescript
-  // Optional: logarithmic mapping for sensitivity
+  // Logarithmic mapping for sensitivity (Task 5.2)
   const sensitivityToSlider = (s: number) => Math.log10(s / 0.1) / Math.log10(10 / 0.1) * 100;
   const sliderToSensitivity = (p: number) => 0.1 * Math.pow(10 / 0.1, p / 100);
   ```
+- [x] Slider now uses 0-100 range internally, with logarithmic conversion
+- [x] Default value (1.0) now sits at exactly 50% (center) of slider
+- [x] Middle mark (1.0) highlighted in CSS to indicate default position
 
 ---
 
