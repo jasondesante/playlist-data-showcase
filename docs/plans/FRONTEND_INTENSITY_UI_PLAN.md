@@ -216,7 +216,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 ## Phase 6: Testing
 
 ### 6.1 Manual Testing Checklist
-- [ ] Sensitivity slider shows correct range (0.1-10)
+- [x] Sensitivity slider shows correct range (0.1-10)
 - [ ] Filter slider shows correct range (0-1)
 - [ ] Default values are correct (sensitivity=1.0, filter=0.0)
 - [ ] Sliders update store correctly
