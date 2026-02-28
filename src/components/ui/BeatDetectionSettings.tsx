@@ -57,7 +57,9 @@ import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import {
     HopSizeMode,
+    MelBandsMode,
     HOP_SIZE_PRESETS,
+    MEL_BANDS_PRESETS,
 } from '@/types';
 
 /**
@@ -128,6 +130,8 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const setGeneratorOptions = useBeatDetectionStore((state) => state.actions.setGeneratorOptions);
   const hopSizeConfig = useBeatDetectionStore((state) => state.hopSizeConfig);
   const setHopSizeConfig = useBeatDetectionStore((state) => state.actions.setHopSizeConfig);
+  const melBandsConfig = useBeatDetectionStore((state) => state.melBandsConfig);
+  const setMelBandsConfig = useBeatDetectionStore((state) => state.actions.setMelBandsConfig);
 
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
@@ -244,6 +248,38 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
    * Preset modes for iteration (excludes 'custom' which is handled separately).
    */
   const HOP_SIZE_PRESET_MODES: Exclude<HopSizeMode, 'custom'>[] = ['efficient', 'standard', 'hq'];
+
+  // ============================================================
+  // TASK 3.3: Mel Bands Control
+  // ============================================================
+
+  /**
+   * Handle Mel Bands mode change.
+   * Updates the mel bands configuration with the selected mode.
+   *
+   * @param mode - The selected mel bands mode
+   */
+  const handleMelBandsModeChange = (mode: MelBandsMode) => {
+    setMelBandsConfig({ mode });
+  };
+
+  /**
+   * Get the display value for the current mel bands configuration.
+   * Shows the preset value in bands.
+   */
+  const getMelBandsDisplayValue = (): string => {
+    return `${MEL_BANDS_PRESETS[melBandsConfig.mode].value} bands`;
+  };
+
+  /**
+   * Check if mel bands is at default (standard mode).
+   */
+  const isMelBandsDefault = melBandsConfig.mode === 'standard';
+
+  /**
+   * All mel bands modes for iteration.
+   */
+  const MEL_BANDS_MODES: MelBandsMode[] = ['standard', 'detailed', 'maximum'];
 
   // ============================================================
   // TASK 3.2: Custom Hop Size Input
@@ -643,6 +679,48 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* ============================================================
+             * MEL BANDS CONTROL (Task 3.3)
+             *
+             * What it does: Controls the frequency resolution for beat detection.
+             * Mel bands determine how the audio spectrum is divided for analysis.
+             *
+             * Modes:
+             * - Standard (40 bands): Default - good for most music
+             * - Detailed (64 bands): More frequency detail, better for complex mixes
+             * - Maximum (80 bands): Maximum frequency resolution, slower processing
+             *
+             * Effect on output:
+             * - More bands = finer frequency resolution, can detect subtle rhythmic elements
+             * - Fewer bands = faster processing, may miss some frequency-specific beats
+             *
+             * Tier: 2 (Advanced Control) - For fine-tuning detection quality
+             * ============================================================ */}
+            <div className="beat-detection-settings-section">
+              <div className="beat-detection-settings-header">
+                <span className="beat-detection-settings-label">Mel Bands</span>
+                <span className={`beat-detection-settings-value ${!isMelBandsDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {getMelBandsDisplayValue()}
+                </span>
+              </div>
+              <div className="beat-detection-ose-toggles" role="radiogroup" aria-label="Mel bands mode">
+                {MEL_BANDS_MODES.map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    className={`beat-detection-ose-toggle ${melBandsConfig.mode === mode ? 'beat-detection-ose-toggle--active' : ''}`}
+                    onClick={() => handleMelBandsModeChange(mode)}
+                    disabled={disabled}
+                    aria-pressed={melBandsConfig.mode === mode}
+                    aria-label={`${MEL_BANDS_PRESETS[mode].label}: ${MEL_BANDS_PRESETS[mode].value} bands - ${MEL_BANDS_PRESETS[mode].description}`}
+                  >
+                    <span className="beat-detection-ose-toggle-label">{MEL_BANDS_PRESETS[mode].label}</span>
+                    <span className="beat-detection-ose-toggle-value">{MEL_BANDS_PRESETS[mode].value}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

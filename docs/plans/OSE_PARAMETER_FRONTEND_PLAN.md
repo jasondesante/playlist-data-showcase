@@ -122,10 +122,10 @@ Add OSE parameter controls to the Advanced Settings section.
   - [x] Display value in ms with live update
   - [x] Add clamping logic to prevent invalid values
 
-- [ ] **3.3 Add Mel Bands Control Section**
-  - [ ] Add section header with label "Mel Bands" and description "Frequency resolution"
-  - [ ] Create EQ-style toggle button group with 3 options: Standard, Detailed, Maximum
-  - [ ] Display current value badge (e.g., "40 bands")
+- [x] **3.3 Add Mel Bands Control Section**
+  - [x] Add section header with label "Mel Bands" and description "Frequency resolution"
+  - [x] Create EQ-style toggle button group with 3 options: Standard, Detailed, Maximum
+  - [x] Display current value badge (e.g., "40 bands")
 
 - [ ] **3.4 Add Gaussian Smooth Control Section**
   - [ ] Add section header with label "Smoothing" and description "Peak clarity"
