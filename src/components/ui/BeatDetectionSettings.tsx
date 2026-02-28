@@ -102,67 +102,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   return (
     <div className="beat-detection-settings">
-      {/* BPM Range Section - Dual Sliders */}
-      <div className="beat-detection-settings-section">
-        <div className="beat-detection-settings-header">
-          <span className="beat-detection-settings-label">BPM Range</span>
-          <span className="beat-detection-settings-value">
-            {minBpm} - {maxBpm} BPM
-          </span>
-        </div>
-
-        {/* Dual slider for BPM range */}
-        <div className="beat-detection-dual-slider">
-          {/* Track with range highlight - sliders are siblings, not children */}
-          <div className="beat-detection-dual-slider-track">
-            {/* Highlight the selected range */}
-            <div
-              className="beat-detection-dual-slider-range"
-              style={{
-                left: `${minBpmPercent}%`,
-                width: `${maxBpmPercent - minBpmPercent}%`,
-              }}
-            />
-          </div>
-
-          {/* Sliders positioned separately to avoid stacking context issues */}
-          <div className="beat-detection-dual-slider-inputs">
-            {/* Max BPM slider - rendered first so min slider is on top */}
-            <input
-              type="range"
-              min="40"
-              max="240"
-              step="5"
-              value={maxBpm}
-              onChange={(e) => handleMaxBpmChange(parseInt(e.target.value, 10))}
-              className="beat-detection-slider beat-detection-slider--max"
-              disabled={disabled}
-              aria-label="Maximum BPM"
-            />
-
-            {/* Min BPM slider - rendered last so it's on top */}
-            <input
-              type="range"
-              min="40"
-              max="240"
-              step="5"
-              value={minBpm}
-              onChange={(e) => handleMinBpmChange(parseInt(e.target.value, 10))}
-              className="beat-detection-slider beat-detection-slider--min"
-              disabled={disabled}
-              aria-label="Minimum BPM"
-            />
-          </div>
-
-          <div className="beat-detection-slider-marks">
-            <span className="beat-detection-slider-mark">40</span>
-            <span className="beat-detection-slider-mark">120</span>
-            <span className="beat-detection-slider-mark">240</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sensitivity Slider (0.1 - 10.0) */}
+      {/* Sensitivity Slider (0.1 - 10.0) - Primary Control */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Sensitivity</span>
@@ -209,7 +149,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
         </div>
       </div>
 
-      {/* Filter Slider (0.0 - 1.0) */}
+      {/* Filter Slider (0.0 - 1.0) - Primary Control */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Filter</span>
@@ -256,35 +196,104 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
         </div>
       </div>
 
-      {/* Tempo Center Slider */}
-      <div className="beat-detection-settings-section">
-        <div className="beat-detection-settings-header">
-          <span className="beat-detection-settings-label">Tempo Center</span>
-          <span className="beat-detection-settings-value">
-            {tempoBpm} BPM
-          </span>
-        </div>
+      {/* Advanced Settings - Collapsible Section (Task 4.1) */}
+      <details className="beat-detection-advanced">
+        <summary className="beat-detection-advanced-summary">
+          <span className="beat-detection-advanced-summary-text">Advanced Settings</span>
+          <span className="beat-detection-advanced-summary-icon">▶</span>
+        </summary>
+        <div className="beat-detection-advanced-content">
+          {/* BPM Range Section - Dual Sliders */}
+          <div className="beat-detection-settings-section">
+            <div className="beat-detection-settings-header">
+              <span className="beat-detection-settings-label">BPM Range</span>
+              <span className="beat-detection-settings-value">
+                {minBpm} - {maxBpm} BPM
+              </span>
+            </div>
 
-        <div className="beat-detection-slider-container">
-          <input
-            type="range"
-            min="0.3"
-            max="0.7"
-            step="0.02"
-            value={sliderTempoValue}
-            onChange={(e) => handleTempoCenterChange(parseFloat(e.target.value))}
-            className="beat-detection-slider"
-            style={{ '--slider-value': `${tempoCenterPercent}%` } as React.CSSProperties}
-            disabled={disabled}
-            aria-label="Tempo center"
-          />
-          <div className="beat-detection-slider-marks">
-            <span className="beat-detection-slider-mark">~86 BPM</span>
-            <span className="beat-detection-slider-mark">~120 BPM</span>
-            <span className="beat-detection-slider-mark">~200 BPM</span>
+            {/* Dual slider for BPM range */}
+            <div className="beat-detection-dual-slider">
+              {/* Track with range highlight - sliders are siblings, not children */}
+              <div className="beat-detection-dual-slider-track">
+                {/* Highlight the selected range */}
+                <div
+                  className="beat-detection-dual-slider-range"
+                  style={{
+                    left: `${minBpmPercent}%`,
+                    width: `${maxBpmPercent - minBpmPercent}%`,
+                  }}
+                />
+              </div>
+
+              {/* Sliders positioned separately to avoid stacking context issues */}
+              <div className="beat-detection-dual-slider-inputs">
+                {/* Max BPM slider - rendered first so min slider is on top */}
+                <input
+                  type="range"
+                  min="40"
+                  max="240"
+                  step="5"
+                  value={maxBpm}
+                  onChange={(e) => handleMaxBpmChange(parseInt(e.target.value, 10))}
+                  className="beat-detection-slider beat-detection-slider--max"
+                  disabled={disabled}
+                  aria-label="Maximum BPM"
+                />
+
+                {/* Min BPM slider - rendered last so it's on top */}
+                <input
+                  type="range"
+                  min="40"
+                  max="240"
+                  step="5"
+                  value={minBpm}
+                  onChange={(e) => handleMinBpmChange(parseInt(e.target.value, 10))}
+                  className="beat-detection-slider beat-detection-slider--min"
+                  disabled={disabled}
+                  aria-label="Minimum BPM"
+                />
+              </div>
+
+              <div className="beat-detection-slider-marks">
+                <span className="beat-detection-slider-mark">40</span>
+                <span className="beat-detection-slider-mark">120</span>
+                <span className="beat-detection-slider-mark">240</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tempo Center Slider */}
+          <div className="beat-detection-settings-section">
+            <div className="beat-detection-settings-header">
+              <span className="beat-detection-settings-label">Tempo Center</span>
+              <span className="beat-detection-settings-value">
+                {tempoBpm} BPM
+              </span>
+            </div>
+
+            <div className="beat-detection-slider-container">
+              <input
+                type="range"
+                min="0.3"
+                max="0.7"
+                step="0.02"
+                value={sliderTempoValue}
+                onChange={(e) => handleTempoCenterChange(parseFloat(e.target.value))}
+                className="beat-detection-slider"
+                style={{ '--slider-value': `${tempoCenterPercent}%` } as React.CSSProperties}
+                disabled={disabled}
+                aria-label="Tempo center"
+              />
+              <div className="beat-detection-slider-marks">
+                <span className="beat-detection-slider-mark">~86 BPM</span>
+                <span className="beat-detection-slider-mark">~120 BPM</span>
+                <span className="beat-detection-slider-mark">~200 BPM</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </details>
 
       {/* Note about tracks without clear beat (Task 7.2) */}
       <div className="beat-detection-settings-note">

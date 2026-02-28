@@ -167,7 +167,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 ## Phase 4: Create Advanced Settings Section
 
 ### 4.1 Add Collapsible Advanced Section
-- [ ] Create new collapsible section below the main sliders:
+- [x] Create new collapsible section below the main sliders:
   ```tsx
   <details className="beat-detection-advanced">
       <summary>Advanced Settings</summary>
@@ -177,13 +177,13 @@ Update the frontend to expose TWO separate controls for beat detection:
       </div>
   </details>
   ```
-- [ ] Move existing settings into this section:
-  - [ ] BPM Range (min/max sliders)
-  - [ ] Tempo Center slider
+- [x] Move existing settings into this section:
+  - [x] BPM Range (min/max sliders)
+  - [x] Tempo Center slider
 
 ### 4.2 Style Advanced Section
-- [ ] Add CSS for collapsible details/summary
-- [ ] Style the advanced content area
+- [x] Add CSS for collapsible details/summary
+- [x] Style the advanced content area
 
 ---
 
