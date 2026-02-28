@@ -97,10 +97,10 @@ Update the beat detection store to handle OSE parameter modes. **No cache key ch
   - [x] Add `resolveGaussianSmoothMs(config: GaussianSmoothConfig): number`
   - [x] These convert mode configs to actual numeric values for the engine
 
-- [ ] **2.3 Update `generateBeatMap` to Use OSE Configs**
-  - [ ] Resolve mode configs to numeric values before passing to engine
-  - [ ] Merge resolved values into `BeatMapGeneratorOptions`
-  - [ ] No cache key changes - same behavior as sensitivity/filter
+- [x] **2.3 Update `generateBeatMap` to Use OSE Configs**
+  - [x] Resolve mode configs to numeric values before passing to engine
+  - [x] Merge resolved values into `BeatMapGeneratorOptions`
+  - [x] No cache key changes - same behavior as sensitivity/filter
 
 **File**: `src/store/beatDetectionStore.ts`
 

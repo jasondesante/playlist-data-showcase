@@ -530,10 +530,20 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         });
 
                         try {
-                            // Merge provided options with defaults
+                            // Resolve OSE configs to numeric values before passing to engine
+                            // This ensures OSE configs always take precedence over any passed options
+                            const resolvedHopSizeMs = resolveHopSizeMs(state.hopSizeConfig);
+                            const resolvedMelBands = resolveMelBands(state.melBandsConfig);
+                            const resolvedGaussianSmoothMs = resolveGaussianSmoothMs(state.gaussianSmoothConfig);
+
+                            // Merge provided options with defaults, with resolved OSE values taking precedence
                             const mergedOptions: BeatMapGeneratorOptions = {
                                 ...state.generatorOptions,
                                 ...options,
+                                // OSE configs always override - these are the source of truth
+                                hopSizeMs: resolvedHopSizeMs,
+                                melBands: resolvedMelBands,
+                                gaussianSmoothMs: resolvedGaussianSmoothMs,
                             };
 
                             const generator = getGenerator(mergedOptions);
