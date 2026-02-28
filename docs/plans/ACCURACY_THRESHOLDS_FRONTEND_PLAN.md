@@ -171,9 +171,9 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   - [x] Render DifficultySettingsPanel
 
 ### Task 5.2: Connect to Store
-- [ ] Wire up DifficultySelector to beatDetectionStore
-- [ ] Wire up CustomThresholdEditor to beatDetectionStore
-- [ ] Ensure changes propagate to BeatStream
+- [x] Wire up DifficultySelector to beatDetectionStore
+- [x] Wire up CustomThresholdEditor to beatDetectionStore
+- [x] Ensure changes propagate to BeatStream
 
 ### Task 5.3: Add Visual Feedback for Current Difficulty
 - [ ] Show current difficulty preset in header
