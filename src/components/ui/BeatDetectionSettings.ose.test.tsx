@@ -480,5 +480,373 @@ describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', ()
         customValue: 30,
       });
     });
+
+    it('clamps value at boundary: minimum value 1 is accepted', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '1' } });
+
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 1,
+      });
+    });
+
+    it('clamps value at boundary: maximum value 50 is accepted', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '50' } });
+
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 50,
+      });
+    });
+  });
+
+  describe('Task 6.2.2: Test invalid input handling', () => {
+    it('does not update when input is empty string', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '' } });
+
+      // Should not call setHopSizeConfig for empty input
+      expect(mockSetHopSizeConfig).not.toHaveBeenCalled();
+    });
+
+    it('does not update when input is non-numeric text', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: 'abc' } });
+
+      // Should not call setHopSizeConfig for non-numeric input
+      expect(mockSetHopSizeConfig).not.toHaveBeenCalled();
+    });
+
+    it('does not update when input contains only special characters', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '!@#$%' } });
+
+      // Should not call setHopSizeConfig for special characters
+      expect(mockSetHopSizeConfig).not.toHaveBeenCalled();
+    });
+
+    it('handles negative values by clamping to minimum', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '-10' } });
+
+      // Negative values should be clamped to minimum (1)
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 1,
+      });
+    });
+
+    it('handles zero value by clamping to minimum', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '0' } });
+
+      // 0 should be clamped to minimum (1)
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 1,
+      });
+    });
+  });
+
+  describe('Task 6.2.3: Test decimal handling (should truncate to integer)', () => {
+    it('truncates decimal value to integer (3.7 becomes 3)', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '3.7' } });
+
+      // parseInt truncates, so 3.7 becomes 3
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 3,
+      });
+    });
+
+    it('truncates decimal value to integer (15.9 becomes 15)', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '15.9' } });
+
+      // parseInt truncates, so 15.9 becomes 15 (not rounded to 16)
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 15,
+      });
+    });
+
+    it('handles decimal below minimum by clamping (0.5 becomes 1)', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '0.5' } });
+
+      // parseInt(0.5) = 0, then clamped to 1
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 1,
+      });
+    });
+
+    it('handles decimal above maximum by clamping (100.5 becomes 50)', async () => {
+      // Mock store with custom mode
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreState,
+          hopSizeConfig: { mode: 'custom', customValue: 25 },
+          actions: {
+            ...mockStoreState.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/custom hop size/i)).toBeInTheDocument();
+      });
+
+      const customInput = screen.getByLabelText(/custom hop size/i);
+      fireEvent.change(customInput, { target: { value: '100.5' } });
+
+      // parseInt(100.5) = 100, then clamped to 50
+      expect(mockSetHopSizeConfig).toHaveBeenCalledWith({
+        mode: 'custom',
+        customValue: 50,
+      });
+    });
+
   });
 });
