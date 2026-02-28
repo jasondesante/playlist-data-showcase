@@ -220,7 +220,7 @@ Update the frontend to expose TWO separate controls for beat detection:
 - [x] Filter slider shows correct range (0-1)
 - [x] Default values are correct (sensitivity=1.0, filter=0.0) - Verified 2026-02-28: Both store (beatDetectionStore.ts:42-43) and component (BeatDetectionSettings.tsx:22-23) have matching defaults
 - [x] Sliders update store correctly - Verified 2026-02-28: Data flow traced: Slider onChange → Handler (handleSensitivityChange/handleFilterChange) → setGeneratorOptions() → Store merge → Persisted via partialize(). Both handlers call setGeneratorOptions correctly. Sensitivity uses logarithmic conversion, filter passes value directly.
-- [ ] Reset buttons work
+- [x] Reset buttons work - Verified 2026-02-28: Code review confirms reset buttons are fully implemented. Reset handlers (lines 108-114) call setGeneratorOptions with default values. Buttons only appear when values differ from defaults (conditional rendering lines 143-154, 193-204). CSS styling includes hover/active states. Build and CSS lint pass.
 - [ ] Advanced section collapses/expands
 
 ### 6.2 Beat Detection Testing
