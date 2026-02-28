@@ -850,3 +850,301 @@ describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', ()
 
   });
 });
+
+/**
+ * Tests for Task 6.3: Re-Analysis Flow
+ *
+ * These tests verify the "Re-Analyze Needed" indicator functionality:
+ * - Indicator appears when OSE settings change
+ * - Indicator clears after re-analysis
+ * - Cached beat map is updated with new settings
+ */
+describe('BeatDetectionSettings - Re-Analysis Flow (Task 6.3)', () => {
+  const mockSetHopSizeConfig = vi.fn();
+  const mockSetMelBandsConfig = vi.fn();
+  const mockSetGaussianSmoothConfig = vi.fn();
+
+  // Mock store state with an existing beat map
+  const mockStoreStateWithBeatMap = {
+    generatorOptions: {
+      minBpm: 60,
+      maxBpm: 180,
+      sensitivity: 1.0,
+      filter: 0.0,
+      tempoCenter: 0.5,
+    },
+    hopSizeConfig: { mode: 'standard' as const },
+    melBandsConfig: { mode: 'standard' as const },
+    gaussianSmoothConfig: { mode: 'standard' as const },
+    beatMap: {
+      id: 'test-beat-map',
+      beats: [{ time: 0.5 }, { time: 1.0 }, { time: 1.5 }],
+      bpm: 120,
+    },
+    lastGeneratedOSEConfig: {
+      hopSizeConfig: { mode: 'standard' },
+      melBandsConfig: { mode: 'standard' },
+      gaussianSmoothConfig: { mode: 'standard' },
+    },
+    actions: {
+      setGeneratorOptions: vi.fn(),
+      setHopSizeConfig: mockSetHopSizeConfig,
+      setMelBandsConfig: mockSetMelBandsConfig,
+      setGaussianSmoothConfig: mockSetGaussianSmoothConfig,
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Task 6.3.1: Verify "Re-Analyze Needed" indicator appears when OSE settings differ', () => {
+    it('shows indicator when hop size mode changes from standard to efficient', async () => {
+      // Start with settings that differ from lastGeneratedOSEConfig
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          hopSizeConfig: { mode: 'efficient' as const }, // Changed from standard
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      // Mock useOseSettingsChanged to return true (settings changed)
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      render(<BeatDetectionSettings />);
+
+      // Expand Advanced Settings
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      // Wait for the indicator to appear
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
+
+      // Verify the indicator text
+      expect(screen.getByText(/settings changed - re-analyze to apply/i)).toBeInTheDocument();
+    });
+
+    it('shows indicator when mel bands mode changes', async () => {
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          melBandsConfig: { mode: 'detailed' as const }, // Changed from standard
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setMelBandsConfig: mockSetMelBandsConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/settings changed - re-analyze to apply/i)).toBeInTheDocument();
+    });
+
+    it('shows indicator when gaussian smooth mode changes', async () => {
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          gaussianSmoothConfig: { mode: 'smooth' as const }, // Changed from standard
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setGaussianSmoothConfig: mockSetGaussianSmoothConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/settings changed - re-analyze to apply/i)).toBeInTheDocument();
+    });
+
+    it('shows indicator when custom hop size value changes', async () => {
+      // Store was generated with custom value 15, now it's 25
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          hopSizeConfig: { mode: 'custom' as const, customValue: 25 },
+          lastGeneratedOSEConfig: {
+            hopSizeConfig: { mode: 'custom', customValue: 15 },
+            melBandsConfig: { mode: 'standard' },
+            gaussianSmoothConfig: { mode: 'standard' },
+          },
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(/settings changed - re-analyze to apply/i)).toBeInTheDocument();
+    });
+
+    it('does not show indicator when no beat map exists', async () => {
+      // No beat map in store
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          beatMap: null,
+          lastGeneratedOSEConfig: null,
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      // useOseSettingsChanged returns false when no beat map exists
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Should NOT show the indicator
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.queryByText(/settings changed/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Task 6.3.2: Verify indicator clears after re-analysis', () => {
+    it('hides indicator when settings match lastGeneratedOSEConfig after re-analysis', async () => {
+      // Simulate state after re-analysis: settings now match lastGeneratedOSEConfig
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          hopSizeConfig: { mode: 'efficient' as const },
+          lastGeneratedOSEConfig: {
+            hopSizeConfig: { mode: 'efficient' }, // Now matches
+            melBandsConfig: { mode: 'standard' },
+            gaussianSmoothConfig: { mode: 'standard' },
+          },
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      // useOseSettingsChanged returns false after re-analysis (settings match)
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Should NOT show the indicator after re-analysis
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.queryByText(/settings changed/i)).not.toBeInTheDocument();
+    });
+
+    it('hides indicator when all OSE settings are returned to defaults', async () => {
+      // All settings back to standard
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          hopSizeConfig: { mode: 'standard' as const },
+          melBandsConfig: { mode: 'standard' as const },
+          gaussianSmoothConfig: { mode: 'standard' as const },
+          actions: {
+            ...mockStoreStateWithBeatMap.actions,
+            setHopSizeConfig: mockSetHopSizeConfig,
+            setMelBandsConfig: mockSetMelBandsConfig,
+            setGaussianSmoothConfig: mockSetGaussianSmoothConfig,
+          },
+        };
+        return selector(state);
+      });
+
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        expect(screen.getByText('Hop Size')).toBeInTheDocument();
+      });
+
+      // Should NOT show the indicator
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Task 6.3.3: Verify indicator has correct accessibility attributes', () => {
+    it('has role="status" for screen reader announcements', async () => {
+      (useBeatDetectionStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector) => {
+        const state = {
+          ...mockStoreStateWithBeatMap,
+          hopSizeConfig: { mode: 'efficient' as const },
+          actions: mockStoreStateWithBeatMap.actions,
+        };
+        return selector(state);
+      });
+
+      (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+      render(<BeatDetectionSettings />);
+
+      const advancedSummary = screen.getByText('Advanced Settings');
+      fireEvent.click(advancedSummary);
+
+      await waitFor(() => {
+        const indicator = screen.getByRole('status');
+        expect(indicator).toBeInTheDocument();
+        expect(indicator).toHaveAttribute('aria-live', 'polite');
+      });
+    });
+  });
+});

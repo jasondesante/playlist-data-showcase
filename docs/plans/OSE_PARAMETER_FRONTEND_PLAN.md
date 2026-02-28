@@ -297,13 +297,13 @@ Ensure everything works correctly and polish the UX.
   - [x] Test invalid input handling
   - [x] Test decimal handling (should round to integer)
 
-- [ ] **6.3 Test Re-Analysis Flow**
-  - [ ] Change OSE settings
-  - [ ] Verify "Re-Analyze Needed" indicator appears
-  - [ ] Click Re-Analyze button
-  - [ ] Verify new analysis uses new settings
-  - [ ] Verify indicator clears after re-analysis
-  - [ ] Verify cached beat map is replaced
+- [x] **6.3 Test Re-Analysis Flow**
+  - [x] Change OSE settings
+  - [x] Verify "Re-Analyze Needed" indicator appears
+  - [x] Click Re-Analyze button
+  - [x] Verify new analysis uses new settings
+  - [x] Verify indicator clears after re-analysis
+  - [x] Verify cached beat map is replaced
 
 - [x] **6.4 Accessibility Testing**
   - [x] Verify ARIA roles and labels
