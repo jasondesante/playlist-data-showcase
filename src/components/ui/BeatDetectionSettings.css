@@ -59,7 +59,7 @@
     hsl(var(--primary) / 0.5) var(--slider-value),
     hsl(var(--border) / 0.5) var(--slider-value),
     hsl(var(--border) / 0.5) 100%
-  );
+  ) !important;
   border-radius: 2px;
   cursor: pointer;
   transition: background 0.1s ease;
@@ -85,6 +85,7 @@
 .beat-detection-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
+  background: transparent !important; /* Prevent global reset from covering our gradient */
 }
 
 /* Slider thumb - The mixer fader */
@@ -178,6 +179,7 @@
   position: relative;
   height: 4px;
   border-radius: 2px;
+  z-index: 1;
 }
 
 /* Track background as pseudo-element to not interfere with child stacking */
@@ -209,15 +211,17 @@
 /* Highlight the selected range between min and max */
 .beat-detection-dual-slider-range {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: -1px; /* Center 6px range on 4px track */
+  height: 6px;
   background: linear-gradient(90deg,
-    hsl(var(--primary) / 0.6),
-    hsl(var(--cute-purple) / 0.6)
+    hsl(var(--primary)),
+    hsl(var(--cute-purple)),
+    hsl(var(--cute-pink))
   );
-  border-radius: 2px;
+  border-radius: 3px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 10; /* High enough to be above inputs container */
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
 }
 
 /* Container for slider inputs - positioned on top of the track */
@@ -228,6 +232,7 @@
   right: 0;
   height: 20px;
   transform: translateY(-8px); /* Center on the 4px track */
+  z-index: 3;
 }
 
 /* Dual slider inputs - overlay them on the same track */
@@ -260,15 +265,20 @@
 .beat-detection-slider--max::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
-  background: hsl(var(--primary));
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at center,
+    white 0%,
+    hsl(var(--primary)) 40%,
+    hsl(var(--primary)) 100%
+  );
+  border: 2px solid hsl(var(--primary));
   border-radius: 50%;
   cursor: grab;
   pointer-events: auto;
   box-shadow:
-    0 0 8px hsl(var(--primary) / 0.5),
-    0 0 0 2px hsl(var(--background));
+    inset 0 0 6px rgba(255, 255, 255, 0.5),
+    0 0 10px hsl(var(--primary) / 0.6);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   z-index: 4;
@@ -278,22 +288,26 @@
 .beat-detection-slider--max::-webkit-slider-thumb:hover {
   transform: scale(1.2);
   box-shadow:
-    0 0 12px hsl(var(--primary) / 0.7),
-    0 0 0 2px hsl(var(--background));
+    inset 0 0 8px rgba(255, 255, 255, 0.7),
+    0 0 15px hsl(var(--primary) / 0.8);
 }
 
 .beat-detection-slider--min::-moz-range-thumb,
 .beat-detection-slider--max::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  background: hsl(var(--primary));
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at center,
+    white 0%,
+    hsl(var(--primary)) 40%,
+    hsl(var(--primary)) 100%
+  );
+  border: 2px solid hsl(var(--primary));
   border-radius: 50%;
-  border: none;
   cursor: grab;
   pointer-events: auto;
   box-shadow:
-    0 0 8px hsl(var(--primary) / 0.5),
-    0 0 0 2px hsl(--background);
+    inset 0 0 6px rgba(255, 255, 255, 0.5),
+    0 0 10px hsl(var(--primary) / 0.6);
 }
 
 /* WebKit - hide the internal track for dual sliders */

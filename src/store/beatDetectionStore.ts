@@ -39,7 +39,7 @@ export interface TapResult extends ButtonPressResult {
 const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     minBpm: 60,
     maxBpm: 180,
-    intensityThreshold: 0.3,
+    sensitivity: 0.3,
     noiseFloorThreshold: 0.1,
     hopSizeMs: 10,
     fftSize: 2048,
@@ -344,256 +344,256 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
             setStorageErrorFn = (error) => set({ storageError: error });
 
             return {
-            ...createInitialState(),
+                ...createInitialState(),
 
-            actions: {
-                generateBeatMap: async (audioUrl, audioId, options, forceRegenerate = false) => {
-                    const state = get();
+                actions: {
+                    generateBeatMap: async (audioUrl, audioId, options, forceRegenerate = false) => {
+                        const state = get();
 
-                    // Check cache first (unless force regenerating)
-                    if (!forceRegenerate && state.cachedBeatMaps[audioId]) {
-                        logger.info('BeatDetection', 'Using cached beat map', { audioId });
-                        const cachedMap = state.cachedBeatMaps[audioId];
+                        // Check cache first (unless force regenerating)
+                        if (!forceRegenerate && state.cachedBeatMaps[audioId]) {
+                            logger.info('BeatDetection', 'Using cached beat map', { audioId });
+                            const cachedMap = state.cachedBeatMaps[audioId];
+                            set({
+                                beatMap: cachedMap,
+                                isGenerating: false,
+                                generationProgress: null,
+                                error: null,
+                            });
+                            return cachedMap;
+                        }
+
+                        // Start generation
+                        logger.info('BeatDetection', 'Starting beat map generation', { audioUrl, audioId });
                         set({
-                            beatMap: cachedMap,
-                            isGenerating: false,
+                            isGenerating: true,
                             generationProgress: null,
                             error: null,
                         });
-                        return cachedMap;
-                    }
 
-                    // Start generation
-                    logger.info('BeatDetection', 'Starting beat map generation', { audioUrl, audioId });
-                    set({
-                        isGenerating: true,
-                        generationProgress: null,
-                        error: null,
-                    });
+                        try {
+                            // Merge provided options with defaults
+                            const mergedOptions: BeatMapGeneratorOptions = {
+                                ...state.generatorOptions,
+                                ...options,
+                            };
 
-                    try {
-                        // Merge provided options with defaults
-                        const mergedOptions: BeatMapGeneratorOptions = {
-                            ...state.generatorOptions,
-                            ...options,
-                        };
+                            const generator = getGenerator(mergedOptions);
 
-                        const generator = getGenerator(mergedOptions);
+                            // Generate with progress callback
+                            const beatMap = await generator.generateBeatMap(
+                                audioUrl,
+                                audioId,
+                                (progress) => {
+                                    set({ generationProgress: progress });
+                                    logger.debug('BeatDetection', 'Generation progress', {
+                                        phase: progress.phase,
+                                        progress: progress.progress,
+                                    });
+                                }
+                            );
 
-                        // Generate with progress callback
-                        const beatMap = await generator.generateBeatMap(
-                            audioUrl,
-                            audioId,
-                            (progress) => {
-                                set({ generationProgress: progress });
-                                logger.debug('BeatDetection', 'Generation progress', {
-                                    phase: progress.phase,
-                                    progress: progress.progress,
-                                });
+                            logger.info('BeatDetection', 'Beat map generated successfully', {
+                                audioId,
+                                beatCount: beatMap.beats.length,
+                                bpm: beatMap.bpm,
+                            });
+
+                            // Cache the result with automatic eviction
+                            const currentState = get();
+                            let { cachedBeatMaps, cacheOrder } = currentState;
+
+                            // If this audioId already exists, remove it from order (will be re-added at end)
+                            if (cachedBeatMaps[audioId]) {
+                                cacheOrder = cacheOrder.filter((id) => id !== audioId);
                             }
-                        );
 
-                        logger.info('BeatDetection', 'Beat map generated successfully', {
-                            audioId,
-                            beatCount: beatMap.beats.length,
-                            bpm: beatMap.bpm,
-                        });
+                            // Perform auto-eviction if needed
+                            const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
+                            cachedBeatMaps = evicted.cachedBeatMaps;
+                            cacheOrder = evicted.cacheOrder;
 
-                        // Cache the result with automatic eviction
-                        const currentState = get();
-                        let { cachedBeatMaps, cacheOrder } = currentState;
+                            // Add the new beat map
+                            cachedBeatMaps = { ...cachedBeatMaps, [audioId]: beatMap };
+                            cacheOrder = [...cacheOrder, audioId];
 
-                        // If this audioId already exists, remove it from order (will be re-added at end)
-                        if (cachedBeatMaps[audioId]) {
-                            cacheOrder = cacheOrder.filter((id) => id !== audioId);
+                            set({
+                                beatMap,
+                                isGenerating: false,
+                                generationProgress: null,
+                                cachedBeatMaps,
+                                cacheOrder,
+                                error: null,
+                            });
+
+                            return beatMap;
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Beat map generation failed', { error: errorMessage });
+                            set({
+                                isGenerating: false,
+                                generationProgress: null,
+                                error: errorMessage,
+                            });
+                            return null;
                         }
+                    },
 
-                        // Perform auto-eviction if needed
-                        const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
-                        cachedBeatMaps = evicted.cachedBeatMaps;
-                        cacheOrder = evicted.cacheOrder;
-
-                        // Add the new beat map
-                        cachedBeatMaps = { ...cachedBeatMaps, [audioId]: beatMap };
-                        cacheOrder = [...cacheOrder, audioId];
-
+                    cancelGeneration: () => {
+                        const generator = generatorInstance;
+                        if (generator) {
+                            generator.cancel();
+                            logger.info('BeatDetection', 'Beat map generation cancelled');
+                        }
                         set({
-                            beatMap,
                             isGenerating: false,
                             generationProgress: null,
-                            cachedBeatMaps,
-                            cacheOrder,
+                        });
+                    },
+
+                    setGeneratorOptions: (options) => {
+                        logger.debug('BeatDetection', 'Updating generator options', options);
+                        set((state) => ({
+                            generatorOptions: {
+                                ...state.generatorOptions,
+                                ...options,
+                            },
+                        }));
+                    },
+
+                    clearBeatMap: () => {
+                        logger.info('BeatDetection', 'Clearing current beat map');
+                        set({
+                            beatMap: null,
+                            practiceModeActive: false,
+                            tapHistory: [],
                             error: null,
                         });
+                    },
 
-                        return beatMap;
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                        logger.error('BeatDetection', 'Beat map generation failed', { error: errorMessage });
+                    startPracticeMode: () => {
+                        logger.info('BeatDetection', 'Starting practice mode');
                         set({
-                            isGenerating: false,
-                            generationProgress: null,
-                            error: errorMessage,
+                            practiceModeActive: true,
+                            tapHistory: [], // Clear history when starting practice
                         });
-                        return null;
-                    }
-                },
+                    },
 
-                cancelGeneration: () => {
-                    const generator = generatorInstance;
-                    if (generator) {
-                        generator.cancel();
-                        logger.info('BeatDetection', 'Beat map generation cancelled');
-                    }
-                    set({
-                        isGenerating: false,
-                        generationProgress: null,
-                    });
-                },
+                    stopPracticeMode: () => {
+                        logger.info('BeatDetection', 'Stopping practice mode');
+                        set({ practiceModeActive: false });
+                    },
 
-                setGeneratorOptions: (options) => {
-                    logger.debug('BeatDetection', 'Updating generator options', options);
-                    set((state) => ({
-                        generatorOptions: {
-                            ...state.generatorOptions,
-                            ...options,
-                        },
-                    }));
-                },
+                    recordTap: (result) => {
+                        const state = get();
+                        const tapResult: TapResult = {
+                            ...result,
+                            tappedAt: result.matchedBeat.timestamp,
+                            tapIndex: state.tapHistory.length,
+                        };
+                        logger.debug('BeatDetection', 'Recording tap', {
+                            accuracy: result.accuracy,
+                            offset: result.offset,
+                            tapIndex: tapResult.tapIndex,
+                        });
+                        set((state) => ({
+                            tapHistory: [...state.tapHistory, tapResult],
+                        }));
+                    },
 
-                clearBeatMap: () => {
-                    logger.info('BeatDetection', 'Clearing current beat map');
-                    set({
-                        beatMap: null,
-                        practiceModeActive: false,
-                        tapHistory: [],
-                        error: null,
-                    });
-                },
+                    clearTapHistory: () => {
+                        logger.info('BeatDetection', 'Clearing tap history');
+                        set({ tapHistory: [] });
+                    },
 
-                startPracticeMode: () => {
-                    logger.info('BeatDetection', 'Starting practice mode');
-                    set({
-                        practiceModeActive: true,
-                        tapHistory: [], // Clear history when starting practice
-                    });
-                },
-
-                stopPracticeMode: () => {
-                    logger.info('BeatDetection', 'Stopping practice mode');
-                    set({ practiceModeActive: false });
-                },
-
-                recordTap: (result) => {
-                    const state = get();
-                    const tapResult: TapResult = {
-                        ...result,
-                        tappedAt: result.matchedBeat.timestamp,
-                        tapIndex: state.tapHistory.length,
-                    };
-                    logger.debug('BeatDetection', 'Recording tap', {
-                        accuracy: result.accuracy,
-                        offset: result.offset,
-                        tapIndex: tapResult.tapIndex,
-                    });
-                    set((state) => ({
-                        tapHistory: [...state.tapHistory, tapResult],
-                    }));
-                },
-
-                clearTapHistory: () => {
-                    logger.info('BeatDetection', 'Clearing tap history');
-                    set({ tapHistory: [] });
-                },
-
-                loadCachedBeatMap: (audioId) => {
-                    const cached = get().cachedBeatMaps[audioId];
-                    if (cached) {
-                        logger.info('BeatDetection', 'Loading cached beat map', { audioId });
-                        set({ beatMap: cached, error: null });
-                        return cached;
-                    }
-                    return null;
-                },
-
-                cacheBeatMap: (audioId, beatMap) => {
-                    logger.info('BeatDetection', 'Caching beat map', { audioId });
-                    set((state) => {
-                        let { cachedBeatMaps, cacheOrder } = state;
-
-                        // If this audioId already exists, remove it from order (will be re-added at end)
-                        if (cachedBeatMaps[audioId]) {
-                            cacheOrder = cacheOrder.filter((id) => id !== audioId);
+                    loadCachedBeatMap: (audioId) => {
+                        const cached = get().cachedBeatMaps[audioId];
+                        if (cached) {
+                            logger.info('BeatDetection', 'Loading cached beat map', { audioId });
+                            set({ beatMap: cached, error: null });
+                            return cached;
                         }
+                        return null;
+                    },
 
-                        // Perform auto-eviction if needed
-                        const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
-                        cachedBeatMaps = evicted.cachedBeatMaps;
-                        cacheOrder = evicted.cacheOrder;
+                    cacheBeatMap: (audioId, beatMap) => {
+                        logger.info('BeatDetection', 'Caching beat map', { audioId });
+                        set((state) => {
+                            let { cachedBeatMaps, cacheOrder } = state;
 
-                        // Add the new beat map
-                        return {
-                            cachedBeatMaps: { ...cachedBeatMaps, [audioId]: beatMap },
-                            cacheOrder: [...cacheOrder, audioId],
-                        };
-                    });
+                            // If this audioId already exists, remove it from order (will be re-added at end)
+                            if (cachedBeatMaps[audioId]) {
+                                cacheOrder = cacheOrder.filter((id) => id !== audioId);
+                            }
+
+                            // Perform auto-eviction if needed
+                            const evicted = performAutoEvictionIfNeeded(cachedBeatMaps, cacheOrder);
+                            cachedBeatMaps = evicted.cachedBeatMaps;
+                            cacheOrder = evicted.cacheOrder;
+
+                            // Add the new beat map
+                            return {
+                                cachedBeatMaps: { ...cachedBeatMaps, [audioId]: beatMap },
+                                cacheOrder: [...cacheOrder, audioId],
+                            };
+                        });
+                    },
+
+                    removeCachedBeatMap: (audioId) => {
+                        logger.info('BeatDetection', 'Removing cached beat map', { audioId });
+                        set((state) => {
+                            const { [audioId]: removed, ...rest } = state.cachedBeatMaps;
+                            return {
+                                cachedBeatMaps: rest,
+                                cacheOrder: state.cacheOrder.filter((id) => id !== audioId),
+                            };
+                        });
+                    },
+
+                    clearAllCachedBeatMaps: () => {
+                        logger.warn('BeatDetection', 'Clearing all cached beat maps');
+                        set({ cachedBeatMaps: {}, cacheOrder: [] });
+                    },
+
+                    getBeatMap: () => {
+                        return get().beatMap;
+                    },
+
+                    hasCachedBeatMap: (audioId) => {
+                        return audioId in get().cachedBeatMaps;
+                    },
+
+                    clearError: () => {
+                        set({ error: null });
+                    },
+
+                    clearStorageError: () => {
+                        set({ storageError: null });
+                    },
+
+                    clearOldestCachedBeatMaps: (count = 1) => {
+                        const state = get();
+                        if (state.cacheOrder.length === 0) return;
+
+                        // Remove the oldest entries (first N in cacheOrder)
+                        const keysToRemove = state.cacheOrder.slice(0, Math.min(count, state.cacheOrder.length));
+                        logger.info('BeatDetection', 'Clearing oldest cached beat maps', {
+                            count: keysToRemove.length,
+                            keys: keysToRemove,
+                        });
+
+                        const newCachedBeatMaps = { ...state.cachedBeatMaps };
+                        keysToRemove.forEach((key) => {
+                            delete newCachedBeatMaps[key];
+                        });
+
+                        set({
+                            cachedBeatMaps: newCachedBeatMaps,
+                            cacheOrder: state.cacheOrder.slice(keysToRemove.length),
+                        });
+                    },
                 },
-
-                removeCachedBeatMap: (audioId) => {
-                    logger.info('BeatDetection', 'Removing cached beat map', { audioId });
-                    set((state) => {
-                        const { [audioId]: removed, ...rest } = state.cachedBeatMaps;
-                        return {
-                            cachedBeatMaps: rest,
-                            cacheOrder: state.cacheOrder.filter((id) => id !== audioId),
-                        };
-                    });
-                },
-
-                clearAllCachedBeatMaps: () => {
-                    logger.warn('BeatDetection', 'Clearing all cached beat maps');
-                    set({ cachedBeatMaps: {}, cacheOrder: [] });
-                },
-
-                getBeatMap: () => {
-                    return get().beatMap;
-                },
-
-                hasCachedBeatMap: (audioId) => {
-                    return audioId in get().cachedBeatMaps;
-                },
-
-                clearError: () => {
-                    set({ error: null });
-                },
-
-                clearStorageError: () => {
-                    set({ storageError: null });
-                },
-
-                clearOldestCachedBeatMaps: (count = 1) => {
-                    const state = get();
-                    if (state.cacheOrder.length === 0) return;
-
-                    // Remove the oldest entries (first N in cacheOrder)
-                    const keysToRemove = state.cacheOrder.slice(0, Math.min(count, state.cacheOrder.length));
-                    logger.info('BeatDetection', 'Clearing oldest cached beat maps', {
-                        count: keysToRemove.length,
-                        keys: keysToRemove,
-                    });
-
-                    const newCachedBeatMaps = { ...state.cachedBeatMaps };
-                    keysToRemove.forEach((key) => {
-                        delete newCachedBeatMaps[key];
-                    });
-
-                    set({
-                        cachedBeatMaps: newCachedBeatMaps,
-                        cacheOrder: state.cacheOrder.slice(keysToRemove.length),
-                    });
-                },
-            },
-        };
+            };
         },
         {
             name: 'beat-detection-storage',

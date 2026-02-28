@@ -18,7 +18,7 @@ import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 const DEFAULTS = {
   minBpm: 60,
   maxBpm: 180,
-  intensityThreshold: 0.3,
+  sensitivity: 0.3,
   tempoCenter: 0.5,
 };
 
@@ -34,7 +34,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
   const maxBpm = generatorOptions.maxBpm ?? DEFAULTS.maxBpm;
-  const intensityThreshold = generatorOptions.intensityThreshold ?? DEFAULTS.intensityThreshold;
+  const sensitivity = generatorOptions.sensitivity ?? DEFAULTS.sensitivity;
   const tempoCenter = generatorOptions.tempoCenter ?? DEFAULTS.tempoCenter;
 
   // Handle BPM Range changes
@@ -50,9 +50,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
     setGeneratorOptions({ maxBpm: newMax });
   };
 
-  // Handle Intensity Threshold change (0.1 - 1.0)
-  const handleIntensityChange = (value: number) => {
-    setGeneratorOptions({ intensityThreshold: value });
+  // Handle Sensitivity change (0.1 - 1.0)
+  const handleSensitivityChange = (value: number) => {
+    setGeneratorOptions({ sensitivity: value });
   };
 
   // Handle Tempo Center change (0.3 - 0.7 seconds)
@@ -66,7 +66,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   // Calculate slider percentages for CSS styling
   const minBpmPercent = ((minBpm - 40) / 200) * 100;
   const maxBpmPercent = ((maxBpm - 40) / 200) * 100;
-  const intensityPercent = ((intensityThreshold - 0.1) / 0.9) * 100;
+  const sensitivityPercent = ((sensitivity - 0.1) / 0.9) * 100;
 
   // Convert tempo center to BPM for display (BPM = 60 / seconds)
   const tempoBpm = Math.round(60 / tempoCenter);
@@ -141,9 +141,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
       {/* Intensity Threshold Slider */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
-          <span className="beat-detection-settings-label">Intensity Threshold</span>
+          <span className="beat-detection-settings-label">Sensitivity</span>
           <span className="beat-detection-settings-value">
-            {intensityThreshold.toFixed(1)}
+            {sensitivity.toFixed(2)}
           </span>
         </div>
 
@@ -153,12 +153,12 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             min="0.1"
             max="1.0"
             step="0.05"
-            value={intensityThreshold}
-            onChange={(e) => handleIntensityChange(parseFloat(e.target.value))}
+            value={sensitivity}
+            onChange={(e) => handleSensitivityChange(parseFloat(e.target.value))}
             className="beat-detection-slider"
-            style={{ '--slider-value': `${intensityPercent}%` } as React.CSSProperties}
+            style={{ '--slider-value': `${sensitivityPercent}%` } as React.CSSProperties}
             disabled={disabled}
-            aria-label="Intensity threshold"
+            aria-label="Detection sensitivity"
           />
           <div className="beat-detection-slider-marks">
             <span className="beat-detection-slider-mark">Low</span>
