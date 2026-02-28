@@ -461,3 +461,37 @@ export interface GaussianSmoothConfig {
     /** The selected gaussian smoothing mode */
     mode: GaussianSmoothMode;
 }
+
+/**
+ * Preset values for Hop Size modes.
+ *
+ * Each preset includes the actual millisecond value, a display label,
+ * and a short description for UI tooltips.
+ */
+export const HOP_SIZE_PRESETS = {
+    efficient: { value: 10, label: 'Efficient', description: 'Fast, reduced precision' },
+    standard: { value: 4, label: 'Standard', description: 'Paper spec (default)' },
+    hq: { value: 2, label: 'HQ', description: 'Maximum precision' },
+} as const;
+
+/**
+ * Preset values for Mel Bands modes.
+ *
+ * Higher band counts provide more frequency resolution but require more computation.
+ */
+export const MEL_BANDS_PRESETS = {
+    standard: { value: 40, label: 'Standard', description: '40 bands' },
+    detailed: { value: 64, label: 'Detailed', description: '64 bands' },
+    maximum: { value: 80, label: 'Maximum', description: '80 bands' },
+} as const;
+
+/**
+ * Preset values for Gaussian Smoothing modes.
+ *
+ * Higher values produce cleaner peaks but may miss fast transients.
+ */
+export const GAUSSIAN_SMOOTH_PRESETS = {
+    minimal: { value: 10, label: 'Minimal', description: 'Fast transients' },
+    standard: { value: 20, label: 'Standard', description: 'Balanced (default)' },
+    smooth: { value: 40, label: 'Smooth', description: 'Cleaner peaks' },
+} as const;

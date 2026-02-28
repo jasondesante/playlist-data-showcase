@@ -29,10 +29,10 @@ Add frontend types to match the backend OSE parameter modes.
   - [x] Add `GaussianSmoothConfig` interface
   - [ ] Re-export types from `playlist-data-engine` when available (deferred until engine exports types)
 
-- [ ] **1.2 Add OSE Preset Constants**
-  - [ ] Add `HOP_SIZE_PRESETS` constant object
-  - [ ] Add `MEL_BANDS_PRESETS` constant object
-  - [ ] Add `GAUSSIAN_SMOOTH_PRESETS` constant object
+- [x] **1.2 Add OSE Preset Constants**
+  - [x] Add `HOP_SIZE_PRESETS` constant object
+  - [x] Add `MEL_BANDS_PRESETS` constant object
+  - [x] Add `GAUSSIAN_SMOOTH_PRESETS` constant object
 
 ### Proposed Types
 
