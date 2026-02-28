@@ -269,10 +269,10 @@ export function BeatMapSummary({
         <span className="beat-map-settings-label">Settings used:</span>
         <div className="beat-map-settings-values">
           <span className="beat-map-settings-value">
-            Sensitivity: {beatMap.metadata.sensitivity.toFixed(1)}
+            Sensitivity: {(beatMap.metadata.sensitivity ?? 1.0).toFixed(1)}
           </span>
           <span className="beat-map-settings-value">
-            Filter: {beatMap.metadata.filter.toFixed(2)}
+            Filter: {(beatMap.metadata.filter ?? 0.0).toFixed(2)}
           </span>
         </div>
       </div>

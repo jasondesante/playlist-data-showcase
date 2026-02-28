@@ -15,7 +15,20 @@ import { Info, RotateCcw } from 'lucide-react';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 
-// Default values for beat detection options (must match engine defaults)
+/**
+ * Default values for beat detection options.
+ * These must match the engine defaults (see beatDetectionStore.ts).
+ *
+ * SENSITIVITY (default: 1.0, range: 0.1-10.0)
+ * - Pre-processing parameter that controls beat detection aggressiveness
+ * - Lower values = fewer beats detected (only strong beats)
+ * - Higher values = more beats detected (includes subtle beats)
+ *
+ * FILTER (default: 0.0, range: 0.0-1.0)
+ * - Post-processing parameter that removes weak beats after detection
+ * - 0 = keep all detected beats
+ * - 1 = keep only the strongest beats
+ */
 const DEFAULTS = {
   minBpm: 60,
   maxBpm: 180,
@@ -81,13 +94,28 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
     setGeneratorOptions({ maxBpm: newMax });
   };
 
-  // Handle Sensitivity change (0.1 - 10.0) - with logarithmic slider mapping (Task 5.2)
+  /**
+   * Handle Sensitivity change (0.1 - 10.0)
+   *
+   * Converts slider position (0-100) to actual sensitivity value using
+   * logarithmic mapping (Task 5.2). This ensures the default (1.0) sits
+   * at the center of the slider, making fine adjustments easier.
+   *
+   * @param sliderPosition - Raw slider value (0-100)
+   */
   const handleSensitivityChange = (sliderPosition: number) => {
     const sensitivity = sliderToSensitivity(sliderPosition);
     setGeneratorOptions({ sensitivity });
   };
 
-  // Handle Filter change (0.0 - 1.0)
+  /**
+   * Handle Filter change (0.0 - 1.0)
+   *
+   * Direct mapping - slider value is the actual filter value.
+   * Higher values remove more beats, keeping only the strongest.
+   *
+   * @param value - Filter value (0.0-1.0)
+   */
   const handleFilterChange = (value: number) => {
     setGeneratorOptions({ filter: value });
   };
@@ -100,11 +128,17 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
     setGeneratorOptions({ tempoCenter: invertedValue });
   };
 
-  // Check if values differ from defaults (for visual indicators)
+  /**
+   * Check if values differ from defaults.
+   * Used to show visual indicators (modified value styling) and reset buttons.
+   */
   const isSensitivityDefault = sensitivity === DEFAULTS.sensitivity;
   const isFilterDefault = filter === DEFAULTS.filter;
 
-  // Reset handlers - restore individual settings to defaults
+  /**
+   * Reset handlers - restore individual settings to their default values.
+   * Each reset button only appears when its corresponding value differs from default.
+   */
   const handleSensitivityReset = () => {
     setGeneratorOptions({ sensitivity: DEFAULTS.sensitivity });
   };
@@ -132,7 +166,30 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   return (
     <div className="beat-detection-settings">
-      {/* Sensitivity Slider (0.1 - 10.0) - Primary Control */}
+      {/* ============================================================
+       * SENSITIVITY SLIDER (Task 3.2)
+       *
+       * What it does: Controls how aggressively the beat detection
+       * algorithm identifies potential beats during the initial
+       * analysis phase (pre-processing).
+       *
+       * Range: 0.1 to 10.0 (logarithmic scale)
+       * - 0.1 = Very conservative: detects only the most obvious beats
+       * - 1.0 = Default: balanced detection for most music
+       * - 10.0 = Very aggressive: detects many beats, including subtle ones
+       *
+       * Effect on output:
+       * - Lower values = fewer beats detected, only strong beats
+       * - Higher values = more beats detected, includes weaker beats
+       *
+       * Use with Filter: Sensitivity determines what beats are CANDIDATES,
+       * then Filter removes the weakest ones. For best results:
+       * - If too few beats: increase sensitivity
+       * - If too many weak beats: increase filter (or decrease sensitivity)
+       *
+       * Note: Uses logarithmic slider mapping (Task 5.2) so the default
+       * value (1.0) sits at the center of the slider.
+       * ============================================================ */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Sensitivity</span>
@@ -182,7 +239,33 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
         </div>
       </div>
 
-      {/* Filter Slider (0.0 - 1.0) - Primary Control */}
+      {/* ============================================================
+       * FILTER SLIDER (Task 3.3)
+       *
+       * What it does: Removes weak beats AFTER detection by filtering
+       * based on beat intensity/confidence (post-processing).
+       * This is a grid-alignment filter that prioritizes beats with
+       * higher confidence scores.
+       *
+       * Range: 0.0 to 1.0 (linear scale)
+       * - 0.0 = Default: keep all detected beats
+       * - 0.5 = Moderate: remove the weakest half of beats
+       * - 1.0 = Strict: keep only the strongest beats
+       *
+       * Effect on output:
+       * - Lower values = more beats kept (including weaker ones)
+       * - Higher values = fewer beats kept (only the strongest)
+       *
+       * Relationship to Sensitivity:
+       * - Sensitivity controls detection (what COULD be a beat)
+       * - Filter controls selection (which beats to KEEP)
+       * - They work independently: you can have high sensitivity with
+       *   high filter to catch subtle beats but only keep the best ones
+       *
+       * Migration note: This replaces the old 'intensityThreshold' parameter.
+       * Users with cached settings will have their intensityThreshold value
+       * automatically migrated to filter.
+       * ============================================================ */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
           <span className="beat-detection-settings-label">Filter</span>

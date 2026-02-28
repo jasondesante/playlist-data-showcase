@@ -308,7 +308,14 @@ Test different combinations:
   - [x] Update intensity settings section - Updated Phase 2.2 to replace old "Intensity Threshold" with new "Sensitivity" and "Filter" sliders, including their ranges, defaults, descriptions, logarithmic scale for sensitivity, reset buttons, and advanced section.
 
 ### 7.2 Update Comments
-- [ ] Add inline comments explaining both parameters
+- [x] Add inline comments explaining both parameters - Verified 2026-02-28: Added comprehensive block comments for Sensitivity and Filter sliders explaining:
+  - What each parameter does (pre-processing vs post-processing)
+  - Range and default values
+  - Effect on beat detection output
+  - Relationship between the two parameters
+  - Usage tips for finding the right combination
+  - Also enhanced DEFAULTS constant documentation with detailed descriptions
+  - Added JSDoc comments to handler functions explaining parameter conversion
 - [ ] Update component JSDoc
 
 ---
