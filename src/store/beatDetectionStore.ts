@@ -131,6 +131,67 @@ export const resolveGaussianSmoothMs = (config: GaussianSmoothConfig): number =>
     return GAUSSIAN_SMOOTH_PRESETS[config.mode].value;
 };
 
+// ============================================================
+// TASK 3.5: OSE Config Tracking for "Re-Analyze Needed" Indicator
+// ============================================================
+
+/**
+ * Snapshot of OSE configs used to generate a beat map.
+ * Used to detect when settings have changed and re-analysis is needed.
+ */
+export interface OSEConfigSnapshot {
+    /** Hop size configuration at generation time */
+    hopSizeConfig: HopSizeConfig;
+    /** Mel bands configuration at generation time */
+    melBandsConfig: MelBandsConfig;
+    /** Gaussian smooth configuration at generation time */
+    gaussianSmoothConfig: GaussianSmoothConfig;
+}
+
+/**
+ * Compare two OSE config snapshots to detect if settings have changed.
+ *
+ * @param a - First OSE config snapshot
+ * @param b - Second OSE config snapshot
+ * @returns true if configs are different (re-analysis needed)
+ */
+export const oseConfigsDiffer = (a: OSEConfigSnapshot | null, b: OSEConfigSnapshot | null): boolean => {
+    // If both are null, no difference
+    if (a === null && b === null) return false;
+    // If one is null and other isn't, they differ
+    if (a === null || b === null) return true;
+
+    // Compare hop size configs
+    if (a.hopSizeConfig.mode !== b.hopSizeConfig.mode) return true;
+    if (a.hopSizeConfig.mode === 'custom' && a.hopSizeConfig.customValue !== b.hopSizeConfig.customValue) return true;
+
+    // Compare mel bands configs
+    if (a.melBandsConfig.mode !== b.melBandsConfig.mode) return true;
+
+    // Compare gaussian smooth configs
+    if (a.gaussianSmoothConfig.mode !== b.gaussianSmoothConfig.mode) return true;
+
+    return false;
+};
+
+/**
+ * Create an OSE config snapshot from the current store state.
+ *
+ * @param hopSizeConfig - Current hop size config
+ * @param melBandsConfig - Current mel bands config
+ * @param gaussianSmoothConfig - Current gaussian smooth config
+ * @returns An OSE config snapshot
+ */
+export const createOSEConfigSnapshot = (
+    hopSizeConfig: HopSizeConfig,
+    melBandsConfig: MelBandsConfig,
+    gaussianSmoothConfig: GaussianSmoothConfig
+): OSEConfigSnapshot => ({
+    hopSizeConfig: { ...hopSizeConfig },
+    melBandsConfig: { ...melBandsConfig },
+    gaussianSmoothConfig: { ...gaussianSmoothConfig },
+});
+
 /**
  * Difficulty settings for beat tap evaluation.
  *
@@ -167,6 +228,8 @@ interface BeatDetectionState {
     melBandsConfig: MelBandsConfig;
     /** OSE Gaussian Smoothing configuration (mode-based selection) */
     gaussianSmoothConfig: GaussianSmoothConfig;
+    /** OSE config snapshot used to generate the current beat map (for re-analyze indicator) */
+    lastGeneratedOSEConfig: OSEConfigSnapshot | null;
     /** Cached beat maps indexed by audio ID for localStorage persistence */
     cachedBeatMaps: Record<string, BeatMap>;
     /** Order of cache insertion (for LRU eviction) - stores audio IDs */
@@ -379,6 +442,7 @@ const createInitialState = (): BeatDetectionState => ({
     hopSizeConfig: { ...DEFAULT_HOP_SIZE_CONFIG },
     melBandsConfig: { ...DEFAULT_MEL_BANDS_CONFIG },
     gaussianSmoothConfig: { ...DEFAULT_GAUSSIAN_SMOOTH_CONFIG },
+    lastGeneratedOSEConfig: null,
     cachedBeatMaps: {},
     cacheOrder: [],
     practiceModeActive: false,
@@ -512,11 +576,18 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         if (!forceRegenerate && state.cachedBeatMaps[audioId]) {
                             logger.info('BeatDetection', 'Using cached beat map', { audioId });
                             const cachedMap = state.cachedBeatMaps[audioId];
+                            // When loading from cache, update the lastGeneratedOSEConfig to current settings
+                            // This prevents showing "re-analyze needed" immediately after loading cached map
                             set({
                                 beatMap: cachedMap,
                                 isGenerating: false,
                                 generationProgress: null,
                                 error: null,
+                                lastGeneratedOSEConfig: createOSEConfigSnapshot(
+                                    state.hopSizeConfig,
+                                    state.melBandsConfig,
+                                    state.gaussianSmoothConfig
+                                ),
                             });
                             return cachedMap;
                         }
@@ -585,6 +656,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             cachedBeatMaps = { ...cachedBeatMaps, [audioId]: beatMap };
                             cacheOrder = [...cacheOrder, audioId];
 
+                            // Store the OSE config snapshot used to generate this beat map
+                            const oseConfigSnapshot = createOSEConfigSnapshot(
+                                currentState.hopSizeConfig,
+                                currentState.melBandsConfig,
+                                currentState.gaussianSmoothConfig
+                            );
+
                             set({
                                 beatMap,
                                 isGenerating: false,
@@ -592,6 +670,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 cachedBeatMaps,
                                 cacheOrder,
                                 error: null,
+                                lastGeneratedOSEConfig: oseConfigSnapshot,
                             });
 
                             // Clear active generator reference
@@ -680,6 +759,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             practiceModeActive: false,
                             tapHistory: [],
                             error: null,
+                            lastGeneratedOSEConfig: null,
                         });
                     },
 
@@ -1050,6 +1130,29 @@ export const useCachedBeatMaps = () =>
  */
 export const useStorageError = () =>
     useBeatDetectionStore((state) => state.storageError);
+
+/**
+ * Selector to check if OSE settings have changed since last beat map generation.
+ * Returns true if a beat map exists and current OSE settings differ from the
+ * settings used to generate it.
+ *
+ * Used for the "Re-Analyze Needed" indicator.
+ */
+export const useOseSettingsChanged = () =>
+    useBeatDetectionStore(useShallow((state) => {
+        // No beat map means nothing to re-analyze
+        if (!state.beatMap) return false;
+
+        // Create a snapshot of current settings
+        const currentSnapshot = createOSEConfigSnapshot(
+            state.hopSizeConfig,
+            state.melBandsConfig,
+            state.gaussianSmoothConfig
+        );
+
+        // Compare with stored snapshot
+        return oseConfigsDiffer(state.lastGeneratedOSEConfig, currentSnapshot);
+    }));
 
 /**
  * Selector to get actions directly.

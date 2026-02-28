@@ -52,9 +52,9 @@
  * - Supports both mouse and touch interaction
  * - Responsive design for mobile, tablet, and desktop viewports
  */
-import { Info, RotateCcw } from 'lucide-react';
+import { Info, RotateCcw, AlertTriangle } from 'lucide-react';
 import './BeatDetectionSettings.css';
-import { useBeatDetectionStore } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useOseSettingsChanged } from '../../store/beatDetectionStore';
 import {
     HopSizeMode,
     MelBandsMode,
@@ -136,6 +136,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const setMelBandsConfig = useBeatDetectionStore((state) => state.actions.setMelBandsConfig);
   const gaussianSmoothConfig = useBeatDetectionStore((state) => state.gaussianSmoothConfig);
   const setGaussianSmoothConfig = useBeatDetectionStore((state) => state.actions.setGaussianSmoothConfig);
+
+  // Check if OSE settings have changed since last beat map generation
+  const oseSettingsChanged = useOseSettingsChanged();
 
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
@@ -801,6 +804,22 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                 ))}
               </div>
             </div>
+
+            {/* ============================================================
+             * TASK 3.5: Re-Analyze Needed Indicator
+             *
+             * Shows when OSE settings have changed since the current beat map
+             * was generated. Indicates to the user that they need to re-analyze
+             * to apply the new settings.
+             * ============================================================ */}
+            {oseSettingsChanged && (
+              <div className="beat-detection-reanalyze-indicator" role="status" aria-live="polite">
+                <AlertTriangle className="beat-detection-reanalyze-indicator-icon" />
+                <span className="beat-detection-reanalyze-indicator-text">
+                  Settings changed - re-analyze to apply
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </details>

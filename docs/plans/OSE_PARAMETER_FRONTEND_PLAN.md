@@ -132,12 +132,12 @@ Add OSE parameter controls to the Advanced Settings section.
   - [x] Create EQ-style toggle button group with 3 options: Minimal, Standard, Smooth
   - [x] Display current value badge (e.g., "20ms")
 
-- [ ] **3.5 Add "Re-Analyze Needed" Indicator**
-  - [ ] Track OSE config used to generate current beat map (store alongside beat map or in separate state)
-  - [ ] Compare current OSE settings to the stored "generated with" settings
-  - [ ] Show visual indicator (e.g., amber badge) when settings differ
-  - [ ] Display message: "Settings changed - re-analyze to apply"
-  - [ ] Clear indicator after successful re-analysis
+- [x] **3.5 Add "Re-Analyze Needed" Indicator**
+  - [x] Track OSE config used to generate current beat map (store alongside beat map or in separate state)
+  - [x] Compare current OSE settings to the stored "generated with" settings
+  - [x] Show visual indicator (e.g., amber badge) when settings differ
+  - [x] Display message: "Settings changed - re-analyze to apply"
+  - [x] Clear indicator after successful re-analysis
 
 ### Component Structure
 

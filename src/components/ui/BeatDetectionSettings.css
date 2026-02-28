@@ -1179,3 +1179,92 @@
     font-size: 0.75rem;
   }
 }
+
+/* ============================================
+   TASK 3.5: RE-ANALYZE NEEDED INDICATOR
+   Shows when OSE settings have changed since
+   the current beat map was generated.
+   ============================================ */
+
+/* Indicator container - amber warning style */
+.beat-detection-reanalyze-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  background: linear-gradient(135deg, hsl(var(--cute-amber, 38 92% 50%) / 0.15), hsl(var(--cute-amber, 38 92% 50%) / 0.08));
+  border: 1px solid hsl(var(--cute-amber, 38 92% 50%) / 0.4);
+  border-radius: 0.375rem;
+  animation: fadeInPulse 0.3s ease-out;
+}
+
+@keyframes fadeInPulse {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Warning icon */
+.beat-detection-reanalyze-indicator-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--cute-amber, 38 92% 50%));
+  flex-shrink: 0;
+}
+
+/* Indicator text */
+.beat-detection-reanalyze-indicator-text {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: hsl(var(--cute-amber, 38 92% 50%));
+  line-height: 1.3;
+}
+
+/* Responsive - tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-detection-reanalyze-indicator {
+    padding: 0.4375rem 0.5625rem;
+    gap: 0.375rem;
+  }
+
+  .beat-detection-reanalyze-indicator-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .beat-detection-reanalyze-indicator-text {
+    font-size: 0.5625rem;
+  }
+}
+
+/* Responsive - mobile */
+@media (max-width: 640px) {
+  .beat-detection-reanalyze-indicator {
+    padding: 0.375rem 0.5rem;
+    gap: 0.3125rem;
+    margin-top: 0.5rem;
+  }
+
+  .beat-detection-reanalyze-indicator-icon {
+    width: 0.6875rem;
+    height: 0.6875rem;
+  }
+
+  .beat-detection-reanalyze-indicator-text {
+    font-size: 0.5rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .beat-detection-reanalyze-indicator {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+  }
+}
