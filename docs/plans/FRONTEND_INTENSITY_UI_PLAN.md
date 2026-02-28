@@ -30,10 +30,10 @@ Update the frontend to expose TWO separate controls for beat detection:
 ## Phase 1: Update Dependencies
 
 ### 1.1 Upgrade Engine Package
-- [ ] Wait for engine changes to be published
-- [ ] Update `package.json` to use new engine version
-- [ ] Run `npm install` to update dependencies
-- [ ] Verify TypeScript compilation succeeds with new types
+- [x] Wait for engine changes to be published
+- [x] Update `package.json` to use new engine version (fixed path to `file:../playlist-data-engine`)
+- [x] Run `npm install` to update dependencies
+- [x] Verify TypeScript compilation succeeds with new types
 
 ### 1.2 Update Type Re-exports
 - [ ] In `src/types/index.ts`, verify new types are re-exported:
