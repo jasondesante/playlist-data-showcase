@@ -65,9 +65,12 @@ All three elements (audio, visual beats, tap detection) work **together continuo
 ### 2.2 Beat Detection Settings Panel
 - [x] Create settings sub-component shown when Beat Detection mode is selected (before analysis)
   - [x] **BPM Range**: Dual slider for min/max BPM (default: 60-180)
-  - [x] **Intensity Threshold**: Slider 0.1-1.0 (default: 0.3)
+  - [x] **Sensitivity**: Slider 0.1-10.0 (default: 1.0) - How aggressively the algorithm detects beats. Lower = fewer beats, Higher = more beats. Uses logarithmic scale for natural feel.
+  - [x] **Filter**: Slider 0.0-1.0 (default: 0.0) - Removes weak beats after detection. 0 = keep all, 1 = only strongest.
   - [x] **Tempo Center**: Slider 0.3-0.7 seconds (default: 0.5 = 120 BPM)
   - [x] Use existing EQ-style slider design patterns
+  - [x] Reset buttons for each slider when not at default value
+  - [x] Advanced section (collapsible) containing BPM Range and Tempo Center
 
 ### 2.3 Analysis Progress UI
 - [x] Update primary action button for beat detection mode

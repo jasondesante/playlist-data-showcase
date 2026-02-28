@@ -304,8 +304,8 @@ Test different combinations:
 ## Phase 7: Documentation Updates
 
 ### 7.1 Update Plan Document
-- [ ] In `docs/plans/BEAT_DETECTION_DEMO_PLAN.md`:
-  - [ ] Update intensity settings section
+- [x] In `docs/plans/BEAT_DETECTION_DEMO_PLAN.md`:
+  - [x] Update intensity settings section - Updated Phase 2.2 to replace old "Intensity Threshold" with new "Sensitivity" and "Filter" sliders, including their ranges, defaults, descriptions, logarithmic scale for sensitivity, reset buttons, and advanced section.
 
 ### 7.2 Update Comments
 - [ ] Add inline comments explaining both parameters
