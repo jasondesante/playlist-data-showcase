@@ -28,6 +28,9 @@ import {
     HOP_SIZE_PRESETS,
     MEL_BANDS_PRESETS,
     GAUSSIAN_SMOOTH_PRESETS,
+    getHopSizeMs,
+    getMelBands,
+    getGaussianSmoothMs,
 } from '@/types';
 import { BeatMapGenerator } from 'playlist-data-engine';
 
@@ -92,44 +95,6 @@ const MAX_CACHED_BEAT_MAPS = 20;
  * Number of old caches to remove when the limit is reached.
  */
 const EVICTION_COUNT = 5;
-
-/**
- * Resolve a HopSizeConfig to the actual hop size in milliseconds.
- *
- * For preset modes (efficient/standard/hq), returns the predefined value.
- * For custom mode, returns the customValue (with fallback to standard if not provided).
- *
- * @param config - The hop size configuration
- * @returns The resolved hop size in milliseconds
- */
-export const resolveHopSizeMs = (config: HopSizeConfig): number => {
-    if (config.mode === 'custom') {
-        // Clamp custom value to valid range (1-50ms)
-        const customValue = config.customValue ?? HOP_SIZE_PRESETS.standard.value;
-        return Math.max(1, Math.min(50, customValue));
-    }
-    return HOP_SIZE_PRESETS[config.mode].value;
-};
-
-/**
- * Resolve a MelBandsConfig to the actual number of mel bands.
- *
- * @param config - The mel bands configuration
- * @returns The resolved number of mel bands
- */
-export const resolveMelBands = (config: MelBandsConfig): number => {
-    return MEL_BANDS_PRESETS[config.mode].value;
-};
-
-/**
- * Resolve a GaussianSmoothConfig to the actual smoothing window in milliseconds.
- *
- * @param config - The gaussian smoothing configuration
- * @returns The resolved smoothing window in milliseconds
- */
-export const resolveGaussianSmoothMs = (config: GaussianSmoothConfig): number => {
-    return GAUSSIAN_SMOOTH_PRESETS[config.mode].value;
-};
 
 // ============================================================
 // TASK 3.5: OSE Config Tracking for "Re-Analyze Needed" Indicator
@@ -603,9 +568,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         try {
                             // Resolve OSE configs to numeric values before passing to engine
                             // This ensures OSE configs always take precedence over any passed options
-                            const resolvedHopSizeMs = resolveHopSizeMs(state.hopSizeConfig);
-                            const resolvedMelBands = resolveMelBands(state.melBandsConfig);
-                            const resolvedGaussianSmoothMs = resolveGaussianSmoothMs(state.gaussianSmoothConfig);
+                            const resolvedHopSizeMs = getHopSizeMs(state.hopSizeConfig);
+                            const resolvedMelBands = getMelBands(state.melBandsConfig);
+                            const resolvedGaussianSmoothMs = getGaussianSmoothMs(state.gaussianSmoothConfig);
 
                             // Merge provided options with defaults, with resolved OSE values taking precedence
                             const mergedOptions: BeatMapGeneratorOptions = {
@@ -716,7 +681,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setHopSizeConfig: (config) => {
                         logger.debug('BeatDetection', 'Updating hop size config', config);
                         // Resolve the numeric value from config using helper function
-                        const hopSizeMs = resolveHopSizeMs(config);
+                        const hopSizeMs = getHopSizeMs(config);
                         set((state) => ({
                             hopSizeConfig: config,
                             generatorOptions: {
@@ -729,7 +694,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setMelBandsConfig: (config) => {
                         logger.debug('BeatDetection', 'Updating mel bands config', config);
                         // Resolve the numeric value from config using helper function
-                        const melBands = resolveMelBands(config);
+                        const melBands = getMelBands(config);
                         set((state) => ({
                             melBandsConfig: config,
                             generatorOptions: {
@@ -742,7 +707,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setGaussianSmoothConfig: (config) => {
                         logger.debug('BeatDetection', 'Updating gaussian smooth config', config);
                         // Resolve the numeric value from config using helper function
-                        const gaussianSmoothMs = resolveGaussianSmoothMs(config);
+                        const gaussianSmoothMs = getGaussianSmoothMs(config);
                         set((state) => ({
                             gaussianSmoothConfig: config,
                             generatorOptions: {

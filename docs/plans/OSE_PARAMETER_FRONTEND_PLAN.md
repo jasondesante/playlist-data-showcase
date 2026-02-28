@@ -27,7 +27,7 @@ Add frontend types to match the backend OSE parameter modes.
   - [x] Add `MelBandsConfig` interface
   - [x] Add `GaussianSmoothMode` type: `'minimal' | 'standard' | 'smooth'`
   - [x] Add `GaussianSmoothConfig` interface
-  - [ ] Re-export types from `playlist-data-engine` when available (deferred until engine exports types)
+  - [x] Re-export types from `playlist-data-engine` when available (completed Feb 2026)
 
 - [x] **1.2 Add OSE Preset Constants**
   - [x] Add `HOP_SIZE_PRESETS` constant object
@@ -268,15 +268,16 @@ Add EQ-style CSS for OSE parameter toggle buttons and custom input.
 
 Wire up the UI to pass OSE parameters to the engine during beat map generation. **No cache key changes** - same behavior as existing sensitivity/filter settings.
 
-- [ ] **5.1 Update `generateBeatMap` to Use OSE Configs**
-  - [ ] Resolve mode configs to numeric values before passing to engine
-  - [ ] Merge resolved values into `BeatMapGeneratorOptions`
-  - [ ] Settings changes require manual re-analyze (same as sensitivity/filter)
+- [x] **5.1 Update `generateBeatMap` to Use OSE Configs**
+  - [x] Resolve mode configs to numeric values before passing to engine
+  - [x] Merge resolved values into `BeatMapGeneratorOptions`
+  - [x] Settings changes require manual re-analyze (same as sensitivity/filter)
 
-- [ ] **5.2 Handle Engine Type Updates**
-  - [ ] Wait for backend to export OSE types from `playlist-data-engine`
-  - [ ] Update frontend imports to use engine types when available
-  - [ ] Remove local type definitions if engine provides them
+- [x] **5.2 Handle Engine Type Updates**
+  - [x] Wait for backend to export OSE types from `playlist-data-engine`
+  - [x] Update frontend imports to use engine types when available
+  - [x] Remove local type definitions if engine provides them
+  - [x] Use engine's helper functions (getHopSizeMs, getMelBands, getGaussianSmoothMs) instead of local resolve functions
 
 **Files**: `src/store/beatDetectionStore.ts`, `src/hooks/useBeatDetection.ts`
 
