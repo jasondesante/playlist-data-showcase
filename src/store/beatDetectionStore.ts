@@ -18,17 +18,17 @@ import {
     BeatMap,
     BeatMapGeneratorOptions,
     BeatMapGenerationProgress,
-    ButtonPressResult,
     DifficultyPreset,
     AccuracyThresholds,
     getAccuracyThresholdsForPreset,
+    ExtendedButtonPressResult,
 } from '@/types';
 import { BeatMapGenerator } from 'playlist-data-engine';
 
 /**
- * TapResult extends ButtonPressResult with additional metadata for history tracking.
+ * TapResult extends ExtendedButtonPressResult with additional metadata for history tracking.
  */
-export interface TapResult extends ButtonPressResult {
+export interface TapResult extends ExtendedButtonPressResult {
     /** Timestamp when the tap occurred (audio context time) */
     tappedAt: number;
     /** Index of the tap in the session */
@@ -162,7 +162,7 @@ interface BeatDetectionActions {
      * Record a tap result in the history.
      * @param result - The button press result from BeatStream.checkButtonPress()
      */
-    recordTap: (result: ButtonPressResult) => void;
+    recordTap: (result: ExtendedButtonPressResult) => void;
 
     /**
      * Clear the tap history.
@@ -855,6 +855,7 @@ export const useTapStatistics = () =>
                 perfect: 0,
                 great: 0,
                 good: 0,
+                ok: 0,
                 miss: 0,
                 averageOffset: 0,
                 standardDeviation: 0,
@@ -863,11 +864,12 @@ export const useTapStatistics = () =>
             };
         }
 
-        // Count by accuracy
-        const counts = {
+        // Count by accuracy (including 'ok')
+        const counts: Record<string, number> = {
             perfect: 0,
             great: 0,
             good: 0,
+            ok: 0,
             miss: 0,
         };
 
@@ -903,7 +905,11 @@ export const useTapStatistics = () =>
 
         return {
             totalTaps: history.length,
-            ...counts,
+            perfect: counts.perfect,
+            great: counts.great,
+            good: counts.good,
+            ok: counts.ok,
+            miss: counts.miss,
             averageOffset: Math.round(avgOffset * 10) / 10, // Round to 1 decimal
             standardDeviation: Math.round(standardDeviation * 10) / 10,
             currentStreak,

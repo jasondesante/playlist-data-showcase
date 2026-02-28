@@ -25,7 +25,7 @@ import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { logger } from '../../utils/logger';
-import type { BeatAccuracy } from 'playlist-data-engine';
+import type { ExtendedBeatAccuracy } from '../../types';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -47,8 +47,8 @@ interface TapDebugInfo {
   beatTime: number;
   /** Calculated offset in ms */
   offsetMs: number;
-  /** Accuracy rating */
-  accuracy: BeatAccuracy;
+  /** Accuracy rating (includes 'ok') */
+  accuracy: ExtendedBeatAccuracy;
 }
 
 interface BeatPracticeViewProps {

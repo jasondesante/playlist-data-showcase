@@ -39,12 +39,13 @@ import type {
     BeatMap,
     Beat,
     BeatEvent,
-    ButtonPressResult,
     BeatStreamOptions,
     AudioSyncState,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
+import { useBeatDetectionStore } from '@/store/beatDetectionStore';
+import type { AccuracyThresholds, ExtendedBeatAccuracy, ExtendedButtonPressResult } from '@/types';
 
 /**
  * Default options for BeatStream.
@@ -126,8 +127,8 @@ export interface UseBeatStreamReturn {
     isActive: boolean;
     /** Whether the stream is paused (active but not animating) */
     isPaused: boolean;
-    /** Check tap accuracy against the nearest beat */
-    checkTap: () => ButtonPressResult | null;
+    /** Check tap accuracy against the nearest beat (includes 'ok' accuracy level) */
+    checkTap: () => ExtendedButtonPressResult | null;
     /** Start the beat stream (call when practice mode begins) */
     startStream: () => void;
     /** Stop the beat stream (call when practice mode ends) */
@@ -487,6 +488,27 @@ export const useBeatStream = (
     }, [currentTime, beatMap?.duration]);
 
     /**
+     * Evaluate accuracy using custom thresholds.
+     * Supports the 'ok' accuracy level which the engine doesn't have.
+     */
+    const evaluateAccuracy = useCallback((
+        absoluteOffset: number,
+        thresholds: AccuracyThresholds
+    ): ExtendedBeatAccuracy => {
+        if (absoluteOffset <= thresholds.perfect) {
+            return 'perfect';
+        } else if (absoluteOffset <= thresholds.great) {
+            return 'great';
+        } else if (absoluteOffset <= thresholds.good) {
+            return 'good';
+        } else if (absoluteOffset <= thresholds.ok) {
+            return 'ok';
+        } else {
+            return 'miss';
+        }
+    }, []);
+
+    /**
      * Check tap accuracy against the nearest beat.
      *
      * CRITICAL FIX: We use the audio player's interpolated time, which matches the
@@ -498,25 +520,48 @@ export const useBeatStream = (
      * compensation (outputLatency + baseLatency) which is meant for Web Audio
      * scheduling, not HTML5 Audio playback. Since playback is via HTML5 Audio,
      * audio.currentTime already represents the actual presentation time.
+     *
+     * ACCURACY EVALUATION: We use custom thresholds from the store to support
+     * difficulty presets and the 'ok' accuracy level. The engine's checkButtonPress
+     * only supports perfect/great/good/miss without 'ok'.
      */
-    const checkTap = useCallback((): ButtonPressResult | null => {
+    const checkTap = useCallback((): ExtendedButtonPressResult | null => {
         if (!beatStreamRef.current || !isActive) {
             return null;
         }
 
+        // Get custom accuracy thresholds from the store
+        const thresholds = useBeatDetectionStore.getState().actions.getAccuracyThresholds();
+
         // Use interpolated audio player time, matching the timeline's time reference
         const tapTime = getInterpolatedTime();
-        const result = beatStreamRef.current.checkButtonPress(tapTime);
+
+        // Use engine's checkButtonPress to find the nearest beat and calculate offset
+        const engineResult = beatStreamRef.current.checkButtonPress(tapTime);
+
+        // Re-evaluate accuracy using our custom thresholds
+        const accuracy = evaluateAccuracy(engineResult.absoluteOffset, thresholds);
+
+        const result: ExtendedButtonPressResult = {
+            ...engineResult,
+            accuracy,
+        };
 
         logger.debug('BeatDetection', 'Tap checked', {
             accuracy: result.accuracy,
             offset: result.offset * 1000, // Convert to ms
-            beatTime: result.matchedBeat.timestamp,
+            beatTime: result.matchedBeat?.timestamp,
             tapTime,
+            thresholds: {
+                perfect: thresholds.perfect * 1000,
+                great: thresholds.great * 1000,
+                good: thresholds.good * 1000,
+                ok: thresholds.ok * 1000,
+            },
         });
 
         return result;
-    }, [isActive, getInterpolatedTime]);
+    }, [isActive, getInterpolatedTime, evaluateAccuracy]);
 
     /**
      * Get beats within a time range for visualization.

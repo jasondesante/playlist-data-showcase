@@ -106,7 +106,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   - [x] Color-code presets (green=easy, yellow=medium, red=hard, purple=custom)
 
 ### Task 3.2: Create CustomThresholdEditor Component
-- [ ] Create `src/components/ui/CustomThresholdEditor.tsx`
+- [x] Create `src/components/ui/CustomThresholdEditor.tsx`
   ```typescript
   interface CustomThresholdEditorProps {
     thresholds: Partial<AccuracyThresholds>;
@@ -115,10 +115,10 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 
   export function CustomThresholdEditor({ thresholds, onChange }: CustomThresholdEditorProps)
   ```
-  - [ ] Render 4 sliders/inputs for perfect, great, good, ok
-  - [ ] Display values in milliseconds (convert from seconds)
-  - [ ] Validate thresholds are in ascending order
-  - [ ] Show visual representation of threshold ranges
+  - [x] Render 4 sliders/inputs for perfect, great, good, ok
+  - [x] Display values in milliseconds (convert from seconds)
+  - [x] Validate thresholds are in ascending order
+  - [x] Show visual representation of threshold ranges
 
 ### Task 3.3: Create DifficultySettingsPanel Component
 - [ ] Create `src/components/ui/DifficultySettingsPanel.tsx`
@@ -147,11 +147,11 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
   - [x] Responsive layout
 
 ### Task 4.2: Add CustomThresholdEditor Styles
-- [ ] Create `src/components/ui/CustomThresholdEditor.css`
-  - [ ] Slider/input styling
-  - [ ] Threshold visualization
-  - [ ] Validation error states
-  - [ ] Responsive layout
+- [x] Create `src/components/ui/CustomThresholdEditor.css`
+  - [x] Slider/input styling
+  - [x] Threshold visualization
+  - [x] Validation error states
+  - [x] Responsive layout
 
 ### Task 4.3: Add DifficultySettingsPanel Styles
 - [ ] Create `src/components/ui/DifficultySettingsPanel.css`

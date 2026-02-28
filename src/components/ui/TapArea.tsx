@@ -15,7 +15,7 @@
  */
 import { useCallback, useRef, useState, useEffect } from 'react';
 import './TapArea.css';
-import type { ButtonPressResult, BeatAccuracy } from '@/types';
+import type { ExtendedButtonPressResult, ExtendedBeatAccuracy } from '@/types';
 
 interface TapAreaProps {
   /** Callback when user taps (click or touch) */
@@ -23,7 +23,7 @@ interface TapAreaProps {
   /** Whether the tap area is active (accepting input) */
   isActive?: boolean;
   /** The last tap result to display (if any) */
-  lastTapResult?: ButtonPressResult | null;
+  lastTapResult?: ExtendedButtonPressResult | null;
   /** Whether to show the feedback animation */
   showFeedback?: boolean;
   /** Duration of feedback display in ms (default: 500) */
@@ -39,7 +39,7 @@ interface TapAreaProps {
 /**
  * Get the CSS color variable for an accuracy rating.
  */
-function getAccuracyColorVar(accuracy: BeatAccuracy): string {
+function getAccuracyColorVar(accuracy: ExtendedBeatAccuracy): string {
   switch (accuracy) {
     case 'perfect':
       return 'var(--tap-perfect)';
@@ -47,6 +47,8 @@ function getAccuracyColorVar(accuracy: BeatAccuracy): string {
       return 'var(--tap-great)';
     case 'good':
       return 'var(--tap-good)';
+    case 'ok':
+      return 'var(--tap-ok)';
     case 'miss':
     default:
       return 'var(--tap-miss)';
@@ -56,7 +58,7 @@ function getAccuracyColorVar(accuracy: BeatAccuracy): string {
 /**
  * Get the display text for an accuracy rating.
  */
-function getAccuracyText(accuracy: BeatAccuracy): string {
+function getAccuracyText(accuracy: ExtendedBeatAccuracy): string {
   return accuracy.toUpperCase();
 }
 
@@ -231,15 +233,15 @@ export function useTapFeedback(
   feedbackDuration: number = 500
 ): {
   showFeedback: boolean;
-  lastTapResult: ButtonPressResult | null;
-  showTapFeedback: (result: ButtonPressResult) => void;
+  lastTapResult: ExtendedButtonPressResult | null;
+  showTapFeedback: (result: ExtendedButtonPressResult) => void;
   hideTapFeedback: () => void;
 } {
   const [showFeedback, setShowFeedback] = useState(false);
-  const [lastTapResult, setLastTapResult] = useState<ButtonPressResult | null>(null);
+  const [lastTapResult, setLastTapResult] = useState<ExtendedButtonPressResult | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
-  const showTapFeedback = useCallback((result: ButtonPressResult) => {
+  const showTapFeedback = useCallback((result: ExtendedButtonPressResult) => {
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);

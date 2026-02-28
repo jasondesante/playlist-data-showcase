@@ -239,6 +239,33 @@ export interface XPFormulaPreset {
 // ============================================================
 
 /**
+ * Extended accuracy levels for button press detection.
+ *
+ * Extends the engine's BeatAccuracy with an 'ok' level for a more forgiving
+ * difficulty curve. The engine only supports 'perfect' | 'great' | 'good' | 'miss'.
+ */
+export type ExtendedBeatAccuracy = 'perfect' | 'great' | 'good' | 'ok' | 'miss';
+
+/**
+ * Extended button press result that includes 'ok' accuracy level.
+ *
+ * Extends the engine's ButtonPressResult to use ExtendedBeatAccuracy.
+ */
+export interface ExtendedButtonPressResult {
+    /** Accuracy level of the press (includes 'ok') */
+    accuracy: ExtendedBeatAccuracy;
+
+    /** Time difference from nearest beat in seconds (negative = early, positive = late) */
+    offset: number;
+
+    /** The beat that was matched (nearest beat to the press) */
+    matchedBeat: import('playlist-data-engine').Beat;
+
+    /** Absolute value of offset for easier comparison */
+    absoluteOffset: number;
+}
+
+/**
  * Accuracy thresholds for beat tap evaluation (in seconds).
  *
  * These thresholds define the time windows for each accuracy level.
