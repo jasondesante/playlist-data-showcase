@@ -6,10 +6,10 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 
 ## Prerequisites
 
-- [ ] Engine plan completed: `playlist-data-engine/docs/plans/ACCURACY_THRESHOLDS_PLAN.md`
-- [ ] Engine updated with new types: `AccuracyThresholds`, `DifficultyPreset`
-- [ ] Engine updated with new constants: `EASY/MEDIUM/HARD_ACCURACY_THRESHOLDS`
-- [ ] Engine updated with `getAccuracyThresholdsForPreset()` function
+- [x] ~~Engine plan completed: `playlist-data-engine/docs/plans/ACCURACY_THRESHOLDS_PLAN.md`~~ **Note: Types defined locally in frontend since engine not yet updated**
+- [x] ~~Engine updated with new types: `AccuracyThresholds`, `DifficultyPreset`~~ **Defined locally in `src/types/index.ts`**
+- [x] ~~Engine updated with new constants: `EASY/MEDIUM/HARD_ACCURACY_THRESHOLDS`~~ **Defined locally in `src/types/index.ts`**
+- [x] ~~Engine updated with `getAccuracyThresholdsForPreset()` function~~ **Defined locally in `src/types/index.ts`**
 - [ ] Engine `BeatStreamOptions` supports `difficultyPreset` and `customThresholds`
 
 ---
@@ -17,7 +17,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
 ## Phase 1: Store Updates
 
 ### Task 1.1: Add Difficulty Settings to beatDetectionStore
-- [ ] Add new state slice in `src/store/beatDetectionStore.ts`
+- [x] Add new state slice in `src/store/beatDetectionStore.ts`
   ```typescript
   interface DifficultySettings {
     /** Current difficulty preset */
@@ -32,6 +32,7 @@ Add UI controls to the playlist-data-showcase frontend to allow users to select 
     difficultySettings: DifficultySettings;
   }
   ```
+**Completed:** Added `DifficultySettings` interface, state, and selectors to beatDetectionStore.
 
 ### Task 1.2: Add Difficulty Actions
 - [ ] Add actions for managing difficulty in `src/store/beatDetectionStore.ts`

@@ -19,6 +19,9 @@ import {
     BeatMapGeneratorOptions,
     BeatMapGenerationProgress,
     ButtonPressResult,
+    DifficultyPreset,
+    AccuracyThresholds,
+    getAccuracyThresholdsForPreset,
 } from '@/types';
 import { BeatMapGenerator } from 'playlist-data-engine';
 
@@ -64,6 +67,27 @@ const MAX_CACHED_BEAT_MAPS = 20;
  */
 const EVICTION_COUNT = 5;
 
+/**
+ * Difficulty settings for beat tap evaluation.
+ *
+ * Controls the timing thresholds used to rate tap accuracy.
+ */
+export interface DifficultySettings {
+    /** Current difficulty preset */
+    preset: DifficultyPreset;
+    /** Custom thresholds (used when preset is 'custom') */
+    customThresholds: Partial<AccuracyThresholds>;
+}
+
+/**
+ * Default difficulty settings.
+ * Starts with 'medium' as a reasonable default for most players.
+ */
+const DEFAULT_DIFFICULTY_SETTINGS: DifficultySettings = {
+    preset: 'medium',
+    customThresholds: {},
+};
+
 interface BeatDetectionState {
     /** The currently loaded beat map (or null if none) */
     beatMap: BeatMap | null;
@@ -85,6 +109,8 @@ interface BeatDetectionState {
     error: string | null;
     /** Storage error message (e.g., quota exceeded) */
     storageError: string | null;
+    /** Difficulty settings for beat tap evaluation */
+    difficultySettings: DifficultySettings;
 }
 
 interface BeatDetectionActions {
@@ -196,6 +222,31 @@ interface BeatDetectionActions {
      * @param count - Number of old caches to remove (default: 1)
      */
     clearOldestCachedBeatMaps: (count?: number) => void;
+
+    /**
+     * Set the difficulty preset for beat tap evaluation.
+     * @param preset - The difficulty preset to use
+     */
+    setDifficultyPreset: (preset: DifficultyPreset) => void;
+
+    /**
+     * Set a custom threshold value for a specific accuracy level.
+     * Only used when preset is 'custom'.
+     * @param key - The accuracy level to set (perfect, great, good, ok)
+     * @param value - The threshold value in seconds
+     */
+    setCustomThreshold: (key: keyof AccuracyThresholds, value: number) => void;
+
+    /**
+     * Reset difficulty settings to defaults.
+     */
+    resetDifficultySettings: () => void;
+
+    /**
+     * Get the current effective accuracy thresholds.
+     * Returns the thresholds for the current preset, or custom thresholds if preset is 'custom'.
+     */
+    getAccuracyThresholds: () => AccuracyThresholds;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -240,6 +291,7 @@ const createInitialState = (): BeatDetectionState => ({
     tapHistory: [],
     error: null,
     storageError: null,
+    difficultySettings: { ...DEFAULT_DIFFICULTY_SETTINGS },
 });
 
 /**
@@ -609,6 +661,43 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             cacheOrder: state.cacheOrder.slice(keysToRemove.length),
                         });
                     },
+
+                    setDifficultyPreset: (preset) => {
+                        logger.info('BeatDetection', 'Setting difficulty preset', { preset });
+                        set((state) => ({
+                            difficultySettings: {
+                                ...state.difficultySettings,
+                                preset,
+                            },
+                        }));
+                    },
+
+                    setCustomThreshold: (key, value) => {
+                        logger.debug('BeatDetection', 'Setting custom threshold', { key, value });
+                        set((state) => ({
+                            difficultySettings: {
+                                ...state.difficultySettings,
+                                preset: 'custom',
+                                customThresholds: {
+                                    ...state.difficultySettings.customThresholds,
+                                    [key]: value,
+                                },
+                            },
+                        }));
+                    },
+
+                    resetDifficultySettings: () => {
+                        logger.info('BeatDetection', 'Resetting difficulty settings');
+                        set({ difficultySettings: { ...DEFAULT_DIFFICULTY_SETTINGS } });
+                    },
+
+                    getAccuracyThresholds: () => {
+                        const { difficultySettings } = get();
+                        return getAccuracyThresholdsForPreset(
+                            difficultySettings.preset,
+                            difficultySettings.customThresholds
+                        );
+                    },
                 },
             };
         },
@@ -620,11 +709,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setStorageErrorFn(error);
                 }
             }),
-            // Only persist cached beat maps, cache order, and generator options
+            // Only persist cached beat maps, cache order, generator options, and difficulty settings
             partialize: (state) => ({
                 cachedBeatMaps: state.cachedBeatMaps,
                 cacheOrder: state.cacheOrder,
                 generatorOptions: state.generatorOptions,
+                difficultySettings: state.difficultySettings,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
@@ -660,11 +750,22 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     });
                 }
 
+                // Handle difficulty settings migration
+                let difficultySettings = persisted?.difficultySettings ?? currentState.difficultySettings;
+                // If difficultySettings exists but is missing fields, merge with defaults
+                if (persisted?.difficultySettings) {
+                    difficultySettings = {
+                        ...DEFAULT_DIFFICULTY_SETTINGS,
+                        ...persisted.difficultySettings,
+                    };
+                }
+
                 return {
                     ...currentState,
                     cachedBeatMaps: persisted?.cachedBeatMaps ?? currentState.cachedBeatMaps,
                     cacheOrder: cacheOrder ?? currentState.cacheOrder,
                     generatorOptions,
+                    difficultySettings,
                 };
             },
             // Callback after rehydration
@@ -808,4 +909,30 @@ export const useTapStatistics = () =>
             currentStreak,
             bestStreak,
         };
+    }));
+
+/**
+ * Selector to get difficulty settings.
+ * Uses useShallow to prevent infinite loops from new object references.
+ */
+export const useDifficultySettings = () =>
+    useBeatDetectionStore(useShallow((state) => state.difficultySettings));
+
+/**
+ * Selector to get the current difficulty preset.
+ */
+export const useDifficultyPreset = () =>
+    useBeatDetectionStore((state) => state.difficultySettings.preset);
+
+/**
+ * Selector to get the current effective accuracy thresholds.
+ * Returns computed thresholds based on preset and custom settings.
+ */
+export const useAccuracyThresholds = () =>
+    useBeatDetectionStore(useShallow((state) => {
+        const { difficultySettings } = state;
+        return getAccuracyThresholdsForPreset(
+            difficultySettings.preset,
+            difficultySettings.customThresholds
+        );
     }));

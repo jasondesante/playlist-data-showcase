@@ -233,3 +233,137 @@ export interface XPFormulaPreset {
     /** Color used for this preset in the chart (CSS color value) */
     chartColor: string;
 }
+
+// ============================================================
+// Beat Detection Difficulty Types
+// ============================================================
+
+/**
+ * Accuracy thresholds for beat tap evaluation (in seconds).
+ *
+ * These thresholds define the time windows for each accuracy level.
+ * A tap within `perfect` seconds of a beat is rated "perfect", etc.
+ *
+ * Values must be in ascending order: perfect < great < good < ok
+ */
+export interface AccuracyThresholds {
+    /** Perfect timing window (seconds) - typically ±10-75ms depending on difficulty */
+    perfect: number;
+    /** Great timing window (seconds) - typically ±25-125ms depending on difficulty */
+    great: number;
+    /** Good timing window (seconds) - typically ±50-175ms depending on difficulty */
+    good: number;
+    /** OK timing window (seconds) - typically ±100-250ms depending on difficulty */
+    ok: number;
+}
+
+/**
+ * Difficulty preset identifiers for beat tap evaluation.
+ *
+ * - 'easy': Forgiving timing for casual players (±75ms perfect)
+ * - 'medium': Balanced difficulty (±45ms perfect)
+ * - 'hard': Strict timing for rhythm game veterans (±10ms perfect)
+ * - 'custom': User-defined custom thresholds
+ */
+export type DifficultyPreset = 'easy' | 'medium' | 'hard' | 'custom';
+
+/**
+ * Easy difficulty thresholds - forgiving timing for casual players.
+ * Perfect window: ±75ms
+ */
+export const EASY_ACCURACY_THRESHOLDS: AccuracyThresholds = {
+    perfect: 0.075,  // ±75ms
+    great: 0.125,    // ±125ms
+    good: 0.175,     // ±175ms
+    ok: 0.250,       // ±250ms
+};
+
+/**
+ * Medium difficulty thresholds - balanced timing.
+ * Perfect window: ±45ms
+ */
+export const MEDIUM_ACCURACY_THRESHOLDS: AccuracyThresholds = {
+    perfect: 0.045,  // ±45ms
+    great: 0.090,    // ±90ms
+    good: 0.135,     // ±135ms
+    ok: 0.200,       // ±200ms
+};
+
+/**
+ * Hard difficulty thresholds - strict timing for veterans.
+ * Perfect window: ±10ms
+ */
+export const HARD_ACCURACY_THRESHOLDS: AccuracyThresholds = {
+    perfect: 0.010,  // ±10ms
+    great: 0.025,    // ±25ms
+    good: 0.050,     // ±50ms
+    ok: 0.100,       // ±100ms
+};
+
+/**
+ * Map of preset names to their threshold values.
+ */
+export const DIFFICULTY_PRESETS: Record<Exclude<DifficultyPreset, 'custom'>, AccuracyThresholds> = {
+    easy: EASY_ACCURACY_THRESHOLDS,
+    medium: MEDIUM_ACCURACY_THRESHOLDS,
+    hard: HARD_ACCURACY_THRESHOLDS,
+};
+
+/**
+ * Get accuracy thresholds for a given difficulty preset.
+ *
+ * @param preset - The difficulty preset ('easy', 'medium', 'hard', or 'custom')
+ * @param customThresholds - Custom thresholds to use when preset is 'custom'
+ * @returns The accuracy thresholds for the given preset
+ */
+export function getAccuracyThresholdsForPreset(
+    preset: DifficultyPreset,
+    customThresholds?: Partial<AccuracyThresholds>
+): AccuracyThresholds {
+    if (preset === 'custom') {
+        // Merge custom thresholds with hard preset as base
+        return {
+            ...HARD_ACCURACY_THRESHOLDS,
+            ...customThresholds,
+        };
+    }
+    return DIFFICULTY_PRESETS[preset];
+}
+
+/**
+ * Validate accuracy thresholds.
+ *
+ * @param thresholds - Partial thresholds to validate
+ * @returns Object with valid flag and array of error messages
+ */
+export function validateThresholds(thresholds: Partial<AccuracyThresholds>): {
+    valid: boolean;
+    errors: string[];
+} {
+    const errors: string[] = [];
+    const keys: (keyof AccuracyThresholds)[] = ['perfect', 'great', 'good', 'ok'];
+
+    // Check that all provided values are positive
+    for (const key of keys) {
+        if (thresholds[key] !== undefined && thresholds[key]! < 0) {
+            errors.push(`${key} must be positive, got ${thresholds[key]}`);
+        }
+    }
+
+    // Check ascending order for provided values
+    const providedKeys = keys.filter(k => thresholds[k] !== undefined);
+    for (let i = 0; i < providedKeys.length - 1; i++) {
+        const current = providedKeys[i];
+        const next = providedKeys[i + 1];
+        if (thresholds[current]! >= thresholds[next]!) {
+            errors.push(
+                `${next} (${thresholds[next]}) must be greater than ${current} (${thresholds[current]})`
+            );
+        }
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+}
