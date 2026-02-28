@@ -332,9 +332,9 @@ Ensure everything works correctly and polish the UX.
 
 ## Questions/Unknowns
 
-- **Default hopSizeMs change**: The backend plan changes default from 10ms to 4ms. Should we show a migration notice to users who have cached beat maps with 10ms?
-- **Custom value step**: Should custom hop size input allow decimals or only integers? (Current plan: integers only)
-- **Engine type availability**: When will `playlist-data-engine` export the OSE types? If not ready, we'll use local type definitions temporarily.
+- ~~**Default hopSizeMs change**: The backend plan changes default from 10ms to 4ms. Should we show a migration notice to users who have cached beat maps with 10ms?~~ **RESOLVED**: No migration notice needed. The engine now uses 4ms as default, and the frontend store's `merge` function automatically infers the mode from cached raw values (line 958-975 in `beatDetectionStore.ts`). Users with old cached beat maps will have their settings migrated to the appropriate mode on next load.
+- **Custom value step**: Should custom hop size input allow decimals or only integers? (Current plan: integers only) **RESOLVED**: Integers only - implemented with `step="1"` on the number input.
+- **Engine type availability**: When will `playlist-data-engine` export the OSE types? If not ready, we'll use local type definitions temporarily. **RESOLVED**: Engine exports OSE types since Feb 2026. Frontend re-exports from `playlist-data-engine`.
 
 ---
 

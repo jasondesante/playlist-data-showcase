@@ -53,6 +53,7 @@
  * - Responsive design for mobile, tablet, and desktop viewports
  */
 import { Info, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore, useOseSettingsChanged } from '../../store/beatDetectionStore';
 import {
@@ -722,7 +723,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           <div className="beat-detection-ose-section">
             <div className="beat-detection-settings-section">
               <div className="beat-detection-settings-header">
-                <span className="beat-detection-settings-label">Hop Size</span>
+                <div className="beat-detection-settings-label-with-tooltip">
+                  <span className="beat-detection-settings-label">Hop Size</span>
+                  <Tooltip content="Analysis precision: how frequently the audio is sampled. Smaller = more precise but slower; larger = faster but may miss subtle beats." />
+                </div>
                 <span className={`beat-detection-settings-value ${!isHopSizeDefault ? 'beat-detection-settings-value--modified' : ''}`}>
                   {getHopSizeDisplayValue()}
                 </span>
@@ -825,7 +829,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
              * ============================================================ */}
             <div className="beat-detection-settings-section">
               <div className="beat-detection-settings-header">
-                <span className="beat-detection-settings-label">Mel Bands</span>
+                <div className="beat-detection-settings-label-with-tooltip">
+                  <span className="beat-detection-settings-label">Mel Bands</span>
+                  <Tooltip content="Frequency resolution: how the audio spectrum is divided. More bands = finer detail for complex mixes; fewer = faster processing." />
+                </div>
                 <span className={`beat-detection-settings-value ${!isMelBandsDefault ? 'beat-detection-settings-value--modified' : ''}`}>
                   {getMelBandsDisplayValue()}
                 </span>
@@ -876,7 +883,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
              * ============================================================ */}
             <div className="beat-detection-settings-section">
               <div className="beat-detection-settings-header">
-                <span className="beat-detection-settings-label">Smoothing</span>
+                <div className="beat-detection-settings-label-with-tooltip">
+                  <span className="beat-detection-settings-label">Smoothing</span>
+                  <Tooltip content="Peak clarity: temporal smoothing applied to the onset envelope. Less = sharper peaks (may have false positives); more = cleaner peaks (may miss fast transients)." />
+                </div>
                 <span className={`beat-detection-settings-value ${!isGaussianSmoothDefault ? 'beat-detection-settings-value--modified' : ''}`}>
                   {getGaussianSmoothDisplayValue()}
                 </span>

@@ -24,6 +24,13 @@
   align-items: center;
 }
 
+/* Container for label + tooltip icon */
+.beat-detection-settings-label-with-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
 .beat-detection-settings-label {
   font-size: 0.5625rem;
   font-weight: 600;
