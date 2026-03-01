@@ -59,8 +59,8 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **1.1 Import Engine Types**
-  - [ ] Update [src/types/index.ts](src/types/index.ts):
+- [x] **1.1 Import Engine Types**
+  - [x] Update [src/types/index.ts](src/types/index.ts):
     ```typescript
     // Re-export from engine
     export type {
@@ -77,6 +77,8 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     // Re-export defaults
     export { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from 'playlist-data-engine';
     ```
+  - [x] Also exported BeatInterpolator class and JSON serialization types (BeatWithSourceJSON, InterpolatedBeatMapJSON, etc.)
+  - [x] Updated engine's index.ts to export the interpolation types first
 
 - [ ] **1.2 Create Frontend-Specific Types**
   - [ ] Add `BeatStreamMode` type:

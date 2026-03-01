@@ -449,3 +449,25 @@ export const GAUSSIAN_SMOOTH_PRESETS = {
     standard: { value: 20, label: 'Standard', description: 'Balanced (default)' },
     smooth: { value: 40, label: 'Smooth', description: 'Cleaner peaks' },
 } as const;
+
+// ============================================================
+// Beat Interpolation Types
+// ============================================================
+
+// Re-export beat interpolation types from the engine
+export type {
+    BeatSource,
+    BeatWithSource,
+    InterpolationAlgorithm,
+    BeatInterpolationOptions,
+    InterpolatedBeatMap,
+    QuarterNoteDetection,
+    GapAnalysis,
+    InterpolationMetadata,
+} from 'playlist-data-engine';
+
+// Re-export beat interpolation constants
+export { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from 'playlist-data-engine';
+
+// Re-export the BeatInterpolator class
+export { BeatInterpolator } from 'playlist-data-engine';
