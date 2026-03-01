@@ -1667,6 +1667,17 @@ export interface InterpolationStatistics {
         /** Weight for pace confidence in confidence calculation (0-1) */
         paceConfidence: number;
     };
+    /** Quarter note detection details (Task 4.3) */
+    quarterNoteDetection: {
+        /** Method used for detection: 'histogram' | 'kde' | 'tempo-detector-fallback' */
+        method: 'histogram' | 'kde' | 'tempo-detector-fallback';
+        /** Number of dense sections that contributed to the detection */
+        denseSectionCount: number;
+        /** Total beats from dense sections used in the detection */
+        denseSectionBeats: number;
+        /** Other significant peaks (e.g., half-note = 2× quarter note), as BPM values */
+        secondaryPeaks: number[];
+    };
 }
 
 /**
@@ -1692,8 +1703,13 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
         }
 
         const { interpolationMetadata, quarterNoteBpm, quarterNoteConfidence } = interpolatedBeatMap;
-        const { gapAnalysis } = interpolationMetadata;
+        const { gapAnalysis, quarterNoteDetection } = interpolationMetadata;
         const avgConfidence = interpolationMetadata.avgInterpolatedConfidence;
+
+        // Convert secondary peaks from interval seconds to BPM
+        const secondaryPeaksBpm = quarterNoteDetection.secondaryPeaks
+            .map((interval) => (interval > 0 ? Math.round(60 / interval) : 0))
+            .filter((bpm) => bpm > 0);
 
         return {
             detectedBeatCount: interpolationMetadata.detectedBeatCount,
@@ -1710,6 +1726,12 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
                 gridAlignment: interpolationOptions.gridAlignmentWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridAlignmentWeight,
                 anchorConfidence: interpolationOptions.anchorConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.anchorConfidenceWeight,
                 paceConfidence: interpolationOptions.paceConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.paceConfidenceWeight,
+            },
+            quarterNoteDetection: {
+                method: quarterNoteDetection.method,
+                denseSectionCount: quarterNoteDetection.denseSectionCount,
+                denseSectionBeats: quarterNoteDetection.denseSectionBeats,
+                secondaryPeaks: secondaryPeaksBpm,
             },
         };
     }));

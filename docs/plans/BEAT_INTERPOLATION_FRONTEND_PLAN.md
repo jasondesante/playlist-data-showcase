@@ -229,10 +229,10 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     - Red: Low confidence (<0.5)
   - [x] Show breakdown: grid alignment / anchor confidence / pace confidence
 
-- [ ] **4.3 Add Quarter Note Detection Info**
-  - [ ] Show detection method (histogram / kde / tempo-detector-fallback)
-  - [ ] Show dense section count and beats
-  - [ ] Show secondary peaks detected (half-note, etc.)
+- [x] **4.3 Add Quarter Note Detection Info**
+  - [x] Show detection method (histogram / kde / tempo-detector-fallback)
+  - [x] Show dense section count and beats
+  - [x] Show secondary peaks detected (half-note, etc.)
 
 ---
 

@@ -375,6 +375,37 @@ export function BeatMapSummary({
             </span>
           </div>
 
+          {/* Quarter Note Detection Info (Task 4.3) */}
+          <div className="beat-map-quarter-note-section">
+            <div className="beat-map-quarter-note-header">
+              <span className="beat-map-quarter-note-label">Quarter Note Detection</span>
+              <span className={`beat-map-quarter-note-method beat-map-quarter-note-method--${interpolationStats.quarterNoteDetection.method}`}>
+                {interpolationStats.quarterNoteDetection.method === 'histogram' && 'Histogram'}
+                {interpolationStats.quarterNoteDetection.method === 'kde' && 'KDE'}
+                {interpolationStats.quarterNoteDetection.method === 'tempo-detector-fallback' && 'Fallback'}
+              </span>
+            </div>
+            <div className="beat-map-quarter-note-details">
+              <div className="beat-map-quarter-note-detail">
+                <span className="beat-map-quarter-note-detail-label">Dense Sections:</span>
+                <span className="beat-map-quarter-note-detail-value">
+                  {interpolationStats.quarterNoteDetection.denseSectionCount}
+                  <span className="beat-map-quarter-note-detail-sub">
+                    ({interpolationStats.quarterNoteDetection.denseSectionBeats} beats)
+                  </span>
+                </span>
+              </div>
+              {interpolationStats.quarterNoteDetection.secondaryPeaks.length > 0 && (
+                <div className="beat-map-quarter-note-detail">
+                  <span className="beat-map-quarter-note-detail-label">Secondary Peaks:</span>
+                  <span className="beat-map-quarter-note-detail-value">
+                    {interpolationStats.quarterNoteDetection.secondaryPeaks.map((bpm) => `${bpm} BPM`).join(', ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Confidence Indicator (Task 4.2) */}
           <div className="beat-map-confidence-section">
             <div className="beat-map-confidence-header">
