@@ -111,7 +111,19 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
   const isPlaying = playbackState === 'playing';
 
+  // Beat stream mode state (Task 6.1)
+  const beatStreamMode = useBeatStreamMode();
+  const interpolatedBeatMap = useInterpolatedBeatMap();
+
+  // Determine which beat map to use based on mode
+  // When mode is 'merged' and we have an interpolated beat map, use it
+  // Otherwise, fall back to the regular beat map
+  const activeBeatMap = (beatStreamMode === 'merged' && interpolatedBeatMap)
+    ? interpolatedBeatMap
+    : beatMap;
+
   // Beat stream hook for real-time sync
+  // Pass the appropriate beat map and mode (Task 6.2)
   const {
     currentBpm,
     lastBeatEvent,
@@ -119,7 +131,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     isActive: streamIsActive,
     isPaused: streamIsPaused,
     seekStream,
-  } = useBeatStream(beatMap, undefined, true);
+  } = useBeatStream(activeBeatMap, undefined, true, beatStreamMode);
 
   // Tap feedback hook for managing visual feedback
   const { showFeedback, lastTapResult, showTapFeedback, hideTapFeedback } = useTapFeedback(500);
@@ -156,9 +168,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const difficultyPreset = useDifficultyPreset();
   const accuracyThresholds = useAccuracyThresholds();
 
-  // Beat stream mode state (Task 6.1)
-  const beatStreamMode = useBeatStreamMode();
-  const interpolatedBeatMap = useInterpolatedBeatMap();
+  // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
 
   /**

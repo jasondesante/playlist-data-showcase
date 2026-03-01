@@ -41,11 +41,12 @@ import type {
     BeatEvent,
     BeatStreamOptions,
     AudioSyncState,
+    InterpolatedBeatMap,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useBeatDetectionStore } from '@/store/beatDetectionStore';
-import type { AccuracyThresholds, ExtendedBeatAccuracy, ExtendedButtonPressResult } from '@/types';
+import type { AccuracyThresholds, ExtendedBeatAccuracy, ExtendedButtonPressResult, BeatStreamMode } from '@/types';
 
 /**
  * Default options for BeatStream.
@@ -151,12 +152,23 @@ export interface UseBeatStreamReturn {
  * Props for the useBeatStream hook.
  */
 export interface UseBeatStreamProps {
-    /** The beat map to stream beats from */
-    beatMap: BeatMap | null;
+    /** The beat map to stream beats from (can be BeatMap or InterpolatedBeatMap) */
+    beatMap: BeatMap | InterpolatedBeatMap | null;
     /** Optional override for stream options */
     options?: Partial<BeatStreamOptions>;
     /** Whether practice mode is active (controls automatic start/stop) */
     practiceModeActive?: boolean;
+    /**
+     * Which beat stream mode to use:
+     * - 'detected': Use only originally detected beats (original behavior)
+     * - 'merged': Use interpolated beats with detected beats as anchors (fills gaps)
+     *
+     * When 'merged' and beatMap is an InterpolatedBeatMap, the hook will pass
+     * useInterpolatedBeats: true to the engine's BeatStream.
+     *
+     * @default 'detected'
+     */
+    beatStreamMode?: BeatStreamMode;
 }
 
 /**
@@ -172,16 +184,20 @@ export interface UseBeatStreamProps {
  * - Sync with audio player's current time
  * - Tap accuracy checking
  * - Seek handling
+ * - Support for both BeatMap and InterpolatedBeatMap
+ * - Beat stream mode selection (detected vs merged)
  *
- * @param beatMap - The beat map to stream beats from
+ * @param beatMap - The beat map to stream beats from (BeatMap or InterpolatedBeatMap)
  * @param options - Optional override for stream options
  * @param practiceModeActive - Whether practice mode is active
+ * @param beatStreamMode - Which beat stream to use ('detected' or 'merged')
  * @returns Hook return object with stream state and methods
  */
 export const useBeatStream = (
-    beatMap: BeatMap | null,
+    beatMap: BeatMap | InterpolatedBeatMap | null,
     options?: Partial<BeatStreamOptions>,
-    practiceModeActive: boolean = false
+    practiceModeActive: boolean = false,
+    beatStreamMode: BeatStreamMode = 'detected'
 ): UseBeatStreamReturn => {
     // State for reactive updates
     const [currentBpm, setCurrentBpm] = useState(0);
@@ -248,6 +264,11 @@ export const useBeatStream = (
 
     /**
      * Initialize the BeatStream with the beat map.
+     *
+     * Handles both BeatMap and InterpolatedBeatMap:
+     * - For BeatMap: uses beats array directly
+     * - For InterpolatedBeatMap with beatStreamMode='merged': uses mergedBeats
+     * - For InterpolatedBeatMap with beatStreamMode='detected': uses detectedBeats
      */
     const initializeStream = useCallback(() => {
         if (!beatMap) {
@@ -266,24 +287,45 @@ export const useBeatStream = (
             beatStreamRef.current = null;
         }
 
-        // Merge options with defaults
+        // Check if this is an InterpolatedBeatMap
+        const isInterpolated = 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
+
+        // Determine if we should use interpolated beats
+        // Only use interpolated beats if:
+        // 1. The beatMap is an InterpolatedBeatMap
+        // 2. beatStreamMode is 'merged'
+        const useInterpolatedBeats = isInterpolated && beatStreamMode === 'merged';
+
+        // Merge options with defaults, including useInterpolatedBeats
         const streamOptions: BeatStreamOptions = {
             ...DEFAULT_BEAT_STREAM_OPTIONS,
             ...options,
+            useInterpolatedBeats,
         };
 
         try {
             beatStreamRef.current = new BeatStream(beatMap, audioContext, streamOptions);
+
+            // Log beat count based on map type
+            const beatCount = isInterpolated
+                ? (useInterpolatedBeats
+                    ? (beatMap as InterpolatedBeatMap).mergedBeats.length
+                    : (beatMap as InterpolatedBeatMap).detectedBeats.length)
+                : (beatMap as BeatMap).beats.length;
+
             logger.info('BeatDetection', 'BeatStream initialized', {
-                beatCount: beatMap.beats.length,
+                beatCount,
                 anticipationTime: streamOptions.anticipationTime,
+                isInterpolated,
+                beatStreamMode,
+                useInterpolatedBeats,
             });
             return true;
         } catch (error) {
             logger.error('BeatDetection', 'Failed to create BeatStream', { error });
             return false;
         }
-    }, [beatMap, options, getAudioContext]);
+    }, [beatMap, options, getAudioContext, beatStreamMode]);
 
     /**
      * Subscribe to beat events.
@@ -566,11 +608,27 @@ export const useBeatStream = (
     /**
      * Get beats within a time range for visualization.
      * Uses binary search for O(log n) performance with long tracks.
+     *
+     * Note: This always uses the beat map's beats array directly, not the
+     * interpolated beats. For interpolated beats, use the BeatStream's
+     * getUpcomingBeats method instead.
      */
     const getBeatsInRange = useCallback((startTime: number, endTime: number): Beat[] => {
-        if (!beatMap || beatMap.beats.length === 0) return [];
+        if (!beatMap) return [];
 
-        const beats = beatMap.beats;
+        // Get the appropriate beats array based on map type and mode
+        const isInterpolated = 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
+        let beats: Beat[];
+        if (isInterpolated) {
+            const interpolatedMap = beatMap as InterpolatedBeatMap;
+            beats = beatStreamMode === 'merged'
+                ? interpolatedMap.mergedBeats
+                : interpolatedMap.detectedBeats;
+        } else {
+            beats = (beatMap as BeatMap).beats;
+        }
+
+        if (beats.length === 0) return [];
 
         // Use binary search to find the range bounds
         const startIndex = findFirstBeatAtOrAfter(beats, startTime);
@@ -583,7 +641,7 @@ export const useBeatStream = (
 
         // Return the slice of beats in the range
         return beats.slice(startIndex, endIndex + 1);
-    }, [beatMap]);
+    }, [beatMap, beatStreamMode]);
 
     /**
      * Get the beat at a specific time.
@@ -680,7 +738,8 @@ export const useBeatStream = (
     }, [stopStream]);
 
     /**
-     * Initialize stream when beat map changes.
+     * Initialize stream when beat map or beat stream mode changes.
+     * Re-initializes if the user switches between detected and merged modes.
      */
     useEffect(() => {
         if (beatMap && practiceModeActive) {
@@ -693,7 +752,7 @@ export const useBeatStream = (
                 beatStreamRef.current = null;
             }
         };
-    }, [beatMap, practiceModeActive, initializeStream]);
+    }, [beatMap, practiceModeActive, beatStreamMode, initializeStream]);
 
     return {
         currentBpm,

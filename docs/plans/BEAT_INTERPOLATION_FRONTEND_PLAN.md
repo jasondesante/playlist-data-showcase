@@ -287,11 +287,12 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Added CSS styles for stream mode toggle in BeatPracticeView.css
     - [x] Toggle is disabled when interpolated beat map is not available
 
-- [ ] **6.2 Update useBeatStream Hook**
-  - [ ] Modify [src/hooks/useBeatStream.ts](src/hooks/useBeatStream.ts)
-  - [ ] Accept `InterpolatedBeatMap` as alternative to `BeatMap`
-  - [ ] Use `detectedBeats` or `mergedBeats` based on `beatStreamMode`
-  - [ ] Pass `source` field through to beat events
+- [x] **6.2 Update useBeatStream Hook**
+  - [x] Modify [src/hooks/useBeatStream.ts](src/hooks/useBeatStream.ts)
+  - [x] Accept `InterpolatedBeatMap` as alternative to `BeatMap`
+  - [x] Use `detectedBeats` or `mergedBeats` based on `beatStreamMode`
+  - [x] Pass `source` field through to beat events (via BeatWithSource type from engine)
+  - [x] Updated BeatPracticeView to pass activeBeatMap and beatStreamMode to the hook
 
 - [ ] **6.3 Update Beat Event Metadata**
   - [ ] Extend `BeatEvent` to include `source: 'detected' | 'interpolated'`
