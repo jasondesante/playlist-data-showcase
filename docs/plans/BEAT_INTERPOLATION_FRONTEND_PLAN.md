@@ -212,9 +212,9 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **4.1 Extend BeatMapSummary Component**
-  - [ ] Update [src/components/ui/BeatMapSummary.tsx](src/components/ui/BeatMapSummary.tsx)
-  - [ ] Add interpolation statistics section:
+- [x] **4.1 Extend BeatMapSummary Component**
+  - [x] Update [src/components/ui/BeatMapSummary.tsx](src/components/ui/BeatMapSummary.tsx)
+  - [x] Add interpolation statistics section:
     - Detected beats: X
     - Interpolated beats: X
     - Total beats: X (interpolation ratio: X%)

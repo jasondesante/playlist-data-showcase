@@ -9,14 +9,20 @@
  * - "Start Practice Mode" button
  * - Warnings for very short tracks or insufficient beats
  * - Warnings for tracks with no clear beat (ambient, classical)
+ * - Interpolation statistics (when available)
  *
  * Part of Task 2.4: Beat Map Summary (After Analysis)
  * Part of Task 7.2: Edge Cases - Very short tracks, no clear beat
+ * Part of Task 4.1: Interpolation Statistics Display
  */
-import { Play, Music2, AlertTriangle, Info, HelpCircle } from 'lucide-react';
+import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import type { BeatMap } from '@/types';
+import {
+    useInterpolationStatistics,
+    useSelectedAlgorithm,
+} from '../../store/beatDetectionStore';
 
 /** Minimum track duration for reliable beat detection (seconds) */
 const MIN_TRACK_DURATION = 5;
@@ -144,11 +150,24 @@ function formatBeatCount(count: number): string {
   return count.toLocaleString();
 }
 
+/**
+ * Algorithm display names for the interpolation statistics section.
+ */
+const ALGORITHM_DISPLAY_NAMES: Record<string, string> = {
+  'histogram-grid': 'Histogram Grid',
+  'adaptive-phase-locked': 'Adaptive Phase-Locked',
+  'dual-pass': 'Dual-Pass',
+};
+
 export function BeatMapSummary({
   beatMap,
   onStartPractice,
   isLoading = false,
 }: BeatMapSummaryProps) {
+  // Get interpolation statistics from store (Task 4.1)
+  const interpolationStats = useInterpolationStatistics();
+  const selectedAlgorithm = useSelectedAlgorithm();
+
   // Check for edge cases with short tracks
   const isShortTrack = beatMap.duration < MIN_TRACK_DURATION;
   const hasInsufficientBeats = beatMap.beats.length < MIN_BEATS_FOR_PRACTICE;
@@ -290,6 +309,69 @@ export function BeatMapSummary({
             </span>
             <span className="beat-map-quality-metric">
               Density: {beatQuality.beatDensity.toFixed(2)}/s
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Interpolation Statistics (Task 4.1) */}
+      {interpolationStats && (
+        <div className="beat-map-interpolation-stats">
+          <div className="beat-map-interpolation-stats-header">
+            <Layers className="beat-map-interpolation-stats-icon" />
+            <span className="beat-map-interpolation-stats-title">
+              Interpolation ({ALGORITHM_DISPLAY_NAMES[selectedAlgorithm] || selectedAlgorithm})
+            </span>
+          </div>
+
+          {/* Quarter Note BPM */}
+          <div className="beat-map-interpolation-stat-row">
+            <span className="beat-map-interpolation-stat-label">Quarter Note BPM:</span>
+            <span className="beat-map-interpolation-stat-value">
+              {formatBpm(interpolationStats.quarterNoteBpm)}
+              <span className="beat-map-interpolation-stat-confidence">
+                ({Math.round(interpolationStats.quarterNoteConfidence * 100)}% conf)
+              </span>
+            </span>
+          </div>
+
+          {/* Total Beats Breakdown */}
+          <div className="beat-map-interpolation-stat-row">
+            <span className="beat-map-interpolation-stat-label">Total Beats:</span>
+            <span className="beat-map-interpolation-stat-value">
+              {formatBeatCount(interpolationStats.totalBeatCount)}
+            </span>
+          </div>
+
+          <div className="beat-map-interpolation-stats-breakdown">
+            <div className="beat-map-interpolation-breakdown-item">
+              <span className="beat-map-interpolation-breakdown-dot beat-map-interpolation-breakdown-dot--detected" />
+              <span className="beat-map-interpolation-breakdown-label">Detected:</span>
+              <span className="beat-map-interpolation-breakdown-value">
+                {formatBeatCount(interpolationStats.detectedBeatCount)}
+                ({Math.round((1 - interpolationStats.interpolationRatio) * 100)}%)
+              </span>
+            </div>
+            <div className="beat-map-interpolation-breakdown-item">
+              <span className="beat-map-interpolation-breakdown-dot beat-map-interpolation-breakdown-dot--interpolated" />
+              <span className="beat-map-interpolation-breakdown-label">Interpolated:</span>
+              <span className="beat-map-interpolation-breakdown-value">
+                {formatBeatCount(interpolationStats.interpolatedBeatCount)}
+                ({Math.round(interpolationStats.interpolationRatio * 100)}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Additional Metrics */}
+          <div className="beat-map-interpolation-metrics">
+            <span className="beat-map-interpolation-metric">
+              Avg Confidence: {Math.round(interpolationStats.avgInterpolatedConfidence * 100)}%
+            </span>
+            <span className="beat-map-interpolation-metric">
+              Grid Align: {Math.round(interpolationStats.gridAlignmentScore * 100)}%
+            </span>
+            <span className="beat-map-interpolation-metric">
+              Drift: {interpolationStats.tempoDriftRatio.toFixed(2)}
             </span>
           </div>
         </div>
