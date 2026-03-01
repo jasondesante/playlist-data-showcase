@@ -761,9 +761,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             const generator = getGenerator(mergedOptions);
 
                             // Generate with progress callback
+                            // Note: downbeatConfig is undefined (use default), progress callback is 4th arg
                             const beatMap = await generator.generateBeatMap(
                                 audioUrl,
                                 audioId,
+                                undefined, // downbeatConfig - use default (beat 0 = downbeat, 4/4 time)
                                 (progress) => {
                                     set({ generationProgress: progress });
                                     logger.debug('BeatDetection', 'Generation progress', {

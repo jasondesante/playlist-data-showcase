@@ -191,8 +191,8 @@ export function AudioAnalysisTab() {
         return 'Detecting tempo...';
       case 'beat_tracking':
         return 'Tracking beats...';
-      case 'downbeat_detection':
-        return 'Detecting downbeats...';
+      case 'measure_labeling':
+        return 'Applying measure labels...';
       case 'finalizing':
         return 'Finalizing...';
       case 'complete':
