@@ -262,9 +262,15 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     - ○ Hollow = Interpolated beat (from grid)
     - Opacity = Confidence level
 
-- [ ] **5.3 Add Quarter Note Grid Overlay (Optional)**
-  - [ ] Draw subtle vertical lines at quarter note intervals
-  - [ ] Show grid alignment visually
+- [x] **5.3 Add Quarter Note Grid Overlay (Optional)**
+  - [x] Draw subtle vertical lines at quarter note intervals
+  - [x] Show grid alignment visually
+  - [x] Added `showGridOverlay` state to beatDetectionStore
+  - [x] Added `toggleGridOverlay` action and `useShowGridOverlay` selector
+  - [x] Added grid line rendering in BeatTimeline.tsx with `getVisibleGridLines()`
+  - [x] Added CSS styles for grid lines (regular and measure boundaries)
+  - [x] Added grid overlay toggle in BeatInterpolationSettings component
+  - [x] Added grid indicator to timeline legend when grid is visible
 
 - [ ] **5.4 Add Tempo Drift Visualization (Optional)**
   - [ ] Draw tempo curve as background line

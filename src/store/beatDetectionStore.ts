@@ -287,6 +287,8 @@ interface BeatDetectionState {
     beatStreamMode: BeatStreamMode;
     /** Whether to show interpolation visualization in timeline */
     showInterpolationVisualization: boolean;
+    /** Whether to show the quarter note grid overlay in timeline (Task 5.3) */
+    showGridOverlay: boolean;
     /** Interpolation config snapshot used to generate the current interpolated beat map (for re-analyze indicator) */
     lastGeneratedInterpolationConfig: InterpolationConfigSnapshot | null;
     /** Cached interpolated beat maps indexed by audio ID for localStorage persistence */
@@ -478,6 +480,11 @@ interface BeatDetectionActions {
     toggleInterpolationVisualization: () => void;
 
     /**
+     * Toggle the quarter note grid overlay visibility. (Task 5.3)
+     */
+    toggleGridOverlay: () => void;
+
+    /**
      * Generate an interpolated beat map from the current beat map.
      * Uses the BeatInterpolator from the engine with current interpolation options.
      * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
@@ -543,6 +550,7 @@ const createInitialState = (): BeatDetectionState => ({
     selectedAlgorithm: 'dual-pass', // Most robust algorithm
     beatStreamMode: 'detected', // Backward compatible default
     showInterpolationVisualization: false,
+    showGridOverlay: false, // Task 5.3: Quarter note grid overlay
     lastGeneratedInterpolationConfig: null,
     cachedInterpolatedBeatMaps: {},
 });
@@ -1157,6 +1165,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     /**
+                     * Toggle the quarter note grid overlay visibility. (Task 5.3)
+                     */
+                    toggleGridOverlay: () => {
+                        const current = get().showGridOverlay;
+                        logger.info('BeatDetection', 'Toggling grid overlay', { enabled: !current });
+                        set({ showGridOverlay: !current });
+                    },
+
+                    /**
                      * Generate an interpolated beat map from the current beat map.
                      * Uses the BeatInterpolator from the engine with current interpolation options.
                      * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
@@ -1658,6 +1675,12 @@ export const useBeatStreamMode = () =>
  */
 export const useShowInterpolationVisualization = () =>
     useBeatDetectionStore((state) => state.showInterpolationVisualization);
+
+/**
+ * Selector to get the grid overlay visibility. (Task 5.3)
+ */
+export const useShowGridOverlay = () =>
+    useBeatDetectionStore((state) => state.showGridOverlay);
 
 /**
  * Confidence level for visual indicator.

@@ -24,6 +24,7 @@ import {
     useInterpolationVisualizationData,
     useBeatStreamMode,
     useInterpolatedBeatMap,
+    useShowGridOverlay,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -106,6 +107,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
+
+  // Grid overlay visibility (Task 5.3)
+  const showGridOverlay = useShowGridOverlay();
 
   // Audio player state
   const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
@@ -524,6 +528,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         isPlaying={isPlaying}
         audioContext={null}
         interpolationData={interpolationData}
+        showGridOverlay={showGridOverlay}
       />
 
       {/* Playback Controls */}

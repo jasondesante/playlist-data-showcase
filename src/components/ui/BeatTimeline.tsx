@@ -48,6 +48,11 @@ interface BeatTimelineProps {
    * Part of Task 5.1: Dual-Source Rendering
    */
   interpolationData?: InterpolationVisualizationData | null;
+  /**
+   * Whether to show the quarter note grid overlay.
+   * Part of Task 5.3: Quarter Note Grid Overlay
+   */
+  showGridOverlay?: boolean;
 }
 
 /**
@@ -70,6 +75,7 @@ export function BeatTimeline({
   isPlaying = false,
   audioContext: _audioContext,
   interpolationData = null,
+  showGridOverlay = false,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
@@ -390,6 +396,54 @@ export function BeatTimeline({
 
   const visibleBeats = getVisibleBeats();
 
+  // ========================================
+  // Task 5.3: Quarter Note Grid Overlay
+  // ========================================
+
+  /**
+   * Calculate visible grid lines at quarter note intervals.
+   * Grid lines are drawn at each quarter note boundary within the visible window.
+   */
+  const getVisibleGridLines = useCallback((): Array<{
+    position: number;
+    isMeasure: boolean; // True if this is a measure boundary (every 4th quarter note)
+  }> => {
+    // Only show grid if interpolation data is available and has quarter note interval
+    if (!showGridOverlay || !interpolationData || interpolationData.quarterNoteInterval <= 0) {
+      return [];
+    }
+
+    const { quarterNoteInterval } = interpolationData;
+    const minTime = smoothTime - pastWindow;
+    const maxTime = smoothTime + anticipationWindow;
+
+    // Calculate the first grid line within or before the visible window
+    const firstGridTime = Math.floor(minTime / quarterNoteInterval) * quarterNoteInterval;
+
+    // Calculate the last grid line within the visible window
+    const lastGridTime = Math.ceil(maxTime / quarterNoteInterval) * quarterNoteInterval;
+
+    // Count how many quarter notes from time 0 to first grid (for measure detection)
+    const gridLines: Array<{ position: number; isMeasure: boolean }> = [];
+
+    for (let time = firstGridTime; time <= lastGridTime; time += quarterNoteInterval) {
+      const position = calculateBeatPosition(time);
+
+      // Only include if within visible bounds
+      if (position >= 0 && position <= 1) {
+        // Determine if this is a measure boundary (every 4th quarter note in 4/4 time)
+        const quarterNoteIndex = Math.round(time / quarterNoteInterval);
+        const isMeasure = quarterNoteIndex % 4 === 0;
+
+        gridLines.push({ position, isMeasure });
+      }
+    }
+
+    return gridLines;
+  }, [showGridOverlay, interpolationData, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
+
+  const visibleGridLines = getVisibleGridLines();
+
   return (
     <div className="beat-timeline">
       {/* Timeline track */}
@@ -412,6 +466,15 @@ export function BeatTimeline({
 
         {/* Future region indicator (right side) */}
         <div className="beat-timeline-future-region" />
+
+        {/* Task 5.3: Quarter Note Grid Overlay */}
+        {showGridOverlay && visibleGridLines.map((gridLine, index) => (
+          <div
+            key={`grid-${index}`}
+            className={`beat-timeline-grid-line ${gridLine.isMeasure ? 'beat-timeline-grid-line--measure' : ''}`}
+            style={{ left: `${gridLine.position * 100}%` }}
+          />
+        ))}
 
         {/* Beat markers */}
         {visibleBeats.map(({ beat, position, isPast, isUpcoming }) => (
@@ -458,6 +521,7 @@ export function BeatTimeline({
       </div>
 
       {/* Task 5.2: Visual Legend for interpolation beat types */}
+      {/* Task 5.3: Added grid overlay indicator */}
       {interpolationData && (
         <div className="beat-timeline-legend">
           <div className="beat-timeline-legend-item">
@@ -474,6 +538,12 @@ export function BeatTimeline({
             </div>
             <span className="beat-timeline-legend-label">Confidence level</span>
           </div>
+          {showGridOverlay && (
+            <div className="beat-timeline-legend-item">
+              <div className="beat-timeline-legend-grid" />
+              <span className="beat-timeline-legend-label">Quarter note grid</span>
+            </div>
+          )}
         </div>
       )}
 

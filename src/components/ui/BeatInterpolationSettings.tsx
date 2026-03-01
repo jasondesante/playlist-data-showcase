@@ -21,6 +21,7 @@ import {
     useInterpolationOptions,
     useSelectedAlgorithm,
     useBeatStreamMode,
+    useShowGridOverlay,
 } from '../../store/beatDetectionStore';
 import type { InterpolationAlgorithm, BeatStreamMode } from '@/types';
 
@@ -97,10 +98,12 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
     const interpolationOptions = useInterpolationOptions();
     const selectedAlgorithm = useSelectedAlgorithm();
     const beatStreamMode = useBeatStreamMode();
+    const showGridOverlay = useShowGridOverlay();
 
     const setInterpolationOptions = useBeatDetectionStore((state) => state.actions.setInterpolationOptions);
     const setSelectedAlgorithm = useBeatDetectionStore((state) => state.actions.setSelectedAlgorithm);
     const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
+    const toggleGridOverlay = useBeatDetectionStore((state) => state.actions.toggleGridOverlay);
 
     // Handle algorithm change
     const handleAlgorithmChange = (algorithm: InterpolationAlgorithm) => {
@@ -258,6 +261,28 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
                 </div>
                 <div className="beat-interpolation-stream-description">
                     {STREAM_MODES.find(m => m.id === beatStreamMode)?.description}
+                </div>
+            </div>
+
+            {/* ============================================================
+             * GRID OVERLAY TOGGLE (Task 5.3)
+             * ============================================================ */}
+            <div className="beat-interpolation-settings-section">
+                <label className="beat-interpolation-checkbox-label">
+                    <input
+                        type="checkbox"
+                        checked={showGridOverlay}
+                        onChange={toggleGridOverlay}
+                        disabled={disabled}
+                        className="beat-interpolation-checkbox"
+                    />
+                    <span className="beat-interpolation-checkbox-text">Show Quarter Note Grid</span>
+                    <Tooltip content="Display vertical lines at quarter note intervals on the timeline. Helps visualize beat alignment." />
+                </label>
+                <div className="beat-interpolation-checkbox-description">
+                    {showGridOverlay
+                        ? 'Grid lines visible on timeline'
+                        : 'Enable to see beat grid alignment'}
                 </div>
             </div>
 
