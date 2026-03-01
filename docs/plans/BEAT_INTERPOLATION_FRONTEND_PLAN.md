@@ -80,12 +80,12 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Also exported BeatInterpolator class and JSON serialization types (BeatWithSourceJSON, InterpolatedBeatMapJSON, etc.)
   - [x] Updated engine's index.ts to export the interpolation types first
 
-- [ ] **1.2 Create Frontend-Specific Types**
-  - [ ] Add `BeatStreamMode` type:
+- [x] **1.2 Create Frontend-Specific Types**
+  - [x] Add `BeatStreamMode` type:
     ```typescript
     type BeatStreamMode = 'detected' | 'merged';
     ```
-  - [ ] Add `InterpolationVisualizationData` for timeline:
+  - [x] Add `InterpolationVisualizationData` for timeline:
     ```typescript
     interface InterpolationVisualizationData {
       beats: Array<{

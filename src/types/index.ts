@@ -471,3 +471,44 @@ export { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from 'playlist-data-engine';
 
 // Re-export the BeatInterpolator class
 export { BeatInterpolator } from 'playlist-data-engine';
+
+// ============================================================
+// Frontend-Specific Beat Interpolation Types
+// ============================================================
+
+/**
+ * Beat stream mode for selecting which beat source to use.
+ *
+ * - 'detected': Use only originally detected beats (original behavior)
+ * - 'merged': Use interpolated beats with detected beats as anchors (fills gaps)
+ */
+export type BeatStreamMode = 'detected' | 'merged';
+
+/**
+ * Visualization data for rendering detected vs interpolated beats in BeatTimeline.
+ *
+ * This type formats the InterpolatedBeatMap data for efficient timeline rendering,
+ * flattening the beat arrays and including all necessary visualization properties.
+ */
+export interface InterpolationVisualizationData {
+    /** All beats (detected + interpolated) formatted for visualization */
+    beats: Array<{
+        /** Timestamp in seconds from the start of the audio */
+        timestamp: number;
+        /** Whether this beat was detected or interpolated */
+        source: 'detected' | 'interpolated';
+        /** Confidence score for this beat (0.0 - 1.0) */
+        confidence: number;
+        /** Whether this beat is a downbeat (first beat of a measure) */
+        isDownbeat: boolean;
+    }>;
+    /** Detected quarter note interval in seconds */
+    quarterNoteInterval: number;
+    /** Optional tempo drift data for visualization */
+    tempoDrift?: Array<{
+        /** Timestamp in seconds */
+        time: number;
+        /** BPM at this point */
+        bpm: number;
+    }>;
+}
