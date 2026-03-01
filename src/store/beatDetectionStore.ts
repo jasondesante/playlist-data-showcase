@@ -1926,31 +1926,55 @@ function calculateTempoDriftData(
 }
 
 /**
- * Selector to get formatted visualization data for the beat timeline.
- * Returns null if no interpolation has been generated or visualization is disabled.
+ * Internal hook to get raw interpolation data from the store.
+ * Returns stable references to avoid unnecessary re-renders.
  * Uses useShallow to prevent infinite loops from new object references.
  */
-export const useInterpolationVisualizationData = (): InterpolationVisualizationData | null =>
-    useBeatDetectionStore(useShallow((state) => {
-        const { interpolatedBeatMap, showInterpolationVisualization } = state;
+function useRawInterpolationData() {
+    return useBeatDetectionStore(useShallow((state) => ({
+        interpolatedBeatMap: state.interpolatedBeatMap,
+        beatStreamMode: state.beatStreamMode,
+    })));
+}
 
-        if (!interpolatedBeatMap || !showInterpolationVisualization) {
+/**
+ * Selector to get formatted visualization data for the beat timeline.
+ * Returns null if no interpolation has been generated.
+ * Respects beatStreamMode: 'detected' shows only detected beats, 'merged' shows all beats.
+ * Uses useMemo to prevent infinite loops from new array references.
+ */
+export const useInterpolationVisualizationData = (): InterpolationVisualizationData | null => {
+    const { interpolatedBeatMap, beatStreamMode } = useRawInterpolationData();
+
+    return useMemo(() => {
+        // Only return visualization data if we have an interpolated beat map
+        if (!interpolatedBeatMap) {
             return null;
         }
 
-        const { mergedBeats, quarterNoteInterval } = interpolatedBeatMap;
+        const { mergedBeats, detectedBeats, quarterNoteInterval } = interpolatedBeatMap;
 
-        // Transform merged beats into visualization format
-        const beats = mergedBeats.map((beat) => ({
-            timestamp: beat.timestamp,
-            source: beat.source,
-            confidence: beat.confidence,
-            isDownbeat: beat.isDownbeat,
-        }));
+        // Select which beats to show based on stream mode
+        // - 'detected': Show only originally detected beats (all marked as 'detected' source)
+        // - 'merged': Show all beats (detected + interpolated, with actual source)
+        const beats = beatStreamMode === 'detected'
+            ? detectedBeats.map((beat) => ({
+                timestamp: beat.timestamp,
+                source: 'detected' as const, // All detected beats have 'detected' source
+                confidence: beat.confidence,
+                isDownbeat: beat.isDownbeat,
+            }))
+            : mergedBeats.map((beat) => ({
+                timestamp: beat.timestamp,
+                source: beat.source, // Preserves actual source (detected or interpolated)
+                confidence: beat.confidence,
+                isDownbeat: beat.isDownbeat,
+            }));
 
         // Calculate tempo drift data for visualization (Task 5.4)
         // Always provide drift data when we have beats - the visualization will show
         // even small tempo variations which is useful for understanding the track
+        // Note: Always use mergedBeats for drift calculation to show full tempo picture
         const tempoDrift = calculateTempoDriftData(
             mergedBeats,
             interpolatedBeatMap.duration,
@@ -1962,7 +1986,8 @@ export const useInterpolationVisualizationData = (): InterpolationVisualizationD
             quarterNoteInterval,
             tempoDrift,
         };
-    }));
+    }, [interpolatedBeatMap, beatStreamMode]);
+};
 
 /**
  * Selector to get all interpolation-related state in one call.
