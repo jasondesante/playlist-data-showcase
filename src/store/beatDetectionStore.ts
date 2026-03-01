@@ -37,6 +37,7 @@ import {
     InterpolationAlgorithm,
     BeatStreamMode,
     DEFAULT_BEAT_INTERPOLATION_OPTIONS,
+    InterpolationVisualizationData,
 } from '@/types';
 import { BeatMapGenerator, BeatInterpolator } from 'playlist-data-engine';
 
@@ -1432,4 +1433,147 @@ export const useOseConfigs = () =>
         hopSizeConfig: state.hopSizeConfig,
         melBandsConfig: state.melBandsConfig,
         gaussianSmoothConfig: state.gaussianSmoothConfig,
+    })));
+
+// ============================================================
+// Beat Interpolation Selectors
+// ============================================================
+
+/**
+ * Selector to get the interpolated beat map.
+ * Returns null if no interpolation has been generated.
+ */
+export const useInterpolatedBeatMap = () =>
+    useBeatDetectionStore((state) => state.interpolatedBeatMap);
+
+/**
+ * Selector to get the current interpolation options.
+ */
+export const useInterpolationOptions = () =>
+    useBeatDetectionStore((state) => state.interpolationOptions);
+
+/**
+ * Selector to get the selected interpolation algorithm.
+ */
+export const useSelectedAlgorithm = () =>
+    useBeatDetectionStore((state) => state.selectedAlgorithm);
+
+/**
+ * Selector to get the beat stream mode.
+ * Returns 'detected' for original beats or 'merged' for interpolated + detected.
+ */
+export const useBeatStreamMode = () =>
+    useBeatDetectionStore((state) => state.beatStreamMode);
+
+/**
+ * Selector to get the interpolation visualization visibility.
+ */
+export const useShowInterpolationVisualization = () =>
+    useBeatDetectionStore((state) => state.showInterpolationVisualization);
+
+/**
+ * Interface for interpolation statistics display.
+ */
+export interface InterpolationStatistics {
+    /** Number of originally detected beats */
+    detectedBeatCount: number;
+    /** Number of beats added by interpolation */
+    interpolatedBeatCount: number;
+    /** Total beats in the merged stream */
+    totalBeatCount: number;
+    /** Ratio of interpolated beats to total beats (0-1) */
+    interpolationRatio: number;
+    /** Average confidence of interpolated beats (0-1) */
+    avgInterpolatedConfidence: number;
+    /** Detected quarter note BPM */
+    quarterNoteBpm: number;
+    /** Confidence in quarter note detection (0-1) */
+    quarterNoteConfidence: number;
+    /** Ratio of max local tempo to min local tempo (drift indicator) */
+    tempoDriftRatio: number;
+    /** How well detected beats align to grid (0-1, higher is better) */
+    gridAlignmentScore: number;
+}
+
+/**
+ * Selector to get interpolation statistics for display.
+ * Returns null if no interpolation has been generated.
+ * Uses useShallow to prevent infinite loops from new object references.
+ */
+export const useInterpolationStatistics = (): InterpolationStatistics | null =>
+    useBeatDetectionStore(useShallow((state) => {
+        const { interpolatedBeatMap } = state;
+
+        if (!interpolatedBeatMap) {
+            return null;
+        }
+
+        const { interpolationMetadata, quarterNoteBpm, quarterNoteConfidence } = interpolatedBeatMap;
+        const { gapAnalysis } = interpolationMetadata;
+
+        return {
+            detectedBeatCount: interpolationMetadata.detectedBeatCount,
+            interpolatedBeatCount: interpolationMetadata.interpolatedBeatCount,
+            totalBeatCount: interpolationMetadata.totalBeatCount,
+            interpolationRatio: interpolationMetadata.interpolationRatio,
+            avgInterpolatedConfidence: interpolationMetadata.avgInterpolatedConfidence,
+            quarterNoteBpm,
+            quarterNoteConfidence,
+            tempoDriftRatio: interpolationMetadata.tempoDriftRatio,
+            gridAlignmentScore: gapAnalysis.gridAlignmentScore,
+        };
+    }));
+
+/**
+ * Selector to get formatted visualization data for the beat timeline.
+ * Returns null if no interpolation has been generated or visualization is disabled.
+ * Uses useShallow to prevent infinite loops from new object references.
+ */
+export const useInterpolationVisualizationData = (): InterpolationVisualizationData | null =>
+    useBeatDetectionStore(useShallow((state) => {
+        const { interpolatedBeatMap, showInterpolationVisualization } = state;
+
+        if (!interpolatedBeatMap || !showInterpolationVisualization) {
+            return null;
+        }
+
+        const { mergedBeats, quarterNoteInterval, interpolationMetadata } = interpolatedBeatMap;
+
+        // Transform merged beats into visualization format
+        const beats = mergedBeats.map((beat) => ({
+            timestamp: beat.timestamp,
+            source: beat.source,
+            confidence: beat.confidence,
+            isDownbeat: beat.isDownbeat,
+        }));
+
+        // Build tempo drift data if there's notable drift
+        // For now, we just provide the basic data without drift curve
+        // This could be enhanced later to track tempo at various points
+        const tempoDrift: InterpolationVisualizationData['tempoDrift'] | undefined =
+            interpolationMetadata.tempoDriftRatio > 1.05
+                ? [
+                      { time: 0, bpm: quarterNoteInterval > 0 ? 60 / quarterNoteInterval : 0 },
+                      { time: interpolatedBeatMap.duration, bpm: quarterNoteInterval > 0 ? 60 / quarterNoteInterval : 0 },
+                  ]
+                : undefined;
+
+        return {
+            beats,
+            quarterNoteInterval,
+            tempoDrift,
+        };
+    }));
+
+/**
+ * Selector to get all interpolation-related state in one call.
+ * Uses useShallow to prevent infinite loops from new object references.
+ */
+export const useInterpolationState = () =>
+    useBeatDetectionStore(useShallow((state) => ({
+        interpolatedBeatMap: state.interpolatedBeatMap,
+        interpolationOptions: state.interpolationOptions,
+        selectedAlgorithm: state.selectedAlgorithm,
+        beatStreamMode: state.beatStreamMode,
+        showInterpolationVisualization: state.showInterpolationVisualization,
     })));

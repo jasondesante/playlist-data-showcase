@@ -131,13 +131,13 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] `clearInterpolation()` - resets interpolation state
   - [x] Also updated `clearBeatMap` to reset interpolation state
 
-- [ ] **2.3 Add Interpolation Selectors**
-  - [ ] `useInterpolatedBeatMap()` - returns InterpolatedBeatMap
-  - [ ] `useInterpolationOptions()` - returns current options
-  - [ ] `useSelectedAlgorithm()` - returns selected algorithm
-  - [ ] `useBeatStreamMode()` - returns 'detected' or 'merged'
-  - [ ] `useInterpolationVisualizationData()` - returns formatted data for timeline
-  - [ ] `useInterpolationStatistics()` - returns stats for summary display:
+- [x] **2.3 Add Interpolation Selectors**
+  - [x] `useInterpolatedBeatMap()` - returns InterpolatedBeatMap
+  - [x] `useInterpolationOptions()` - returns current options
+  - [x] `useSelectedAlgorithm()` - returns selected algorithm
+  - [x] `useBeatStreamMode()` - returns 'detected' or 'merged'
+  - [x] `useInterpolationVisualizationData()` - returns formatted data for timeline
+  - [x] `useInterpolationStatistics()` - returns stats for summary display:
     ```typescript
     interface InterpolationStatistics {
       detectedBeatCount: number;
@@ -151,6 +151,7 @@ This plan covers the frontend integration for the Beat Interpolation system defi
       gridAlignmentScore: number;
     }
     ```
+  - [x] Also added `useShowInterpolationVisualization()` and `useInterpolationState()` convenience selectors
 
 - [ ] **2.4 Update generateBeatMap Action**
   - [ ] After BeatMap generation, automatically call `generateInterpolatedBeatMap()`
