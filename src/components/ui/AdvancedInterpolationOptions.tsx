@@ -3,20 +3,27 @@
  *
  * A collapsible panel containing all advanced interpolation options.
  * Part of Task 8.1: Create AdvancedInterpolationOptions Component
+ * Part of Task 8.2: Add Option Presets
  *
  * Features:
  * - All options from BeatInterpolationOptions interface
  * - Dense section configuration
  * - Confidence model weight configuration
  * - Individual reset buttons for each option
+ * - Preset selector for common use cases
+ * - Reset all to defaults button
  * - Pure CSS styling (no Tailwind)
  *
  * @component
  */
-import { RotateCcw, ChevronDown } from 'lucide-react';
+import { RotateCcw, ChevronDown, Settings2 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
-import type { BeatInterpolationOptions } from '@/types';
-import { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from '@/types';
+import type { BeatInterpolationOptions, InterpolationPresetId } from '@/types';
+import {
+    DEFAULT_BEAT_INTERPOLATION_OPTIONS,
+    INTERPOLATION_PRESETS,
+    detectInterpolationPreset,
+} from '@/types';
 import './AdvancedInterpolationOptions.css';
 
 /**
@@ -47,6 +54,9 @@ interface AdvancedInterpolationOptionsProps {
 
     /** Whether the section should start expanded */
     defaultExpanded?: boolean;
+
+    /** Callback when reset all to defaults is clicked (optional - component can handle internally if not provided) */
+    onResetAll?: () => void;
 }
 
 /**
@@ -59,6 +69,7 @@ export function AdvancedInterpolationOptions({
     onOptionsChange,
     disabled = false,
     defaultExpanded = false,
+    onResetAll,
 }: AdvancedInterpolationOptionsProps) {
     // Get current values with defaults
     const minAnchorConfidence = getOptionValue(options, 'minAnchorConfidence');
@@ -72,6 +83,9 @@ export function AdvancedInterpolationOptions({
     const anchorConfidenceWeight = getOptionValue(options, 'anchorConfidenceWeight');
     const paceConfidenceWeight = getOptionValue(options, 'paceConfidenceWeight');
 
+    // Detect current preset based on options
+    const currentPresetId = detectInterpolationPreset(options);
+
     // Check if values differ from defaults
     const isMinAnchorConfidenceDefault = minAnchorConfidence === DEFAULT_BEAT_INTERPOLATION_OPTIONS.minAnchorConfidence;
     const isGridSnapToleranceDefault = gridSnapTolerance === DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridSnapTolerance;
@@ -83,6 +97,19 @@ export function AdvancedInterpolationOptions({
     const isGridAlignmentWeightDefault = gridAlignmentWeight === DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridAlignmentWeight;
     const isAnchorConfidenceWeightDefault = anchorConfidenceWeight === DEFAULT_BEAT_INTERPOLATION_OPTIONS.anchorConfidenceWeight;
     const isPaceConfidenceWeightDefault = paceConfidenceWeight === DEFAULT_BEAT_INTERPOLATION_OPTIONS.paceConfidenceWeight;
+
+    // Check if any option differs from defaults
+    const hasAnyNonDefaultOption =
+        !isMinAnchorConfidenceDefault ||
+        !isGridSnapToleranceDefault ||
+        !isTempoAdaptationRateDefault ||
+        !isAnomalyThresholdDefault ||
+        !isExtrapolateStartDefault ||
+        !isExtrapolateEndDefault ||
+        !isDenseSectionMinBeatsDefault ||
+        !isGridAlignmentWeightDefault ||
+        !isAnchorConfidenceWeightDefault ||
+        !isPaceConfidenceWeightDefault;
 
     // Calculate slider percentages for CSS styling
     const minAnchorConfidencePercent = minAnchorConfidence * 100;
@@ -117,6 +144,28 @@ export function AdvancedInterpolationOptions({
         onOptionsChange({ [key]: e.target.checked });
     };
 
+    // Preset change handler
+    const handlePresetChange = (presetId: InterpolationPresetId) => {
+        const preset = INTERPOLATION_PRESETS.find(p => p.id === presetId);
+        if (preset) {
+            // Apply preset options - spread defaults first to reset all, then apply preset
+            onOptionsChange({
+                ...DEFAULT_BEAT_INTERPOLATION_OPTIONS,
+                ...preset.options,
+            });
+        }
+    };
+
+    // Reset all handler
+    const handleResetAll = () => {
+        if (onResetAll) {
+            onResetAll();
+        } else {
+            // Reset to all defaults
+            onOptionsChange({ ...DEFAULT_BEAT_INTERPOLATION_OPTIONS });
+        }
+    };
+
     return (
         <details className="advanced-interpolation-options" open={defaultExpanded}>
             <summary className="advanced-interpolation-summary">
@@ -124,6 +173,53 @@ export function AdvancedInterpolationOptions({
                 <ChevronDown className="advanced-interpolation-summary-icon" size={12} />
             </summary>
             <div className="advanced-interpolation-content">
+                {/* ============================================================
+                 * PRESET SELECTOR (Task 8.2)
+                 * ============================================================ */}
+                <div className="advanced-interpolation-section advanced-interpolation-preset-section">
+                    <div className="advanced-interpolation-header">
+                        <div className="advanced-interpolation-label-with-tooltip">
+                            <Settings2 className="advanced-interpolation-preset-icon" size={12} />
+                            <span className="advanced-interpolation-label">Presets</span>
+                            <Tooltip content="Choose a preset configuration optimized for different use cases." />
+                        </div>
+                        {hasAnyNonDefaultOption && (
+                            <button
+                                type="button"
+                                className="advanced-interpolation-reset-all-btn"
+                                onClick={handleResetAll}
+                                disabled={disabled}
+                                aria-label="Reset all options to defaults"
+                                title="Reset all to defaults"
+                            >
+                                <RotateCcw className="advanced-interpolation-reset-all-btn-icon" size={12} />
+                                <span>Reset All</span>
+                            </button>
+                        )}
+                    </div>
+                    <div className="advanced-interpolation-preset-grid">
+                        {INTERPOLATION_PRESETS.map((preset) => {
+                            const isSelected = currentPresetId === preset.id;
+                            return (
+                                <button
+                                    key={preset.id}
+                                    type="button"
+                                    className={`advanced-interpolation-preset-btn ${isSelected ? 'advanced-interpolation-preset-btn--active' : ''}`}
+                                    onClick={() => handlePresetChange(preset.id)}
+                                    disabled={disabled}
+                                    aria-pressed={isSelected}
+                                    title={preset.description}
+                                >
+                                    <span className="advanced-interpolation-preset-name">{preset.name}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="advanced-interpolation-preset-description">
+                        {INTERPOLATION_PRESETS.find(p => p.id === currentPresetId)?.description || 'Custom configuration'}
+                    </div>
+                </div>
+
                 {/* ============================================================
                  * CORE INTERPOLATION SETTINGS
                  * ============================================================ */}

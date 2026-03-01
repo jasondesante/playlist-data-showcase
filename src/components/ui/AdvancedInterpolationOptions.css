@@ -1,6 +1,7 @@
 /* ============================================
    ADVANCED INTERPOLATION OPTIONS
    Task 8.1: AdvancedInterpolationOptions Component
+   Task 8.2: Add Option Presets
    ============================================ */
 
 /* Main collapsible container */
@@ -78,6 +79,128 @@
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
+}
+
+/* ============================================
+   PRESET SELECTOR (Task 8.2)
+   ============================================ */
+
+.advanced-interpolation-preset-section {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed hsl(var(--border) / 0.3);
+  margin-bottom: 0.25rem;
+}
+
+.advanced-interpolation-preset-icon {
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+
+.advanced-interpolation-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.advanced-interpolation-preset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 1.75rem;
+}
+
+.advanced-interpolation-preset-btn:hover:not(:disabled) {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.advanced-interpolation-preset-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.advanced-interpolation-preset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.advanced-interpolation-preset-btn--active {
+  background: hsl(var(--primary) / 0.15);
+  border-color: hsl(var(--primary) / 0.6);
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.2);
+}
+
+.advanced-interpolation-preset-btn--active:hover:not(:disabled) {
+  background: hsl(var(--primary) / 0.2);
+  border-color: hsl(var(--primary) / 0.8);
+}
+
+.advanced-interpolation-preset-name {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.advanced-interpolation-preset-btn--active .advanced-interpolation-preset-name {
+  color: hsl(var(--primary));
+}
+
+.advanced-interpolation-preset-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Reset All Button */
+.advanced-interpolation-reset-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: hsl(var(--cute-amber, 38 92% 50%) / 0.1);
+  border: 1px solid hsl(var(--cute-amber, 38 92% 50%) / 0.3);
+  border-radius: 0.1875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.advanced-interpolation-reset-all-btn:hover:not(:disabled) {
+  background: hsl(var(--cute-amber, 38 92% 50%) / 0.2);
+  border-color: hsl(var(--cute-amber, 38 92% 50%) / 0.5);
+}
+
+.advanced-interpolation-reset-all-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.advanced-interpolation-reset-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.advanced-interpolation-reset-all-btn-icon {
+  width: 0.625rem;
+  height: 0.625rem;
+  color: hsl(var(--cute-amber, 38 92% 50%));
+}
+
+.advanced-interpolation-reset-all-btn span {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: hsl(var(--cute-amber, 38 92% 50%));
 }
 
 /* Compact section for confidence weights */
@@ -489,6 +612,32 @@
     padding: 0.4375rem 0.5625rem;
     padding-top: 0;
   }
+
+  /* Preset responsive - Tablet */
+  .advanced-interpolation-preset-grid {
+    gap: 0.3125rem;
+  }
+
+  .advanced-interpolation-preset-btn {
+    padding: 0.3125rem 0.375rem;
+    min-height: 1.5rem;
+  }
+
+  .advanced-interpolation-preset-name {
+    font-size: 0.4688rem;
+  }
+
+  .advanced-interpolation-preset-description {
+    font-size: 0.4375rem;
+  }
+
+  .advanced-interpolation-reset-all-btn {
+    padding: 0.1875rem 0.375rem;
+  }
+
+  .advanced-interpolation-reset-all-btn span {
+    font-size: 0.4375rem;
+  }
 }
 
 /* ============================================
@@ -538,6 +687,33 @@
   .advanced-interpolation-content {
     padding: 0.375rem 0.5rem;
     padding-top: 0;
+  }
+
+  /* Preset responsive - Mobile */
+  .advanced-interpolation-preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+  }
+
+  .advanced-interpolation-preset-btn {
+    padding: 0.25rem 0.3125rem;
+    min-height: 1.375rem;
+  }
+
+  .advanced-interpolation-preset-name {
+    font-size: 0.4375rem;
+  }
+
+  .advanced-interpolation-preset-description {
+    font-size: 0.375rem;
+  }
+
+  .advanced-interpolation-reset-all-btn {
+    padding: 0.125rem 0.25rem;
+  }
+
+  .advanced-interpolation-reset-all-btn span {
+    font-size: 0.375rem;
   }
 }
 
@@ -595,6 +771,25 @@
   .advanced-interpolation-checkbox-label {
     font-size: 0.75rem;
   }
+
+  /* Preset touch optimizations */
+  .advanced-interpolation-preset-btn {
+    min-height: 44px;
+    padding: 0.5rem;
+  }
+
+  .advanced-interpolation-preset-name {
+    font-size: 0.625rem;
+  }
+
+  .advanced-interpolation-reset-all-btn {
+    min-height: 32px;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .advanced-interpolation-reset-all-btn span {
+    font-size: 0.5625rem;
+  }
 }
 
 /* ============================================
@@ -615,6 +810,14 @@
   }
 
   .advanced-interpolation-reset-btn {
+    transition: none;
+  }
+
+  .advanced-interpolation-preset-btn {
+    transition: none;
+  }
+
+  .advanced-interpolation-reset-all-btn {
     transition: none;
   }
 }

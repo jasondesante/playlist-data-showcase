@@ -487,7 +487,15 @@ export { BeatInterpolator } from 'playlist-data-engine';
 import type {
     BeatEvent as EngineBeatEvent,
     BeatSource as BeatSourceType,
+    BeatInterpolationOptions as EngineBeatInterpolationOptions,
 } from 'playlist-data-engine';
+
+// Import defaults needed for preset functions (Task 8.2)
+import { DEFAULT_BEAT_INTERPOLATION_OPTIONS as ENGINE_DEFAULTS } from 'playlist-data-engine';
+
+// Local alias for use in preset functions
+type BeatInterpolationOptions = EngineBeatInterpolationOptions;
+const DEFAULT_BEAT_INTERPOLATION_OPTIONS = ENGINE_DEFAULTS;
 
 // ============================================================
 // Frontend-Specific Beat Interpolation Types
@@ -570,4 +578,173 @@ export interface ExtendedBeatEvent extends EngineBeatEvent {
      * comes from an InterpolatedBeatMap's mergedBeats array.
      */
     source?: BeatSourceType;
+}
+
+// ============================================================
+// Interpolation Option Presets (Task 8.2)
+// ============================================================
+
+/**
+ * Interpolation preset identifier.
+ *
+ * Each preset is optimized for a specific use case:
+ * - 'default': Balanced settings for most tracks
+ * - 'stable-tempo': Fixed grid for tracks with very stable tempo
+ * - 'variable-tempo': High adaptation for tracks with tempo drift
+ * - 'sparse-detection': Lower thresholds for tracks with few detected beats
+ * - 'research': Defaults with all options exposed (handled in UI)
+ */
+export type InterpolationPresetId =
+    | 'default'
+    | 'stable-tempo'
+    | 'variable-tempo'
+    | 'sparse-detection'
+    | 'research';
+
+/**
+ * Configuration for an interpolation preset.
+ */
+export interface InterpolationPreset {
+    /** Unique identifier for the preset */
+    id: InterpolationPresetId;
+    /** Display name shown in the UI */
+    name: string;
+    /** Short description of when to use this preset */
+    description: string;
+    /** The interpolation options for this preset */
+    options: Partial<BeatInterpolationOptions>;
+}
+
+/**
+ * Interpolation presets for common use cases.
+ *
+ * Each preset is designed for a specific scenario:
+ * - **Default**: Balanced settings that work well for most tracks
+ * - **Stable Tempo**: Fixed grid with low adaptation for tracks with very consistent tempo
+ * - **Variable Tempo**: High adaptation rate for tracks with tempo drift (live recordings, etc.)
+ * - **Sparse Detection**: Lower thresholds to accept more anchors when few beats are detected
+ * - **Research**: Defaults with advanced options exposed for experimentation
+ */
+export const INTERPOLATION_PRESETS: InterpolationPreset[] = [
+    {
+        id: 'default',
+        name: 'Default',
+        description: 'Balanced settings for most tracks',
+        options: {}, // Empty = use all engine defaults
+    },
+    {
+        id: 'stable-tempo',
+        name: 'Stable Tempo',
+        description: 'Fixed grid for tracks with very stable tempo (electronic, studio recordings)',
+        options: {
+            tempoAdaptationRate: 0.1,        // Low - don't adapt much
+            gridSnapTolerance: 0.03,         // Tighter snapping (30ms)
+            anomalyThreshold: 0.3,           // More sensitive to anomalies
+            minAnchorConfidence: 0.4,        // Higher threshold for anchors
+        },
+    },
+    {
+        id: 'variable-tempo',
+        name: 'Variable Tempo',
+        description: 'High adaptation for tracks with tempo drift (live recordings, classical)',
+        options: {
+            tempoAdaptationRate: 0.7,        // High - adapt to tempo changes
+            gridSnapTolerance: 0.08,         // More tolerance (80ms)
+            anomalyThreshold: 0.5,           // Less sensitive to anomalies
+            minAnchorConfidence: 0.25,       // Slightly lower threshold
+        },
+    },
+    {
+        id: 'sparse-detection',
+        name: 'Sparse Detection',
+        description: 'Lower thresholds for tracks with few detected beats',
+        options: {
+            minAnchorConfidence: 0.15,       // Low - accept more anchors
+            denseSectionMinBeats: 2,         // Smaller sections count
+            gridSnapTolerance: 0.07,         // More tolerance
+            extrapolateStart: true,          // Always extrapolate
+            extrapolateEnd: true,
+        },
+    },
+    {
+        id: 'research',
+        name: 'Research',
+        description: 'Default settings for experimentation (expand Advanced Options)',
+        options: {}, // Use defaults, but UI shows all options
+    },
+];
+
+/**
+ * Get an interpolation preset by its ID.
+ *
+ * @param id - The preset identifier
+ * @returns The preset configuration, or undefined if not found
+ */
+export function getInterpolationPreset(id: InterpolationPresetId): InterpolationPreset | undefined {
+    return INTERPOLATION_PRESETS.find(preset => preset.id === id);
+}
+
+/**
+ * Detect which preset (if any) matches the given options.
+ * Returns 'default' if no preset matches.
+ *
+ * @param options - The current interpolation options
+ * @returns The matching preset ID
+ */
+export function detectInterpolationPreset(options: BeatInterpolationOptions): InterpolationPresetId {
+    // Import defaults lazily to avoid circular dependency
+    const defaults = DEFAULT_BEAT_INTERPOLATION_OPTIONS;
+
+    // Check each preset (except 'default' and 'research')
+    for (const preset of INTERPOLATION_PRESETS) {
+        if (preset.id === 'default' || preset.id === 'research') continue;
+
+        const presetOpts = preset.options;
+        const keys = Object.keys(presetOpts) as (keyof BeatInterpolationOptions)[];
+
+        // Check if all preset options match current options
+        const matches = keys.every(key => {
+            const presetValue = presetOpts[key];
+            const currentValue = options[key] ?? defaults[key];
+            return presetValue === currentValue;
+        });
+
+        // Also check that non-specified options are at defaults
+        if (matches) {
+            const allKeys: (keyof BeatInterpolationOptions)[] = [
+                'minAnchorConfidence', 'gridSnapTolerance', 'tempoAdaptationRate',
+                'anomalyThreshold', 'denseSectionMinBeats', 'extrapolateStart',
+                'extrapolateEnd', 'gridAlignmentWeight', 'anchorConfidenceWeight',
+                'paceConfidenceWeight',
+            ];
+
+            const nonPresetKeys = allKeys.filter(k => !(k in presetOpts));
+            const nonDefaultsMatch = nonPresetKeys.every(key => {
+                return (options[key] ?? defaults[key]) === defaults[key];
+            });
+
+            if (nonDefaultsMatch) {
+                return preset.id;
+            }
+        }
+    }
+
+    // Check if everything is at defaults
+    const allKeys: (keyof BeatInterpolationOptions)[] = [
+        'minAnchorConfidence', 'gridSnapTolerance', 'tempoAdaptationRate',
+        'anomalyThreshold', 'denseSectionMinBeats', 'extrapolateStart',
+        'extrapolateEnd', 'gridAlignmentWeight', 'anchorConfidenceWeight',
+        'paceConfidenceWeight',
+    ];
+
+    const allDefaults = allKeys.every(key => {
+        return (options[key] ?? defaults[key]) === defaults[key];
+    });
+
+    if (allDefaults) {
+        return 'default';
+    }
+
+    // Custom configuration
+    return 'research';
 }
