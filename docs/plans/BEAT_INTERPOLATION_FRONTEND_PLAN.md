@@ -571,12 +571,12 @@ Legend:
 
 ## Success Criteria
 
-- [ ] Interpolation settings panel integrated into BeatDetectionSettings
-- [ ] All 3 algorithms selectable with clear descriptions
-- [ ] BeatTimeline visually distinguishes detected vs interpolated beats
-- [ ] Practice mode can switch between detected and merged streams
-- [ ] Interpolation statistics shown in BeatMapSummary
-- [ ] Confidence breakdown displayed (grid/anchor/pace)
-- [ ] "Re-analyze needed" indicator works for interpolation settings
-- [ ] Advanced options accessible for power users
-- [ ] Algorithm comparison view available for research
+- [x] Interpolation settings panel integrated into BeatDetectionSettings
+- [x] All 3 algorithms selectable with clear descriptions
+- [x] BeatTimeline visually distinguishes detected vs interpolated beats
+- [x] Practice mode can switch between detected and merged streams
+- [x] Interpolation statistics shown in BeatMapSummary
+- [x] Confidence breakdown displayed (grid/anchor/pace)
+- [x] "Re-analyze needed" indicator works for interpolation settings
+- [x] Advanced options accessible for power users
+- [x] Algorithm comparison view available for research

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, GitCompare } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -16,6 +16,7 @@ import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
+import { InterpolationComparisonView } from '../ui/InterpolationComparisonView';
 import { ColorExtractor } from 'playlist-data-engine';
 import { useBeatDetectionStore } from '../../store/beatDetectionStore';
 import { logger } from '../../utils/logger';
@@ -81,6 +82,9 @@ export function AudioAnalysisTab() {
   const clearBeatMap = useBeatDetectionStore((state) => state.actions.clearBeatMap);
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
   const storageError = useBeatDetectionStore((state) => state.storageError);
+
+  // State for showing algorithm comparison view
+  const [showComparisonView, setShowComparisonView] = useState(false);
 
   /**
    * Load cached beat map when the selected track changes.
@@ -801,7 +805,35 @@ export function AudioAnalysisTab() {
               onStartPractice={handleStartPracticeMode}
             />
           )}
+
+          {/* Algorithm Comparison Toggle - shown after successful analysis */}
+          {beatMap && !isBeatGenerating && (
+            <div className="audio-analysis-comparison-toggle">
+              <Button
+                variant={showComparisonView ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => setShowComparisonView(!showComparisonView)}
+                leftIcon={GitCompare}
+                className="audio-analysis-comparison-btn"
+              >
+                {showComparisonView ? 'Hide' : 'Compare'} Algorithms
+              </Button>
+              <span className="audio-analysis-comparison-hint">
+                Compare all 3 interpolation algorithms side-by-side
+              </span>
+            </div>
+          )}
         </Card>
+      )}
+
+      {/* Algorithm Comparison View - Full-width section for research */}
+      {selectedTrack && analysisMode === 'beat' && !practiceModeActive && beatMap && showComparisonView && (
+        <div className="audio-analysis-comparison-container fade-in">
+          <InterpolationComparisonView
+            beatMap={beatMap}
+            timeWindow={10}
+          />
+        </div>
       )}
 
       {/* Beat Practice View - Full-width immersive experience */}

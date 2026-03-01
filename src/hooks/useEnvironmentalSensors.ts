@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { EnvironmentalSensors, BiomeType, XPBonusSource, XpModifierBreakdown } from 'playlist-data-engine';
+import { EnvironmentalSensors, BiomeType, XPBonusSource, XpModifierBreakdown, SolarInfo } from 'playlist-data-engine';
 import { useSensorStore } from '@/store/sensorStore';
 import { useAppStore } from '@/store/appStore';
 import { logger } from '@/utils/logger';
@@ -156,6 +156,11 @@ export const useEnvironmentalSensors = () => {
     // Used to show "last successful update" in the UI
     const [lastWeatherSuccess, setLastWeatherSuccess] = useState<number | null>(null);
 
+    // Solar info state - always available when we have location
+    // Works WITHOUT API key using astronomical calculations
+    const [solarInfo, setSolarInfo] = useState<SolarInfo | null>(null);
+
+
     // Calculate XP modifier from environmental context (1.0 - 3.0)
     // Updates whenever environmentalContext changes
     const xpModifier = useMemo(() => {
@@ -280,6 +285,12 @@ export const useEnvironmentalSensors = () => {
                 setWeatherError(weatherSensor.lastError);
             }
         }
+
+        // Update solar info whenever we have location (works without API key)
+        if (context?.geolocation || sensors.getLastKnownGood('geolocation')?.geolocation) {
+            const solar = sensors.getSolarInfo();
+            setSolarInfo(solar);
+        }
     }, [sensors]);
 
     const startMonitoring = useCallback(async () => {
@@ -402,5 +413,5 @@ export const useEnvironmentalSensors = () => {
         }
     }, [sensors, isMonitoring, updateEnvironmentalContext, checkWeatherStatus, updateDiagnosticsState]);
 
-    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBreakdown, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather };
+    return { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBreakdown, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather, solarInfo };
 };
