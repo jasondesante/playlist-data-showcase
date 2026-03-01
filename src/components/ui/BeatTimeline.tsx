@@ -10,13 +10,15 @@
  * - Visual pulse/flash when a beat crosses the "now" line
  * - Anticipation window showing upcoming beats
  * - Smooth 60fps animation using requestAnimationFrame
+ * - Interpolation visualization: detected vs interpolated beats (Task 5.1)
  *
  * Part of Task 4.1: BeatTimeline Component
  * Part of Task 4.3: Timeline Synchronization
+ * Part of Task 5.1: Dual-Source Rendering for Interpolation
  */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
-import type { Beat, BeatMap, BeatEvent } from '@/types';
+import type { Beat, BeatMap, BeatEvent, InterpolationVisualizationData } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -39,6 +41,13 @@ interface BeatTimelineProps {
   isPlaying?: boolean;
   /** Optional AudioContext for precise timing (if available) */
   audioContext?: AudioContext | null;
+  /**
+   * Interpolation visualization data for rendering detected vs interpolated beats.
+   * When provided, takes precedence over beatMap for beat rendering.
+   * Set to null to use original beatMap beats only.
+   * Part of Task 5.1: Dual-Source Rendering
+   */
+  interpolationData?: InterpolationVisualizationData | null;
 }
 
 /**
@@ -60,6 +69,7 @@ export function BeatTimeline({
   pastWindow = 4.0,
   isPlaying = false,
   audioContext: _audioContext,
+  interpolationData = null,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
@@ -288,8 +298,8 @@ export function BeatTimeline({
    * so beats maintain consistent speed as they scroll past center.
    */
   const calculateBeatPosition = useCallback(
-    (beat: Beat): number => {
-      const timeUntilBeat = beat.timestamp - smoothTime;
+    (timestamp: number): number => {
+      const timeUntilBeat = timestamp - smoothTime;
       // Use the same scale for both sides to maintain consistent speed
       const position = 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
       return position;
@@ -297,35 +307,86 @@ export function BeatTimeline({
     [smoothTime, anticipationWindow]
   );
 
+  // ========================================
+  // Task 5.1: Unified Beat Type for Dual-Source Rendering
+  // ========================================
+
+  /**
+   * Unified beat representation for rendering.
+   * Works with both original BeatMap beats and interpolation visualization beats.
+   */
+  type UnifiedBeat = {
+    timestamp: number;
+    isDownbeat: boolean;
+    confidence: number;
+    /** Source of the beat - 'detected' from BeatTracker or 'interpolated' from grid */
+    source: 'detected' | 'interpolated';
+    /** Unique key for React rendering */
+    key: string;
+  };
+
+  /**
+   * Convert BeatMap beats to unified format.
+   */
+  const convertBeatMapBeats = useCallback((beats: Beat[]): UnifiedBeat[] => {
+    return beats.map((beat, index) => ({
+      timestamp: beat.timestamp,
+      isDownbeat: beat.isDownbeat,
+      confidence: beat.confidence ?? 1,
+      source: 'detected' as const,
+      key: `beat-${beat.timestamp.toFixed(3)}-${beat.measureNumber ?? index}`,
+    }));
+  }, []);
+
+  /**
+   * Convert interpolation visualization beats to unified format.
+   */
+  const convertInterpolationBeats = useCallback((beats: InterpolationVisualizationData['beats']): UnifiedBeat[] => {
+    return beats.map((beat, index) => ({
+      timestamp: beat.timestamp,
+      isDownbeat: beat.isDownbeat,
+      confidence: beat.confidence,
+      source: beat.source,
+      key: `interp-${beat.timestamp.toFixed(3)}-${beat.source}-${index}`,
+    }));
+  }, []);
+
+  /**
+   * Get the beats to render based on whether interpolation data is provided.
+   * When interpolationData is available, use it; otherwise fall back to beatMap.
+   */
+  const unifiedBeats = useMemo((): UnifiedBeat[] => {
+    if (interpolationData && interpolationData.beats.length > 0) {
+      return convertInterpolationBeats(interpolationData.beats);
+    }
+    return convertBeatMapBeats(beatMap.beats);
+  }, [interpolationData, beatMap.beats, convertInterpolationBeats, convertBeatMapBeats]);
+
   /**
    * Get beats visible in the current window
-   * Always uses the full beatMap to include both past and future beats
+   * Uses unified beat format for dual-source rendering.
    * Uses asymmetric windows: pastWindow for past beats, anticipationWindow for future
    */
   const getVisibleBeats = useCallback((): Array<{
-    beat: Beat;
+    beat: UnifiedBeat;
     position: number;
     isPast: boolean;
     isUpcoming: boolean;
   }> => {
-    // Always use the full beat map to get both past and future beats
-    // (upcomingBeats only contains future beats, which won't work for showing past beats)
-    const beatsToUse = beatMap.beats;
-
     // Use asymmetric windows: more time for past beats to scroll off screen
     const minTime = smoothTime - pastWindow;
     const maxTime = smoothTime + anticipationWindow;
 
-    return beatsToUse
+    return unifiedBeats
       .filter((beat) => beat.timestamp >= minTime && beat.timestamp <= maxTime)
       .map((beat) => {
-        const position = calculateBeatPosition(beat);
+        const position = calculateBeatPosition(beat.timestamp);
         const isPast = beat.timestamp < smoothTime - 0.05; // 50ms tolerance
         const isUpcoming = beat.timestamp > smoothTime + 0.05;
         return { beat, position, isPast, isUpcoming };
       })
       .filter((item) => item.position >= 0 && item.position <= 1);
-  }, [beatMap.beats, smoothTime, anticipationWindow, pastWindow, calculateBeatPosition]);
+  }, [unifiedBeats, smoothTime, anticipationWindow, pastWindow, calculateBeatPosition]);
 
   const visibleBeats = getVisibleBeats();
 
@@ -355,15 +416,16 @@ export function BeatTimeline({
         {/* Beat markers */}
         {visibleBeats.map(({ beat, position, isPast, isUpcoming }) => (
           <div
-            key={`beat-${beat.timestamp.toFixed(3)}-${beat.measureNumber}`}
+            key={beat.key}
             className={`beat-timeline-marker ${
               beat.isDownbeat ? 'beat-timeline-marker--downbeat' : ''
             } ${isPast ? 'beat-timeline-marker--past' : ''} ${
               isUpcoming ? 'beat-timeline-marker--upcoming' : ''
-            }`}
+            } ${beat.source === 'interpolated' ? 'beat-timeline-marker--interpolated' : ''}`}
             style={{
               left: `${position * 100}%`,
-              opacity: beat.confidence ?? 1,
+              // For detected beats, use confidence if available; for interpolated beats, always use confidence
+              opacity: beat.source === 'detected' ? (beat.confidence ?? 1) : beat.confidence,
             }}
           >
             {/* Beat inner dot */}

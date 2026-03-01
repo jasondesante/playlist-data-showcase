@@ -17,7 +17,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target } from 'lucide-react';
 import './BeatPracticeView.css';
-import { useBeatDetectionStore, useDifficultyPreset, useAccuracyThresholds } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useDifficultyPreset, useAccuracyThresholds, useInterpolationVisualizationData } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
@@ -96,6 +96,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const beatMap = useBeatDetectionStore((state) => state.beatMap);
   const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
   const recordTap = useBeatDetectionStore((state) => state.actions.recordTap);
+
+  // Interpolation visualization data (Task 5.1)
+  const interpolationData = useInterpolationVisualizationData();
 
   // Audio player state
   const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
@@ -465,6 +468,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         anticipationWindow={2.0}
         isPlaying={isPlaying}
         audioContext={null}
+        interpolationData={interpolationData}
       />
 
       {/* Playback Controls */}

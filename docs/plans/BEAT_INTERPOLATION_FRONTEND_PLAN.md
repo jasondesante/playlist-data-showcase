@@ -242,15 +242,19 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **5.1 Update BeatTimeline for Dual-Source Rendering**
-  - [ ] Modify [src/components/ui/BeatTimeline.tsx](src/components/ui/BeatTimeline.tsx)
-  - [ ] Accept new prop: `interpolationData: InterpolationVisualizationData | null`
-  - [ ] Render detected beats with **solid markers**
-  - [ ] Render interpolated beats with **hollow/dashed markers**
-  - [ ] Use confidence to vary **opacity** of interpolated beats:
+- [x] **5.1 Update BeatTimeline for Dual-Source Rendering**
+  - [x] Modify [src/components/ui/BeatTimeline.tsx](src/components/ui/BeatTimeline.tsx)
+  - [x] Accept new prop: `interpolationData: InterpolationVisualizationData | null`
+  - [x] Render detected beats with **solid markers**
+  - [x] Render interpolated beats with **hollow/dashed markers**
+  - [x] Use confidence to vary **opacity** of interpolated beats:
     ```typescript
     const opacity = beat.source === 'detected' ? 1.0 : beat.confidence;
     ```
+  - [x] Added `UnifiedBeat` type for dual-source rendering
+  - [x] Added CSS styles for interpolated markers (hollow/dashed)
+  - [x] Added responsive styles for interpolated markers
+  - [x] Integrated interpolation data into BeatPracticeView
 
 - [ ] **5.2 Add Visual Legend**
   - [ ] Show legend explaining beat types:

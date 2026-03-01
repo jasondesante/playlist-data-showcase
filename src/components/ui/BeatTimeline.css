@@ -103,6 +103,67 @@
   box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
 }
 
+/* ============================================
+   Task 5.1: Interpolated Beat Markers
+   Hollow/dashed style for grid-generated beats
+   ============================================ */
+
+/**
+ * Interpolated beats use a hollow ring style instead of solid fill.
+ * The border uses a dashed pattern to visually distinguish from detected beats.
+ * Confidence affects opacity (handled inline via style prop).
+ */
+.beat-timeline-marker--interpolated .beat-timeline-marker-dot {
+  /* Hollow ring style */
+  background: transparent;
+  border: 2px dashed hsl(var(--cute-yellow));
+  box-shadow: none;
+  /* Slightly smaller to account for border */
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Interpolated downbeats - use primary color with hollow style */
+.beat-timeline-marker--interpolated.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  border-color: hsl(var(--primary));
+  border-width: 2.5px;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Past interpolated beats - subtle dimming */
+.beat-timeline-marker--interpolated.beat-timeline-marker--past .beat-timeline-marker-dot {
+  opacity: 0.5;
+}
+
+/* Upcoming interpolated beats - subtle glow */
+.beat-timeline-marker--interpolated.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+  animation: interpolated-beat-glow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes interpolated-beat-glow {
+  from {
+    box-shadow: 0 0 4px hsl(var(--cute-yellow) / 0.3);
+  }
+  to {
+    box-shadow: 0 0 8px hsl(var(--cute-yellow) / 0.5);
+  }
+}
+
+/* Upcoming interpolated downbeats - primary color glow */
+.beat-timeline-marker--interpolated.beat-timeline-marker--upcoming.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  animation-name: interpolated-downbeat-glow;
+}
+
+@keyframes interpolated-downbeat-glow {
+  from {
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+  }
+}
+
 /* Downbeat accent ring */
 .beat-timeline-marker-ring {
   position: absolute;
@@ -375,6 +436,19 @@
     height: 1rem;
   }
 
+  /* Interpolated markers - smaller on mobile */
+  .beat-timeline-marker--interpolated .beat-timeline-marker-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-width: 1.5px;
+  }
+
+  .beat-timeline-marker--interpolated.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-width: 2px;
+  }
+
   .beat-timeline-marker-ring {
     inset: -3px;
   }
@@ -428,6 +502,19 @@
   .beat-timeline-marker--downbeat .beat-timeline-marker-dot {
     width: 0.875rem;
     height: 0.875rem;
+  }
+
+  /* Interpolated markers - even smaller on extra small screens */
+  .beat-timeline-marker--interpolated .beat-timeline-marker-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-width: 1px;
+  }
+
+  .beat-timeline-marker--interpolated.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-width: 1.5px;
   }
 
   .beat-timeline-marker-ring {
