@@ -153,15 +153,19 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     ```
   - [x] Also added `useShowInterpolationVisualization()` and `useInterpolationState()` convenience selectors
 
-- [ ] **2.4 Update generateBeatMap Action**
-  - [ ] After BeatMap generation, automatically call `generateInterpolatedBeatMap()`
-  - [ ] Cache InterpolatedBeatMap alongside BeatMap
-  - [ ] Fire only if `interpolationOptions` differ from last generation
+- [x] **2.4 Update generateBeatMap Action**
+  - [x] After BeatMap generation, automatically call `generateInterpolatedBeatMap()`
+  - [x] Cache InterpolatedBeatMap alongside BeatMap
+  - [x] Fire only if `interpolationOptions` differ from last generation
+  - [x] Added `InterpolationConfigSnapshot` type and helper functions
+  - [x] Added `lastGeneratedInterpolationConfig` and `cachedInterpolatedBeatMaps` to state
+  - [x] Updated `clearBeatMap` to reset interpolation config
+  - [x] Updated `partialize` to persist interpolation state
 
-- [ ] **2.5 Add Re-Analyze Detection**
-  - [ ] Track `lastGeneratedInterpolationOptions` snapshot
-  - [ ] Add `useInterpolationSettingsChanged()` selector
-  - [ ] Combine with existing OSE settings changed check
+- [x] **2.5 Add Re-Analyze Detection**
+  - [x] Track `lastGeneratedInterpolationConfig` snapshot
+  - [x] Add `useInterpolationSettingsChanged()` selector
+  - [x] Add `useNeedsReanalysis()` combined selector for overall re-analyze indicator
 
 ---
 

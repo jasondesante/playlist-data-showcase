@@ -165,6 +165,66 @@ export const createOSEConfigSnapshot = (
 });
 
 /**
+ * Snapshot of interpolation config for comparing settings changes.
+ */
+export interface InterpolationConfigSnapshot {
+    interpolationOptions: BeatInterpolationOptions;
+    selectedAlgorithm: InterpolationAlgorithm;
+}
+
+/**
+ * Check if two interpolation config snapshots differ.
+ *
+ * @param a - First snapshot
+ * @param b - Second snapshot
+ * @returns True if the configs differ
+ */
+export const interpolationConfigsDiffer = (
+    a: InterpolationConfigSnapshot | null,
+    b: InterpolationConfigSnapshot | null
+): boolean => {
+    // If both are null, no difference
+    if (a === null && b === null) return false;
+    // If one is null and other isn't, they differ
+    if (a === null || b === null) return true;
+
+    // Compare selected algorithm
+    if (a.selectedAlgorithm !== b.selectedAlgorithm) return true;
+
+    // Compare all interpolation options
+    const optsA = a.interpolationOptions;
+    const optsB = b.interpolationOptions;
+
+    if (optsA.minAnchorConfidence !== optsB.minAnchorConfidence) return true;
+    if (optsA.gridSnapTolerance !== optsB.gridSnapTolerance) return true;
+    if (optsA.tempoAdaptationRate !== optsB.tempoAdaptationRate) return true;
+    if (optsA.extrapolateStart !== optsB.extrapolateStart) return true;
+    if (optsA.extrapolateEnd !== optsB.extrapolateEnd) return true;
+    if (optsA.anomalyThreshold !== optsB.anomalyThreshold) return true;
+    if (optsA.denseSectionMinBeats !== optsB.denseSectionMinBeats) return true;
+    if (optsA.gridAlignmentWeight !== optsB.gridAlignmentWeight) return true;
+    if (optsA.anchorConfidenceWeight !== optsB.anchorConfidenceWeight) return true;
+    if (optsA.paceConfidenceWeight !== optsB.paceConfidenceWeight) return true;
+
+    return false;
+};
+
+/**
+ * Create an interpolation config snapshot from the current store state.
+ *
+ * @param interpolationOptions - Current interpolation options
+ * @param selectedAlgorithm - Selected interpolation algorithm
+ * @returns An interpolation config snapshot
+ */
+export const createInterpolationConfigSnapshot = (
+    interpolationOptions: BeatInterpolationOptions,
+    selectedAlgorithm: InterpolationAlgorithm
+): InterpolationConfigSnapshot => ({
+    interpolationOptions: { ...interpolationOptions },
+    selectedAlgorithm,
+});
+
+/**
  * Difficulty settings for beat tap evaluation.
  *
  * Controls the timing thresholds used to rate tap accuracy.
@@ -227,6 +287,10 @@ interface BeatDetectionState {
     beatStreamMode: BeatStreamMode;
     /** Whether to show interpolation visualization in timeline */
     showInterpolationVisualization: boolean;
+    /** Interpolation config snapshot used to generate the current interpolated beat map (for re-analyze indicator) */
+    lastGeneratedInterpolationConfig: InterpolationConfigSnapshot | null;
+    /** Cached interpolated beat maps indexed by audio ID for localStorage persistence */
+    cachedInterpolatedBeatMaps: Record<string, InterpolatedBeatMap>;
 }
 
 interface BeatDetectionActions {
@@ -479,6 +543,8 @@ const createInitialState = (): BeatDetectionState => ({
     selectedAlgorithm: 'dual-pass', // Most robust algorithm
     beatStreamMode: 'detected', // Backward compatible default
     showInterpolationVisualization: false,
+    lastGeneratedInterpolationConfig: null,
+    cachedInterpolatedBeatMaps: {},
 });
 
 /**
@@ -618,6 +684,52 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     state.gaussianSmoothConfig
                                 ),
                             });
+
+                            // Check if we have a cached interpolated beat map and if options match
+                            const currentInterpolationConfig = createInterpolationConfigSnapshot(
+                                state.interpolationOptions,
+                                state.selectedAlgorithm
+                            );
+                            const cachedInterpolated = state.cachedInterpolatedBeatMaps[audioId];
+
+                            if (cachedInterpolated && !interpolationConfigsDiffer(currentInterpolationConfig, state.lastGeneratedInterpolationConfig)) {
+                                // Use cached interpolated beat map
+                                logger.info('BeatDetection', 'Using cached interpolated beat map', { audioId });
+                                set({
+                                    interpolatedBeatMap: cachedInterpolated,
+                                    lastGeneratedInterpolationConfig: currentInterpolationConfig,
+                                });
+                            } else {
+                                // Generate interpolation (options changed or not cached)
+                                logger.info('BeatDetection', 'Generating interpolated beat map after cache load', {
+                                    reason: cachedInterpolated ? 'options changed' : 'not cached',
+                                });
+                                // Need to get fresh state after the set above
+                                const freshState = get();
+                                const interpolator = new BeatInterpolator({
+                                    ...freshState.interpolationOptions,
+                                    algorithm: freshState.selectedAlgorithm,
+                                });
+                                try {
+                                    const interpolatedBeatMap = interpolator.interpolate(cachedMap);
+                                    set({
+                                        interpolatedBeatMap,
+                                        lastGeneratedInterpolationConfig: currentInterpolationConfig,
+                                        cachedInterpolatedBeatMaps: {
+                                            ...freshState.cachedInterpolatedBeatMaps,
+                                            [audioId]: interpolatedBeatMap,
+                                        },
+                                    });
+                                    logger.info('BeatDetection', 'Interpolated beat map generated successfully', {
+                                        detectedBeats: interpolatedBeatMap.detectedBeats.length,
+                                        mergedBeats: interpolatedBeatMap.mergedBeats.length,
+                                    });
+                                } catch (interpError) {
+                                    const errorMsg = interpError instanceof Error ? interpError.message : 'Unknown interpolation error';
+                                    logger.error('BeatDetection', 'Failed to generate interpolated beat map', { error: errorMsg });
+                                }
+                            }
+
                             return cachedMap;
                         }
 
@@ -692,6 +804,40 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 currentState.gaussianSmoothConfig
                             );
 
+                            // Automatically generate interpolated beat map
+                            const interpolationConfigSnapshot = createInterpolationConfigSnapshot(
+                                currentState.interpolationOptions,
+                                currentState.selectedAlgorithm
+                            );
+
+                            let interpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            let cachedInterpolatedBeatMaps = currentState.cachedInterpolatedBeatMaps;
+
+                            try {
+                                const interpolator = new BeatInterpolator({
+                                    ...currentState.interpolationOptions,
+                                    algorithm: currentState.selectedAlgorithm,
+                                });
+                                interpolatedBeatMap = interpolator.interpolate(beatMap);
+
+                                // Cache the interpolated beat map
+                                cachedInterpolatedBeatMaps = {
+                                    ...cachedInterpolatedBeatMaps,
+                                    [audioId]: interpolatedBeatMap,
+                                };
+
+                                logger.info('BeatDetection', 'Interpolated beat map generated automatically', {
+                                    detectedBeats: interpolatedBeatMap.detectedBeats.length,
+                                    mergedBeats: interpolatedBeatMap.mergedBeats.length,
+                                    interpolatedCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
+                                    quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
+                                });
+                            } catch (interpError) {
+                                const errorMsg = interpError instanceof Error ? interpError.message : 'Unknown interpolation error';
+                                logger.error('BeatDetection', 'Failed to generate interpolated beat map', { error: errorMsg });
+                                // Continue without interpolation - don't fail the whole generation
+                            }
+
                             set({
                                 beatMap,
                                 isGenerating: false,
@@ -700,6 +846,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 cacheOrder,
                                 error: null,
                                 lastGeneratedOSEConfig: oseConfigSnapshot,
+                                interpolatedBeatMap,
+                                lastGeneratedInterpolationConfig: interpolationConfigSnapshot,
+                                cachedInterpolatedBeatMaps,
                             });
 
                             // Clear active generator reference
@@ -792,6 +941,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             // Also clear interpolation state
                             interpolatedBeatMap: null,
                             showInterpolationVisualization: false,
+                            lastGeneratedInterpolationConfig: null,
                         });
                     },
 
@@ -1082,6 +1232,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 melBandsConfig: state.melBandsConfig,
                 gaussianSmoothConfig: state.gaussianSmoothConfig,
                 difficultySettings: state.difficultySettings,
+                // Interpolation state
+                interpolationOptions: state.interpolationOptions,
+                selectedAlgorithm: state.selectedAlgorithm,
+                beatStreamMode: state.beatStreamMode,
+                cachedInterpolatedBeatMaps: state.cachedInterpolatedBeatMaps,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
@@ -1577,3 +1732,32 @@ export const useInterpolationState = () =>
         beatStreamMode: state.beatStreamMode,
         showInterpolationVisualization: state.showInterpolationVisualization,
     })));
+
+/**
+ * Selector to check if interpolation settings have changed since last generation.
+ * Used for the "Re-Analyze Needed" indicator for interpolation.
+ */
+export const useInterpolationSettingsChanged = () =>
+    useBeatDetectionStore(useShallow((state) => {
+        // No beat map means nothing to re-analyze
+        if (!state.beatMap) return false;
+
+        // Create a snapshot of current settings
+        const currentSnapshot = createInterpolationConfigSnapshot(
+            state.interpolationOptions,
+            state.selectedAlgorithm
+        );
+
+        // Compare with stored snapshot
+        return interpolationConfigsDiffer(state.lastGeneratedInterpolationConfig, currentSnapshot);
+    }));
+
+/**
+ * Selector to check if either OSE or interpolation settings have changed.
+ * Combined check for the overall "Re-Analyze Needed" indicator.
+ */
+export const useNeedsReanalysis = () => {
+    const oseChanged = useOseSettingsChanged();
+    const interpolationChanged = useInterpolationSettingsChanged();
+    return oseChanged || interpolationChanged;
+};
