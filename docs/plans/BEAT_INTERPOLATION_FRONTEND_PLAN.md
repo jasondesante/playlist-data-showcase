@@ -122,13 +122,14 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     }
     ```
 
-- [ ] **2.2 Add Interpolation Actions**
-  - [ ] `setInterpolationOptions(options: Partial<BeatInterpolationOptions>)`
-  - [ ] `setSelectedAlgorithm(algorithm: InterpolationAlgorithm)`
-  - [ ] `setBeatStreamMode(mode: BeatStreamMode)`
-  - [ ] `toggleInterpolationVisualization()`
-  - [ ] `generateInterpolatedBeatMap()` - calls engine's BeatInterpolator
-  - [ ] `clearInterpolation()` - resets interpolation state
+- [x] **2.2 Add Interpolation Actions**
+  - [x] `setInterpolationOptions(options: Partial<BeatInterpolationOptions>)`
+  - [x] `setSelectedAlgorithm(algorithm: InterpolationAlgorithm)`
+  - [x] `setBeatStreamMode(mode: BeatStreamMode)`
+  - [x] `toggleInterpolationVisualization()`
+  - [x] `generateInterpolatedBeatMap()` - calls engine's BeatInterpolator
+  - [x] `clearInterpolation()` - resets interpolation state
+  - [x] Also updated `clearBeatMap` to reset interpolation state
 
 - [ ] **2.3 Add Interpolation Selectors**
   - [ ] `useInterpolatedBeatMap()` - returns InterpolatedBeatMap

@@ -38,7 +38,7 @@ import {
     BeatStreamMode,
     DEFAULT_BEAT_INTERPOLATION_OPTIONS,
 } from '@/types';
-import { BeatMapGenerator } from 'playlist-data-engine';
+import { BeatMapGenerator, BeatInterpolator } from 'playlist-data-engine';
 
 /**
  * TapResult extends ExtendedButtonPressResult with additional metadata for history tracking.
@@ -383,6 +383,46 @@ interface BeatDetectionActions {
      * Returns the thresholds for the current preset, or custom thresholds if preset is 'custom'.
      */
     getAccuracyThresholds: () => AccuracyThresholds;
+
+    // ============================================================
+    // Interpolation Actions (Task 2.2)
+    // ============================================================
+
+    /**
+     * Update interpolation options.
+     * These will be used for subsequent interpolated beat map generations.
+     * @param options - Partial options to merge with existing options
+     */
+    setInterpolationOptions: (options: Partial<BeatInterpolationOptions>) => void;
+
+    /**
+     * Set the selected interpolation algorithm.
+     * @param algorithm - The algorithm to use ('histogram-grid' | 'adaptive-phase-locked' | 'dual-pass')
+     */
+    setSelectedAlgorithm: (algorithm: InterpolationAlgorithm) => void;
+
+    /**
+     * Set the beat stream mode for practice/playback.
+     * @param mode - 'detected' for original beats, 'merged' for interpolated + detected
+     */
+    setBeatStreamMode: (mode: BeatStreamMode) => void;
+
+    /**
+     * Toggle the interpolation visualization visibility.
+     */
+    toggleInterpolationVisualization: () => void;
+
+    /**
+     * Generate an interpolated beat map from the current beat map.
+     * Uses the BeatInterpolator from the engine with current interpolation options.
+     * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
+     */
+    generateInterpolatedBeatMap: () => InterpolatedBeatMap | null;
+
+    /**
+     * Clear the interpolated beat map and reset interpolation state.
+     */
+    clearInterpolation: () => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -748,6 +788,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             tapHistory: [],
                             error: null,
                             lastGeneratedOSEConfig: null,
+                            // Also clear interpolation state
+                            interpolatedBeatMap: null,
+                            showInterpolationVisualization: false,
                         });
                     },
 
@@ -908,6 +951,115 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             difficultySettings.preset,
                             difficultySettings.customThresholds
                         );
+                    },
+
+                    // ============================================================
+                    // Interpolation Actions (Task 2.2)
+                    // ============================================================
+
+                    /**
+                     * Update interpolation options.
+                     * These will be used for subsequent interpolated beat map generations.
+                     * @param options - Partial options to merge with existing options
+                     */
+                    setInterpolationOptions: (options) => {
+                        logger.debug('BeatDetection', 'Updating interpolation options', options);
+                        set((state) => ({
+                            interpolationOptions: {
+                                ...state.interpolationOptions,
+                                ...options,
+                            },
+                        }));
+                    },
+
+                    /**
+                     * Set the selected interpolation algorithm.
+                     * @param algorithm - The algorithm to use
+                     */
+                    setSelectedAlgorithm: (algorithm) => {
+                        logger.info('BeatDetection', 'Setting interpolation algorithm', { algorithm });
+                        set((state) => ({
+                            selectedAlgorithm: algorithm,
+                            interpolationOptions: {
+                                ...state.interpolationOptions,
+                                algorithm,
+                            },
+                        }));
+                    },
+
+                    /**
+                     * Set the beat stream mode for practice/playback.
+                     * @param mode - 'detected' for original beats, 'merged' for interpolated + detected
+                     */
+                    setBeatStreamMode: (mode) => {
+                        logger.info('BeatDetection', 'Setting beat stream mode', { mode });
+                        set({ beatStreamMode: mode });
+                    },
+
+                    /**
+                     * Toggle the interpolation visualization visibility.
+                     */
+                    toggleInterpolationVisualization: () => {
+                        const current = get().showInterpolationVisualization;
+                        logger.info('BeatDetection', 'Toggling interpolation visualization', { enabled: !current });
+                        set({ showInterpolationVisualization: !current });
+                    },
+
+                    /**
+                     * Generate an interpolated beat map from the current beat map.
+                     * Uses the BeatInterpolator from the engine with current interpolation options.
+                     * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
+                     */
+                    generateInterpolatedBeatMap: () => {
+                        const state = get();
+                        const { beatMap, interpolationOptions, selectedAlgorithm } = state;
+
+                        if (!beatMap) {
+                            logger.warn('BeatDetection', 'No beat map loaded, cannot generate interpolation');
+                            return null;
+                        }
+
+                        logger.info('BeatDetection', 'Generating interpolated beat map', {
+                            algorithm: selectedAlgorithm,
+                            beatCount: beatMap.beats.length,
+                        });
+
+                        try {
+                            // Create interpolator with current options (including selected algorithm)
+                            const interpolator = new BeatInterpolator({
+                                ...interpolationOptions,
+                                algorithm: selectedAlgorithm,
+                            });
+
+                            // Generate the interpolated beat map
+                            const interpolatedBeatMap = interpolator.interpolate(beatMap);
+
+                            logger.info('BeatDetection', 'Interpolated beat map generated successfully', {
+                                detectedBeats: interpolatedBeatMap.detectedBeats.length,
+                                mergedBeats: interpolatedBeatMap.mergedBeats.length,
+                                interpolatedCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
+                                quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
+                            });
+
+                            set({ interpolatedBeatMap });
+                            return interpolatedBeatMap;
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to generate interpolated beat map', { error: errorMessage });
+                            set({ error: errorMessage });
+                            return null;
+                        }
+                    },
+
+                    /**
+                     * Clear the interpolated beat map and reset interpolation state.
+                     */
+                    clearInterpolation: () => {
+                        logger.info('BeatDetection', 'Clearing interpolation state');
+                        set({
+                            interpolatedBeatMap: null,
+                            showInterpolationVisualization: false,
+                        });
                     },
                 },
             };
