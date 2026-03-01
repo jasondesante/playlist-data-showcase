@@ -52,10 +52,11 @@
  * - Supports both mouse and touch interaction
  * - Responsive design for mobile, tablet, and desktop viewports
  */
-import { Info, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Info, RotateCcw, AlertTriangle, ChevronDown } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { BeatInterpolationSettings } from './BeatInterpolationSettings';
 import './BeatDetectionSettings.css';
-import { useBeatDetectionStore, useOseSettingsChanged } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useOseSettingsChanged, useInterpolationSettingsChanged } from '../../store/beatDetectionStore';
 import {
     HopSizeMode,
     MelBandsMode,
@@ -140,6 +141,9 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   // Check if OSE settings have changed since last beat map generation
   const oseSettingsChanged = useOseSettingsChanged();
+
+  // Check if interpolation settings have changed since last beat map generation
+  const interpolationSettingsChanged = useInterpolationSettingsChanged();
 
   // Extract values with fallbacks for potentially undefined properties
   const minBpm = generatorOptions.minBpm ?? DEFAULTS.minBpm;
@@ -933,6 +937,39 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
               </div>
             )}
           </div>
+        </div>
+      </details>
+
+      {/* ============================================================
+       * TASK 3.4: Beat Interpolation Settings Section
+       *
+       * Collapsible section for beat interpolation options.
+       * Allows users to configure how gaps between detected beats are filled.
+       * Shows after OSE settings as a separate collapsible section.
+       * ============================================================ */}
+      <details className="beat-detection-interpolation">
+        <summary className="beat-detection-interpolation-summary">
+          <span className="beat-detection-interpolation-summary-text">Beat Interpolation</span>
+          <ChevronDown className="beat-detection-interpolation-summary-icon" size={12} />
+        </summary>
+        <div className="beat-detection-interpolation-content">
+          <BeatInterpolationSettings disabled={disabled} />
+
+          {/* ============================================================
+           * TASK 3.4: Re-Analyze Needed Indicator for Interpolation
+           *
+           * Shows when interpolation settings have changed since the current
+           * beat map was generated. Indicates to the user that they need to
+           * re-analyze to apply the new interpolation settings.
+           * ============================================================ */}
+          {interpolationSettingsChanged && (
+            <div className="beat-detection-reanalyze-indicator" role="status" aria-live="polite">
+              <AlertTriangle className="beat-detection-reanalyze-indicator-icon" />
+              <span className="beat-detection-reanalyze-indicator-text">
+                Interpolation settings changed - re-analyze to apply
+              </span>
+            </div>
+          )}
         </div>
       </details>
 

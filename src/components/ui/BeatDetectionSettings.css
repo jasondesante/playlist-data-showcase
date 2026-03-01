@@ -1275,3 +1275,127 @@
     padding: 0.625rem 0.75rem;
   }
 }
+
+/* ============================================
+   TASK 3.4: BEAT INTERPOLATION SECTION
+   Collapsible section for interpolation settings
+   ============================================ */
+
+.beat-detection-interpolation {
+  margin-top: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  background: hsl(var(--muted) / 0.15);
+  overflow: hidden;
+}
+
+.beat-detection-interpolation-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.625rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+/* Hide default marker for WebKit browsers */
+.beat-detection-interpolation-summary::-webkit-details-marker {
+  display: none;
+}
+
+.beat-detection-interpolation-summary:hover {
+  background: hsl(var(--muted) / 0.3);
+}
+
+.beat-detection-interpolation-summary-text {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-detection-interpolation-summary-icon {
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease;
+}
+
+/* Rotate arrow when open */
+.beat-detection-interpolation[open] .beat-detection-interpolation-summary-icon {
+  transform: rotate(180deg);
+}
+
+.beat-detection-interpolation-content {
+  padding: 0.5rem 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Responsive for interpolation section - tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-detection-interpolation {
+    margin-top: 0.4375rem;
+  }
+
+  .beat-detection-interpolation-summary {
+    padding: 0.4375rem 0.5625rem;
+    min-height: 36px;
+  }
+
+  .beat-detection-interpolation-summary-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-interpolation-content {
+    padding: 0.4375rem 0.5625rem;
+  }
+}
+
+/* Responsive for interpolation section - mobile */
+@media (max-width: 640px) {
+  .beat-detection-interpolation {
+    margin-top: 0.375rem;
+  }
+
+  .beat-detection-interpolation-summary {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-detection-interpolation-summary-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-detection-interpolation-content {
+    padding: 0.375rem 0.5rem;
+  }
+}
+
+/* Touch device optimizations for interpolation section */
+@media (hover: none) and (pointer: coarse) {
+  .beat-detection-interpolation-summary {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .beat-detection-interpolation-summary:active {
+    background: hsl(var(--muted) / 0.5);
+  }
+}
+
+/* Reduced motion support for interpolation section */
+@media (prefers-reduced-motion: reduce) {
+  .beat-detection-interpolation-content {
+    animation: none;
+  }
+
+  .beat-detection-interpolation-summary-icon {
+    transition: none;
+  }
+}

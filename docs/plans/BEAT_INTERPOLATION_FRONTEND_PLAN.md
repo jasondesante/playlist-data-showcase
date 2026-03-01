@@ -199,10 +199,10 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     - **Detected**: Use only originally detected beats (original behavior)
     - **Merged**: Use interpolated beats with detected beats as anchors (fills gaps)
 
-- [ ] **3.4 Integrate into BeatDetectionSettings**
-  - [ ] Add collapsible "Beat Interpolation" section
-  - [ ] Show after OSE settings
-  - [ ] Add "Re-analyze needed" indicator when settings change
+- [x] **3.4 Integrate into BeatDetectionSettings**
+  - [x] Add collapsible "Beat Interpolation" section
+  - [x] Show after OSE settings
+  - [x] Add "Re-analyze needed" indicator when settings change
 
 ---
 
