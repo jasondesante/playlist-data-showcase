@@ -17,7 +17,14 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target } from 'lucide-react';
 import './BeatPracticeView.css';
-import { useBeatDetectionStore, useDifficultyPreset, useAccuracyThresholds, useInterpolationVisualizationData } from '../../store/beatDetectionStore';
+import {
+    useBeatDetectionStore,
+    useDifficultyPreset,
+    useAccuracyThresholds,
+    useInterpolationVisualizationData,
+    useBeatStreamMode,
+    useInterpolatedBeatMap,
+} from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
@@ -148,6 +155,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Difficulty settings for visual feedback
   const difficultyPreset = useDifficultyPreset();
   const accuracyThresholds = useAccuracyThresholds();
+
+  // Beat stream mode state (Task 6.1)
+  const beatStreamMode = useBeatStreamMode();
+  const interpolatedBeatMap = useInterpolatedBeatMap();
+  const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
 
   /**
    * Handle tap action (spacebar or click)
@@ -390,6 +402,39 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             Exit
           </Button>
         </div>
+      </div>
+
+      {/* Beat Stream Mode Toggle (Task 6.1) */}
+      <div className="beat-practice-stream-toggle-container">
+        <span className="beat-practice-stream-toggle-label">Beat Stream</span>
+        <div className="beat-practice-stream-toggles">
+          <button
+            type="button"
+            className={`beat-practice-stream-toggle ${beatStreamMode === 'detected' ? 'beat-practice-stream-toggle--active' : ''}`}
+            onClick={() => setBeatStreamMode('detected')}
+            aria-pressed={beatStreamMode === 'detected'}
+          >
+            <span className="beat-practice-stream-toggle-text">Detected Only</span>
+          </button>
+          <button
+            type="button"
+            className={`beat-practice-stream-toggle ${beatStreamMode === 'merged' ? 'beat-practice-stream-toggle--active' : ''} ${!interpolatedBeatMap ? 'beat-practice-stream-toggle--disabled' : ''}`}
+            onClick={() => interpolatedBeatMap && setBeatStreamMode('merged')}
+            disabled={!interpolatedBeatMap}
+            aria-pressed={beatStreamMode === 'merged'}
+            title={!interpolatedBeatMap ? 'Interpolation not available' : undefined}
+          >
+            <span className="beat-practice-stream-toggle-text">Merged</span>
+            {!interpolatedBeatMap && <span className="beat-practice-stream-toggle-indicator">✦</span>}
+          </button>
+        </div>
+        <span className="beat-practice-stream-toggle-description">
+          {beatStreamMode === 'detected'
+            ? 'Using originally detected beats'
+            : interpolatedBeatMap
+              ? 'Using interpolated beats with detected anchors'
+              : 'Interpolation not available'}
+        </span>
       </div>
 
       {/* BPM and Position Display */}

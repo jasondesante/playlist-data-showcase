@@ -278,12 +278,14 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **6.1 Add Stream Mode Toggle**
-  - [ ] Add toggle to [src/components/ui/BeatPracticeView.tsx](src/components/ui/BeatPracticeView.tsx)
-  - [ ] Label: "Beat Stream" with options:
+- [x] **6.1 Add Stream Mode Toggle**
+  - [x] Add toggle to [src/components/ui/BeatPracticeView.tsx](src/components/ui/BeatPracticeView.tsx)
+  - [x] Label: "Beat Stream" with options:
     - **Detected Only** - Original detected beats
     - **Merged (with interpolation)** - Full grid with detected anchors
-  - [ ] Toggle updates `beatStreamMode` in store
+  - [x] Toggle updates `beatStreamMode` in store
+  - [x] Added CSS styles for stream mode toggle in BeatPracticeView.css
+    - [x] Toggle is disabled when interpolated beat map is not available
 
 - [ ] **6.2 Update useBeatStream Hook**
   - [ ] Modify [src/hooks/useBeatStream.ts](src/hooks/useBeatStream.ts)
