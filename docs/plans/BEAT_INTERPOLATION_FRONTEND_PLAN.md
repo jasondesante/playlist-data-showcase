@@ -256,8 +256,8 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Added responsive styles for interpolated markers
   - [x] Integrated interpolation data into BeatPracticeView
 
-- [ ] **5.2 Add Visual Legend**
-  - [ ] Show legend explaining beat types:
+- [x] **5.2 Add Visual Legend**
+  - [x] Show legend explaining beat types:
     - ● Solid = Detected beat (from BeatTracker)
     - ○ Hollow = Interpolated beat (from grid)
     - Opacity = Confidence level

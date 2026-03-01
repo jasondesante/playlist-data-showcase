@@ -457,6 +457,26 @@ export function BeatTimeline({
         <div className="beat-timeline-impact-zone" />
       </div>
 
+      {/* Task 5.2: Visual Legend for interpolation beat types */}
+      {interpolationData && (
+        <div className="beat-timeline-legend">
+          <div className="beat-timeline-legend-item">
+            <div className="beat-timeline-legend-marker beat-timeline-legend-marker--detected" />
+            <span className="beat-timeline-legend-label">Detected beat</span>
+          </div>
+          <div className="beat-timeline-legend-item">
+            <div className="beat-timeline-legend-marker beat-timeline-legend-marker--interpolated" />
+            <span className="beat-timeline-legend-label">Interpolated beat</span>
+          </div>
+          <div className="beat-timeline-legend-item">
+            <div className="beat-timeline-legend-opacity">
+              <div className="beat-timeline-legend-opacity-bar" />
+            </div>
+            <span className="beat-timeline-legend-label">Confidence level</span>
+          </div>
+        </div>
+      )}
+
       {/* Timeline info bar */}
       <div className="beat-timeline-info">
         <div className="beat-timeline-info-item">

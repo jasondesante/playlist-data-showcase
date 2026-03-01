@@ -387,6 +387,73 @@
   color: hsl(199, 89%, 48%); /* Light Blue */
 }
 
+/* ============================================
+   Task 5.2: Visual Legend for Beat Types
+   ============================================ */
+
+.beat-timeline-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.beat-timeline-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-timeline-legend-marker {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Detected beat marker - solid fill */
+.beat-timeline-legend-marker--detected {
+  background: hsl(var(--cute-yellow));
+  box-shadow: 0 0 6px hsl(var(--cute-yellow) / 0.6);
+}
+
+/* Interpolated beat marker - hollow/dashed */
+.beat-timeline-legend-marker--interpolated {
+  background: transparent;
+  border: 2px dashed hsl(var(--cute-yellow));
+  box-shadow: none;
+}
+
+/* Confidence level indicator */
+.beat-timeline-legend-opacity {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.beat-timeline-legend-opacity-bar {
+  width: 2rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--cute-yellow) / 0.3) 0%,
+    hsl(var(--cute-yellow) / 0.6) 50%,
+    hsl(var(--cute-yellow) / 1) 100%
+  );
+}
+
+.beat-timeline-legend-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+
 /* Info Bar */
 .beat-timeline-info {
   display: flex;
@@ -485,6 +552,34 @@
   .beat-timeline-info-value {
     font-size: 0.6875rem;
   }
+
+  /* Legend responsive */
+  .beat-timeline-legend {
+    gap: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-timeline-legend-item {
+    gap: 0.375rem;
+  }
+
+  .beat-timeline-legend-marker {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .beat-timeline-legend-marker--interpolated {
+    border-width: 1.5px;
+  }
+
+  .beat-timeline-legend-opacity-bar {
+    width: 1.5rem;
+    height: 0.375rem;
+  }
+
+  .beat-timeline-legend-label {
+    font-size: 0.5625rem;
+  }
 }
 
 /* Extra small screens */
@@ -557,5 +652,34 @@
 
   .beat-timeline-info-value {
     font-size: 0.625rem;
+  }
+
+  /* Legend responsive - extra small */
+  .beat-timeline-legend {
+    gap: 0.5rem;
+    padding: 0.25rem 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .beat-timeline-legend-item {
+    gap: 0.25rem;
+  }
+
+  .beat-timeline-legend-marker {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  .beat-timeline-legend-marker--interpolated {
+    border-width: 1px;
+  }
+
+  .beat-timeline-legend-opacity-bar {
+    width: 1.25rem;
+    height: 0.3125rem;
+  }
+
+  .beat-timeline-legend-label {
+    font-size: 0.5rem;
   }
 }
