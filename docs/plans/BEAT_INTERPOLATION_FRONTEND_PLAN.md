@@ -1,8 +1,13 @@
 # Beat Interpolation - Frontend Integration Plan
 
+> **⚠️ SUPERSEDED**: This plan has been completed and simplified. Algorithm selection has been removed.
+> See [SIMPLIFY_BEAT_INTERPOLATION_FRONTEND_PLAN.md](./SIMPLIFY_BEAT_INTERPOLATION_FRONTEND_PLAN.md) for the current simplification plan.
+
 ## Overview
 
-This plan covers the frontend integration for the Beat Interpolation system defined in [beat-interpolation-implementation-plan.md](playlist-data-engine/docs/plans/beat-interpolation-implementation-plan.md). The frontend will expose the interpolation algorithms, allow users to switch between detected and merged beat streams, and visualize the interpolation results.
+This plan covers the frontend integration for the Beat Interpolation system. The frontend exposes beat interpolation, allows users to switch between detected and merged beat streams, and visualizes the interpolation results.
+
+**Note**: Algorithm selection (histogram-grid, adaptive-phase-locked, dual-pass) has been removed. The engine now uses only the Adaptive Phase-Locked Grid algorithm.
 
 ### Key Concepts from Engine Plan
 
