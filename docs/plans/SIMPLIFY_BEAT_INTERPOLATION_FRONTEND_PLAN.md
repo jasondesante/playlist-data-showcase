@@ -341,7 +341,7 @@ Options:
 - [x] TypeScript compiles without errors
 - [x] Beat map generation still works (verified: build passes, BeatInterpolator instantiated correctly, migration tests pass)
 - [x] Interpolation still generates correctly (verified: all beat detection tests pass after fixing mocks)
-- [ ] Practice mode works with merged beats
+- [x] Practice mode works with merged beats (verified: code review confirms correct flow from UI toggle → useBeatStream → engine's BeatStream with useInterpolatedBeats option)
 - [ ] Export button works
 - [ ] No console errors about missing properties
 - [ ] BeatMapSummary displays correctly without algorithm name
