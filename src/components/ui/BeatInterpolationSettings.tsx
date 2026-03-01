@@ -7,13 +7,14 @@
  * Features:
  * - Algorithm selector with three options
  * - Beat stream mode toggle
- * - Collapsible advanced options section
+ * - Advanced options via AdvancedInterpolationOptions component (Task 8.1)
  * - Pure CSS styling (no Tailwind)
  *
  * @component
  */
-import { Info, RotateCcw, ChevronDown, Star } from 'lucide-react';
+import { Info, Star } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { AdvancedInterpolationOptions } from './AdvancedInterpolationOptions';
 import './BeatInterpolationSettings.css';
 import {
     useBeatDetectionStore,
@@ -21,21 +22,7 @@ import {
     useSelectedAlgorithm,
     useBeatStreamMode,
 } from '../../store/beatDetectionStore';
-import type { InterpolationAlgorithm, BeatStreamMode, BeatInterpolationOptions } from '@/types';
-import { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from '@/types';
-
-/**
- * Get an interpolation option value with fallback to default
- * Uses non-null assertion since defaults are guaranteed to exist
- */
-function getOptionValue<K extends keyof BeatInterpolationOptions>(
-    options: BeatInterpolationOptions,
-    key: K
-): NonNullable<BeatInterpolationOptions[K]> {
-    const value = options[key] ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS[key];
-    // We know defaults exist, so this is safe
-    return value as NonNullable<BeatInterpolationOptions[K]>;
-}
+import type { InterpolationAlgorithm, BeatStreamMode } from '@/types';
 
 /**
  * Algorithm configuration for display
@@ -104,7 +91,7 @@ interface BeatInterpolationSettingsProps {
  * BeatInterpolationSettings Component
  *
  * Renders settings for beat interpolation including algorithm selection,
- * beat stream mode, and advanced options.
+ * beat stream mode, and advanced options via AdvancedInterpolationOptions.
  */
 export function BeatInterpolationSettings({ disabled = false }: BeatInterpolationSettingsProps) {
     const interpolationOptions = useInterpolationOptions();
@@ -124,70 +111,6 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
     const handleStreamModeChange = (mode: BeatStreamMode) => {
         setBeatStreamMode(mode);
     };
-
-    // Handle slider changes
-    const handleMinAnchorConfidenceChange = (value: number) => {
-        setInterpolationOptions({ minAnchorConfidence: value });
-    };
-
-    const handleGridSnapToleranceChange = (value: number) => {
-        setInterpolationOptions({ gridSnapTolerance: value });
-    };
-
-    const handleTempoAdaptationRateChange = (value: number) => {
-        setInterpolationOptions({ tempoAdaptationRate: value });
-    };
-
-    const handleAnomalyThresholdChange = (value: number) => {
-        setInterpolationOptions({ anomalyThreshold: value });
-    };
-
-    // Handle toggle changes
-    const handleExtrapolateStartChange = (checked: boolean) => {
-        setInterpolationOptions({ extrapolateStart: checked });
-    };
-
-    const handleExtrapolateEndChange = (checked: boolean) => {
-        setInterpolationOptions({ extrapolateEnd: checked });
-    };
-
-    // Reset handlers
-    const handleResetMinAnchorConfidence = () => {
-        setInterpolationOptions({ minAnchorConfidence: DEFAULT_BEAT_INTERPOLATION_OPTIONS.minAnchorConfidence });
-    };
-
-    const handleResetGridSnapTolerance = () => {
-        setInterpolationOptions({ gridSnapTolerance: DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridSnapTolerance });
-    };
-
-    const handleResetTempoAdaptationRate = () => {
-        setInterpolationOptions({ tempoAdaptationRate: DEFAULT_BEAT_INTERPOLATION_OPTIONS.tempoAdaptationRate });
-    };
-
-    const handleResetAnomalyThreshold = () => {
-        setInterpolationOptions({ anomalyThreshold: DEFAULT_BEAT_INTERPOLATION_OPTIONS.anomalyThreshold });
-    };
-
-    // Check if values differ from defaults
-    const minAnchorConfidence = getOptionValue(interpolationOptions, 'minAnchorConfidence');
-    const gridSnapTolerance = getOptionValue(interpolationOptions, 'gridSnapTolerance');
-    const tempoAdaptationRate = getOptionValue(interpolationOptions, 'tempoAdaptationRate');
-    const anomalyThreshold = getOptionValue(interpolationOptions, 'anomalyThreshold');
-    const extrapolateStart = getOptionValue(interpolationOptions, 'extrapolateStart');
-    const extrapolateEnd = getOptionValue(interpolationOptions, 'extrapolateEnd');
-
-    const isMinAnchorConfidenceDefault = minAnchorConfidence === DEFAULT_BEAT_INTERPOLATION_OPTIONS.minAnchorConfidence;
-    const isGridSnapToleranceDefault = gridSnapTolerance === DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridSnapTolerance;
-    const isTempoAdaptationRateDefault = tempoAdaptationRate === DEFAULT_BEAT_INTERPOLATION_OPTIONS.tempoAdaptationRate;
-    const isAnomalyThresholdDefault = anomalyThreshold === DEFAULT_BEAT_INTERPOLATION_OPTIONS.anomalyThreshold;
-    const isExtrapolateStartDefault = extrapolateStart === DEFAULT_BEAT_INTERPOLATION_OPTIONS.extrapolateStart;
-    const isExtrapolateEndDefault = extrapolateEnd === DEFAULT_BEAT_INTERPOLATION_OPTIONS.extrapolateEnd;
-
-    // Calculate slider percentages for CSS styling
-    const minAnchorConfidencePercent = minAnchorConfidence * 100;
-    const gridSnapTolerancePercent = ((gridSnapTolerance - 10) / 90) * 100; // 10-100ms range
-    const tempoAdaptationRatePercent = tempoAdaptationRate * 100;
-    const anomalyThresholdPercent = ((anomalyThreshold - 0.2) / 0.4) * 100; // 0.2-0.6 range
 
     // Generic keyboard navigation handler for toggle groups
     const createKeyboardNavHandler = <T extends string>(
@@ -339,228 +262,14 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
             </div>
 
             {/* ============================================================
-             * ADVANCED OPTIONS - Collapsible Section
+             * ADVANCED OPTIONS - Using AdvancedInterpolationOptions Component
+             * Task 8.1: Extracted to separate component
              * ============================================================ */}
-            <details className="beat-interpolation-advanced">
-                <summary className="beat-interpolation-advanced-summary">
-                    <span className="beat-interpolation-advanced-summary-text">Advanced Options</span>
-                    <ChevronDown className="beat-interpolation-advanced-summary-icon" size={12} />
-                </summary>
-                <div className="beat-interpolation-advanced-content">
-                    {/* Min Anchor Confidence */}
-                    <div className="beat-interpolation-settings-section">
-                        <div className="beat-interpolation-settings-header">
-                            <div className="beat-interpolation-settings-label-with-tooltip">
-                                <span className="beat-interpolation-settings-label">Min Anchor Confidence</span>
-                                <Tooltip content="Minimum confidence threshold for a detected beat to be used as an anchor for interpolation." />
-                            </div>
-                            <div className="beat-interpolation-settings-header-right">
-                                <span className={`beat-interpolation-settings-value ${!isMinAnchorConfidenceDefault ? 'beat-interpolation-settings-value--modified' : ''}`}>
-                                    {minAnchorConfidence.toFixed(2)}
-                                </span>
-                                {!isMinAnchorConfidenceDefault && (
-                                    <button
-                                        type="button"
-                                        className="beat-interpolation-reset-btn"
-                                        onClick={handleResetMinAnchorConfidence}
-                                        disabled={disabled}
-                                        aria-label="Reset min anchor confidence to default"
-                                        title={`Reset to default (${DEFAULT_BEAT_INTERPOLATION_OPTIONS.minAnchorConfidence})`}
-                                    >
-                                        <RotateCcw className="beat-interpolation-reset-btn-icon" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="beat-interpolation-slider-container">
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.05"
-                                value={minAnchorConfidence}
-                                onChange={(e) => handleMinAnchorConfidenceChange(parseFloat(e.target.value))}
-                                className="beat-interpolation-slider"
-                                style={{ '--slider-value': `${minAnchorConfidencePercent}%` } as React.CSSProperties}
-                                disabled={disabled}
-                                aria-label="Minimum anchor confidence"
-                            />
-                            <div className="beat-interpolation-slider-marks">
-                                <span className="beat-interpolation-slider-mark">0.0</span>
-                                <span className="beat-interpolation-slider-mark">0.5</span>
-                                <span className="beat-interpolation-slider-mark">1.0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Grid Snap Tolerance */}
-                    <div className="beat-interpolation-settings-section">
-                        <div className="beat-interpolation-settings-header">
-                            <div className="beat-interpolation-settings-label-with-tooltip">
-                                <span className="beat-interpolation-settings-label">Grid Snap Tolerance</span>
-                                <Tooltip content="Tolerance in milliseconds for snapping detected beats to the grid." />
-                            </div>
-                            <div className="beat-interpolation-settings-header-right">
-                                <span className={`beat-interpolation-settings-value ${!isGridSnapToleranceDefault ? 'beat-interpolation-settings-value--modified' : ''}`}>
-                                    {gridSnapTolerance}ms
-                                </span>
-                                {!isGridSnapToleranceDefault && (
-                                    <button
-                                        type="button"
-                                        className="beat-interpolation-reset-btn"
-                                        onClick={handleResetGridSnapTolerance}
-                                        disabled={disabled}
-                                        aria-label="Reset grid snap tolerance to default"
-                                        title={`Reset to default (${DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridSnapTolerance}ms)`}
-                                    >
-                                        <RotateCcw className="beat-interpolation-reset-btn-icon" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="beat-interpolation-slider-container">
-                            <input
-                                type="range"
-                                min="10"
-                                max="100"
-                                step="5"
-                                value={gridSnapTolerance}
-                                onChange={(e) => handleGridSnapToleranceChange(parseInt(e.target.value, 10))}
-                                className="beat-interpolation-slider"
-                                style={{ '--slider-value': `${gridSnapTolerancePercent}%` } as React.CSSProperties}
-                                disabled={disabled}
-                                aria-label="Grid snap tolerance"
-                            />
-                            <div className="beat-interpolation-slider-marks">
-                                <span className="beat-interpolation-slider-mark">10ms</span>
-                                <span className="beat-interpolation-slider-mark">55ms</span>
-                                <span className="beat-interpolation-slider-mark">100ms</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tempo Adaptation Rate */}
-                    <div className="beat-interpolation-settings-section">
-                        <div className="beat-interpolation-settings-header">
-                            <div className="beat-interpolation-settings-label-with-tooltip">
-                                <span className="beat-interpolation-settings-label">Tempo Adaptation Rate</span>
-                                <Tooltip content="How much the tempo can adapt between anchors. Higher values allow more drift." />
-                            </div>
-                            <div className="beat-interpolation-settings-header-right">
-                                <span className={`beat-interpolation-settings-value ${!isTempoAdaptationRateDefault ? 'beat-interpolation-settings-value--modified' : ''}`}>
-                                    {tempoAdaptationRate.toFixed(2)}
-                                </span>
-                                {!isTempoAdaptationRateDefault && (
-                                    <button
-                                        type="button"
-                                        className="beat-interpolation-reset-btn"
-                                        onClick={handleResetTempoAdaptationRate}
-                                        disabled={disabled}
-                                        aria-label="Reset tempo adaptation rate to default"
-                                        title={`Reset to default (${DEFAULT_BEAT_INTERPOLATION_OPTIONS.tempoAdaptationRate})`}
-                                    >
-                                        <RotateCcw className="beat-interpolation-reset-btn-icon" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="beat-interpolation-slider-container">
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.05"
-                                value={tempoAdaptationRate}
-                                onChange={(e) => handleTempoAdaptationRateChange(parseFloat(e.target.value))}
-                                className="beat-interpolation-slider"
-                                style={{ '--slider-value': `${tempoAdaptationRatePercent}%` } as React.CSSProperties}
-                                disabled={disabled}
-                                aria-label="Tempo adaptation rate"
-                            />
-                            <div className="beat-interpolation-slider-marks">
-                                <span className="beat-interpolation-slider-mark">0.0</span>
-                                <span className="beat-interpolation-slider-mark">0.5</span>
-                                <span className="beat-interpolation-slider-mark">1.0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Anomaly Threshold */}
-                    <div className="beat-interpolation-settings-section">
-                        <div className="beat-interpolation-settings-header">
-                            <div className="beat-interpolation-settings-label-with-tooltip">
-                                <span className="beat-interpolation-settings-label">Anomaly Threshold</span>
-                                <Tooltip content="Multiplier for detecting tempo anomalies. Lower values are more sensitive." />
-                            </div>
-                            <div className="beat-interpolation-settings-header-right">
-                                <span className={`beat-interpolation-settings-value ${!isAnomalyThresholdDefault ? 'beat-interpolation-settings-value--modified' : ''}`}>
-                                    {anomalyThreshold.toFixed(2)}
-                                </span>
-                                {!isAnomalyThresholdDefault && (
-                                    <button
-                                        type="button"
-                                        className="beat-interpolation-reset-btn"
-                                        onClick={handleResetAnomalyThreshold}
-                                        disabled={disabled}
-                                        aria-label="Reset anomaly threshold to default"
-                                        title={`Reset to default (${DEFAULT_BEAT_INTERPOLATION_OPTIONS.anomalyThreshold})`}
-                                    >
-                                        <RotateCcw className="beat-interpolation-reset-btn-icon" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="beat-interpolation-slider-container">
-                            <input
-                                type="range"
-                                min="0.2"
-                                max="0.6"
-                                step="0.02"
-                                value={anomalyThreshold}
-                                onChange={(e) => handleAnomalyThresholdChange(parseFloat(e.target.value))}
-                                className="beat-interpolation-slider"
-                                style={{ '--slider-value': `${anomalyThresholdPercent}%` } as React.CSSProperties}
-                                disabled={disabled}
-                                aria-label="Anomaly threshold"
-                            />
-                            <div className="beat-interpolation-slider-marks">
-                                <span className="beat-interpolation-slider-mark">0.2</span>
-                                <span className="beat-interpolation-slider-mark">0.4</span>
-                                <span className="beat-interpolation-slider-mark">0.6</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Extrapolation Toggles */}
-                    <div className="beat-interpolation-toggles-section">
-                        <div className="beat-interpolation-settings-label">Extrapolation</div>
-                        <div className="beat-interpolation-checkbox-group">
-                            <label className="beat-interpolation-checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={extrapolateStart}
-                                    onChange={(e) => handleExtrapolateStartChange(e.target.checked)}
-                                    disabled={disabled}
-                                />
-                                <span className={`beat-interpolation-checkbox-label ${!isExtrapolateStartDefault ? 'beat-interpolation-checkbox-label--modified' : ''}`}>
-                                    Extrapolate before first beat
-                                </span>
-                            </label>
-                            <label className="beat-interpolation-checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={extrapolateEnd}
-                                    onChange={(e) => handleExtrapolateEndChange(e.target.checked)}
-                                    disabled={disabled}
-                                />
-                                <span className={`beat-interpolation-checkbox-label ${!isExtrapolateEndDefault ? 'beat-interpolation-checkbox-label--modified' : ''}`}>
-                                    Extrapolate after last beat
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </details>
+            <AdvancedInterpolationOptions
+                options={interpolationOptions}
+                onOptionsChange={setInterpolationOptions}
+                disabled={disabled}
+            />
 
             {/* Note about interpolation */}
             <div className="beat-interpolation-settings-note">

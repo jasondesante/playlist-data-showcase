@@ -356,10 +356,10 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **8.1 Create AdvancedInterpolationOptions Component**
-  - [ ] Create [src/components/ui/AdvancedInterpolationOptions.tsx](src/components/ui/AdvancedInterpolationOptions.tsx)
-  - [ ] Collapsible "Advanced" section in interpolation settings
-  - [ ] Include all options from `BeatInterpolationOptions`:
+- [x] **8.1 Create AdvancedInterpolationOptions Component**
+  - [x] Create [src/components/ui/AdvancedInterpolationOptions.tsx](src/components/ui/AdvancedInterpolationOptions.tsx)
+  - [x] Collapsible "Advanced" section in interpolation settings
+  - [x] Include all options from `BeatInterpolationOptions`:
     - `minAnchorConfidence` - Minimum confidence to use as anchor
     - `gridSnapTolerance` - Tolerance for snapping detected beats to grid
     - `tempoAdaptationRate` - How much tempo can drift between anchors
@@ -367,6 +367,9 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     - `denseSectionMinBeats` - Minimum beats to count as dense section
     - `gridAlignmentWeight` / `anchorConfidenceWeight` / `paceConfidenceWeight` - Confidence model weights
     - `extrapolateStart` / `extrapolateEnd` - Whether to extrapolate beyond detected beats
+  - [x] Individual reset buttons for each option
+  - [x] CSS styling in [src/components/ui/AdvancedInterpolationOptions.css](src/components/ui/AdvancedInterpolationOptions.css)
+  - [x] Integrated into BeatInterpolationSettings component
 
 - [ ] **8.2 Add Option Presets**
   - [ ] Create presets for common use cases:
