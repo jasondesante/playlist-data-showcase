@@ -1,0 +1,827 @@
+/* ============================================
+   BEAT INTERPOLATION SETTINGS
+   Task 3.1: BeatInterpolationSettings Component
+   ============================================ */
+
+/* Main container */
+.beat-interpolation-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* Settings Section */
+.beat-interpolation-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.beat-interpolation-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Container for label + tooltip icon */
+.beat-interpolation-settings-label-with-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-interpolation-settings-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-interpolation-settings-value {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+/* Container for value + reset button */
+.beat-interpolation-settings-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Modified value indicator */
+.beat-interpolation-settings-value--modified {
+  color: hsl(var(--cute-amber, 38 92% 50%));
+  background: hsl(var(--cute-amber, 38 92% 50%) / 0.15);
+  box-shadow: inset 0 0 0 1px hsl(var(--cute-amber, 38 92% 50%) / 0.3);
+}
+
+/* Reset button */
+.beat-interpolation-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.1875rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.15s ease;
+}
+
+.beat-interpolation-reset-btn:hover {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary));
+}
+
+.beat-interpolation-reset-btn:active {
+  transform: scale(0.9);
+}
+
+.beat-interpolation-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.beat-interpolation-reset-btn-icon {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+/* ============================================
+   ALGORITHM SELECTOR
+   ============================================ */
+
+.beat-interpolation-algorithm-toggles {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.beat-interpolation-algorithm-toggle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.375rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-interpolation-algorithm-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.beat-interpolation-algorithm-toggle:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-interpolation-algorithm-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state - primary color with glow effect */
+.beat-interpolation-algorithm-toggle--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
+.beat-interpolation-algorithm-toggle--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+  box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
+}
+
+/* Algorithm toggle label */
+.beat-interpolation-algorithm-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Recommended badge */
+.beat-interpolation-recommended-badge {
+  color: hsl(var(--cute-amber, 38 92% 50%));
+  fill: hsl(var(--cute-amber, 38 92% 50%));
+}
+
+/* Algorithm description text */
+.beat-interpolation-algorithm-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+  font-style: italic;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* ============================================
+   BEAT STREAM MODE SELECTOR
+   ============================================ */
+
+.beat-interpolation-stream-toggles {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.beat-interpolation-stream-toggle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.375rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-interpolation-stream-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.beat-interpolation-stream-toggle:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-interpolation-stream-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state for stream mode - green tint */
+.beat-interpolation-stream-toggle--active {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.18), hsl(142 76% 36% / 0.12));
+  border-color: hsl(142 76% 36%);
+  box-shadow: 0 0 12px hsl(142 76% 36% / 0.2);
+  color: hsl(142 76% 45%);
+}
+
+.beat-interpolation-stream-toggle--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.22), hsl(142 76% 36% / 0.16));
+  box-shadow: 0 0 16px hsl(142 76% 36% / 0.3);
+}
+
+/* Stream mode toggle label */
+.beat-interpolation-stream-toggle-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Stream mode description text */
+.beat-interpolation-stream-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+  font-style: italic;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* ============================================
+   SLIDER STYLES
+   ============================================ */
+
+.beat-interpolation-slider-container {
+  position: relative;
+}
+
+/* Base Slider Styles - EQ fader style */
+.beat-interpolation-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right,
+    hsl(var(--primary) / 0.5) 0%,
+    hsl(var(--primary) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) var(--slider-value),
+    hsl(var(--border) / 0.5) 100%
+  ) !important;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  position: relative;
+}
+
+/* EQ-style slot markers on the slider track */
+.beat-interpolation-slider::before {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+  background: repeating-linear-gradient(
+    to right,
+    hsl(var(--border) / 0.2) 0px,
+    hsl(var(--border) / 0.2) 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.beat-interpolation-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: transparent !important;
+}
+
+/* Slider thumb - The mixer fader */
+.beat-interpolation-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  cursor: grab;
+  margin-top: -3px;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.beat-interpolation-slider::-webkit-slider-thumb:hover {
+  transform: scaleY(1.2);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.7);
+}
+
+.beat-interpolation-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scaleY(1.1);
+}
+
+.beat-interpolation-slider::-moz-range-thumb {
+  width: 16px;
+  height: 10px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  border: none;
+  cursor: grab;
+  box-shadow:
+    0 0 10px hsl(var(--primary) / 0.5),
+    inset 0 0 0 1px hsl(var(--background) / 0.4);
+}
+
+.beat-interpolation-slider::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: hsl(var(--border) / 0.5);
+  border-radius: 2px;
+}
+
+.beat-interpolation-slider::-moz-range-progress {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 2px;
+}
+
+/* Disabled state */
+.beat-interpolation-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.beat-interpolation-slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Slider marks */
+.beat-interpolation-slider-marks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding: 0 0.125rem;
+}
+
+.beat-interpolation-slider-mark {
+  font-size: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+/* ============================================
+   CHECKBOX TOGGLES
+   ============================================ */
+
+.beat-interpolation-toggles-section {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+}
+
+.beat-interpolation-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.beat-interpolation-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.beat-interpolation-checkbox input[type="checkbox"] {
+  width: 0.875rem;
+  height: 0.875rem;
+  accent-color: hsl(var(--primary));
+  cursor: pointer;
+}
+
+.beat-interpolation-checkbox input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.beat-interpolation-checkbox-label {
+  font-size: 0.5625rem;
+  color: hsl(var(--foreground));
+}
+
+.beat-interpolation-checkbox-label--modified {
+  color: hsl(var(--cute-amber, 38 92% 50%));
+}
+
+/* ============================================
+   COLLAPSIBLE ADVANCED SECTION
+   ============================================ */
+
+.beat-interpolation-advanced {
+  margin-top: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  background: hsl(var(--muted) / 0.15);
+  overflow: hidden;
+}
+
+.beat-interpolation-advanced-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.625rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+/* Hide default marker for WebKit browsers */
+.beat-interpolation-advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.beat-interpolation-advanced-summary:hover {
+  background: hsl(var(--muted) / 0.3);
+}
+
+.beat-interpolation-advanced-summary-text {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-interpolation-advanced-summary-icon {
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease;
+}
+
+/* Rotate arrow when open */
+.beat-interpolation-advanced[open] .beat-interpolation-advanced-summary-icon {
+  transform: rotate(180deg);
+}
+
+.beat-interpolation-advanced-content {
+  padding: 0.5rem 0.625rem;
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   NOTE SECTION
+   ============================================ */
+
+.beat-interpolation-settings-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.beat-interpolation-settings-note-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+.beat-interpolation-settings-note-text {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-interpolation-settings {
+    gap: 0.625rem;
+    margin-top: 0.625rem;
+    padding-top: 0.625rem;
+  }
+
+  .beat-interpolation-settings-section {
+    gap: 0.3125rem;
+  }
+
+  .beat-interpolation-settings-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-settings-value {
+    font-size: 0.625rem;
+    padding: 0.0938rem 0.3125rem;
+  }
+
+  .beat-interpolation-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 11px;
+  }
+
+  .beat-interpolation-slider::-moz-range-thumb {
+    width: 18px;
+    height: 11px;
+  }
+
+  .beat-interpolation-slider-mark {
+    font-size: 0.4688rem;
+  }
+
+  .beat-interpolation-reset-btn {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .beat-interpolation-reset-btn-icon {
+    width: 0.6875rem;
+    height: 0.6875rem;
+  }
+
+  .beat-interpolation-algorithm-toggle {
+    padding: 0.4375rem 0.3125rem;
+  }
+
+  .beat-interpolation-algorithm-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-algorithm-description {
+    font-size: 0.4688rem;
+  }
+
+  .beat-interpolation-stream-toggle {
+    padding: 0.4375rem 0.3125rem;
+  }
+
+  .beat-interpolation-stream-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-stream-description {
+    font-size: 0.4688rem;
+  }
+
+  .beat-interpolation-advanced {
+    margin-top: 0.4375rem;
+  }
+
+  .beat-interpolation-advanced-summary {
+    padding: 0.4375rem 0.5625rem;
+    min-height: 36px;
+  }
+
+  .beat-interpolation-advanced-summary-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-advanced-content {
+    padding: 0.4375rem 0.5625rem;
+    padding-top: 0;
+  }
+
+  .beat-interpolation-settings-note {
+    padding: 0.4375rem 0.5625rem;
+  }
+
+  .beat-interpolation-settings-note-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .beat-interpolation-settings-note-text {
+    font-size: 0.5625rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+  .beat-interpolation-settings {
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .beat-interpolation-settings-section {
+    gap: 0.25rem;
+  }
+
+  .beat-interpolation-settings-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-settings-value {
+    font-size: 0.625rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .beat-interpolation-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 12px;
+  }
+
+  .beat-interpolation-slider::-moz-range-thumb {
+    width: 18px;
+    height: 12px;
+  }
+
+  .beat-interpolation-slider-mark {
+    font-size: 0.4375rem;
+  }
+
+  .beat-interpolation-algorithm-toggles {
+    flex-wrap: wrap;
+  }
+
+  .beat-interpolation-algorithm-toggle {
+    padding: 0.375rem 0.25rem;
+    min-width: calc(33.33% - 0.25rem);
+  }
+
+  .beat-interpolation-algorithm-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-algorithm-description {
+    font-size: 0.4375rem;
+  }
+
+  .beat-interpolation-stream-toggles {
+    flex-wrap: wrap;
+  }
+
+  .beat-interpolation-stream-toggle {
+    padding: 0.375rem 0.25rem;
+    min-width: calc(50% - 0.1875rem);
+  }
+
+  .beat-interpolation-stream-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-stream-description {
+    font-size: 0.4375rem;
+  }
+
+  .beat-interpolation-advanced {
+    margin-top: 0.375rem;
+  }
+
+  .beat-interpolation-advanced-summary {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-interpolation-advanced-summary-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-interpolation-advanced-content {
+    padding: 0.375rem 0.5rem;
+    padding-top: 0;
+  }
+
+  .beat-interpolation-settings-note {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-interpolation-settings-note-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .beat-interpolation-settings-note-text {
+    font-size: 0.5625rem;
+  }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .beat-interpolation-slider {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .beat-interpolation-slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    margin-top: -12px;
+  }
+
+  .beat-interpolation-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+  }
+
+  .beat-interpolation-reset-btn {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .beat-interpolation-reset-btn-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .beat-interpolation-algorithm-toggle {
+    min-height: 44px;
+    padding: 0.625rem 0.5rem;
+  }
+
+  .beat-interpolation-algorithm-toggle:active {
+    transform: scale(0.98);
+  }
+
+  .beat-interpolation-stream-toggle {
+    min-height: 44px;
+    padding: 0.625rem 0.5rem;
+  }
+
+  .beat-interpolation-stream-toggle:active {
+    transform: scale(0.98);
+  }
+
+  .beat-interpolation-advanced-summary {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .beat-interpolation-advanced-summary:active {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .beat-interpolation-checkbox input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .beat-interpolation-checkbox-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-interpolation-slider {
+    transition: none;
+  }
+
+  .beat-interpolation-advanced-content {
+    animation: none;
+  }
+
+  .beat-interpolation-advanced-summary-icon {
+    transition: none;
+  }
+
+  .beat-interpolation-algorithm-toggle,
+  .beat-interpolation-stream-toggle,
+  .beat-interpolation-reset-btn {
+    transition: none;
+  }
+}

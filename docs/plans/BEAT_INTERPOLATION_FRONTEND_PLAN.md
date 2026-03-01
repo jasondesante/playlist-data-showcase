@@ -175,9 +175,9 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **3.1 Create BeatInterpolationSettings Component**
-  - [ ] Create [src/components/ui/BeatInterpolationSettings.tsx](src/components/ui/BeatInterpolationSettings.tsx)
-  - [ ] Include controls:
+- [x] **3.1 Create BeatInterpolationSettings Component**
+  - [x] Create [src/components/ui/BeatInterpolationSettings.tsx](src/components/ui/BeatInterpolationSettings.tsx)
+  - [x] Include controls:
     - **Algorithm Selector**: `histogram-grid` | `adaptive-phase-locked` | `dual-pass`
     - **Beat Stream Mode**: `detected` | `merged`
     - **Advanced Options** (collapsible):
@@ -187,15 +187,15 @@ This plan covers the frontend integration for the Beat Interpolation system defi
       - `anomalyThreshold` slider (0.2 - 0.6)
       - `extrapolateStart` / `extrapolateEnd` toggles
 
-- [ ] **3.2 Add Algorithm Descriptions**
-  - [ ] Add tooltips/info for each algorithm:
+- [x] **3.2 Add Algorithm Descriptions**
+  - [x] Add tooltips/info for each algorithm:
     - **Histogram-Based Fixed Grid**: Uses the most common interval as a rigid grid. Best for tracks with very stable tempo.
     - **Adaptive Phase-Locked**: Adjusts tempo slightly at each detected beat anchor. Handles minor tempo drift.
     - **Dual-Pass with Confidence**: Advanced algorithm with KDE peak finding and distributed error correction. Most robust.
-  - [ ] Show "Recommended" badge on `dual-pass`
+  - [x] Show "Recommended" badge on `dual-pass`
 
-- [ ] **3.3 Add Mode Descriptions**
-  - [ ] Tooltip for beat stream mode:
+- [x] **3.3 Add Mode Descriptions**
+  - [x] Tooltip for beat stream mode:
     - **Detected**: Use only originally detected beats (original behavior)
     - **Merged**: Use interpolated beats with detected beats as anchors (fills gaps)
 
