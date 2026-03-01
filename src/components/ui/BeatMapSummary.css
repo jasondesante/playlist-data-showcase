@@ -455,3 +455,151 @@
     font-size: 0.625rem;
   }
 }
+
+/* ============================================
+   Task 4.2: Confidence Indicator Section
+   Shows visual confidence level with color coding
+   ============================================ */
+
+.beat-map-confidence-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+}
+
+.beat-map-confidence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.beat-map-confidence-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Confidence Badge - Color coded by level */
+.beat-map-confidence-badge {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.beat-map-confidence-badge--high {
+  background: hsl(142 76% 36% / 0.15);
+  color: hsl(142 76% 36%);
+  border: 1px solid hsl(142 76% 36% / 0.3);
+}
+
+.beat-map-confidence-badge--medium {
+  background: hsl(45 100% 50% / 0.15);
+  color: hsl(45 100% 40%);
+  border: 1px solid hsl(45 100% 50% / 0.3);
+}
+
+.beat-map-confidence-badge--low {
+  background: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive));
+  border: 1px solid hsl(var(--destructive) / 0.3);
+}
+
+/* Main Confidence Bar */
+.beat-map-confidence-bar {
+  height: 6px;
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.beat-map-confidence-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease-out;
+}
+
+.beat-map-confidence-bar-fill--high {
+  background: linear-gradient(90deg, hsl(142 76% 36%), hsl(142 76% 46%));
+}
+
+.beat-map-confidence-bar-fill--medium {
+  background: linear-gradient(90deg, hsl(45 100% 40%), hsl(45 100% 50%));
+}
+
+.beat-map-confidence-bar-fill--low {
+  background: linear-gradient(90deg, hsl(var(--destructive)), hsl(var(--destructive) / 0.8));
+}
+
+/* Confidence Breakdown */
+.beat-map-confidence-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.beat-map-confidence-breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-map-confidence-breakdown-label {
+  font-size: 0.5625rem;
+  color: hsl(var(--muted-foreground));
+  min-width: 5.5rem;
+  flex-shrink: 0;
+}
+
+.beat-map-confidence-breakdown-bar {
+  flex: 1;
+  height: 4px;
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 2rem;
+}
+
+.beat-map-confidence-breakdown-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+}
+
+.beat-map-confidence-breakdown-bar-fill--grid {
+  background: hsl(var(--primary));
+}
+
+.beat-map-confidence-breakdown-bar-fill--anchor {
+  background: hsl(262 83% 58%);
+}
+
+.beat-map-confidence-breakdown-bar-fill--pace {
+  background: hsl(199 89% 48%);
+}
+
+.beat-map-confidence-breakdown-percent {
+  font-size: 0.5625rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground) / 0.7);
+  min-width: 2rem;
+  text-align: right;
+}
+
+/* Responsive adjustments for confidence section */
+@media (max-width: 480px) {
+  .beat-map-confidence-breakdown-label {
+    min-width: 4.5rem;
+    font-size: 0.5rem;
+  }
+
+  .beat-map-confidence-breakdown-percent {
+    font-size: 0.5rem;
+  }
+}

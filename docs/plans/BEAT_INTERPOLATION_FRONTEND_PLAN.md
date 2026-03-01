@@ -222,12 +222,12 @@ This plan covers the frontend integration for the Beat Interpolation system defi
     - Grid alignment score: X%
     - Tempo drift ratio: X
 
-- [ ] **4.2 Add Confidence Indicator**
-  - [ ] Show visual indicator for interpolation confidence:
+- [x] **4.2 Add Confidence Indicator**
+  - [x] Show visual indicator for interpolation confidence:
     - Green: High confidence (>0.8)
     - Yellow: Medium confidence (0.5-0.8)
     - Red: Low confidence (<0.5)
-  - [ ] Show breakdown: grid alignment / anchor confidence / pace confidence
+  - [x] Show breakdown: grid alignment / anchor confidence / pace confidence
 
 - [ ] **4.3 Add Quarter Note Detection Info**
   - [ ] Show detection method (histogram / kde / tempo-detector-fallback)

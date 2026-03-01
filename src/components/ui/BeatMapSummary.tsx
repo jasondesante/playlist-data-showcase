@@ -374,6 +374,64 @@ export function BeatMapSummary({
               Drift: {interpolationStats.tempoDriftRatio.toFixed(2)}
             </span>
           </div>
+
+          {/* Confidence Indicator (Task 4.2) */}
+          <div className="beat-map-confidence-section">
+            <div className="beat-map-confidence-header">
+              <span className="beat-map-confidence-label">Confidence</span>
+              <span className={`beat-map-confidence-badge beat-map-confidence-badge--${interpolationStats.confidenceLevel}`}>
+                {interpolationStats.confidenceLevel === 'high' && 'High'}
+                {interpolationStats.confidenceLevel === 'medium' && 'Medium'}
+                {interpolationStats.confidenceLevel === 'low' && 'Low'}
+              </span>
+            </div>
+            <div className="beat-map-confidence-bar">
+              <div
+                className={`beat-map-confidence-bar-fill beat-map-confidence-bar-fill--${interpolationStats.confidenceLevel}`}
+                style={{ width: `${interpolationStats.avgInterpolatedConfidence * 100}%` }}
+              />
+            </div>
+
+            {/* Confidence Breakdown */}
+            <div className="beat-map-confidence-breakdown">
+              <div className="beat-map-confidence-breakdown-item">
+                <span className="beat-map-confidence-breakdown-label">Grid Alignment</span>
+                <div className="beat-map-confidence-breakdown-bar">
+                  <div
+                    className="beat-map-confidence-breakdown-bar-fill beat-map-confidence-breakdown-bar-fill--grid"
+                    style={{ width: `${interpolationStats.confidenceWeights.gridAlignment * 100}%` }}
+                  />
+                </div>
+                <span className="beat-map-confidence-breakdown-percent">
+                  {Math.round(interpolationStats.confidenceWeights.gridAlignment * 100)}%
+                </span>
+              </div>
+              <div className="beat-map-confidence-breakdown-item">
+                <span className="beat-map-confidence-breakdown-label">Anchor Confidence</span>
+                <div className="beat-map-confidence-breakdown-bar">
+                  <div
+                    className="beat-map-confidence-breakdown-bar-fill beat-map-confidence-breakdown-bar-fill--anchor"
+                    style={{ width: `${interpolationStats.confidenceWeights.anchorConfidence * 100}%` }}
+                  />
+                </div>
+                <span className="beat-map-confidence-breakdown-percent">
+                  {Math.round(interpolationStats.confidenceWeights.anchorConfidence * 100)}%
+                </span>
+              </div>
+              <div className="beat-map-confidence-breakdown-item">
+                <span className="beat-map-confidence-breakdown-label">Pace Confidence</span>
+                <div className="beat-map-confidence-breakdown-bar">
+                  <div
+                    className="beat-map-confidence-breakdown-bar-fill beat-map-confidence-breakdown-bar-fill--pace"
+                    style={{ width: `${interpolationStats.confidenceWeights.paceConfidence * 100}%` }}
+                  />
+                </div>
+                <span className="beat-map-confidence-breakdown-percent">
+                  {Math.round(interpolationStats.confidenceWeights.paceConfidence * 100)}%
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

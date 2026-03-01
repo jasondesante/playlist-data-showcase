@@ -1627,6 +1627,14 @@ export const useShowInterpolationVisualization = () =>
     useBeatDetectionStore((state) => state.showInterpolationVisualization);
 
 /**
+ * Confidence level for visual indicator.
+ * - 'high': > 0.8 confidence (green)
+ * - 'medium': 0.5 - 0.8 confidence (yellow)
+ * - 'low': < 0.5 confidence (red)
+ */
+export type ConfidenceLevel = 'high' | 'medium' | 'low';
+
+/**
  * Interface for interpolation statistics display.
  */
 export interface InterpolationStatistics {
@@ -1640,6 +1648,8 @@ export interface InterpolationStatistics {
     interpolationRatio: number;
     /** Average confidence of interpolated beats (0-1) */
     avgInterpolatedConfidence: number;
+    /** Confidence level for visual indicator */
+    confidenceLevel: ConfidenceLevel;
     /** Detected quarter note BPM */
     quarterNoteBpm: number;
     /** Confidence in quarter note detection (0-1) */
@@ -1648,7 +1658,25 @@ export interface InterpolationStatistics {
     tempoDriftRatio: number;
     /** How well detected beats align to grid (0-1, higher is better) */
     gridAlignmentScore: number;
+    /** Confidence model weights for breakdown display */
+    confidenceWeights: {
+        /** Weight for grid alignment in confidence calculation (0-1) */
+        gridAlignment: number;
+        /** Weight for anchor confidence in confidence calculation (0-1) */
+        anchorConfidence: number;
+        /** Weight for pace confidence in confidence calculation (0-1) */
+        paceConfidence: number;
+    };
 }
+
+/**
+ * Determine confidence level from average confidence value.
+ */
+const getConfidenceLevel = (confidence: number): ConfidenceLevel => {
+    if (confidence > 0.8) return 'high';
+    if (confidence >= 0.5) return 'medium';
+    return 'low';
+};
 
 /**
  * Selector to get interpolation statistics for display.
@@ -1657,7 +1685,7 @@ export interface InterpolationStatistics {
  */
 export const useInterpolationStatistics = (): InterpolationStatistics | null =>
     useBeatDetectionStore(useShallow((state) => {
-        const { interpolatedBeatMap } = state;
+        const { interpolatedBeatMap, interpolationOptions } = state;
 
         if (!interpolatedBeatMap) {
             return null;
@@ -1665,17 +1693,24 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
 
         const { interpolationMetadata, quarterNoteBpm, quarterNoteConfidence } = interpolatedBeatMap;
         const { gapAnalysis } = interpolationMetadata;
+        const avgConfidence = interpolationMetadata.avgInterpolatedConfidence;
 
         return {
             detectedBeatCount: interpolationMetadata.detectedBeatCount,
             interpolatedBeatCount: interpolationMetadata.interpolatedBeatCount,
             totalBeatCount: interpolationMetadata.totalBeatCount,
             interpolationRatio: interpolationMetadata.interpolationRatio,
-            avgInterpolatedConfidence: interpolationMetadata.avgInterpolatedConfidence,
+            avgInterpolatedConfidence: avgConfidence,
+            confidenceLevel: getConfidenceLevel(avgConfidence),
             quarterNoteBpm,
             quarterNoteConfidence,
             tempoDriftRatio: interpolationMetadata.tempoDriftRatio,
             gridAlignmentScore: gapAnalysis.gridAlignmentScore,
+            confidenceWeights: {
+                gridAlignment: interpolationOptions.gridAlignmentWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridAlignmentWeight,
+                anchorConfidence: interpolationOptions.anchorConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.anchorConfidenceWeight,
+                paceConfidence: interpolationOptions.paceConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.paceConfidenceWeight,
+            },
         };
     }));
 
