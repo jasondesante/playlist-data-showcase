@@ -1559,3 +1559,164 @@
   }
 }
 
+/* ========================================
+   SOLAR INFO CARD
+   ======================================== */
+
+.sensor-solar-card {
+  background: linear-gradient(135deg, hsl(45 100% 50% / 0.05), hsl(var(--surface-2)));
+}
+
+.sensor-solar-card .sensor-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: hsl(45 100% 50%);
+}
+
+.sensor-solar-no-api-badge {
+  margin-left: auto;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  background: hsl(var(--cute-teal) / 0.15);
+  color: hsl(var(--cute-teal));
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Current Day Stage */
+.sensor-solar-stage {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.sensor-solar-stage-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.sensor-solar-stage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sensor-solar-stage-label {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-solar-stage-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* Sun Times Grid */
+.sensor-solar-times-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sensor-solar-times-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sensor-solar-time-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-solar-time-icon {
+  font-size: 1.25rem;
+}
+
+.sensor-solar-time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sensor-solar-time-label {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-solar-time-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* Sun Position */
+.sensor-solar-position {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: hsl(var(--surface-3));
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.sensor-solar-position-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sensor-solar-position-label {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-solar-position-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* Twilight Times */
+.sensor-solar-twilight {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--surface-3));
+  border-radius: var(--radius);
+}
+
+.sensor-solar-twilight-label {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sensor-solar-twilight-times {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--foreground));
+}
+

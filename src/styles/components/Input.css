@@ -272,8 +272,8 @@ input[type="range"]::-moz-range-thumb:hover {
 
 /* Input field with icons */
 input.input-field-with-left-icon {
-  padding: 0 0 0 3.5rem;
-  width: 93%;
+  padding: 0 1rem 0 3.5rem;
+  width: 100%;
 }
 
 .input-field-with-right-icon {
@@ -294,6 +294,24 @@ input.input-field-with-left-icon {
 
 .input-helper-text-disabled {
   opacity: 0.5;
+}
+
+/* Links in helper text */
+.input-helper-text a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-fast) ease, opacity var(--duration-fast) ease;
+}
+
+.input-helper-text a:hover {
+  opacity: 0.8;
+}
+
+.input-helper-text a:focus {
+  outline: 2px solid hsl(var(--primary) / 0.5);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* --------------------------------------------

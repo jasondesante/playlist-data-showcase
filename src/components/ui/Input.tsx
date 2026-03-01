@@ -13,7 +13,7 @@
  * - Hover border color change
  */
 
-import { forwardRef, type InputHTMLAttributes } from 'react';
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../../utils/cn';
 import type { LucideIcon } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   /** Error message to display - shows error state when provided */
   error?: string;
   /** Helper text to display below the input */
-  helperText?: string;
+  helperText?: ReactNode;
   /** Size of the input */
   size?: InputSize;
   /** Container class for wrapping the input group */

@@ -627,7 +627,7 @@ export function SettingsTab() {
               value={openWeatherKey}
               onChange={(e) => handleOpenWeatherKeyChange(e.target.value)}
               placeholder="Enter your OpenWeather API key..."
-              helperText="Required for weather data in Environmental Sensors tab. Get your key at openweathermap.org"
+              helperText={<>Required for weather data in Environmental Sensors tab. Get your key at <a href="https://openweathermap.org" target="_blank" rel="noopener noreferrer">openweathermap.org</a></>}
               containerClassName="settings-input-wrapper"
             />
             <div className={`settings-validation-status ${getValidationStatusClass(openWeatherValidation.status)}`}>

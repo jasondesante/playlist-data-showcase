@@ -128,6 +128,12 @@ function maskApiKey(key: string | undefined): string {
   return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
 }
 
+// Helper function to format time (e.g., "6:42 AM")
+function formatSolarTime(date: Date | undefined): string {
+  if (!date || isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
 // Helper function to map PermissionState to status type
 function permissionToStatus(permission: PermissionState): 'healthy' | 'degraded' | 'error' {
   switch (permission) {
@@ -321,7 +327,7 @@ function SevereWeatherAlertCard({
 
 export function EnvironmentalSensorsTab() {
   const { settings } = useAppStore();
-  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather } = useEnvironmentalSensors();
+  const { requestPermission, startMonitoring, isMonitoring, environmentalContext, permissions, sensors, xpModifier, xpBonusSources, biome, severeWeatherAlert, diagnostics, weatherError, lastWeatherSuccess, refreshWeather, solarInfo } = useEnvironmentalSensors();
 
   const [xData, setXData] = useState<number[]>([]);
   const [yData, setYData] = useState<number[]>([]);
@@ -549,6 +555,104 @@ export function EnvironmentalSensorsTab() {
                 </ul>
               </Card>
             )}
+
+            {/* Solar Info - always shows when location is available (no API key needed) */}
+            {solarInfo ? (
+              <Card variant="elevated" padding="lg" className="sensor-solar-card">
+                <div className="sensor-card-title">
+                  <Sun size={18} />
+                  <span>Solar Info</span>
+                  <span className="sensor-solar-no-api-badge">No API key needed</span>
+                </div>
+
+                {/* Current Day Stage */}
+                <div className="sensor-solar-stage">
+                  <span className="sensor-solar-stage-emoji">
+                    {solarInfo.stage === 'night' ? '🌙' : solarInfo.stage === 'dawn' ? '🌅' : solarInfo.stage === 'dusk' ? '🌇' : '☀️'}
+                  </span>
+                  <div className="sensor-solar-stage-info">
+                    <span className="sensor-solar-stage-label">Current Stage</span>
+                    <span className="sensor-solar-stage-value" style={{
+                      color: solarInfo.stage === 'night' ? 'hsl(260 60% 65%)' :
+                             solarInfo.stage === 'dawn' ? 'hsl(30 80% 60%)' :
+                             solarInfo.stage === 'dusk' ? 'hsl(25 80% 55%)' :
+                             'hsl(45 100% 50%)'
+                    }}>
+                      {solarInfo.stage.charAt(0).toUpperCase() + solarInfo.stage.slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sun Times Grid */}
+                <div className="sensor-solar-times-grid">
+                  <div className="sensor-solar-time-item">
+                    <span className="sensor-solar-time-icon">🌅</span>
+                    <div className="sensor-solar-time-info">
+                      <span className="sensor-solar-time-label">Sunrise</span>
+                      <span className="sensor-solar-time-value">{formatSolarTime(solarInfo.sunrise)}</span>
+                    </div>
+                  </div>
+                  <div className="sensor-solar-time-item">
+                    <span className="sensor-solar-time-icon">🌇</span>
+                    <div className="sensor-solar-time-info">
+                      <span className="sensor-solar-time-label">Sunset</span>
+                      <span className="sensor-solar-time-value">{formatSolarTime(solarInfo.sunset)}</span>
+                    </div>
+                  </div>
+                  <div className="sensor-solar-time-item">
+                    <span className="sensor-solar-time-icon">☀️</span>
+                    <div className="sensor-solar-time-info">
+                      <span className="sensor-solar-time-label">Solar Noon</span>
+                      <span className="sensor-solar-time-value">{formatSolarTime(solarInfo.solarNoon)}</span>
+                    </div>
+                  </div>
+                  <div className="sensor-solar-time-item">
+                    <span className="sensor-solar-time-icon">⏱️</span>
+                    <div className="sensor-solar-time-info">
+                      <span className="sensor-solar-time-label">Day Length</span>
+                      <span className="sensor-solar-time-value">
+                        {solarInfo.dayLengthHours > 0
+                          ? `${Math.floor(solarInfo.dayLengthHours)}h ${Math.round((solarInfo.dayLengthHours % 1) * 60)}m`
+                          : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sun Position */}
+                <div className="sensor-solar-position">
+                  <div className="sensor-solar-position-item">
+                    <span className="sensor-solar-position-label">Sun Altitude</span>
+                    <span className="sensor-solar-position-value">{solarInfo.sunAltitude.toFixed(1)}°</span>
+                  </div>
+                  <div className="sensor-solar-position-item">
+                    <span className="sensor-solar-position-label">Sun Azimuth</span>
+                    <span className="sensor-solar-position-value">{solarInfo.sunAzimuth.toFixed(1)}°</span>
+                  </div>
+                </div>
+
+                {/* Twilight Times */}
+                {(solarInfo.civilDawn || solarInfo.civilDusk) && (
+                  <div className="sensor-solar-twilight">
+                    <span className="sensor-solar-twilight-label">Civil Twilight</span>
+                    <div className="sensor-solar-twilight-times">
+                      {solarInfo.civilDawn && (
+                        <span>🌅 {formatSolarTime(solarInfo.civilDawn)}</span>
+                      )}
+                      {solarInfo.civilDusk && (
+                        <span>🌆 {formatSolarTime(solarInfo.civilDusk)}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            ) : (environmentalContext as any).geolocation ? (
+              <Card variant="outlined" padding="lg" className="sensor-empty-card sensor-warning-card">
+                <div className="sensor-empty-icon">☀️</div>
+                <h3 className="sensor-empty-title">Calculating Solar Info...</h3>
+                <p className="sensor-empty-message">Solar data is being calculated from your location.</p>
+              </Card>
+            ) : null}
 
             {/* Live Motion Data */}
             {environmentalContext.motion ? (

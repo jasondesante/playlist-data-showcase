@@ -137,6 +137,20 @@ export const useEnvironmentalSensors = () => {
         syncPermissionsWithBrowser();
     }, [sensors, setPermission]);
 
+    // Calculate solar info on mount if we already have location data (persisted from previous session)
+    // This allows solar info to show immediately without clicking "Start Monitoring"
+    useEffect(() => {
+        if (!sensors) return;
+
+        // Check if we have location data in the persisted context
+        const geoData = environmentalContext?.geolocation as any;
+        if (geoData?.latitude && geoData?.longitude) {
+            logger.debug('EnvironmentalSensors', 'Calculating solar info from persisted location');
+            const solar = sensors.getSolarInfoForCoords(geoData.latitude, geoData.longitude);
+            setSolarInfo(solar);
+        }
+    }, [sensors, environmentalContext?.geolocation]);
+
     const [isMonitoring, setIsMonitoring] = useState(false);
 
     // Severe weather alert state - updated when weather changes
