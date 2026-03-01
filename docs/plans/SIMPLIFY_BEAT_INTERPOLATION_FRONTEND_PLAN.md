@@ -340,13 +340,13 @@ Options:
 
 - [x] TypeScript compiles without errors
 - [x] Beat map generation still works (verified: build passes, BeatInterpolator instantiated correctly, migration tests pass)
-- [ ] Interpolation still generates correctly
+- [x] Interpolation still generates correctly (verified: all beat detection tests pass after fixing mocks)
 - [ ] Practice mode works with merged beats
 - [ ] Export button works
 - [ ] No console errors about missing properties
 - [ ] BeatMapSummary displays correctly without algorithm name
 
-> **Note**: The OSE tests (`BeatDetectionSettings.ose.test.tsx`) have incomplete mocks and need updates. This is a test maintenance issue, not a beat map generation issue. The migration tests pass after adding missing `BeatInterpolator` and `DEFAULT_BEAT_INTERPOLATION_OPTIONS` mocks.
+> **Note**: The OSE tests (`BeatDetectionSettings.ose.test.tsx`) have been fixed by adding missing mocks: `detectInterpolationPreset`, `INTERPOLATION_PRESETS`, and proper `useInterpolationOptions` return values.
 
 ---
 

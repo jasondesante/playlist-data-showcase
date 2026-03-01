@@ -66,6 +66,14 @@ vi.mock('@/types', () => ({
     maxBpmDeviation: 30,
     minGridConfidence: 0.5,
   },
+  detectInterpolationPreset: () => 'default',
+  INTERPOLATION_PRESETS: [
+    { id: 'default', name: 'Default', description: 'Balanced settings for most tracks', options: {} },
+    { id: 'stable-tempo', name: 'Stable Tempo', description: 'Fixed grid for stable tempo', options: {} },
+    { id: 'variable-tempo', name: 'Variable Tempo', description: 'High adaptation for tempo drift', options: {} },
+    { id: 'sparse-detection', name: 'Sparse Detection', description: 'Lower thresholds for few beats', options: {} },
+    { id: 'research', name: 'Research', description: 'Defaults with advanced options', options: {} },
+  ],
 }));
 
 describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', () => {
@@ -112,7 +120,18 @@ describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', ()
 
     (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
     (useInterpolationSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
-    (useInterpolationOptions as unknown as ReturnType<typeof vi.fn>).mockReturnValue({});
+    (useInterpolationOptions as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      minAnchorConfidence: 0.3,
+      gridSnapTolerance: 0.05,
+      tempoAdaptationRate: 0.3,
+      anomalyThreshold: 0.4,
+      denseSectionMinBeats: 3,
+      extrapolateStart: true,
+      extrapolateEnd: true,
+      gridAlignmentWeight: 0.5,
+      anchorConfidenceWeight: 0.3,
+      paceConfidenceWeight: 0.2,
+    });
     (useBeatStreamMode as unknown as ReturnType<typeof vi.fn>).mockReturnValue('merged');
     (useShowGridOverlay as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
     (useShowInterpolationVisualization as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
