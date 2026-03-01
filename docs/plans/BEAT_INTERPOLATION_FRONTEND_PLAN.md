@@ -330,18 +330,23 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Added algorithm descriptions with color-coded indicators
   - [x] Pure CSS styling (no Tailwind) - created InterpolationComparisonView.css
 
-- [ ] **7.2 Add Comparison Statistics Table**
-  - [ ] Show table comparing algorithms:
+- [x] **7.2 Add Comparison Statistics Table**
+  - [x] Show table comparing algorithms:
     | Algorithm | Total Beats | Interpolated | Avg Confidence | Tempo Drift |
     |-----------|-------------|--------------|----------------|-------------|
     | Histogram | X           | X            | X%             | X           |
     | Adaptive  | X           | X            | X%             | X           |
     | Dual-Pass | X           | X            | X%             | X           |
+  - [x] Added in InterpolationComparisonView.tsx lines 386-480
+  - [x] Includes: Total Beats, Interpolated (with %), Avg Confidence, Quarter BPM, Tempo Drift, Grid Alignment
 
-- [ ] **7.3 Add Debug Export**
-  - [ ] Button to export `InterpolatedBeatMap` as JSON
-  - [ ] Include all metadata for offline analysis
-  - [ ] Useful for research and debugging
+- [x] **7.3 Add Debug Export**
+  - [x] Button to export `InterpolatedBeatMap` as JSON
+  - [x] Include all metadata for offline analysis
+  - [x] Useful for research and debugging
+  - [x] Added export section with individual algorithm export buttons
+  - [x] Added "Export All" button to download all algorithms in one file
+  - [x] Export includes: algorithm, timestamps, beats, metadata, gap analysis, quarter note detection
 
 ---
 

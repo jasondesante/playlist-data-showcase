@@ -14,7 +14,7 @@
  * @component
  */
 import { useMemo, useState, useCallback } from 'react';
-import { Layers, Clock, Target, TrendingUp, AlertCircle } from 'lucide-react';
+import { Layers, Clock, Target, TrendingUp, AlertCircle, Download } from 'lucide-react';
 import './InterpolationComparisonView.css';
 import type {
     BeatMap,
@@ -170,6 +170,81 @@ function formatNumber(num: number): string {
 }
 
 /**
+ * Convert InterpolatedBeatMap to a JSON-serializable format for export
+ */
+function toExportJSON(
+    interpolatedBeatMap: InterpolatedBeatMap,
+    algorithm: InterpolationAlgorithm,
+    beatMapDuration: number
+): object {
+    return {
+        algorithm,
+        exportTimestamp: new Date().toISOString(),
+        beatMapDuration,
+        quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
+        quarterNoteConfidence: interpolatedBeatMap.quarterNoteConfidence,
+        detectedBeats: interpolatedBeatMap.detectedBeats.map(b => ({
+            timestamp: b.timestamp,
+            isDownbeat: b.isDownbeat,
+            confidence: b.confidence,
+            beatInMeasure: b.beatInMeasure,
+            measureNumber: b.measureNumber,
+            intensity: b.intensity,
+        })),
+        mergedBeats: interpolatedBeatMap.mergedBeats.map(b => ({
+            timestamp: b.timestamp,
+            isDownbeat: b.isDownbeat,
+            confidence: b.confidence,
+            source: b.source,
+            beatInMeasure: b.beatInMeasure,
+            measureNumber: b.measureNumber,
+            intensity: b.intensity,
+            distanceToAnchor: b.distanceToAnchor,
+            nearestAnchorTimestamp: b.nearestAnchorTimestamp,
+        })),
+        metadata: {
+            interpolatedBeatCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
+            detectedBeatCount: interpolatedBeatMap.interpolationMetadata.detectedBeatCount,
+            totalBeatCount: interpolatedBeatMap.interpolationMetadata.totalBeatCount,
+            interpolationRatio: interpolatedBeatMap.interpolationMetadata.interpolationRatio,
+            avgInterpolatedConfidence: interpolatedBeatMap.interpolationMetadata.avgInterpolatedConfidence,
+            tempoDriftRatio: interpolatedBeatMap.interpolationMetadata.tempoDriftRatio,
+            quarterNoteDetection: {
+                intervalSeconds: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.intervalSeconds,
+                bpm: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.bpm,
+                confidence: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.confidence,
+                method: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.method,
+                denseSectionCount: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionCount,
+                denseSectionBeats: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionBeats,
+            },
+            gapAnalysis: {
+                totalGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.totalGaps,
+                halfNoteGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.halfNoteGaps,
+                anomalies: interpolatedBeatMap.interpolationMetadata.gapAnalysis.anomalies,
+                avgGapSize: interpolatedBeatMap.interpolationMetadata.gapAnalysis.avgGapSize,
+                gridAlignmentScore: interpolatedBeatMap.interpolationMetadata.gapAnalysis.gridAlignmentScore,
+            },
+        },
+    };
+}
+
+/**
+ * Download data as a JSON file
+ */
+function downloadAsJSON(data: object, filename: string): void {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+/**
  * Simple Timeline Component for Comparison View
  *
  * A simplified timeline that shows beats for a specific time window.
@@ -289,6 +364,34 @@ export function InterpolationComparisonView({
     // Jump to start/end
     const jumpToStart = useCallback(() => setCurrentTime(0), []);
     const jumpToEnd = useCallback(() => setCurrentTime(Math.max(0, maxTime)), [maxTime]);
+
+    // Export handler for a specific algorithm
+    const handleExport = useCallback((stats: AlgorithmStats) => {
+        const exportData = toExportJSON(
+            stats.interpolatedBeatMap,
+            stats.algorithm,
+            beatMap.duration
+        );
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `interpolated-beatmap-${stats.algorithm}-${timestamp}.json`;
+        downloadAsJSON(exportData, filename);
+    }, [beatMap.duration]);
+
+    // Export all algorithms as a single file
+    const handleExportAll = useCallback(() => {
+        const exportData = {
+            exportTimestamp: new Date().toISOString(),
+            beatMapDuration: beatMap.duration,
+            algorithms: allStats.map(stats => toExportJSON(
+                stats.interpolatedBeatMap,
+                stats.algorithm,
+                beatMap.duration
+            )),
+        };
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `interpolated-beatmap-all-algorithms-${timestamp}.json`;
+        downloadAsJSON(exportData, filename);
+    }, [allStats, beatMap.duration]);
 
     return (
         <div className="interpolation-comparison">
@@ -493,6 +596,48 @@ export function InterpolationComparisonView({
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Debug Export Section - Task 7.3 */}
+            <div className="interpolation-comparison-export">
+                <h3 className="interpolation-comparison-export-title">
+                    <Download className="interpolation-comparison-export-icon" size={16} />
+                    Debug Export
+                </h3>
+                <p className="interpolation-comparison-export-description">
+                    Export interpolated beat map data as JSON for offline analysis and debugging.
+                </p>
+                <div className="interpolation-comparison-export-actions">
+                    {allStats.map((stats, index) => {
+                        const algoConfig = ALGORITHMS[index];
+                        return (
+                            <button
+                                key={stats.algorithm}
+                                className="interpolation-comparison-export-btn"
+                                onClick={() => handleExport(stats)}
+                                aria-label={`Export ${algoConfig.label} data`}
+                            >
+                                <div
+                                    className="interpolation-comparison-export-btn-color"
+                                    style={{ background: algoConfig.color }}
+                                />
+                                <span className="interpolation-comparison-export-btn-label">
+                                    Export {algoConfig.shortLabel}
+                                </span>
+                            </button>
+                        );
+                    })}
+                    <button
+                        className="interpolation-comparison-export-btn interpolation-comparison-export-btn--all"
+                        onClick={handleExportAll}
+                        aria-label="Export all algorithms"
+                    >
+                        <Download size={14} />
+                        <span className="interpolation-comparison-export-btn-label">
+                            Export All
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
     );
