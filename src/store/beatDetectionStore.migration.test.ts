@@ -37,6 +37,20 @@ vi.mock('playlist-data-engine', () => ({
         }),
         cancel: vi.fn(),
     })),
+    BeatInterpolator: vi.fn().mockImplementation(() => ({
+        interpolate: vi.fn().mockReturnValue({
+            beats: [],
+            bpm: 120,
+            audioId: 'test',
+            metadata: {},
+        }),
+    })),
+    DEFAULT_BEAT_INTERPOLATION_OPTIONS: {
+        phaseLockStrength: 0.8,
+        gridTolerance: 0.1,
+        maxBpmDeviation: 30,
+        minGridConfidence: 0.5,
+    },
 }));
 
 /**

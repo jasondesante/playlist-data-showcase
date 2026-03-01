@@ -10,12 +10,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BeatDetectionSettings } from './BeatDetectionSettings';
-import { useBeatDetectionStore, useOseSettingsChanged } from '../../store/beatDetectionStore';
+import {
+  useBeatDetectionStore,
+  useOseSettingsChanged,
+  useInterpolationSettingsChanged,
+  useInterpolationOptions,
+  useBeatStreamMode,
+  useShowGridOverlay,
+  useShowInterpolationVisualization,
+  useShowTempoDriftVisualization,
+  useInterpolationStatistics,
+  useInterpolatedBeatMap,
+  useInterpolationVisualizationData,
+  useInterpolationState,
+  useNeedsReanalysis,
+} from '../../store/beatDetectionStore';
 
 // Mock the store
 vi.mock('../../store/beatDetectionStore', () => ({
   useBeatDetectionStore: vi.fn(),
   useOseSettingsChanged: vi.fn(),
+  useInterpolationSettingsChanged: vi.fn(),
+  useInterpolationOptions: vi.fn(),
+  useBeatStreamMode: vi.fn(),
+  useShowGridOverlay: vi.fn(),
+  useShowInterpolationVisualization: vi.fn(),
+  useShowTempoDriftVisualization: vi.fn(),
+  useInterpolationStatistics: vi.fn(),
+  useInterpolatedBeatMap: vi.fn(),
+  useInterpolationVisualizationData: vi.fn(),
+  useInterpolationState: vi.fn(),
+  useNeedsReanalysis: vi.fn(),
 }));
 
 // Mock the presets from types
@@ -34,6 +59,12 @@ vi.mock('@/types', () => ({
     minimal: { value: 10, label: 'Minimal', description: 'Fast transients' },
     standard: { value: 20, label: 'Standard', description: 'Balanced (default)' },
     smooth: { value: 40, label: 'Smooth', description: 'Cleaner peaks' },
+  },
+  DEFAULT_BEAT_INTERPOLATION_OPTIONS: {
+    phaseLockStrength: 0.8,
+    gridTolerance: 0.1,
+    maxBpmDeviation: 30,
+    minGridConfidence: 0.5,
   },
 }));
 
@@ -80,6 +111,17 @@ describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', ()
     });
 
     (useOseSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useInterpolationSettingsChanged as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useInterpolationOptions as unknown as ReturnType<typeof vi.fn>).mockReturnValue({});
+    (useBeatStreamMode as unknown as ReturnType<typeof vi.fn>).mockReturnValue('merged');
+    (useShowGridOverlay as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useShowInterpolationVisualization as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useShowTempoDriftVisualization as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useInterpolationStatistics as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
+    (useInterpolatedBeatMap as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
+    (useInterpolationVisualizationData as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
+    (useInterpolationState as unknown as ReturnType<typeof vi.fn>).mockReturnValue({});
+    (useNeedsReanalysis as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
   });
 
   describe('Task 6.1.1: Verify mode selection updates store', () => {
