@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, GitCompare } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, Download } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -16,9 +16,8 @@ import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
-import { InterpolationComparisonView } from '../ui/InterpolationComparisonView';
 import { ColorExtractor } from 'playlist-data-engine';
-import { useBeatDetectionStore } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap } from '../../store/beatDetectionStore';
 import { logger } from '../../utils/logger';
 
 /**
@@ -82,9 +81,76 @@ export function AudioAnalysisTab() {
   const clearBeatMap = useBeatDetectionStore((state) => state.actions.clearBeatMap);
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
   const storageError = useBeatDetectionStore((state) => state.storageError);
+  const interpolatedBeatMap = useInterpolatedBeatMap();
 
-  // State for showing algorithm comparison view
-  const [showComparisonView, setShowComparisonView] = useState(false);
+  /**
+   * Export interpolated beat map as JSON for debugging/analysis
+   */
+  const handleExportBeatMap = useCallback(() => {
+    if (!interpolatedBeatMap || !beatMap) return;
+    
+    const exportData = {
+      exportTimestamp: new Date().toISOString(),
+      beatMapDuration: beatMap.duration,
+      algorithm: 'adaptive-phase-locked',
+      quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
+      quarterNoteConfidence: interpolatedBeatMap.quarterNoteConfidence,
+      detectedBeats: interpolatedBeatMap.detectedBeats.map(b => ({
+        timestamp: b.timestamp,
+        isDownbeat: b.isDownbeat,
+        confidence: b.confidence,
+        beatInMeasure: b.beatInMeasure,
+        measureNumber: b.measureNumber,
+        intensity: b.intensity,
+      })),
+      mergedBeats: interpolatedBeatMap.mergedBeats.map(b => ({
+        timestamp: b.timestamp,
+        source: b.source,
+        confidence: b.confidence,
+        isDownbeat: b.isDownbeat,
+        beatInMeasure: b.beatInMeasure,
+        measureNumber: b.measureNumber,
+        intensity: b.intensity,
+        distanceToAnchor: b.distanceToAnchor,
+        nearestAnchorTimestamp: b.nearestAnchorTimestamp,
+      })),
+      metadata: {
+        interpolatedBeatCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
+        detectedBeatCount: interpolatedBeatMap.interpolationMetadata.detectedBeatCount,
+        totalBeatCount: interpolatedBeatMap.interpolationMetadata.totalBeatCount,
+        interpolationRatio: interpolatedBeatMap.interpolationMetadata.interpolationRatio,
+        avgInterpolatedConfidence: interpolatedBeatMap.interpolationMetadata.avgInterpolatedConfidence,
+        tempoDriftRatio: interpolatedBeatMap.interpolationMetadata.tempoDriftRatio,
+        quarterNoteDetection: {
+          intervalSeconds: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.intervalSeconds,
+          bpm: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.bpm,
+          confidence: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.confidence,
+          method: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.method,
+          denseSectionCount: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionCount,
+          denseSectionBeats: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionBeats,
+        },
+        gapAnalysis: {
+          totalGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.totalGaps,
+          halfNoteGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.halfNoteGaps,
+          anomalies: interpolatedBeatMap.interpolationMetadata.gapAnalysis.anomalies,
+          avgGapSize: interpolatedBeatMap.interpolationMetadata.gapAnalysis.avgGapSize,
+          gridAlignmentScore: interpolatedBeatMap.interpolationMetadata.gapAnalysis.gridAlignmentScore,
+        },
+      },
+    };
+    
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    link.download = `interpolated-beatmap-${timestamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [interpolatedBeatMap, beatMap]);
 
   /**
    * Load cached beat map when the selected track changes.
@@ -806,34 +872,24 @@ export function AudioAnalysisTab() {
             />
           )}
 
-          {/* Algorithm Comparison Toggle - shown after successful analysis */}
-          {beatMap && !isBeatGenerating && (
-            <div className="audio-analysis-comparison-toggle">
+          {/* Export Button - shown after successful analysis */}
+          {beatMap && !isBeatGenerating && interpolatedBeatMap && (
+            <div className="audio-analysis-export-section">
               <Button
-                variant={showComparisonView ? 'primary' : 'outline'}
+                variant="outline"
                 size="sm"
-                onClick={() => setShowComparisonView(!showComparisonView)}
-                leftIcon={GitCompare}
-                className="audio-analysis-comparison-btn"
+                onClick={handleExportBeatMap}
+                leftIcon={Download}
+                className="audio-analysis-export-btn"
               >
-                {showComparisonView ? 'Hide' : 'Compare'} Algorithms
+                Export Beat Map
               </Button>
-              <span className="audio-analysis-comparison-hint">
-                Compare all 3 interpolation algorithms side-by-side
+              <span className="audio-analysis-export-hint">
+                Download interpolated beat map data as JSON
               </span>
             </div>
           )}
         </Card>
-      )}
-
-      {/* Algorithm Comparison View - Full-width section for research */}
-      {selectedTrack && analysisMode === 'beat' && !practiceModeActive && beatMap && showComparisonView && (
-        <div className="audio-analysis-comparison-container fade-in">
-          <InterpolationComparisonView
-            beatMap={beatMap}
-            timeWindow={10}
-          />
-        </div>
       )}
 
       {/* Beat Practice View - Full-width immersive experience */}

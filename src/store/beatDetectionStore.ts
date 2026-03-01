@@ -555,8 +555,8 @@ const createInitialState = (): BeatDetectionState => ({
     // Interpolation state
     interpolationOptions: { ...DEFAULT_BEAT_INTERPOLATION_OPTIONS },
     interpolatedBeatMap: null,
-    selectedAlgorithm: 'dual-pass', // Most robust algorithm
-    beatStreamMode: 'detected', // Backward compatible default
+selectedAlgorithm: 'adaptive-phase-locked', // Best algorithm after testing
+        beatStreamMode: 'merged', // Use interpolated beats by default
     showInterpolationVisualization: false,
     showGridOverlay: false, // Task 5.3: Quarter note grid overlay
     showTempoDriftVisualization: false, // Task 5.4: Tempo drift visualization

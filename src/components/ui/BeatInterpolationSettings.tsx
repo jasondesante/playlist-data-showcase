@@ -5,55 +5,25 @@
  * Part of Task 3.1: Create BeatInterpolationSettings Component
  *
  * Features:
- * - Algorithm selector with three options
  * - Beat stream mode toggle
+ * - Grid overlay and tempo drift visualization toggles
  * - Advanced options via AdvancedInterpolationOptions component (Task 8.1)
  * - Pure CSS styling (no Tailwind)
  *
  * @component
  */
-import { Info, Star } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { AdvancedInterpolationOptions } from './AdvancedInterpolationOptions';
 import './BeatInterpolationSettings.css';
 import {
     useBeatDetectionStore,
     useInterpolationOptions,
-    useSelectedAlgorithm,
     useBeatStreamMode,
     useShowGridOverlay,
     useShowTempoDriftVisualization,
 } from '../../store/beatDetectionStore';
-import type { InterpolationAlgorithm, BeatStreamMode } from '@/types';
-
-/**
- * Algorithm configuration for display
- */
-interface AlgorithmConfig {
-    id: InterpolationAlgorithm;
-    label: string;
-    description: string;
-    recommended?: boolean;
-}
-
-const ALGORITHMS: AlgorithmConfig[] = [
-    {
-        id: 'histogram-grid',
-        label: 'Histogram Grid',
-        description: 'Uses the most common interval as a rigid grid. Best for tracks with very stable tempo.',
-    },
-    {
-        id: 'adaptive-phase-locked',
-        label: 'Adaptive Phase-Locked',
-        description: 'Adjusts tempo slightly at each detected beat anchor. Handles minor tempo drift.',
-    },
-    {
-        id: 'dual-pass',
-        label: 'Dual-Pass',
-        description: 'Advanced algorithm with KDE peak finding and distributed error correction. Most robust.',
-        recommended: true,
-    },
-];
+import type { BeatStreamMode } from '@/types';
 
 /**
  * Beat stream mode configuration for display
@@ -92,26 +62,19 @@ interface BeatInterpolationSettingsProps {
 /**
  * BeatInterpolationSettings Component
  *
- * Renders settings for beat interpolation including algorithm selection,
- * beat stream mode, and advanced options via AdvancedInterpolationOptions.
+ * Renders settings for beat interpolation including beat stream mode,
+ * visualization toggles, and advanced options via AdvancedInterpolationOptions.
  */
 export function BeatInterpolationSettings({ disabled = false }: BeatInterpolationSettingsProps) {
     const interpolationOptions = useInterpolationOptions();
-    const selectedAlgorithm = useSelectedAlgorithm();
     const beatStreamMode = useBeatStreamMode();
     const showGridOverlay = useShowGridOverlay();
     const showTempoDriftVisualization = useShowTempoDriftVisualization();
 
     const setInterpolationOptions = useBeatDetectionStore((state) => state.actions.setInterpolationOptions);
-    const setSelectedAlgorithm = useBeatDetectionStore((state) => state.actions.setSelectedAlgorithm);
     const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
     const toggleGridOverlay = useBeatDetectionStore((state) => state.actions.toggleGridOverlay);
     const toggleTempoDriftVisualization = useBeatDetectionStore((state) => state.actions.toggleTempoDriftVisualization);
-
-    // Handle algorithm change
-    const handleAlgorithmChange = (algorithm: InterpolationAlgorithm) => {
-        setSelectedAlgorithm(algorithm);
-    };
 
     // Handle beat stream mode change
     const handleStreamModeChange = (mode: BeatStreamMode) => {
@@ -167,58 +130,6 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
 
     return (
         <div className="beat-interpolation-settings">
-            {/* ============================================================
-             * ALGORITHM SELECTOR
-             * ============================================================ */}
-            <div className="beat-interpolation-settings-section">
-                <div className="beat-interpolation-settings-header">
-                    <div className="beat-interpolation-settings-label-with-tooltip">
-                        <span className="beat-interpolation-settings-label">Algorithm</span>
-                        <Tooltip content="Select the algorithm used to fill gaps between detected beats." />
-                    </div>
-                </div>
-                <div
-                    className="beat-interpolation-algorithm-toggles"
-                    role="radiogroup"
-                    aria-label="Interpolation algorithm"
-                    onKeyDown={createKeyboardNavHandler(
-                        ALGORITHMS.map(a => a.id),
-                        selectedAlgorithm,
-                        handleAlgorithmChange
-                    )}
-                >
-                    {ALGORITHMS.map((algo, index) => {
-                        const isSelected = selectedAlgorithm === algo.id;
-                        return (
-                            <button
-                                key={algo.id}
-                                type="button"
-                                data-mode-index={index}
-                                className={`beat-interpolation-algorithm-toggle ${isSelected ? 'beat-interpolation-algorithm-toggle--active' : ''}`}
-                                onClick={() => handleAlgorithmChange(algo.id)}
-                                disabled={disabled}
-                                tabIndex={getToggleTabIndex(algo.id, selectedAlgorithm)}
-                                role="radio"
-                                aria-checked={isSelected}
-                                aria-label={`${algo.label}: ${algo.description}`}
-                                title={algo.description}
-                            >
-                                <span className="beat-interpolation-algorithm-toggle-label">
-                                    {algo.label}
-                                    {algo.recommended && (
-                                        <Star className="beat-interpolation-recommended-badge" size={10} />
-                                    )}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-                {/* Show description of selected algorithm */}
-                <div className="beat-interpolation-algorithm-description">
-                    {ALGORITHMS.find(a => a.id === selectedAlgorithm)?.description}
-                </div>
-            </div>
-
             {/* ============================================================
              * BEAT STREAM MODE
              * ============================================================ */}

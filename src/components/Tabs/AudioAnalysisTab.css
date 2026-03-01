@@ -1587,3 +1587,35 @@
     font-size: 0.6875rem;
   }
 }
+
+/* Export Section */
+.audio-analysis-export-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+}
+
+.audio-analysis-export-btn {
+  flex-shrink: 0;
+}
+
+.audio-analysis-export-hint {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .audio-analysis-export-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .audio-analysis-export-hint {
+    font-size: 0.6875rem;
+  }
+}
