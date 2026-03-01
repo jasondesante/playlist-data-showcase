@@ -92,7 +92,6 @@ export function AudioAnalysisTab() {
     const exportData = {
       exportTimestamp: new Date().toISOString(),
       beatMapDuration: beatMap.duration,
-      algorithm: 'adaptive-phase-locked',
       quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
       quarterNoteConfidence: interpolatedBeatMap.quarterNoteConfidence,
       detectedBeats: interpolatedBeatMap.detectedBeats.map(b => ({

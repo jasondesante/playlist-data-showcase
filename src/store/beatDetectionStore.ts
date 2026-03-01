@@ -35,7 +35,7 @@ import {
     // Interpolation types
     BeatInterpolationOptions,
     InterpolatedBeatMap,
-    InterpolationAlgorithm,
+    // InterpolationAlgorithm - REMOVED: Engine now uses only adaptive-phase-locked
     BeatStreamMode,
     DEFAULT_BEAT_INTERPOLATION_OPTIONS,
     InterpolationVisualizationData,
@@ -170,7 +170,7 @@ export const createOSEConfigSnapshot = (
  */
 export interface InterpolationConfigSnapshot {
     interpolationOptions: BeatInterpolationOptions;
-    selectedAlgorithm: InterpolationAlgorithm;
+    // selectedAlgorithm removed - engine uses only adaptive-phase-locked
 }
 
 /**
@@ -188,9 +188,6 @@ export const interpolationConfigsDiffer = (
     if (a === null && b === null) return false;
     // If one is null and other isn't, they differ
     if (a === null || b === null) return true;
-
-    // Compare selected algorithm
-    if (a.selectedAlgorithm !== b.selectedAlgorithm) return true;
 
     // Compare all interpolation options
     const optsA = a.interpolationOptions;
@@ -214,15 +211,12 @@ export const interpolationConfigsDiffer = (
  * Create an interpolation config snapshot from the current store state.
  *
  * @param interpolationOptions - Current interpolation options
- * @param selectedAlgorithm - Selected interpolation algorithm
  * @returns An interpolation config snapshot
  */
 export const createInterpolationConfigSnapshot = (
-    interpolationOptions: BeatInterpolationOptions,
-    selectedAlgorithm: InterpolationAlgorithm
+    interpolationOptions: BeatInterpolationOptions
 ): InterpolationConfigSnapshot => ({
     interpolationOptions: { ...interpolationOptions },
-    selectedAlgorithm,
 });
 
 /**
@@ -282,8 +276,7 @@ interface BeatDetectionState {
     interpolationOptions: BeatInterpolationOptions;
     /** The interpolated beat map (generated from beatMap) */
     interpolatedBeatMap: InterpolatedBeatMap | null;
-    /** Selected interpolation algorithm */
-    selectedAlgorithm: InterpolationAlgorithm;
+    // selectedAlgorithm removed - engine uses only adaptive-phase-locked
     /** Current beat stream mode for practice/playback */
     beatStreamMode: BeatStreamMode;
     /** Whether to show interpolation visualization in timeline */
@@ -466,12 +459,6 @@ interface BeatDetectionActions {
     setInterpolationOptions: (options: Partial<BeatInterpolationOptions>) => void;
 
     /**
-     * Set the selected interpolation algorithm.
-     * @param algorithm - The algorithm to use ('histogram-grid' | 'adaptive-phase-locked' | 'dual-pass')
-     */
-    setSelectedAlgorithm: (algorithm: InterpolationAlgorithm) => void;
-
-    /**
      * Set the beat stream mode for practice/playback.
      * @param mode - 'detected' for original beats, 'merged' for interpolated + detected
      */
@@ -555,8 +542,8 @@ const createInitialState = (): BeatDetectionState => ({
     // Interpolation state
     interpolationOptions: { ...DEFAULT_BEAT_INTERPOLATION_OPTIONS },
     interpolatedBeatMap: null,
-selectedAlgorithm: 'adaptive-phase-locked', // Best algorithm after testing
-        beatStreamMode: 'merged', // Use interpolated beats by default
+    // selectedAlgorithm removed - engine uses only adaptive-phase-locked
+    beatStreamMode: 'merged', // Use interpolated beats by default
     showInterpolationVisualization: false,
     showGridOverlay: false, // Task 5.3: Quarter note grid overlay
     showTempoDriftVisualization: false, // Task 5.4: Tempo drift visualization
@@ -704,8 +691,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Check if we have a cached interpolated beat map and if options match
                             const currentInterpolationConfig = createInterpolationConfigSnapshot(
-                                state.interpolationOptions,
-                                state.selectedAlgorithm
+                                state.interpolationOptions
                             );
                             const cachedInterpolated = state.cachedInterpolatedBeatMaps[audioId];
 
@@ -723,10 +709,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 });
                                 // Need to get fresh state after the set above
                                 const freshState = get();
-                                const interpolator = new BeatInterpolator({
-                                    ...freshState.interpolationOptions,
-                                    algorithm: freshState.selectedAlgorithm,
-                                });
+                                const interpolator = new BeatInterpolator(freshState.interpolationOptions);
                                 try {
                                     const interpolatedBeatMap = interpolator.interpolate(cachedMap);
                                     set({
@@ -823,18 +806,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Automatically generate interpolated beat map
                             const interpolationConfigSnapshot = createInterpolationConfigSnapshot(
-                                currentState.interpolationOptions,
-                                currentState.selectedAlgorithm
+                                currentState.interpolationOptions
                             );
 
                             let interpolatedBeatMap: InterpolatedBeatMap | null = null;
                             let cachedInterpolatedBeatMaps = currentState.cachedInterpolatedBeatMaps;
 
                             try {
-                                const interpolator = new BeatInterpolator({
-                                    ...currentState.interpolationOptions,
-                                    algorithm: currentState.selectedAlgorithm,
-                                });
+                                const interpolator = new BeatInterpolator(currentState.interpolationOptions);
                                 interpolatedBeatMap = interpolator.interpolate(beatMap);
 
                                 // Cache the interpolated beat map
@@ -1141,21 +1120,6 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     /**
-                     * Set the selected interpolation algorithm.
-                     * @param algorithm - The algorithm to use
-                     */
-                    setSelectedAlgorithm: (algorithm) => {
-                        logger.info('BeatDetection', 'Setting interpolation algorithm', { algorithm });
-                        set((state) => ({
-                            selectedAlgorithm: algorithm,
-                            interpolationOptions: {
-                                ...state.interpolationOptions,
-                                algorithm,
-                            },
-                        }));
-                    },
-
-                    /**
                      * Set the beat stream mode for practice/playback.
                      * @param mode - 'detected' for original beats, 'merged' for interpolated + detected
                      */
@@ -1198,7 +1162,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                      */
                     generateInterpolatedBeatMap: () => {
                         const state = get();
-                        const { beatMap, interpolationOptions, selectedAlgorithm } = state;
+                        const { beatMap, interpolationOptions } = state;
 
                         if (!beatMap) {
                             logger.warn('BeatDetection', 'No beat map loaded, cannot generate interpolation');
@@ -1206,16 +1170,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         }
 
                         logger.info('BeatDetection', 'Generating interpolated beat map', {
-                            algorithm: selectedAlgorithm,
                             beatCount: beatMap.beats.length,
                         });
 
                         try {
-                            // Create interpolator with current options (including selected algorithm)
-                            const interpolator = new BeatInterpolator({
-                                ...interpolationOptions,
-                                algorithm: selectedAlgorithm,
-                            });
+                            // Create interpolator with current options
+                            const interpolator = new BeatInterpolator(interpolationOptions);
 
                             // Generate the interpolated beat map
                             const interpolatedBeatMap = interpolator.interpolate(beatMap);
@@ -1269,7 +1229,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 difficultySettings: state.difficultySettings,
                 // Interpolation state
                 interpolationOptions: state.interpolationOptions,
-                selectedAlgorithm: state.selectedAlgorithm,
+                // selectedAlgorithm removed - engine uses only adaptive-phase-locked
                 beatStreamMode: state.beatStreamMode,
                 cachedInterpolatedBeatMaps: state.cachedInterpolatedBeatMaps,
             }) as BeatDetectionStoreState,
@@ -1676,12 +1636,6 @@ export const useInterpolationOptions = () =>
     useBeatDetectionStore((state) => state.interpolationOptions);
 
 /**
- * Selector to get the selected interpolation algorithm.
- */
-export const useSelectedAlgorithm = () =>
-    useBeatDetectionStore((state) => state.selectedAlgorithm);
-
-/**
  * Selector to get the beat stream mode.
  * Returns 'detected' for original beats or 'merged' for interpolated + detected.
  */
@@ -1997,7 +1951,6 @@ export const useInterpolationState = () =>
     useBeatDetectionStore(useShallow((state) => ({
         interpolatedBeatMap: state.interpolatedBeatMap,
         interpolationOptions: state.interpolationOptions,
-        selectedAlgorithm: state.selectedAlgorithm,
         beatStreamMode: state.beatStreamMode,
         showInterpolationVisualization: state.showInterpolationVisualization,
     })));
@@ -2013,8 +1966,7 @@ export const useInterpolationSettingsChanged = () =>
 
         // Create a snapshot of current settings
         const currentSnapshot = createInterpolationConfigSnapshot(
-            state.interpolationOptions,
-            state.selectedAlgorithm
+            state.interpolationOptions
         );
 
         // Compare with stored snapshot

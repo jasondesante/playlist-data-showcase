@@ -21,7 +21,6 @@ import { Button } from './Button';
 import type { BeatMap } from '@/types';
 import {
     useInterpolationStatistics,
-    useSelectedAlgorithm,
 } from '../../store/beatDetectionStore';
 
 /** Minimum track duration for reliable beat detection (seconds) */
@@ -150,15 +149,6 @@ function formatBeatCount(count: number): string {
   return count.toLocaleString();
 }
 
-/**
- * Algorithm display names for the interpolation statistics section.
- */
-const ALGORITHM_DISPLAY_NAMES: Record<string, string> = {
-  'histogram-grid': 'Histogram Grid',
-  'adaptive-phase-locked': 'Adaptive Phase-Locked',
-  'dual-pass': 'Dual-Pass',
-};
-
 export function BeatMapSummary({
   beatMap,
   onStartPractice,
@@ -166,7 +156,6 @@ export function BeatMapSummary({
 }: BeatMapSummaryProps) {
   // Get interpolation statistics from store (Task 4.1)
   const interpolationStats = useInterpolationStatistics();
-  const selectedAlgorithm = useSelectedAlgorithm();
 
   // Check for edge cases with short tracks
   const isShortTrack = beatMap.duration < MIN_TRACK_DURATION;
@@ -320,7 +309,7 @@ export function BeatMapSummary({
           <div className="beat-map-interpolation-stats-header">
             <Layers className="beat-map-interpolation-stats-icon" />
             <span className="beat-map-interpolation-stats-title">
-              Interpolation ({ALGORITHM_DISPLAY_NAMES[selectedAlgorithm] || selectedAlgorithm})
+              Interpolation
             </span>
           </div>
 
