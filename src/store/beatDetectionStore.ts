@@ -9,6 +9,7 @@
  * Uses zustand with persist middleware for localStorage caching of beat maps.
  */
 
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage, type PersistStorage, type StorageValue } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
@@ -1771,11 +1772,25 @@ const getConfidenceLevel = (confidence: number): ConfidenceLevel => {
 /**
  * Selector to get interpolation statistics for display.
  * Returns null if no interpolation has been generated.
- * Uses useShallow to prevent infinite loops from new object references.
+ *
+ * Note: This uses a two-step approach to prevent infinite loops:
+ * 1. First, select raw data with useShallow to get stable primitive values
+ * 2. Then, memoize the computed result based on those stable values
  */
-export const useInterpolationStatistics = (): InterpolationStatistics | null =>
-    useBeatDetectionStore(useShallow((state) => {
-        const { interpolatedBeatMap, interpolationOptions } = state;
+export const useInterpolationStatistics = (): InterpolationStatistics | null => {
+    // Step 1: Select raw data with useShallow for stable references
+    const rawData = useBeatDetectionStore(
+        useShallow((state) => ({
+            interpolatedBeatMap: state.interpolatedBeatMap,
+            gridAlignmentWeight: state.interpolationOptions.gridAlignmentWeight,
+            anchorConfidenceWeight: state.interpolationOptions.anchorConfidenceWeight,
+            paceConfidenceWeight: state.interpolationOptions.paceConfidenceWeight,
+        }))
+    );
+
+    // Step 2: Memoize the computed result based on stable raw data
+    return useMemo(() => {
+        const { interpolatedBeatMap, gridAlignmentWeight, anchorConfidenceWeight, paceConfidenceWeight } = rawData;
 
         if (!interpolatedBeatMap) {
             return null;
@@ -1802,9 +1817,9 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
             tempoDriftRatio: interpolationMetadata.tempoDriftRatio,
             gridAlignmentScore: gapAnalysis.gridAlignmentScore,
             confidenceWeights: {
-                gridAlignment: interpolationOptions.gridAlignmentWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridAlignmentWeight,
-                anchorConfidence: interpolationOptions.anchorConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.anchorConfidenceWeight,
-                paceConfidence: interpolationOptions.paceConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.paceConfidenceWeight,
+                gridAlignment: gridAlignmentWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.gridAlignmentWeight,
+                anchorConfidence: anchorConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.anchorConfidenceWeight,
+                paceConfidence: paceConfidenceWeight ?? DEFAULT_BEAT_INTERPOLATION_OPTIONS.paceConfidenceWeight,
             },
             quarterNoteDetection: {
                 method: quarterNoteDetection.method,
@@ -1813,7 +1828,8 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
                 secondaryPeaks: secondaryPeaksBpm,
             },
         };
-    }));
+    }, [rawData]);
+};
 
 /**
  * Calculate tempo drift data for visualization.
