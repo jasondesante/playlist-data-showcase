@@ -31,6 +31,12 @@ import {
     getHopSizeMs,
     getMelBands,
     getGaussianSmoothMs,
+    // Interpolation types
+    BeatInterpolationOptions,
+    InterpolatedBeatMap,
+    InterpolationAlgorithm,
+    BeatStreamMode,
+    DEFAULT_BEAT_INTERPOLATION_OPTIONS,
 } from '@/types';
 import { BeatMapGenerator } from 'playlist-data-engine';
 
@@ -209,6 +215,17 @@ interface BeatDetectionState {
     storageError: string | null;
     /** Difficulty settings for beat tap evaluation */
     difficultySettings: DifficultySettings;
+    // Interpolation state
+    /** Options for beat interpolation */
+    interpolationOptions: BeatInterpolationOptions;
+    /** The interpolated beat map (generated from beatMap) */
+    interpolatedBeatMap: InterpolatedBeatMap | null;
+    /** Selected interpolation algorithm */
+    selectedAlgorithm: InterpolationAlgorithm;
+    /** Current beat stream mode for practice/playback */
+    beatStreamMode: BeatStreamMode;
+    /** Whether to show interpolation visualization in timeline */
+    showInterpolationVisualization: boolean;
 }
 
 interface BeatDetectionActions {
@@ -415,6 +432,12 @@ const createInitialState = (): BeatDetectionState => ({
     error: null,
     storageError: null,
     difficultySettings: { ...DEFAULT_DIFFICULTY_SETTINGS },
+    // Interpolation state
+    interpolationOptions: { ...DEFAULT_BEAT_INTERPOLATION_OPTIONS },
+    interpolatedBeatMap: null,
+    selectedAlgorithm: 'dual-pass', // Most robust algorithm
+    beatStreamMode: 'detected', // Backward compatible default
+    showInterpolationVisualization: false,
 });
 
 /**

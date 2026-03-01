@@ -107,8 +107,8 @@ This plan covers the frontend integration for the Beat Interpolation system defi
 
 ### Tasks
 
-- [ ] **2.1 Extend State Interface**
-  - [ ] Add to [src/store/beatDetectionStore.ts](src/store/beatDetectionStore.ts):
+- [x] **2.1 Extend State Interface**
+  - [x] Add to [src/store/beatDetectionStore.ts](src/store/beatDetectionStore.ts):
     ```typescript
     interface BeatDetectionState {
       // ... existing state ...
