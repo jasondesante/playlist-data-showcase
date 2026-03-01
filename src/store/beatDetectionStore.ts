@@ -1459,6 +1459,8 @@ export const useBeatDetectionActions = () =>
 /**
  * Selector to compute tap statistics.
  * Uses useShallow to prevent infinite loops from new object references.
+ *
+ * Includes breakdown by beat source (detected vs interpolated) for Task 6.4.
  */
 export const useTapStatistics = () =>
     useBeatDetectionStore(useShallow((state) => {
@@ -1475,6 +1477,11 @@ export const useTapStatistics = () =>
                 standardDeviation: 0,
                 currentStreak: 0,
                 bestStreak: 0,
+                // Source breakdown (Task 6.4)
+                detectedBeatsTotal: 0,
+                detectedBeatsHit: 0,
+                interpolatedBeatsTotal: 0,
+                interpolatedBeatsHit: 0,
             };
         }
 
@@ -1491,6 +1498,12 @@ export const useTapStatistics = () =>
         let currentStreak = 0;
         let bestStreak = 0;
 
+        // Source breakdown counts (Task 6.4)
+        let detectedBeatsTotal = 0;
+        let detectedBeatsHit = 0;
+        let interpolatedBeatsTotal = 0;
+        let interpolatedBeatsHit = 0;
+
         history.forEach((tap) => {
             counts[tap.accuracy]++;
 
@@ -1505,6 +1518,21 @@ export const useTapStatistics = () =>
                 }
             } else {
                 currentStreak = 0;
+            }
+
+            // Track source breakdown (Task 6.4)
+            // Taps without source info (e.g., using BeatMap without interpolation)
+            // are not counted in the source breakdown
+            if (tap.source === 'detected') {
+                detectedBeatsTotal++;
+                if (tap.accuracy !== 'miss') {
+                    detectedBeatsHit++;
+                }
+            } else if (tap.source === 'interpolated') {
+                interpolatedBeatsTotal++;
+                if (tap.accuracy !== 'miss') {
+                    interpolatedBeatsHit++;
+                }
             }
         });
 
@@ -1528,6 +1556,11 @@ export const useTapStatistics = () =>
             standardDeviation: Math.round(standardDeviation * 10) / 10,
             currentStreak,
             bestStreak,
+            // Source breakdown (Task 6.4)
+            detectedBeatsTotal,
+            detectedBeatsHit,
+            interpolatedBeatsTotal,
+            interpolatedBeatsHit,
         };
     }));
 

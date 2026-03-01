@@ -592,6 +592,10 @@ export const useBeatStream = (
      * ACCURACY EVALUATION: We use custom thresholds from the store to support
      * difficulty presets and the 'ok' accuracy level. The engine's checkButtonPress
      * only supports perfect/great/good/miss without 'ok'.
+     *
+     * SOURCE EXTRACTION: When using InterpolatedBeatMap with mergedBeats, the
+     * matched beat contains a 'source' field indicating whether it was detected
+     * or interpolated. We extract this for tap statistics breakdown.
      */
     const checkTap = useCallback((): ExtendedButtonPressResult | null => {
         if (!beatStreamRef.current || !isActive) {
@@ -610,9 +614,17 @@ export const useBeatStream = (
         // Re-evaluate accuracy using our custom thresholds
         const accuracy = evaluateAccuracy(engineResult.absoluteOffset, thresholds);
 
+        // Extract source from matched beat (BeatWithSource has source field)
+        // At runtime, when using InterpolatedBeatMap.mergedBeats, the beat
+        // object actually contains the source property even though TypeScript
+        // types it as Beat.
+        const matchedBeatWithSource = engineResult.matchedBeat as BeatWithSource;
+        const source: BeatSource | undefined = matchedBeatWithSource?.source;
+
         const result: ExtendedButtonPressResult = {
             ...engineResult,
             accuracy,
+            source,
         };
 
         logger.debug('BeatDetection', 'Tap checked', {
@@ -620,6 +632,7 @@ export const useBeatStream = (
             offset: result.offset * 1000, // Convert to ms
             beatTime: result.matchedBeat?.timestamp,
             tapTime,
+            source: source ?? 'unknown',
             thresholds: {
                 perfect: thresholds.perfect * 1000,
                 great: thresholds.great * 1000,

@@ -53,6 +53,13 @@
   grid-template-columns: repeat(6, 1fr);
 }
 
+/* Source breakdown row has 2 items (Task 6.4) */
+.tap-stats__row--source {
+  grid-template-columns: repeat(2, 1fr);
+  padding-top: 0.5rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+}
+
 /* Individual Stat Item */
 .tap-stats__item {
   display: flex;
@@ -104,6 +111,17 @@
 
 .tap-stats__item--miss .tap-stats__value {
   color: #ef4444;
+}
+
+/* Source breakdown colors (Task 6.4) */
+/* Detected beats - solid/marked color */
+.tap-stats__item--detected .tap-stats__value {
+  color: #a855f7; /* Purple - represents original detected beats */
+}
+
+/* Interpolated beats - hollow/softer color */
+.tap-stats__item--interpolated .tap-stats__value {
+  color: #06b6d4; /* Cyan - represents interpolated/grid beats */
 }
 
 /* Empty State */
@@ -167,6 +185,11 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
+  /* Source breakdown: keep 2 columns on tablet/phone */
+  .tap-stats__row--source {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .tap-stats__item {
     padding: 0.375rem;
   }
@@ -215,6 +238,11 @@
 
   /* Hit distribution: 2 columns on very small screens */
   .tap-stats__row--hits {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Source breakdown: keep 2 columns on very small screens */
+  .tap-stats__row--source {
     grid-template-columns: repeat(2, 1fr);
   }
 

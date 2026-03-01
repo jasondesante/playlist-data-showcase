@@ -9,9 +9,11 @@
  * - Standard deviation (timing consistency)
  * - Current streak
  * - Best streak
+ * - Source breakdown (detected vs interpolated beats) - Task 6.4
  * - Reset Stats button
  *
  * Part of Task 5.3: TapStats Component
+ * Updated Task 6.4: Source breakdown for detected vs interpolated beats
  */
 import { useCallback } from 'react';
 import { RotateCcw } from 'lucide-react';
@@ -56,6 +58,10 @@ export function TapStats({
   const handleReset = useCallback(() => {
     clearTapHistory();
   }, [clearTapHistory]);
+
+  // Check if we have source breakdown data (Task 6.4)
+  // Only show the breakdown section if there's at least one tap with source info
+  const hasSourceData = stats.detectedBeatsTotal > 0 || stats.interpolatedBeatsTotal > 0;
 
   const containerClasses = [
     'tap-stats',
@@ -131,6 +137,24 @@ export function TapStats({
             <span className="tap-stats__label">Best</span>
           </div>
         </div>
+
+        {/* Source breakdown row (Task 6.4) - only shown when using interpolated beat map */}
+        {hasSourceData && (
+          <div className="tap-stats__row tap-stats__row--source">
+            <div className="tap-stats__item tap-stats__item--detected">
+              <span className="tap-stats__value">
+                {stats.detectedBeatsHit}/{stats.detectedBeatsTotal}
+              </span>
+              <span className="tap-stats__label">Detected</span>
+            </div>
+            <div className="tap-stats__item tap-stats__item--interpolated">
+              <span className="tap-stats__value">
+                {stats.interpolatedBeatsHit}/{stats.interpolatedBeatsTotal}
+              </span>
+              <span className="tap-stats__label">Interpolated</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Empty state */}

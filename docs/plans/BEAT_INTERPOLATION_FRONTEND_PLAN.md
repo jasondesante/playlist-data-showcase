@@ -301,11 +301,16 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Updated `BeatTimeline` to use `ExtendedBeatEvent` and display source indicator
   - [x] Show source in practice feedback (optional - added indicator in timeline info bar)
 
-- [ ] **6.4 Update Tap Statistics**
-  - [ ] Track separate stats for detected vs interpolated beats
-  - [ ] Add breakdown to TapStats display:
+- [x] **6.4 Update Tap Statistics**
+  - [x] Track separate stats for detected vs interpolated beats
+  - [x] Add breakdown to TapStats display:
     - Detected beats hit: X / Y
     - Interpolated beats hit: X / Y
+  - [x] Extended `ExtendedButtonPressResult` type with optional `source` field
+  - [x] Updated `checkTap` in useBeatStream to extract source from matched beat
+  - [x] Extended `useTapStatistics` selector with source breakdown counts
+  - [x] Updated TapStats component to display source breakdown when available
+  - [x] Added CSS styles for detected (purple) and interpolated (cyan) beat indicators
 
 ---
 
