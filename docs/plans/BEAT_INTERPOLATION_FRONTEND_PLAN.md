@@ -294,9 +294,12 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Pass `source` field through to beat events (via BeatWithSource type from engine)
   - [x] Updated BeatPracticeView to pass activeBeatMap and beatStreamMode to the hook
 
-- [ ] **6.3 Update Beat Event Metadata**
-  - [ ] Extend `BeatEvent` to include `source: 'detected' | 'interpolated'`
-  - [ ] Show source in practice feedback (optional)
+- [x] **6.3 Update Beat Event Metadata**
+  - [x] Extend `BeatEvent` to include `source: 'detected' | 'interpolated'`
+  - [x] Created `ExtendedBeatEvent` type in frontend types
+  - [x] Updated `useBeatStream` to extract source from BeatWithSource when available
+  - [x] Updated `BeatTimeline` to use `ExtendedBeatEvent` and display source indicator
+  - [x] Show source in practice feedback (optional - added indicator in timeline info bar)
 
 - [ ] **6.4 Update Tap Statistics**
   - [ ] Track separate stats for detected vs interpolated beats

@@ -18,15 +18,15 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
-import type { Beat, BeatMap, BeatEvent, InterpolationVisualizationData } from '@/types';
+import type { Beat, BeatMap, ExtendedBeatEvent, InterpolationVisualizationData } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
   beatMap: BeatMap;
   /** Current playback time in seconds (from audio player - used as reference) */
   currentTime: number;
-  /** The last beat event (for pulse animation trigger) */
-  lastBeatEvent?: BeatEvent | null;
+  /** The last beat event (for pulse animation trigger) - includes source info when available */
+  lastBeatEvent?: ExtendedBeatEvent | null;
   /** Timestamp of the last tap (for tap visual feedback) */
   lastTapTime?: number;
   /** The accuracy rating of the last tap (for color-coded feedback) */
@@ -492,6 +492,11 @@ export function BeatTimeline({
             <span className="beat-timeline-info-label">Last Beat</span>
             <span className="beat-timeline-info-value">
               {lastBeatEvent.beat.isDownbeat ? 'DOWN' : 'BEAT'}
+              {lastBeatEvent.source && (
+                <span className="beat-timeline-info-source">
+                  {lastBeatEvent.source === 'detected' ? ' ●' : ' ○'}
+                </span>
+              )}
             </span>
           </div>
         )}

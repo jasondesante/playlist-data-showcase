@@ -487,6 +487,12 @@
   color: hsl(var(--foreground));
 }
 
+/* Task 6.3: Beat source indicator in timeline info */
+.beat-timeline-info-source {
+  margin-left: 0.25rem;
+  opacity: 0.7;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .beat-timeline-track {

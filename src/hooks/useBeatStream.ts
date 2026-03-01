@@ -42,11 +42,19 @@ import type {
     BeatStreamOptions,
     AudioSyncState,
     InterpolatedBeatMap,
+    BeatWithSource,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useBeatDetectionStore } from '@/store/beatDetectionStore';
-import type { AccuracyThresholds, ExtendedBeatAccuracy, ExtendedButtonPressResult, BeatStreamMode } from '@/types';
+import type {
+    AccuracyThresholds,
+    ExtendedBeatAccuracy,
+    ExtendedButtonPressResult,
+    BeatStreamMode,
+    ExtendedBeatEvent,
+    BeatSource,
+} from '@/types';
 
 /**
  * Default options for BeatStream.
@@ -120,8 +128,8 @@ export interface UseBeatStreamReturn {
     currentBpm: number;
     /** Array of upcoming beats for visualization */
     upcomingBeats: Beat[];
-    /** The last beat event emitted (for pulse animations) */
-    lastBeatEvent: BeatEvent | null;
+    /** The last beat event emitted (for pulse animations) - includes source info when available */
+    lastBeatEvent: ExtendedBeatEvent | null;
     /** Current audio sync state for debugging */
     syncState: AudioSyncState | null;
     /** Whether the stream is currently active */
@@ -202,7 +210,7 @@ export const useBeatStream = (
     // State for reactive updates
     const [currentBpm, setCurrentBpm] = useState(0);
     const [upcomingBeats, setUpcomingBeats] = useState<Beat[]>([]);
-    const [lastBeatEvent, setLastBeatEvent] = useState<BeatEvent | null>(null);
+    const [lastBeatEvent, setLastBeatEvent] = useState<ExtendedBeatEvent | null>(null);
     const [syncState, setSyncState] = useState<AudioSyncState | null>(null);
     const [isActive, setIsActive] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -329,6 +337,10 @@ export const useBeatStream = (
 
     /**
      * Subscribe to beat events.
+     *
+     * Task 6.3: Extracts source information from the beat if available
+     * (when using InterpolatedBeatMap with mergedBeats) and includes
+     * it in the ExtendedBeatEvent.
      */
     const subscribeToEvents = useCallback(() => {
         if (!beatStreamRef.current) return;
@@ -339,7 +351,20 @@ export const useBeatStream = (
         }
 
         const unsubscribe = beatStreamRef.current.subscribe((event: BeatEvent) => {
-            setLastBeatEvent(event);
+            // Extract source from beat if it exists (BeatWithSource has source field)
+            // At runtime, when using InterpolatedBeatMap.mergedBeats, the beat
+            // object actually contains the source property even though TypeScript
+            // types it as Beat.
+            const beatWithSource = event.beat as BeatWithSource;
+            const source: BeatSource | undefined = beatWithSource?.source;
+
+            // Create extended event with source information
+            const extendedEvent: ExtendedBeatEvent = {
+                ...event,
+                ...(source && { source }),
+            };
+
+            setLastBeatEvent(extendedEvent);
             setCurrentBpm(event.currentBpm);
 
             // Log beat events for debugging
@@ -348,6 +373,7 @@ export const useBeatStream = (
                 beatTime: event.beat.timestamp,
                 currentBpm: event.currentBpm,
                 timeUntilBeat: event.timeUntilBeat,
+                source: source ?? 'unknown',
             });
         });
 
