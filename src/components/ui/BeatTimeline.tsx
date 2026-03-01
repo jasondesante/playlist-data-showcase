@@ -11,10 +11,13 @@
  * - Anticipation window showing upcoming beats
  * - Smooth 60fps animation using requestAnimationFrame
  * - Interpolation visualization: detected vs interpolated beats (Task 5.1)
+ * - Quarter note grid overlay (Task 5.3)
+ * - Tempo drift visualization (Task 5.4)
  *
  * Part of Task 4.1: BeatTimeline Component
  * Part of Task 4.3: Timeline Synchronization
  * Part of Task 5.1: Dual-Source Rendering for Interpolation
+ * Part of Task 5.4: Tempo Drift Visualization
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
@@ -53,6 +56,11 @@ interface BeatTimelineProps {
    * Part of Task 5.3: Quarter Note Grid Overlay
    */
   showGridOverlay?: boolean;
+  /**
+   * Whether to show the tempo drift visualization.
+   * Part of Task 5.4: Tempo Drift Visualization
+   */
+  showTempoDriftVisualization?: boolean;
 }
 
 /**
@@ -76,6 +84,7 @@ export function BeatTimeline({
   audioContext: _audioContext,
   interpolationData = null,
   showGridOverlay = false,
+  showTempoDriftVisualization = false,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
@@ -444,6 +453,111 @@ export function BeatTimeline({
 
   const visibleGridLines = getVisibleGridLines();
 
+  // ========================================
+  // Task 5.4: Tempo Drift Visualization
+  // ========================================
+
+  /**
+   * Calculate visible tempo drift curve and drift sections.
+   * Returns an SVG path string and sections where tempo drifts significantly.
+   */
+  const getTempoDriftVisualization = useCallback((): {
+    pathPoints: Array<{ position: number; normalizedBpm: number }>;
+    driftSections: Array<{ startPosition: number; endPosition: number; driftType: 'speedup' | 'slowdown' }>;
+    avgBpm: number;
+  } | null => {
+    // Only show if enabled and we have drift data
+    if (!showTempoDriftVisualization || !interpolationData?.tempoDrift || interpolationData.tempoDrift.length < 2) {
+      return null;
+    }
+
+    const { tempoDrift, quarterNoteInterval } = interpolationData;
+    const minTime = smoothTime - pastWindow;
+    const maxTime = smoothTime + anticipationWindow;
+
+    // Calculate average BPM from quarter note interval
+    const avgBpm = quarterNoteInterval > 0 ? 60 / quarterNoteInterval : 120;
+
+    // Filter drift points to visible window
+    const visiblePoints = tempoDrift
+      .filter((point) => point.time >= minTime && point.time <= maxTime)
+      .map((point) => ({
+        position: calculateBeatPosition(point.time),
+        bpm: point.bpm,
+      }))
+      .filter((point) => point.position >= 0 && point.position <= 1);
+
+    // Ensure we have at least start and end points
+    if (visiblePoints.length < 2) {
+      return null;
+    }
+
+    // Calculate min/max BPM for normalization
+    const bpmValues = visiblePoints.map((p) => p.bpm);
+    const minBpm = Math.min(...bpmValues);
+    const maxBpm = Math.max(...bpmValues);
+    const bpmRange = Math.max(maxBpm - minBpm, 10); // At least 10 BPM range
+
+    // Normalize BPM to 0-1 range for visualization
+    const pathPoints = visiblePoints.map((p) => ({
+      position: p.position,
+      normalizedBpm: (p.bpm - minBpm) / bpmRange,
+    }));
+
+    // Detect drift sections (where BPM deviates significantly from average)
+    const driftThreshold = 0.03; // 3% deviation threshold
+    const driftSections: Array<{ startPosition: number; endPosition: number; driftType: 'speedup' | 'slowdown' }> = [];
+
+    let inDriftSection = false;
+    let driftStart = 0;
+    let currentDriftType: 'speedup' | 'slowdown' | null = null;
+
+    for (let i = 0; i < visiblePoints.length; i++) {
+      const point = visiblePoints[i];
+      const deviation = (point.bpm - avgBpm) / avgBpm;
+      const isDrifting = Math.abs(deviation) > driftThreshold;
+      const driftType = deviation > 0 ? 'speedup' : 'slowdown';
+
+      if (isDrifting && !inDriftSection) {
+        // Start new drift section
+        inDriftSection = true;
+        driftStart = point.position;
+        currentDriftType = driftType;
+      } else if (isDrifting && inDriftSection && driftType !== currentDriftType) {
+        // Drift type changed, close previous and start new
+        driftSections.push({
+          startPosition: driftStart,
+          endPosition: visiblePoints[i - 1].position,
+          driftType: currentDriftType!,
+        });
+        driftStart = point.position;
+        currentDriftType = driftType;
+      } else if (!isDrifting && inDriftSection) {
+        // End drift section
+        driftSections.push({
+          startPosition: driftStart,
+          endPosition: point.position,
+          driftType: currentDriftType!,
+        });
+        inDriftSection = false;
+        currentDriftType = null;
+      }
+    }
+
+    // Close any remaining drift section
+    if (inDriftSection && currentDriftType) {
+      driftSections.push({
+        startPosition: driftStart,
+        endPosition: visiblePoints[visiblePoints.length - 1].position,
+        driftType: currentDriftType,
+      });
+    }
+
+    return { pathPoints, driftSections, avgBpm };
+  }, [showTempoDriftVisualization, interpolationData, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
+
+  const tempoDriftViz = getTempoDriftVisualization();
+
   return (
     <div className="beat-timeline">
       {/* Timeline track */}
@@ -475,6 +589,54 @@ export function BeatTimeline({
             style={{ left: `${gridLine.position * 100}%` }}
           />
         ))}
+
+        {/* Task 5.4: Tempo Drift Visualization */}
+        {tempoDriftViz && (
+          <>
+            {/* Drift section highlights */}
+            {tempoDriftViz.driftSections.map((section, index) => (
+              <div
+                key={`drift-section-${index}`}
+                className={`beat-timeline-drift-section beat-timeline-drift-section--${section.driftType}`}
+                style={{
+                  left: `${section.startPosition * 100}%`,
+                  width: `${(section.endPosition - section.startPosition) * 100}%`,
+                }}
+              />
+            ))}
+            {/* Tempo curve SVG */}
+            <svg
+              className="beat-timeline-tempo-curve"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="tempo-curve-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(var(--primary) / 0.4)" />
+                  <stop offset="50%" stopColor="hsl(var(--primary) / 0.2)" />
+                  <stop offset="100%" stopColor="hsl(var(--primary) / 0.1)" />
+                </linearGradient>
+              </defs>
+              {/* Area fill under the curve */}
+              <path
+                d={`M ${tempoDriftViz.pathPoints[0].position * 100} ${100 - tempoDriftViz.pathPoints[0].normalizedBpm * 80 - 10} ` +
+                  tempoDriftViz.pathPoints.slice(1).map((p) => `L ${p.position * 100} ${100 - p.normalizedBpm * 80 - 10}`).join(' ') +
+                  ` L ${tempoDriftViz.pathPoints[tempoDriftViz.pathPoints.length - 1].position * 100} 100 L ${tempoDriftViz.pathPoints[0].position * 100} 100 Z`}
+                className="beat-timeline-tempo-curve-area"
+                fill="url(#tempo-curve-gradient)"
+              />
+              {/* Main curve line */}
+              <path
+                d={`M ${tempoDriftViz.pathPoints[0].position * 100} ${100 - tempoDriftViz.pathPoints[0].normalizedBpm * 80 - 10} ` +
+                  tempoDriftViz.pathPoints.slice(1).map((p) => `L ${p.position * 100} ${100 - p.normalizedBpm * 80 - 10}`).join(' ')}
+                className="beat-timeline-tempo-curve-line"
+                fill="none"
+                stroke="hsl(var(--primary) / 0.6)"
+                strokeWidth="0.5"
+              />
+            </svg>
+          </>
+        )}
 
         {/* Beat markers */}
         {visibleBeats.map(({ beat, position, isPast, isUpcoming }) => (
@@ -522,6 +684,7 @@ export function BeatTimeline({
 
       {/* Task 5.2: Visual Legend for interpolation beat types */}
       {/* Task 5.3: Added grid overlay indicator */}
+      {/* Task 5.4: Added tempo drift indicator */}
       {interpolationData && (
         <div className="beat-timeline-legend">
           <div className="beat-timeline-legend-item">
@@ -542,6 +705,12 @@ export function BeatTimeline({
             <div className="beat-timeline-legend-item">
               <div className="beat-timeline-legend-grid" />
               <span className="beat-timeline-legend-label">Quarter note grid</span>
+            </div>
+          )}
+          {showTempoDriftVisualization && (
+            <div className="beat-timeline-legend-item">
+              <div className="beat-timeline-legend-tempo" />
+              <span className="beat-timeline-legend-label">Tempo curve</span>
             </div>
           )}
         </div>

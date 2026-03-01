@@ -22,6 +22,7 @@ import {
     useSelectedAlgorithm,
     useBeatStreamMode,
     useShowGridOverlay,
+    useShowTempoDriftVisualization,
 } from '../../store/beatDetectionStore';
 import type { InterpolationAlgorithm, BeatStreamMode } from '@/types';
 
@@ -99,11 +100,13 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
     const selectedAlgorithm = useSelectedAlgorithm();
     const beatStreamMode = useBeatStreamMode();
     const showGridOverlay = useShowGridOverlay();
+    const showTempoDriftVisualization = useShowTempoDriftVisualization();
 
     const setInterpolationOptions = useBeatDetectionStore((state) => state.actions.setInterpolationOptions);
     const setSelectedAlgorithm = useBeatDetectionStore((state) => state.actions.setSelectedAlgorithm);
     const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
     const toggleGridOverlay = useBeatDetectionStore((state) => state.actions.toggleGridOverlay);
+    const toggleTempoDriftVisualization = useBeatDetectionStore((state) => state.actions.toggleTempoDriftVisualization);
 
     // Handle algorithm change
     const handleAlgorithmChange = (algorithm: InterpolationAlgorithm) => {
@@ -283,6 +286,28 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
                     {showGridOverlay
                         ? 'Grid lines visible on timeline'
                         : 'Enable to see beat grid alignment'}
+                </div>
+            </div>
+
+            {/* ============================================================
+             * TEMPO DRIFT VISUALIZATION TOGGLE (Task 5.4)
+             * ============================================================ */}
+            <div className="beat-interpolation-settings-section">
+                <label className="beat-interpolation-checkbox-label">
+                    <input
+                        type="checkbox"
+                        checked={showTempoDriftVisualization}
+                        onChange={toggleTempoDriftVisualization}
+                        disabled={disabled}
+                        className="beat-interpolation-checkbox"
+                    />
+                    <span className="beat-interpolation-checkbox-text">Show Tempo Drift</span>
+                    <Tooltip content="Display a tempo curve showing how tempo changes throughout the track. Highlights sections where tempo speeds up or slows down." />
+                </label>
+                <div className="beat-interpolation-checkbox-description">
+                    {showTempoDriftVisualization
+                        ? 'Tempo curve and drift sections visible'
+                        : 'Enable to see tempo variations'}
                 </div>
             </div>
 

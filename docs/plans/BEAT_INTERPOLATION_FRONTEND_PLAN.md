@@ -272,9 +272,17 @@ This plan covers the frontend integration for the Beat Interpolation system defi
   - [x] Added grid overlay toggle in BeatInterpolationSettings component
   - [x] Added grid indicator to timeline legend when grid is visible
 
-- [ ] **5.4 Add Tempo Drift Visualization (Optional)**
-  - [ ] Draw tempo curve as background line
-  - [ ] Highlight sections where tempo drifts
+- [x] **5.4 Add Tempo Drift Visualization (Optional)**
+  - [x] Draw tempo curve as background line
+  - [x] Highlight sections where tempo drifts
+  - [x] Added `calculateTempoDriftData()` helper function in beatDetectionStore
+  - [x] Added `showTempoDriftVisualization` state and `toggleTempoDriftVisualization` action
+  - [x] Added `useShowTempoDriftVisualization` selector
+  - [x] Updated BeatTimeline to render SVG tempo curve with gradient fill
+  - [x] Added drift section highlights for speedup (cyan) and slowdown (amber) sections
+  - [x] Added toggle in BeatInterpolationSettings component
+  - [x] Added CSS styles for tempo curve, drift sections, and legend indicator
+  - [x] Added responsive styles for mobile screens
 
 ---
 

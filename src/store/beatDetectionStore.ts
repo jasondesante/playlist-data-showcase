@@ -289,6 +289,8 @@ interface BeatDetectionState {
     showInterpolationVisualization: boolean;
     /** Whether to show the quarter note grid overlay in timeline (Task 5.3) */
     showGridOverlay: boolean;
+    /** Whether to show the tempo drift visualization in timeline (Task 5.4) */
+    showTempoDriftVisualization: boolean;
     /** Interpolation config snapshot used to generate the current interpolated beat map (for re-analyze indicator) */
     lastGeneratedInterpolationConfig: InterpolationConfigSnapshot | null;
     /** Cached interpolated beat maps indexed by audio ID for localStorage persistence */
@@ -485,6 +487,11 @@ interface BeatDetectionActions {
     toggleGridOverlay: () => void;
 
     /**
+     * Toggle the tempo drift visualization visibility. (Task 5.4)
+     */
+    toggleTempoDriftVisualization: () => void;
+
+    /**
      * Generate an interpolated beat map from the current beat map.
      * Uses the BeatInterpolator from the engine with current interpolation options.
      * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
@@ -551,6 +558,7 @@ const createInitialState = (): BeatDetectionState => ({
     beatStreamMode: 'detected', // Backward compatible default
     showInterpolationVisualization: false,
     showGridOverlay: false, // Task 5.3: Quarter note grid overlay
+    showTempoDriftVisualization: false, // Task 5.4: Tempo drift visualization
     lastGeneratedInterpolationConfig: null,
     cachedInterpolatedBeatMaps: {},
 });
@@ -1174,6 +1182,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     /**
+                     * Toggle the tempo drift visualization visibility. (Task 5.4)
+                     */
+                    toggleTempoDriftVisualization: () => {
+                        const current = get().showTempoDriftVisualization;
+                        logger.info('BeatDetection', 'Toggling tempo drift visualization', { enabled: !current });
+                        set({ showTempoDriftVisualization: !current });
+                    },
+
+                    /**
                      * Generate an interpolated beat map from the current beat map.
                      * Uses the BeatInterpolator from the engine with current interpolation options.
                      * @returns The generated InterpolatedBeatMap, or null if no beat map is loaded
@@ -1683,6 +1700,12 @@ export const useShowGridOverlay = () =>
     useBeatDetectionStore((state) => state.showGridOverlay);
 
 /**
+ * Selector to get the tempo drift visualization visibility. (Task 5.4)
+ */
+export const useShowTempoDriftVisualization = () =>
+    useBeatDetectionStore((state) => state.showTempoDriftVisualization);
+
+/**
  * Confidence level for visual indicator.
  * - 'high': > 0.8 confidence (green)
  * - 'medium': 0.5 - 0.8 confidence (yellow)
@@ -1793,6 +1816,100 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null =>
     }));
 
 /**
+ * Calculate tempo drift data for visualization.
+ *
+ * Samples local tempo at regular intervals throughout the track by analyzing
+ * the intervals between adjacent beats. This creates a tempo curve that shows
+ * how tempo changes over time.
+ *
+ * Part of Task 5.4: Tempo Drift Visualization
+ *
+ * @param beats - Array of beats with timestamps
+ * @param duration - Total duration of the track in seconds
+ * @param quarterNoteInterval - The detected quarter note interval in seconds
+ * @param sampleInterval - How often to sample tempo (default: 0.5 seconds)
+ * @returns Array of { time, bpm } points for visualization
+ */
+function calculateTempoDriftData(
+    beats: Array<{ timestamp: number }>,
+    duration: number,
+    quarterNoteInterval: number,
+    sampleInterval: number = 0.5
+): Array<{ time: number; bpm: number }> {
+    if (beats.length < 2 || quarterNoteInterval <= 0) {
+        return [];
+    }
+
+    const driftPoints: Array<{ time: number; bpm: number }> = [];
+    const baseBpm = 60 / quarterNoteInterval;
+
+    // Sort beats by timestamp (should already be sorted, but ensure it)
+    const sortedBeats = [...beats].sort((a, b) => a.timestamp - b.timestamp);
+
+    // Calculate local tempo using a sliding window of beat intervals
+    // We look at a window of ~2 beats worth of time to smooth out variations
+    const windowSize = quarterNoteInterval * 2;
+
+    for (let time = 0; time <= duration; time += sampleInterval) {
+        // Find beats within the window around this time
+        const windowStart = Math.max(0, time - windowSize);
+        const windowEnd = Math.min(duration, time + windowSize);
+
+        const windowBeats = sortedBeats.filter(
+            (beat) => beat.timestamp >= windowStart && beat.timestamp <= windowEnd
+        );
+
+        if (windowBeats.length >= 2) {
+            // Calculate average interval between consecutive beats in the window
+            let totalInterval = 0;
+            let intervalCount = 0;
+
+            for (let i = 1; i < windowBeats.length; i++) {
+                const interval = windowBeats[i].timestamp - windowBeats[i - 1].timestamp;
+                // Filter out anomalous intervals (too short or too long)
+                if (interval > quarterNoteInterval * 0.25 && interval < quarterNoteInterval * 4) {
+                    totalInterval += interval;
+                    intervalCount++;
+                }
+            }
+
+            if (intervalCount > 0) {
+                const avgInterval = totalInterval / intervalCount;
+                const localBpm = 60 / avgInterval;
+
+                // Clamp to reasonable BPM range (40-240 BPM)
+                const clampedBpm = Math.max(40, Math.min(240, localBpm));
+                driftPoints.push({ time, bpm: clampedBpm });
+            } else {
+                // Fall back to base BPM if no valid intervals
+                driftPoints.push({ time, bpm: baseBpm });
+            }
+        } else if (windowBeats.length === 1) {
+            // Not enough beats for interval calculation, use base BPM
+            driftPoints.push({ time, bpm: baseBpm });
+        }
+        // If no beats in window, skip this point (will be interpolated in visualization)
+    }
+
+    // Ensure we have at least start and end points
+    if (driftPoints.length === 0) {
+        driftPoints.push(
+            { time: 0, bpm: baseBpm },
+            { time: duration, bpm: baseBpm }
+        );
+    } else if (driftPoints[0].time > 0) {
+        driftPoints.unshift({ time: 0, bpm: driftPoints[0].bpm });
+    }
+
+    const lastPoint = driftPoints[driftPoints.length - 1];
+    if (lastPoint.time < duration) {
+        driftPoints.push({ time: duration, bpm: lastPoint.bpm });
+    }
+
+    return driftPoints;
+}
+
+/**
  * Selector to get formatted visualization data for the beat timeline.
  * Returns null if no interpolation has been generated or visualization is disabled.
  * Uses useShallow to prevent infinite loops from new object references.
@@ -1805,7 +1922,7 @@ export const useInterpolationVisualizationData = (): InterpolationVisualizationD
             return null;
         }
 
-        const { mergedBeats, quarterNoteInterval, interpolationMetadata } = interpolatedBeatMap;
+        const { mergedBeats, quarterNoteInterval } = interpolatedBeatMap;
 
         // Transform merged beats into visualization format
         const beats = mergedBeats.map((beat) => ({
@@ -1815,16 +1932,14 @@ export const useInterpolationVisualizationData = (): InterpolationVisualizationD
             isDownbeat: beat.isDownbeat,
         }));
 
-        // Build tempo drift data if there's notable drift
-        // For now, we just provide the basic data without drift curve
-        // This could be enhanced later to track tempo at various points
-        const tempoDrift: InterpolationVisualizationData['tempoDrift'] | undefined =
-            interpolationMetadata.tempoDriftRatio > 1.05
-                ? [
-                      { time: 0, bpm: quarterNoteInterval > 0 ? 60 / quarterNoteInterval : 0 },
-                      { time: interpolatedBeatMap.duration, bpm: quarterNoteInterval > 0 ? 60 / quarterNoteInterval : 0 },
-                  ]
-                : undefined;
+        // Calculate tempo drift data for visualization (Task 5.4)
+        // Always provide drift data when we have beats - the visualization will show
+        // even small tempo variations which is useful for understanding the track
+        const tempoDrift = calculateTempoDriftData(
+            mergedBeats,
+            interpolatedBeatMap.duration,
+            quarterNoteInterval
+        );
 
         return {
             beats,
