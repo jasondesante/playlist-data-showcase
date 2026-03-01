@@ -467,7 +467,7 @@ export const GAUSSIAN_SMOOTH_PRESETS = {
 export type {
     BeatSource,
     BeatWithSource,
-    InterpolationAlgorithm,
+    // InterpolationAlgorithm - REMOVED: Engine now uses only adaptive-phase-locked
     BeatInterpolationOptions,
     InterpolatedBeatMap,
     QuarterNoteDetection,
