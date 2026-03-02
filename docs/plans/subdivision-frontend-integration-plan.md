@@ -9,13 +9,12 @@
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 - Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
 - Phase 6: Tasks 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 (useSubdivisionPlayback Hook + SubdivisionButtons Component + Styles + Integration in BeatPracticeView + Subdivision stats display + Real-time subdivision switching + Transition Mode Configuration)
-- Phase 7: Tasks 7.1, 7.2 (SubdividedBeatMap input support + BeatStreamMode type update)
+- Phase 7: Tasks 7.1, 7.2, 7.3 (SubdividedBeatMap input support + BeatStreamMode type update + BeatStream Mode Toggle Update)
 
 **Pending Phases:**
-- Phase 7: Task 7.3 (remaining)
 - Phase 8-10
 
-**Ready to Start:** Phase 7, Task 7.3 (BeatStream Mode Toggle Update)
+**Ready to Start:** Phase 8, Task 8.1 (Subdivision Color Scheme)
 
 ---
 
@@ -420,9 +419,9 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 7.3 BeatStream Mode Toggle Update
 
-- [ ] Update BeatPracticeView stream toggle
-  - [ ] Add "Subdivided" option when SubdividedBeatMap exists
-  - [ ] Show subdivision type in toggle label
+- [x] Update BeatPracticeView stream toggle
+  - [x] Add "Subdivided" option when SubdividedBeatMap exists
+  - [x] Show subdivision type in toggle label
 
 ---
 

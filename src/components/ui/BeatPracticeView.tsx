@@ -24,6 +24,7 @@ import {
     useInterpolationVisualizationData,
     useBeatStreamMode,
     useInterpolatedBeatMap,
+    useSubdividedBeatMap,
     useShowGridOverlay,
     useShowTempoDriftVisualization,
     useIsDownbeatSelectionMode,
@@ -134,13 +135,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Beat stream mode state (Task 6.1)
   const beatStreamMode = useBeatStreamMode();
   const interpolatedBeatMap = useInterpolatedBeatMap();
+  const subdividedBeatMap = useSubdividedBeatMap();
 
   // Determine which beat map to use based on mode
   // When mode is 'merged' and we have an interpolated beat map, use it
+  // When mode is 'subdivided' and we have a subdivided beat map, use it
   // Otherwise, fall back to the regular beat map
-  const activeBeatMap = (beatStreamMode === 'merged' && interpolatedBeatMap)
-    ? interpolatedBeatMap
-    : beatMap;
+  const activeBeatMap = (beatStreamMode === 'subdivided' && subdividedBeatMap)
+    ? subdividedBeatMap
+    : (beatStreamMode === 'merged' && interpolatedBeatMap)
+      ? interpolatedBeatMap
+      : beatMap;
 
   // Beat stream hook for real-time sync
   // Pass the appropriate beat map and mode (Task 6.2)
@@ -491,13 +496,30 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             <span className="beat-practice-stream-toggle-text">Merged</span>
             {!interpolatedBeatMap && <span className="beat-practice-stream-toggle-indicator">✦</span>}
           </button>
+          <button
+            type="button"
+            className={`beat-practice-stream-toggle ${beatStreamMode === 'subdivided' ? 'beat-practice-stream-toggle--active' : ''} ${!subdividedBeatMap ? 'beat-practice-stream-toggle--disabled' : ''}`}
+            onClick={() => subdividedBeatMap && setBeatStreamMode('subdivided')}
+            disabled={!subdividedBeatMap}
+            aria-pressed={beatStreamMode === 'subdivided'}
+            title={!subdividedBeatMap ? 'Subdivision not available - generate in Analysis tab' : undefined}
+          >
+            <span className="beat-practice-stream-toggle-text">Subdivided</span>
+            {!subdividedBeatMap && <span className="beat-practice-stream-toggle-indicator">✦</span>}
+          </button>
         </div>
         <span className="beat-practice-stream-toggle-description">
           {beatStreamMode === 'detected'
             ? 'Using originally detected beats'
-            : interpolatedBeatMap
-              ? 'Using interpolated beats with detected anchors'
-              : 'Interpolation not available'}
+            : beatStreamMode === 'merged'
+              ? (interpolatedBeatMap
+                  ? 'Using interpolated beats with detected anchors'
+                  : 'Interpolation not available')
+              : beatStreamMode === 'subdivided'
+                ? (subdividedBeatMap
+                    ? `Using ${subdividedBeatMap.subdivisionMetadata.subdivisionsUsed.join(' → ')} subdivision`
+                    : 'Subdivision not available')
+                : 'Unknown mode'}
         </span>
       </div>
 
