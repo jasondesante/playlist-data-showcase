@@ -152,10 +152,10 @@ Timeline with measure visualization ON:
   - [x] Create `src/components/ui/DownbeatConfigPanel.css`
   - [x] Export from component index if applicable (N/A - no component index file exists)
 
-- [ ] **2.2 Implement header section**
-  - [ ] Settings icon with "Downbeat Configuration" title
-  - [ ] "Modified" badge when config differs from default
-  - [ ] Collapse/expand toggle
+- [x] **2.2 Implement header section**
+  - [x] Settings icon with "Downbeat Configuration" title
+  - [x] "Modified" badge when config differs from default
+  - [x] Collapse/expand toggle
 
 - [ ] **2.3 Implement current config display**
   - [ ] Show current time signature (e.g., "4/4")
