@@ -257,6 +257,209 @@
 }
 
 /* ============================================
+   TASK 2.7: MULTI-SEGMENT SUPPORT (ADVANCED)
+   ============================================ */
+
+/* Advanced Section Container */
+.downbeat-config-panel-advanced {
+  margin-top: 0.375rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  background: hsl(var(--surface-1) / 0.3);
+  overflow: hidden;
+}
+
+/* Advanced Section Header */
+.downbeat-config-panel-advanced-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.downbeat-config-panel-advanced-header:hover:not(:disabled) {
+  background: hsl(var(--surface-2) / 0.5);
+}
+
+.downbeat-config-panel-advanced-chevron {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.downbeat-config-panel-advanced-chevron--expanded {
+  transform: rotate(90deg);
+}
+
+.downbeat-config-panel-advanced-title {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Advanced Section Content */
+.downbeat-config-panel-advanced-content {
+  padding: 0.5rem 0.625rem 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Segment List */
+.downbeat-config-panel-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* Individual Segment */
+.downbeat-config-panel-segment {
+  padding: 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.25rem;
+}
+
+.downbeat-config-panel-segment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.downbeat-config-panel-segment-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.downbeat-config-panel-segment-range {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.3);
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.1875rem;
+}
+
+.downbeat-config-panel-segment-delete {
+  margin-left: auto;
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.downbeat-config-panel-segment-delete:hover:not(:disabled) {
+  background: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+}
+
+.downbeat-config-panel-segment-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.downbeat-config-panel-segment-delete-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Segment Details */
+.downbeat-config-panel-segment-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.downbeat-config-panel-segment-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.downbeat-config-panel-segment-detail-label {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.downbeat-config-panel-segment-detail-value {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+}
+
+/* Add Segment Form */
+.downbeat-config-panel-add-segment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: hsl(var(--surface-2) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.25rem;
+}
+
+.downbeat-config-panel-add-segment-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.downbeat-config-panel-add-segment-field {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.downbeat-config-panel-add-segment-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.downbeat-config-panel-add-segment-time-sigs {
+  display: flex;
+  gap: 0.1875rem;
+}
+
+.downbeat-config-panel-add-segment-time-sigs .downbeat-config-panel-time-sig-btn {
+  flex: 1;
+  padding: 0.25rem 0.125rem;
+  font-size: 0.5rem;
+}
+
+.downbeat-config-panel-add-segment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+}
+
+/* Add Segment Button */
+.downbeat-config-panel-add-segment-btn {
+  width: 100%;
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
@@ -303,6 +506,23 @@
 
   .downbeat-config-panel-hint-text {
     font-size: 0.5rem;
+  }
+
+  /* Task 2.7: Advanced section responsive */
+  .downbeat-config-panel-advanced-header {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .downbeat-config-panel-advanced-content {
+    padding: 0.375rem 0.5rem 0.5rem;
+  }
+
+  .downbeat-config-panel-segment {
+    padding: 0.375rem;
+  }
+
+  .downbeat-config-panel-add-segment-form {
+    padding: 0.375rem;
   }
 }
 
@@ -384,6 +604,52 @@
   .downbeat-config-panel-actions .button {
     width: 100%;
   }
+
+  /* Task 2.7: Advanced section mobile responsive */
+  .downbeat-config-panel-advanced-header {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .downbeat-config-panel-advanced-content {
+    padding: 0.375rem 0.5rem 0.5rem;
+  }
+
+  .downbeat-config-panel-segment {
+    padding: 0.375rem;
+  }
+
+  .downbeat-config-panel-segment-details {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .downbeat-config-panel-add-segment-form {
+    padding: 0.375rem;
+  }
+
+  .downbeat-config-panel-add-segment-row {
+    flex-direction: column;
+  }
+
+  .downbeat-config-panel-add-segment-field {
+    min-width: 100%;
+  }
+
+  .downbeat-config-panel-add-segment-time-sigs {
+    flex-wrap: wrap;
+  }
+
+  .downbeat-config-panel-add-segment-time-sigs .downbeat-config-panel-time-sig-btn {
+    min-width: calc(33.33% - 0.125rem);
+  }
+
+  .downbeat-config-panel-add-segment-actions {
+    flex-direction: column;
+  }
+
+  .downbeat-config-panel-add-segment-actions .button {
+    width: 100%;
+  }
 }
 
 /* Touch device optimizations */
@@ -421,6 +687,15 @@
 
   .downbeat-config-panel-time-sig-btn,
   .downbeat-config-panel-header {
+    transition: none;
+  }
+
+  .downbeat-config-panel-advanced-chevron {
+    transition: none;
+  }
+
+  .downbeat-config-panel-advanced-header,
+  .downbeat-config-panel-segment-delete {
     transition: none;
   }
 }

@@ -176,12 +176,12 @@ Timeline with measure visualization ON:
   - [x] Info icon with text: "Click on any beat in the timeline to set it as the downbeat"
   - [x] Styled consistently with existing hint boxes
 
-- [ ] **2.7 Implement multi-segment support (Advanced)**
-  - [ ] Collapsible "Advanced: Time Signature Changes" section
-  - [ ] List of current segments with start beat, time signature, downbeat index
-  - [ ] "Add Segment" button to add new segment at specific beat
-  - [ ] Delete button for each segment (except first)
-  - [ ] Edit controls for each segment
+- [x] **2.7 Implement multi-segment support (Advanced)**
+  - [x] Collapsible "Advanced: Time Signature Changes" section
+  - [x] List of current segments with start beat, time signature, downbeat index
+  - [x] "Add Segment" button to add new segment at specific beat
+  - [x] Delete button for each segment (except first)
+  - [x] Edit controls for each segment
 
 - [ ] **2.8 Implement actions**
   - [ ] "Reset to Default" button (shown when modified)

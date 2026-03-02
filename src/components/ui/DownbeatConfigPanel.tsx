@@ -13,9 +13,10 @@
  *
  * Part of Manual Downbeat Configuration UI - Phase 2
  * Task 2.1: Create DownbeatConfigPanel component
+ * Task 2.7: Multi-segment support (Advanced)
  */
 import { useState } from 'react';
-import { Settings, ChevronDown, RotateCcw, Info } from 'lucide-react';
+import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import {
@@ -26,6 +27,7 @@ import {
     useBeatMap,
     useBeatDetectionStore,
 } from '../../store/beatDetectionStore';
+import type { DownbeatSegment } from '../../types';
 import './DownbeatConfigPanel.css';
 
 /** Common time signature options */
@@ -103,6 +105,13 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
     // Local state for collapsible panel
     const [isExpanded, setIsExpanded] = useState(false);
 
+    // Local state for advanced section (Task 2.7)
+    const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false);
+    const [isAddingSegment, setIsAddingSegment] = useState(false);
+    const [newSegmentStartBeat, setNewSegmentStartBeat] = useState('');
+    const [newSegmentTimeSig, setNewSegmentTimeSig] = useState<TimeSignatureValue>(4);
+    const [newSegmentDownbeat, setNewSegmentDownbeat] = useState('');
+
     // Get the first segment's downbeat index (for single-segment display)
     const currentDownbeatIndex = config.segments[0]?.downbeatBeatIndex ?? 0;
 
@@ -158,6 +167,89 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                 timeSignature
             );
         }
+    };
+
+    // ========================================
+    // Task 2.7: Multi-Segment Support Handlers
+    // ========================================
+
+    /**
+     * Handle adding a new segment.
+     * Validates inputs and calls store action.
+     */
+    const handleAddSegment = () => {
+        const startBeat = parseInt(newSegmentStartBeat, 10);
+        const downbeatIndex = parseInt(newSegmentDownbeat, 10);
+
+        // Validate inputs
+        if (isNaN(startBeat) || startBeat < 1 || startBeat > maxBeatIndex) {
+            return;
+        }
+
+        if (isNaN(downbeatIndex) || downbeatIndex < 0 || downbeatIndex > maxBeatIndex) {
+            return;
+        }
+
+        // Check that startBeat doesn't already exist
+        const existingStartBeats = config.segments.map((s: DownbeatSegment) => s.startBeat);
+        if (existingStartBeats.includes(startBeat)) {
+            return;
+        }
+
+        // Create new segment
+        const newSegment: DownbeatSegment = {
+            startBeat,
+            downbeatBeatIndex: downbeatIndex,
+            timeSignature: { beatsPerMeasure: newSegmentTimeSig },
+        };
+
+        // Add segment via store action
+        useBeatDetectionStore.getState().actions.addDownbeatSegment(newSegment);
+
+        // Reset form state
+        setIsAddingSegment(false);
+        setNewSegmentStartBeat('');
+        setNewSegmentTimeSig(4);
+        setNewSegmentDownbeat('');
+    };
+
+    /**
+     * Handle removing a segment.
+     * Cannot remove the first segment (index 0).
+     */
+    const handleRemoveSegment = (segmentIndex: number) => {
+        if (segmentIndex === 0) return;
+        useBeatDetectionStore.getState().actions.removeDownbeatSegment(segmentIndex);
+    };
+
+    /**
+     * Cancel adding a new segment.
+     */
+    const handleCancelAddSegment = () => {
+        setIsAddingSegment(false);
+        setNewSegmentStartBeat('');
+        setNewSegmentTimeSig(4);
+        setNewSegmentDownbeat('');
+    };
+
+    /**
+     * Get a label for the segment (e.g., "First", "Segment 2").
+     */
+    const getSegmentLabel = (index: number): string => {
+        if (index === 0) return 'First';
+        return `Segment ${index + 1}`;
+    };
+
+    /**
+     * Get a description of the beat range covered by a segment.
+     */
+    const getSegmentRange = (index: number, segments: DownbeatSegment[]): string => {
+        const start = segments[index].startBeat;
+        const end = segments[index + 1]?.startBeat ?? maxBeatIndex;
+        if (start === end || index === segments.length - 1) {
+            return `Beat ${start}+`;
+        }
+        return `Beats ${start}-${end - 1}`;
     };
 
     return (
@@ -271,8 +363,175 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         </span>
                     </div>
 
-                    {/* Multi-Segment Support - Task 2.7 (placeholder for now) */}
-                    {/* Will be implemented in Task 2.7 */}
+                    {/* Multi-Segment Support - Task 2.7 */}
+                    <div className="downbeat-config-panel-advanced">
+                        <button
+                            type="button"
+                            className="downbeat-config-panel-advanced-header"
+                            onClick={() => setIsAdvancedExpanded(!isAdvancedExpanded)}
+                            aria-expanded={isAdvancedExpanded}
+                            aria-controls="downbeat-config-advanced-content"
+                        >
+                            <ChevronRight
+                                className={`downbeat-config-panel-advanced-chevron ${
+                                    isAdvancedExpanded ? 'downbeat-config-panel-advanced-chevron--expanded' : ''
+                                }`}
+                            />
+                            <span className="downbeat-config-panel-advanced-title">
+                                Advanced: Time Signature Changes
+                            </span>
+                        </button>
+
+                        {isAdvancedExpanded && (
+                            <div
+                                id="downbeat-config-advanced-content"
+                                className="downbeat-config-panel-advanced-content"
+                            >
+                                {/* Segment List */}
+                                <div className="downbeat-config-panel-segments">
+                                    {config.segments.map((segment: DownbeatSegment, index: number) => (
+                                        <div key={index} className="downbeat-config-panel-segment">
+                                            <div className="downbeat-config-panel-segment-header">
+                                                <span className="downbeat-config-panel-segment-label">
+                                                    {getSegmentLabel(index)}
+                                                </span>
+                                                <span className="downbeat-config-panel-segment-range">
+                                                    {getSegmentRange(index, config.segments)}
+                                                </span>
+                                                {index > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        className="downbeat-config-panel-segment-delete"
+                                                        onClick={() => handleRemoveSegment(index)}
+                                                        disabled={isDisabled}
+                                                        aria-label={`Delete ${getSegmentLabel(index)}`}
+                                                        title="Delete segment"
+                                                    >
+                                                        <Trash2 className="downbeat-config-panel-segment-delete-icon" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="downbeat-config-panel-segment-details">
+                                                <span className="downbeat-config-panel-segment-detail">
+                                                    <span className="downbeat-config-panel-segment-detail-label">Start:</span>
+                                                    <span className="downbeat-config-panel-segment-detail-value">Beat {segment.startBeat}</span>
+                                                </span>
+                                                <span className="downbeat-config-panel-segment-detail">
+                                                    <span className="downbeat-config-panel-segment-detail-label">Time:</span>
+                                                    <span className="downbeat-config-panel-segment-detail-value">
+                                                        {segment.timeSignature.beatsPerMeasure}/4
+                                                    </span>
+                                                </span>
+                                                <span className="downbeat-config-panel-segment-detail">
+                                                    <span className="downbeat-config-panel-segment-detail-label">Downbeat:</span>
+                                                    <span className="downbeat-config-panel-segment-detail-value">{segment.downbeatBeatIndex}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Add Segment Form */}
+                                {isAddingSegment ? (
+                                    <div className="downbeat-config-panel-add-segment-form">
+                                        <div className="downbeat-config-panel-add-segment-row">
+                                            <div className="downbeat-config-panel-add-segment-field">
+                                                <label className="downbeat-config-panel-add-segment-label">
+                                                    Start Beat
+                                                </label>
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    max={maxBeatIndex}
+                                                    value={newSegmentStartBeat}
+                                                    onChange={(e) => setNewSegmentStartBeat(e.target.value)}
+                                                    disabled={isDisabled}
+                                                    size="sm"
+                                                    placeholder="e.g., 32"
+                                                />
+                                            </div>
+                                            <div className="downbeat-config-panel-add-segment-field">
+                                                <label className="downbeat-config-panel-add-segment-label">
+                                                    Time Signature
+                                                </label>
+                                                <div className="downbeat-config-panel-add-segment-time-sigs">
+                                                    {TIME_SIGNATURES.map((beats) => (
+                                                        <button
+                                                            key={beats}
+                                                            type="button"
+                                                            className={`downbeat-config-panel-time-sig-btn ${
+                                                                newSegmentTimeSig === beats
+                                                                    ? 'downbeat-config-panel-time-sig-btn--active'
+                                                                    : ''
+                                                            }`}
+                                                            onClick={() => setNewSegmentTimeSig(beats)}
+                                                            disabled={isDisabled}
+                                                            aria-pressed={newSegmentTimeSig === beats}
+                                                        >
+                                                            {beats}/4
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="downbeat-config-panel-add-segment-row">
+                                            <div className="downbeat-config-panel-add-segment-field">
+                                                <label className="downbeat-config-panel-add-segment-label">
+                                                    Downbeat Beat Index
+                                                </label>
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    max={maxBeatIndex}
+                                                    value={newSegmentDownbeat}
+                                                    onChange={(e) => setNewSegmentDownbeat(e.target.value)}
+                                                    disabled={isDisabled}
+                                                    size="sm"
+                                                    placeholder="e.g., 32"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="downbeat-config-panel-add-segment-actions">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleCancelAddSegment}
+                                                disabled={isDisabled}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
+                                                onClick={handleAddSegment}
+                                                disabled={
+                                                    isDisabled ||
+                                                    !newSegmentStartBeat ||
+                                                    !newSegmentDownbeat ||
+                                                    config.segments.some(
+                                                        (s: DownbeatSegment) => s.startBeat === parseInt(newSegmentStartBeat, 10)
+                                                    )
+                                                }
+                                            >
+                                                Add Segment
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        leftIcon={Plus}
+                                        onClick={() => setIsAddingSegment(true)}
+                                        disabled={isDisabled}
+                                        className="downbeat-config-panel-add-segment-btn"
+                                    >
+                                        Add Segment at Beat...
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Actions - Task 2.8 */}
                     <div className="downbeat-config-panel-actions">
