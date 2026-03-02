@@ -18,7 +18,7 @@ import { SubdivisionSettings } from '../ui/SubdivisionSettings';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
-import { useBeatDetectionStore, useInterpolatedBeatMap } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig } from '../../store/beatDetectionStore';
 import { logger } from '../../utils/logger';
 
 /**
@@ -83,13 +83,16 @@ export function AudioAnalysisTab() {
   const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
   const storageError = useBeatDetectionStore((state) => state.storageError);
   const interpolatedBeatMap = useInterpolatedBeatMap();
+  const subdividedBeatMap = useSubdividedBeatMap();
+  const subdivisionConfig = useSubdivisionConfig();
 
   /**
    * Export interpolated beat map as JSON for debugging/analysis
+   * Includes subdivision data when a SubdividedBeatMap has been generated.
    */
   const handleExportBeatMap = useCallback(() => {
     if (!interpolatedBeatMap || !beatMap) return;
-    
+
     const exportData = {
       exportTimestamp: new Date().toISOString(),
       beatMapDuration: beatMap.duration,
@@ -137,8 +140,40 @@ export function AudioAnalysisTab() {
           gridAlignmentScore: interpolatedBeatMap.interpolationMetadata.gapAnalysis.gridAlignmentScore,
         },
       },
+      // Subdivision configuration (always included)
+      subdivision: {
+        config: subdivisionConfig,
+        // Include SubdividedBeatMap if generated
+        ...(subdividedBeatMap ? {
+          beatMap: {
+            audioId: subdividedBeatMap.audioId,
+            duration: subdividedBeatMap.duration,
+            beats: subdividedBeatMap.beats.map(b => ({
+              timestamp: b.timestamp,
+              beatInMeasure: b.beatInMeasure,
+              isDownbeat: b.isDownbeat,
+              measureNumber: b.measureNumber,
+              intensity: b.intensity,
+              confidence: b.confidence,
+              isDetected: b.isDetected,
+              originalBeatIndex: b.originalBeatIndex,
+              subdivisionType: b.subdivisionType,
+            })),
+            detectedBeatIndices: subdividedBeatMap.detectedBeatIndices,
+          },
+          metadata: {
+            originalBeatCount: subdividedBeatMap.subdivisionMetadata.originalBeatCount,
+            subdividedBeatCount: subdividedBeatMap.subdivisionMetadata.subdividedBeatCount,
+            averageDensityMultiplier: subdividedBeatMap.subdivisionMetadata.averageDensityMultiplier,
+            segmentCount: subdividedBeatMap.subdivisionMetadata.segmentCount,
+            subdivisionsUsed: subdividedBeatMap.subdivisionMetadata.subdivisionsUsed,
+            hasMultipleTempos: subdividedBeatMap.subdivisionMetadata.hasMultipleTempos,
+            maxDensity: subdividedBeatMap.subdivisionMetadata.maxDensity,
+          },
+        } : null),
+      },
     };
-    
+
     const json = JSON.stringify(exportData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -150,7 +185,7 @@ export function AudioAnalysisTab() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [interpolatedBeatMap, beatMap]);
+  }, [interpolatedBeatMap, beatMap, subdivisionConfig, subdividedBeatMap]);
 
   /**
    * Load cached beat map when the selected track changes.
@@ -890,7 +925,9 @@ export function AudioAnalysisTab() {
                 Export Beat Map
               </Button>
               <span className="audio-analysis-export-hint">
-                Download interpolated beat map data as JSON
+                {subdividedBeatMap
+                  ? 'Download beat map with subdivision data as JSON'
+                  : 'Download interpolated beat map data as JSON'}
               </span>
             </div>
           )}

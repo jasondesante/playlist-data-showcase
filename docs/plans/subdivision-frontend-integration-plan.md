@@ -7,13 +7,13 @@
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
-- Phase 5: Tasks 5.1, 5.2 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display)
+- Phase 5: Tasks 5.1, 5.2, 5.3 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export)
 
 **Pending Phases:**
-- Phase 5: Tasks 5.3, 5.4
+- Phase 5: Task 5.4
 - Phase 6-10
 
-**Ready to Start:** Phase 5, Task 5.3 (Update Beat Map Export)
+**Ready to Start:** Phase 5, Task 5.4 (SubdividedBeatMap Visualization)
 
 ---
 
@@ -326,11 +326,11 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 5.3 Update Beat Map Export
 
-- [ ] Update `handleExportBeatMap` in AudioAnalysisTab
-  - [ ] Embed subdivision data in main export JSON (not separate file)
-  - [ ] Include subdivision config
-  - [ ] Include SubdividedBeatMap if generated
-  - [ ] Add subdivision metadata to export JSON
+- [x] Update `handleExportBeatMap` in AudioAnalysisTab
+  - [x] Embed subdivision data in main export JSON (not separate file)
+  - [x] Include subdivision config
+  - [x] Include SubdividedBeatMap if generated
+  - [x] Add subdivision metadata to export JSON
 
 ### 5.4 SubdividedBeatMap Visualization
 
