@@ -100,6 +100,12 @@
    TIMELINE TRACK
    ============================================ */
 
+.subdivision-timeline-editor-timeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .subdivision-timeline-editor-track {
   position: relative;
   height: 5rem;
@@ -138,6 +144,130 @@
   position: relative;
   height: 100%;
   min-width: 100%;
+}
+
+/* ============================================
+   TIME RULER (Task 4.2)
+   ============================================ */
+
+.subdivision-timeline-editor-time-ruler {
+  position: relative;
+  height: 1.25rem;
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-bottom: none;
+  border-radius: 0.25rem 0.25rem 0 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.subdivision-timeline-editor-time-ruler::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.subdivision-timeline-editor-time-ruler-inner {
+  position: relative;
+  height: 100%;
+  min-width: 100%;
+}
+
+.subdivision-timeline-editor-time-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.subdivision-timeline-editor-time-marker-tick {
+  width: 1px;
+  height: 0.375rem;
+  background: hsl(var(--border));
+}
+
+.subdivision-timeline-editor-time-marker--minute .subdivision-timeline-editor-time-marker-tick {
+  height: 0.5rem;
+  width: 2px;
+  background: hsl(var(--muted-foreground));
+}
+
+.subdivision-timeline-editor-time-marker-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  margin-top: 0.0625rem;
+}
+
+.subdivision-timeline-editor-time-marker--minute .subdivision-timeline-editor-time-marker-label {
+  color: hsl(var(--foreground));
+  font-size: 0.5625rem;
+}
+
+/* ============================================
+   BEAT RULER (Task 4.2)
+   ============================================ */
+
+.subdivision-timeline-editor-beat-ruler {
+  position: relative;
+  height: 1.125rem;
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-top: none;
+  border-radius: 0 0 0.25rem 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.subdivision-timeline-editor-beat-ruler::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.subdivision-timeline-editor-beat-ruler-inner {
+  position: relative;
+  height: 100%;
+  min-width: 100%;
+}
+
+.subdivision-timeline-editor-beat-marker {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.subdivision-timeline-editor-beat-marker-tick {
+  width: 1px;
+  height: 0.25rem;
+  background: hsl(var(--border));
+}
+
+.subdivision-timeline-editor-beat-marker--major .subdivision-timeline-editor-beat-marker-tick {
+  height: 0.375rem;
+  width: 2px;
+  background: hsl(var(--primary) / 0.6);
+}
+
+.subdivision-timeline-editor-beat-marker-label {
+  font-size: 0.4375rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+
+.subdivision-timeline-editor-beat-marker--major .subdivision-timeline-editor-beat-marker-label {
+  color: hsl(var(--primary));
+  font-size: 0.5rem;
 }
 
 /* ============================================
@@ -502,8 +632,24 @@
     font-size: 0.5rem;
   }
 
+  .subdivision-timeline-editor-time-ruler {
+    height: 1.125rem;
+  }
+
+  .subdivision-timeline-editor-time-marker-label {
+    font-size: 0.4375rem;
+  }
+
   .subdivision-timeline-editor-track {
     height: 4.5rem;
+  }
+
+  .subdivision-timeline-editor-beat-ruler {
+    height: 1rem;
+  }
+
+  .subdivision-timeline-editor-beat-marker-label {
+    font-size: 0.375rem;
   }
 
   .subdivision-timeline-editor-legend {
@@ -545,8 +691,24 @@
     justify-content: flex-end;
   }
 
+  .subdivision-timeline-editor-time-ruler {
+    height: 1rem;
+  }
+
+  .subdivision-timeline-editor-time-marker-label {
+    font-size: 0.375rem;
+  }
+
   .subdivision-timeline-editor-track {
     height: 4rem;
+  }
+
+  .subdivision-timeline-editor-beat-ruler {
+    height: 0.875rem;
+  }
+
+  .subdivision-timeline-editor-beat-marker-label {
+    font-size: 0.3125rem;
   }
 
   .subdivision-timeline-editor-segment-label {

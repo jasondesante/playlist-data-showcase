@@ -6,13 +6,13 @@
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
-- Phase 4: Tasks 4.1, 4.5 (SubdivisionTimelineEditor component and styles created)
+- Phase 4: Tasks 4.1, 4.2, 4.5 (SubdivisionTimelineEditor component, timeline visualization, and styles created)
 
 **Pending Phases:**
-- Phase 4: Tasks 4.2-4.4, 4.6 (Timeline visualization, drag/drop, click to add, integration)
+- Phase 4: Tasks 4.3-4.4, 4.6 (Drag/drop, click to add, integration)
 - Phase 5-10
 
-**Ready to Start:** Phase 4, Task 4.2 (Timeline Visualization)
+**Ready to Start:** Phase 4, Task 4.3 (Drag and Drop Segment Boundaries)
 
 ---
 
@@ -267,13 +267,13 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.2 Timeline Visualization
 
-- [ ] Render timeline with:
-  - [ ] Beat markers (from UnifiedBeatMap)
-  - [ ] Downbeat indicators
-  - [ ] Current subdivision regions (colored blocks)
-  - [ ] Segment boundary markers
-  - [ ] Time ruler (seconds/minutes)
-  - [ ] Beat ruler (beat numbers)
+- [x] Render timeline with:
+  - [x] Beat markers (from UnifiedBeatMap)
+  - [x] Downbeat indicators
+  - [x] Current subdivision regions (colored blocks)
+  - [x] Segment boundary markers
+  - [x] Time ruler (seconds/minutes)
+  - [x] Beat ruler (beat numbers)
 
 ### 4.3 Drag and Drop Segment Boundaries
 

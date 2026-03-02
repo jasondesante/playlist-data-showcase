@@ -131,6 +131,8 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
 
     // Timeline container ref
     const timelineRef = useRef<HTMLDivElement>(null);
+    const timeRulerRef = useRef<HTMLDivElement>(null);
+    const beatRulerRef = useRef<HTMLDivElement>(null);
 
     // Zoom state (1 = 100%, 2 = 200%, etc.)
     const [zoom, setZoom] = useState(1);
@@ -159,8 +161,11 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     const pixelsPerBeat = basePixelsPerBeat * zoom;
     const timelineWidth = totalBeats * pixelsPerBeat;
 
-    // Beats per measure (assuming 4/4 time for now, could be derived from downbeat config)
-    const beatsPerMeasure = 4;
+    // Beats per measure from downbeat config (from first segment's time signature)
+    const beatsPerMeasure = unifiedBeatMap?.downbeatConfig?.segments?.[0]?.timeSignature?.beatsPerMeasure ?? 4;
+
+    // Duration in seconds from UnifiedBeatMap
+    const duration = unifiedBeatMap?.duration ?? 0;
 
     /**
      * Calculate beat position from mouse X coordinate
@@ -348,6 +353,116 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [hasUnifiedBeatMap, totalBeats, scrollPosition, pixelsPerBeat, beatsPerMeasure, getXFromBeat]);
 
     /**
+     * Generate time ruler markers (Task 4.2)
+     * Shows seconds and minutes on a ruler above the timeline
+     */
+    const timeMarkers = useMemo(() => {
+        if (!hasUnifiedBeatMap || duration === 0) return [];
+
+        const markers = [];
+        const timelineContainerWidth = timelineRef.current?.clientWidth ?? 800;
+
+        // Calculate visible time range
+        const visibleStartTime = (scrollPosition / timelineWidth) * duration;
+        const visibleEndTime = ((scrollPosition + timelineContainerWidth) / timelineWidth) * duration;
+
+        // Determine appropriate interval based on zoom and duration
+        let interval: number;
+        const visibleDuration = visibleEndTime - visibleStartTime;
+        if (visibleDuration > 600) {
+            interval = 60; // 1 minute intervals
+        } else if (visibleDuration > 120) {
+            interval = 30; // 30 second intervals
+        } else if (visibleDuration > 60) {
+            interval = 15; // 15 second intervals
+        } else if (visibleDuration > 30) {
+            interval = 10; // 10 second intervals
+        } else if (visibleDuration > 10) {
+            interval = 5; // 5 second intervals
+        } else {
+            interval = 1; // 1 second intervals
+        }
+
+        // Generate markers
+        const startInterval = Math.floor(visibleStartTime / interval) * interval;
+        const endInterval = Math.ceil(visibleEndTime / interval) * interval;
+
+        for (let time = startInterval; time <= endInterval; time += interval) {
+            if (time < 0 || time > duration) continue;
+
+            const position = (time / duration) * timelineWidth;
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            const isMinute = time % 60 === 0;
+
+            markers.push({
+                time,
+                position,
+                label: minutes > 0
+                    ? `${minutes}:${seconds.toString().padStart(2, '0')}`
+                    : `${seconds}s`,
+                isMinute,
+            });
+        }
+
+        return markers;
+    }, [hasUnifiedBeatMap, duration, scrollPosition, timelineWidth]);
+
+    /**
+     * Generate beat ruler markers (Task 4.2)
+     * Shows beat numbers on a ruler below the timeline
+     */
+    const beatRulerMarkers = useMemo(() => {
+        if (!hasUnifiedBeatMap || totalBeats === 0) return [];
+
+        const markers: Array<{
+            beat: number;
+            position: number;
+            label: string;
+            isMajor: boolean;
+        }> = [];
+        const timelineContainerWidth = timelineRef.current?.clientWidth ?? 800;
+
+        // Calculate visible beat range
+        const visibleStartBeat = Math.floor(scrollPosition / pixelsPerBeat);
+        const visibleEndBeat = Math.ceil((scrollPosition + timelineContainerWidth) / pixelsPerBeat);
+
+        // Determine appropriate interval based on zoom
+        let interval: number;
+        if (pixelsPerBeat >= 32) {
+            interval = 1; // Show every beat
+        } else if (pixelsPerBeat >= 16) {
+            interval = 2; // Show every 2 beats
+        } else if (pixelsPerBeat >= 8) {
+            interval = 4; // Show every 4 beats (one measure in 4/4)
+        } else if (pixelsPerBeat >= 4) {
+            interval = 8; // Show every 8 beats
+        } else {
+            interval = 16; // Show every 16 beats
+        }
+
+        // Generate markers
+        const startBeat = Math.floor(visibleStartBeat / interval) * interval;
+        const endBeat = Math.ceil(visibleEndBeat / interval) * interval;
+
+        for (let beat = startBeat; beat <= endBeat; beat += interval) {
+            if (beat < 0 || beat > totalBeats) continue;
+
+            const position = getXFromBeat(beat);
+            const isMeasure = beat % beatsPerMeasure === 0;
+
+            markers.push({
+                beat,
+                position,
+                label: isMeasure ? `M${Math.floor(beat / beatsPerMeasure) + 1}` : `${beat}`,
+                isMajor: isMeasure,
+            });
+        }
+
+        return markers;
+    }, [hasUnifiedBeatMap, totalBeats, scrollPosition, pixelsPerBeat, beatsPerMeasure, getXFromBeat]);
+
+    /**
      * Calculate segment positions for rendering
      */
     const segmentRegions = useMemo(() => {
@@ -368,10 +483,19 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [subdivisionConfig.segments, totalBeats, getXFromBeat]);
 
     /**
-     * Handle scroll event to update visible markers
+     * Handle scroll event to update visible markers and sync rulers
      */
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        setScrollPosition(e.currentTarget.scrollLeft);
+        const scrollLeft = e.currentTarget.scrollLeft;
+        setScrollPosition(scrollLeft);
+
+        // Sync time ruler and beat ruler scroll
+        if (timeRulerRef.current && timeRulerRef.current !== e.currentTarget) {
+            timeRulerRef.current.scrollLeft = scrollLeft;
+        }
+        if (beatRulerRef.current && beatRulerRef.current !== e.currentTarget) {
+            beatRulerRef.current.scrollLeft = scrollLeft;
+        }
     };
 
     // Don't render if no beat map
@@ -421,111 +545,174 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
             </div>
 
             {/* ============================================================
-             * TIMELINE TRACK
+             * TIMELINE TRACK CONTAINER
              * ============================================================ */}
-            <div
-                ref={timelineRef}
-                className="subdivision-timeline-editor-track"
-                onScroll={handleScroll}
-                onClick={handleTimelineClick}
-            >
-                {/* Timeline inner container with proper width */}
+            <div className="subdivision-timeline-editor-timeline-container">
+                {/* ============================================================
+                 * TIME RULER (Task 4.2)
+                 * ============================================================ */}
                 <div
-                    className="subdivision-timeline-editor-track-inner"
-                    style={{ width: `${timelineWidth}px` }}
+                    ref={timeRulerRef}
+                    className="subdivision-timeline-editor-time-ruler"
+                    onScroll={handleScroll}
                 >
-                    {/* Beat grid lines */}
-                    {beatMarkers.map(({ beat, position, isDownbeat }) => (
-                        <div
-                            key={`beat-${beat}`}
-                            className={`subdivision-timeline-editor-grid-line ${
-                                isDownbeat ? 'subdivision-timeline-editor-grid-line--measure' : ''
-                            }`}
-                            style={{ left: `${position}px` }}
-                        >
-                            {isDownbeat && (
-                                <span className="subdivision-timeline-editor-measure-number">
-                                    M{Math.floor(beat / beatsPerMeasure) + 1}
-                                </span>
-                            )}
-                        </div>
-                    ))}
-
-                    {/* Segment regions */}
-                    {segmentRegions.map(({ index, segment, typeConfig, startX, width, endBeat }) => (
-                        <div
-                            key={`segment-${index}`}
-                            className={`subdivision-timeline-editor-segment ${
-                                hoveredSegment === index ? 'subdivision-timeline-editor-segment--hovered' : ''
-                            }`}
-                            style={{
-                                left: `${startX}px`,
-                                width: `${Math.max(2, width)}px`,
-                                backgroundColor: typeConfig.backgroundColor,
-                                borderColor: typeConfig.color,
-                            }}
-                            onMouseEnter={() => setHoveredSegment(index)}
-                            onMouseLeave={() => setHoveredSegment(null)}
-                        >
-                            {/* Segment label */}
+                    <div
+                        className="subdivision-timeline-editor-time-ruler-inner"
+                        style={{ width: `${timelineWidth}px` }}
+                    >
+                        {timeMarkers.map(({ time, position, label, isMinute }) => (
                             <div
-                                className="subdivision-timeline-editor-segment-label"
-                                style={{ color: typeConfig.color }}
+                                key={`time-${time}`}
+                                className={`subdivision-timeline-editor-time-marker ${
+                                    isMinute ? 'subdivision-timeline-editor-time-marker--minute' : ''
+                                }`}
+                                style={{ left: `${position}px` }}
                             >
-                                {typeConfig.shortLabel}
+                                <div className="subdivision-timeline-editor-time-marker-tick" />
+                                <span className="subdivision-timeline-editor-time-marker-label">
+                                    {label}
+                                </span>
                             </div>
+                        ))}
+                    </div>
+                </div>
 
-                            {/* Segment info tooltip on hover */}
-                            {hoveredSegment === index && (
-                                <div className="subdivision-timeline-editor-segment-tooltip">
-                                    <div className="subdivision-timeline-editor-segment-tooltip-title">
-                                        {typeConfig.label}
-                                    </div>
-                                    <div className="subdivision-timeline-editor-segment-tooltip-detail">
-                                        Beat {segment.startBeat} - {endBeat - 1}
-                                    </div>
-                                    <div className="subdivision-timeline-editor-segment-tooltip-hint">
-                                        Drag edge to adjust
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-
-                    {/* Segment boundary handles */}
-                    {subdivisionConfig.segments.map((segment, index) => {
-                        // Skip first segment handle (can't drag beat 0)
-                        if (index === 0) return null;
-
-                        const typeConfig = getTypeConfig(segment.subdivision);
-                        return (
+                {/* ============================================================
+                 * TIMELINE TRACK
+                 * ============================================================ */}
+                <div
+                    ref={timelineRef}
+                    className="subdivision-timeline-editor-track"
+                    onScroll={handleScroll}
+                    onClick={handleTimelineClick}
+                >
+                    {/* Timeline inner container with proper width */}
+                    <div
+                        className="subdivision-timeline-editor-track-inner"
+                        style={{ width: `${timelineWidth}px` }}
+                    >
+                        {/* Beat grid lines */}
+                        {beatMarkers.map(({ beat, position, isDownbeat }) => (
                             <div
-                                key={`handle-${index}`}
-                                className={`subdivision-timeline-editor-handle ${
-                                    draggingSegment === index ? 'subdivision-timeline-editor-handle--dragging' : ''
+                                key={`beat-${beat}`}
+                                className={`subdivision-timeline-editor-grid-line ${
+                                    isDownbeat ? 'subdivision-timeline-editor-grid-line--measure' : ''
+                                }`}
+                                style={{ left: `${position}px` }}
+                            >
+                                {isDownbeat && (
+                                    <span className="subdivision-timeline-editor-measure-number">
+                                        M{Math.floor(beat / beatsPerMeasure) + 1}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+
+                        {/* Segment regions */}
+                        {segmentRegions.map(({ index, segment, typeConfig, startX, width, endBeat }) => (
+                            <div
+                                key={`segment-${index}`}
+                                className={`subdivision-timeline-editor-segment ${
+                                    hoveredSegment === index ? 'subdivision-timeline-editor-segment--hovered' : ''
                                 }`}
                                 style={{
-                                    left: `${getXFromBeat(segment.startBeat)}px`,
-                                    backgroundColor: typeConfig.color,
+                                    left: `${startX}px`,
+                                    width: `${Math.max(2, width)}px`,
+                                    backgroundColor: typeConfig.backgroundColor,
+                                    borderColor: typeConfig.color,
                                 }}
-                                onMouseDown={(e) => handleHandleMouseDown(e, index)}
-                                onKeyDown={(e) => handleHandleKeyDown(e, index)}
-                                tabIndex={disabled ? -1 : 0}
-                                role="slider"
-                                aria-label={`Segment ${index + 1} boundary at beat ${segment.startBeat}`}
-                                aria-valuemin={(subdivisionConfig.segments[index - 1]?.startBeat ?? -1) + 1}
-                                aria-valuemax={(subdivisionConfig.segments[index + 1]?.startBeat ?? totalBeats) - 1}
-                                aria-valuenow={segment.startBeat}
+                                onMouseEnter={() => setHoveredSegment(index)}
+                                onMouseLeave={() => setHoveredSegment(null)}
                             >
-                                <div className="subdivision-timeline-editor-handle-grip">
-                                    <MoveHorizontal className="subdivision-timeline-editor-handle-icon" />
+                                {/* Segment label */}
+                                <div
+                                    className="subdivision-timeline-editor-segment-label"
+                                    style={{ color: typeConfig.color }}
+                                >
+                                    {typeConfig.shortLabel}
                                 </div>
-                                <div className="subdivision-timeline-editor-handle-label">
-                                    {segment.startBeat}
-                                </div>
+
+                                {/* Segment info tooltip on hover */}
+                                {hoveredSegment === index && (
+                                    <div className="subdivision-timeline-editor-segment-tooltip">
+                                        <div className="subdivision-timeline-editor-segment-tooltip-title">
+                                            {typeConfig.label}
+                                        </div>
+                                        <div className="subdivision-timeline-editor-segment-tooltip-detail">
+                                            Beat {segment.startBeat} - {endBeat - 1}
+                                        </div>
+                                        <div className="subdivision-timeline-editor-segment-tooltip-hint">
+                                            Drag edge to adjust
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        );
-                    })}
+                        ))}
+
+                        {/* Segment boundary handles */}
+                        {subdivisionConfig.segments.map((segment, index) => {
+                            // Skip first segment handle (can't drag beat 0)
+                            if (index === 0) return null;
+
+                            const typeConfig = getTypeConfig(segment.subdivision);
+                            return (
+                                <div
+                                    key={`handle-${index}`}
+                                    className={`subdivision-timeline-editor-handle ${
+                                        draggingSegment === index ? 'subdivision-timeline-editor-handle--dragging' : ''
+                                    }`}
+                                    style={{
+                                        left: `${getXFromBeat(segment.startBeat)}px`,
+                                        backgroundColor: typeConfig.color,
+                                    }}
+                                    onMouseDown={(e) => handleHandleMouseDown(e, index)}
+                                    onKeyDown={(e) => handleHandleKeyDown(e, index)}
+                                    tabIndex={disabled ? -1 : 0}
+                                    role="slider"
+                                    aria-label={`Segment ${index + 1} boundary at beat ${segment.startBeat}`}
+                                    aria-valuemin={(subdivisionConfig.segments[index - 1]?.startBeat ?? -1) + 1}
+                                    aria-valuemax={(subdivisionConfig.segments[index + 1]?.startBeat ?? totalBeats) - 1}
+                                    aria-valuenow={segment.startBeat}
+                                >
+                                    <div className="subdivision-timeline-editor-handle-grip">
+                                        <MoveHorizontal className="subdivision-timeline-editor-handle-icon" />
+                                    </div>
+                                    <div className="subdivision-timeline-editor-handle-label">
+                                        {segment.startBeat}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* ============================================================
+                 * BEAT RULER (Task 4.2)
+                 * ============================================================ */}
+                <div
+                    ref={beatRulerRef}
+                    className="subdivision-timeline-editor-beat-ruler"
+                    onScroll={handleScroll}
+                >
+                    <div
+                        className="subdivision-timeline-editor-beat-ruler-inner"
+                        style={{ width: `${timelineWidth}px` }}
+                    >
+                        {beatRulerMarkers.map(({ beat, position, label, isMajor }) => (
+                            <div
+                                key={`beat-ruler-${beat}`}
+                                className={`subdivision-timeline-editor-beat-marker ${
+                                    isMajor ? 'subdivision-timeline-editor-beat-marker--major' : ''
+                                }`}
+                                style={{ left: `${position}px` }}
+                            >
+                                <div className="subdivision-timeline-editor-beat-marker-tick" />
+                                <span className="subdivision-timeline-editor-beat-marker-label">
+                                    {label}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
