@@ -6,13 +6,13 @@
 - Phase 1: Type System Updates
 
 **In Progress Phases:**
-- Phase 2: Store Updates (Task 2.1, 2.5 complete)
+- Phase 2: Store Updates (Tasks 2.1, 2.2, 2.5 complete)
 
 **Pending Phases:**
-- Phase 2 (remaining tasks 2.2-2.4)
+- Phase 2 (remaining tasks 2.3-2.4)
 - Phase 3-10
 
-**Ready to Start:** Phase 2, Task 2.2 (Add Subdivision Actions)
+**Ready to Start:** Phase 2, Task 2.3 (Add Subdivision Selectors)
 
 ---
 
@@ -168,17 +168,17 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 2.2 Add Subdivision Actions
 
-- [ ] Add actions for subdivision management
-  - [ ] `generateUnifiedBeatMap()` - create UnifiedBeatMap from InterpolatedBeatMap
-  - [ ] `generateSubdividedBeatMap()` - create SubdividedBeatMap using BeatSubdivider
-  - [ ] `setSubdivisionConfig()` - update subdivision configuration
-  - [ ] `addSubdivisionSegment()` - add a new segment
-  - [ ] `removeSubdivisionSegment()` - remove a segment
-  - [ ] `updateSubdivisionSegment()` - update existing segment
-  - [ ] `setSubdivisionMode()` - switch between pre-calculated and real-time
-  - [ ] `setCurrentSubdivision()` - for real-time mode
-  - [ ] `initializeSubdivisionPlayback()` - create SubdivisionPlaybackController
-  - [ ] `cleanupSubdivisionPlayback()` - destroy controller
+- [x] Add actions for subdivision management
+  - [x] `generateUnifiedBeatMap()` - create UnifiedBeatMap from InterpolatedBeatMap
+  - [x] `generateSubdividedBeatMap()` - create SubdividedBeatMap using BeatSubdivider
+  - [x] `setSubdivisionConfig()` - update subdivision configuration
+  - [x] `addSubdivisionSegment()` - add a new segment
+  - [x] `removeSubdivisionSegment()` - remove a segment
+  - [x] `updateSubdivisionSegment()` - update existing segment
+  - [x] ~~`setSubdivisionMode()`~~ - **REMOVED** per design decision (mode is implicit by component)
+  - [x] `setCurrentSubdivision()` - for real-time mode
+  - [x] `initializeSubdivisionPlayback()` - create SubdivisionPlaybackController
+  - [x] `cleanupSubdivisionPlayback()` - destroy controller
 
 ### 2.3 Add Subdivision Selectors
 

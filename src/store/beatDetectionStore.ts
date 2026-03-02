@@ -48,12 +48,21 @@ import {
     TempoSection,
     // Subdivision types (Phase 2: Task 2.1)
     SubdivisionType,
+    SubdivisionSegment,
     SubdivisionConfig,
     UnifiedBeatMap,
     SubdividedBeatMap,
+    SubdivisionPlaybackOptions,
     DEFAULT_SUBDIVISION_CONFIG,
+    DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS,
 } from '@/types';
-import { BeatMapGenerator, BeatInterpolator, SubdivisionPlaybackController } from 'playlist-data-engine';
+import {
+    BeatMapGenerator,
+    BeatInterpolator,
+    BeatSubdivider,
+    SubdivisionPlaybackController,
+    unifyBeatMap,
+} from 'playlist-data-engine';
 
 /**
  * TapResult extends ExtendedButtonPressResult with additional metadata for history tracking.
@@ -628,6 +637,80 @@ interface BeatDetectionActions {
      * @param enabled - Whether auto multi-tempo is enabled
      */
     setAutoMultiTempo: (enabled: boolean) => void;
+
+    // ============================================================
+    // Subdivision Actions (Phase 2: Task 2.2)
+    // ============================================================
+
+    /**
+     * Generate a UnifiedBeatMap from the current InterpolatedBeatMap.
+     * The UnifiedBeatMap is a flattened grid of quarter notes that serves
+     * as the foundation for both pre-calculated and real-time subdivision.
+     * @returns The generated UnifiedBeatMap, or null if no interpolated beat map exists
+     */
+    generateUnifiedBeatMap: () => UnifiedBeatMap | null;
+
+    /**
+     * Generate a SubdividedBeatMap from the current UnifiedBeatMap using BeatSubdivider.
+     * Uses the current subdivisionConfig for segment-based subdivision patterns.
+     * Used in AudioAnalysisTab for pre-calculated level creation and export.
+     * @returns The generated SubdividedBeatMap, or null if no unified beat map exists
+     */
+    generateSubdividedBeatMap: () => SubdividedBeatMap | null;
+
+    /**
+     * Update the subdivision configuration.
+     * This triggers regeneration of the SubdividedBeatMap if one exists.
+     * @param config - The new subdivision configuration
+     */
+    setSubdivisionConfig: (config: SubdivisionConfig) => void;
+
+    /**
+     * Add a new subdivision segment.
+     * Segments are automatically sorted by startBeat after insertion.
+     * @param segment - The segment to add
+     */
+    addSubdivisionSegment: (segment: SubdivisionSegment) => void;
+
+    /**
+     * Remove a subdivision segment by index.
+     * Cannot remove the first segment (index 0).
+     * @param segmentIndex - The index of the segment to remove
+     */
+    removeSubdivisionSegment: (segmentIndex: number) => void;
+
+    /**
+     * Update a subdivision segment by index.
+     * @param segmentIndex - The index of the segment to update
+     * @param updates - Partial segment properties to update
+     */
+    updateSubdivisionSegment: (segmentIndex: number, updates: Partial<SubdivisionSegment>) => void;
+
+    /**
+     * Set the current subdivision type for real-time mode.
+     * Used in BeatPracticeView for the subdivision playground.
+     * @param subdivision - The subdivision type to use
+     */
+    setCurrentSubdivision: (subdivision: SubdivisionType) => void;
+
+    /**
+     * Initialize the SubdivisionPlaybackController for real-time mode.
+     * Creates a new controller using the current UnifiedBeatMap.
+     * Used in BeatPracticeView when entering practice mode.
+     * @param audioContext - The Web Audio API AudioContext for timing
+     * @param options - Optional playback options (defaults to DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS)
+     * @returns The created controller, or null if no unified beat map exists
+     */
+    initializeSubdivisionPlayback: (
+        audioContext: AudioContext,
+        options?: Partial<SubdivisionPlaybackOptions>
+    ) => SubdivisionPlaybackController | null;
+
+    /**
+     * Clean up the SubdivisionPlaybackController.
+     * Should be called when exiting practice mode or when the controller is no longer needed.
+     */
+    cleanupSubdivisionPlayback: () => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1686,6 +1769,294 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setAutoMultiTempo: (enabled: boolean) => {
                         set({ autoMultiTempo: enabled });
                         logger.info('BeatDetection', 'Auto multi-tempo setting changed', { enabled });
+                    },
+
+                    // ============================================================
+                    // Subdivision Actions (Phase 2: Task 2.2)
+                    // ============================================================
+
+                    /**
+                     * Generate a UnifiedBeatMap from the current InterpolatedBeatMap.
+                     */
+                    generateUnifiedBeatMap: () => {
+                        const state = get();
+                        const { interpolatedBeatMap } = state;
+
+                        if (!interpolatedBeatMap) {
+                            logger.warn('BeatDetection', 'No interpolated beat map available, cannot generate UnifiedBeatMap');
+                            return null;
+                        }
+
+                        try {
+                            logger.info('BeatDetection', 'Generating UnifiedBeatMap from InterpolatedBeatMap', {
+                                beatCount: interpolatedBeatMap.mergedBeats.length,
+                            });
+
+                            const unifiedMap = unifyBeatMap(interpolatedBeatMap);
+
+                            // Clear the subdivided beat map since the unified map changed
+                            set({
+                                unifiedBeatMap: unifiedMap,
+                                subdividedBeatMap: null, // Clear subdivision when unified changes
+                            });
+
+                            logger.info('BeatDetection', 'UnifiedBeatMap generated successfully', {
+                                beatCount: unifiedMap.beats.length,
+                                quarterNoteInterval: unifiedMap.quarterNoteInterval,
+                            });
+
+                            return unifiedMap;
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to generate UnifiedBeatMap', { error: errorMessage });
+                            set({ error: errorMessage });
+                            return null;
+                        }
+                    },
+
+                    /**
+                     * Generate a SubdividedBeatMap from the current UnifiedBeatMap.
+                     */
+                    generateSubdividedBeatMap: () => {
+                        const state = get();
+                        let { unifiedBeatMap } = state;
+
+                        // Generate unified map if it doesn't exist but we have an interpolated map
+                        if (!unifiedBeatMap && state.interpolatedBeatMap) {
+                            logger.info('BeatDetection', 'UnifiedBeatMap not found, generating it first');
+                            unifiedBeatMap = state.actions.generateUnifiedBeatMap();
+                        }
+
+                        if (!unifiedBeatMap) {
+                            logger.warn('BeatDetection', 'No UnifiedBeatMap available, cannot generate SubdividedBeatMap');
+                            return null;
+                        }
+
+                        const { subdivisionConfig } = state;
+
+                        try {
+                            logger.info('BeatDetection', 'Generating SubdividedBeatMap', {
+                                unifiedBeatCount: unifiedBeatMap.beats.length,
+                                segmentCount: subdivisionConfig.segments.length,
+                            });
+
+                            const subdivider = new BeatSubdivider();
+                            const subdividedMap = subdivider.subdivide(unifiedBeatMap, subdivisionConfig);
+
+                            set({ subdividedBeatMap: subdividedMap });
+
+                            logger.info('BeatDetection', 'SubdividedBeatMap generated successfully', {
+                                beatCount: subdividedMap.beats.length,
+                                metadata: subdividedMap.subdivisionMetadata,
+                            });
+
+                            return subdividedMap;
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to generate SubdividedBeatMap', { error: errorMessage });
+                            set({ error: errorMessage });
+                            return null;
+                        }
+                    },
+
+                    /**
+                     * Update the subdivision configuration.
+                     */
+                    setSubdivisionConfig: (config: SubdivisionConfig) => {
+                        const state = get();
+
+                        logger.info('BeatDetection', 'Updating subdivision config', {
+                            segmentCount: config.segments.length,
+                        });
+
+                        set({ subdivisionConfig: config });
+
+                        // Regenerate subdivided beat map if one exists
+                        if (state.subdividedBeatMap) {
+                            logger.info('BeatDetection', 'Regenerating SubdividedBeatMap due to config change');
+                            state.actions.generateSubdividedBeatMap();
+                        }
+                    },
+
+                    /**
+                     * Add a new subdivision segment.
+                     */
+                    addSubdivisionSegment: (segment: SubdivisionSegment) => {
+                        const state = get();
+                        const { subdivisionConfig } = state;
+
+                        // Add new segment and sort by startBeat
+                        const newSegments = [...subdivisionConfig.segments, segment].sort(
+                            (a, b) => a.startBeat - b.startBeat
+                        );
+
+                        logger.info('BeatDetection', 'Adding subdivision segment', {
+                            startBeat: segment.startBeat,
+                            subdivision: segment.subdivision,
+                            newSegmentCount: newSegments.length,
+                        });
+
+                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                    },
+
+                    /**
+                     * Remove a subdivision segment by index.
+                     */
+                    removeSubdivisionSegment: (segmentIndex: number) => {
+                        const state = get();
+                        const { subdivisionConfig } = state;
+
+                        // Can't remove the first segment
+                        if (segmentIndex === 0) {
+                            logger.warn('BeatDetection', 'Cannot remove the first subdivision segment');
+                            return;
+                        }
+
+                        if (segmentIndex < 0 || segmentIndex >= subdivisionConfig.segments.length) {
+                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
+                            return;
+                        }
+
+                        const newSegments = subdivisionConfig.segments.filter(
+                            (_: SubdivisionSegment, index: number) => index !== segmentIndex
+                        );
+
+                        logger.info('BeatDetection', 'Removing subdivision segment', {
+                            removedIndex: segmentIndex,
+                            newSegmentCount: newSegments.length,
+                        });
+
+                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                    },
+
+                    /**
+                     * Update a subdivision segment by index.
+                     */
+                    updateSubdivisionSegment: (segmentIndex: number, updates: Partial<SubdivisionSegment>) => {
+                        const state = get();
+                        const { subdivisionConfig } = state;
+
+                        if (segmentIndex < 0 || segmentIndex >= subdivisionConfig.segments.length) {
+                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
+                            return;
+                        }
+
+                        const newSegments = subdivisionConfig.segments.map(
+                            (segment: SubdivisionSegment, index: number) =>
+                                index === segmentIndex ? { ...segment, ...updates } : segment
+                        );
+
+                        // Re-sort if startBeat changed
+                        if (updates.startBeat !== undefined) {
+                            newSegments.sort((a: SubdivisionSegment, b: SubdivisionSegment) => a.startBeat - b.startBeat);
+                        }
+
+                        logger.info('BeatDetection', 'Updating subdivision segment', {
+                            segmentIndex,
+                            updates,
+                        });
+
+                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                    },
+
+                    /**
+                     * Set the current subdivision type for real-time mode.
+                     */
+                    setCurrentSubdivision: (subdivision: SubdivisionType) => {
+                        const state = get();
+
+                        logger.info('BeatDetection', 'Setting current subdivision', {
+                            subdivision,
+                            previousSubdivision: state.currentSubdivision,
+                        });
+
+                        set({ currentSubdivision: subdivision });
+
+                        // Also update the playback controller if it exists
+                        const controller = getActiveSubdivisionPlaybackController();
+                        if (controller) {
+                            controller.setSubdivision(subdivision);
+                            logger.info('BeatDetection', 'Updated playback controller subdivision');
+                        }
+                    },
+
+                    /**
+                     * Initialize the SubdivisionPlaybackController for real-time mode.
+                     */
+                    initializeSubdivisionPlayback: (
+                        audioContext: AudioContext,
+                        options?: Partial<SubdivisionPlaybackOptions>
+                    ) => {
+                        const state = get();
+
+                        // Clean up any existing controller first
+                        const existingController = getActiveSubdivisionPlaybackController();
+                        if (existingController) {
+                            logger.info('BeatDetection', 'Cleaning up existing SubdivisionPlaybackController');
+                            existingController.dispose();
+                            setActiveSubdivisionPlaybackController(null);
+                        }
+
+                        // Ensure we have a UnifiedBeatMap
+                        let { unifiedBeatMap } = state;
+                        if (!unifiedBeatMap && state.interpolatedBeatMap) {
+                            logger.info('BeatDetection', 'Generating UnifiedBeatMap for playback controller');
+                            unifiedBeatMap = state.actions.generateUnifiedBeatMap();
+                        }
+
+                        if (!unifiedBeatMap) {
+                            logger.warn('BeatDetection', 'No UnifiedBeatMap available, cannot initialize SubdivisionPlaybackController');
+                            return null;
+                        }
+
+                        // Merge provided options with defaults
+                        const playbackOptions: SubdivisionPlaybackOptions = {
+                            ...DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS,
+                            initialSubdivision: state.currentSubdivision,
+                            ...options,
+                        };
+
+                        try {
+                            logger.info('BeatDetection', 'Initializing SubdivisionPlaybackController', {
+                                beatCount: unifiedBeatMap.beats.length,
+                                initialSubdivision: playbackOptions.initialSubdivision,
+                                transitionMode: playbackOptions.transitionMode,
+                            });
+
+                            const controller = new SubdivisionPlaybackController(
+                                unifiedBeatMap,
+                                audioContext,
+                                playbackOptions
+                            );
+
+                            setActiveSubdivisionPlaybackController(controller);
+
+                            logger.info('BeatDetection', 'SubdivisionPlaybackController initialized successfully');
+
+                            return controller;
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to initialize SubdivisionPlaybackController', {
+                                error: errorMessage,
+                            });
+                            set({ error: errorMessage });
+                            return null;
+                        }
+                    },
+
+                    /**
+                     * Clean up the SubdivisionPlaybackController.
+                     */
+                    cleanupSubdivisionPlayback: () => {
+                        const controller = getActiveSubdivisionPlaybackController();
+
+                        if (controller) {
+                            logger.info('BeatDetection', 'Cleaning up SubdivisionPlaybackController');
+                            controller.dispose();
+                            setActiveSubdivisionPlaybackController(null);
+                        } else {
+                            logger.debug('BeatDetection', 'No SubdivisionPlaybackController to clean up');
+                        }
                     },
                 },
             };
