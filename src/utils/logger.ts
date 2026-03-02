@@ -33,7 +33,8 @@ type LogCategory =
     | 'ContentCreator'
     | 'ContentValidation'
     | 'ClassConfigForm'
-    | 'BeatDetection';
+    | 'BeatDetection'
+    | 'SubdivisionPlayback';
 
 
 

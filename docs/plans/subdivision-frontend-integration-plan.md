@@ -8,11 +8,13 @@
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 - Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
+- Phase 6: Task 6.1 (useSubdivisionPlayback Hook)
 
 **Pending Phases:**
-- Phase 6-10
+- Phase 6: Tasks 6.2-6.7
+- Phase 7-10
 
-**Ready to Start:** Phase 6, Task 6.1 (useSubdivisionPlayback Hook)
+**Ready to Start:** Phase 6, Task 6.2 (SubdivisionButtons Component)
 
 ---
 
@@ -344,13 +346,13 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 6.1 Create useSubdivisionPlayback Hook
 
-- [ ] Create `src/hooks/useSubdivisionPlayback.ts`
-  - [ ] Wrap `SubdivisionPlaybackController` from engine
-  - [ ] Accept `UnifiedBeatMap` and `AudioContext`
-  - [ ] Expose `setSubdivision(type)` for UI buttons
-  - [ ] Emit beat events for timeline visualization
-  - [ ] Handle play/pause/seek from audio player
-  - [ ] Clean up controller on unmount
+- [x] Create `src/hooks/useSubdivisionPlayback.ts`
+  - [x] Wrap `SubdivisionPlaybackController` from engine
+  - [x] Accept `UnifiedBeatMap` and `AudioContext`
+  - [x] Expose `setSubdivision(type)` for UI buttons
+  - [x] Emit beat events for timeline visualization
+  - [x] Handle play/pause/seek from audio player
+  - [x] Clean up controller on unmount
 
 ### 6.2 Create SubdivisionButtons Component
 

@@ -23,3 +23,4 @@ export * from './useAudioEnemyGeneration';
 export * from './useSpawnMode';
 export * from './useContentCreator';
 export * from './useBeatDetection';
+export * from './useSubdivisionPlayback';
