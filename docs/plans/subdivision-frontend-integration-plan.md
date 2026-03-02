@@ -8,13 +8,13 @@
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 - Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
-- Phase 6: Tasks 6.1, 6.2, 6.3 (useSubdivisionPlayback Hook + SubdivisionButtons Component + Styles)
+- Phase 6: Tasks 6.1, 6.2, 6.3, 6.4 (useSubdivisionPlayback Hook + SubdivisionButtons Component + Styles + Integration in BeatPracticeView)
 
 **Pending Phases:**
-- Phase 6: Tasks 6.4-6.7
+- Phase 6: Tasks 6.5-6.7
 - Phase 7-10
 
-**Ready to Start:** Phase 6, Task 6.4 (Integrate SubdivisionPlaybackController via Hook)
+**Ready to Start:** Phase 6, Task 6.5 (Update BeatPracticeView with Subdivision UI)
 
 ---
 
@@ -372,10 +372,10 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 6.4 Integrate SubdivisionPlaybackController via Hook
 
-- [ ] Use `useSubdivisionPlayback` hook in BeatPracticeView
-  - [ ] Initialize when entering practice mode
-  - [ ] Pass UnifiedBeatMap as foundation
-  - [ ] Configure with `immediate` transition mode (default)
+- [x] Use `useSubdivisionPlayback` hook in BeatPracticeView
+  - [x] Initialize when entering practice mode
+  - [x] Pass UnifiedBeatMap as foundation
+  - [x] Configure with `immediate` transition mode (default)
 
 ### 6.5 Update BeatPracticeView
 

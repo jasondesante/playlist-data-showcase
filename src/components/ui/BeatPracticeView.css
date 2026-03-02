@@ -1149,3 +1149,76 @@
     margin-top: 0.25rem;
   }
 }
+
+/* ============================================
+   SUBDIVISION PLAYGROUND CONTAINER
+   Phase 6: Task 6.4 - Real-time subdivision switching
+   ============================================ */
+
+.beat-practice-subdivision-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-practice-subdivision-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-practice-subdivision-icon {
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--cute-purple));
+}
+
+.beat-practice-subdivision-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: 0.03em;
+}
+
+.beat-practice-subdivision-active-indicator {
+  margin-left: auto;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--cute-green));
+  background: hsl(var(--cute-green) / 0.15);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--cute-green) / 0.3);
+  animation: subdivision-active-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes subdivision-active-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive adjustments for subdivision */
+@media (max-width: 640px) {
+  .beat-practice-subdivision-container {
+    padding: 0.5rem;
+  }
+
+  .beat-practice-subdivision-title {
+    font-size: 0.6875rem;
+  }
+
+  .beat-practice-subdivision-active-indicator {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+}

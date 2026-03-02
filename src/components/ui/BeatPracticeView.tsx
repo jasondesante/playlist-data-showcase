@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers } from 'lucide-react';
 import './BeatPracticeView.css';
 import {
     useBeatDetectionStore,
@@ -33,12 +33,14 @@ import {
     useTapStatistics,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
+import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
+import { SubdivisionButtons } from './SubdivisionButtons';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset } from '../../types';
 
@@ -193,6 +195,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
+
+  // Subdivision playback hook for real-time subdivision switching (Phase 6: Task 6.4)
+  // Check if subdivision playback is available (requires UnifiedBeatMap)
+  const subdivisionPlaybackAvailable = useSubdivisionPlaybackAvailable();
+
+  // Initialize subdivision playback hook - practice mode is always active in this view
+  const {
+    currentSubdivision,
+    isActive: subdivisionIsActive,
+    setSubdivision,
+  } = useSubdivisionPlayback(true);
 
   /**
    * Handle tap action (spacebar or click)
@@ -599,6 +612,25 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           {isPlaying ? 'Pause' : 'Play'}
         </Button>
       </div>
+
+      {/* Subdivision Buttons (Phase 6: Task 6.4) - Real-time subdivision switching */}
+      {subdivisionPlaybackAvailable && (
+        <div className="beat-practice-subdivision-container">
+          <div className="beat-practice-subdivision-header">
+            <Layers className="beat-practice-subdivision-icon" />
+            <span className="beat-practice-subdivision-title">Subdivision Playground</span>
+            {subdivisionIsActive && (
+              <span className="beat-practice-subdivision-active-indicator">Active</span>
+            )}
+          </div>
+          <SubdivisionButtons
+            currentSubdivision={currentSubdivision}
+            onSubdivisionChange={setSubdivision}
+            disabled={!isPlaying}
+            isActive={isPlaying && subdivisionIsActive}
+          />
+        </div>
+      )}
 
       {/* Tap Area - Using the dedicated TapArea component */}
       <TapArea
