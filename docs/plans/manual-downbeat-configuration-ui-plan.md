@@ -322,8 +322,8 @@ Timeline with measure visualization ON:
 
 ## Verification Checklist
 
-- [ ] Build passes: `npm run build`
-- [ ] TypeScript compiles without errors
+- [x] Build passes: `npm run build`
+- [x] TypeScript compiles without errors
 - [ ] Generate beat map works with default config
 - [ ] Click on beat in timeline updates downbeat position
 - [ ] Time signature toggle updates measure structure
