@@ -154,6 +154,17 @@ export function BeatTimeline({
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
+  // Reset animation reference when playback starts to prevent initial jitter
+  // This ensures the animation loop has a fresh timestamp when starting
+  useEffect(() => {
+    if (isPlaying) {
+      lastAudioTimeRef.current = {
+        time: currentTime,
+        timestamp: performance.now(),
+      };
+    }
+  }, [isPlaying, currentTime]);
+
   /**
    * Animation loop for smooth scrolling.
    * Uses requestAnimationFrame for 60fps updates.

@@ -1794,6 +1794,953 @@ interface TempoSection {
 
 ---
 
+## Beat Subdivision
+
+Beat subdivision transforms a quarter-note beat grid into various rhythmic patterns (half notes, eighth notes, triplets, etc.). This enables rhythm game level creation by allowing dynamic subdivision changes at specific beat positions.
+
+### Overview
+
+The subdivision system operates on a `UnifiedBeatMap` (created from an `InterpolatedBeatMap`) and produces a `SubdividedBeatMap` with the requested rhythmic pattern.
+
+**Processing Pipeline:**
+
+```
+┌─────────────┐     ┌──────────────────────┐     ┌──────────────────┐     ┌─────────────────────┐
+│  BeatMap    │ ──▶ │  InterpolatedBeatMap │ ──▶ │  UnifiedBeatMap  │ ──▶ │  SubdividedBeatMap  │
+│ (detected)  │     │ (detected + interp.) │     │ (flattened QN)   │     │ (rhythm patterns)   │
+└─────────────┘     └──────────────────────┘     └──────────────────┘     └─────────────────────┘
+```
+
+### Source Files
+
+| Component | Location |
+|-----------|----------|
+| **BeatSubdivider** | [src/core/analysis/beat/BeatSubdivider.ts](../src/core/analysis/beat/BeatSubdivider.ts) |
+| **unifyBeatMap** | [src/core/analysis/beat/utils/unifyBeatMap.ts](../src/core/analysis/beat/utils/unifyBeatMap.ts) |
+| **subdivideBeatMap** | [src/core/analysis/beat/utils/subdivideBeatMap.ts](../src/core/analysis/beat/utils/subdivideBeatMap.ts) |
+| **Subdivision Types** | [src/core/types/BeatMap.ts](../src/core/types/BeatMap.ts) |
+
+---
+
+### Subdivision Types
+
+| Type | Density | Description | beatInMeasure Labels |
+|------|---------|-------------|---------------------|
+| `quarter` | 1x | Default, unchanged | 0, 1, 2, 3 |
+| `half` | 0.5x | Beats on 1 and 3 only | 0, 2, 4, 6 |
+| `eighth` | 2x | Beat between each quarter | 0, 0.5, 1, 1.5, 2, 2.5... |
+| `sixteenth` | 4x | Maximum density (hard limit) | 0, 0.25, 0.5, 0.75, 1... |
+| `triplet8` | 3x | Eighth triplets (3 per quarter) | 0, 0.33, 0.66, 1, 1.33... |
+| `triplet4` | 1.5x | Quarter triplets (3 per half) | 0, 0.66, 1.33, 2, 2.66... |
+| `dotted4` | 0.67x | Every 1.5 quarters (phase-independent) | 0, 1.5, 3, 4.5... |
+| `dotted8` | 2x | Swing long-short pattern (2/3 + 1/3) | 0, 0.667, 1, 1.667, 2... |
+
+**Note:** Sixteenth notes (4x) are the **maximum supported density**. Higher densities are not supported.
+
+---
+
+### Basic Usage
+
+#### One-Step Subdivision
+
+The simplest way to subdivide a beat map:
+
+```typescript
+import { AudioAnalyzer } from 'playlist-data-engine';
+
+const analyzer = new AudioAnalyzer();
+
+// Generate and interpolate beat map
+const beatMap = await analyzer.generateBeatMap('song.mp3', 'track-001');
+const interpolated = analyzer.interpolateBeatMap(beatMap);
+
+// Subdivide with default config (quarter notes)
+const subdivided = analyzer.subdivideBeatMap(interpolated);
+
+console.log(`Original beats: ${interpolated.mergedBeats.length}`);
+console.log(`Subdivided beats: ${subdivided.beats.length}`);
+console.log(`Density multiplier: ${subdivided.subdivisionMetadata.averageDensityMultiplier}`);
+```
+
+#### Custom Subdivision Configuration
+
+Use segment-based configuration to change subdivisions over time:
+
+```typescript
+import { AudioAnalyzer, type SubdivisionConfig } from 'playlist-data-engine';
+
+const analyzer = new AudioAnalyzer();
+const interpolated = await analyzer.generateBeatMapWithInterpolation('song.mp3', 'track-001');
+
+// Create dynamic rhythm pattern
+const subdivisionConfig: SubdivisionConfig = {
+  segments: [
+    { startBeat: 0, subdivision: 'quarter' },      // Intro: quarter notes
+    { startBeat: 32, subdivision: 'eighth' },      // Verse: eighth notes
+    { startBeat: 96, subdivision: 'half' },        // Bridge: half notes
+    { startBeat: 128, subdivision: 'triplet8' },   // Solo: triplets
+  ],
+};
+
+const subdivided = analyzer.subdivideBeatMap(interpolated, subdivisionConfig);
+
+// Result:
+// - Beats 0-31: Quarter notes (standard grid)
+// - Beats 32-95: Eighth notes (double time)
+// - Beats 96-127: Half notes (half time)
+// - Beats 128+: Triplets (swing feel)
+```
+
+---
+
+### Using BeatSubdivider Directly
+
+For more control, use the `BeatSubdivider` class directly:
+
+```typescript
+import {
+  BeatMapGenerator,
+  BeatInterpolator,
+  BeatSubdivider,
+  unifyBeatMap,
+  type SubdivisionConfig
+} from 'playlist-data-engine';
+
+const generator = new BeatMapGenerator();
+const interpolator = new BeatInterpolator();
+const subdivider = new BeatSubdivider({
+  tolerance: 0.02,          // 20ms tolerance for detected beat alignment
+  defaultIntensity: 0.5,    // Intensity for generated beats
+  defaultConfidence: 0.7,   // Confidence for generated beats
+});
+
+// Step 1: Generate beat map
+const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
+
+// Step 2: Interpolate to fill gaps
+const interpolatedMap = interpolator.interpolate(beatMap);
+
+// Step 3: Unify into quarter-note grid
+const unifiedMap = unifyBeatMap(interpolatedMap);
+
+// Step 4: Subdivide with rhythm pattern
+const config: SubdivisionConfig = {
+  segments: [
+    { startBeat: 0, subdivision: 'eighth' },
+  ],
+};
+
+const subdividedMap = subdivider.subdivide(unifiedMap, config);
+
+console.log(`Original: ${unifiedMap.beats.length} beats`);
+console.log(`Subdivided: ${subdividedMap.beats.length} beats`);
+console.log(`Subdivisions used: ${subdividedMap.subdivisionMetadata.subdivisionsUsed.join(', ')}`);
+```
+
+---
+
+### Subdivision Types Explained
+
+#### Quarter Notes (No Change)
+
+Default subdivision - beats pass through unchanged:
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'quarter' }],
+};
+// Result: 1x density (unchanged)
+```
+
+#### Half Notes (0.5x Density)
+
+Keeps beats on positions 0 and 2 (downbeats and beat 3s). Measure numbers are preserved from the original grid.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'half' }],
+};
+// Original: 0, 1, 2, 3, 4, 5, 6, 7...
+// Result:   0,    2,    4,    6...   (downbeats and beat 3s)
+```
+
+#### Eighth Notes (2x Density)
+
+Inserts a new beat midway between each quarter note. Intensity/confidence is interpolated from neighboring beats.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'eighth' }],
+};
+// Original: 0, 1, 2, 3...
+// Result:   0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5...
+```
+
+#### Sixteenth Notes (4x Density - Maximum)
+
+Inserts 3 beats evenly spaced between each quarter note. This is the **hard maximum** for density.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'sixteenth' }],
+};
+// Original: 0, 1, 2, 3...
+// Result:   0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2...
+```
+
+#### Eighth Triplets (3x Density)
+
+Three beats per quarter note, creating a triplet feel.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'triplet8' }],
+};
+// Original: 0, 1, 2, 3...
+// Result:   0, 0.33, 0.66, 1, 1.33, 1.66, 2, 2.33, 2.66...
+```
+
+#### Quarter Triplets (1.5x Density)
+
+Three beats per half note - same density as eighth notes but different feel.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'triplet4' }],
+};
+// Original: 0, 1, 2, 3...
+// Result:   0, 0.66, 1, 1.66, 2, 2.66, 3, 3.66...
+```
+
+#### Dotted Quarter (0.67x Density)
+
+Phase-independent pattern that creates 3-beat groups in 4/4 time (cross-rhythm). Doesn't care about measure boundaries.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'dotted4' }],
+};
+// Pattern: 0, 1.5, 3, 4.5, 6... (every 1.5 quarter notes)
+```
+
+#### Dotted Eighth / Swing (2x Density)
+
+Classic swing long-short pattern: long note is 2/3 of a quarter, short note is 1/3.
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [{ startBeat: 0, subdivision: 'dotted8' }],
+};
+// Pattern: 0, 0.667, 1, 1.667, 2, 2.667...
+//          ├───long───┤short├───long───┤short┤
+```
+
+---
+
+### Segment-Based Configuration
+
+Subdivision can change at any beat index using segments. Segments are **contiguous** - each segment covers all beats from its `startBeat` until the next segment's `startBeat` (or end of track).
+
+```typescript
+const config: SubdivisionConfig = {
+  segments: [
+    { startBeat: 0, subdivision: 'quarter' },     // Beats 0-31
+    { startBeat: 32, subdivision: 'eighth' },     // Beats 32-63
+    { startBeat: 64, subdivision: 'sixteenth' },  // Beats 64+
+  ],
+};
+```
+
+**Segment Transitions:**
+- Changes happen **immediately** at the specified beat index
+- No waiting for measure boundaries
+- Pattern continues from that point with new subdivision
+
+---
+
+### Beat Label System (Decimal)
+
+In a `SubdividedBeat`, the `beatInMeasure` property uses **decimal values** to represent positions between quarter notes:
+
+| Subdivision | Example Labels |
+|-------------|----------------|
+| quarter | 0, 1, 2, 3 |
+| eighth | 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 |
+| sixteenth | 0, 0.25, 0.5, 0.75, 1, 1.25... |
+| triplet8 | 0, 0.33, 0.66, 1, 1.33, 1.66... |
+
+**Note:** The base `Beat` interface uses integer `beatInMeasure` values. Only `SubdividedBeat` uses decimal values.
+
+---
+
+### Detected Beat Preservation
+
+Each `SubdividedBeat` has an `isDetected` flag indicating whether it was originally detected (vs interpolated or generated by subdivision):
+
+```typescript
+const subdivided = analyzer.subdivideBeatMap(interpolated);
+
+// Get originally detected beats for accent patterns
+const detectedBeats = subdivided.beats.filter(b => b.isDetected);
+console.log(`Detected beats: ${detectedBeats.length}`);
+
+// Use detectedBeatIndices for quick lookup
+console.log(`Detected indices: ${subdivided.detectedBeatIndices}`);
+```
+
+**Behavior by Subdivision Type:**
+- **Half notes**: Detected beats not on positions 0/2 are removed
+- **Eighth/Sixteenth**: New beats are NOT marked as detected
+- **Triplets/Dotted**: Generated beats aligned close to detected beats may be marked
+
+---
+
+### Tempo-Aware Subdivision
+
+When the `UnifiedBeatMap` contains multiple tempo sections (from multi-tempo interpolation), subdivision is automatically tempo-aware:
+
+```typescript
+// Enable multi-tempo detection during interpolation
+const interpolated = analyzer.interpolateBeatMap(beatMap, {
+  enableMultiTempo: true,
+});
+
+// Subdivision uses correct intervals for each tempo section
+const subdivided = analyzer.subdivideBeatMap(interpolated, {
+  segments: [{ startBeat: 0, subdivision: 'eighth' }],
+});
+
+// Check if multiple tempos were detected
+console.log(`Has multiple tempos: ${subdivided.subdivisionMetadata.hasMultipleTempos}`);
+```
+
+---
+
+### Validation
+
+Validate subdivision configuration before use:
+
+```typescript
+import {
+  validateSubdivisionConfig,
+  validateSubdivisionConfigAgainstBeats,
+  validateSubdivisionDensity,
+} from 'playlist-data-engine';
+
+// Structural validation
+try {
+  validateSubdivisionConfig(config);
+} catch (e) {
+  console.error('Invalid config:', e.message);
+}
+
+// Validate against beat count
+try {
+  validateSubdivisionConfigAgainstBeats(config, totalBeats);
+} catch (e) {
+  console.error('Config exceeds beat count:', e.message);
+}
+
+// Validate density (throws if > 4x)
+try {
+  validateSubdivisionDensity('sixteenth');  // OK
+  validateSubdivisionDensity('thirtysecond'); // Throws - not supported
+} catch (e) {
+  console.error('Invalid density:', e.message);
+}
+```
+
+---
+
+### Types Reference
+
+#### SubdivisionType
+
+```typescript
+type SubdivisionType =
+  | 'quarter'    // 1x density (no change)
+  | 'half'       // 0.5x density (beats 1 and 3)
+  | 'eighth'     // 2x density
+  | 'sixteenth'  // 4x density (MAXIMUM)
+  | 'triplet8'   // 3 beats per quarter (eighth triplets)
+  | 'triplet4'   // 3 beats per half note (quarter triplets)
+  | 'dotted4'    // Every 1.5 quarters (phase-independent)
+  | 'dotted8';   // Swing pattern (2/3 + 1/3 quarters)
+```
+
+#### SubdivisionSegment
+
+```typescript
+interface SubdivisionSegment {
+  /** Beat index where this subdivision starts */
+  startBeat: number;
+
+  /** Type of subdivision to apply */
+  subdivision: SubdivisionType;
+}
+```
+
+#### SubdivisionConfig
+
+```typescript
+interface SubdivisionConfig {
+  /** Array of subdivision segments ordered by startBeat */
+  segments: SubdivisionSegment[];
+}
+```
+
+#### SubdividedBeat
+
+```typescript
+interface SubdividedBeat extends Beat {
+  /** Position within the measure as a decimal (e.g., 0.5 for the "and" of beat 1) */
+  beatInMeasure: number;
+
+  /** Whether this beat was originally detected */
+  isDetected: boolean;
+
+  /** Index of the original beat in the UnifiedBeatMap */
+  originalBeatIndex?: number;
+
+  /** The subdivision type that created this beat */
+  subdivisionType: SubdivisionType;
+}
+```
+
+#### SubdividedBeatMap
+
+```typescript
+interface SubdividedBeatMap {
+  audioId: string;
+  duration: number;
+  beats: SubdividedBeat[];
+  detectedBeatIndices: number[];
+  subdivisionConfig: SubdivisionConfig;
+  downbeatConfig: DownbeatConfig;
+  tempoSections?: TempoSection[];
+  subdivisionMetadata: SubdivisionMetadata;
+}
+```
+
+#### SubdivisionMetadata
+
+```typescript
+interface SubdivisionMetadata {
+  /** Number of beats in the original unified map */
+  originalBeatCount: number;
+
+  /** Number of beats after subdivision */
+  subdividedBeatCount: number;
+
+  /** Overall density multiplier (2.0 = twice as many beats) */
+  averageDensityMultiplier: number;
+
+  /** Number of subdivision segments */
+  segmentCount: number;
+
+  /** Subdivision types used */
+  subdivisionsUsed: SubdivisionType[];
+
+  /** Whether the track has multiple tempo sections */
+  hasMultipleTempos: boolean;
+
+  /** Maximum density encountered */
+  maxDensity: number;
+}
+```
+
+#### BeatSubdividerOptions
+
+```typescript
+interface BeatSubdividerOptions {
+  /** Tolerance for aligning beats to detected beats (default: 0.02 = 20ms) */
+  tolerance?: number;
+
+  /** Default intensity for generated beats (default: 0.5) */
+  defaultIntensity?: number;
+
+  /** Default confidence for generated beats (default: 0.7) */
+  defaultConfidence?: number;
+}
+```
+
+---
+
+### Classes
+
+#### BeatSubdivider
+
+Transforms quarter-note beat grids into various rhythmic subdivisions.
+
+**Source**: [src/core/analysis/beat/BeatSubdivider.ts](../src/core/analysis/beat/BeatSubdivider.ts)
+
+##### Constructor
+
+```typescript
+new BeatSubdivider(options?: BeatSubdividerOptions)
+```
+
+##### Methods
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `subdivide` | `unifiedMap: UnifiedBeatMap`, `config?: SubdivisionConfig` | `SubdividedBeatMap` | Subdivide according to configuration |
+
+---
+
+### Utility Functions
+
+#### unifyBeatMap
+
+Converts an `InterpolatedBeatMap` to a `UnifiedBeatMap`:
+
+```typescript
+import { unifyBeatMap } from 'playlist-data-engine';
+
+const unifiedMap = unifyBeatMap(interpolatedMap);
+```
+
+#### subdivideBeatMap
+
+Convenience function that unifies then subdivides in one step:
+
+```typescript
+import { subdivideBeatMap } from 'playlist-data-engine';
+
+const subdividedMap = subdivideBeatMap(interpolatedMap, config);
+```
+
+---
+
+### When to Use Beat Subdivision
+
+| Use Case | Recommended |
+|----------|-------------|
+| Rhythm game level creation | ✅ Yes |
+| Dynamic difficulty patterns | ✅ Yes |
+| Swing/triplet feel | ✅ Yes |
+| Practice mode with changing tempos | ✅ Yes |
+| Simple beat visualization | ❌ Use UnifiedBeatMap directly |
+
+---
+
+### Using SubdividedBeatMap with BeatStream
+
+The `BeatStream` class accepts `SubdividedBeatMap` directly, allowing you to stream beat events from subdivided beats:
+
+```typescript
+import {
+  BeatMapGenerator,
+  BeatInterpolator,
+  BeatStream,
+  unifyBeatMap,
+  subdivideBeatMap
+} from 'playlist-data-engine';
+
+// Generate and process beat map
+const generator = new BeatMapGenerator();
+const interpolator = new BeatInterpolator();
+
+const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
+const interpolatedMap = interpolator.interpolate(beatMap);
+
+// Subdivide to eighth notes
+const subdividedMap = subdivideBeatMap(interpolatedMap, {
+  segments: [{ startBeat: 0, subdivision: 'eighth' }]
+});
+
+// Create BeatStream from SubdividedBeatMap
+const audioContext = new AudioContext();
+const beatStream = new BeatStream(subdividedMap, audioContext, {
+  anticipationTime: 2.0,
+  difficultyPreset: 'medium'
+});
+
+// Subscribe to beat events (includes all subdivided beats)
+beatStream.subscribe((event) => {
+  if (event.type === 'exact') {
+    console.log(`Beat at ${event.beat.timestamp}s`);
+    // Access subdivision-specific properties
+    const subdividedBeat = event.beat;
+    console.log(`Subdivision: ${subdividedBeat.subdivisionType}`);
+    console.log(`Is detected: ${subdividedBeat.isDetected}`);
+  }
+});
+
+beatStream.start();
+```
+
+**Key Points:**
+
+- `BeatStream` automatically detects `SubdividedBeatMap` and uses the subdivided beats
+- The `subdivisionType` and `isDetected` properties are preserved on each beat
+- BPM is calculated from the subdivided beat intervals
+- Works with all subdivision types (quarter, half, eighth, sixteenth, triplets, dotted)
+
+**Changing Beat Maps:**
+
+You can switch between different subdivision configurations during runtime:
+
+```typescript
+// Start with quarter notes
+const quarterMap = subdivideBeatMap(interpolatedMap, {
+  segments: [{ startBeat: 0, subdivision: 'quarter' }]
+});
+const stream = new BeatStream(quarterMap, audioContext);
+stream.start();
+
+// Later, switch to eighth notes
+const eighthMap = subdivideBeatMap(interpolatedMap, {
+  segments: [{ startBeat: 0, subdivision: 'eighth' }]
+});
+stream.setBeatMap(eighthMap);
+```
+
+---
+
+## Real-Time Subdivision Playground (Practice Mode)
+
+A separate feature from the pre-calculated SubdividedBeatMap, the Real-Time Subdivision Playground enables instant subdivision switching during playback for practice mode. Users can start with quarter notes and instantly switch to eighth notes (or any subdivision) while practicing.
+
+### Key Distinction
+
+| Feature | SubdividedBeatMap | Real-Time Playground |
+|---------|-------------------|---------------------|
+| Purpose | Level creation | Practice mode |
+| Timing | Pre-calculated | Generated on-the-fly |
+| Storage | Saved with level | Not stored |
+| Switching | Via config segments | Via button click during playback |
+| Complexity | Lower (static) | Higher (dynamic) |
+
+### Source Files
+
+| Component | Location |
+|-----------|----------|
+| **SubdivisionPlaybackController** | [src/core/playback/SubdivisionPlaybackController.ts](../src/core/playback/SubdivisionPlaybackController.ts) |
+
+---
+
+### Basic Usage
+
+Create a real-time controller for practice mode:
+
+```typescript
+import {
+  BeatMapGenerator,
+  BeatInterpolator,
+  unifyBeatMap,
+  SubdivisionPlaybackController
+} from 'playlist-data-engine';
+
+// Generate and unify (done once)
+const generator = new BeatMapGenerator();
+const interpolator = new BeatInterpolator();
+
+const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
+const interpolatedMap = interpolator.interpolate(beatMap);
+const unifiedMap = unifyBeatMap(interpolatedMap);
+
+// Create real-time controller for practice mode
+const audioContext = new AudioContext();
+const controller = new SubdivisionPlaybackController(
+  unifiedMap,
+  audioContext,
+  {
+    initialSubdivision: 'quarter',
+    transitionMode: 'next-downbeat',
+    onSubdivisionChange: (oldType, newType) => {
+    console.log(`Switched from ${oldType} to ${newType}`);
+  },
+  }
+);
+
+// Subscribe to beat events
+const unsubscribe = controller.subscribe((event) => {
+  if (event.type === 'upcoming') {
+    // Pre-render beat visual
+    console.log(`Beat approaching in ${event.timeUntilBeat}s`);
+  } else if (event.type === 'exact') {
+    // Beat is happening now
+    console.log('Beat!', event.beat);
+  }
+});
+
+// Start playback
+controller.play();
+```
+
+---
+
+### Real-Time Subdivision Switching
+
+Change subdivision during playback
+
+```typescript
+// User clicks "Eighth Notes" button in practice mode
+document.getElementById('eighth-btn').onclick = () => {
+  controller.setSubdivision('eighth');  // Switches in real-time!
+};
+
+// User clicks "Half Notes" button
+document.getElementById('half-btn').onclick = () => {
+  controller.setSubdivision('half');  // Slows down the beat grid
+};
+
+// User clicks "Quarter Notes" button
+document.getElementById('quarter-btn').onclick = () => {
+  controller.setSubdivision('quarter');  // Back to normal
+};
+```
+
+---
+
+### Transition Modes
+
+The `transitionMode` option controls how subdivision changes are applied:
+
+| Mode | Behavior |
+|------|----------|
+| `'immediate'` | Switch instantly at the current position |
+| `'next-downbeat'` | Wait for the next downbeat before switching |
+| `'next-measure'` | Wait for the next measure before switching |
+
+```typescript
+// Immediate mode - switches right away
+const immediateController = new SubdivisionPlaybackController(
+  unifiedMap,
+  audioContext,
+  { transitionMode: 'immediate' }
+);
+
+// Next-downbeat mode - waits for beat 1 ofconst downbeatController = new SubdivisionPlaybackController(
+  unifiedMap,
+  audioContext,
+  { transitionMode: 'next-downbeat' }
+);
+
+// Next-measure mode - waits for start of next measure
+const measureController = new SubdivisionPlaybackController(
+  unifiedMap,
+  audioContext,
+  { transitionMode: 'next-measure' }
+);
+```
+
+---
+
+### Playback Control
+
+Control playback with standard methods
+
+```typescript
+// Start playback
+controller.play();
+
+// Pause playback
+controller.pause();
+
+// Resume playback
+controller.resume();
+
+// Stop playback (resets position)
+controller.stop();
+
+// Seek to a specific time
+controller.seek(30.5);  // Jump to 30.5 seconds
+
+// Get current state
+console.log('Running:', controller.isRunning());
+console.log('Paused:', controller.isPaused());
+console.log('Current time:', controller.getCurrentTime());
+console.log('Duration:', controller.getDuration());
+```
+
+---
+
+### Beat Query Methods
+
+Get beats for display or analysis
+
+```typescript
+// Get beats in a time range
+const beats = controller.getBeatsInRange(10, 15);
+console.log(`Beats between 10s and 15s: ${beats.length}`);
+
+// Get upcoming beats for pre-rendering
+const upcomingBeats = controller.getUpcomingBeats(5);
+console.log(`Next 5 beats:`, upcomingBeats);
+
+// Get beat at specific time
+const beat = controller.getBeatAtTime(12.5);
+if (beat) {
+  console.log('Beat at 12.5s:', beat);
+}
+
+// Get current beat (most recently passed)
+const currentBeat = controller.getCurrentBeat();
+
+// Get next beat
+const nextBeat = controller.getNextBeat();
+```
+
+---
+
+### Options Interface
+
+#### SubdivisionPlaybackOptions
+
+```typescript
+interface SubdivisionPlaybackOptions {
+  /** Starting subdivision type (default: 'quarter') */
+  initialSubdivision?: SubdivisionType;
+
+  /** How to handle subdivision changes (default: 'immediate') */
+  transitionMode?: 'immediate' | 'next-downbeat' | 'next-measure';
+
+  /** Callback when subdivision changes */
+  onSubdivisionChange?: (oldType: SubdivisionType, newType: SubdivisionType) => void;
+
+  /** Anticipation time for beat events in seconds (default: 2.0) */
+  anticipationTime?: number;
+
+  /** Timing tolerance for beat event detection in seconds (default: 0.01) */
+  timingTolerance?: number;
+
+  /** User-calibrated offset in milliseconds (default: 0) */
+  userOffsetMs?: number;
+
+  /** Whether to compensate for output latency (default: true) */
+  compensateOutputLatency?: boolean;
+}
+```
+
+---
+
+### Event Types
+
+#### SubdivisionBeatEvent
+
+```typescript
+interface SubdivisionBeatEvent {
+  /** The beat that triggered this event */
+  beat: SubdividedBeat;
+
+  /** Current subdivision type */
+  currentSubdivision: SubdivisionType;
+
+  /** Audio context time when event was emitted */
+  audioTime: number;
+
+  /** Time until the beat (negative if passed) */
+  timeUntilBeat: number;
+
+  /** Type of event: 'upcoming', 'exact', or 'passed' */
+  type: BeatEventType;
+}
+```
+
+#### BeatEventType
+
+Events are emitted at different times during playback:
+
+| Type | When | Use Case |
+|------|------|----------|
+| `'upcoming'` | Beat is within `anticipationTime` | Pre-render visuals, prepare animations |
+| `'exact'` | Beat time is reached (within tolerance) | Trigger sounds, haptics |
+| `'passed'` | Beat time has passed | Clean up, logging |
+
+```typescript
+type BeatEventType = 'upcoming' | 'exact' | 'passed';
+```
+
+#### SubdivisionCallback
+
+```typescript
+type SubdivisionCallback = (event: SubdivisionBeatEvent) => void;
+```
+
+---
+
+### SubdivisionPlaybackController Class
+
+**Source**: [src/core/playback/SubdivisionPlaybackController.ts](../src/core/playback/SubdivisionPlaybackController.ts)
+
+#### Constructor
+
+```typescript
+new SubdivisionPlaybackController(
+  unifiedMap: UnifiedBeatMap,
+  audioContext: AudioContext,
+  options?: SubdivisionPlaybackOptions
+)
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `subdivision` | `SubdivisionType` | Current subdivision type (read-only) |
+| `beatMap` | `UnifiedBeatMap` | The unified beat map (read-only) |
+
+#### Methods
+
+| Method | Parameters | Returns | Description |
+|--------|------------|---------|-------------|
+| `subscribe` | `callback: SubdivisionCallback` | `() => void` | Subscribe to beat events, returns unsubscribe function |
+| `setSubdivision` | `type: SubdivisionType` | `void` | Change subdivision in real-time |
+| `play` | - | `void` | Start streaming beat events |
+| `pause` | - | `void` | Pause event emission, preserves position |
+| `resume` | - | `void` | Resume from paused position |
+| `stop` | - | `void` | Stop playback and reset state |
+| `seek` | `time: number` | `void` | Jump to a specific time |
+| `getBeatsInRange` | `startTime: number`, `endTime: number` | `SubdividedBeat[]` | Get beats in a time range |
+| `getUpcomingBeats` | `count: number` | `SubdividedBeat[]` | Get upcoming beats within anticipation window |
+| `getBeatAtTime` | `time: number` | `SubdividedBeat \| null` | Get beat at specific time |
+| `getCurrentBeat` | - | `SubdividedBeat \| null` | Get current (most recent) beat |
+| `getNextBeat` | - | `SubdividedBeat \| null` | Get next beat |
+| `isRunning` | - | `boolean` | Check if playback is active |
+| `isPaused` | - | `boolean` | Check if playback is paused |
+| `getCurrentTime` | - | `number` | Get current playback position |
+| `getDuration` | - | `number` | Get beat map duration |
+| `getOptions` | - | `Required<SubdivisionPlaybackOptions>` | Get current options |
+| `setBeatMap` | `unifiedMap: UnifiedBeatMap` | `void` | Update the beat map |
+| `dispose` | - | `void` | Clean up resources |
+
+---
+
+### Practice Mode UI Concept
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PRACTICE MODE - Song.mp3                                       │
+│                                                                 │
+│  [Quarter] [Eighth] [Half] [Triplets] [Swing]                   │
+│     ↑                                                           │
+│   (active)                                                      │
+│                                                                 │
+│  ▶ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│                    ↑    ↑    ↑    ↑                             │
+│                   beat events flow based on active              │
+│                   subdivision type                              │
+│                                                                 │
+│  Current: Eighth Notes | Next beat in: 0.234s                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Use Cases for Real-Time Playground
+
+| Use Case | Recommended |
+|----------|-------------|
+| Practice mode with dynamic difficulty | ✅ Yes |
+| Learning rhythm patterns | ✅ Yes |
+| Interactive beat visualization | ✅ Yes |
+| Live performance tools | ✅ Yes |
+| Pre-calculated level creation | ❌ Use SubdividedBeatMap directly |
+
+---
+
 ## References
 
 - [Beat Tracking by Dynamic Programming (Ellis, 2007)](https://www.ee.columbia.edu/~dpwe/pubs/Ellis07-beattrack.pdf)

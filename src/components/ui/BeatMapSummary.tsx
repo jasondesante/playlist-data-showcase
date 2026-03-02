@@ -15,8 +15,8 @@
  * Part of Task 7.2: Edge Cases - Very short tracks, no clear beat
  * Part of Task 4.1: Interpolation Statistics Display
  */
-import { useCallback } from 'react';
-import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge, Clock } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge, Clock, Pause } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
@@ -33,6 +33,7 @@ import {
     useShowTempoDriftVisualization,
     useBeatDetectionStore,
 } from '../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 
 /** Minimum track duration for reliable beat detection (seconds) */
 const MIN_TRACK_DURATION = 5;
@@ -175,6 +176,52 @@ export function BeatMapSummary({
   const interpolationData = useInterpolationVisualizationData();
   const showGridOverlay = useShowGridOverlay();
   const showTempoDriftVisualization = useShowTempoDriftVisualization();
+
+  // Audio player state for preview timeline sync
+  const { playbackState, currentTime: audioTime, pause, resume, seek } = useAudioPlayerStore();
+  const isAudioPlaying = playbackState === 'playing';
+
+  // Preview timeline state - for navigating through the song when selecting downbeat
+  const [manualPreviewTime, setManualPreviewTime] = useState(0);
+
+  // Use audio time when playing, otherwise use manually selected time
+  const previewTime = isAudioPlaying ? audioTime : manualPreviewTime;
+
+  /**
+   * Handle seek in preview timeline.
+   * Allows user to drag to navigate through the song.
+   * Also seeks the audio player so playback continues from the new position.
+   */
+  const handlePreviewSeek = useCallback((time: number) => {
+    setManualPreviewTime(time);
+    seek(time);
+  }, [seek]);
+
+  /**
+   * Handle play/pause toggle for the preview timeline.
+   */
+  const handlePlayPause = useCallback(() => {
+    if (isAudioPlaying) {
+      pause();
+    } else {
+      resume();
+    }
+  }, [isAudioPlaying, pause, resume]);
+
+  // Reset manual preview time when exiting selection mode
+  useEffect(() => {
+    if (!isDownbeatSelectionMode) {
+      setManualPreviewTime(0);
+    }
+  }, [isDownbeatSelectionMode]);
+
+  // Sync manual preview time to audio position when playback pauses
+  // This ensures the timeline stays at the current position when pausing
+  useEffect(() => {
+    if (!isAudioPlaying && audioTime > 0) {
+      setManualPreviewTime(audioTime);
+    }
+  }, [isAudioPlaying, audioTime]);
 
   /**
    * Handle beat click for downbeat selection.
@@ -624,20 +671,32 @@ export function BeatMapSummary({
       {/* Beat Timeline Preview - for downbeat selection (Phase 5: BeatMapSummary Integration) */}
       {isDownbeatSelectionMode && (
         <div className="beat-map-summary-timeline">
-          <div className="beat-map-summary-timeline-label">
-            Click a beat marker to set it as the downbeat:
+          <div className="beat-map-summary-timeline-header">
+            <span className="beat-map-summary-timeline-label">
+              Drag to navigate, click a beat marker to set as downbeat:
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePlayPause}
+              leftIcon={isAudioPlaying ? Pause : Play}
+              className="beat-map-summary-timeline-play-btn"
+            >
+              {isAudioPlaying ? 'Pause' : 'Play'}
+            </Button>
           </div>
           <BeatTimeline
             beatMap={beatMap}
-            currentTime={0}
-            anticipationWindow={beatMap.duration / 2}
-            pastWindow={beatMap.duration / 2}
-            isPlaying={false}
+            currentTime={previewTime}
+            anticipationWindow={5}
+            pastWindow={10}
+            isPlaying={isAudioPlaying}
             interpolationData={interpolationData}
             showGridOverlay={showGridOverlay}
             showTempoDriftVisualization={showTempoDriftVisualization}
             enableBeatSelection={isDownbeatSelectionMode}
             onBeatClick={handleBeatClick}
+            onSeek={handlePreviewSeek}
             showMeasureBoundaries={showMeasureBoundaries}
           />
         </div>

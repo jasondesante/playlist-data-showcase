@@ -61,6 +61,7 @@ A concise overview of all main exports from the library, organized by category.
 |--------|-------------|---------|
 | `PlaylistParser` | Parse playlist JSON/Araweave data | [Core Modules](#core-modules) |
 | `MetadataExtractor` | Extract metadata from track objects | [Core Modules](#core-modules) |
+| `getAudioUrls`, `getImageUrls`, etc. | Simple playlist data extraction utilities | [Core Modules](#core-modules) |
 | `AudioAnalyzer` | Analyze audio frequency characteristics | [Core Modules](#core-modules) |
 | `SpectrumScanner` | Analyze frequency bands | [Core Modules](#core-modules) |
 | `ColorExtractor` | Extract color palettes from images | [Core Modules](#core-modules) |
@@ -148,9 +149,13 @@ A concise overview of all main exports from the library, organized by category.
 | `BeatStream` | Real-time beat event streaming synchronized with audio | [Beat Detection](#beat-detection) |
 | `OnsetStrengthEnvelope` | Perceptual onset strength envelope calculation (Mel spectrogram) | [Beat Detection](#beat-detection) |
 | `BeatTracker` | Dynamic Programming beat tracking (Ellis algorithm) | [Beat Detection](#beat-detection) |
-| `TempoDetector` | Global tempo estimation with perceptual weighting | [Beat Detection](#beat-detection) |
+| `TempoDetector` | Global tempo estimation with perceptual weighting | [ [Beat Detection](#beat-detection) |
 | `reapplyDownbeatConfig` | Recalculate measure labels from manual configuration | [Beat Detection](#beat-detection) |
 | `BeatInterpolator` | Fill gaps in beat maps with interpolated beats | [Beat Detection](#beat-detection) |
+| `BeatSubdivider` | Subdivide beat maps into rhythmic patterns (half, eighth, sixteenth, triplets, dotted) | [Beat Detection](#beat-detection) |
+| `unifyBeatMap` | Convert InterpolatedBeatMap to UnifiedBeatMap for subdivision | [Beat Detection](#beat-detection) |
+| `subdivideBeatMap` | One-step convenience function for subdivision | [Beat Detection](#beat-detection) |
+| `SubdivisionPlaybackController` | Real-time subdivision switching for practice mode | [Beat Detection](#beat-detection) |
 
 **Beat Utilities:** `hzToMel`, `melToHz`, `resampleAudio`, `createMelFilterbank`, `highPassFilter`, `gaussianSmooth`, `calculateStdDev`, `performBeatFFT`, `performSTFT` — see [Beat Detection Utilities](#beat-detection-utilities)
 
@@ -200,6 +205,8 @@ All TypeScript types are exported, including:
 **Beat Detection Types:** `Beat`, `BeatMap`, `BeatMapMetadata`, `BeatEvent`, `BeatEventType`, `BeatStreamCallback`, `AudioSyncState`, `BeatMapGeneratorOptions`, `BeatStreamOptions`, `BeatMapJSON`, `BeatAccuracy`, `ButtonPressResult`, `AccuracyThresholds`, `DifficultyPreset`, `TempoEstimate`, `OSEConfig`, `BeatTrackerConfig`, `TempoDetectorConfig`, `TimeSignatureConfig`, `DownbeatSegment`, `DownbeatConfig`, `BeatMapGenerationProgress` — see [Beat Detection](#beat-detection) and [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)
 
 **Beat Interpolation Types:** `BeatSource`, `BeatWithSource`, `QuarterNoteDetection`, `GapAnalysis`, `InterpolationMetadata`, `InterpolatedBeatMap`, `BeatInterpolationOptions`, `InterpolatedBeatMapJSON`, `TempoSection`, `TempoSectionJSON` — see [Beat Detection](#beat-detection) and [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)
+
+**Beat Subdivision Types:** `SubdivisionType`, `SubdivisionSegment`, `SubdivisionConfig`, `UnifiedBeatMap`, `SubdividedBeat`, `SubdividedBeatMap`, `SubdivisionMetadata`, `BeatSubdividerOptions` — see [Beat Detection](#beat-detection) and [docs/AUDIO_ANALYSIS.md](docs/AUDIO_ANALYSIS.md)
 
 **OSE Parameter Mode Types:** `HopSizeMode`, `HopSizeConfig`, `MelBandsMode`, `MelBandsConfig`, `GaussianSmoothMode`, `GaussianSmoothConfig` — see [OSE Parameter Modes](#ose-parameter-modes)
 
@@ -1168,6 +1175,62 @@ Extracts metadata fields from playlist track data. All methods are static.
 | `static parseMetadata(metadata): Record<string, unknown> \| null` | Parses metadata string to JSON object with error handling |
 | `static convertAttributes(attributes): Record<string, string \| number> \| null` | Converts OpenSea-style attributes array to key-value object |
 
+### Playlist Utilities
+
+**Location:** `src/utils/playlistUtils.ts`
+
+Simple functions that return arrays of basic data from playlists. Works with both parsed (`ServerlessPlaylist`) and raw (`RawArweavePlaylist`) formats.
+
+#### Array Extraction Functions
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `getAudioUrls(playlist)` | `string[]` | All audio URLs from tracks |
+| `getImageUrls(playlist)` | `string[]` | All image URLs from tracks |
+| `getTrackTitles(playlist)` | `string[]` | All track titles |
+| `getArtists(playlist)` | `string[]` | All artist names |
+| `getGenres(playlist)` | `string[]` | Unique genres (sorted alphabetically) |
+| `getTags(playlist)` | `string[]` | Unique tags (sorted, lowercased) |
+| `getTotalDuration(playlist)` | `number` | Total duration in seconds |
+| `getTrackCount(playlist)` | `number` | Number of tracks |
+
+#### Object Extraction Functions
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `getTracks(playlist)` | `SimpleTrack[]` | Simplified objects: `{ title, artist, audio_url, image_url }` |
+| `getFullTracks(playlist)` | `object[]` | All available track data as plain objects |
+
+#### Types
+
+```typescript
+type PlaylistInput = ServerlessPlaylist | RawArweavePlaylist;
+
+interface SimpleTrack {
+    title: string;
+    artist: string;
+    audio_url: string;
+    image_url: string;
+}
+```
+
+#### Usage Example
+
+```typescript
+import { PlaylistParser, getAudioUrls, getArtists, getTracks } from 'playlist-data-engine';
+
+const parser = new PlaylistParser();
+const playlist = await parser.parse(rawPlaylistData);
+
+// Simple array extraction
+const urls = getAudioUrls(playlist);      // ['https://...', 'https://...']
+const artists = getArtists(playlist);     // ['Artist A', 'Artist B']
+
+// Object extraction
+const tracks = getTracks(playlist);
+// [{ title: 'Song', artist: 'Artist', audio_url: '...', image_url: '...' }, ...]
+```
+
 ---
 
 ### AudioAnalyzer
@@ -1442,6 +1505,18 @@ Beat detection system based on the Ellis Dynamic Programming algorithm. Provides
 | `TempoSection` | Tempo section with boundaries | `start`, `end`, `bpm`, `intervalSeconds`, `beatCount`, `startBeatIndex`, `endBeatIndex` |
 | `InterpolatedBeatMap` | Beat map with interpolation | `audioId`, `duration`, `detectedBeats`, `mergedBeats`, `quarterNoteInterval`, `quarterNoteBpm`, `quarterNoteConfidence`, `originalMetadata`, `interpolationMetadata` |
 | `BeatInterpolationOptions` | Configuration for interpolation | `minAnchorConfidence`, `gridSnapTolerance`, `tempoAdaptationRate`, `extrapolateStart`, `extrapolateEnd`, `anomalyThreshold`, `denseSectionMinBeats`, `gridAlignmentWeight`, `anchorConfidenceWeight`, `paceConfidenceWeight`, `tempoSectionThreshold`, `minClusterBeats`, `enableMultiTempo` |
+| `SubdivisionType` | Types of beat subdivision | `'quarter'` \| `'half'` \| `'eighth'` \| `'sixteenth'` \| `'triplet8'` \| `'triplet4'` \| `'dotted4'` \| `'dotted8'` |
+| `SubdivisionSegment` | Segment with subdivision config | `startBeat`, `subdivision` |
+| `SubdivisionConfig` | Subdivision configuration for rhythm patterns | `segments` |
+| `UnifiedBeatMap` | Unified beat map (detected + interpolated merged) | `audioId`, `duration`, `beats`, `detectedBeatIndices`, `quarterNoteInterval`, `quarterNoteBpm`, `downbeatConfig`, `tempoSections?`, `originalMetadata` |
+| `SubdividedBeat` | Beat in a subdivided map (decimal beatInMeasure) | `beatInMeasure` (decimal), `isDetected`, `originalBeatIndex?`, `subdivisionType` |
+| `SubdividedBeatMap` | Beat map after subdivision | `audioId`, `duration`, `beats`, `detectedBeatIndices`, `subdivisionConfig`, `downbeatConfig`, `tempoSections?`, `subdivisionMetadata` |
+| `SubdivisionMetadata` | Metadata about subdivision process | `originalBeatCount`, `subdividedBeatCount`, `averageDensityMultiplier`, `segmentCount`, `subdivisionsUsed`, `hasMultipleTempos`, `maxDensity` |
+| `BeatSubdividerOptions` | Configuration for BeatSubdivider | `tolerance`, `defaultIntensity`, `defaultConfidence` |
+| `SubdivisionPlaybackOptions` | Configuration for real-time subdivision controller | `initialSubdivision`, `transitionMode`, `onSubdivisionChange`, `anticipationTime`, `timingTolerance`, `userOffsetMs`, `compensateOutputLatency` |
+| `SubdivisionBeatEvent` | Event emitted during playback | `beat`, `currentSubdivision`, `timeUntilBeat`, `audioTime`, `type` |
+| `SubdivisionCallback` | Callback type for beat events | `(event: SubdivisionBeatEvent) => void` |
+| `SubdivisionTransitionMode` | Transition mode for subdivision changes | `'immediate'` \| `'next-downbeat'` \| `'next-measure'` |
 
 ### BeatMapGenerator
 
@@ -1496,10 +1571,15 @@ constructor(options?: BeatMapGeneratorOptions)
 
 Real-time beat event streaming synchronized with audio playback. Emits upcoming, exact, and passed beat events.
 
+**Supported Input Types:**
+- `BeatMap` - Standard beat map with detected beats
+- `InterpolatedBeatMap` - Beat map with interpolated beats (use `useInterpolatedBeats` option)
+- `SubdividedBeatMap` - Beat map with subdivision applied (eighth notes, triplets, etc.)
+
 **Constructor:**
 
 ```typescript
-constructor(beatMap: BeatMap, audioContext: AudioContext, options?: BeatStreamOptions)
+constructor(beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap, audioContext: AudioContext, options?: BeatStreamOptions)
 ```
 
 **Options (with defaults):**
@@ -1792,6 +1872,367 @@ Interpolated beat confidence is calculated from three components:
 |----------|-------|-------------|
 | `DEFAULT_BEAT_INTERPOLATION_OPTIONS` | See above | Default interpolation options |
 
+### BeatSubdivider
+
+**Location:** `src/core/analysis/beat/BeatSubdivider.ts`
+
+Transforms a UnifiedBeatMap into a SubdividedBeatMap by applying rhythmic subdivision patterns. Supports half notes, eighth notes, sixteenth notes, triplets, and dotted patterns. Subdivision can change over time via segment-based configuration.
+
+**Key Concepts:**
+
+- **Processing Pipeline**: `BeatMap` → `InterpolatedBeatMap` → `UnifiedBeatMap` → `SubdividedBeatMap`
+- **Subdivision Types**: Quarter (1x), Half (0.5x), Eighth (2x), Sixteenth (4x - maximum), Triplets, Dotted patterns
+- **Segment Support**: Subdivision can change at any beat index for dynamic rhythm patterns
+- **Tempo-Aware**: Uses TempoSection intervals for multi-tempo tracks
+
+**Constructor:**
+
+```typescript
+constructor(options?: BeatSubdividerOptions)
+```
+
+**Options (with defaults):**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `tolerance` | 0.02 (20ms) | Tolerance for aligning beats to detected beats |
+| `defaultIntensity` | 0.5 | Default intensity for newly generated beats (0.0 - 1.0) |
+| `defaultConfidence` | 0.7 | Default confidence for newly generated beats (0.0 - 1.0) |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `subdivide(unifiedMap: UnifiedBeatMap, config?: SubdivisionConfig): SubdividedBeatMap` | Subdivide a unified beat map according to configuration |
+
+**Subdivision Types:**
+
+| Type | Density | Description | Beat Labels in 4/4 |
+|------|---------|-------------|---------------------|
+| `'quarter'` | 1x | No change (standard) | 0, 1, 2, 3 |
+| `'half'` | 0.5x | Beats on 1 and 3 only | 0, 2, 4, 6 |
+| `'eighth'` | 2x | Double density | 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 |
+| `'sixteenth'` | 4x | Maximum density | 0, 0.25, 0.5, 0.75, 1, 1.25... |
+| `'triplet8'` | 2x | Eighth triplets (3 per quarter) | 0, 0.33, 0.66, 1, 1.33, 1.66... |
+| `'triplet4'` | 2x | Quarter triplets (3 per half) | 0, 0.66, 1.33, 2, 2.66, 3.33... |
+| `'dotted4'` | 2.67x | Dotted quarter (phase-independent) | 0, 1.5, 3, 4.5, 6... |
+| `'dotted8'` | 2x | Swing long-short (2/3 + 1/3) | 0, 0.667, 1, 1.667, 2... |
+
+**Usage:**
+
+```typescript
+import {
+    BeatMapGenerator,
+    BeatInterpolator,
+    BeatSubdivider,
+    unifyBeatMap,
+    type SubdivisionConfig
+} from 'playlist-data-engine';
+
+const generator = new BeatMapGenerator();
+const interpolator = new BeatInterpolator();
+const subdivider = new BeatSubdivider();
+
+// Step 1: Generate beat map
+const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
+
+// Step 2: Interpolate to fill gaps
+const interpolatedMap = interpolator.interpolate(beatMap);
+
+// Step 3: Unify into quarter-note grid
+const unifiedMap = unifyBeatMap(interpolatedMap);
+
+// Step 4: Subdivide with rhythm pattern
+const subdivisionConfig: SubdivisionConfig = {
+    segments: [
+        { startBeat: 0, subdivision: 'quarter' },      // Intro: quarter notes
+        { startBeat: 32, subdivision: 'eighth' },      // Verse: eighth notes
+        { startBeat: 96, subdivision: 'half' },        // Bridge: half notes
+        { startBeat: 128, subdivision: 'triplet8' },   // Solo: triplets
+    ],
+};
+
+const subdividedMap = subdivider.subdivide(unifiedMap, subdivisionConfig);
+
+// Result: A beat map that changes rhythm density over time
+console.log('Original beats:', unifiedMap.beats.length);
+console.log('Subdivided beats:', subdividedMap.beats.length);
+console.log('Density multiplier:', subdividedMap.subdivisionMetadata.averageDensityMultiplier);
+
+// Detected beats are still marked for accent patterns
+const detectedBeats = subdividedMap.beats.filter(b => b.isDetected);
+```
+
+**Segment Transitions:**
+
+Changes happen **IMMEDIATELY** at the specified beat index. No waiting for measure boundaries. Example: Quarter → Eighth at beat 32 means beat 32 is the first eighth note.
+
+**Validation Functions:**
+
+| Function | Description |
+|----------|-------------|
+| `validateSubdivisionConfig(config)` | Structural validation (segments non-empty, ordered, valid types) |
+| `validateSubdivisionConfigAgainstBeats(config, totalBeats)` | Validate startBeat values against beat count |
+| `validateSubdivisionDensity(subdivision)` | Ensure density doesn't exceed maximum (4x) |
+| `isValidSubdivisionType(value)` | Type guard for SubdivisionType |
+| `getSubdivisionDensity(subdivision)` | Get density multiplier for a subdivision type |
+
+**Constants:**
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `DEFAULT_SUBDIVISION_CONFIG` | `{ segments: [{ startBeat: 0, subdivision: 'quarter' }] }` | Default subdivision config |
+| `MAX_SUBDIVISION_DENSITY` | 4 | Maximum density (sixteenth notes) |
+| `VALID_SUBDIVISION_TYPES` | Array of all valid types | For validation |
+
+### unifyBeatMap
+
+**Location:** `src/core/analysis/beat/utils/unifyBeatMap.ts`
+
+Standalone function that converts an InterpolatedBeatMap into a UnifiedBeatMap. This flattens detected + interpolated beats into a single unified list, preparing the beat map for subdivision.
+
+**Signature:**
+
+```typescript
+function unifyBeatMap(interpolatedBeatMap: InterpolatedBeatMap): UnifiedBeatMap
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `interpolatedBeatMap` | `InterpolatedBeatMap` | The interpolated beat map to unify |
+
+**Returns:** `UnifiedBeatMap` ready for subdivision
+
+**Usage:**
+
+```typescript
+import { BeatInterpolator, unifyBeatMap } from 'playlist-data-engine';
+
+const interpolator = new BeatInterpolator();
+const interpolatedMap = interpolator.interpolate(beatMap);
+
+// Convert to unified format
+const unifiedMap = unifyBeatMap(interpolatedMap);
+
+// All beats are now in a single array
+console.log('Total beats:', unifiedMap.beats.length);
+
+// Detected beat indices for accent patterns
+console.log('Detected beats:', unifiedMap.detectedBeatIndices.length);
+
+// Tempo information preserved
+console.log('BPM:', unifiedMap.quarterNoteBpm);
+```
+
+### subdivideBeatMap
+
+**Location:** `src/core/analysis/beat/utils/subdivideBeatMap.ts`
+
+Convenience function that combines unification and subdivision into a single step. Takes an InterpolatedBeatMap and SubdivisionConfig, returns a SubdividedBeatMap.
+
+**Signature:**
+
+```typescript
+function subdivideBeatMap(
+    interpolatedBeatMap: InterpolatedBeatMap,
+    config?: SubdivisionConfig,
+    options?: BeatSubdividerOptions
+): SubdividedBeatMap
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `interpolatedBeatMap` | `InterpolatedBeatMap` | The interpolated beat map to subdivide |
+| `config` | `SubdivisionConfig?` | Optional subdivision configuration (defaults to quarter notes) |
+| `options` | `BeatSubdividerOptions?` | Optional BeatSubdivider options |
+
+**Returns:** `SubdividedBeatMap` with subdivision applied
+
+**Usage:**
+
+```typescript
+import { BeatInterpolator, subdivideBeatMap } from 'playlist-data-engine';
+
+const interpolator = new BeatInterpolator();
+const interpolatedMap = interpolator.interpolate(beatMap);
+
+// One-step subdivision with custom config
+const subdividedMap = subdivideBeatMap(interpolatedMap, {
+    segments: [
+        { startBeat: 0, subdivision: 'quarter' },
+        { startBeat: 32, subdivision: 'eighth' },
+    ],
+});
+
+// Or with subdivider options
+const subdividedMap = subdivideBeatMap(interpolatedMap, config, {
+    tolerance: 0.03,
+    defaultIntensity: 0.6,
+});
+```
+
+### SubdivisionPlaybackController
+
+**Location:** `src/core/playback/SubdivisionPlaybackController.ts`
+
+Real-time subdivision controller for practice mode. Enables instant switching between subdivision types during playback, allowing users to practice with different rhythmic densities (e.g., start with quarter notes, then switch to eighth notes).
+
+**Key Concepts:**
+
+- **Real-Time Generation**: Beats are generated on-the-fly based on current subdivision type
+- **Instant Switching**: Change subdivision type at any time during playback
+- **Transition Modes**: Configurable behavior for when subdivision changes take effect
+- **Web Audio Integration**: Precise timing using AudioContext for synchronization
+
+**Constructor:**
+
+```typescript
+constructor(
+    unifiedMap: UnifiedBeatMap,
+    audioContext: AudioContext,
+    options?: SubdivisionPlaybackOptions
+)
+```
+
+**Options (with defaults):**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `initialSubdivision` | `'quarter'` | Starting subdivision type |
+| `transitionMode` | `'immediate'` | How to handle subdivision changes (`'immediate'`, `'next-downbeat'`, `'next-measure'`) |
+| `onSubdivisionChange` | `undefined` | Callback when subdivision changes `(oldType, newType) => void` |
+| `anticipationTime` | `2.0` | Time before beat to emit 'upcoming' event (seconds) |
+| `timingTolerance` | `0.01` | Tolerance for beat event detection (10ms) |
+| `userOffsetMs` | `0` | User-calibrated audio/visual offset (milliseconds) |
+| `compensateOutputLatency` | `true` | Auto-adjust using AudioContext.outputLatency |
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `subdivision` | `SubdivisionType` | Get the current subdivision type (read-only) |
+| `beatMap` | `UnifiedBeatMap` | Get the unified beat map (read-only) |
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `subscribe(callback: SubdivisionCallback): () => void` | Subscribe to beat events, returns unsubscribe function |
+| `setSubdivision(type: SubdivisionType): void` | Change subdivision type in real-time |
+| `play(): void` | Start streaming beat events |
+| `stop(): void` | Stop streaming and reset state |
+| `pause(): void` | Pause event emission (preserves position) |
+| `resume(): void` | Resume paused playback |
+| `seek(time: number): void` | Seek to a specific time in seconds |
+| `getBeatsInRange(startTime: number, endTime: number): SubdividedBeat[]` | Get beats in a time range |
+| `getUpcomingBeats(count: number): SubdividedBeat[]` | Get upcoming beats for pre-rendering |
+| `getBeatAtTime(time: number): SubdividedBeat \| null` | Get beat at specific time |
+| `getCurrentBeat(): SubdividedBeat \| null` | Get the current (most recent) beat |
+| `getNextBeat(): SubdividedBeat \| null` | Get the next beat |
+| `getCurrentTime(): number` | Get current playback position in seconds |
+| `getDuration(): number` | Get beat map duration in seconds |
+| `getOptions(): Required<SubdivisionPlaybackOptions>` | Get current playback options |
+| `setBeatMap(unifiedMap: UnifiedBeatMap): void` | Update the unified beat map |
+| `isRunning(): boolean` | Check if controller is running |
+| `isPaused(): boolean` | Check if controller is paused |
+| `dispose(): void` | Clean up resources |
+
+**Transition Modes:**
+
+| Mode | Description |
+|------|-------------|
+| `'immediate'` | Switch subdivision instantly at current position |
+| `'next-downbeat'` | Wait for the next downbeat before switching |
+| `'next-measure'` | Wait for the next measure before switching |
+
+**Usage - Practice Mode:**
+
+```typescript
+import {
+    BeatMapGenerator,
+    BeatInterpolator,
+    unifyBeatMap,
+    SubdivisionPlaybackController
+} from 'playlist-data-engine';
+
+// Generate and unify (done once)
+const generator = new BeatMapGenerator();
+const interpolator = new BeatInterpolator();
+
+const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
+const interpolatedMap = interpolator.interpolate(beatMap);
+const unifiedMap = unifyBeatMap(interpolatedMap);
+
+// Create real-time controller for practice mode
+const controller = new SubdivisionPlaybackController(
+    unifiedMap,
+    audioContext,
+    {
+        initialSubdivision: 'quarter',
+        transitionMode: 'next-downbeat',
+        onSubdivisionChange: (oldType, newType) => {
+            console.log(`Switched from ${oldType} to ${newType}`);
+        },
+    }
+);
+
+// Subscribe to beat events
+controller.subscribe((event) => {
+    switch (event.type) {
+        case 'upcoming':
+            // Pre-render beat visual (event.timeUntilBeat seconds until beat)
+            break;
+        case 'exact':
+            // Beat is happening now - play sound
+            playBeatSound(event.beat);
+            break;
+        case 'passed':
+            // Beat was missed
+            break;
+    }
+});
+
+// Start playback
+controller.play();
+
+// User clicks "Eighth Notes" button in practice mode
+document.getElementById('eighth-btn').onclick = () => {
+    controller.setSubdivision('eighth');  // Switches in real-time!
+};
+
+// User clicks "Half Notes" button
+document.getElementById('half-btn').onclick = () => {
+    controller.setSubdivision('half');  // Slows down the beat grid
+};
+
+// User clicks "Quarter Notes" button
+document.getElementById('quarter-btn').onclick = () => {
+    controller.setSubdivision('quarter');  // Back to normal
+};
+```
+
+**Event Types:**
+
+The `SubdivisionBeatEvent` includes:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `beat` | `SubdividedBeat` | The beat this event relates to |
+| `currentSubdivision` | `SubdivisionType` | Current subdivision type being used |
+| `timeUntilBeat` | `number` | Time until the beat occurs (negative if passed) |
+| `audioTime` | `number` | Current audio context time in seconds |
+| `type` | `'upcoming'` \| `'exact'` \| `'passed'` | Type of event |
+
+**Constants:**
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS` | `{ initialSubdivision: 'quarter', transitionMode: 'immediate', ... }` | Default playback options |
+
 ### Beat Detection Utilities
 
 **Location:** `src/core/analysis/beat/utils/audioUtils.ts`
@@ -1824,6 +2265,15 @@ Interpolated beat confidence is calculated from three components:
 | `validateThresholds(thresholds)` | Returns `ThresholdValidationResult` | Validate custom thresholds for correctness (checks positive values and ascending order) |
 | `BEAT_DETECTION_VERSION` | `'1.0.0'` | Algorithm version |
 | `BEAT_DETECTION_ALGORITHM` | `'ellis-dp-v1'` | Algorithm identifier |
+| `DEFAULT_SUBDIVISION_CONFIG` | `{ segments: [{ startBeat: 0, subdivision: 'quarter' }] }` | Default subdivision config (quarter notes throughout) |
+| `MAX_SUBDIVISION_DENSITY` | 4 | Maximum subdivision density (sixteenth notes) |
+| `VALID_SUBDIVISION_TYPES` | `['quarter', 'half', 'eighth', 'sixteenth', 'triplet8', 'triplet4', 'dotted4', 'dotted8']` | All valid subdivision types |
+| `isValidSubdivisionType(value)` | Returns boolean | Type guard for SubdivisionType |
+| `getSubdivisionDensity(subdivision)` | Returns number | Get density multiplier (0.5, 1, 2, or 4) |
+| `validateSubdivisionConfig(config)` | Throws on error | Validate subdivision config structure |
+| `validateSubdivisionConfigAgainstBeats(config, totalBeats)` | Throws on error | Validate config against beat count |
+| `validateSubdivisionDensity(subdivision)` | Throws on error | Validate density doesn't exceed max |
+| `DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS` | `{ initialSubdivision: 'quarter', transitionMode: 'immediate', anticipationTime: 2.0, timingTolerance: 0.01, userOffsetMs: 0, compensateOutputLatency: true }` | Default options for SubdivisionPlaybackController |
 
 ### OSE Parameter Modes
 
