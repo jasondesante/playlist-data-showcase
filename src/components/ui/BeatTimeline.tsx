@@ -78,6 +78,11 @@ interface BeatTimelineProps {
    * Part of Task 3.1: Beat Selection Props
    */
   selectedBeatIndex?: number;
+  /**
+   * Whether to show measure boundary lines and measure numbers.
+   * Part of Phase 4: Measure Visualization (Task 4.1)
+   */
+  showMeasureBoundaries?: boolean;
 }
 
 /**
@@ -105,9 +110,12 @@ export function BeatTimeline({
   onBeatClick,
   enableBeatSelection = false,
   selectedBeatIndex,
+  showMeasureBoundaries = false,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
+  // showMeasureBoundaries will be used in Task 4.3-4.5 for measure visualization
+  void showMeasureBoundaries;
   const trackRef = useRef<HTMLDivElement>(null);
   const [pulseKey, setPulseKey] = useState(0);
   const lastPulseTimeRef = useRef<number>(0);

@@ -297,6 +297,8 @@ interface BeatDetectionState {
     // Downbeat configuration state
     /** Current downbeat configuration (null = using default: beat 0 is downbeat, 4/4 time) */
     downbeatConfig: DownbeatConfig | null;
+    /** Whether to show measure boundary lines and numbers in timeline (Phase 4: Measure Visualization) */
+    showMeasureBoundaries: boolean;
 }
 
 interface BeatDetectionActions {
@@ -545,6 +547,12 @@ interface BeatDetectionActions {
      * @param updates - Partial segment properties to update
      */
     updateDownbeatSegment: (segmentIndex: number, updates: Partial<DownbeatSegment>) => void;
+
+    /**
+     * Set whether measure boundary lines and numbers should be shown in the timeline.
+     * @param show - Whether to show measure boundaries
+     */
+    setShowMeasureBoundaries: (show: boolean) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -606,6 +614,8 @@ const createInitialState = (): BeatDetectionState => ({
     cachedInterpolatedBeatMaps: {},
     // Downbeat configuration state
     downbeatConfig: null, // null = using default config
+    // Measure visualization toggle (Phase 4: Measure Visualization)
+    showMeasureBoundaries: false, // Off by default, user opt-in
 });
 
 /**
@@ -1491,6 +1501,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         state.actions.applyDownbeatConfig({ segments: newSegments });
                     },
+
+                    /**
+                     * Set whether measure boundary lines and numbers should be shown in the timeline.
+                     */
+                    setShowMeasureBoundaries: (show: boolean) => {
+                        set({ showMeasureBoundaries: show });
+                        logger.info('BeatDetection', 'Measure boundaries visibility changed', { show });
+                    },
                 },
             };
         },
@@ -1518,6 +1536,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 cachedInterpolatedBeatMaps: state.cachedInterpolatedBeatMaps,
                 // Downbeat configuration state
                 downbeatConfig: state.downbeatConfig,
+                // Measure visualization toggle (Phase 4)
+                showMeasureBoundaries: state.showMeasureBoundaries,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
@@ -2314,3 +2334,14 @@ export const useDownbeatSegmentCount = () =>
  */
 export const useHasCustomDownbeatConfig = () =>
     useBeatDetectionStore((state) => state.downbeatConfig !== null);
+
+// ============================================================
+// Measure Visualization Selectors (Phase 4: Task 4.1)
+// ============================================================
+
+/**
+ * Selector to get whether measure boundaries should be shown in the timeline.
+ * Returns the showMeasureBoundaries state value (default: false).
+ */
+export const useShowMeasureBoundaries = () =>
+    useBeatDetectionStore((state) => state.showMeasureBoundaries);

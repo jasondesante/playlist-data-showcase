@@ -217,10 +217,10 @@ Timeline with measure visualization ON:
 
 ## Phase 4: Measure Visualization (Optional Toggle)
 
-- [ ] **4.1 Add measure visualization toggle**
-  - [ ] New prop `showMeasureBoundaries?: boolean` on BeatTimeline
-  - [ ] Add toggle control in DownbeatConfigPanel or BeatPracticeView
-  - [ ] Persist preference in store state
+- [x] **4.1 Add measure visualization toggle**
+  - [x] New prop `showMeasureBoundaries?: boolean` on BeatTimeline
+  - [x] Add toggle control in DownbeatConfigPanel or BeatPracticeView
+  - [x] Persist preference in store state
 
 - [ ] **4.2 Calculate measure boundaries**
   - [ ] Add helper function to find beats where `isDownbeat=true`

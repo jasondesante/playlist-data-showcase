@@ -16,7 +16,7 @@
  * Task 2.7: Multi-segment support (Advanced)
  */
 import { useState } from 'react';
-import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import {
@@ -26,6 +26,7 @@ import {
     useHasCustomDownbeatConfig,
     useBeatMap,
     useBeatDetectionStore,
+    useShowMeasureBoundaries,
 } from '../../store/beatDetectionStore';
 import type { DownbeatSegment } from '../../types';
 import './DownbeatConfigPanel.css';
@@ -101,6 +102,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
     const segmentCount = useDownbeatSegmentCount();
     const hasCustomConfig = useHasCustomDownbeatConfig();
     const beatMap = useBeatMap();
+    const showMeasureBoundaries = useShowMeasureBoundaries();
 
     // Local state for collapsible panel
     const [isExpanded, setIsExpanded] = useState(false);
@@ -360,6 +362,29 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         <Info className="downbeat-config-panel-hint-icon" />
                         <span className="downbeat-config-panel-hint-text">
                             Click "Edit Downbeat" then click any beat in the timeline to set it as the downbeat (beat 1)
+                        </span>
+                    </div>
+
+                    {/* Measure Visualization Toggle - Task 4.1 */}
+                    <div className="downbeat-config-panel-toggle">
+                        <button
+                            type="button"
+                            className={`downbeat-config-panel-toggle-btn ${showMeasureBoundaries ? 'downbeat-config-panel-toggle-btn--active' : ''}`}
+                            onClick={() => useBeatDetectionStore.getState().actions.setShowMeasureBoundaries(!showMeasureBoundaries)}
+                            disabled={isDisabled}
+                            aria-pressed={showMeasureBoundaries}
+                        >
+                            {showMeasureBoundaries ? (
+                                <Eye className="downbeat-config-panel-toggle-icon" />
+                            ) : (
+                                <EyeOff className="downbeat-config-panel-toggle-icon" />
+                            )}
+                            <span className="downbeat-config-panel-toggle-label">
+                                Show Measure Boundaries
+                            </span>
+                        </button>
+                        <span className="downbeat-config-panel-toggle-hint">
+                            {showMeasureBoundaries ? 'Measure lines and numbers visible' : 'Click to show measure lines'}
                         </span>
                     </div>
 

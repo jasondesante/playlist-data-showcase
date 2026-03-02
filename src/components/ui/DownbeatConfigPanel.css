@@ -245,6 +245,80 @@
 }
 
 /* ============================================
+   PHASE 4: MEASURE VISUALIZATION TOGGLE (Task 4.1)
+   ============================================ */
+
+.downbeat-config-panel-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.downbeat-config-panel-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.downbeat-config-panel-toggle-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.downbeat-config-panel-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.downbeat-config-panel-toggle-btn--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.2);
+}
+
+.downbeat-config-panel-toggle-btn--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+  box-shadow: 0 0 14px hsl(var(--primary) / 0.3);
+}
+
+.downbeat-config-panel-toggle-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.downbeat-config-panel-toggle-btn--active .downbeat-config-panel-toggle-icon {
+  color: hsl(var(--primary));
+}
+
+.downbeat-config-panel-toggle-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  transition: color 0.15s ease;
+}
+
+.downbeat-config-panel-toggle-btn--active .downbeat-config-panel-toggle-label {
+  color: hsl(var(--primary));
+}
+
+.downbeat-config-panel-toggle-hint {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  padding-left: 0.25rem;
+}
+
+/* ============================================
    TASK 2.8: ACTIONS
    ============================================ */
 
@@ -508,6 +582,15 @@
     font-size: 0.5rem;
   }
 
+  /* Phase 4: Measure visualization toggle responsive */
+  .downbeat-config-panel-toggle-btn {
+    padding: 0.375rem 0.625rem;
+  }
+
+  .downbeat-config-panel-toggle-label {
+    font-size: 0.5625rem;
+  }
+
   /* Task 2.7: Advanced section responsive */
   .downbeat-config-panel-advanced-header {
     padding: 0.375rem 0.5rem;
@@ -597,6 +680,19 @@
     font-size: 0.5rem;
   }
 
+  /* Phase 4: Measure visualization toggle mobile responsive */
+  .downbeat-config-panel-toggle-btn {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .downbeat-config-panel-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .downbeat-config-panel-toggle-hint {
+    font-size: 0.4375rem;
+  }
+
   .downbeat-config-panel-actions {
     flex-direction: column;
   }
@@ -673,6 +769,16 @@
   .downbeat-config-panel-time-sig-btn:active {
     transform: scale(0.98);
   }
+
+  /* Phase 4: Measure visualization toggle touch optimization */
+  .downbeat-config-panel-toggle-btn {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .downbeat-config-panel-toggle-btn:active {
+    transform: scale(0.98);
+  }
 }
 
 /* Reduced motion support */
@@ -696,6 +802,13 @@
 
   .downbeat-config-panel-advanced-header,
   .downbeat-config-panel-segment-delete {
+    transition: none;
+  }
+
+  /* Phase 4: Measure visualization toggle reduced motion */
+  .downbeat-config-panel-toggle-btn,
+  .downbeat-config-panel-toggle-icon,
+  .downbeat-config-panel-toggle-label {
     transition: none;
   }
 }
