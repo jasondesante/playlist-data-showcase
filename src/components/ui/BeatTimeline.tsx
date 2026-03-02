@@ -21,7 +21,7 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
-import type { Beat, BeatMap, ExtendedBeatEvent, InterpolationVisualizationData } from '@/types';
+import type { Beat, BeatMap, ExtendedBeatEvent, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -83,6 +83,19 @@ interface BeatTimelineProps {
    * Part of Phase 4: Measure Visualization (Task 4.1)
    */
   showMeasureBoundaries?: boolean;
+  /**
+   * Pre-calculated subdivided beat map with custom subdivision patterns.
+   * When provided, takes precedence over interpolationData and beatMap for beat rendering.
+   * Beats are color-coded by subdivision type and segment boundaries are shown.
+   * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+   */
+  subdividedBeatMap?: SubdividedBeatMap | null;
+  /**
+   * Whether to show subdivision visualization (segment boundaries, type colors).
+   * Only applies when subdividedBeatMap is provided.
+   * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+   */
+  showSubdivisionVisualization?: boolean;
 }
 
 /**
@@ -111,6 +124,8 @@ export function BeatTimeline({
   enableBeatSelection = false,
   selectedBeatIndex,
   showMeasureBoundaries = false,
+  subdividedBeatMap = null,
+  showSubdivisionVisualization = true,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
@@ -361,18 +376,20 @@ export function BeatTimeline({
 
   // ========================================
   // Task 5.1: Unified Beat Type for Dual-Source Rendering
+  // Task 5.4: Added subdivision type for SubdividedBeatMap visualization
   // ========================================
 
   /**
    * Unified beat representation for rendering.
-   * Works with both original BeatMap beats and interpolation visualization beats.
+   * Works with original BeatMap beats, interpolation visualization beats,
+   * and SubdividedBeatMap beats.
    */
   type UnifiedBeat = {
     timestamp: number;
     isDownbeat: boolean;
     confidence: number;
-    /** Source of the beat - 'detected' from BeatTracker or 'interpolated' from grid */
-    source: 'detected' | 'interpolated';
+    /** Source of the beat - 'detected' from BeatTracker, 'interpolated' from grid, or 'subdivided' */
+    source: 'detected' | 'interpolated' | 'subdivided';
     /** Unique key for React rendering */
     key: string;
     /**
@@ -386,6 +403,17 @@ export function BeatTimeline({
      * Part of Phase 4: Measure Visualization (Task 4.2)
      */
     measureNumber: number;
+    /**
+     * The subdivision type for this beat (from SubdividedBeatMap).
+     * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+     */
+    subdivisionType?: SubdivisionType;
+    /**
+     * Decimal position within the measure (from SubdividedBeatMap).
+     * E.g., 0, 0.5, 1, 1.5 for eighth notes
+     * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+     */
+    beatInMeasure?: number;
   };
 
   /**
@@ -429,15 +457,42 @@ export function BeatTimeline({
   }, []);
 
   /**
-   * Get the beats to render based on whether interpolation data is provided.
-   * When interpolationData is available, use it; otherwise fall back to beatMap.
+   * Convert SubdividedBeatMap beats to unified format.
+   * Includes subdivision type and decimal beatInMeasure for visualization.
+   * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+   */
+  const convertSubdividedBeats = useCallback((map: SubdividedBeatMap): UnifiedBeat[] => {
+    return map.beats.map((beat, index) => ({
+      timestamp: beat.timestamp,
+      isDownbeat: beat.isDownbeat,
+      confidence: beat.confidence ?? 1,
+      source: 'subdivided' as const,
+      key: `subdiv-${beat.timestamp.toFixed(3)}-${beat.subdivisionType}-${index}`,
+      beatIndex: index,
+      measureNumber: beat.measureNumber ?? 0,
+      subdivisionType: beat.subdivisionType,
+      beatInMeasure: beat.beatInMeasure,
+    }));
+  }, []);
+
+  /**
+   * Get the beats to render based on priority:
+   * 1. SubdividedBeatMap (if provided and has beats) - Task 5.4
+   * 2. Interpolation visualization data (if provided) - Task 5.1
+   * 3. Original BeatMap beats - Default
    */
   const unifiedBeats = useMemo((): UnifiedBeat[] => {
+    // Priority 1: SubdividedBeatMap (Task 5.4)
+    if (subdividedBeatMap && subdividedBeatMap.beats.length > 0) {
+      return convertSubdividedBeats(subdividedBeatMap);
+    }
+    // Priority 2: Interpolation data (Task 5.1)
     if (interpolationData && interpolationData.beats.length > 0) {
       return convertInterpolationBeats(interpolationData.beats);
     }
+    // Priority 3: Original BeatMap
     return convertBeatMapBeats(beatMap.beats);
-  }, [interpolationData, beatMap.beats, convertInterpolationBeats, convertBeatMapBeats]);
+  }, [subdividedBeatMap, interpolationData, beatMap.beats, convertSubdividedBeats, convertInterpolationBeats, convertBeatMapBeats]);
 
   /**
    * Get beats visible in the current window
@@ -509,6 +564,75 @@ export function BeatTimeline({
   }, [showMeasureBoundaries, unifiedBeats, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
 
   const visibleMeasureBoundaries = getVisibleMeasureBoundaries();
+
+  // ========================================
+  // Phase 5: SubdividedBeatMap Segment Boundary Visualization (Task 5.4)
+  // ========================================
+
+  /**
+   * Calculate visible subdivision segment boundaries.
+   * Shows vertical lines at segment start positions with subdivision type labels.
+   */
+  const getVisibleSubdivisionSegmentBoundaries = useCallback((): Array<{
+    /** Position on timeline (0-1) */
+    position: number;
+    /** Subdivision type for this segment */
+    subdivisionType: SubdivisionType;
+    /** Beat index where segment starts */
+    startBeat: number;
+    /** Timestamp of the segment start (approximate, based on beat position) */
+    timestamp: number;
+  }> => {
+    // Only show if subdivision visualization is enabled and we have a subdivided beat map
+    if (!showSubdivisionVisualization || !subdividedBeatMap || !subdividedBeatMap.subdivisionConfig.segments.length) {
+      return [];
+    }
+
+    const segments = subdividedBeatMap.subdivisionConfig.segments;
+    const minTime = smoothTime - pastWindow;
+    const maxTime = smoothTime + anticipationWindow;
+
+    // Find segment boundaries by looking at the subdivided beats
+    // Each segment boundary is where the subdivision type changes
+    const boundaries: Array<{
+      position: number;
+      subdivisionType: SubdivisionType;
+      startBeat: number;
+      timestamp: number;
+    }> = [];
+
+    for (const segment of segments) {
+      // Find the beat at this segment's start position
+      const segmentStartBeat = subdividedBeatMap.beats.find(
+        (b) => b.subdivisionType === segment.subdivision &&
+               b.originalBeatIndex === segment.startBeat
+      );
+
+      // Or find any beat that marks the segment start (for generated beats)
+      const beatAtSegmentStart = segmentStartBeat || subdividedBeatMap.beats[segment.startBeat];
+
+      if (beatAtSegmentStart) {
+        const timestamp = beatAtSegmentStart.timestamp;
+
+        // Check if this boundary is within the visible window
+        if (timestamp >= minTime && timestamp <= maxTime) {
+          const position = calculateBeatPosition(timestamp);
+          if (position >= 0 && position <= 1) {
+            boundaries.push({
+              position,
+              subdivisionType: segment.subdivision,
+              startBeat: segment.startBeat,
+              timestamp,
+            });
+          }
+        }
+      }
+    }
+
+    return boundaries;
+  }, [showSubdivisionVisualization, subdividedBeatMap, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
+
+  const visibleSubdivisionSegmentBoundaries = getVisibleSubdivisionSegmentBoundaries();
 
   // ========================================
   // Task 5.3: Quarter Note Grid Overlay
@@ -708,6 +832,18 @@ export function BeatTimeline({
           </div>
         ))}
 
+        {/* Phase 5: SubdividedBeatMap Segment Boundaries (Task 5.4) */}
+        {showSubdivisionVisualization && visibleSubdivisionSegmentBoundaries.map((boundary, index) => (
+          <div
+            key={`subdivision-segment-${index}`}
+            className={`beat-timeline-subdivision-boundary beat-timeline-subdivision-boundary--${boundary.subdivisionType}`}
+            style={{ left: `${boundary.position * 100}%` }}
+          >
+            <div className="beat-timeline-subdivision-line" />
+            <span className="beat-timeline-subdivision-label">{boundary.subdivisionType}</span>
+          </div>
+        ))}
+
         {/* Task 5.4: Tempo Drift Visualization */}
         {tempoDriftViz && (
           <>
@@ -765,6 +901,10 @@ export function BeatTimeline({
             } ${isPast ? 'beat-timeline-marker--past' : ''} ${
               isUpcoming ? 'beat-timeline-marker--upcoming' : ''
             } ${beat.source === 'interpolated' ? 'beat-timeline-marker--interpolated' : ''} ${
+              beat.source === 'subdivided' ? 'beat-timeline-marker--subdivided' : ''
+            } ${
+              beat.subdivisionType ? `beat-timeline-marker--subdivision-${beat.subdivisionType}` : ''
+            } ${
               enableBeatSelection ? 'beat-timeline-marker--selectable' : ''
             } ${
               selectedBeatIndex !== undefined && beat.beatIndex === selectedBeatIndex
@@ -773,7 +913,7 @@ export function BeatTimeline({
             }`}
             style={{
               left: `${position * 100}%`,
-              // For detected beats, use confidence if available; for interpolated beats, always use confidence
+              // For detected beats, use confidence if available; for interpolated/subdivided beats, always use confidence
               opacity: beat.source === 'detected' ? (beat.confidence ?? 1) : beat.confidence,
             }}
             onClick={
@@ -788,7 +928,7 @@ export function BeatTimeline({
             tabIndex={enableBeatSelection ? 0 : undefined}
             aria-label={
               enableBeatSelection
-                ? `Beat ${beat.beatIndex + 1}${beat.isDownbeat ? ' (downbeat)' : ''}`
+                ? `Beat ${beat.beatIndex + 1}${beat.isDownbeat ? ' (downbeat)' : ''}${beat.subdivisionType ? ` (${beat.subdivisionType})` : ''}`
                 : undefined
             }
             onKeyDown={
@@ -840,7 +980,22 @@ export function BeatTimeline({
       {/* Task 5.2: Visual Legend for interpolation beat types */}
       {/* Task 5.3: Added grid overlay indicator */}
       {/* Task 5.4: Added tempo drift indicator */}
-      {interpolationData && (
+      {/* Phase 5 Task 5.4: Added subdivision legend */}
+      {subdividedBeatMap && showSubdivisionVisualization ? (
+        <div className="beat-timeline-legend">
+          {/* Show subdivision types used in this beat map */}
+          {subdividedBeatMap.subdivisionMetadata.subdivisionsUsed.map((subType) => (
+            <div key={subType} className="beat-timeline-legend-item">
+              <div className={`beat-timeline-legend-marker beat-timeline-legend-marker--subdivision-${subType}`} />
+              <span className="beat-timeline-legend-label">{subType}</span>
+            </div>
+          ))}
+          <div className="beat-timeline-legend-item">
+            <div className="beat-timeline-legend-subdivision-boundary" />
+            <span className="beat-timeline-legend-label">Segment boundary</span>
+          </div>
+        </div>
+      ) : interpolationData ? (
         <div className="beat-timeline-legend">
           <div className="beat-timeline-legend-item">
             <div className="beat-timeline-legend-marker beat-timeline-legend-marker--detected" />
@@ -869,7 +1024,7 @@ export function BeatTimeline({
             </div>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Timeline info bar */}
       <div className="beat-timeline-info">

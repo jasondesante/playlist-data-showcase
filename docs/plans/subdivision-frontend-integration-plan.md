@@ -7,13 +7,12 @@
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
-- Phase 5: Tasks 5.1, 5.2, 5.3 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export)
+- Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
 
 **Pending Phases:**
-- Phase 5: Task 5.4
 - Phase 6-10
 
-**Ready to Start:** Phase 5, Task 5.4 (SubdividedBeatMap Visualization)
+**Ready to Start:** Phase 6, Task 6.1 (useSubdivisionPlayback Hook)
 
 ---
 
@@ -334,10 +333,10 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 5.4 SubdividedBeatMap Visualization
 
-- [ ] Update BeatTimeline to render SubdividedBeatMap
-  - [ ] Color-code beats by subdivision type
-  - [ ] Show segment boundaries
-  - [ ] Handle decimal beatInMeasure values
+- [x] Update BeatTimeline to render SubdividedBeatMap
+  - [x] Color-code beats by subdivision type
+  - [x] Show segment boundaries
+  - [x] Handle decimal beatInMeasure values
 
 ---
 

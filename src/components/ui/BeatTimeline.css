@@ -1049,3 +1049,392 @@
     margin-top: 0.1875rem;
   }
 }
+
+/* ============================================
+   Phase 5 Task 5.4: SubdividedBeatMap Visualization
+   Color-coded beats by subdivision type
+   ============================================ */
+
+/**
+ * Subdivided beat marker - uses subdivision-specific colors.
+ * Each subdivision type has a distinct color for visual differentiation.
+ */
+.beat-timeline-marker--subdivided .beat-timeline-marker-dot {
+  /* Default styling for subdivided beats */
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+}
+
+/* Quarter notes - Primary blue (default, no subdivision) */
+.beat-timeline-marker--subdivision-quarter .beat-timeline-marker-dot {
+  background: hsl(210, 100%, 50%);
+  box-shadow: 0 0 8px hsl(210, 100%, 50% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-quarter.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(210, 100%, 45%);
+  box-shadow: 0 0 12px hsl(210, 100%, 45% / 0.7);
+}
+
+/* Half notes - Green (slower, more relaxed) */
+.beat-timeline-marker--subdivision-half .beat-timeline-marker-dot {
+  background: hsl(142, 76%, 46%);
+  box-shadow: 0 0 8px hsl(142, 76%, 46% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-half.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(142, 76%, 40%);
+  box-shadow: 0 0 12px hsl(142, 76%, 40% / 0.7);
+}
+
+/* Eighth notes - Orange (double time, energetic) */
+.beat-timeline-marker--subdivision-eighth .beat-timeline-marker-dot {
+  background: hsl(30, 100%, 50%);
+  box-shadow: 0 0 8px hsl(30, 100%, 50% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-eighth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(30, 100%, 45%);
+  box-shadow: 0 0 12px hsl(30, 100%, 45% / 0.7);
+}
+
+/* Sixteenth notes - Red (maximum density, intense) */
+.beat-timeline-marker--subdivision-sixteenth .beat-timeline-marker-dot {
+  background: hsl(0, 84%, 60%);
+  box-shadow: 0 0 8px hsl(0, 84%, 60% / 0.6);
+  /* Smaller size for sixteenth notes to fit more on screen */
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.beat-timeline-marker--subdivision-sixteenth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(0, 84%, 55%);
+  box-shadow: 0 0 12px hsl(0, 84%, 55% / 0.7);
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Triplet eighth (3 per quarter) - Purple */
+.beat-timeline-marker--subdivision-triplet8 .beat-timeline-marker-dot {
+  background: hsl(280, 80%, 55%);
+  box-shadow: 0 0 8px hsl(280, 80%, 55% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-triplet8.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(280, 80%, 50%);
+  box-shadow: 0 0 12px hsl(280, 80%, 50% / 0.7);
+}
+
+/* Triplet quarter (3 per half) - Pink */
+.beat-timeline-marker--subdivision-triplet4 .beat-timeline-marker-dot {
+  background: hsl(330, 80%, 55%);
+  box-shadow: 0 0 8px hsl(330, 80%, 55% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-triplet4.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(330, 80%, 50%);
+  box-shadow: 0 0 12px hsl(330, 80%, 50% / 0.7);
+}
+
+/* Dotted quarter (1.5x interval) - Teal */
+.beat-timeline-marker--subdivision-dotted4 .beat-timeline-marker-dot {
+  background: hsl(180, 70%, 45%);
+  box-shadow: 0 0 8px hsl(180, 70%, 45% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-dotted4.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(180, 70%, 40%);
+  box-shadow: 0 0 12px hsl(180, 70%, 40% / 0.7);
+}
+
+/* Dotted eighth (swing pattern) - Yellow/Gold */
+.beat-timeline-marker--subdivision-dotted8 .beat-timeline-marker-dot {
+  background: hsl(48, 96%, 53%);
+  box-shadow: 0 0 8px hsl(48, 96%, 53% / 0.6);
+}
+
+.beat-timeline-marker--subdivision-dotted8.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  background: hsl(48, 96%, 48%);
+  box-shadow: 0 0 12px hsl(48, 96%, 48% / 0.7);
+}
+
+/* Upcoming subdivided beats - glow animation with subdivision-specific colors */
+.beat-timeline-marker--subdivided.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+  animation: subdivided-beat-glow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes subdivided-beat-glow {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.3);
+  }
+}
+
+/* Past subdivided beats - dim but keep color */
+.beat-timeline-marker--subdivided.beat-timeline-marker--past .beat-timeline-marker-dot {
+  opacity: 0.7;
+}
+
+/* ============================================
+   Subdivision Segment Boundary Visualization
+   Vertical lines marking subdivision changes
+   ============================================ */
+
+/**
+ * Subdivision segment boundary container - positioned at segment start.
+ */
+.beat-timeline-subdivision-boundary {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/**
+ * The actual segment boundary line - dashed style to distinguish from measure lines.
+ */
+.beat-timeline-subdivision-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(var(--primary) / 0.8) 0px,
+    hsl(var(--primary) / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+}
+
+/**
+ * Segment subdivision type label - displays above the timeline.
+ */
+.beat-timeline-subdivision-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary) / 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+  background: hsl(var(--background) / 0.9);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px dashed hsl(var(--primary) / 0.4);
+  text-shadow: 0 1px 2px hsl(var(--background) / 0.8);
+}
+
+/* Segment boundary color variations by subdivision type */
+.beat-timeline-subdivision-boundary--quarter .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(210, 100%, 50% / 0.8) 0px,
+    hsl(210, 100%, 50% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(210, 100%, 50% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--half .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(142, 76%, 46% / 0.8) 0px,
+    hsl(142, 76%, 46% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(142, 76%, 46% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--eighth .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(30, 100%, 50% / 0.8) 0px,
+    hsl(30, 100%, 50% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(30, 100%, 50% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--sixteenth .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(0, 84%, 60% / 0.8) 0px,
+    hsl(0, 84%, 60% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(0, 84%, 60% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--triplet8 .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(280, 80%, 55% / 0.8) 0px,
+    hsl(280, 80%, 55% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(280, 80%, 55% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--triplet4 .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(330, 80%, 55% / 0.8) 0px,
+    hsl(330, 80%, 55% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(330, 80%, 55% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--dotted4 .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(180, 70%, 45% / 0.8) 0px,
+    hsl(180, 70%, 45% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(180, 70%, 45% / 0.4);
+}
+
+.beat-timeline-subdivision-boundary--dotted8 .beat-timeline-subdivision-line {
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(48, 96%, 53% / 0.8) 0px,
+    hsl(48, 96%, 53% / 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  box-shadow: 0 0 8px hsl(48, 96%, 53% / 0.4);
+}
+
+/* ============================================
+   Subdivision Legend Markers
+   Color-coded legend items for each subdivision type
+   ============================================ */
+
+.beat-timeline-legend-marker--subdivision-quarter {
+  background: hsl(210, 100%, 50%);
+  box-shadow: 0 0 6px hsl(210, 100%, 50% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-half {
+  background: hsl(142, 76%, 46%);
+  box-shadow: 0 0 6px hsl(142, 76%, 46% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-eighth {
+  background: hsl(30, 100%, 50%);
+  box-shadow: 0 0 6px hsl(30, 100%, 50% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-sixteenth {
+  background: hsl(0, 84%, 60%);
+  box-shadow: 0 0 6px hsl(0, 84%, 60% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-triplet8 {
+  background: hsl(280, 80%, 55%);
+  box-shadow: 0 0 6px hsl(280, 80%, 55% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-triplet4 {
+  background: hsl(330, 80%, 55%);
+  box-shadow: 0 0 6px hsl(330, 80%, 55% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-dotted4 {
+  background: hsl(180, 70%, 45%);
+  box-shadow: 0 0 6px hsl(180, 70%, 45% / 0.6);
+}
+
+.beat-timeline-legend-marker--subdivision-dotted8 {
+  background: hsl(48, 96%, 53%);
+  box-shadow: 0 0 6px hsl(48, 96%, 53% / 0.6);
+}
+
+/* Segment boundary legend indicator */
+.beat-timeline-legend-subdivision-boundary {
+  width: 0.5rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    hsl(var(--primary) / 0.8) 0px,
+    hsl(var(--primary) / 0.8) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  border-radius: 0.125rem;
+}
+
+/* ============================================
+   Subdivision Responsive Styles
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Sixteenth notes - even smaller on mobile */
+  .beat-timeline-marker--subdivision-sixteenth .beat-timeline-marker-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  .beat-timeline-marker--subdivision-sixteenth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .beat-timeline-subdivision-boundary {
+    width: 2px;
+  }
+
+  .beat-timeline-subdivision-line {
+    width: 2px;
+  }
+
+  .beat-timeline-subdivision-label {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Sixteenth notes - smallest on extra small screens */
+  .beat-timeline-marker--subdivision-sixteenth .beat-timeline-marker-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  .beat-timeline-marker--subdivision-sixteenth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .beat-timeline-subdivision-boundary {
+    width: 2px;
+  }
+
+  .beat-timeline-subdivision-line {
+    width: 2px;
+  }
+
+  .beat-timeline-subdivision-label {
+    font-size: 0.4375rem;
+    padding: 0.0625rem 0.1875rem;
+  }
+}
