@@ -92,10 +92,10 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Show boundary lines between sections
 
 ### Task 3.4: Update Interpolation Statistics Display
-- [ ] Update the existing interpolation stats section to show:
+- [x] Update the existing interpolation stats section to show:
   - Primary BPM (first/largest section)
   - "Multi-Tempo: Yes (X sections)" when applicable
-- [ ] Keep existing stats (beat counts, confidence, etc.)
+- [x] Keep existing stats (beat counts, confidence, etc.)
 
 ### Task 3.5: Add CSS Styling for Multi-Tempo Section
 - [ ] Style the tempo sections container

@@ -344,6 +344,31 @@ export function BeatMapSummary({
             </span>
           </div>
 
+          {/* Primary BPM Row (Task 3.4) */}
+          <div className="beat-map-interpolation-stat-row">
+            <span className="beat-map-interpolation-stat-label">Primary BPM:</span>
+            <span className="beat-map-interpolation-stat-value beat-map-interpolation-stat-value--primary">
+              {interpolationStats.hasMultiTempoApplied && interpolationStats.tempoSections && interpolationStats.tempoSections.length > 0
+                ? formatBpm(interpolationStats.tempoSections[0].bpm)
+                : formatBpm(interpolationStats.quarterNoteBpm)}
+            </span>
+          </div>
+
+          {/* Multi-Tempo Indicator (Task 3.4) */}
+          <div className="beat-map-interpolation-stat-row">
+            <span className="beat-map-interpolation-stat-label">Multi-Tempo:</span>
+            <span className="beat-map-interpolation-stat-value">
+              {interpolationStats.hasMultiTempoApplied && interpolationStats.tempoSections ? (
+                <>
+                  <span className="beat-map-multi-tempo-indicator beat-map-multi-tempo-indicator--yes">Yes</span>
+                  <span className="beat-map-multi-tempo-sections">({interpolationStats.tempoSections.length} {interpolationStats.tempoSections.length === 1 ? 'section' : 'sections'})</span>
+                </>
+              ) : (
+                <span className="beat-map-multi-tempo-indicator beat-map-multi-tempo-indicator--no">No</span>
+              )}
+            </span>
+          </div>
+
           {/* Multi-Tempo Detection Banner (Task 3.1) */}
           {interpolationStats.hasMultipleTempos && !interpolationStats.hasMultiTempoApplied && (
             <div className="beat-map-multi-tempo-banner">
