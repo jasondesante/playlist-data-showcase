@@ -7,11 +7,13 @@
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
+- Phase 5: Task 5.1 (Generate SubdividedBeatMap button with loading indicator)
 
 **Pending Phases:**
-- Phase 5-10
+- Phase 5: Tasks 5.2, 5.3, 5.4
+- Phase 6-10
 
-**Ready to Start:** Phase 5, Task 5.1 (Generate SubdividedBeatMap)
+**Ready to Start:** Phase 5, Task 5.2 (Update BeatMapSummary for Subdivision)
 
 ---
 
@@ -311,10 +313,10 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 5.1 Generate SubdividedBeatMap
 
-- [ ] Add "Generate Subdivision" button to SubdivisionSettings
-  - [ ] Calls `BeatSubdivider.subdivide()` with current config
-  - [ ] Shows progress indicator during generation
-  - [ ] Stores result in `subdividedBeatMap`
+- [x] Add "Generate Subdivision" button to SubdivisionSettings
+  - [x] Calls `BeatSubdivider.subdivide()` with current config
+  - [x] Shows progress indicator during generation
+  - [x] Stores result in `subdividedBeatMap`
 
 ### 5.2 Update BeatMapSummary for Subdivision
 

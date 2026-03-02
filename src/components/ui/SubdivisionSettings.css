@@ -376,9 +376,39 @@
   box-shadow: none;
 }
 
+/* Task 5.1: Loading state for generate button */
+.subdivision-settings-generate-btn--loading {
+  opacity: 0.8;
+  cursor: wait;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 16px hsl(var(--primary) / 0.5);
+  }
+}
+
 .subdivision-settings-generate-btn-icon {
   width: 0.875rem;
   height: 0.875rem;
+}
+
+/* Task 5.1: Spinning animation for loading icon */
+.subdivision-settings-generate-btn-icon--spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Generated Info */
@@ -666,6 +696,15 @@
   .subdivision-settings-generate-btn,
   .subdivision-settings-segment-remove {
     transition: none;
+  }
+
+  /* Task 5.1: Disable spinning animation for reduced motion */
+  .subdivision-settings-generate-btn--loading {
+    animation: none;
+  }
+
+  .subdivision-settings-generate-btn-icon--spinning {
+    animation: none;
   }
 }
 

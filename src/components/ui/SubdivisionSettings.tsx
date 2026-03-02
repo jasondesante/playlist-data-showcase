@@ -134,6 +134,9 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
     const [showTimeline, setShowTimeline] = useState(false);
     const [selectedSegmentIndex, setSelectedSegmentIndex] = useState<number | null>(null);
 
+    // Task 5.1: Generation loading state
+    const [isGenerating, setIsGenerating] = useState(false);
+
     // Check if we have a UnifiedBeatMap to work with
     const hasUnifiedBeatMap = unifiedBeatMap !== null;
     const totalBeats = unifiedBeatMap?.beats.length ?? 0;
@@ -189,7 +192,18 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
 
     // Handle generating the SubdividedBeatMap
     const handleGenerate = () => {
-        generateSubdividedBeatMap();
+        // Task 5.1: Show loading state during generation
+        setIsGenerating(true);
+
+        // Use requestAnimationFrame to ensure the loading state is rendered
+        // before the synchronous subdivision work begins
+        requestAnimationFrame(() => {
+            try {
+                generateSubdividedBeatMap();
+            } finally {
+                setIsGenerating(false);
+            }
+        });
     };
 
     // Handle keyboard navigation for subdivision type toggles
@@ -440,15 +454,16 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                 <div className="subdivision-settings-generate">
                     <button
                         type="button"
-                        className="subdivision-settings-generate-btn"
+                        className={`subdivision-settings-generate-btn ${isGenerating ? 'subdivision-settings-generate-btn--loading' : ''}`}
                         onClick={handleGenerate}
-                        disabled={disabled}
-                        aria-label="Generate subdivided beat map"
+                        disabled={disabled || isGenerating}
+                        aria-label={isGenerating ? 'Generating subdivided beat map...' : 'Generate subdivided beat map'}
+                        aria-busy={isGenerating}
                     >
-                        <RefreshCw className="subdivision-settings-generate-btn-icon" />
-                        <span>Generate Subdivided Beat Map</span>
+                        <RefreshCw className={`subdivision-settings-generate-btn-icon ${isGenerating ? 'subdivision-settings-generate-btn-icon--spinning' : ''}`} />
+                        <span>{isGenerating ? 'Generating...' : 'Generate Subdivided Beat Map'}</span>
                     </button>
-                    {subdividedBeatMap && (
+                    {subdividedBeatMap && !isGenerating && (
                         <div className="subdivision-settings-generated-info">
                             <span className="subdivision-settings-generated-badge">
                                 Generated
