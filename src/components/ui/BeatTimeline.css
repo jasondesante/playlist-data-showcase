@@ -125,6 +125,42 @@
   transform: scale(1.3);
 }
 
+/* ============================================
+   Task 3.4: Beat Number Labels
+   Shown below beat markers when selection mode is enabled
+   ============================================ */
+
+/**
+ * Beat number label - displays the beat index (1-based) below the marker.
+ * Only visible when enableBeatSelection is true.
+ */
+.beat-timeline-marker-number {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  pointer-events: none;
+  /* Slight text shadow for better visibility on busy backgrounds */
+  text-shadow: 0 1px 2px hsl(var(--background) / 0.8);
+}
+
+/* Highlight number for selected beat */
+.beat-timeline-marker--selected .beat-timeline-marker-number {
+  color: hsl(var(--primary));
+  font-weight: 700;
+}
+
+/* Downbeat numbers use primary color */
+.beat-timeline-marker--downbeat .beat-timeline-marker-number {
+  color: hsl(var(--primary) / 0.9);
+}
+
 .beat-timeline-marker-dot {
   width: 0.875rem;
   height: 0.875rem;
@@ -795,6 +831,12 @@
     width: 1rem;
     height: 0.625rem;
   }
+
+  /* Task 3.4: Beat number labels responsive - mobile */
+  .beat-timeline-marker-number {
+    font-size: 0.5rem;
+    margin-top: 0.1875rem;
+  }
 }
 
 /* Extra small screens */
@@ -910,5 +952,11 @@
   .beat-timeline-legend-tempo {
     width: 0.875rem;
     height: 0.5rem;
+  }
+
+  /* Task 3.4: Beat number labels responsive - extra small */
+  .beat-timeline-marker-number {
+    font-size: 0.5rem;
+    margin-top: 0.1875rem;
   }
 }

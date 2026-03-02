@@ -716,6 +716,12 @@ export function BeatTimeline({
             <div className="beat-timeline-marker-dot" />
             {/* Downbeat accent ring */}
             {beat.isDownbeat && <div className="beat-timeline-marker-ring" />}
+            {/* Task 3.4: Beat number label - shown when selection mode is enabled */}
+            {enableBeatSelection && (
+              <span className="beat-timeline-marker-number">
+                {beat.beatIndex + 1}
+              </span>
+            )}
           </div>
         ))}
 

@@ -208,10 +208,10 @@ Timeline with measure visualization ON:
   - [x] Selected beat highlight (ring or glow)
   - [x] Add CSS class `.beat-timeline-marker--selectable`
 
-- [ ] **3.4 Add beat number labels (optional visibility)**
-  - [ ] Show beat numbers (1, 2, 3, 4...) below beats when selection enabled
-  - [ ] Position below marker with small font
-  - [ ] Add CSS class `.beat-timeline-marker-number`
+- [x] **3.4 Add beat number labels (optional visibility)**
+  - [x] Show beat numbers (1, 2, 3, 4...) below beats when selection enabled
+  - [x] Position below marker with small font
+  - [x] Add CSS class `.beat-timeline-marker-number`
 
 ---
 
