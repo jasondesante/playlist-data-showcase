@@ -168,9 +168,24 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - Build succeeds with no errors
 
 ### Task 5.3: Test Auto Multi-Tempo Toggle
-- [ ] Verify analysis behaves differently when toggle is off
-- [ ] When off: `hasMultipleTempos: true` but `hasMultiTempoApplied: false`
-- [ ] When on: Both flags true if multiple tempos exist
+- [x] Verify analysis behaves differently when toggle is off
+- [x] When off: `hasMultipleTempos: true` but `hasMultiTempoApplied: false`
+- [x] When on: Both flags true if multiple tempos exist
+
+**Verification Summary (2026-03-02):**
+- Created `BeatInterpolationSettings.auto-multitempo.test.tsx` with 11 tests covering:
+  - Toggle UI rendering and state display (checked/unchecked)
+  - Toggle interaction with `setAutoMultiTempo` action
+  - Description text changes based on toggle state
+  - Tooltip presence and content
+  - Disabled state handling
+- Created `beatDetectionStore.autoMultitempo.test.ts` with 7 tests covering:
+  - Default `autoMultiTempo` value is `true`
+  - `setAutoMultiTempo` action correctly updates state
+  - `enableMultiTempo` option flow to `BeatInterpolator`
+  - Expected behavior when toggle is ON vs OFF
+- All 18 new tests pass
+- Build succeeds with no errors
 
 ### Task 5.4: Test Edge Cases
 - [ ] Very short tracks with tempo changes
