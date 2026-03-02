@@ -8,13 +8,13 @@
 - Phase 3: SubdivisionSettings Component
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 - Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
-- Phase 6: Task 6.1 (useSubdivisionPlayback Hook)
+- Phase 6: Tasks 6.1, 6.2, 6.3 (useSubdivisionPlayback Hook + SubdivisionButtons Component + Styles)
 
 **Pending Phases:**
-- Phase 6: Tasks 6.2-6.7
+- Phase 6: Tasks 6.4-6.7
 - Phase 7-10
 
-**Ready to Start:** Phase 6, Task 6.2 (SubdivisionButtons Component)
+**Ready to Start:** Phase 6, Task 6.4 (Integrate SubdivisionPlaybackController via Hook)
 
 ---
 
@@ -356,19 +356,19 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 6.2 Create SubdivisionButtons Component
 
-- [ ] Create `src/components/ui/SubdivisionButtons.tsx`
-  - [ ] Row of quick subdivision buttons
-  - [ ] Buttons: Quarter, Half, Eighth, Sixteenth, Triplet, Swing
-  - [ ] Active state for current subdivision
-  - [ ] Disabled states for unavailable types
+- [x] Create `src/components/ui/SubdivisionButtons.tsx`
+  - [x] Row of quick subdivision buttons
+  - [x] Buttons: Quarter, Half, Eighth, Sixteenth, Triplet, Swing
+  - [x] Active state for current subdivision
+  - [x] Disabled states for unavailable types
 
 ### 6.3 SubdivisionButtons Styles
 
-- [ ] Create `src/components/ui/SubdivisionButtons.css`
-  - [ ] Horizontal button group
-  - [ ] Active button highlighting
-  - [ ] Icons for each subdivision type
-  - [ ] Touch-friendly sizing
+- [x] Create `src/components/ui/SubdivisionButtons.css`
+  - [x] Horizontal button group
+  - [x] Active button highlighting
+  - [x] Icons for each subdivision type (density dots)
+  - [x] Touch-friendly sizing
 
 ### 6.4 Integrate SubdivisionPlaybackController via Hook
 
