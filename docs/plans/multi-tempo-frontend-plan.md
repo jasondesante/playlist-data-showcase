@@ -77,13 +77,13 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Include info icon with tooltip explaining the detection
 
 ### Task 3.2: Add Tempo Sections Display
-- [ ] Create new section in BeatMapSummary when `hasMultiTempoApplied: true`
-- [ ] Display each tempo section as a card/row with:
+- [x] Create new section in BeatMapSummary when `hasMultiTempoApplied: true`
+- [x] Display each tempo section as a card/row with:
   - Section number (1, 2, 3...)
   - BPM for that section
   - Duration (start - end timestamps, formatted)
   - Beat count
-- [ ] Add header: "Tempo Sections (X sections detected)"
+- [x] Add header: "Tempo Sections (X sections detected)"
 
 ### Task 3.3: Add Timeline Section Markers
 - [ ] Add visual timeline bar showing section boundaries

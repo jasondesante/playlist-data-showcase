@@ -16,7 +16,7 @@
  * Part of Task 4.1: Interpolation Statistics Display
  */
 import { useCallback } from 'react';
-import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge } from 'lucide-react';
+import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge, Clock } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
@@ -352,6 +352,45 @@ export function BeatMapSummary({
                 Multiple tempos detected: [{interpolationStats.detectedClusterTempos.map(bpm => formatBpm(bpm)).join(', ')}] BPM
               </span>
               <Tooltip content="This track contains multiple distinct tempo sections. When Auto Multi-Tempo is enabled, these sections will be analyzed separately for more accurate beat mapping." />
+            </div>
+          )}
+
+          {/* Tempo Sections Display (Task 3.2) */}
+          {interpolationStats.hasMultiTempoApplied && interpolationStats.tempoSections && interpolationStats.tempoSections.length > 0 && (
+            <div className="beat-map-tempo-sections">
+              <div className="beat-map-tempo-sections-header">
+                <Clock className="beat-map-tempo-sections-header-icon" />
+                <span className="beat-map-tempo-sections-title">
+                  Tempo Sections ({interpolationStats.tempoSections.length} {interpolationStats.tempoSections.length === 1 ? 'section' : 'sections'} detected)
+                </span>
+              </div>
+              <div className="beat-map-tempo-sections-list">
+                {interpolationStats.tempoSections.map((section, index) => (
+                  <div key={index} className="beat-map-tempo-section-card">
+                    <div className="beat-map-tempo-section-number">Section {index + 1}</div>
+                    <div className="beat-map-tempo-section-details">
+                      <div className="beat-map-tempo-section-detail">
+                        <span className="beat-map-tempo-section-detail-label">BPM</span>
+                        <span className="beat-map-tempo-section-detail-value beat-map-tempo-section-bpm">
+                          {formatBpm(section.bpm)}
+                        </span>
+                      </div>
+                      <div className="beat-map-tempo-section-detail">
+                        <span className="beat-map-tempo-section-detail-label">Duration</span>
+                        <span className="beat-map-tempo-section-detail-value">
+                          {formatDuration(section.start)} - {formatDuration(section.end)}
+                        </span>
+                      </div>
+                      <div className="beat-map-tempo-section-detail">
+                        <span className="beat-map-tempo-section-detail-label">Beats</span>
+                        <span className="beat-map-tempo-section-detail-value">
+                          {formatBeatCount(section.beatCount)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

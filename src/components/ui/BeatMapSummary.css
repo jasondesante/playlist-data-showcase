@@ -394,6 +394,106 @@
   color: hsl(280 70% 60%);
 }
 
+/* ============================================
+   Task 3.2: Tempo Sections Display
+   Shows section details when multi-tempo is applied
+   ============================================ */
+
+.beat-map-tempo-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.beat-map-tempo-sections-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-map-tempo-sections-header-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(280 70% 60%);
+}
+
+.beat-map-tempo-sections-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.beat-map-tempo-sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.beat-map-tempo-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.625rem;
+  background: linear-gradient(135deg,
+    hsl(280 70% 50% / 0.08),
+    hsl(280 70% 50% / 0.03)
+  );
+  border: 1px solid hsl(280 70% 50% / 0.2);
+  border-radius: 0.375rem;
+}
+
+.beat-map-tempo-section-number {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(280 70% 70%);
+}
+
+.beat-map-tempo-section-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.beat-map-tempo-section-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.beat-map-tempo-section-detail-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-map-tempo-section-detail-value {
+  font-size: 0.6875rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--foreground));
+}
+
+.beat-map-tempo-section-bpm {
+  font-weight: 700;
+  color: hsl(280 70% 70%);
+}
+
+/* Responsive adjustments for tempo sections */
+@media (max-width: 480px) {
+  .beat-map-tempo-section-details {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .beat-map-tempo-section-card {
+    padding: 0.375rem 0.5rem;
+  }
+}
+
 .beat-map-interpolation-stat-row {
   display: flex;
   justify-content: space-between;
