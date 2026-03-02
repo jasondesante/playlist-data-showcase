@@ -24,6 +24,7 @@ import {
   useInterpolationVisualizationData,
   useInterpolationState,
   useNeedsReanalysis,
+  useAutoMultiTempo,
 } from '../../store/beatDetectionStore';
 
 // Mock the store
@@ -41,6 +42,7 @@ vi.mock('../../store/beatDetectionStore', () => ({
   useInterpolationVisualizationData: vi.fn(),
   useInterpolationState: vi.fn(),
   useNeedsReanalysis: vi.fn(),
+  useAutoMultiTempo: vi.fn(),
 }));
 
 // Mock the presets from types
@@ -141,6 +143,7 @@ describe('BeatDetectionSettings - OSE Toggle Button Interactions (Task 6.1)', ()
     (useInterpolationVisualizationData as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
     (useInterpolationState as unknown as ReturnType<typeof vi.fn>).mockReturnValue({});
     (useNeedsReanalysis as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    (useAutoMultiTempo as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
   });
 
   describe('Task 6.1.1: Verify mode selection updates store', () => {

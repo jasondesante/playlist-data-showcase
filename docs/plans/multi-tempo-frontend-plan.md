@@ -135,9 +135,18 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 **Goal**: Ensure feature works correctly in all scenarios.
 
 ### Task 5.1: Test Single-Tempo Tracks (No Regression)
-- [ ] Verify `hasMultipleTempos: false` for single-tempo tracks
-- [ ] Verify no multi-tempo UI appears
-- [ ] Verify existing functionality unchanged
+- [x] Verify `hasMultipleTempos: false` for single-tempo tracks
+- [x] Verify no multi-tempo UI appears
+- [x] Verify existing functionality unchanged
+
+**Verification Summary (2026-03-02):**
+- Analyzed conditional rendering in BeatMapSummary.tsx and BeatPracticeView.tsx
+- Multi-Tempo Detection Banner (line 373): Only shows when `hasMultipleTempos && !hasMultiTempoApplied`
+- Tempo Sections Display (line 384): Only shows when `hasMultiTempoApplied && tempoSections && tempoSections.length > 0`
+- Practice View Multi-Tempo Indicator (line 499): Only shows when `hasMultiTempoApplied && tempoSections && tempoSections.length > 1`
+- For single-tempo tracks: `hasMultipleTempos` defaults to `false`, `hasMultiTempoApplied` defaults to `false`, `tempoSections` defaults to `null`
+- Fixed test regression: Added missing `useAutoMultiTempo` mock to BeatDetectionSettings.ose.test.tsx
+- All 52 BeatDetectionSettings tests pass, build succeeds with no errors
 
 ### Task 5.2: Test Multi-Tempo Tracks
 - [ ] Verify detection banner appears when multiple tempos detected
