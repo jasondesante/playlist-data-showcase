@@ -6,13 +6,13 @@
 - Phase 1: Type System Updates
 
 **In Progress Phases:**
-- Phase 2: Store Updates (Tasks 2.1, 2.2, 2.5 complete)
+- Phase 2: Store Updates (Tasks 2.1, 2.2, 2.3, 2.5 complete)
 
 **Pending Phases:**
-- Phase 2 (remaining tasks 2.3-2.4)
+- Phase 2 (remaining task 2.4)
 - Phase 3-10
 
-**Ready to Start:** Phase 2, Task 2.3 (Add Subdivision Selectors)
+**Ready to Start:** Phase 2, Task 2.4 (Integrate with Existing Pipeline)
 
 ---
 
@@ -182,13 +182,13 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 2.3 Add Subdivision Selectors
 
-- [ ] Add selectors for subdivision state
-  - [ ] `useUnifiedBeatMap()` - get UnifiedBeatMap
-  - [ ] `useSubdividedBeatMap()` - get SubdividedBeatMap
-  - [ ] `useSubdivisionConfig()` - get SubdivisionConfig
-  - [ ] `useCurrentSubdivision()` - get current subdivision type
-  - [ ] ~~`useSubdivisionMode()`~~ - **REMOVED** (mode is implicit by component)
-  - [ ] `useSubdivisionMetadata()` - get subdivision metadata
+- [x] Add selectors for subdivision state
+  - [x] `useUnifiedBeatMap()` - get UnifiedBeatMap
+  - [x] `useSubdividedBeatMap()` - get SubdividedBeatMap
+  - [x] `useSubdivisionConfig()` - get SubdivisionConfig
+  - [x] `useCurrentSubdivision()` - get current subdivision type
+  - [x] ~~`useSubdivisionMode()`~~ - **REMOVED** (mode is implicit by component)
+  - [x] `useSubdivisionMetadata()` - get subdivision metadata
 
 ### 2.4 Integrate with Existing Pipeline
 
