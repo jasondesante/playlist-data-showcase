@@ -329,7 +329,7 @@ Timeline with measure visualization ON:
 - [x] Time signature toggle updates measure structure
 - [x] Measure boundary lines display correctly
 - [x] Multi-segment support works for time signature changes
-- [ ] Config persists after page reload (localStorage)
+- [x] Config persists after page reload (localStorage)
 - [ ] Practice mode uses updated downbeat positions
 - [ ] Reset button restores default config
 - [ ] Cached beat maps update with new config
