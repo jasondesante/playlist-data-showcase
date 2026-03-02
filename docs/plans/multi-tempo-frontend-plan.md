@@ -62,8 +62,8 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Wire to `autoMultiTempo` state via `useAutoMultiTempo()` and `setAutoMultiTempo()`
 
 ### Task 2.2: Add CSS Styling for Toggle
-- [ ] Style the new toggle consistently with existing interpolation settings
-- [ ] Add info tooltip explaining the feature
+- [x] Style the new toggle consistently with existing interpolation settings
+- [x] Add info tooltip explaining the feature
 
 ---
 
