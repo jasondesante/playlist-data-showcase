@@ -328,7 +328,7 @@ Timeline with measure visualization ON:
 - [x] Click on beat in timeline updates downbeat position
 - [x] Time signature toggle updates measure structure
 - [x] Measure boundary lines display correctly
-- [ ] Multi-segment support works for time signature changes
+- [x] Multi-segment support works for time signature changes
 - [ ] Config persists after page reload (localStorage)
 - [ ] Practice mode uses updated downbeat positions
 - [ ] Reset button restores default config
