@@ -209,8 +209,8 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
         if (disabled || draggingSegment !== null) return;
 
         // Only handle clicks on the timeline track, not on segments or handles
-        if ((e.target as HTMLElement).closest('.subdivision-timeline-segment') ||
-            (e.target as HTMLElement).closest('.subdivision-timeline-handle')) {
+        if ((e.target as HTMLElement).closest('.subdivision-timeline-editor-segment') ||
+            (e.target as HTMLElement).closest('.subdivision-timeline-editor-handle')) {
             return;
         }
 

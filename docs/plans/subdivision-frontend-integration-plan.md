@@ -6,13 +6,13 @@
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
-- Phase 4: Tasks 4.1, 4.2, 4.5 (SubdivisionTimelineEditor component, timeline visualization, and styles created)
+- Phase 4: Tasks 4.1, 4.2, 4.3, 4.5 (SubdivisionTimelineEditor component, timeline visualization, drag/drop, and styles created)
 
 **Pending Phases:**
-- Phase 4: Tasks 4.3-4.4, 4.6 (Drag/drop, click to add, integration)
+- Phase 4: Tasks 4.4, 4.6 (Click to add, integration)
 - Phase 5-10
 
-**Ready to Start:** Phase 4, Task 4.3 (Drag and Drop Segment Boundaries)
+**Ready to Start:** Phase 4, Task 4.4 (Click to Add Segment)
 
 ---
 
@@ -277,12 +277,12 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.3 Drag and Drop Segment Boundaries
 
-- [ ] Implement drag interaction:
-  - [ ] Drag segment boundary to resize
-  - [ ] Snap to beat positions
-  - [ ] Update startBeat on drag end
-  - [ ] Visual feedback during drag
-  - [ ] Keyboard accessibility (arrow keys)
+- [x] Implement drag interaction:
+  - [x] Drag segment boundary to resize
+  - [x] Snap to beat positions
+  - [x] Update startBeat on drag end
+  - [x] Visual feedback during drag
+  - [x] Keyboard accessibility (arrow keys)
 
 ### 4.4 Click to Add Segment
 
