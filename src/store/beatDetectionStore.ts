@@ -752,7 +752,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         // Check cache first (unless force regenerating)
                         if (!forceRegenerate && state.cachedBeatMaps[audioId]) {
                             logger.info('BeatDetection', 'Using cached beat map', { audioId });
-                            const cachedMap = state.cachedBeatMaps[audioId];
+                            let cachedMap = state.cachedBeatMaps[audioId];
+
+                            // ============================================================
+                            // Task 6.1: Re-apply downbeat config when loading from cache
+                            // ============================================================
+                            // If a custom downbeat config exists, apply it to the cached beat map.
+                            // The cache stores the original beat map (with default downbeat),
+                            // so we need to re-apply the user's custom config on load.
+                            if (state.downbeatConfig) {
+                                logger.info('BeatDetection', 'Re-applying downbeat config to cached beat map');
+                                cachedMap = reapplyDownbeatConfig(cachedMap, state.downbeatConfig);
+                            }
+
                             // When loading from cache, update the lastGeneratedOSEConfig to current settings
                             // This prevents showing "re-analyze needed" immediately after loading cached map
                             set({
@@ -773,7 +785,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             );
                             const cachedInterpolated = state.cachedInterpolatedBeatMaps[audioId];
 
-                            if (cachedInterpolated && !interpolationConfigsDiffer(currentInterpolationConfig, state.lastGeneratedInterpolationConfig)) {
+                            // Task 6.2: If we have a custom downbeat config, we must regenerate
+                            // the interpolated beat map because the cached one was generated
+                            // from the original beat map (without downbeat config applied)
+                            const mustRegenerateInterpolation = !!state.downbeatConfig;
+
+                            if (!mustRegenerateInterpolation && cachedInterpolated && !interpolationConfigsDiffer(currentInterpolationConfig, state.lastGeneratedInterpolationConfig)) {
                                 // Use cached interpolated beat map
                                 logger.info('BeatDetection', 'Using cached interpolated beat map', { audioId });
                                 set({
@@ -781,9 +798,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     lastGeneratedInterpolationConfig: currentInterpolationConfig,
                                 });
                             } else {
-                                // Generate interpolation (options changed or not cached)
+                                // Generate interpolation (options changed, not cached, or downbeat config applied)
                                 logger.info('BeatDetection', 'Generating interpolated beat map after cache load', {
-                                    reason: cachedInterpolated ? 'options changed' : 'not cached',
+                                    reason: mustRegenerateInterpolation
+                                        ? 'downbeat config applied'
+                                        : cachedInterpolated
+                                            ? 'options changed'
+                                            : 'not cached',
                                 });
                                 // Need to get fresh state after the set above
                                 const freshState = get();
@@ -793,10 +814,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     set({
                                         interpolatedBeatMap,
                                         lastGeneratedInterpolationConfig: currentInterpolationConfig,
-                                        cachedInterpolatedBeatMaps: {
-                                            ...freshState.cachedInterpolatedBeatMaps,
-                                            [audioId]: interpolatedBeatMap,
-                                        },
+                                        // Only update cache if no custom downbeat config
+                                        // (otherwise we'd cache the modified beat map)
+                                        ...(mustRegenerateInterpolation ? {} : {
+                                            cachedInterpolatedBeatMaps: {
+                                                ...freshState.cachedInterpolatedBeatMaps,
+                                                [audioId]: interpolatedBeatMap,
+                                            },
+                                        }),
                                     });
                                     logger.info('BeatDetection', 'Interpolated beat map generated successfully', {
                                         detectedBeats: interpolatedBeatMap.detectedBeats.length,
@@ -925,6 +950,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 interpolatedBeatMap,
                                 lastGeneratedInterpolationConfig: interpolationConfigSnapshot,
                                 cachedInterpolatedBeatMaps,
+                                // Task 6.1: Reset downbeat config when generating a new beat map
+                                // Each beat map should start with default downbeat configuration
+                                downbeatConfig: null,
                             });
 
                             // Clear active generator reference

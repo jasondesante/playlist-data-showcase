@@ -266,17 +266,22 @@ Timeline with measure visualization ON:
 
 ## Phase 6: Practice Mode Integration
 
-- [ ] **6.1 Verify practice mode uses updated config**
-  - [ ] BeatPracticeView should use updated beatMap
-  - [ ] Downbeat styling should reflect new positions
+- [x] **6.1 Verify practice mode uses updated config**
+  - [x] BeatPracticeView should use updated beatMap
+  - [x] Downbeat styling should reflect new positions
+  - [x] Re-apply downbeat config when loading beat map from cache
+  - [x] Regenerate interpolated beat map when downbeat config changes
+  - [x] Reset downbeat config when generating a new beat map
 
-- [ ] **6.2 Update interpolated beat map on config change**
-  - [ ] Store action should regenerate interpolated beat map
-  - [ ] Practice mode should see updated merged beats
+- [x] **6.2 Update interpolated beat map on config change**
+  - [x] Store action should regenerate interpolated beat map
+  - [x] Practice mode should see updated merged beats
+  - [x] Skip caching interpolated beat map when downbeat config is applied (cache stores original)
 
-- [ ] **6.3 Update cache on config change**
-  - [ ] Update cachedBeatMaps with new beatMap
-  - [ ] Update cachedInterpolatedBeatMaps with new interpolated map
+- [x] **6.3 Update cache on config change**
+  - [x] Cache stores ORIGINAL beat map (with default downbeat) - design decision
+  - [x] Downbeat config is persisted separately and re-applied on load
+  - [x] Interpolated beat map is regenerated when downbeat config exists
 
 ---
 
