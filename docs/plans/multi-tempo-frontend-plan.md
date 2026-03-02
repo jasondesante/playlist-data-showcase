@@ -188,9 +188,22 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - Build succeeds with no errors
 
 ### Task 5.4: Test Edge Cases
-- [ ] Very short tracks with tempo changes
-- [ ] Tracks with 3+ tempo sections
-- [ ] Tracks with subtle tempo drift (should NOT trigger multi-tempo)
+- [x] Very short tracks with tempo changes
+- [x] Tracks with 3+ tempo sections
+- [x] Tracks with subtle tempo drift (should NOT trigger multi-tempo)
+
+**Verification Summary (2026-03-02):**
+- Created `BeatMapSummary.multi-tempo-edge-cases.test.tsx` with 16 tests covering:
+  - **Very short tracks**: Short duration (30s), very short sections (<10s), single-beat sections
+  - **3+ tempo sections**: 3, 4, and 5 section tracks with proportion verification
+  - **Subtle tempo drift**: Tests verifying 10% threshold behavior:
+    - Within 10% (e.g., 120→128 BPM at ~6.7%): Does NOT trigger multi-tempo
+    - Exactly 10% (e.g., 120→132 BPM): Does NOT trigger (threshold is > 10%)
+    - Above 10% (e.g., 120→134 BPM at ~11.7%): DOES trigger multi-tempo
+  - **Octave multiples**: 60 BPM and 120 BPM treated as same tempo (not multi-tempo)
+  - **Null/empty handling**: Graceful handling of null or empty tempoSections
+- All 48 multi-tempo tests pass (10 + 22 + 16)
+- Build succeeds with no errors
 
 ---
 
