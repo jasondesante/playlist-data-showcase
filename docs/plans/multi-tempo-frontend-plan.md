@@ -149,10 +149,23 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - All 52 BeatDetectionSettings tests pass, build succeeds with no errors
 
 ### Task 5.2: Test Multi-Tempo Tracks
-- [ ] Verify detection banner appears when multiple tempos detected
-- [ ] Verify sections display correctly after analysis
-- [ ] Verify timeline markers show correct proportions
-- [ ] Verify practice mode shows multi-tempo info
+- [x] Verify detection banner appears when multiple tempos detected
+- [x] Verify sections display correctly after analysis
+- [x] Verify timeline markers show correct proportions
+- [x] Verify practice mode shows multi-tempo info
+
+**Verification Summary (2026-03-02):**
+- Created `BeatMapSummary.multi-tempo.test.tsx` with 22 tests covering:
+  - Detection banner visibility conditions (5 tests)
+  - Tempo sections display (6 tests)
+  - Timeline markers and segment proportions (6 tests)
+  - Interpolation stats multi-tempo display (5 tests)
+- Created `BeatPracticeView.multi-tempo.test.tsx` with 10 tests covering:
+  - Multi-tempo indicator display conditions (7 tests)
+  - Single-tempo track handling (2 tests)
+  - BPM stat area containment (1 test)
+- All 32 multi-tempo tests pass
+- Build succeeds with no errors
 
 ### Task 5.3: Test Auto Multi-Tempo Toggle
 - [ ] Verify analysis behaves differently when toggle is off
