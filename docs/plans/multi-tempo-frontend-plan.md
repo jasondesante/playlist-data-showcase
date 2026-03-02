@@ -46,8 +46,8 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Return multi-tempo stats in the selector result
 
 ### Task 1.4: Update Beat Interpolation Flow
-- [ ] Modify `generateBeatMap` flow to pass `enableMultiTempo` option based on `autoMultiTempo` state
-- [ ] Ensure multi-tempo analysis runs automatically when enabled and multiple tempos detected
+- [x] Modify `generateBeatMap` flow to pass `enableMultiTempo` option based on `autoMultiTempo` state
+- [x] Ensure multi-tempo analysis runs automatically when enabled and multiple tempos detected
 
 ---
 

@@ -177,6 +177,8 @@ export const createOSEConfigSnapshot = (
  */
 export interface InterpolationConfigSnapshot {
     interpolationOptions: BeatInterpolationOptions;
+    /** Whether automatic multi-tempo analysis was enabled when this config was created */
+    autoMultiTempo: boolean;
     // selectedAlgorithm removed - engine uses only adaptive-phase-locked
 }
 
@@ -211,6 +213,9 @@ export const interpolationConfigsDiffer = (
     if (optsA.anchorConfidenceWeight !== optsB.anchorConfidenceWeight) return true;
     if (optsA.paceConfidenceWeight !== optsB.paceConfidenceWeight) return true;
 
+    // Compare autoMultiTempo setting
+    if (a.autoMultiTempo !== b.autoMultiTempo) return true;
+
     return false;
 };
 
@@ -218,12 +223,15 @@ export const interpolationConfigsDiffer = (
  * Create an interpolation config snapshot from the current store state.
  *
  * @param interpolationOptions - Current interpolation options
+ * @param autoMultiTempo - Whether automatic multi-tempo analysis is enabled
  * @returns An interpolation config snapshot
  */
 export const createInterpolationConfigSnapshot = (
-    interpolationOptions: BeatInterpolationOptions
+    interpolationOptions: BeatInterpolationOptions,
+    autoMultiTempo: boolean
 ): InterpolationConfigSnapshot => ({
     interpolationOptions: { ...interpolationOptions },
+    autoMultiTempo,
 });
 
 /**
@@ -794,7 +802,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Check if we have a cached interpolated beat map and if options match
                             const currentInterpolationConfig = createInterpolationConfigSnapshot(
-                                state.interpolationOptions
+                                state.interpolationOptions,
+                                state.autoMultiTempo
                             );
                             const cachedInterpolated = state.cachedInterpolatedBeatMaps[audioId];
 
@@ -821,7 +830,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 });
                                 // Need to get fresh state after the set above
                                 const freshState = get();
-                                const interpolator = new BeatInterpolator(freshState.interpolationOptions);
+                                // Merge interpolation options with enableMultiTempo based on autoMultiTempo state
+                                const interpolator = new BeatInterpolator({
+                                    ...freshState.interpolationOptions,
+                                    enableMultiTempo: freshState.autoMultiTempo,
+                                });
                                 try {
                                     const interpolatedBeatMap = interpolator.interpolate(cachedMap);
                                     set({
@@ -924,14 +937,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Automatically generate interpolated beat map
                             const interpolationConfigSnapshot = createInterpolationConfigSnapshot(
-                                currentState.interpolationOptions
+                                currentState.interpolationOptions,
+                                currentState.autoMultiTempo
                             );
 
                             let interpolatedBeatMap: InterpolatedBeatMap | null = null;
                             let cachedInterpolatedBeatMaps = currentState.cachedInterpolatedBeatMaps;
 
                             try {
-                                const interpolator = new BeatInterpolator(currentState.interpolationOptions);
+                                // Merge interpolation options with enableMultiTempo based on autoMultiTempo state
+                                const interpolator = new BeatInterpolator({
+                                    ...currentState.interpolationOptions,
+                                    enableMultiTempo: currentState.autoMultiTempo,
+                                });
                                 interpolatedBeatMap = interpolator.interpolate(beatMap);
 
                                 // Cache the interpolated beat map
@@ -1283,7 +1301,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                      */
                     generateInterpolatedBeatMap: () => {
                         const state = get();
-                        const { beatMap, interpolationOptions } = state;
+                        const { beatMap, interpolationOptions, autoMultiTempo } = state;
 
                         if (!beatMap) {
                             logger.warn('BeatDetection', 'No beat map loaded, cannot generate interpolation');
@@ -1292,11 +1310,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         logger.info('BeatDetection', 'Generating interpolated beat map', {
                             beatCount: beatMap.beats.length,
+                            enableMultiTempo: autoMultiTempo,
                         });
 
                         try {
-                            // Create interpolator with current options
-                            const interpolator = new BeatInterpolator(interpolationOptions);
+                            // Create interpolator with current options, including enableMultiTempo from state
+                            const interpolator = new BeatInterpolator({
+                                ...interpolationOptions,
+                                enableMultiTempo: autoMultiTempo,
+                            });
 
                             // Generate the interpolated beat map
                             const interpolatedBeatMap = interpolator.interpolate(beatMap);
@@ -1360,8 +1382,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             // Update interpolated beat map if it exists
                             let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
                             if (interpolatedBeatMap) {
-                                // Re-interpolate with the updated beat map
-                                const interpolator = new BeatInterpolator(state.interpolationOptions);
+                                // Re-interpolate with the updated beat map, including enableMultiTempo from state
+                                const interpolator = new BeatInterpolator({
+                                    ...state.interpolationOptions,
+                                    enableMultiTempo: state.autoMultiTempo,
+                                });
                                 updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
                                 logger.info('BeatDetection', 'Re-interpolated beat map with new downbeat config');
                             }
@@ -1402,7 +1427,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             // Update interpolated beat map if it exists
                             let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
                             if (interpolatedBeatMap) {
-                                const interpolator = new BeatInterpolator(state.interpolationOptions);
+                                // Include enableMultiTempo from state
+                                const interpolator = new BeatInterpolator({
+                                    ...state.interpolationOptions,
+                                    enableMultiTempo: state.autoMultiTempo,
+                                });
                                 updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
                             }
 
@@ -2351,9 +2380,10 @@ export const useInterpolationSettingsChanged = () =>
         // No beat map means nothing to re-analyze
         if (!state.beatMap) return false;
 
-        // Create a snapshot of current settings
+        // Create a snapshot of current settings (including autoMultiTempo)
         const currentSnapshot = createInterpolationConfigSnapshot(
-            state.interpolationOptions
+            state.interpolationOptions,
+            state.autoMultiTempo
         );
 
         // Compare with stored snapshot
