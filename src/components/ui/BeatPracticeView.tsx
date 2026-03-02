@@ -30,6 +30,7 @@ import {
     useShowMeasureBoundaries,
     useTimeSignature,
     useInterpolationStatistics,
+    useTapStatistics,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -166,9 +167,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for tap visual feedback on timeline
   const [tapVisualTime, setTapVisualTime] = useState<number>(0);
 
-  // Debug: track recent taps for timing analysis
+  // Debug: track all taps for timing analysis (no limit - shows full session history)
   const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
-  const MAX_DEBUG_HISTORY = 5;
 
   // Track audio time for debug info
   const audioTimeRef = useRef<number>(currentTime);
@@ -187,6 +187,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Multi-tempo info (Phase 4: Task 4.1)
   const interpolationStats = useInterpolationStatistics();
+
+  // Tap statistics for session summary (accuracy %, total deviation)
+  const tapStats = useTapStatistics();
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
@@ -247,7 +250,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         offsetMs: Math.round(result.offset * 1000),
         accuracy: result.accuracy,
       };
-      setTapDebugHistory(prev => [debugInfo, ...prev].slice(0, MAX_DEBUG_HISTORY));
+      setTapDebugHistory(prev => [debugInfo, ...prev]);
     }
   }, [checkTap, recordTap, streamIsActive, showTapFeedback]);
 
@@ -628,8 +631,34 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         <div className="beat-practice-debug-header">
           <Clock className="beat-practice-debug-icon" />
           <span>TAP TIMING DEBUG</span>
-          <span className="beat-practice-debug-hint">(shows last {MAX_DEBUG_HISTORY} taps)</span>
+          <span className="beat-practice-debug-hint">({tapDebugHistory.length} taps this session)</span>
         </div>
+
+        {/* Session Stats Summary */}
+        {tapDebugHistory.length > 0 && (
+          <div className="beat-practice-debug-session-stats">
+            <div className="beat-practice-debug-session-stat">
+              <span className="beat-practice-debug-session-value">{tapStats.accuracyPercentage}%</span>
+              <span className="beat-practice-debug-session-label">Accuracy</span>
+            </div>
+            <div className="beat-practice-debug-session-stat">
+              <span className="beat-practice-debug-session-value">{tapStats.averageOffset}ms</span>
+              <span className="beat-practice-debug-session-label">Avg Deviation</span>
+            </div>
+            <div className="beat-practice-debug-session-stat">
+              <span className="beat-practice-debug-session-value">{tapStats.totalDeviation}ms</span>
+              <span className="beat-practice-debug-session-label">Total Deviation</span>
+            </div>
+            <div className="beat-practice-debug-session-stat">
+              <span className="beat-practice-debug-session-value">{tapStats.totalTaps}</span>
+              <span className="beat-practice-debug-session-label">Total Taps</span>
+            </div>
+            <div className="beat-practice-debug-session-stat">
+              <span className="beat-practice-debug-session-value">{tapStats.miss}</span>
+              <span className="beat-practice-debug-session-label">Missed Taps</span>
+            </div>
+          </div>
+        )}
 
         {/* Active Thresholds Display */}
         <div className="beat-practice-debug-thresholds">

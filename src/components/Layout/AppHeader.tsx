@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Play, Pause, Square, Music } from 'lucide-react';
+import { Play, Pause, Square, Music, Volume2, Volume1, VolumeX } from 'lucide-react';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { useSessionTracker } from '@/hooks/useSessionTracker';
@@ -40,8 +40,9 @@ export function AppHeader({
   onTabChange
 }: AppHeaderProps) {
   const [hasStopped, setHasStopped] = useState(false);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const { activeSession, pauseSession, resumeSession } = useSessionStore();
-  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl, volume, isMuted, setVolume, toggleMute } = useAudioPlayerStore();
   const { isActive: isSessionActive } = useSessionTracker();
   const { selectedTrack } = usePlaylistStore();
 
@@ -101,6 +102,14 @@ export function AppHeader({
 
   const isPlaying = playbackState === 'playing';
 
+  // Helper to determine which volume icon to show
+  const getVolumeIcon = () => {
+    if (isMuted || volume === 0) return VolumeX;
+    if (volume <= 0.5) return Volume1;
+    return Volume2;
+  };
+  const VolumeIcon = getVolumeIcon();
+
   // Display 0 for time when hasStopped
   const displayTime = hasStopped ? 0 : currentTime;
 
@@ -153,6 +162,45 @@ export function AppHeader({
                       >
                         <Square size={16} />
                       </button>
+                    </div>
+
+                    {/* Volume Control */}
+                    <div
+                      className="mini-player-volume-container"
+                      onMouseEnter={() => setShowVolumeSlider(true)}
+                      onMouseLeave={() => setShowVolumeSlider(false)}
+                    >
+                      <button
+                        className={`mini-player-btn mini-player-volume-btn ${isMuted ? 'mini-player-volume-btn--muted' : ''}`}
+                        onClick={toggleMute}
+                        aria-label={isMuted ? 'Unmute' : `Mute (currently ${Math.round(volume * 100)}%)`}
+                        aria-pressed={isMuted}
+                        title={isMuted ? 'Unmute' : 'Mute'}
+                      >
+                        <VolumeIcon size={16} />
+                      </button>
+
+                      {/* Volume Slider Popup */}
+                      {showVolumeSlider && (
+                        <div className="mini-player-volume-popup">
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={volume}
+                            onChange={(e) => setVolume(parseFloat(e.target.value))}
+                            className="mini-player-volume-slider"
+                            aria-label="Volume"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(volume * 100)}
+                          />
+                          <div className="mini-player-volume-value">
+                            {Math.round(volume * 100)}%
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mini-player-time">

@@ -1871,9 +1871,11 @@ export const useTapStatistics = () =>
                 ok: 0,
                 miss: 0,
                 averageOffset: 0,
+                totalDeviation: 0,
                 standardDeviation: 0,
                 currentStreak: 0,
                 bestStreak: 0,
+                accuracyPercentage: 0,
                 // Source breakdown (Task 6.4)
                 detectedBeatsTotal: 0,
                 detectedBeatsHit: 0,
@@ -1942,6 +1944,11 @@ export const useTapStatistics = () =>
         });
         const standardDeviation = Math.sqrt(squaredDiffs / history.length);
 
+        // Calculate accuracy percentage (non-miss taps / total taps)
+        const accuracyPercentage = history.length > 0
+            ? Math.round(((history.length - counts.miss) / history.length) * 100 * 10) / 10 // Round to 1 decimal
+            : 0;
+
         return {
             totalTaps: history.length,
             perfect: counts.perfect,
@@ -1950,9 +1957,11 @@ export const useTapStatistics = () =>
             ok: counts.ok,
             miss: counts.miss,
             averageOffset: Math.round(avgOffset * 10) / 10, // Round to 1 decimal
+            totalDeviation: Math.round(totalOffset * 10) / 10, // Sum of all absolute offsets in ms
             standardDeviation: Math.round(standardDeviation * 10) / 10,
             currentStreak,
             bestStreak,
+            accuracyPercentage, // Percentage of non-miss taps
             // Source breakdown (Task 6.4)
             detectedBeatsTotal,
             detectedBeatsHit,
