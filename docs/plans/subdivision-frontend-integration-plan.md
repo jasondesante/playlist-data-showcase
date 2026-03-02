@@ -6,13 +6,12 @@
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
-- Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5 (SubdivisionTimelineEditor component, timeline visualization, drag/drop, click to add, and styles created)
+- Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 
 **Pending Phases:**
-- Phase 4: Task 4.6 (Integration with SubdivisionSettings)
 - Phase 5-10
 
-**Ready to Start:** Phase 4, Task 4.6 (Integrate with SubdivisionSettings)
+**Ready to Start:** Phase 5, Task 5.1 (Generate SubdividedBeatMap)
 
 ---
 
@@ -302,9 +301,9 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.6 Integrate with SubdivisionSettings
 
-- [ ] Show timeline editor when segments > 1 or expanded
-- [ ] Sync timeline selection with segment list
-- [ ] Update preview on configuration change
+- [x] Show timeline editor when segments > 1 or expanded
+- [x] Sync timeline selection with segment list
+- [x] Update preview on configuration change
 
 ---
 

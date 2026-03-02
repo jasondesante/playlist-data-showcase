@@ -14,8 +14,10 @@
  *
  * @component
  */
-import { Info, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { Info, Plus, Trash2, RefreshCw, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { SubdivisionTimelineEditor } from './SubdivisionTimelineEditor';
 import './SubdivisionSettings.css';
 import {
     useBeatDetectionStore,
@@ -128,9 +130,16 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
     const updateSubdivisionSegment = useBeatDetectionStore((state) => state.actions.updateSubdivisionSegment);
     const generateSubdividedBeatMap = useBeatDetectionStore((state) => state.actions.generateSubdividedBeatMap);
 
+    // Task 4.6: Timeline editor state
+    const [showTimeline, setShowTimeline] = useState(false);
+    const [selectedSegmentIndex, setSelectedSegmentIndex] = useState<number | null>(null);
+
     // Check if we have a UnifiedBeatMap to work with
     const hasUnifiedBeatMap = unifiedBeatMap !== null;
     const totalBeats = unifiedBeatMap?.beats.length ?? 0;
+
+    // Task 4.6: Auto-show timeline when segments > 1
+    const hasMultipleSegments = subdivisionConfig.segments.length > 1;
 
     // Handle adding a new segment
     const handleAddSegment = () => {
@@ -280,9 +289,14 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                     <div className="subdivision-settings-segments-list">
                         {subdivisionConfig.segments.map((segment, index) => {
                             const typeConfig = getTypeConfig(segment.subdivision);
+                            const isSelected = selectedSegmentIndex === index;
 
                             return (
-                                <div key={index} className="subdivision-settings-segment">
+                                <div
+                                    key={index}
+                                    className={`subdivision-settings-segment ${isSelected ? 'subdivision-settings-segment--selected' : ''}`}
+                                    onClick={() => setSelectedSegmentIndex(isSelected ? null : index)}
+                                >
                                     {/* Segment number and controls */}
                                     <div className="subdivision-settings-segment-header">
                                         <span className="subdivision-settings-segment-number">
@@ -380,6 +394,40 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                     {subdivisionConfig.segments.length >= 8 && (
                         <div className="subdivision-settings-segment-limit">
                             Maximum 8 segments allowed
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ============================================================
+             * TIMELINE EDITOR (Task 4.6: Integrate with SubdivisionSettings)
+             * ============================================================ */}
+            {hasUnifiedBeatMap && (
+                <div className="subdivision-settings-timeline-section">
+                    <button
+                        type="button"
+                        className={`subdivision-settings-timeline-toggle ${showTimeline || hasMultipleSegments ? 'subdivision-settings-timeline-toggle--active' : ''}`}
+                        onClick={() => setShowTimeline(!showTimeline)}
+                        aria-expanded={showTimeline || hasMultipleSegments}
+                        aria-controls="subdivision-timeline-editor"
+                    >
+                        <Clock className="subdivision-settings-timeline-toggle-icon" />
+                        <span className="subdivision-settings-timeline-toggle-label">
+                            Timeline Editor
+                        </span>
+                        {(showTimeline || hasMultipleSegments) ? (
+                            <ChevronUp className="subdivision-settings-timeline-toggle-chevron" />
+                        ) : (
+                            <ChevronDown className="subdivision-settings-timeline-toggle-chevron" />
+                        )}
+                    </button>
+
+                    {(showTimeline || hasMultipleSegments) && (
+                        <div
+                            id="subdivision-timeline-editor"
+                            className="subdivision-settings-timeline-wrapper"
+                        >
+                            <SubdivisionTimelineEditor disabled={disabled} />
                         </div>
                     )}
                 </div>
