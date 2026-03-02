@@ -157,10 +157,10 @@ Timeline with measure visualization ON:
   - [x] "Modified" badge when config differs from default
   - [x] Collapse/expand toggle
 
-- [ ] **2.3 Implement current config display**
-  - [ ] Show current time signature (e.g., "4/4")
-  - [ ] Show current downbeat position (beat index)
-  - [ ] Show segment count if > 1
+- [x] **2.3 Implement current config display**
+  - [x] Show current time signature (e.g., "4/4")
+  - [x] Show current downbeat position (beat index)
+  - [x] Show segment count if > 1
 
 - [ ] **2.4 Implement time signature selector**
   - [ ] Toggle buttons for common time signatures: 3/4, 4/4, 5/4, 6/4, 7/4, 8/4
