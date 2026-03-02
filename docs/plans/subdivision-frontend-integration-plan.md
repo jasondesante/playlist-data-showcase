@@ -6,11 +6,13 @@
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
+- Phase 4: Tasks 4.1, 4.5 (SubdivisionTimelineEditor component and styles created)
 
 **Pending Phases:**
-- Phase 4-10
+- Phase 4: Tasks 4.2-4.4, 4.6 (Timeline visualization, drag/drop, click to add, integration)
+- Phase 5-10
 
-**Ready to Start:** Phase 4, Task 4.1 (Create SubdivisionTimelineEditor Component)
+**Ready to Start:** Phase 4, Task 4.2 (Timeline Visualization)
 
 ---
 
@@ -256,12 +258,12 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.1 Create Timeline Editor Component
 
-- [ ] Create `src/components/ui/SubdivisionTimelineEditor.tsx`
-  - [ ] Visual timeline showing beat positions
-  - [ ] Colored regions for each subdivision segment
-  - [ ] Drag handles to adjust segment boundaries
-  - [ ] Click to add new segment at position
-  - [ ] Zoom and scroll for long tracks
+- [x] Create `src/components/ui/SubdivisionTimelineEditor.tsx`
+  - [x] Visual timeline showing beat positions
+  - [x] Colored regions for each subdivision segment
+  - [x] Drag handles to adjust segment boundaries
+  - [x] Click to add new segment at position
+  - [x] Zoom and scroll for long tracks
 
 ### 4.2 Timeline Visualization
 
@@ -292,11 +294,11 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.5 Timeline Editor Styles
 
-- [ ] Create `src/components/ui/SubdivisionTimelineEditor.css`
-  - [ ] Timeline track styles
-  - [ ] Segment region colors per subdivision type
-  - [ ] Drag handle styles
-  - [ ] Hover and active states
+- [x] Create `src/components/ui/SubdivisionTimelineEditor.css`
+  - [x] Timeline track styles
+  - [x] Segment region colors per subdivision type
+  - [x] Drag handle styles
+  - [x] Hover and active states
 
 ### 4.6 Integrate with SubdivisionSettings
 
