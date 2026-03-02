@@ -231,15 +231,15 @@ Timeline with measure visualization ON:
   - [x] Semi-transparent primary color
   - [x] Position based on timestamp ratio
 
-- [ ] **4.4 Add measure number labels (when toggle enabled)**
-  - [ ] Small labels above timeline showing measure numbers (1, 2, 3...)
-  - [ ] Only show for visible measures (performance optimization)
-  - [ ] Add CSS class `.beat-timeline-measure-number`
+- [x] **4.4 Add measure number labels (when toggle enabled)**
+  - [x] Small labels above timeline showing measure numbers (1, 2, 3...)
+  - [x] Only show for visible measures (performance optimization)
+  - [x] Add CSS class `.beat-timeline-measure-number`
 
-- [ ] **4.5 Add CSS for measure visualization**
-  - [ ] `.beat-timeline-measure-boundary` - line container
-  - [ ] `.beat-timeline-measure-line` - the actual line
-  - [ ] `.beat-timeline-measure-number` - label styling
+- [x] **4.5 Add CSS for measure visualization**
+  - [x] `.beat-timeline-measure-boundary` - line container
+  - [x] `.beat-timeline-measure-line` - the actual line
+  - [x] `.beat-timeline-measure-number` - label styling
 
 ---
 

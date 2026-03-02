@@ -685,6 +685,7 @@ export function BeatTimeline({
         ))}
 
         {/* Task 4.3: Measure Boundary Lines */}
+        {/* Task 4.4: Measure Number Labels */}
         {showMeasureBoundaries && visibleMeasureBoundaries.map((boundary, index) => (
           <div
             key={`measure-boundary-${index}`}
@@ -692,6 +693,7 @@ export function BeatTimeline({
             style={{ left: `${boundary.position * 100}%` }}
           >
             <div className="beat-timeline-measure-line" />
+            <span className="beat-timeline-measure-number">M{boundary.measureNumber}</span>
           </div>
         ))}
 
