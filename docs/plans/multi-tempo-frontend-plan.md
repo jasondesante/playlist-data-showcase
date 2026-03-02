@@ -39,11 +39,11 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
   - `hasMultiTempoApplied: boolean`
 
 ### Task 1.3: Update useInterpolationStatistics Selector
-- [ ] Extract `hasMultipleTempos` from `interpolationMetadata`
-- [ ] Extract `detectedClusterTempos` from `interpolationMetadata`
-- [ ] Extract `tempoSections` from `interpolationMetadata`
-- [ ] Extract `hasMultiTempoApplied` from `interpolationMetadata`
-- [ ] Return multi-tempo stats in the selector result
+- [x] Extract `hasMultipleTempos` from `interpolationMetadata`
+- [x] Extract `detectedClusterTempos` from `interpolationMetadata`
+- [x] Extract `tempoSections` from `interpolationMetadata`
+- [x] Extract `hasMultiTempoApplied` from `interpolationMetadata`
+- [x] Return multi-tempo stats in the selector result
 
 ### Task 1.4: Update Beat Interpolation Flow
 - [ ] Modify `generateBeatMap` flow to pass `enableMultiTempo` option based on `autoMultiTempo` state
