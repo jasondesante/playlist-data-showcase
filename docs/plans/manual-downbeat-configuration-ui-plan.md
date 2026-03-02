@@ -258,9 +258,9 @@ Timeline with measure visualization ON:
   - [x] Show "Click a beat to set as downbeat" instruction
   - [x] "Done" button to exit selection mode
 
-- [ ] **5.4 Connect BeatTimeline click to store**
-  - [ ] Pass `onBeatClick` callback that calls `setDownbeatPosition`
-  - [ ] Enable selection mode when "Edit Downbeat" is clicked
+- [x] **5.4 Connect BeatTimeline click to store**
+  - [x] Pass `onBeatClick` callback that calls `setDownbeatPosition`
+  - [x] Enable selection mode when "Edit Downbeat" is clicked
 
 ---
 

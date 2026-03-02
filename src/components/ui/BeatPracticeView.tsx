@@ -26,6 +26,9 @@ import {
     useInterpolatedBeatMap,
     useShowGridOverlay,
     useShowTempoDriftVisualization,
+    useIsDownbeatSelectionMode,
+    useShowMeasureBoundaries,
+    useTimeSignature,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -114,6 +117,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Tempo drift visualization visibility (Task 5.4)
   const showTempoDriftVisualization = useShowTempoDriftVisualization();
+
+  // Downbeat selection mode (Phase 5: BeatMapSummary Integration - Task 5.4)
+  const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
+  const showMeasureBoundaries = useShowMeasureBoundaries();
+  const timeSignature = useTimeSignature();
 
   // Audio player state
   const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
@@ -287,6 +295,24 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     stopPracticeMode();
     onExit();
   }, [stopPracticeMode, onExit]);
+
+  /**
+   * Handle beat click for downbeat selection.
+   * Called when user clicks a beat in selection mode.
+   * Part of Phase 5: BeatMapSummary Integration (Task 5.4)
+   */
+  const handleBeatClick = useCallback((beatIndex: number) => {
+    // Only handle click if in selection mode
+    if (!isDownbeatSelectionMode) return;
+
+    // Update the downbeat position in the store
+    useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
+
+    logger.info('BeatDetection', 'Downbeat position set via beat click', {
+      beatIndex,
+      timeSignature,
+    });
+  }, [isDownbeatSelectionMode, timeSignature]);
 
   /**
    * Calculate time from progress bar position
@@ -534,6 +560,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         interpolationData={interpolationData}
         showGridOverlay={showGridOverlay}
         showTempoDriftVisualization={showTempoDriftVisualization}
+        enableBeatSelection={isDownbeatSelectionMode}
+        onBeatClick={handleBeatClick}
+        showMeasureBoundaries={showMeasureBoundaries}
       />
 
       {/* Playback Controls */}
