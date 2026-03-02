@@ -172,9 +172,9 @@ Timeline with measure visualization ON:
   - [x] Validation and clamping
   - [x] Update config on change
 
-- [ ] **2.6 Implement hint box**
-  - [ ] Info icon with text: "Click on any beat in the timeline to set it as the downbeat"
-  - [ ] Styled consistently with existing hint boxes
+- [x] **2.6 Implement hint box**
+  - [x] Info icon with text: "Click on any beat in the timeline to set it as the downbeat"
+  - [x] Styled consistently with existing hint boxes
 
 - [ ] **2.7 Implement multi-segment support (Advanced)**
   - [ ] Collapsible "Advanced: Time Signature Changes" section
