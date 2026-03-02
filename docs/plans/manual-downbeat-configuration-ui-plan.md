@@ -196,11 +196,11 @@ Timeline with measure visualization ON:
   - [x] `enableBeatSelection?: boolean`
   - [x] `selectedBeatIndex?: number` (for visual highlight)
 
-- [ ] **3.2 Implement beat click handler**
-  - [ ] Add click handler to beat markers
-  - [ ] Only active when `enableBeatSelection=true`
-  - [ ] Stop propagation to prevent timeline seek
-  - [ ] Call `onBeatClick` with beat index
+- [x] **3.2 Implement beat click handler**
+  - [x] Add click handler to beat markers
+  - [x] Only active when `enableBeatSelection=true`
+  - [x] Stop propagation to prevent timeline seek
+  - [x] Call `onBeatClick` with beat index
 
 - [ ] **3.3 Add beat selection visual styling**
   - [ ] Cursor pointer when selection enabled
