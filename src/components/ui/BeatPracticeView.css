@@ -207,6 +207,11 @@
   gap: 0.75rem;
 }
 
+/* When subdivision is available, use 4 columns */
+.beat-practice-stats:has(.beat-practice-stat--subdivision) {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .beat-practice-stat {
   display: flex;
   flex-direction: column;
@@ -288,6 +293,47 @@
   margin-top: 0.25rem;
   border: 1px solid hsl(var(--cute-purple) / 0.3);
   white-space: nowrap;
+}
+
+/* ============================================
+   SUBDIVISION STAT DISPLAY
+   Phase 6: Task 6.5 - Show current subdivision in stats area
+   ============================================ */
+
+.beat-practice-stat--subdivision {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--cute-purple) / 0.05));
+  border-color: hsl(var(--cute-purple) / 0.2);
+}
+
+.beat-practice-stat-value--subdivision {
+  font-size: 1rem;
+  text-transform: capitalize;
+  color: hsl(var(--cute-purple));
+}
+
+.beat-practice-stat-value--subdivision-active {
+  animation: subdivision-value-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes subdivision-value-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* "live" badge for subdivision label */
+.beat-practice-subdivision-indicator {
+  font-size: 0.5rem;
+  font-weight: 500;
+  text-transform: lowercase;
+  color: hsl(var(--cute-purple));
+  background: hsl(var(--cute-purple) / 0.15);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  animation: indicator-fade 1.5s ease-in-out infinite;
 }
 
 /* Progress Bar for Absolute Seeking */
@@ -559,6 +605,11 @@
     gap: 0.5rem;
   }
 
+  /* When subdivision is available on mobile, use 2x2 grid */
+  .beat-practice-stats:has(.beat-practice-stat--subdivision) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .beat-practice-stat {
     padding: 0.5rem;
   }
@@ -582,6 +633,16 @@
     font-size: 0.4375rem;
     padding: 0.0625rem 0.25rem;
     margin-top: 0.125rem;
+  }
+
+  /* Subdivision stat mobile */
+  .beat-practice-stat-value--subdivision {
+    font-size: 0.875rem;
+  }
+
+  .beat-practice-subdivision-indicator {
+    font-size: 0.4375rem;
+    padding: 0.0625rem 0.1875rem;
   }
 
   .beat-practice-progress-bar {
@@ -667,6 +728,11 @@
     gap: 0.375rem;
   }
 
+  /* When subdivision is available on extra small screens, use 2x2 grid */
+  .beat-practice-stats:has(.beat-practice-stat--subdivision) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .beat-practice-stat {
     padding: 0.375rem;
   }
@@ -689,6 +755,16 @@
   .beat-practice-multi-tempo-indicator {
     font-size: 0.375rem;
     padding: 0.0625rem 0.1875rem;
+  }
+
+  /* Subdivision stat extra small */
+  .beat-practice-stat-value--subdivision {
+    font-size: 0.75rem;
+  }
+
+  .beat-practice-subdivision-indicator {
+    font-size: 0.375rem;
+    padding: 0.0625rem 0.125rem;
   }
 
   .beat-practice-progress-bar {
