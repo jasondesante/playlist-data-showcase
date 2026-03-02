@@ -191,10 +191,10 @@ Timeline with measure visualization ON:
 
 ## Phase 3: BeatTimeline Click Integration
 
-- [ ] **3.1 Add selection props to BeatTimeline**
-  - [ ] `onBeatClick?: (beatIndex: number) => void`
-  - [ ] `enableBeatSelection?: boolean`
-  - [ ] `selectedBeatIndex?: number` (for visual highlight)
+- [x] **3.1 Add selection props to BeatTimeline**
+  - [x] `onBeatClick?: (beatIndex: number) => void`
+  - [x] `enableBeatSelection?: boolean`
+  - [x] `selectedBeatIndex?: number` (for visual highlight)
 
 - [ ] **3.2 Implement beat click handler**
   - [ ] Add click handler to beat markers

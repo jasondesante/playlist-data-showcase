@@ -61,6 +61,23 @@ interface BeatTimelineProps {
    * Part of Task 5.4: Tempo Drift Visualization
    */
   showTempoDriftVisualization?: boolean;
+  /**
+   * Callback when user clicks on a beat marker.
+   * Part of Task 3.1: Beat Selection Props
+   * @param beatIndex - The index of the clicked beat in the beatMap.beats array
+   */
+  onBeatClick?: (beatIndex: number) => void;
+  /**
+   * Whether beat selection mode is enabled.
+   * When true, beat markers become clickable and show pointer cursor.
+   * Part of Task 3.1: Beat Selection Props
+   */
+  enableBeatSelection?: boolean;
+  /**
+   * The index of the currently selected beat (for visual highlight).
+   * Part of Task 3.1: Beat Selection Props
+   */
+  selectedBeatIndex?: number;
 }
 
 /**
@@ -85,6 +102,9 @@ export function BeatTimeline({
   interpolationData = null,
   showGridOverlay = false,
   showTempoDriftVisualization = false,
+  onBeatClick,
+  enableBeatSelection = false,
+  selectedBeatIndex,
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
@@ -338,6 +358,12 @@ export function BeatTimeline({
     source: 'detected' | 'interpolated';
     /** Unique key for React rendering */
     key: string;
+    /**
+     * The index of this beat in the original beatMap.beats array.
+     * Used for beat selection callback.
+     * Part of Task 3.1: Beat Selection Props
+     */
+    beatIndex: number;
   };
 
   /**
@@ -350,6 +376,7 @@ export function BeatTimeline({
       confidence: beat.confidence ?? 1,
       source: 'detected' as const,
       key: `beat-${beat.timestamp.toFixed(3)}-${beat.measureNumber ?? index}`,
+      beatIndex: index,
     }));
   }, []);
 
@@ -363,6 +390,7 @@ export function BeatTimeline({
       confidence: beat.confidence,
       source: beat.source,
       key: `interp-${beat.timestamp.toFixed(3)}-${beat.source}-${index}`,
+      beatIndex: index,
     }));
   }, []);
 
@@ -646,12 +674,43 @@ export function BeatTimeline({
               beat.isDownbeat ? 'beat-timeline-marker--downbeat' : ''
             } ${isPast ? 'beat-timeline-marker--past' : ''} ${
               isUpcoming ? 'beat-timeline-marker--upcoming' : ''
-            } ${beat.source === 'interpolated' ? 'beat-timeline-marker--interpolated' : ''}`}
+            } ${beat.source === 'interpolated' ? 'beat-timeline-marker--interpolated' : ''} ${
+              enableBeatSelection ? 'beat-timeline-marker--selectable' : ''
+            } ${
+              selectedBeatIndex !== undefined && beat.beatIndex === selectedBeatIndex
+                ? 'beat-timeline-marker--selected'
+                : ''
+            }`}
             style={{
               left: `${position * 100}%`,
               // For detected beats, use confidence if available; for interpolated beats, always use confidence
               opacity: beat.source === 'detected' ? (beat.confidence ?? 1) : beat.confidence,
             }}
+            onClick={
+              enableBeatSelection && onBeatClick
+                ? (e) => {
+                    e.stopPropagation(); // Prevent timeline seek
+                    onBeatClick(beat.beatIndex);
+                  }
+                : undefined
+            }
+            role={enableBeatSelection ? 'button' : undefined}
+            tabIndex={enableBeatSelection ? 0 : undefined}
+            aria-label={
+              enableBeatSelection
+                ? `Beat ${beat.beatIndex + 1}${beat.isDownbeat ? ' (downbeat)' : ''}`
+                : undefined
+            }
+            onKeyDown={
+              enableBeatSelection && onBeatClick
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onBeatClick(beat.beatIndex);
+                    }
+                  }
+                : undefined
+            }
           >
             {/* Beat inner dot */}
             <div className="beat-timeline-marker-dot" />
