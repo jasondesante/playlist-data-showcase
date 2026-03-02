@@ -119,10 +119,10 @@ Timeline with measure visualization ON:
 
 ## Phase 1: Type Re-exports and Store Foundation
 
-- [ ] **1.1 Re-export downbeat types from engine**
-  - [ ] Add `TimeSignatureConfig`, `DownbeatSegment`, `DownbeatConfig` to `src/types/index.ts`
-  - [ ] Add `DEFAULT_DOWNBEAT_CONFIG`, `reapplyDownbeatConfig` exports
-  - [ ] Verify types are accessible throughout codebase
+- [x] **1.1 Re-export downbeat types from engine**
+  - [x] Add `TimeSignatureConfig`, `DownbeatSegment`, `DownbeatConfig` to `src/types/index.ts`
+  - [x] Add `DEFAULT_DOWNBEAT_CONFIG`, `reapplyDownbeatConfig` exports
+  - [x] Verify types are accessible throughout codebase (vite build succeeds)
 
 - [ ] **1.2 Add downbeat config state to store**
   - [ ] Add `downbeatConfig: DownbeatConfig | null` to state interface in `src/store/beatDetectionStore.ts`

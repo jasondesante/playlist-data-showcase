@@ -481,6 +481,23 @@ export { DEFAULT_BEAT_INTERPOLATION_OPTIONS } from 'playlist-data-engine';
 // Re-export the BeatInterpolator class
 export { BeatInterpolator } from 'playlist-data-engine';
 
+// ============================================================
+// Downbeat Configuration Types
+// ============================================================
+
+// Re-export downbeat configuration types from the engine
+export type {
+    TimeSignatureConfig,
+    DownbeatSegment,
+    DownbeatConfig,
+} from 'playlist-data-engine';
+
+// Re-export downbeat configuration constants and functions
+export {
+    DEFAULT_DOWNBEAT_CONFIG,
+    reapplyDownbeatConfig,
+} from 'playlist-data-engine';
+
 // Import types needed for extending (Task 6.3)
 // These are imported with aliases so we can extend them in this file
 // Note: BeatEvent and BeatEventType are already re-exported from the main export block above
