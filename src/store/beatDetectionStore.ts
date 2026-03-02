@@ -39,6 +39,8 @@ import {
     BeatStreamMode,
     DEFAULT_BEAT_INTERPOLATION_OPTIONS,
     InterpolationVisualizationData,
+    // Downbeat configuration types
+    DownbeatConfig,
 } from '@/types';
 import { BeatMapGenerator, BeatInterpolator } from 'playlist-data-engine';
 
@@ -289,6 +291,9 @@ interface BeatDetectionState {
     lastGeneratedInterpolationConfig: InterpolationConfigSnapshot | null;
     /** Cached interpolated beat maps indexed by audio ID for localStorage persistence */
     cachedInterpolatedBeatMaps: Record<string, InterpolatedBeatMap>;
+    // Downbeat configuration state
+    /** Current downbeat configuration (null = using default: beat 0 is downbeat, 4/4 time) */
+    downbeatConfig: DownbeatConfig | null;
 }
 
 interface BeatDetectionActions {
@@ -549,6 +554,8 @@ const createInitialState = (): BeatDetectionState => ({
     showTempoDriftVisualization: false, // Task 5.4: Tempo drift visualization
     lastGeneratedInterpolationConfig: null,
     cachedInterpolatedBeatMaps: {},
+    // Downbeat configuration state
+    downbeatConfig: null, // null = using default config
 });
 
 /**
@@ -1234,6 +1241,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 // selectedAlgorithm removed - engine uses only adaptive-phase-locked
                 beatStreamMode: state.beatStreamMode,
                 cachedInterpolatedBeatMaps: state.cachedInterpolatedBeatMaps,
+                // Downbeat configuration state
+                downbeatConfig: state.downbeatConfig,
             }) as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {

@@ -124,10 +124,10 @@ Timeline with measure visualization ON:
   - [x] Add `DEFAULT_DOWNBEAT_CONFIG`, `reapplyDownbeatConfig` exports
   - [x] Verify types are accessible throughout codebase (vite build succeeds)
 
-- [ ] **1.2 Add downbeat config state to store**
-  - [ ] Add `downbeatConfig: DownbeatConfig | null` to state interface in `src/store/beatDetectionStore.ts`
-  - [ ] Initialize as `null` in initial state (null = using default)
-  - [ ] Add to `partialize` for localStorage persistence
+- [x] **1.2 Add downbeat config state to store**
+  - [x] Add `downbeatConfig: DownbeatConfig | null` to state interface in `src/store/beatDetectionStore.ts`
+  - [x] Initialize as `null` in initial state (null = using default)
+  - [x] Add to `partialize` for localStorage persistence
 
 - [ ] **1.3 Add store actions for downbeat config**
   - [ ] `reapplyDownbeatConfig(config: DownbeatConfig)` - Apply new config, update beatMap and interpolatedBeatMap
