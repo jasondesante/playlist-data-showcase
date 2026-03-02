@@ -2268,3 +2268,49 @@ export const useNeedsReanalysis = () => {
     const interpolationChanged = useInterpolationSettingsChanged();
     return oseChanged || interpolationChanged;
 };
+
+// ============================================================
+// Downbeat Configuration Selectors (Task 1.4)
+// ============================================================
+
+/**
+ * Selector to get the current downbeat configuration.
+ * Returns the stored config or DEFAULT_DOWNBEAT_CONFIG if null (using default).
+ */
+export const useDownbeatConfig = () =>
+    useBeatDetectionStore((state) =>
+        state.downbeatConfig ?? DEFAULT_DOWNBEAT_CONFIG
+    );
+
+/**
+ * Selector to get the current time signature (beats per measure).
+ * Returns the beatsPerMeasure from the first segment, which is the primary
+ * time signature for the track. Defaults to 4 if no config exists.
+ */
+export const useTimeSignature = () =>
+    useBeatDetectionStore((state) => {
+        const config = state.downbeatConfig;
+        // Get beatsPerMeasure from first segment, or default to 4
+        return config?.segments[0]?.timeSignature.beatsPerMeasure
+            ?? DEFAULT_DOWNBEAT_CONFIG.segments[0].timeSignature.beatsPerMeasure;
+    });
+
+/**
+ * Selector to get the number of downbeat segments.
+ * Returns 1 if using default config (single segment), otherwise returns
+ * the actual segment count from the stored config.
+ */
+export const useDownbeatSegmentCount = () =>
+    useBeatDetectionStore((state) => {
+        const config = state.downbeatConfig;
+        // Default config has 1 segment
+        return config?.segments.length ?? 1;
+    });
+
+/**
+ * Selector to check if a custom (non-default) downbeat config is applied.
+ * Returns true if downbeatConfig is not null, indicating the user has
+ * modified the default downbeat configuration.
+ */
+export const useHasCustomDownbeatConfig = () =>
+    useBeatDetectionStore((state) => state.downbeatConfig !== null);

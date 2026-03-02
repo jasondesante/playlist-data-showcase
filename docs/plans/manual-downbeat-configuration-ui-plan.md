@@ -137,11 +137,11 @@ Timeline with measure visualization ON:
   - [x] `removeDownbeatSegment(segmentIndex: number)` - Remove a segment
   - [x] `updateDownbeatSegment(segmentIndex: number, updates: Partial<DownbeatSegment>)` - Update segment
 
-- [ ] **1.4 Add store selectors**
-  - [ ] `useDownbeatConfig()` - Get current config
-  - [ ] `useTimeSignature()` - Get current beats per measure (first segment)
-  - [ ] `useDownbeatSegmentCount()` - Get number of segments
-  - [ ] `useHasCustomDownbeatConfig()` - Check if non-default config is applied
+- [x] **1.4 Add store selectors**
+  - [x] `useDownbeatConfig()` - Get current config
+  - [x] `useTimeSignature()` - Get current beats per measure (first segment)
+  - [x] `useDownbeatSegmentCount()` - Get number of segments
+  - [x] `useHasCustomDownbeatConfig()` - Check if non-default config is applied
 
 ---
 
