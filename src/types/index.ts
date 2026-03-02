@@ -476,6 +476,19 @@ export type {
     // Tempo Section types (multi-tempo support)
     TempoSection,
     TempoSectionJSON,
+
+    // Beat Subdivision types
+    SubdivisionType,
+    SubdivisionSegment,
+    SubdivisionConfig,
+    UnifiedBeatMap,
+    SubdividedBeat,
+    SubdividedBeatMap,
+    SubdivisionMetadata,
+    SubdivisionTransitionMode,
+    SubdivisionPlaybackOptions,
+    SubdivisionBeatEvent,
+    SubdivisionCallback,
 } from 'playlist-data-engine';
 
 // Re-export beat interpolation constants
@@ -499,6 +512,31 @@ export type {
 export {
     DEFAULT_DOWNBEAT_CONFIG,
     reapplyDownbeatConfig,
+} from 'playlist-data-engine';
+
+// ============================================================
+// Beat Subdivision Types
+// ============================================================
+
+// Re-export beat subdivision constants and validation functions
+export {
+    DEFAULT_SUBDIVISION_CONFIG,
+    DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS,
+    MAX_SUBDIVISION_DENSITY,
+    VALID_SUBDIVISION_TYPES,
+    isValidSubdivisionType,
+    getSubdivisionDensity,
+    validateSubdivisionConfig,
+    validateSubdivisionConfigAgainstBeats,
+    validateSubdivisionDensity,
+} from 'playlist-data-engine';
+
+// Re-export the BeatSubdivider class and utility functions
+export {
+    BeatSubdivider,
+    unifyBeatMap,
+    subdivideBeatMap,
+    SubdivisionPlaybackController,
 } from 'playlist-data-engine';
 
 // Import types needed for extending (Task 6.3)
