@@ -331,5 +331,5 @@ Timeline with measure visualization ON:
 - [x] Multi-segment support works for time signature changes
 - [x] Config persists after page reload (localStorage)
 - [x] Practice mode uses updated downbeat positions
-- [ ] Reset button restores default config
+- [x] Reset button restores default config
 - [ ] Cached beat maps update with new config

@@ -311,4 +311,75 @@ describe('beatDetectionStore multi-segment downbeat support', () => {
             expect(state.downbeatConfig?.segments[1].timeSignature.beatsPerMeasure).toBe(5);
         });
     });
+
+    describe('resetDownbeatConfig', () => {
+        it('should reset downbeatConfig to null (default)', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const mockBeatMap = createMockBeatMap(100);
+            useBeatDetectionStore.setState({ beatMap: mockBeatMap });
+
+            // First, set a custom downbeat position
+            useBeatDetectionStore.getState().actions.setDownbeatPosition(5, 4);
+
+            // Verify custom config is set
+            let state = useBeatDetectionStore.getState();
+            expect(state.downbeatConfig).not.toBeNull();
+            expect(state.downbeatConfig?.segments[0].downbeatBeatIndex).toBe(5);
+
+            // Now reset
+            useBeatDetectionStore.getState().actions.resetDownbeatConfig();
+
+            // Verify config is reset to null (default)
+            state = useBeatDetectionStore.getState();
+            expect(state.downbeatConfig).toBeNull();
+        });
+
+        it('should reapply default config to beatMap beats', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const mockBeatMap = createMockBeatMap(100);
+            useBeatDetectionStore.setState({ beatMap: mockBeatMap });
+
+            // Set a custom downbeat position (beat 5 is downbeat)
+            useBeatDetectionStore.getState().actions.setDownbeatPosition(5, 4);
+
+            // Verify beats are updated with custom config
+            let state = useBeatDetectionStore.getState();
+            expect(state.beatMap?.beats[5].isDownbeat).toBe(true);
+            expect(state.beatMap?.beats[0].isDownbeat).toBe(false);
+
+            // Reset to default
+            useBeatDetectionStore.getState().actions.resetDownbeatConfig();
+
+            // Verify beats are reset to default (beat 0 is downbeat)
+            state = useBeatDetectionStore.getState();
+            expect(state.beatMap?.beats[0].isDownbeat).toBe(true);
+            expect(state.beatMap?.beats[5].isDownbeat).toBe(false);
+        });
+
+        it('should handle reset when no beat map is loaded', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Ensure no beat map is loaded
+            useBeatDetectionStore.setState({ beatMap: null });
+
+            // Reset should not throw and should not change state
+            expect(() => {
+                useBeatDetectionStore.getState().actions.resetDownbeatConfig();
+            }).not.toThrow();
+
+            const state = useBeatDetectionStore.getState();
+            expect(state.beatMap).toBeNull();
+        });
+    });
 });
