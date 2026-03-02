@@ -15,13 +15,22 @@
  * Part of Task 7.2: Edge Cases - Very short tracks, no clear beat
  * Part of Task 4.1: Interpolation Statistics Display
  */
+import { useCallback } from 'react';
 import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
+import { BeatTimeline } from './BeatTimeline';
 import type { BeatMap } from '@/types';
 import {
     useInterpolationStatistics,
+    useIsDownbeatSelectionMode,
+    useTimeSignature,
+    useShowMeasureBoundaries,
+    useInterpolationVisualizationData,
+    useShowGridOverlay,
+    useShowTempoDriftVisualization,
+    useBeatDetectionStore,
 } from '../../store/beatDetectionStore';
 
 /** Minimum track duration for reliable beat detection (seconds) */
@@ -157,6 +166,26 @@ export function BeatMapSummary({
 }: BeatMapSummaryProps) {
   // Get interpolation statistics from store (Task 4.1)
   const interpolationStats = useInterpolationStatistics();
+
+  // Downbeat selection mode (Phase 5: BeatMapSummary Integration)
+  const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
+  const timeSignature = useTimeSignature();
+  const showMeasureBoundaries = useShowMeasureBoundaries();
+  const interpolationData = useInterpolationVisualizationData();
+  const showGridOverlay = useShowGridOverlay();
+  const showTempoDriftVisualization = useShowTempoDriftVisualization();
+
+  /**
+   * Handle beat click for downbeat selection.
+   * Called when user clicks a beat in selection mode.
+   */
+  const handleBeatClick = useCallback((beatIndex: number) => {
+    // Only handle click if in selection mode
+    if (!isDownbeatSelectionMode) return;
+
+    // Update the downbeat position in the store
+    useBeatDetectionStore.getState().actions.setDownbeatPosition(beatIndex, timeSignature);
+  }, [isDownbeatSelectionMode, timeSignature]);
 
   // Check for edge cases with short tracks
   const isShortTrack = beatMap.duration < MIN_TRACK_DURATION;
@@ -458,6 +487,28 @@ export function BeatMapSummary({
 
       {/* Downbeat Configuration Panel (Task 5.2) */}
       <DownbeatConfigPanel disabled={!beatMap} />
+
+      {/* Beat Timeline Preview - for downbeat selection (Phase 5: BeatMapSummary Integration) */}
+      {isDownbeatSelectionMode && (
+        <div className="beat-map-summary-timeline">
+          <div className="beat-map-summary-timeline-label">
+            Click a beat marker to set it as the downbeat:
+          </div>
+          <BeatTimeline
+            beatMap={beatMap}
+            currentTime={0}
+            anticipationWindow={beatMap.duration / 2}
+            pastWindow={beatMap.duration / 2}
+            isPlaying={false}
+            interpolationData={interpolationData}
+            showGridOverlay={showGridOverlay}
+            showTempoDriftVisualization={showTempoDriftVisualization}
+            enableBeatSelection={isDownbeatSelectionMode}
+            onBeatClick={handleBeatClick}
+            showMeasureBoundaries={showMeasureBoundaries}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="beat-map-summary-actions">
