@@ -111,9 +111,9 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 **Goal**: Show multi-tempo info in practice mode BPM display.
 
 ### Task 4.1: Update BPM Display in Practice View
-- [ ] When `hasMultipleTempos: true`, show indicator in BPM section
-- [ ] Display format: "128-140 BPM (2 sections)" or similar
-- [ ] Keep existing position and duration displays unchanged
+- [x] When `hasMultipleTempos: true`, show indicator in BPM section
+- [x] Display format: "128-140 BPM (2 sections)" or similar
+- [x] Keep existing position and duration displays unchanged
 
 ### Task 4.2: No Practice Mode Logic Changes
 - [ ] Verify practice mode works correctly with multi-tempo beat maps

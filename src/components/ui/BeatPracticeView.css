@@ -273,6 +273,23 @@
   }
 }
 
+/* ============================================
+   MULTI-TEMPO INDICATOR
+   Phase 4: Task 4.1 - Show multi-tempo info in BPM section
+   ============================================ */
+
+.beat-practice-multi-tempo-indicator {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: hsl(var(--cute-purple));
+  background: hsl(var(--cute-purple) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-top: 0.25rem;
+  border: 1px solid hsl(var(--cute-purple) / 0.3);
+  white-space: nowrap;
+}
+
 /* Progress Bar for Absolute Seeking */
 .beat-practice-progress-container {
   padding: 0.5rem 0;
@@ -561,6 +578,12 @@
     padding: 0.0625rem 0.1875rem;
   }
 
+  .beat-practice-multi-tempo-indicator {
+    font-size: 0.4375rem;
+    padding: 0.0625rem 0.25rem;
+    margin-top: 0.125rem;
+  }
+
   .beat-practice-progress-bar {
     height: 1.75rem;
   }
@@ -661,6 +684,11 @@
   .beat-practice-bpm-indicator {
     font-size: 0.375rem;
     padding: 0.0625rem 0.125rem;
+  }
+
+  .beat-practice-multi-tempo-indicator {
+    font-size: 0.375rem;
+    padding: 0.0625rem 0.1875rem;
   }
 
   .beat-practice-progress-bar {

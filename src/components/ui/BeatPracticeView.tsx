@@ -29,6 +29,7 @@ import {
     useIsDownbeatSelectionMode,
     useShowMeasureBoundaries,
     useTimeSignature,
+    useInterpolationStatistics,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -183,6 +184,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Difficulty settings for visual feedback
   const difficultyPreset = useDifficultyPreset();
   const accuracyThresholds = useAccuracyThresholds();
+
+  // Multi-tempo info (Phase 4: Task 4.1)
+  const interpolationStats = useInterpolationStatistics();
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
@@ -491,6 +495,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             BPM
             {currentBpm > 0 && <span className="beat-practice-bpm-indicator">rolling</span>}
           </span>
+          {/* Multi-tempo indicator (Phase 4: Task 4.1) */}
+          {interpolationStats?.hasMultiTempoApplied && interpolationStats.tempoSections && interpolationStats.tempoSections.length > 1 && (
+            <span className="beat-practice-multi-tempo-indicator">
+              {Math.round(Math.min(...interpolationStats.tempoSections.map(s => s.bpm)))}-{Math.round(Math.max(...interpolationStats.tempoSections.map(s => s.bpm)))} BPM ({interpolationStats.tempoSections.length} sections)
+            </span>
+          )}
         </div>
         <div className="beat-practice-stat">
           <span className="beat-practice-stat-value">{formatTime(currentTime)}</span>
