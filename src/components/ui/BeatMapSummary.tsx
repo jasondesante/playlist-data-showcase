@@ -16,7 +16,7 @@
  * Part of Task 4.1: Interpolation Statistics Display
  */
 import { useCallback, useState, useEffect } from 'react';
-import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge, Clock, Pause } from 'lucide-react';
+import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge, Clock, Pause, GitBranch } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
@@ -32,6 +32,8 @@ import {
     useShowGridOverlay,
     useShowTempoDriftVisualization,
     useBeatDetectionStore,
+    useSubdividedBeatMap,
+    useSubdivisionMetadata,
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 
@@ -168,6 +170,10 @@ export function BeatMapSummary({
 }: BeatMapSummaryProps) {
   // Get interpolation statistics from store (Task 4.1)
   const interpolationStats = useInterpolationStatistics();
+
+  // Subdivision info (Phase 5, Task 5.2: Subdivision display)
+  const subdividedBeatMap = useSubdividedBeatMap();
+  const subdivisionMetadata = useSubdivisionMetadata();
 
   // Downbeat selection mode (Phase 5: BeatMapSummary Integration)
   const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
@@ -661,6 +667,60 @@ export function BeatMapSummary({
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subdivision Statistics (Phase 5, Task 5.2) */}
+      {subdividedBeatMap && subdivisionMetadata && (
+        <div className="beat-map-subdivision-stats">
+          <div className="beat-map-subdivision-stats-header">
+            <GitBranch className="beat-map-subdivision-stats-icon" />
+            <span className="beat-map-subdivision-stats-title">
+              Subdivision
+            </span>
+          </div>
+
+          {/* Subdivision Types Flow */}
+          <div className="beat-map-subdivision-flow">
+            <span className="beat-map-subdivision-flow-label">
+              Pattern:
+            </span>
+            <span className="beat-map-subdivision-flow-types">
+              {subdivisionMetadata.subdivisionsUsed.join(' → ')}
+            </span>
+          </div>
+
+          {/* Beat Count Stats */}
+          <div className="beat-map-subdivision-stats-row">
+            <div className="beat-map-subdivision-stat">
+              <span className="beat-map-subdivision-stat-label">Original</span>
+              <span className="beat-map-subdivision-stat-value">
+                {formatBeatCount(subdivisionMetadata.originalBeatCount)}
+              </span>
+            </div>
+            <div className="beat-map-subdivision-stat-arrow">→</div>
+            <div className="beat-map-subdivision-stat">
+              <span className="beat-map-subdivision-stat-label">Subdivided</span>
+              <span className="beat-map-subdivision-stat-value beat-map-subdivision-stat-value--highlight">
+                {formatBeatCount(subdivisionMetadata.subdividedBeatCount)}
+              </span>
+            </div>
+          </div>
+
+          {/* Additional Metrics */}
+          <div className="beat-map-subdivision-metrics">
+            <span className="beat-map-subdivision-metric">
+              {subdivisionMetadata.segmentCount} {subdivisionMetadata.segmentCount === 1 ? 'segment' : 'segments'}
+            </span>
+            <span className="beat-map-subdivision-metric">
+              {subdivisionMetadata.averageDensityMultiplier.toFixed(1)}x avg density
+            </span>
+            {subdivisionMetadata.hasMultipleTempos && (
+              <span className="beat-map-subdivision-metric beat-map-subdivision-metric--multi-tempo">
+                Multi-tempo
+              </span>
+            )}
           </div>
         </div>
       )}
