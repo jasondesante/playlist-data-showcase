@@ -248,10 +248,10 @@ Timeline with measure visualization ON:
 - [x] **5.1 Import DownbeatConfigPanel**
   - [x] Add import to `src/components/ui/BeatMapSummary.tsx`
 
-- [ ] **5.2 Add panel to BeatMapSummary**
-  - [ ] Add DownbeatConfigPanel after interpolation statistics section
-  - [ ] Pass `disabled={!beatMap}` prop
-  - [ ] Wire up selection mode state
+- [x] **5.2 Add panel to BeatMapSummary**
+  - [x] Add DownbeatConfigPanel after interpolation statistics section
+  - [x] Pass `disabled={!beatMap}` prop
+  - [x] Wire up selection mode state (component handles internally via store selectors)
 
 - [ ] **5.3 Add selection mode toggle**
   - [ ] "Edit Downbeat" button to enter selection mode

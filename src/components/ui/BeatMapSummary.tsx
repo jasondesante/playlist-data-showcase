@@ -456,6 +456,9 @@ export function BeatMapSummary({
         </div>
       )}
 
+      {/* Downbeat Configuration Panel (Task 5.2) */}
+      <DownbeatConfigPanel disabled={!beatMap} />
+
       {/* Actions */}
       <div className="beat-map-summary-actions">
         <Button
