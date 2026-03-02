@@ -507,6 +507,38 @@
   background: hsl(var(--primary) / 0.2);
 }
 
+/* ============================================
+   Task 4.3: Measure Boundary Lines
+   Vertical lines at measure starts with primary color
+   ============================================ */
+
+/**
+ * Measure boundary container - positioned at measure start.
+ * Contains the vertical line element.
+ */
+.beat-timeline-measure-boundary {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/**
+ * The actual measure line - semi-transparent primary color.
+ * Extends full height of the timeline track.
+ */
+.beat-timeline-measure-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.3);
+}
+
 /* Legend indicator for grid */
 .beat-timeline-legend-grid {
   width: 1rem;
@@ -818,6 +850,16 @@
     height: 0.875rem;
   }
 
+  /* Task 4.3: Measure boundary lines responsive - mobile */
+  .beat-timeline-measure-boundary {
+    width: 1.5px;
+  }
+
+  .beat-timeline-measure-line {
+    width: 1.5px;
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.25);
+  }
+
   /* Tempo drift visualization responsive */
   .beat-timeline-tempo-curve {
     opacity: 0.5;
@@ -952,6 +994,16 @@
   .beat-timeline-legend-tempo {
     width: 0.875rem;
     height: 0.5rem;
+  }
+
+  /* Task 4.3: Measure boundary lines responsive - extra small */
+  .beat-timeline-measure-boundary {
+    width: 1px;
+  }
+
+  .beat-timeline-measure-line {
+    width: 1px;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.2);
   }
 
   /* Task 3.4: Beat number labels responsive - extra small */

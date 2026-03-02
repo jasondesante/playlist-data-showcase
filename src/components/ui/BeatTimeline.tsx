@@ -684,6 +684,17 @@ export function BeatTimeline({
           />
         ))}
 
+        {/* Task 4.3: Measure Boundary Lines */}
+        {showMeasureBoundaries && visibleMeasureBoundaries.map((boundary, index) => (
+          <div
+            key={`measure-boundary-${index}`}
+            className="beat-timeline-measure-boundary"
+            style={{ left: `${boundary.position * 100}%` }}
+          >
+            <div className="beat-timeline-measure-line" />
+          </div>
+        ))}
+
         {/* Task 5.4: Tempo Drift Visualization */}
         {tempoDriftViz && (
           <>

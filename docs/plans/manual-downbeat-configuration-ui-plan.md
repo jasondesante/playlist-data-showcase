@@ -226,10 +226,10 @@ Timeline with measure visualization ON:
   - [x] Add helper function to find beats where `isDownbeat=true`
   - [x] Calculate positions based on beat timestamps
 
-- [ ] **4.3 Render measure boundary lines (when toggle enabled)**
-  - [ ] Vertical lines at measure starts
-  - [ ] Semi-transparent primary color
-  - [ ] Position based on timestamp ratio
+- [x] **4.3 Render measure boundary lines (when toggle enabled)**
+  - [x] Vertical lines at measure starts
+  - [x] Semi-transparent primary color
+  - [x] Position based on timestamp ratio
 
 - [ ] **4.4 Add measure number labels (when toggle enabled)**
   - [ ] Small labels above timeline showing measure numbers (1, 2, 3...)
