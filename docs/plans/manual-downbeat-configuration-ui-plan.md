@@ -327,7 +327,7 @@ Timeline with measure visualization ON:
 - [x] Generate beat map works with default config
 - [x] Click on beat in timeline updates downbeat position
 - [x] Time signature toggle updates measure structure
-- [ ] Measure boundary lines display correctly
+- [x] Measure boundary lines display correctly
 - [ ] Multi-segment support works for time signature changes
 - [ ] Config persists after page reload (localStorage)
 - [ ] Practice mode uses updated downbeat positions
