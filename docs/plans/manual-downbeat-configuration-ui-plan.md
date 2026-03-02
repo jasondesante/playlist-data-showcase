@@ -202,11 +202,11 @@ Timeline with measure visualization ON:
   - [x] Stop propagation to prevent timeline seek
   - [x] Call `onBeatClick` with beat index
 
-- [ ] **3.3 Add beat selection visual styling**
-  - [ ] Cursor pointer when selection enabled
-  - [ ] Hover scale effect on beat markers
-  - [ ] Selected beat highlight (ring or glow)
-  - [ ] Add CSS class `.beat-timeline-marker--selectable`
+- [x] **3.3 Add beat selection visual styling**
+  - [x] Cursor pointer when selection enabled
+  - [x] Hover scale effect on beat markers
+  - [x] Selected beat highlight (ring or glow)
+  - [x] Add CSS class `.beat-timeline-marker--selectable`
 
 - [ ] **3.4 Add beat number labels (optional visibility)**
   - [ ] Show beat numbers (1, 2, 3, 4...) below beats when selection enabled
