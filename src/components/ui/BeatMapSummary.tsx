@@ -18,6 +18,7 @@
 import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
+import { DownbeatConfigPanel } from './DownbeatConfigPanel';
 import type { BeatMap } from '@/types';
 import {
     useInterpolationStatistics,

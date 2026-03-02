@@ -245,8 +245,8 @@ Timeline with measure visualization ON:
 
 ## Phase 5: BeatMapSummary Integration
 
-- [ ] **5.1 Import DownbeatConfigPanel**
-  - [ ] Add import to `src/components/ui/BeatMapSummary.tsx`
+- [x] **5.1 Import DownbeatConfigPanel**
+  - [x] Add import to `src/components/ui/BeatMapSummary.tsx`
 
 - [ ] **5.2 Add panel to BeatMapSummary**
   - [ ] Add DownbeatConfigPanel after interpolation statistics section
