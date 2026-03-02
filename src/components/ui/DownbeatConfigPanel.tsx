@@ -23,6 +23,7 @@ import {
     useTimeSignature,
     useDownbeatSegmentCount,
     useHasCustomDownbeatConfig,
+    useBeatMap,
     useBeatDetectionStore,
 } from '../../store/beatDetectionStore';
 import './DownbeatConfigPanel.css';
@@ -97,6 +98,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
     const timeSignature = useTimeSignature();
     const segmentCount = useDownbeatSegmentCount();
     const hasCustomConfig = useHasCustomDownbeatConfig();
+    const beatMap = useBeatMap();
 
     // Local state for collapsible panel
     const [isExpanded, setIsExpanded] = useState(false);
@@ -104,8 +106,59 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
     // Get the first segment's downbeat index (for single-segment display)
     const currentDownbeatIndex = config.segments[0]?.downbeatBeatIndex ?? 0;
 
+    // Calculate max beat index for validation (0 to beats.length - 1)
+    const maxBeatIndex = beatMap ? beatMap.beats.length - 1 : 0;
+
     // Check if panel should be disabled
     const isDisabled = disabled;
+
+    /**
+     * Handle downbeat position input change.
+     * Validates and clamps the value, then updates the store.
+     */
+    const handleDownbeatIndexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+
+        // Allow empty input for typing
+        if (value === '') {
+            return;
+        }
+
+        const parsedValue = parseInt(value, 10);
+
+        // Only update if it's a valid number
+        if (!isNaN(parsedValue)) {
+            // The store action will clamp to valid range
+            useBeatDetectionStore.getState().actions.setDownbeatPosition(
+                parsedValue,
+                timeSignature
+            );
+        }
+    };
+
+    /**
+     * Handle blur event to ensure valid value.
+     * If input is empty or invalid, reset to current value.
+     */
+    const handleDownbeatIndexBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const parsedValue = parseInt(value, 10);
+
+        // If invalid or empty, reset to current downbeat index
+        if (value === '' || isNaN(parsedValue)) {
+            e.target.value = String(currentDownbeatIndex);
+            return;
+        }
+
+        // Clamp to valid range on blur
+        const clampedValue = Math.max(0, Math.min(parsedValue, maxBeatIndex));
+        if (clampedValue !== parsedValue) {
+            useBeatDetectionStore.getState().actions.setDownbeatPosition(
+                clampedValue,
+                timeSignature
+            );
+        }
+    };
 
     return (
         <div className={`downbeat-config-panel ${isDisabled ? 'downbeat-config-panel--disabled' : ''}`}>
@@ -200,9 +253,12 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         <Input
                             type="number"
                             min={0}
+                            max={maxBeatIndex}
                             value={currentDownbeatIndex}
+                            onChange={handleDownbeatIndexChange}
+                            onBlur={handleDownbeatIndexBlur}
                             disabled={isDisabled}
-                            helperText="The beat number to set as the downbeat (first beat of measure)"
+                            helperText={`The beat number to set as the downbeat (0-${maxBeatIndex})`}
                             size="sm"
                         />
                     </div>

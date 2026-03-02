@@ -167,10 +167,10 @@ Timeline with measure visualization ON:
   - [x] Use existing toggle button pattern from BeatDetectionSettings
   - [x] Update config immediately on selection
 
-- [ ] **2.5 Implement downbeat position input**
-  - [ ] Number input (0 to max beats - 1)
-  - [ ] Validation and clamping
-  - [ ] Update config on change
+- [x] **2.5 Implement downbeat position input**
+  - [x] Number input (0 to max beats - 1)
+  - [x] Validation and clamping
+  - [x] Update config on change
 
 - [ ] **2.6 Implement hint box**
   - [ ] Info icon with text: "Click on any beat in the timeline to set it as the downbeat"
