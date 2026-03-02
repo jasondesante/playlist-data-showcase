@@ -162,10 +162,10 @@ Timeline with measure visualization ON:
   - [x] Show current downbeat position (beat index)
   - [x] Show segment count if > 1
 
-- [ ] **2.4 Implement time signature selector**
-  - [ ] Toggle buttons for common time signatures: 3/4, 4/4, 5/4, 6/4, 7/4, 8/4
-  - [ ] Use existing toggle button pattern from BeatDetectionSettings
-  - [ ] Update config immediately on selection
+- [x] **2.4 Implement time signature selector**
+  - [x] Toggle buttons for common time signatures: 3/4, 4/4, 5/4, 6/4, 7/4, 8/4
+  - [x] Use existing toggle button pattern from BeatDetectionSettings
+  - [x] Update config immediately on selection
 
 - [ ] **2.5 Implement downbeat position input**
   - [ ] Number input (0 to max beats - 1)

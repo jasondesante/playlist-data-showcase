@@ -23,11 +23,68 @@ import {
     useTimeSignature,
     useDownbeatSegmentCount,
     useHasCustomDownbeatConfig,
+    useBeatDetectionStore,
 } from '../../store/beatDetectionStore';
 import './DownbeatConfigPanel.css';
 
 /** Common time signature options */
 const TIME_SIGNATURES = [3, 4, 5, 6, 7, 8] as const;
+type TimeSignatureValue = typeof TIME_SIGNATURES[number];
+
+/**
+ * Handle keyboard navigation for time signature toggle buttons.
+ * Implements standard radiogroup behavior with arrow keys.
+ */
+const handleTimeSigKeyDown = (
+    e: React.KeyboardEvent,
+    currentTimeSig: TimeSignatureValue,
+    onSelect: (beats: TimeSignatureValue) => void
+) => {
+    const currentIndex = TIME_SIGNATURES.indexOf(currentTimeSig);
+    let newIndex = currentIndex;
+
+    switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+            e.preventDefault();
+            newIndex = currentIndex > 0 ? currentIndex - 1 : TIME_SIGNATURES.length - 1;
+            break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+            e.preventDefault();
+            newIndex = currentIndex < TIME_SIGNATURES.length - 1 ? currentIndex + 1 : 0;
+            break;
+        case 'Home':
+            e.preventDefault();
+            newIndex = 0;
+            break;
+        case 'End':
+            e.preventDefault();
+            newIndex = TIME_SIGNATURES.length - 1;
+            break;
+        default:
+            return;
+    }
+
+    // Select the new time signature
+    onSelect(TIME_SIGNATURES[newIndex]);
+
+    // Focus the button for the new selection
+    const container = e.currentTarget;
+    const buttons = container.querySelectorAll('[data-time-sig-index]');
+    const targetButton = buttons[newIndex] as HTMLElement;
+    if (targetButton) {
+        targetButton.focus();
+    }
+};
+
+/**
+ * Get tabIndex for toggle buttons in a radiogroup.
+ * Only the active button should be in the tab order (tabIndex=0).
+ */
+const getToggleTabIndex = (beats: TimeSignatureValue, currentBeats: TimeSignatureValue): number => {
+    return beats === currentBeats ? 0 : -1;
+};
 
 interface DownbeatConfigPanelProps {
     /** Whether the panel is disabled (no beat map available) */
@@ -100,17 +157,36 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                     {/* Time Signature Selector - Task 2.4 */}
                     <div className="downbeat-config-panel-section">
                         <span className="downbeat-config-panel-section-label">Time Signature</span>
-                        <div className="downbeat-config-panel-time-sigs" role="radiogroup" aria-label="Time signature">
-                            {TIME_SIGNATURES.map((beats) => (
+                        <div
+                            className="downbeat-config-panel-time-sigs"
+                            role="radiogroup"
+                            aria-label="Time signature"
+                            onKeyDown={(e) => handleTimeSigKeyDown(
+                                e,
+                                timeSignature as TimeSignatureValue,
+                                (beats) => useBeatDetectionStore.getState().actions.setDownbeatPosition(currentDownbeatIndex, beats)
+                            )}
+                        >
+                            {TIME_SIGNATURES.map((beats, index) => (
                                 <button
                                     key={beats}
                                     type="button"
+                                    data-time-sig-index={index}
                                     className={`downbeat-config-panel-time-sig-btn ${
                                         timeSignature === beats ? 'downbeat-config-panel-time-sig-btn--active' : ''
                                     }`}
+                                    onClick={() => {
+                                        // Update config immediately on selection
+                                        useBeatDetectionStore.getState().actions.setDownbeatPosition(
+                                            currentDownbeatIndex,
+                                            beats
+                                        );
+                                    }}
                                     disabled={isDisabled}
+                                    tabIndex={getToggleTabIndex(beats, timeSignature as TimeSignatureValue)}
                                     aria-checked={timeSignature === beats}
                                     role="radio"
+                                    aria-label={`${beats}/4 time signature`}
                                 >
                                     {beats}/4
                                 </button>
