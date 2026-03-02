@@ -6,13 +6,13 @@
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
 - Phase 3: SubdivisionSettings Component
-- Phase 4: Tasks 4.1, 4.2, 4.3, 4.5 (SubdivisionTimelineEditor component, timeline visualization, drag/drop, and styles created)
+- Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5 (SubdivisionTimelineEditor component, timeline visualization, drag/drop, click to add, and styles created)
 
 **Pending Phases:**
-- Phase 4: Tasks 4.4, 4.6 (Click to add, integration)
+- Phase 4: Task 4.6 (Integration with SubdivisionSettings)
 - Phase 5-10
 
-**Ready to Start:** Phase 4, Task 4.4 (Click to Add Segment)
+**Ready to Start:** Phase 4, Task 4.6 (Integrate with SubdivisionSettings)
 
 ---
 
@@ -286,11 +286,11 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 4.4 Click to Add Segment
 
-- [ ] Implement click interaction:
-  - [ ] Click on timeline to add segment at position
-  - [ ] Show subdivision type picker on click
-  - [ ] Validate: can't overlap existing segments
-  - [ ] Auto-sort segments by startBeat
+- [x] Implement click interaction:
+  - [x] Click on timeline to add segment at position
+  - [x] Show subdivision type picker on click
+  - [x] Validate: can't overlap existing segments
+  - [x] Auto-sort segments by startBeat
 
 ### 4.5 Timeline Editor Styles
 

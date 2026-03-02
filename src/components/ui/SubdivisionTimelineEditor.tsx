@@ -203,7 +203,26 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
+     * Check if a beat position falls within any existing segment's range
+     * (Phase 4, Task 4.4: Validate - can't overlap existing segments)
+     */
+    const isBeatWithinSegmentRange = useCallback((beat: number): boolean => {
+        for (let i = 0; i < subdivisionConfig.segments.length; i++) {
+            const segment = subdivisionConfig.segments[i];
+            const nextSegment = subdivisionConfig.segments[i + 1];
+            const endBeat = nextSegment ? nextSegment.startBeat : totalBeats;
+
+            // Check if beat falls within this segment's range [startBeat, endBeat)
+            if (beat >= segment.startBeat && beat < endBeat) {
+                return true;
+            }
+        }
+        return false;
+    }, [subdivisionConfig.segments, totalBeats]);
+
+    /**
      * Handle click on timeline to add segment
+     * (Phase 4, Task 4.4: Click to Add Segment)
      */
     const handleTimelineClick = (e: React.MouseEvent) => {
         if (disabled || draggingSegment !== null) return;
@@ -216,12 +235,9 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
 
         const beat = getBeatFromX(e.clientX);
 
-        // Check if beat is not already a segment start
-        const existingSegment = subdivisionConfig.segments.findIndex(
-            s => s.startBeat === beat
-        );
-
-        if (existingSegment === -1 && beat > 0) {
+        // Validate: can't add at beat 0 (first segment's domain)
+        // and can't overlap existing segments
+        if (beat > 0 && !isBeatWithinSegmentRange(beat)) {
             // Show type picker
             setPendingSegmentBeat(beat);
             setShowTypePicker(true);
