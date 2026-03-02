@@ -44,6 +44,8 @@ import {
     DownbeatSegment,
     DEFAULT_DOWNBEAT_CONFIG,
     reapplyDownbeatConfig,
+    // Multi-tempo types
+    TempoSection,
 } from '@/types';
 import { BeatMapGenerator, BeatInterpolator } from 'playlist-data-engine';
 
@@ -301,6 +303,8 @@ interface BeatDetectionState {
     showMeasureBoundaries: boolean;
     /** Whether downbeat selection mode is active (Phase 5: BeatMapSummary Integration - Task 5.3) */
     isDownbeatSelectionMode: boolean;
+    /** Whether automatic multi-tempo analysis is enabled (default: true) */
+    autoMultiTempo: boolean;
 }
 
 interface BeatDetectionActions {
@@ -562,6 +566,13 @@ interface BeatDetectionActions {
      * @param enabled - Whether selection mode is enabled
      */
     setDownbeatSelectionMode: (enabled: boolean) => void;
+
+    /**
+     * Set whether automatic multi-tempo analysis is enabled.
+     * When enabled (default), tracks with multiple tempo sections are automatically re-analyzed.
+     * @param enabled - Whether auto multi-tempo is enabled
+     */
+    setAutoMultiTempo: (enabled: boolean) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -627,6 +638,8 @@ const createInitialState = (): BeatDetectionState => ({
     showMeasureBoundaries: false, // Off by default, user opt-in
     // Downbeat selection mode (Phase 5: BeatMapSummary Integration - Task 5.3)
     isDownbeatSelectionMode: false, // Off by default
+    // Multi-tempo analysis (default: enabled)
+    autoMultiTempo: true,
 });
 
 /**
@@ -1558,6 +1571,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         set({ isDownbeatSelectionMode: enabled });
                         logger.info('BeatDetection', 'Downbeat selection mode changed', { enabled });
                     },
+
+                    setAutoMultiTempo: (enabled: boolean) => {
+                        set({ autoMultiTempo: enabled });
+                        logger.info('BeatDetection', 'Auto multi-tempo setting changed', { enabled });
+                    },
                 },
             };
         },
@@ -2067,6 +2085,15 @@ export interface InterpolationStatistics {
         /** Other significant peaks (e.g., half-note = 2× quarter note), as BPM values */
         secondaryPeaks: number[];
     };
+    // Multi-tempo fields (Phase 1: Task 1.2)
+    /** Whether multiple distinct tempos were detected */
+    hasMultipleTempos: boolean;
+    /** Array of detected tempo values in BPM (e.g., [128, 140]) */
+    detectedClusterTempos: number[];
+    /** Tempo sections with boundaries (only after multi-tempo analysis) */
+    tempoSections: TempoSection[] | null;
+    /** Whether multi-tempo re-analysis has been applied */
+    hasMultiTempoApplied: boolean;
 }
 
 /**
@@ -2136,6 +2163,11 @@ export const useInterpolationStatistics = (): InterpolationStatistics | null => 
                 denseSectionBeats: quarterNoteDetection.denseSectionBeats,
                 secondaryPeaks: secondaryPeaksBpm,
             },
+            // Multi-tempo fields (Phase 1: Task 1.2)
+            hasMultipleTempos: interpolationMetadata.hasMultipleTempos ?? false,
+            detectedClusterTempos: interpolationMetadata.detectedClusterTempos ?? [],
+            tempoSections: interpolationMetadata.tempoSections ?? null,
+            hasMultiTempoApplied: interpolationMetadata.hasMultiTempoApplied ?? false,
         };
     }, [rawData]);
 };
@@ -2394,6 +2426,24 @@ export const useHasCustomDownbeatConfig = () =>
  */
 export const useShowMeasureBoundaries = () =>
     useBeatDetectionStore((state) => state.showMeasureBoundaries);
+
+// ============================================================
+// Multi-Tempo Selectors (Phase 1: Task 1.2)
+// ============================================================
+
+/**
+ * Selector hook for auto multi-tempo setting.
+ * Returns the autoMultiTempo state value (default: true).
+ */
+export const useAutoMultiTempo = () =>
+    useBeatDetectionStore((state) => state.autoMultiTempo);
+
+/**
+ * Selector hook for setAutoMultiTempo action.
+ * Returns the setter function for updating autoMultiTempo state.
+ */
+export const useSetAutoMultiTempo = () =>
+    useBeatDetectionStore((state) => state.actions.setAutoMultiTempo);
 
 // ============================================================
 // Downbeat Selection Mode Selectors (Phase 5: Task 5.3)

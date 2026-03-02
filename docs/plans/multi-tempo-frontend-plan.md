@@ -29,10 +29,10 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Verify type is available for use in components
 
 ### Task 1.2: Add Multi-Tempo State to beatDetectionStore
-- [ ] Add `autoMultiTempo: boolean` state (default: `true`)
-- [ ] Add `setAutoMultiTempo(value: boolean)` action
-- [ ] Add selector `useAutoMultiTempo()` hook
-- [ ] Update `InterpolationStatistics` interface to include multi-tempo fields:
+- [x] Add `autoMultiTempo: boolean` state (default: `true`)
+- [x] Add `setAutoMultiTempo(value: boolean)` action
+- [x] Add selector `useAutoMultiTempo()` hook
+- [x] Update `InterpolationStatistics` interface to include multi-tempo fields:
   - `hasMultipleTempos: boolean`
   - `detectedClusterTempos: number[]`
   - `tempoSections: TempoSection[] | null`
