@@ -114,8 +114,6 @@ export function BeatTimeline({
 }: BeatTimelineProps) {
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
-  // showMeasureBoundaries will be used in Task 4.3-4.5 for measure visualization
-  void showMeasureBoundaries;
   const trackRef = useRef<HTMLDivElement>(null);
   const [pulseKey, setPulseKey] = useState(0);
   const lastPulseTimeRef = useRef<number>(0);
@@ -372,6 +370,11 @@ export function BeatTimeline({
      * Part of Task 3.1: Beat Selection Props
      */
     beatIndex: number;
+    /**
+     * The measure number (0-indexed) for this beat.
+     * Part of Phase 4: Measure Visualization (Task 4.2)
+     */
+    measureNumber: number;
   };
 
   /**
@@ -385,21 +388,33 @@ export function BeatTimeline({
       source: 'detected' as const,
       key: `beat-${beat.timestamp.toFixed(3)}-${beat.measureNumber ?? index}`,
       beatIndex: index,
+      measureNumber: beat.measureNumber ?? 0,
     }));
   }, []);
 
   /**
    * Convert interpolation visualization beats to unified format.
+   * Calculates measure numbers based on downbeat positions.
    */
   const convertInterpolationBeats = useCallback((beats: InterpolationVisualizationData['beats']): UnifiedBeat[] => {
-    return beats.map((beat, index) => ({
-      timestamp: beat.timestamp,
-      isDownbeat: beat.isDownbeat,
-      confidence: beat.confidence,
-      source: beat.source,
-      key: `interp-${beat.timestamp.toFixed(3)}-${beat.source}-${index}`,
-      beatIndex: index,
-    }));
+    // First pass: identify downbeat positions to calculate measure numbers
+    let currentMeasure = 0;
+    return beats.map((beat, index) => {
+      const unifiedBeat = {
+        timestamp: beat.timestamp,
+        isDownbeat: beat.isDownbeat,
+        confidence: beat.confidence,
+        source: beat.source,
+        key: `interp-${beat.timestamp.toFixed(3)}-${beat.source}-${index}`,
+        beatIndex: index,
+        measureNumber: currentMeasure,
+      };
+      // Increment measure counter after each downbeat
+      if (beat.isDownbeat && index > 0) {
+        currentMeasure++;
+      }
+      return unifiedBeat;
+    });
   }, []);
 
   /**
@@ -440,6 +455,49 @@ export function BeatTimeline({
   }, [unifiedBeats, smoothTime, anticipationWindow, pastWindow, calculateBeatPosition]);
 
   const visibleBeats = getVisibleBeats();
+
+  // ========================================
+  // Task 4.2: Measure Boundaries Calculation
+  // ========================================
+
+  /**
+   * Calculate visible measure boundaries.
+   * Finds beats where isDownbeat=true and calculates their positions.
+   * Returns measure boundary data for rendering.
+   *
+   * Part of Phase 4: Measure Visualization (Task 4.2)
+   */
+  const getVisibleMeasureBoundaries = useCallback((): Array<{
+    /** Position on timeline (0-1) */
+    position: number;
+    /** Measure number (1-indexed for display) */
+    measureNumber: number;
+    /** Timestamp of the downbeat */
+    timestamp: number;
+  }> => {
+    // Only calculate if measure visualization is enabled
+    if (!showMeasureBoundaries) {
+      return [];
+    }
+
+    // Filter to find downbeats within the visible window
+    const minTime = smoothTime - pastWindow;
+    const maxTime = smoothTime + anticipationWindow;
+
+    return unifiedBeats
+      .filter((beat) => beat.isDownbeat && beat.timestamp >= minTime && beat.timestamp <= maxTime)
+      .map((beat) => {
+        const position = calculateBeatPosition(beat.timestamp);
+        return {
+          position,
+          measureNumber: beat.measureNumber + 1, // Convert to 1-indexed for display
+          timestamp: beat.timestamp,
+        };
+      })
+      .filter((boundary) => boundary.position >= 0 && boundary.position <= 1);
+  }, [showMeasureBoundaries, unifiedBeats, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
+
+  const visibleMeasureBoundaries = getVisibleMeasureBoundaries();
 
   // ========================================
   // Task 5.3: Quarter Note Grid Overlay

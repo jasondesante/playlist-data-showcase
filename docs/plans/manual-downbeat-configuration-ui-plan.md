@@ -222,9 +222,9 @@ Timeline with measure visualization ON:
   - [x] Add toggle control in DownbeatConfigPanel or BeatPracticeView
   - [x] Persist preference in store state
 
-- [ ] **4.2 Calculate measure boundaries**
-  - [ ] Add helper function to find beats where `isDownbeat=true`
-  - [ ] Calculate positions based on beat timestamps
+- [x] **4.2 Calculate measure boundaries**
+  - [x] Add helper function to find beats where `isDownbeat=true`
+  - [x] Calculate positions based on beat timestamps
 
 - [ ] **4.3 Render measure boundary lines (when toggle enabled)**
   - [ ] Vertical lines at measure starts
