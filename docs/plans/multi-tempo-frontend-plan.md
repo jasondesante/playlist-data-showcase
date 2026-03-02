@@ -25,8 +25,8 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 **Goal**: Ensure TempoSection type is available and store handles multi-tempo state.
 
 ### Task 1.1: Export TempoSection Type from Types
-- [ ] Update `src/types/index.ts` to re-export `TempoSection` and `TempoSectionJSON` from playlist-data-engine
-- [ ] Verify type is available for use in components
+- [x] Update `src/types/index.ts` to re-export `TempoSection` and `TempoSectionJSON` from playlist-data-engine
+- [x] Verify type is available for use in components
 
 ### Task 1.2: Add Multi-Tempo State to beatDetectionStore
 - [ ] Add `autoMultiTempo: boolean` state (default: `true`)

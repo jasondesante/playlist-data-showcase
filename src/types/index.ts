@@ -473,6 +473,9 @@ export type {
     QuarterNoteDetection,
     GapAnalysis,
     InterpolationMetadata,
+    // Tempo Section types (multi-tempo support)
+    TempoSection,
+    TempoSectionJSON,
 } from 'playlist-data-engine';
 
 // Re-export beat interpolation constants
