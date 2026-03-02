@@ -72,9 +72,9 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 **Goal**: Show multi-tempo detection info and section details in BeatMapSummary.
 
 ### Task 3.1: Add Multi-Tempo Detection Banner
-- [ ] Show banner when `hasMultipleTempos: true` and `hasMultiTempoApplied: false`
-- [ ] Banner text: "Multiple tempos detected: [128, 140] BPM"
-- [ ] Include info icon with tooltip explaining the detection
+- [x] Show banner when `hasMultipleTempos: true` and `hasMultiTempoApplied: false`
+- [x] Banner text: "Multiple tempos detected: [128, 140] BPM"
+- [x] Include info icon with tooltip explaining the detection
 
 ### Task 3.2: Add Tempo Sections Display
 - [ ] Create new section in BeatMapSummary when `hasMultiTempoApplied: true`

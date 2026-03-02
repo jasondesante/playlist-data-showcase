@@ -351,6 +351,49 @@
   color: hsl(var(--foreground));
 }
 
+/* ============================================
+   Task 3.1: Multi-Tempo Detection Banner
+   Shows when multiple tempos are detected but not yet applied
+   ============================================ */
+
+.beat-map-multi-tempo-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg,
+    hsl(280 70% 50% / 0.12),
+    hsl(280 70% 50% / 0.06)
+  );
+  border: 1px solid hsl(280 70% 50% / 0.3);
+  border-radius: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.beat-map-multi-tempo-banner-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(280 70% 60%);
+  flex-shrink: 0;
+}
+
+.beat-map-multi-tempo-banner-text {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: hsl(280 70% 85%);
+  flex: 1;
+}
+
+.beat-map-multi-tempo-banner .tooltip-wrapper {
+  flex-shrink: 0;
+}
+
+.beat-map-multi-tempo-banner .tooltip-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: hsl(280 70% 60%);
+}
+
 .beat-map-interpolation-stat-row {
   display: flex;
   justify-content: space-between;

@@ -16,11 +16,12 @@
  * Part of Task 4.1: Interpolation Statistics Display
  */
 import { useCallback } from 'react';
-import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers } from 'lucide-react';
+import { Play, Music2, AlertTriangle, Info, HelpCircle, Layers, Gauge } from 'lucide-react';
 import './BeatMapSummary.css';
 import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
 import { BeatTimeline } from './BeatTimeline';
+import { Tooltip } from './Tooltip';
 import type { BeatMap } from '@/types';
 import {
     useInterpolationStatistics,
@@ -342,6 +343,17 @@ export function BeatMapSummary({
               Interpolation
             </span>
           </div>
+
+          {/* Multi-Tempo Detection Banner (Task 3.1) */}
+          {interpolationStats.hasMultipleTempos && !interpolationStats.hasMultiTempoApplied && (
+            <div className="beat-map-multi-tempo-banner">
+              <Gauge className="beat-map-multi-tempo-banner-icon" />
+              <span className="beat-map-multi-tempo-banner-text">
+                Multiple tempos detected: [{interpolationStats.detectedClusterTempos.map(bpm => formatBpm(bpm)).join(', ')}] BPM
+              </span>
+              <Tooltip content="This track contains multiple distinct tempo sections. When Auto Multi-Tempo is enabled, these sections will be analyzed separately for more accurate beat mapping." />
+            </div>
+          )}
 
           {/* Quarter Note BPM */}
           <div className="beat-map-interpolation-stat-row">
