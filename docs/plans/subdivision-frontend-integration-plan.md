@@ -5,11 +5,12 @@
 **Completed Phases:**
 - Phase 1: Type System Updates
 - Phase 2: Store Updates
+- Phase 3: SubdivisionSettings Component
 
 **Pending Phases:**
-- Phase 3-10
+- Phase 4-10
 
-**Ready to Start:** Phase 3, Task 3.1 (Create SubdivisionSettings Component)
+**Ready to Start:** Phase 4, Task 4.1 (Create SubdivisionTimelineEditor Component)
 
 ---
 
@@ -207,47 +208,47 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 3.1 Create SubdivisionSettings Component
 
-- [ ] Create `src/components/ui/SubdivisionSettings.tsx`
-  - [ ] Display current subdivision configuration
-  - [ ] Show list of segments with subdivision types
-  - [ ] Add/remove segment buttons
-  - [ ] Subdivision type selector per segment
-  - [ ] Start beat input for each segment
+- [x] Create `src/components/ui/SubdivisionSettings.tsx`
+  - [x] Display current subdivision configuration
+  - [x] Show list of segments with subdivision types
+  - [x] Add/remove segment buttons
+  - [x] Subdivision type selector per segment
+  - [x] Start beat input for each segment
 
 ### 3.2 Subdivision Type Selector
 
-- [ ] Create subdivision type selector UI
-  - [ ] Quarter (1x) - default
-  - [ ] Half (0.5x) - beats on 1 and 3
-  - [ ] Eighth (2x) - double density
-  - [ ] Sixteenth (4x) - maximum density
-  - [ ] Triplet8 (3 per quarter)
-  - [ ] Triplet4 (3 per half)
-  - [ ] Dotted4 (1.5x interval)
-  - [ ] Dotted8 (swing pattern)
+- [x] Create subdivision type selector UI
+  - [x] Quarter (1x) - default
+  - [x] Half (0.5x) - beats on 1 and 3
+  - [x] Eighth (2x) - double density
+  - [x] Sixteenth (4x) - maximum density
+  - [x] Triplet8 (3 per quarter)
+  - [x] Triplet4 (3 per half)
+  - [x] Dotted4 (1.5x interval)
+  - [x] Dotted8 (swing pattern)
 
 ### 3.3 Segment List UI
 
-- [ ] Create segment list with:
-  - [ ] Visual list of segments ordered by startBeat
-  - [ ] Each segment shows: startBeat, subdivision type
-  - [ ] Edit button to modify segment
-  - [ ] Delete button (except first segment)
-  - [ ] "Add Segment" button at bottom
+- [x] Create segment list with:
+  - [x] Visual list of segments ordered by startBeat
+  - [x] Each segment shows: startBeat, subdivision type
+  - [x] Edit button to modify segment
+  - [x] Delete button (except first segment)
+  - [x] "Add Segment" button at bottom
 
 ### 3.4 Subdivision Settings Styles
 
-- [ ] Create `src/components/ui/SubdivisionSettings.css`
-  - [ ] Match existing settings panel styles
-  - [ ] Responsive layout
-  - [ ] Toggle button styles for subdivision types
+- [x] Create `src/components/ui/SubdivisionSettings.css`
+  - [x] Match existing settings panel styles
+  - [x] Responsive layout
+  - [x] Toggle button styles for subdivision types
 
 ### 3.5 Integrate with AudioAnalysisTab
 
-- [ ] Add SubdivisionSettings section in AudioAnalysisTab
-  - [ ] Place below BeatDetectionSettings in beat mode
-  - [ ] Show only when beat map exists
-  - [ ] Disabled during beat generation
+- [x] Add SubdivisionSettings section in AudioAnalysisTab
+  - [x] Place below BeatDetectionSettings in beat mode
+  - [x] Show only when beat map exists
+  - [x] Disabled during beat generation
 
 ---
 

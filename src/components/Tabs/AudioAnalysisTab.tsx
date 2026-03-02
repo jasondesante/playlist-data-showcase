@@ -14,6 +14,7 @@ import { useTabContext } from '../../App';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
+import { SubdivisionSettings } from '../ui/SubdivisionSettings';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
@@ -776,6 +777,11 @@ export function AudioAnalysisTab() {
                     This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
                   </span>
                 </div>
+              )}
+
+              {/* Subdivision Settings - Phase 3: shown when Beat mode is selected and beat map exists */}
+              {analysisMode === 'beat' && beatMap && !isBeatGenerating && (
+                <SubdivisionSettings disabled={isBeatGenerating} />
               )}
             </div>
 

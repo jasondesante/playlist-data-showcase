@@ -1,0 +1,670 @@
+/* ============================================
+   SUBDIVISION SETTINGS
+   Phase 3, Task 3.1: SubdivisionSettings Component
+   ============================================ */
+
+/* Main container */
+.subdivision-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* Header Section */
+.subdivision-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subdivision-settings-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.subdivision-settings-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--foreground));
+}
+
+.subdivision-settings-summary {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+/* Labels */
+.subdivision-settings-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Notice when no UnifiedBeatMap */
+.subdivision-settings-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+}
+
+.subdivision-settings-notice-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+.subdivision-settings-notice-text {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+/* ============================================
+   SEGMENTS SECTION
+   ============================================ */
+
+.subdivision-settings-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.subdivision-settings-segments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subdivision-settings-beat-count {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+/* Segments List */
+.subdivision-settings-segments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Individual Segment */
+.subdivision-settings-segment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+}
+
+.subdivision-settings-segment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subdivision-settings-segment-number {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.3);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.1875rem;
+}
+
+/* Remove Button */
+.subdivision-settings-segment-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.1875rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.15s ease;
+}
+
+.subdivision-settings-segment-remove:hover:not(:disabled) {
+  background: hsl(var(--destructive) / 0.1);
+  border-color: hsl(var(--destructive) / 0.5);
+  color: hsl(var(--destructive));
+}
+
+.subdivision-settings-segment-remove:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.subdivision-settings-segment-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.subdivision-settings-segment-remove-icon {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+/* Segment Field */
+.subdivision-settings-segment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.subdivision-settings-segment-label {
+  font-size: 0.5rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Start Beat Input */
+.subdivision-settings-segment-input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.625rem;
+  font-family: ui-monospace, monospace;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  color: hsl(var(--foreground));
+  transition: border-color 0.15s ease;
+}
+
+.subdivision-settings-segment-input:hover:not(:disabled) {
+  border-color: hsl(var(--border));
+}
+
+.subdivision-settings-segment-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.subdivision-settings-segment-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   SUBDIVISION TYPE TOGGLES
+   ============================================ */
+
+.subdivision-settings-type-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.subdivision-settings-type-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(var(--muted-foreground));
+  min-width: 2.5rem;
+}
+
+.subdivision-settings-type-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.subdivision-settings-type-toggle:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.subdivision-settings-type-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state - primary color with glow effect */
+.subdivision-settings-type-toggle--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
+.subdivision-settings-type-toggle--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+  box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
+}
+
+/* Type toggle label */
+.subdivision-settings-type-toggle-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Type description */
+.subdivision-settings-type-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+  font-style: italic;
+  margin-top: 0.125rem;
+}
+
+/* ============================================
+   ADD SEGMENT BUTTON
+   ============================================ */
+
+.subdivision-settings-add-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px dashed hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.5625rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.subdivision-settings-add-segment:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary));
+}
+
+.subdivision-settings-add-segment:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.subdivision-settings-add-segment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.subdivision-settings-add-segment-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.subdivision-settings-segment-limit {
+  font-size: 0.5rem;
+  color: hsl(var(--cute-amber, 38 92% 50%));
+  text-align: center;
+  font-style: italic;
+}
+
+/* ============================================
+   GENERATE BUTTON
+   ============================================ */
+
+.subdivision-settings-generate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+}
+
+.subdivision-settings-generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--cute-purple) / 0.8));
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: hsl(var(--background));
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.subdivision-settings-generate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+}
+
+.subdivision-settings-generate-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
+}
+
+.subdivision-settings-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.subdivision-settings-generate-btn-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Generated Info */
+.subdivision-settings-generated-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.subdivision-settings-generated-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--cute-green, 142 76% 36%));
+  background: hsl(var(--cute-green, 142 76% 36%) / 0.15);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.1875rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--cute-green, 142 76% 36%) / 0.3);
+}
+
+.subdivision-settings-generated-stats {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, monospace;
+}
+
+/* ============================================
+   NOTE SECTION
+   ============================================ */
+
+.subdivision-settings-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.subdivision-settings-note-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+.subdivision-settings-note-text {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1026px) {
+  .subdivision-settings {
+    gap: 0.625rem;
+    margin-top: 0.625rem;
+    padding-top: 0.625rem;
+  }
+
+  .subdivision-settings-title {
+    font-size: 0.625rem;
+  }
+
+  .subdivision-settings-summary {
+    font-size: 0.5rem;
+    padding: 0.0938rem 0.3125rem;
+  }
+
+  .subdivision-settings-segment {
+    padding: 0.4375rem 0.5625rem;
+    gap: 0.3125rem;
+  }
+
+  .subdivision-settings-segment-input {
+    padding: 0.3125rem 0.4375rem;
+    font-size: 0.5625rem;
+  }
+
+  .subdivision-settings-type-toggle {
+    padding: 0.3125rem 0.4375rem;
+    min-width: 2.25rem;
+  }
+
+  .subdivision-settings-type-toggle-label {
+    font-size: 0.4688rem;
+  }
+
+  .subdivision-settings-add-segment {
+    padding: 0.4375rem 0.625rem;
+    font-size: 0.5rem;
+  }
+
+  .subdivision-settings-generate-btn {
+    padding: 0.5625rem 0.875rem;
+    font-size: 0.5625rem;
+  }
+
+  .subdivision-settings-note {
+    padding: 0.4375rem 0.5625rem;
+  }
+
+  .subdivision-settings-note-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .subdivision-settings-note-text {
+    font-size: 0.5625rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+  .subdivision-settings {
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .subdivision-settings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .subdivision-settings-title {
+    font-size: 0.5625rem;
+  }
+
+  .subdivision-settings-summary {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .subdivision-settings-segments-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+  }
+
+  .subdivision-settings-segment {
+    padding: 0.375rem 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .subdivision-settings-segment-input {
+    padding: 0.25rem 0.375rem;
+    font-size: 0.5625rem;
+  }
+
+  .subdivision-settings-type-toggles {
+    gap: 0.1875rem;
+  }
+
+  .subdivision-settings-type-toggle {
+    padding: 0.25rem 0.375rem;
+    min-width: 2rem;
+    flex: 1 1 calc(25% - 0.1875rem);
+  }
+
+  .subdivision-settings-type-toggle-label {
+    font-size: 0.4375rem;
+  }
+
+  .subdivision-settings-type-description {
+    font-size: 0.4375rem;
+  }
+
+  .subdivision-settings-add-segment {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.5rem;
+  }
+
+  .subdivision-settings-add-segment-icon {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .subdivision-settings-generate {
+    gap: 0.25rem;
+    padding-top: 0.375rem;
+  }
+
+  .subdivision-settings-generate-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.5rem;
+  }
+
+  .subdivision-settings-generate-btn-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .subdivision-settings-generated-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .subdivision-settings-note {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .subdivision-settings-note-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .subdivision-settings-note-text {
+    font-size: 0.5rem;
+  }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .subdivision-settings-segment-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 0.5rem;
+  }
+
+  .subdivision-settings-segment-remove {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .subdivision-settings-segment-remove-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .subdivision-settings-type-toggle {
+    min-height: 44px;
+    padding: 0.625rem 0.5rem;
+  }
+
+  .subdivision-settings-type-toggle:active {
+    transform: scale(0.98);
+  }
+
+  .subdivision-settings-add-segment {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .subdivision-settings-add-segment:active {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  }
+
+  .subdivision-settings-generate-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .subdivision-settings-generate-btn:active {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .subdivision-settings-type-toggle,
+  .subdivision-settings-add-segment,
+  .subdivision-settings-generate-btn,
+  .subdivision-settings-segment-remove {
+    transition: none;
+  }
+}
