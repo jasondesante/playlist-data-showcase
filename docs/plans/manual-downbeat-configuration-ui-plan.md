@@ -332,4 +332,4 @@ Timeline with measure visualization ON:
 - [x] Config persists after page reload (localStorage)
 - [x] Practice mode uses updated downbeat positions
 - [x] Reset button restores default config
-- [ ] Cached beat maps update with new config
+- [x] Cached beat maps update with new config

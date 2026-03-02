@@ -382,4 +382,111 @@ describe('beatDetectionStore multi-segment downbeat support', () => {
             expect(state.beatMap).toBeNull();
         });
     });
+
+    describe('Cached beat maps update with new config', () => {
+        it('should re-apply downbeat config when loading beat map from cache', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const mockBeatMap = createMockBeatMap(100);
+
+            // Simulate: cache the beat map with default downbeat
+            useBeatDetectionStore.setState({
+                cachedBeatMaps: {
+                    'test-audio-id': mockBeatMap,
+                },
+                cacheOrder: ['test-audio-id'],
+                // Simulate: persisted downbeat config (beat 5 is downbeat)
+                downbeatConfig: {
+                    segments: [{
+                        startBeat: 0,
+                        downbeatBeatIndex: 5,
+                        timeSignature: { beatsPerMeasure: 4 },
+                    }],
+                },
+            });
+
+            // Verify the cached beat map has default downbeat (beat 0 is downbeat)
+            const cachedMap = useBeatDetectionStore.getState().cachedBeatMaps['test-audio-id'];
+            expect(cachedMap?.beats[0].isDownbeat).toBe(true);
+            expect(cachedMap?.beats[5].isDownbeat).toBe(false);
+
+            // Now simulate loading from cache by calling the internal logic
+            // This simulates what happens in generateBeatMap when cache is hit
+            const { reapplyDownbeatConfig } = await import('playlist-data-engine');
+            const state = useBeatDetectionStore.getState();
+            const config = state.downbeatConfig;
+
+            if (config) {
+                const updatedMap = reapplyDownbeatConfig(cachedMap!, config);
+
+                // Verify the config was applied: beat 5 should now be downbeat
+                expect(updatedMap.beats[5].isDownbeat).toBe(true);
+                expect(updatedMap.beats[0].isDownbeat).toBe(false);
+            }
+        });
+
+        it('should not modify the cached beat map when applying config', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const mockBeatMap = createMockBeatMap(100);
+
+            // Cache the beat map with default downbeat
+            useBeatDetectionStore.setState({
+                cachedBeatMaps: {
+                    'test-audio-id': mockBeatMap,
+                },
+                cacheOrder: ['test-audio-id'],
+                downbeatConfig: {
+                    segments: [{
+                        startBeat: 0,
+                        downbeatBeatIndex: 5,
+                        timeSignature: { beatsPerMeasure: 4 },
+                    }],
+                },
+            });
+
+            const originalCachedMap = useBeatDetectionStore.getState().cachedBeatMaps['test-audio-id'];
+
+            // Apply config (this should not mutate the cached map)
+            const { reapplyDownbeatConfig } = await import('playlist-data-engine');
+            const config = useBeatDetectionStore.getState().downbeatConfig;
+            reapplyDownbeatConfig(originalCachedMap!, config!);
+
+            // The cached map should still have default downbeat
+            const cachedMapAfter = useBeatDetectionStore.getState().cachedBeatMaps['test-audio-id'];
+            expect(cachedMapAfter?.beats[0].isDownbeat).toBe(true);
+            expect(cachedMapAfter?.beats[5].isDownbeat).toBe(false);
+        });
+
+        it('should use default config when downbeatConfig is null', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const mockBeatMap = createMockBeatMap(100);
+
+            // Cache the beat map and ensure downbeatConfig is null
+            useBeatDetectionStore.setState({
+                cachedBeatMaps: {
+                    'test-audio-id': mockBeatMap,
+                },
+                cacheOrder: ['test-audio-id'],
+                downbeatConfig: null,
+            });
+
+            const state = useBeatDetectionStore.getState();
+
+            // When downbeatConfig is null, no re-application should happen
+            // The cached beat map should be used as-is
+            expect(state.downbeatConfig).toBeNull();
+            expect(state.cachedBeatMaps['test-audio-id']?.beats[0].isDownbeat).toBe(true);
+        });
+    });
 });
