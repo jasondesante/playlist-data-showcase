@@ -364,6 +364,63 @@ export function BeatMapSummary({
                   Tempo Sections ({interpolationStats.tempoSections.length} {interpolationStats.tempoSections.length === 1 ? 'section' : 'sections'} detected)
                 </span>
               </div>
+
+              {/* Timeline Section Markers (Task 3.3) */}
+              <div className="beat-map-tempo-timeline">
+                <div className="beat-map-tempo-timeline-bar">
+                  {interpolationStats.tempoSections.map((section, index) => {
+                    // Calculate the total duration of all sections
+                    const totalDuration = interpolationStats.tempoSections!.reduce(
+                      (sum, s) => sum + (s.end - s.start),
+                      0
+                    );
+                    // Calculate this section's duration and percentage
+                    const sectionDuration = section.end - section.start;
+                    const widthPercent = (sectionDuration / totalDuration) * 100;
+                    // Assign a color based on index using a palette
+                    const colorIndex = index % 4;
+
+                    return (
+                      <div
+                        key={index}
+                        className={`beat-map-tempo-timeline-segment beat-map-tempo-timeline-segment--color-${colorIndex + 1}`}
+                        style={{ width: `${widthPercent}%` }}
+                      >
+                        <span className="beat-map-tempo-timeline-bpm">
+                          {formatBpm(section.bpm)}
+                        </span>
+                        {index < interpolationStats.tempoSections!.length - 1 && (
+                          <div className="beat-map-tempo-timeline-boundary" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="beat-map-tempo-timeline-labels">
+                  {interpolationStats.tempoSections.map((section, index) => {
+                    const totalDuration = interpolationStats.tempoSections!.reduce(
+                      (sum, s) => sum + (s.end - s.start),
+                      0
+                    );
+                    const sectionDuration = section.end - section.start;
+                    const widthPercent = (sectionDuration / totalDuration) * 100;
+
+                    return (
+                      <div
+                        key={index}
+                        className="beat-map-tempo-timeline-label"
+                        style={{ width: `${widthPercent}%` }}
+                      >
+                        <span className="beat-map-tempo-timeline-time">
+                          {formatDuration(section.start)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section Cards */}
               <div className="beat-map-tempo-sections-list">
                 {interpolationStats.tempoSections.map((section, index) => (
                   <div key={index} className="beat-map-tempo-section-card">

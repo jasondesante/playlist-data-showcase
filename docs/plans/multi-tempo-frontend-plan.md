@@ -86,10 +86,10 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 - [x] Add header: "Tempo Sections (X sections detected)"
 
 ### Task 3.3: Add Timeline Section Markers
-- [ ] Add visual timeline bar showing section boundaries
-- [ ] Each section shown as a colored segment proportional to its duration
-- [ ] Display BPM label on each segment
-- [ ] Show boundary lines between sections
+- [x] Add visual timeline bar showing section boundaries
+- [x] Each section shown as a colored segment proportional to its duration
+- [x] Display BPM label on each segment
+- [x] Show boundary lines between sections
 
 ### Task 3.4: Update Interpolation Statistics Display
 - [ ] Update the existing interpolation stats section to show:

@@ -482,6 +482,110 @@
   color: hsl(280 70% 70%);
 }
 
+/* ============================================
+   Task 3.3: Timeline Section Markers
+   Visual timeline bar showing section boundaries
+   ============================================ */
+
+.beat-map-tempo-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.beat-map-tempo-timeline-bar {
+  display: flex;
+  height: 1.75rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-map-tempo-timeline-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 2rem;
+  transition: filter 0.15s ease;
+}
+
+.beat-map-tempo-timeline-segment:hover {
+  filter: brightness(1.1);
+}
+
+/* Tempo section colors - 4 color palette */
+.beat-map-tempo-timeline-segment--color-1 {
+  background: linear-gradient(135deg,
+    hsl(280 70% 55% / 0.9),
+    hsl(280 70% 45% / 0.9)
+  );
+}
+
+.beat-map-tempo-timeline-segment--color-2 {
+  background: linear-gradient(135deg,
+    hsl(199 89% 48% / 0.9),
+    hsl(199 89% 38% / 0.9)
+  );
+}
+
+.beat-map-tempo-timeline-segment--color-3 {
+  background: linear-gradient(135deg,
+    hsl(142 76% 45% / 0.9),
+    hsl(142 76% 35% / 0.9)
+  );
+}
+
+.beat-map-tempo-timeline-segment--color-4 {
+  background: linear-gradient(135deg,
+    hsl(262 83% 58% / 0.9),
+    hsl(262 83% 48% / 0.9)
+  );
+}
+
+.beat-map-tempo-timeline-bpm {
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: white;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.25rem;
+}
+
+.beat-map-tempo-timeline-boundary {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: white;
+  box-shadow: 0 0 4px rgb(0 0 0 / 0.3);
+  z-index: 1;
+}
+
+.beat-map-tempo-timeline-labels {
+  display: flex;
+  border-radius: 0.125rem;
+}
+
+.beat-map-tempo-timeline-label {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 0.25rem;
+  min-width: 2rem;
+}
+
+.beat-map-tempo-timeline-time {
+  font-size: 0.5rem;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+}
+
 /* Responsive adjustments for tempo sections */
 @media (max-width: 480px) {
   .beat-map-tempo-section-details {
@@ -491,6 +595,18 @@
 
   .beat-map-tempo-section-card {
     padding: 0.375rem 0.5rem;
+  }
+
+  .beat-map-tempo-timeline-bar {
+    height: 1.5rem;
+  }
+
+  .beat-map-tempo-timeline-bpm {
+    font-size: 0.5625rem;
+  }
+
+  .beat-map-tempo-timeline-time {
+    font-size: 0.4375rem;
   }
 }
 
