@@ -980,9 +980,17 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             if (!mustRegenerateInterpolation && cachedInterpolated && !interpolationConfigsDiffer(currentInterpolationConfig, state.lastGeneratedInterpolationConfig)) {
                                 // Use cached interpolated beat map
                                 logger.info('BeatDetection', 'Using cached interpolated beat map', { audioId });
+
+                                // Task 2.4: Auto-generate UnifiedBeatMap from cached interpolation
+                                const unifiedMap = unifyBeatMap(cachedInterpolated);
                                 set({
                                     interpolatedBeatMap: cachedInterpolated,
                                     lastGeneratedInterpolationConfig: currentInterpolationConfig,
+                                    unifiedBeatMap: unifiedMap,
+                                    subdividedBeatMap: null, // Clear subdivision when unified changes
+                                });
+                                logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from cached interpolation', {
+                                    beatCount: unifiedMap.beats.length,
                                 });
                             } else {
                                 // Generate interpolation (options changed, not cached, or downbeat config applied)
@@ -1002,9 +1010,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 });
                                 try {
                                     const interpolatedBeatMap = interpolator.interpolate(cachedMap);
+
+                                    // Task 2.4: Auto-generate UnifiedBeatMap after interpolation
+                                    const unifiedMap = unifyBeatMap(interpolatedBeatMap);
+
                                     set({
                                         interpolatedBeatMap,
                                         lastGeneratedInterpolationConfig: currentInterpolationConfig,
+                                        unifiedBeatMap: unifiedMap,
+                                        subdividedBeatMap: null, // Clear subdivision when unified changes
                                         // Only update cache if no custom downbeat config
                                         // (otherwise we'd cache the modified beat map)
                                         ...(mustRegenerateInterpolation ? {} : {
@@ -1017,6 +1031,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     logger.info('BeatDetection', 'Interpolated beat map generated successfully', {
                                         detectedBeats: interpolatedBeatMap.detectedBeats.length,
                                         mergedBeats: interpolatedBeatMap.mergedBeats.length,
+                                    });
+                                    logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from interpolation', {
+                                        beatCount: unifiedMap.beats.length,
                                     });
                                 } catch (interpError) {
                                     const errorMsg = interpError instanceof Error ? interpError.message : 'Unknown interpolation error';
@@ -1107,6 +1124,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             );
 
                             let interpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            let unifiedBeatMap: UnifiedBeatMap | null = null;
                             let cachedInterpolatedBeatMaps = currentState.cachedInterpolatedBeatMaps;
 
                             try {
@@ -1129,6 +1147,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     interpolatedCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
                                     quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
                                 });
+
+                                // Task 2.4: Auto-generate UnifiedBeatMap after interpolation
+                                unifiedBeatMap = unifyBeatMap(interpolatedBeatMap);
+                                logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from interpolation', {
+                                    beatCount: unifiedBeatMap.beats.length,
+                                });
                             } catch (interpError) {
                                 const errorMsg = interpError instanceof Error ? interpError.message : 'Unknown interpolation error';
                                 logger.error('BeatDetection', 'Failed to generate interpolated beat map', { error: errorMsg });
@@ -1146,6 +1170,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 interpolatedBeatMap,
                                 lastGeneratedInterpolationConfig: interpolationConfigSnapshot,
                                 cachedInterpolatedBeatMaps,
+                                unifiedBeatMap,
+                                subdividedBeatMap: null, // Clear subdivision when unified changes
                                 // Task 6.1: Reset downbeat config when generating a new beat map
                                 // Each beat map should start with default downbeat configuration
                                 downbeatConfig: null,
@@ -1495,7 +1521,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
                             });
 
-                            set({ interpolatedBeatMap });
+                            // Task 2.4: Auto-generate UnifiedBeatMap after interpolation
+                            const unifiedMap = unifyBeatMap(interpolatedBeatMap);
+                            set({
+                                interpolatedBeatMap,
+                                unifiedBeatMap: unifiedMap,
+                                subdividedBeatMap: null, // Clear subdivision when unified changes
+                            });
+                            logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from interpolation', {
+                                beatCount: unifiedMap.beats.length,
+                            });
                             return interpolatedBeatMap;
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -1513,6 +1548,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         set({
                             interpolatedBeatMap: null,
                             showInterpolationVisualization: false,
+                            // Task 2.4: Also clear subdivision state since it depends on interpolation
+                            unifiedBeatMap: null,
+                            subdividedBeatMap: null,
                         });
                     },
 
@@ -1546,6 +1584,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Update interpolated beat map if it exists
                             let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            let updatedUnifiedBeatMap: UnifiedBeatMap | null = null;
                             if (interpolatedBeatMap) {
                                 // Re-interpolate with the updated beat map, including enableMultiTempo from state
                                 const interpolator = new BeatInterpolator({
@@ -1554,11 +1593,17 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 });
                                 updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
                                 logger.info('BeatDetection', 'Re-interpolated beat map with new downbeat config');
+
+                                // Task 2.4: Also regenerate UnifiedBeatMap
+                                updatedUnifiedBeatMap = unifyBeatMap(updatedInterpolatedBeatMap);
+                                logger.info('BeatDetection', 'UnifiedBeatMap regenerated after downbeat config change');
                             }
 
                             set({
                                 beatMap: updatedBeatMap,
                                 interpolatedBeatMap: updatedInterpolatedBeatMap,
+                                unifiedBeatMap: updatedUnifiedBeatMap,
+                                subdividedBeatMap: null, // Clear subdivision when unified changes
                                 downbeatConfig: config,
                             });
 
@@ -1591,6 +1636,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Update interpolated beat map if it exists
                             let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            let updatedUnifiedBeatMap: UnifiedBeatMap | null = null;
                             if (interpolatedBeatMap) {
                                 // Include enableMultiTempo from state
                                 const interpolator = new BeatInterpolator({
@@ -1598,11 +1644,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     enableMultiTempo: state.autoMultiTempo,
                                 });
                                 updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
+
+                                // Task 2.4: Also regenerate UnifiedBeatMap
+                                updatedUnifiedBeatMap = unifyBeatMap(updatedInterpolatedBeatMap);
                             }
 
                             set({
                                 beatMap: updatedBeatMap,
                                 interpolatedBeatMap: updatedInterpolatedBeatMap,
+                                unifiedBeatMap: updatedUnifiedBeatMap,
+                                subdividedBeatMap: null, // Clear subdivision when unified changes
                                 downbeatConfig: null, // null = using default
                             });
 

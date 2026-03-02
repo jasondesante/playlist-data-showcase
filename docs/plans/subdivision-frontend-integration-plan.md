@@ -4,15 +4,12 @@
 
 **Completed Phases:**
 - Phase 1: Type System Updates
-
-**In Progress Phases:**
-- Phase 2: Store Updates (Tasks 2.1, 2.2, 2.3, 2.5 complete)
+- Phase 2: Store Updates
 
 **Pending Phases:**
-- Phase 2 (remaining task 2.4)
 - Phase 3-10
 
-**Ready to Start:** Phase 2, Task 2.4 (Integrate with Existing Pipeline)
+**Ready to Start:** Phase 3, Task 3.1 (Create SubdivisionSettings Component)
 
 ---
 
@@ -192,9 +189,9 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 2.4 Integrate with Existing Pipeline
 
-- [ ] Update `generateBeatMap` success handler to auto-generate `UnifiedBeatMap`
-- [ ] Update interpolation success handler to regenerate `UnifiedBeatMap`
-- [ ] Clear `SubdividedBeatMap` when `UnifiedBeatMap` changes
+- [x] Update `generateBeatMap` success handler to auto-generate `UnifiedBeatMap`
+- [x] Update interpolation success handler to regenerate `UnifiedBeatMap`
+- [x] Clear `SubdividedBeatMap` when `UnifiedBeatMap` changes
 
 ### 2.5 Persist SubdivisionConfig to localStorage
 
