@@ -6,12 +6,13 @@
 - Phase 1: Type System Updates
 
 **In Progress Phases:**
-- None
+- Phase 2: Store Updates (Task 2.1, 2.5 complete)
 
 **Pending Phases:**
-- Phase 2-10
+- Phase 2 (remaining tasks 2.2-2.4)
+- Phase 3-10
 
-**Ready to Start:** Phase 2 (Store Updates)
+**Ready to Start:** Phase 2, Task 2.2 (Add Subdivision Actions)
 
 ---
 
@@ -154,20 +155,16 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 2.1 Add Subdivision State
 
-- [ ] Add subdivision state to `beatDetectionStore.ts`
-  ```typescript
-  interface BeatDetectionState {
-    // ... existing state ...
-
-    // Subdivision state
-    unifiedBeatMap: UnifiedBeatMap | null;
-    subdividedBeatMap: SubdividedBeatMap | null;
-    subdivisionConfig: SubdivisionConfig;
-    subdivisionPlaybackController: SubdivisionPlaybackController | null;
-    currentSubdivision: SubdivisionType;
-    subdivisionMode: 'pre-calculated' | 'real-time';
-  }
-  ```
+- [x] Add subdivision state to `beatDetectionStore.ts`
+  - [x] `unifiedBeatMap: UnifiedBeatMap | null` - unified quarter-note grid
+  - [x] `subdividedBeatMap: SubdividedBeatMap | null` - pre-calculated subdivided map
+  - [x] `subdivisionConfig: SubdivisionConfig` - current configuration (persisted)
+  - [x] `currentSubdivision: SubdivisionType` - for real-time mode (persisted)
+  - [x] `cachedUnifiedBeatMaps: Record<string, UnifiedBeatMap>` - localStorage cache
+  - [x] `cachedSubdividedBeatMaps: Record<string, SubdividedBeatMap>` - localStorage cache
+  - [x] Module-level `_activeSubdivisionPlaybackController` with getter/setter (non-serializable)
+  - [x] ~~`subdivisionMode`~~ - **REMOVED** per design decision (mode is implicit by component)
+  - [x] ~~`subdivisionPlaybackController` in state~~ - **MOVED** to module-level variable (not serializable)
 
 ### 2.2 Add Subdivision Actions
 
@@ -190,7 +187,7 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
   - [ ] `useSubdividedBeatMap()` - get SubdividedBeatMap
   - [ ] `useSubdivisionConfig()` - get SubdivisionConfig
   - [ ] `useCurrentSubdivision()` - get current subdivision type
-  - [ ] `useSubdivisionMode()` - get subdivision mode
+  - [ ] ~~`useSubdivisionMode()`~~ - **REMOVED** (mode is implicit by component)
   - [ ] `useSubdivisionMetadata()` - get subdivision metadata
 
 ### 2.4 Integrate with Existing Pipeline
@@ -201,10 +198,11 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 2.5 Persist SubdivisionConfig to localStorage
 
-- [ ] Add localStorage persistence for SubdivisionConfig
-  - [ ] Save config on change
-  - [ ] Load config on store initialization
-  - [ ] Use existing persistence pattern from beatDetectionStore
+- [x] Add localStorage persistence for SubdivisionConfig
+  - [x] Save config on change (via partialize)
+  - [x] Load config on store initialization (via merge)
+  - [x] Use existing persistence pattern from beatDetectionStore
+  - [x] Persist `currentSubdivision`, `cachedUnifiedBeatMaps`, `cachedSubdividedBeatMaps`
 
 ---
 
