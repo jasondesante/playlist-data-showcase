@@ -9,11 +9,13 @@
 - Phase 4: Tasks 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 (SubdivisionTimelineEditor component complete, including integration with SubdivisionSettings)
 - Phase 5: Tasks 5.1, 5.2, 5.3, 5.4 (Generate SubdividedBeatMap button + BeatMapSummary subdivision display + Beat Map Export + BeatTimeline visualization)
 - Phase 6: Tasks 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 (useSubdivisionPlayback Hook + SubdivisionButtons Component + Styles + Integration in BeatPracticeView + Subdivision stats display + Real-time subdivision switching + Transition Mode Configuration)
+- Phase 7: Tasks 7.1, 7.2 (SubdividedBeatMap input support + BeatStreamMode type update)
 
 **Pending Phases:**
-- Phase 7-10
+- Phase 7: Task 7.3 (remaining)
+- Phase 8-10
 
-**Ready to Start:** Phase 7, Task 7.1 (BeatStream Integration)
+**Ready to Start:** Phase 7, Task 7.3 (BeatStream Mode Toggle Update)
 
 ---
 
@@ -404,14 +406,14 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 
 ### 7.1 Support SubdividedBeatMap Input
 
-- [ ] Update `useBeatStream.ts` to accept SubdividedBeatMap
-  - [ ] Add type guard for SubdividedBeatMap detection
-  - [ ] Use `beats` array from SubdividedBeatMap
-  - [ ] Handle `SubdividedBeat` type with decimal beatInMeasure
+- [x] Update `useBeatStream.ts` to accept SubdividedBeatMap
+  - [x] Add type guard for SubdividedBeatMap detection
+  - [x] Use `beats` array from SubdividedBeatMap
+  - [x] Handle `SubdividedBeat` type with decimal beatInMeasure
 
 ### 7.2 Update Beat Stream Mode
 
-- [ ] Add 'subdivided' to BeatStreamMode type
+- [x] Add 'subdivided' to BeatStreamMode type
   ```typescript
   type BeatStreamMode = 'detected' | 'merged' | 'subdivided';
   ```

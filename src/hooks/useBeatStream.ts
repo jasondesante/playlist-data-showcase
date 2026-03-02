@@ -43,6 +43,7 @@ import type {
     AudioSyncState,
     InterpolatedBeatMap,
     BeatWithSource,
+    SubdividedBeatMap,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
@@ -71,6 +72,19 @@ const DEFAULT_BEAT_STREAM_OPTIONS: BeatStreamOptions = {
  * Number of upcoming beats to pre-render for visualization.
  */
 const UPCOMING_BEATS_COUNT = 10;
+
+/**
+ * Type guard to check if a beat map is a SubdividedBeatMap.
+ *
+ * SubdividedBeatMap is identified by having a `subdivisionMetadata` property
+ * and a `beats` array containing SubdividedBeat objects.
+ *
+ * @param beatMap - The beat map to check
+ * @returns true if the beat map is a SubdividedBeatMap
+ */
+function isSubdividedBeatMap(beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap | null): beatMap is SubdividedBeatMap {
+    return beatMap !== null && 'subdivisionMetadata' in beatMap && 'subdivisionConfig' in beatMap;
+}
 
 /**
  * Find the index of the first beat at or after the given time using binary search.
@@ -160,8 +174,8 @@ export interface UseBeatStreamReturn {
  * Props for the useBeatStream hook.
  */
 export interface UseBeatStreamProps {
-    /** The beat map to stream beats from (can be BeatMap or InterpolatedBeatMap) */
-    beatMap: BeatMap | InterpolatedBeatMap | null;
+    /** The beat map to stream beats from (can be BeatMap, InterpolatedBeatMap, or SubdividedBeatMap) */
+    beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap | null;
     /** Optional override for stream options */
     options?: Partial<BeatStreamOptions>;
     /** Whether practice mode is active (controls automatic start/stop) */
@@ -170,9 +184,13 @@ export interface UseBeatStreamProps {
      * Which beat stream mode to use:
      * - 'detected': Use only originally detected beats (original behavior)
      * - 'merged': Use interpolated beats with detected beats as anchors (fills gaps)
+     * - 'subdivided': Use pre-calculated subdivided beats (e.g., eighth notes, triplets)
      *
      * When 'merged' and beatMap is an InterpolatedBeatMap, the hook will pass
      * useInterpolatedBeats: true to the engine's BeatStream.
+     *
+     * When 'subdivided' and beatMap is a SubdividedBeatMap, the hook will use
+     * the subdivided beats array directly.
      *
      * @default 'detected'
      */
@@ -192,17 +210,17 @@ export interface UseBeatStreamProps {
  * - Sync with audio player's current time
  * - Tap accuracy checking
  * - Seek handling
- * - Support for both BeatMap and InterpolatedBeatMap
- * - Beat stream mode selection (detected vs merged)
+ * - Support for BeatMap, InterpolatedBeatMap, and SubdividedBeatMap
+ * - Beat stream mode selection (detected, merged, or subdivided)
  *
- * @param beatMap - The beat map to stream beats from (BeatMap or InterpolatedBeatMap)
+ * @param beatMap - The beat map to stream beats from (BeatMap, InterpolatedBeatMap, or SubdividedBeatMap)
  * @param options - Optional override for stream options
  * @param practiceModeActive - Whether practice mode is active
- * @param beatStreamMode - Which beat stream to use ('detected' or 'merged')
+ * @param beatStreamMode - Which beat stream to use ('detected', 'merged', or 'subdivided')
  * @returns Hook return object with stream state and methods
  */
 export const useBeatStream = (
-    beatMap: BeatMap | InterpolatedBeatMap | null,
+    beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap | null,
     options?: Partial<BeatStreamOptions>,
     practiceModeActive: boolean = false,
     beatStreamMode: BeatStreamMode = 'detected'
@@ -273,10 +291,11 @@ export const useBeatStream = (
     /**
      * Initialize the BeatStream with the beat map.
      *
-     * Handles both BeatMap and InterpolatedBeatMap:
+     * Handles BeatMap, InterpolatedBeatMap, and SubdividedBeatMap:
      * - For BeatMap: uses beats array directly
      * - For InterpolatedBeatMap with beatStreamMode='merged': uses mergedBeats
      * - For InterpolatedBeatMap with beatStreamMode='detected': uses detectedBeats
+     * - For SubdividedBeatMap with beatStreamMode='subdivided': uses subdivided beats array
      */
     const initializeStream = useCallback(() => {
         if (!beatMap) {
@@ -295,8 +314,9 @@ export const useBeatStream = (
             beatStreamRef.current = null;
         }
 
-        // Check if this is an InterpolatedBeatMap
-        const isInterpolated = 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
+        // Check beat map types
+        const isSubdivided = isSubdividedBeatMap(beatMap);
+        const isInterpolated = !isSubdivided && 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
 
         // Determine if we should use interpolated beats
         // Only use interpolated beats if:
@@ -315,16 +335,30 @@ export const useBeatStream = (
             beatStreamRef.current = new BeatStream(beatMap, audioContext, streamOptions);
 
             // Log beat count based on map type
-            const beatCount = isInterpolated
-                ? (useInterpolatedBeats
-                    ? (beatMap as InterpolatedBeatMap).mergedBeats.length
-                    : (beatMap as InterpolatedBeatMap).detectedBeats.length)
-                : (beatMap as BeatMap).beats.length;
+            let beatCount: number;
+            let mapType: string;
+
+            if (isSubdivided) {
+                const subdividedMap = beatMap as SubdividedBeatMap;
+                beatCount = subdividedMap.beats.length;
+                mapType = 'subdivided';
+            } else if (isInterpolated) {
+                const interpolatedMap = beatMap as InterpolatedBeatMap;
+                beatCount = useInterpolatedBeats
+                    ? interpolatedMap.mergedBeats.length
+                    : interpolatedMap.detectedBeats.length;
+                mapType = 'interpolated';
+            } else {
+                beatCount = (beatMap as BeatMap).beats.length;
+                mapType = 'standard';
+            }
 
             logger.info('BeatDetection', 'BeatStream initialized', {
                 beatCount,
+                mapType,
                 anticipationTime: streamOptions.anticipationTime,
                 isInterpolated,
+                isSubdivided,
                 beatStreamMode,
                 useInterpolatedBeats,
             });
@@ -651,14 +685,23 @@ export const useBeatStream = (
      * Note: This always uses the beat map's beats array directly, not the
      * interpolated beats. For interpolated beats, use the BeatStream's
      * getUpcomingBeats method instead.
+     *
+     * Supports SubdividedBeatMap - when beatStreamMode is 'subdivided', uses
+     * the subdivided beats array which contains SubdividedBeat objects with
+     * decimal beatInMeasure values.
      */
     const getBeatsInRange = useCallback((startTime: number, endTime: number): Beat[] => {
         if (!beatMap) return [];
 
         // Get the appropriate beats array based on map type and mode
-        const isInterpolated = 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
+        const isSubdivided = isSubdividedBeatMap(beatMap);
+        const isInterpolated = !isSubdivided && 'mergedBeats' in beatMap && 'detectedBeats' in beatMap;
         let beats: Beat[];
-        if (isInterpolated) {
+
+        if (isSubdivided) {
+            // For SubdividedBeatMap, use the subdivided beats array
+            beats = (beatMap as SubdividedBeatMap).beats;
+        } else if (isInterpolated) {
             const interpolatedMap = beatMap as InterpolatedBeatMap;
             beats = beatStreamMode === 'merged'
                 ? interpolatedMap.mergedBeats

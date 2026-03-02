@@ -564,8 +564,9 @@ const DEFAULT_BEAT_INTERPOLATION_OPTIONS = ENGINE_DEFAULTS;
  *
  * - 'detected': Use only originally detected beats (original behavior)
  * - 'merged': Use interpolated beats with detected beats as anchors (fills gaps)
+ * - 'subdivided': Use pre-calculated subdivided beats (e.g., eighth notes, triplets)
  */
-export type BeatStreamMode = 'detected' | 'merged';
+export type BeatStreamMode = 'detected' | 'merged' | 'subdivided';
 
 /**
  * Visualization data for rendering detected vs interpolated beats in BeatTimeline.
