@@ -56,10 +56,10 @@ Update the frontend (playlist-data-showcase) to support the new multi-tempo dete
 **Goal**: Add advanced setting to control automatic multi-tempo analysis.
 
 ### Task 2.1: Add Auto Multi-Tempo Toggle to BeatInterpolationSettings
-- [ ] Add new checkbox setting: "Auto Multi-Tempo Detection"
-- [ ] Default: checked (enabled)
-- [ ] Description: "Automatically analyze tracks with multiple tempo sections"
-- [ ] Wire to `autoMultiTempo` state via `useAutoMultiTempo()` and `setAutoMultiTempo()`
+- [x] Add new checkbox setting: "Auto Multi-Tempo Detection"
+- [x] Default: checked (enabled)
+- [x] Description: "Automatically analyze tracks with multiple tempo sections"
+- [x] Wire to `autoMultiTempo` state via `useAutoMultiTempo()` and `setAutoMultiTempo()`
 
 ### Task 2.2: Add CSS Styling for Toggle
 - [ ] Style the new toggle consistently with existing interpolation settings

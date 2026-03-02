@@ -22,6 +22,7 @@ import {
     useBeatStreamMode,
     useShowGridOverlay,
     useShowTempoDriftVisualization,
+    useAutoMultiTempo,
 } from '../../store/beatDetectionStore';
 import type { BeatStreamMode } from '@/types';
 
@@ -70,11 +71,13 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
     const beatStreamMode = useBeatStreamMode();
     const showGridOverlay = useShowGridOverlay();
     const showTempoDriftVisualization = useShowTempoDriftVisualization();
+    const autoMultiTempo = useAutoMultiTempo();
 
     const setInterpolationOptions = useBeatDetectionStore((state) => state.actions.setInterpolationOptions);
     const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
     const toggleGridOverlay = useBeatDetectionStore((state) => state.actions.toggleGridOverlay);
     const toggleTempoDriftVisualization = useBeatDetectionStore((state) => state.actions.toggleTempoDriftVisualization);
+    const setAutoMultiTempo = useBeatDetectionStore((state) => state.actions.setAutoMultiTempo);
 
     // Handle beat stream mode change
     const handleStreamModeChange = (mode: BeatStreamMode) => {
@@ -219,6 +222,28 @@ export function BeatInterpolationSettings({ disabled = false }: BeatInterpolatio
                     {showTempoDriftVisualization
                         ? 'Tempo curve and drift sections visible'
                         : 'Enable to see tempo variations'}
+                </div>
+            </div>
+
+            {/* ============================================================
+             * AUTO MULTI-TEMPO DETECTION TOGGLE (Task 2.1)
+             * ============================================================ */}
+            <div className="beat-interpolation-settings-section">
+                <label className="beat-interpolation-checkbox-label">
+                    <input
+                        type="checkbox"
+                        checked={autoMultiTempo}
+                        onChange={(e) => setAutoMultiTempo(e.target.checked)}
+                        disabled={disabled}
+                        className="beat-interpolation-checkbox"
+                    />
+                    <span className="beat-interpolation-checkbox-text">Auto Multi-Tempo Detection</span>
+                    <Tooltip content="Automatically analyze tracks with multiple tempo sections. When enabled, distinct tempo changes will be detected and applied for more accurate beat mapping." />
+                </label>
+                <div className="beat-interpolation-checkbox-description">
+                    {autoMultiTempo
+                        ? 'Multi-tempo analysis enabled (recommended)'
+                        : 'Single tempo mode - may be less accurate for variable tempo tracks'}
                 </div>
             </div>
 
