@@ -129,13 +129,13 @@ Timeline with measure visualization ON:
   - [x] Initialize as `null` in initial state (null = using default)
   - [x] Add to `partialize` for localStorage persistence
 
-- [ ] **1.3 Add store actions for downbeat config**
-  - [ ] `reapplyDownbeatConfig(config: DownbeatConfig)` - Apply new config, update beatMap and interpolatedBeatMap
-  - [ ] `resetDownbeatConfig()` - Reset to default (beat 0 = downbeat, 4/4)
-  - [ ] `setDownbeatPosition(beatIndex: number, beatsPerMeasure?: number)` - Convenience for single-segment
-  - [ ] `addDownbeatSegment(segment: DownbeatSegment)` - Add new segment for time signature changes
-  - [ ] `removeDownbeatSegment(segmentIndex: number)` - Remove a segment
-  - [ ] `updateDownbeatSegment(segmentIndex: number, updates: Partial<DownbeatSegment>)` - Update segment
+- [x] **1.3 Add store actions for downbeat config**
+  - [x] `applyDownbeatConfig(config: DownbeatConfig)` - Apply new config, update beatMap and interpolatedBeatMap
+  - [x] `resetDownbeatConfig()` - Reset to default (beat 0 = downbeat, 4/4)
+  - [x] `setDownbeatPosition(beatIndex: number, beatsPerMeasure?: number)` - Convenience for single-segment
+  - [x] `addDownbeatSegment(segment: DownbeatSegment)` - Add new segment for time signature changes
+  - [x] `removeDownbeatSegment(segmentIndex: number)` - Remove a segment
+  - [x] `updateDownbeatSegment(segmentIndex: number, updates: Partial<DownbeatSegment>)` - Update segment
 
 - [ ] **1.4 Add store selectors**
   - [ ] `useDownbeatConfig()` - Get current config

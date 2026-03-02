@@ -41,6 +41,9 @@ import {
     InterpolationVisualizationData,
     // Downbeat configuration types
     DownbeatConfig,
+    DownbeatSegment,
+    DEFAULT_DOWNBEAT_CONFIG,
+    reapplyDownbeatConfig,
 } from '@/types';
 import { BeatMapGenerator, BeatInterpolator } from 'playlist-data-engine';
 
@@ -495,6 +498,53 @@ interface BeatDetectionActions {
      * Clear the interpolated beat map and reset interpolation state.
      */
     clearInterpolation: () => void;
+
+    // ============================================================
+    // Downbeat Configuration Actions (Task 1.3)
+    // ============================================================
+
+    /**
+     * Apply a new downbeat configuration to the current beat map.
+     * This recalculates beatInMeasure, isDownbeat, and measureNumber for all beats.
+     * Also updates the interpolated beat map if one exists.
+     * @param config - The new downbeat configuration to apply
+     */
+    applyDownbeatConfig: (config: DownbeatConfig) => void;
+
+    /**
+     * Reset downbeat configuration to default (beat 0 = downbeat, 4/4 time).
+     * This sets downbeatConfig to null, indicating default behavior.
+     */
+    resetDownbeatConfig: () => void;
+
+    /**
+     * Convenience method to set the downbeat position for a single-segment config.
+     * Creates or updates a single segment with the given downbeat position.
+     * @param beatIndex - The beat index that should be the downbeat (0-indexed)
+     * @param beatsPerMeasure - Number of beats per measure (default: 4)
+     */
+    setDownbeatPosition: (beatIndex: number, beatsPerMeasure?: number) => void;
+
+    /**
+     * Add a new downbeat segment for time signature changes.
+     * Segments are automatically sorted by startBeat after insertion.
+     * @param segment - The segment to add
+     */
+    addDownbeatSegment: (segment: DownbeatSegment) => void;
+
+    /**
+     * Remove a downbeat segment by index.
+     * Cannot remove the first segment (index 0).
+     * @param segmentIndex - The index of the segment to remove
+     */
+    removeDownbeatSegment: (segmentIndex: number) => void;
+
+    /**
+     * Update a downbeat segment by index.
+     * @param segmentIndex - The index of the segment to update
+     * @param updates - Partial segment properties to update
+     */
+    updateDownbeatSegment: (segmentIndex: number, updates: Partial<DownbeatSegment>) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1215,6 +1265,231 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             interpolatedBeatMap: null,
                             showInterpolationVisualization: false,
                         });
+                    },
+
+                    // ============================================================
+                    // Downbeat Configuration Actions (Task 1.3)
+                    // ============================================================
+
+                    /**
+                     * Apply a new downbeat configuration to the current beat map.
+                     * This recalculates beatInMeasure, isDownbeat, and measureNumber for all beats.
+                     * Also updates the interpolated beat map if one exists.
+                     */
+                    applyDownbeatConfig: (config: DownbeatConfig) => {
+                        const state = get();
+                        const { beatMap, interpolatedBeatMap } = state;
+
+                        if (!beatMap) {
+                            logger.warn('BeatDetection', 'No beat map loaded, cannot apply downbeat config');
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Applying downbeat config', {
+                            segmentCount: config.segments.length,
+                            firstSegmentBeatsPerMeasure: config.segments[0]?.timeSignature.beatsPerMeasure,
+                            firstSegmentDownbeatIndex: config.segments[0]?.downbeatBeatIndex,
+                        });
+
+                        try {
+                            // Apply config to the original beat map
+                            const updatedBeatMap = reapplyDownbeatConfig(beatMap, config);
+
+                            // Update interpolated beat map if it exists
+                            let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            if (interpolatedBeatMap) {
+                                // Re-interpolate with the updated beat map
+                                const interpolator = new BeatInterpolator(state.interpolationOptions);
+                                updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
+                                logger.info('BeatDetection', 'Re-interpolated beat map with new downbeat config');
+                            }
+
+                            set({
+                                beatMap: updatedBeatMap,
+                                interpolatedBeatMap: updatedInterpolatedBeatMap,
+                                downbeatConfig: config,
+                            });
+
+                            logger.info('BeatDetection', 'Downbeat config applied successfully');
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to apply downbeat config', { error: errorMessage });
+                            set({ error: errorMessage });
+                        }
+                    },
+
+                    /**
+                     * Reset downbeat configuration to default (beat 0 = downbeat, 4/4 time).
+                     * This sets downbeatConfig to null, indicating default behavior.
+                     */
+                    resetDownbeatConfig: () => {
+                        const state = get();
+                        const { beatMap, interpolatedBeatMap } = state;
+
+                        if (!beatMap) {
+                            logger.warn('BeatDetection', 'No beat map loaded, cannot reset downbeat config');
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Resetting downbeat config to default');
+
+                        try {
+                            // Apply default config to the original beat map
+                            const updatedBeatMap = reapplyDownbeatConfig(beatMap, DEFAULT_DOWNBEAT_CONFIG);
+
+                            // Update interpolated beat map if it exists
+                            let updatedInterpolatedBeatMap: InterpolatedBeatMap | null = null;
+                            if (interpolatedBeatMap) {
+                                const interpolator = new BeatInterpolator(state.interpolationOptions);
+                                updatedInterpolatedBeatMap = interpolator.interpolate(updatedBeatMap);
+                            }
+
+                            set({
+                                beatMap: updatedBeatMap,
+                                interpolatedBeatMap: updatedInterpolatedBeatMap,
+                                downbeatConfig: null, // null = using default
+                            });
+
+                            logger.info('BeatDetection', 'Downbeat config reset to default');
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                            logger.error('BeatDetection', 'Failed to reset downbeat config', { error: errorMessage });
+                            set({ error: errorMessage });
+                        }
+                    },
+
+                    /**
+                     * Convenience method to set the downbeat position for a single-segment config.
+                     * Creates or updates a single segment with the given downbeat position.
+                     */
+                    setDownbeatPosition: (beatIndex: number, beatsPerMeasure: number = 4) => {
+                        const state = get();
+                        const { beatMap } = state;
+
+                        if (!beatMap) {
+                            logger.warn('BeatDetection', 'No beat map loaded, cannot set downbeat position');
+                            return;
+                        }
+
+                        // Clamp beatIndex to valid range
+                        const maxBeatIndex = beatMap.beats.length - 1;
+                        const clampedBeatIndex = Math.max(0, Math.min(beatIndex, maxBeatIndex));
+
+                        logger.info('BeatDetection', 'Setting downbeat position', {
+                            beatIndex: clampedBeatIndex,
+                            beatsPerMeasure,
+                        });
+
+                        // Create a single-segment config
+                        const config: DownbeatConfig = {
+                            segments: [{
+                                startBeat: 0,
+                                downbeatBeatIndex: clampedBeatIndex,
+                                timeSignature: { beatsPerMeasure },
+                            }],
+                        };
+
+                        // Use applyDownbeatConfig to apply the new config
+                        state.actions.applyDownbeatConfig(config);
+                    },
+
+                    /**
+                     * Add a new downbeat segment for time signature changes.
+                     * Segments are automatically sorted by startBeat after insertion.
+                     */
+                    addDownbeatSegment: (segment: DownbeatSegment) => {
+                        const state = get();
+                        const { downbeatConfig, beatMap } = state;
+
+                        if (!beatMap) {
+                            logger.warn('BeatDetection', 'No beat map loaded, cannot add segment');
+                            return;
+                        }
+
+                        // Get current segments or start with default
+                        const currentSegments = downbeatConfig?.segments ?? [...DEFAULT_DOWNBEAT_CONFIG.segments];
+
+                        // Add new segment and sort by startBeat
+                        const newSegments = [...currentSegments, segment].sort((a, b) => a.startBeat - b.startBeat);
+
+                        logger.info('BeatDetection', 'Adding downbeat segment', {
+                            startBeat: segment.startBeat,
+                            beatsPerMeasure: segment.timeSignature.beatsPerMeasure,
+                            newSegmentCount: newSegments.length,
+                        });
+
+                        // Apply the updated config
+                        state.actions.applyDownbeatConfig({ segments: newSegments });
+                    },
+
+                    /**
+                     * Remove a downbeat segment by index.
+                     * Cannot remove the first segment (index 0).
+                     */
+                    removeDownbeatSegment: (segmentIndex: number) => {
+                        const state = get();
+                        const { downbeatConfig } = state;
+
+                        // Can't remove if no config or trying to remove first segment
+                        if (!downbeatConfig) {
+                            logger.warn('BeatDetection', 'No downbeat config to remove segment from');
+                            return;
+                        }
+
+                        if (segmentIndex === 0) {
+                            logger.warn('BeatDetection', 'Cannot remove the first downbeat segment');
+                            return;
+                        }
+
+                        if (segmentIndex < 0 || segmentIndex >= downbeatConfig.segments.length) {
+                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
+                            return;
+                        }
+
+                        const newSegments = downbeatConfig.segments.filter((_: DownbeatSegment, index: number) => index !== segmentIndex);
+
+                        logger.info('BeatDetection', 'Removing downbeat segment', {
+                            removedIndex: segmentIndex,
+                            remainingSegments: newSegments.length,
+                        });
+
+                        state.actions.applyDownbeatConfig({ segments: newSegments });
+                    },
+
+                    /**
+                     * Update a downbeat segment by index.
+                     */
+                    updateDownbeatSegment: (segmentIndex: number, updates: Partial<DownbeatSegment>) => {
+                        const state = get();
+                        const { downbeatConfig } = state;
+
+                        if (!downbeatConfig) {
+                            logger.warn('BeatDetection', 'No downbeat config to update');
+                            return;
+                        }
+
+                        if (segmentIndex < 0 || segmentIndex >= downbeatConfig.segments.length) {
+                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
+                            return;
+                        }
+
+                        const newSegments = downbeatConfig.segments.map((segment: DownbeatSegment, index: number) =>
+                            index === segmentIndex
+                                ? { ...segment, ...updates }
+                                : segment
+                        );
+
+                        // Re-sort if startBeat changed
+                        if (updates.startBeat !== undefined) {
+                            newSegments.sort((a: DownbeatSegment, b: DownbeatSegment) => a.startBeat - b.startBeat);
+                        }
+
+                        logger.info('BeatDetection', 'Updating downbeat segment', {
+                            segmentIndex,
+                            updates,
+                        });
+
+                        state.actions.applyDownbeatConfig({ segments: newSegments });
                     },
                 },
             };
