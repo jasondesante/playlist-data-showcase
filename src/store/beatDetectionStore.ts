@@ -299,6 +299,8 @@ interface BeatDetectionState {
     downbeatConfig: DownbeatConfig | null;
     /** Whether to show measure boundary lines and numbers in timeline (Phase 4: Measure Visualization) */
     showMeasureBoundaries: boolean;
+    /** Whether downbeat selection mode is active (Phase 5: BeatMapSummary Integration - Task 5.3) */
+    isDownbeatSelectionMode: boolean;
 }
 
 interface BeatDetectionActions {
@@ -553,6 +555,13 @@ interface BeatDetectionActions {
      * @param show - Whether to show measure boundaries
      */
     setShowMeasureBoundaries: (show: boolean) => void;
+    /**
+     * Set whether downbeat selection mode is active.
+     * When active, beat markers in the timeline become clickable for setting downbeat position.
+     * Part of Phase 5: BeatMapSummary Integration (Task 5.3)
+     * @param enabled - Whether selection mode is enabled
+     */
+    setDownbeatSelectionMode: (enabled: boolean) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -616,6 +625,8 @@ const createInitialState = (): BeatDetectionState => ({
     downbeatConfig: null, // null = using default config
     // Measure visualization toggle (Phase 4: Measure Visualization)
     showMeasureBoundaries: false, // Off by default, user opt-in
+    // Downbeat selection mode (Phase 5: BeatMapSummary Integration - Task 5.3)
+    isDownbeatSelectionMode: false, // Off by default
 });
 
 /**
@@ -1509,6 +1520,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         set({ showMeasureBoundaries: show });
                         logger.info('BeatDetection', 'Measure boundaries visibility changed', { show });
                     },
+
+                    /**
+                     * Set whether downbeat selection mode is active.
+                     * When active, beat markers in the timeline become clickable for setting downbeat position.
+                     * Part of Phase 5: BeatMapSummary Integration (Task 5.3)
+                     */
+                    setDownbeatSelectionMode: (enabled: boolean) => {
+                        set({ isDownbeatSelectionMode: enabled });
+                        logger.info('BeatDetection', 'Downbeat selection mode changed', { enabled });
+                    },
                 },
             };
         },
@@ -2345,3 +2366,15 @@ export const useHasCustomDownbeatConfig = () =>
  */
 export const useShowMeasureBoundaries = () =>
     useBeatDetectionStore((state) => state.showMeasureBoundaries);
+
+// ============================================================
+// Downbeat Selection Mode Selectors (Phase 5: Task 5.3)
+// ============================================================
+
+/**
+ * Selector to get whether downbeat selection mode is active.
+ * When active, beat markers in the timeline become clickable for setting downbeat position.
+ * Returns the isDownbeatSelectionMode state value (default: false).
+ */
+export const useIsDownbeatSelectionMode = () =>
+    useBeatDetectionStore((state) => state.isDownbeatSelectionMode);

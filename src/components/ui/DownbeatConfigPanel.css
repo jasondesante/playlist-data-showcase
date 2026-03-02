@@ -244,6 +244,24 @@
   line-height: 1.4;
 }
 
+/* Task 5.3: Selection mode hint styling */
+.downbeat-config-panel-hint--selection-mode {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.1));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.downbeat-config-panel-hint--selection-mode .downbeat-config-panel-hint-icon {
+  color: hsl(var(--primary));
+}
+
+.downbeat-config-panel-hint--selection-mode .downbeat-config-panel-hint-text {
+  color: hsl(var(--foreground));
+}
+
+.downbeat-config-panel-hint--selection-mode .downbeat-config-panel-hint-text strong {
+  color: hsl(var(--primary));
+}
+
 /* ============================================
    PHASE 4: MEASURE VISUALIZATION TOGGLE (Task 4.1)
    ============================================ */

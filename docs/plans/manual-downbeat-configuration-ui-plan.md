@@ -253,10 +253,10 @@ Timeline with measure visualization ON:
   - [x] Pass `disabled={!beatMap}` prop
   - [x] Wire up selection mode state (component handles internally via store selectors)
 
-- [ ] **5.3 Add selection mode toggle**
-  - [ ] "Edit Downbeat" button to enter selection mode
-  - [ ] Show "Click a beat to set as downbeat" instruction
-  - [ ] "Done" button to exit selection mode
+- [x] **5.3 Add selection mode toggle**
+  - [x] "Edit Downbeat" button to enter selection mode
+  - [x] Show "Click a beat to set as downbeat" instruction
+  - [x] "Done" button to exit selection mode
 
 - [ ] **5.4 Connect BeatTimeline click to store**
   - [ ] Pass `onBeatClick` callback that calls `setDownbeatPosition`

@@ -16,7 +16,7 @@
  * Task 2.7: Multi-segment support (Advanced)
  */
 import { useState } from 'react';
-import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Settings, ChevronDown, RotateCcw, Info, Plus, Trash2, ChevronRight, Eye, EyeOff, MousePointer2, Check } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import {
@@ -27,6 +27,7 @@ import {
     useBeatMap,
     useBeatDetectionStore,
     useShowMeasureBoundaries,
+    useIsDownbeatSelectionMode,
 } from '../../store/beatDetectionStore';
 import type { DownbeatSegment } from '../../types';
 import './DownbeatConfigPanel.css';
@@ -103,6 +104,7 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
     const hasCustomConfig = useHasCustomDownbeatConfig();
     const beatMap = useBeatMap();
     const showMeasureBoundaries = useShowMeasureBoundaries();
+    const isSelectionMode = useIsDownbeatSelectionMode();
 
     // Local state for collapsible panel
     const [isExpanded, setIsExpanded] = useState(false);
@@ -357,12 +359,23 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         />
                     </div>
 
-                    {/* Hint Box - Task 2.6 */}
-                    <div className="downbeat-config-panel-hint">
-                        <Info className="downbeat-config-panel-hint-icon" />
-                        <span className="downbeat-config-panel-hint-text">
-                            Click "Edit Downbeat" then click any beat in the timeline to set it as the downbeat (beat 1)
-                        </span>
+                    {/* Hint Box - Task 2.6 / Task 5.3 */}
+                    <div className={`downbeat-config-panel-hint ${isSelectionMode ? 'downbeat-config-panel-hint--selection-mode' : ''}`}>
+                        {isSelectionMode ? (
+                            <>
+                                <MousePointer2 className="downbeat-config-panel-hint-icon" />
+                                <span className="downbeat-config-panel-hint-text">
+                                    <strong>Selection mode active:</strong> Click any beat in the timeline to set it as the downbeat (beat 1)
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <Info className="downbeat-config-panel-hint-icon" />
+                                <span className="downbeat-config-panel-hint-text">
+                                    Click "Edit Downbeat" then click any beat in the timeline to set it as the downbeat (beat 1)
+                                </span>
+                            </>
+                        )}
                     </div>
 
                     {/* Measure Visualization Toggle - Task 4.1 */}
@@ -558,8 +571,20 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         )}
                     </div>
 
-                    {/* Actions - Task 2.8 */}
+                    {/* Actions - Task 2.8 / Task 5.3 */}
                     <div className="downbeat-config-panel-actions">
+                        {/* Task 5.3: Edit Downbeat / Done toggle button */}
+                        <Button
+                            variant={isSelectionMode ? 'primary' : 'outline'}
+                            size="sm"
+                            disabled={isDisabled}
+                            leftIcon={isSelectionMode ? Check : MousePointer2}
+                            onClick={() => {
+                                useBeatDetectionStore.getState().actions.setDownbeatSelectionMode(!isSelectionMode);
+                            }}
+                        >
+                            {isSelectionMode ? 'Done' : 'Edit Downbeat'}
+                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
