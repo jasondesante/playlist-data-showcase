@@ -540,6 +540,9 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                             size="sm"
                             disabled={isDisabled || !hasCustomConfig}
                             leftIcon={RotateCcw}
+                            onClick={() => {
+                                useBeatDetectionStore.getState().actions.resetDownbeatConfig();
+                            }}
                         >
                             Reset to Default
                         </Button>

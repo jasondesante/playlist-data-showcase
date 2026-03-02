@@ -183,9 +183,9 @@ Timeline with measure visualization ON:
   - [x] Delete button for each segment (except first)
   - [x] Edit controls for each segment
 
-- [ ] **2.8 Implement actions**
-  - [ ] "Reset to Default" button (shown when modified)
-  - [ ] Disabled state when no beat map exists
+- [x] **2.8 Implement actions**
+  - [x] "Reset to Default" button (shown when modified)
+  - [x] Disabled state when no beat map exists
 
 ---
 
