@@ -28,6 +28,7 @@ import type {
     SubdividedBeatMap,
     Beat,
 } from '@/types';
+import { isDdrKey, isGuitarKey } from '@/types';
 import './KeyLaneView.css';
 
 /**
@@ -166,6 +167,34 @@ function getBeatHitState(
 }
 
 /**
+ * Detect the chart style based on the keys used in the beat map.
+ * Returns 'ddr' if any DDR keys (arrows) are used, 'guitar-hero' if any Guitar Hero keys (numbers) are used.
+ * Returns null if no keys are assigned or can't determine.
+ */
+function detectChartStyleFromKeys(beatMap: SubdividedBeatMap | null): ChartStyle | null {
+    if (!beatMap || !beatMap.beats) return null;
+
+    let hasDdrKeys = false;
+    let hasGuitarKeys = false;
+
+    for (const beat of beatMap.beats) {
+        if (beat.requiredKey) {
+            if (isDdrKey(beat.requiredKey)) {
+                hasDdrKeys = true;
+            } else if (isGuitarKey(beat.requiredKey)) {
+                hasGuitarKeys = true;
+            }
+        }
+    }
+
+    // If both types exist, prefer DDR (default)
+    if (hasDdrKeys && hasGuitarKeys) return 'ddr';
+    if (hasDdrKeys) return 'ddr';
+    if (hasGuitarKeys) return 'guitar-hero';
+    return null;
+}
+
+/**
  * KeyLaneView Container Component
  *
  * Renders the appropriate number of lanes based on chart style.
@@ -270,6 +299,27 @@ export function KeyLaneView({
         return beatMap.beats.some((beat) => beat.requiredKey);
     }, [beatMap]);
 
+    // Detect the actual chart style based on used keys
+    const detectedChartStyle = useMemo(() => detectChartStyleFromKeys(beatMap), [beatMap]);
+
+    // Check for style mismatch (viewing DDR lanes for Guitar Hero chart or vice versa)
+    const styleMismatch = useMemo(() => {
+        if (!hasChartNotes || !detectedChartStyle) return false;
+        return detectedChartStyle !== chartStyle;
+    }, [hasChartNotes, detectedChartStyle, chartStyle]);
+
+    // Get hint message for style mismatch
+    const styleMismatchHint = useMemo(() => {
+        if (!styleMismatch) return null;
+        if (chartStyle === 'ddr' && detectedChartStyle === 'guitar-hero') {
+            return 'Chart uses number keys - switch to Guitar Lanes view';
+        }
+        if (chartStyle === 'guitar-hero' && detectedChartStyle === 'ddr') {
+            return 'Chart uses arrow keys - switch to DDR Lanes view';
+        }
+        return null;
+    }, [styleMismatch, chartStyle, detectedChartStyle]);
+
     return (
         <div
             className={cn(
@@ -330,6 +380,15 @@ export function KeyLaneView({
                 <div className="key-lane-view-hint">
                     <span className="key-lane-view-hint-text">
                         No key assignments - edit chart to add notes
+                    </span>
+                </div>
+            )}
+
+            {/* Style mismatch warning - viewing wrong lane type for chart */}
+            {styleMismatch && styleMismatchHint && (
+                <div className="key-lane-view-mismatch">
+                    <span className="key-lane-view-mismatch-text">
+                        {styleMismatchHint}
                     </span>
                 </div>
             )}

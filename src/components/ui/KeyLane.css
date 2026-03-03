@@ -41,9 +41,26 @@
     background: hsl(var(--background) / 0.7);
 }
 
-/* Paused state - dim the lane */
+/* Paused state - dim the lane and pause animations */
 .key-lane--paused {
     opacity: 0.7;
+}
+
+/* Pause all beat animations when paused */
+.key-lane--paused .key-lane-beat-inner {
+    animation-play-state: paused;
+}
+
+.key-lane--paused .key-lane-beat-hit-ring {
+    animation-play-state: paused;
+}
+
+.key-lane--paused .key-lane-feedback-flash {
+    animation-play-state: paused;
+}
+
+.key-lane--paused .key-lane-hit-zone--feedback {
+    animation-play-state: paused;
 }
 
 /* ============================================
