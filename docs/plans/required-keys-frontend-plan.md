@@ -74,10 +74,11 @@ The following decisions were made during planning:
 ## Phase 1: Type System Updates
 
 ### Task 1.1: Update ExtendedBeatAccuracy Type
-- [ ] Add `'wrongKey'` to `ExtendedBeatAccuracy` type in [src/types/index.ts](src/types/index.ts)
+- [x] Add `'wrongKey'` to `ExtendedBeatAccuracy` type in [src/types/index.ts](src/types/index.ts)
   ```typescript
   export type ExtendedBeatAccuracy = 'perfect' | 'great' | 'good' | 'ok' | 'miss' | 'wrongKey';
   ```
+**Status:** Already complete - type was previously defined with 'wrongKey' included.
 
 ### Task 1.2: Update ExtendedButtonPressResult Interface
 - [ ] Add `keyMatch: boolean` property
