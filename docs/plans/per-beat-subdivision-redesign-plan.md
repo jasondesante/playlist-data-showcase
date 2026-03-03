@@ -250,9 +250,9 @@ This plan covers:
 
 ### 8.1 Engine Tests
 
-- [ ] Test `PerBeatSubdivisionConfig` validation
-- [ ] Test BeatSubdivider with per-beat config
-- [ ] Test edge cases:
+- [x] Test `PerBeatSubdivisionConfig` validation
+- [x] Test BeatSubdivider with per-beat config
+- [x] Test edge cases:
   - Empty beat map
   - All beats same subdivision
   - Every beat different subdivision
