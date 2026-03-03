@@ -32,6 +32,10 @@ export type {
     ButtonPressResult,
     BeatMapGenerationProgress,
 
+    // Required Keys (Chart Mode)
+    KeyAssignableBeatMap,
+    KeyAssignment,
+
     // Character
     CharacterSheet,
     AbilityScores,
@@ -582,6 +586,17 @@ export {
     unifyBeatMap,
     subdivideBeatMap,
     SubdivisionPlaybackController,
+} from 'playlist-data-engine';
+
+// Re-export Required Keys helper functions for chart mode
+export {
+    assignKeyToBeat,
+    assignKeysToBeats,
+    extractKeyMap,
+    clearAllKeys,
+    hasRequiredKeys,
+    getKeyCount,
+    getUsedKeys,
 } from 'playlist-data-engine';
 
 // Import types needed for extending (Task 6.3)

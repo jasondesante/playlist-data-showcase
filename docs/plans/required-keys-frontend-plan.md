@@ -88,9 +88,9 @@ The following decisions were made during planning:
 **Status:** Complete - Added key matching fields with comprehensive JSDoc comments.
 
 ### Task 1.3: Re-export Engine Types and Helpers
-- [ ] Re-export `BeatAccuracy` (now includes 'wrongKey') from engine
-- [ ] Re-export `KeyAssignableBeatMap`, `KeyAssignment` types from engine
-- [ ] Re-export helper functions from `beatKeyHelpers.ts`:
+- [x] Re-export `BeatAccuracy` (now includes 'wrongKey') from engine
+- [x] Re-export `KeyAssignableBeatMap`, `KeyAssignment` types from engine
+- [x] Re-export helper functions from `beatKeyHelpers.ts`:
   - `assignKeyToBeat`
   - `assignKeysToBeats`
   - `extractKeyMap`
@@ -98,6 +98,7 @@ The following decisions were made during planning:
   - `hasRequiredKeys`
   - `getKeyCount`
   - `getUsedKeys`
+**Status:** Complete - All types and helper functions re-exported from playlist-data-engine.
 
 ### Task 1.4: Add Chart-Related Types
 - [ ] Create `ChartStyle` type: `'ddr' | 'guitar-hero'`
