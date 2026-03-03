@@ -1,0 +1,663 @@
+/* ============================================
+   CHART EDITOR
+   Phase 4, Task 4.2: Timeline-based key assignment editor
+   ============================================ */
+
+/* Main container */
+.chart-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Empty state */
+.chart-editor--empty {
+    padding: 1rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border: 1px dashed hsl(var(--border) / 0.5);
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.chart-editor-empty-message {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.chart-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 0.375rem;
+    flex-wrap: wrap;
+}
+
+/* Mode selector */
+.chart-editor-modes {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.chart-editor-mode-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.625rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-mode-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-mode-btn--active {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-mode-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Statistics */
+.chart-editor-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-editor-stat {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+}
+
+.chart-editor-stat--keys {
+    color: hsl(var(--primary));
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+}
+
+/* Clear all button */
+.chart-editor-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(180deg, hsl(var(--destructive) / 0.1), hsl(var(--destructive) / 0.05));
+    border: 1px solid hsl(var(--destructive) / 0.3);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--destructive));
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-clear-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--destructive) / 0.2), hsl(var(--destructive) / 0.1));
+    border-color: hsl(var(--destructive) / 0.5);
+}
+
+.chart-editor-clear-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.chart-editor-clear-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   INSTRUCTIONS
+   ============================================ */
+
+.chart-editor-instructions {
+    font-size: 0.5625rem;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+    background: hsl(var(--surface-2) / 0.3);
+    border-radius: 0.25rem;
+}
+
+.chart-editor-instructions strong {
+    color: hsl(var(--primary));
+    font-weight: 700;
+}
+
+.chart-editor-instructions--warning {
+    color: hsl(var(--destructive));
+}
+
+/* ============================================
+   GRID CONTAINER (Scrollable)
+   ============================================ */
+
+.chart-editor-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 0.375rem;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+.chart-editor-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.chart-editor-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chart-editor-container::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+}
+
+.chart-editor-container::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Grid track (inner container) */
+.chart-editor-track {
+    display: flex;
+    min-height: 4rem;
+    padding: 0.5rem 0;
+    position: relative;
+}
+
+/* Virtualized content container */
+.chart-editor-virtualized {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-height: 4rem;
+    padding: 0.5rem 0;
+}
+
+/* ============================================
+   MEASURE GROUPS
+   ============================================ */
+
+.chart-editor-measure {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    padding-top: 1.25rem; /* Space for measure label */
+}
+
+/* Measure label */
+.chart-editor-measure-label {
+    position: absolute;
+    top: 0;
+    left: 0.25rem;
+    font-size: 0.5rem;
+    font-weight: 700;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--primary) / 0.8);
+    background: hsl(var(--background) / 0.85);
+    padding: 0.0625rem 0.25rem;
+    border-radius: 0.1875rem;
+    border: 1px solid hsl(var(--primary) / 0.2);
+    z-index: 5;
+}
+
+/* Measure boundary line */
+.chart-editor-measure-boundary {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2px;
+    background: hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.2);
+    pointer-events: none;
+}
+
+/* Hide boundary for last measure */
+.chart-editor-measure:last-child .chart-editor-measure-boundary {
+    display: none;
+}
+
+/* ============================================
+   BEAT CELLS
+   ============================================ */
+
+.chart-editor-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 3rem;
+    flex-shrink: 0;
+    background: hsl(var(--surface-2) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.2);
+    border-right: none; /* Collapse borders */
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+/* Add right border to last cell in measure */
+.chart-editor-measure:last-child .chart-editor-cell:last-child {
+    border-right: 1px solid hsl(var(--border) / 0.2);
+}
+
+/* Hover state */
+.chart-editor-cell:hover:not(.chart-editor-cell--disabled) {
+    background: hsl(var(--surface-hover) / 0.6);
+    border-color: hsl(var(--border) / 0.4);
+}
+
+/* Disabled state */
+.chart-editor-cell--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Focus state */
+.chart-editor-cell:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+/* Beat number */
+.chart-editor-cell-number {
+    font-size: 0.5rem;
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground) / 0.7);
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+}
+
+/* Empty indicator (no key assigned) */
+.chart-editor-cell-empty {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    border: 1px dashed hsl(var(--muted-foreground) / 0.3);
+    background: transparent;
+}
+
+/* ============================================
+   KEY ASSIGNMENT COLORS
+   DDR: left=blue, down=green, up=red, right=purple
+   Guitar Hero: 1=green, 2=red, 3=yellow, 4=blue, 5=orange
+   ============================================ */
+
+/* Cell with key assigned */
+.chart-editor-cell--has-key {
+    border-color: hsl(var(--border) / 0.4);
+}
+
+/* Key symbol */
+.chart-editor-cell-key {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 0 8px currentColor;
+}
+
+/* DDR Left / Guitar Hero 4 - Blue */
+.chart-editor-cell--blue {
+    background: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(210 100% 50% / 0.1));
+    border-color: hsl(210 100% 50% / 0.4);
+}
+
+.chart-editor-cell--blue .chart-editor-cell-key {
+    color: hsl(210 100% 60%);
+}
+
+.chart-editor-cell--blue .chart-editor-cell-number {
+    color: hsl(210 100% 50% / 0.7);
+}
+
+/* DDR Up / Guitar Hero 2 - Red */
+.chart-editor-cell--red {
+    background: linear-gradient(135deg, hsl(0 84% 60% / 0.2), hsl(0 84% 60% / 0.1));
+    border-color: hsl(0 84% 60% / 0.4);
+}
+
+.chart-editor-cell--red .chart-editor-cell-key {
+    color: hsl(0 84% 65%);
+}
+
+.chart-editor-cell--red .chart-editor-cell-number {
+    color: hsl(0 84% 60% / 0.7);
+}
+
+/* DDR Down / Guitar Hero 1 - Green */
+.chart-editor-cell--green {
+    background: linear-gradient(135deg, hsl(142 76% 46% / 0.2), hsl(142 76% 46% / 0.1));
+    border-color: hsl(142 76% 46% / 0.4);
+}
+
+.chart-editor-cell--green .chart-editor-cell-key {
+    color: hsl(142 76% 55%);
+}
+
+.chart-editor-cell--green .chart-editor-cell-number {
+    color: hsl(142 76% 46% / 0.7);
+}
+
+/* DDR Right - Purple */
+.chart-editor-cell--purple {
+    background: linear-gradient(135deg, hsl(280 80% 55% / 0.2), hsl(280 80% 55% / 0.1));
+    border-color: hsl(280 80% 55% / 0.4);
+}
+
+.chart-editor-cell--purple .chart-editor-cell-key {
+    color: hsl(280 80% 65%);
+}
+
+.chart-editor-cell--purple .chart-editor-cell-number {
+    color: hsl(280 80% 55% / 0.7);
+}
+
+/* Guitar Hero 3 - Yellow */
+.chart-editor-cell--yellow {
+    background: linear-gradient(135deg, hsl(48 96% 53% / 0.2), hsl(48 96% 53% / 0.1));
+    border-color: hsl(48 96% 53% / 0.4);
+}
+
+.chart-editor-cell--yellow .chart-editor-cell-key {
+    color: hsl(48 96% 60%);
+}
+
+.chart-editor-cell--yellow .chart-editor-cell-number {
+    color: hsl(48 96% 53% / 0.7);
+}
+
+/* Guitar Hero 5 - Orange */
+.chart-editor-cell--orange {
+    background: linear-gradient(135deg, hsl(24 95% 60% / 0.2), hsl(24 95% 60% / 0.1));
+    border-color: hsl(24 95% 60% / 0.4);
+}
+
+.chart-editor-cell--orange .chart-editor-cell-key {
+    color: hsl(24 95% 65%);
+}
+
+.chart-editor-cell--orange .chart-editor-cell-number {
+    color: hsl(24 95% 60% / 0.7);
+}
+
+/* ============================================
+   PAINT MODE
+   ============================================ */
+
+/* Cell being painted during drag */
+.chart-editor-cell--painting {
+    animation: chart-paint-pulse 0.3s ease-out;
+}
+
+@keyframes chart-paint-pulse {
+    0% {
+        transform: scale(0.95);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ============================================
+   ERASE MODE
+   ============================================ */
+
+/* Cell that can be erased */
+.chart-editor-cell--erasable {
+    cursor: pointer;
+}
+
+.chart-editor-cell--erasable:hover {
+    background: hsl(var(--destructive) / 0.15);
+    border-color: hsl(var(--destructive) / 0.4);
+}
+
+.chart-editor-cell--erasable:hover .chart-editor-cell-key {
+    color: hsl(var(--destructive));
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.chart-editor-footer {
+    display: flex;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    background: hsl(var(--surface-2) / 0.3);
+    border-radius: 0.25rem;
+}
+
+.chart-editor-style-indicator {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1026px) {
+    .chart-editor-header {
+        gap: 0.5rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .chart-editor-mode-btn {
+        padding: 0.1875rem 0.5rem;
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat {
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat--keys {
+        font-size: 0.625rem;
+    }
+
+    .chart-editor-clear-btn {
+        padding: 0.1875rem 0.375rem;
+        font-size: 0.4375rem;
+    }
+
+    .chart-editor-measure-label {
+        font-size: 0.4375rem;
+    }
+
+    .chart-editor-cell {
+        height: 2.5rem;
+    }
+
+    .chart-editor-cell-number {
+        font-size: 0.4375rem;
+    }
+
+    .chart-editor-cell-key {
+        font-size: 0.875rem;
+    }
+
+    .chart-editor-cell-empty {
+        width: 0.375rem;
+        height: 0.375rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+    .chart-editor-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.375rem;
+        padding: 0.375rem;
+    }
+
+    .chart-editor-modes {
+        justify-content: center;
+    }
+
+    .chart-editor-mode-btn {
+        flex: 1;
+        max-width: 4rem;
+        justify-content: center;
+        padding: 0.25rem 0.375rem;
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stats {
+        justify-content: center;
+    }
+
+    .chart-editor-stat {
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat--keys {
+        font-size: 0.5625rem;
+    }
+
+    .chart-editor-clear-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .chart-editor-container {
+        border-radius: 0.25rem;
+    }
+
+    .chart-editor-track {
+        min-height: 3rem;
+    }
+
+    .chart-editor-measure {
+        padding-top: 1rem;
+    }
+
+    .chart-editor-measure-label {
+        font-size: 0.375rem;
+        padding: 0.0625rem 0.1875rem;
+    }
+
+    .chart-editor-cell {
+        height: 2rem;
+    }
+
+    .chart-editor-cell-number {
+        font-size: 0.375rem;
+    }
+
+    .chart-editor-cell-key {
+        font-size: 0.75rem;
+    }
+
+    .chart-editor-cell-empty {
+        width: 0.3125rem;
+        height: 0.3125rem;
+    }
+
+    .chart-editor-instructions {
+        font-size: 0.5rem;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .chart-editor-cell {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .chart-editor-mode-btn,
+    .chart-editor-clear-btn {
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .chart-editor-cell-key {
+        font-size: 1.25rem;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .chart-editor-cell,
+    .chart-editor-mode-btn,
+    .chart-editor-clear-btn {
+        transition: none;
+    }
+
+    .chart-editor-cell--painting {
+        animation: none;
+    }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+@media (prefers-contrast: more) {
+    .chart-editor-cell {
+        border-width: 2px;
+    }
+
+    .chart-editor-cell--has-key {
+        border-width: 2px;
+    }
+
+    .chart-editor-measure-boundary {
+        width: 3px;
+    }
+}

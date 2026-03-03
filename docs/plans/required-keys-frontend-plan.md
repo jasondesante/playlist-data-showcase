@@ -243,12 +243,21 @@ Create new file: [src/components/ui/KeyPalette.tsx](src/components/ui/KeyPalette
 
 ### Task 4.2: Create ChartEditor Component
 Create new file: [src/components/ui/ChartEditor.tsx](src/components/ui/ChartEditor.tsx)
-- [ ] Timeline view with beat markers (fixed view, scroll for navigation)
-- [ ] Show required key indicators on beats (using ↑↓←→ and 1-5 symbols)
-- [ ] Click beat to assign selected key
-- [ ] Click assigned beat to remove key (in erase mode)
-- [ ] Drag to paint multiple beats with same key
-- [ ] Clear All button to remove all key assignments
+- [x] Timeline view with beat markers (fixed view, scroll for navigation)
+- [x] Show required key indicators on beats (using ↑↓←→ and 1-5 symbols)
+- [x] Click beat to assign selected key
+- [x] Click assigned beat to remove key (in erase mode)
+- [x] Drag to paint multiple beats with same key
+- [x] Clear All button to remove all key assignments
+**Status:** Complete - Created ChartEditor component with CSS styling. Features:
+- Virtualized horizontal timeline with beat markers grouped by measure
+- Key symbols displayed on beats with color coding (DDR: left=blue, down=green, up=red, right=purple; Guitar Hero: 1=green, 2=red, 3=yellow, 4=blue, 5=orange)
+- Paint mode: click or drag to assign selected key to beats
+- Erase mode: click to remove key assignments
+- Clear All button to remove all key assignments
+- Statistics display showing key count and used keys
+- Mode toggle (Paint/Erase)
+- CSS file: [src/components/ui/ChartEditor.css](src/components/ui/ChartEditor.css)
 
 ### Task 4.3: Create ChartEditorToolbar Component
 Create new file: [src/components/ui/ChartEditorToolbar.tsx](src/components/ui/ChartEditorToolbar.tsx)
