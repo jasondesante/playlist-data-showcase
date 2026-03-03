@@ -25,7 +25,7 @@ This plan covers:
 
 ### 1.1 Update SubdivisionConfig Type
 
-- [ ] Add new `PerBeatSubdivisionConfig` interface to `BeatMap.ts`
+- [x] Add new `PerBeatSubdivisionConfig` interface to `BeatMap.ts`
   ```typescript
   interface PerBeatSubdivisionConfig {
     /** Version for migration */
