@@ -1029,3 +1029,215 @@ export function getKeySymbol(key: SupportedKey): string {
     };
     return symbols[key];
 }
+
+// ============================================================
+// Level Import/Export Types (Task 1.5)
+// ============================================================
+
+// Import SubdivisionConfig for use in LevelExportData
+import type { SubdivisionConfig } from 'playlist-data-engine';
+
+/**
+ * Beat data structure for level export.
+ *
+ * Contains the essential beat properties needed to reconstruct a beat map
+ * with key assignments. Used in LevelExportData.beats array.
+ */
+export interface LevelExportBeat {
+    /** Timestamp in seconds from the start of the audio */
+    timestamp: number;
+    /** Position of this beat within its measure (0-based) */
+    beatInMeasure: number;
+    /** Whether this beat is a downbeat (first beat of a measure) */
+    isDownbeat: boolean;
+    /** The measure number this beat belongs to (0-based) */
+    measureNumber: number;
+    /** Intensity value for this beat (0.0 - 1.0) */
+    intensity: number;
+    /** Detection confidence for this beat (0.0 - 1.0) */
+    confidence: number;
+    /** Required key for this beat (undefined if no key assigned) */
+    requiredKey?: string;
+}
+
+/**
+ * Complete level export data for saving and loading rhythm game levels.
+ *
+ * A "level" combines a beat map with a chart (key assignments). This structure
+ * contains everything needed to reconstruct a playable rhythm game level:
+ * - Beat timing data with key assignments
+ * - Subdivision configuration (required keys only work with subdivided mode)
+ * - Chart metadata for UI display
+ *
+ * @example
+ * ```typescript
+ * const levelData: LevelExportData = {
+ *   version: 1,
+ *   audioId: 'spotify-track-123',
+ *   audioTitle: 'Song Name',
+ *   exportedAt: Date.now(),
+ *   beatCount: 100,
+ *   beats: [...], // Array of LevelExportBeat
+ *   subdivisionConfig: { subdivisionType: 'eighth', ... },
+ *   chartStyle: 'ddr',
+ *   metadata: {
+ *     keyCount: 45,
+ *     usedKeys: ['up', 'down', 'left', 'right'],
+ *   },
+ * };
+ * ```
+ */
+export interface LevelExportData {
+    /** Schema version for future migrations (currently always 1) */
+    version: 1;
+    /** Audio identifier - must match exactly when importing */
+    audioId: string;
+    /** Optional audio title for display purposes */
+    audioTitle?: string;
+    /** Unix timestamp when this level was exported */
+    exportedAt: number;
+
+    // Beat map data
+    /** Total number of beats in the level */
+    beatCount: number;
+    /** Array of beat data with key assignments */
+    beats: LevelExportBeat[];
+
+    // Subdivision config (required keys only work with subdivided mode)
+    /** The subdivision configuration used for this level */
+    subdivisionConfig: SubdivisionConfig;
+
+    // Chart metadata
+    /** The chart style this level was authored for */
+    chartStyle: ChartStyle;
+    /** Metadata about key assignments in this level */
+    metadata: {
+        /** Number of beats that have a required key assigned */
+        keyCount: number;
+        /** Array of unique keys used in this level */
+        usedKeys: string[];
+    };
+}
+
+/**
+ * Result of validating a level import.
+ *
+ * Used to provide detailed error messages when import validation fails.
+ */
+export interface LevelImportValidationResult {
+    /** Whether the level data is valid for import */
+    valid: boolean;
+    /** Array of error messages if validation failed */
+    errors: string[];
+    /** Array of warning messages (non-blocking issues) */
+    warnings: string[];
+}
+
+/**
+ * Validates a LevelExportData structure.
+ *
+ * Checks that all required fields are present and correctly typed.
+ * Does NOT validate audioId match or beat count - those are validated
+ * separately during the import process.
+ *
+ * @param data - The data to validate
+ * @returns Validation result with errors/warnings if invalid
+ */
+export function validateLevelExportData(data: unknown): LevelImportValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Type guard for basic object
+    if (typeof data !== 'object' || data === null) {
+        return { valid: false, errors: ['Data must be a non-null object'], warnings: [] };
+    }
+
+    const level = data as Record<string, unknown>;
+
+    // Check required fields
+    if (level.version !== 1) {
+        errors.push(`version must be 1, got ${level.version}`);
+    }
+
+    if (typeof level.audioId !== 'string' || level.audioId.length === 0) {
+        errors.push('audioId must be a non-empty string');
+    }
+
+    if (typeof level.exportedAt !== 'number' || level.exportedAt <= 0) {
+        errors.push('exportedAt must be a positive number (unix timestamp)');
+    }
+
+    if (typeof level.beatCount !== 'number' || level.beatCount < 0) {
+        errors.push('beatCount must be a non-negative number');
+    }
+
+    if (!Array.isArray(level.beats)) {
+        errors.push('beats must be an array');
+    } else {
+        // Validate beat count matches array length
+        if (level.beats.length !== level.beatCount) {
+            errors.push(`beatCount (${level.beatCount}) does not match beats array length (${level.beats.length})`);
+        }
+
+        // Validate each beat has required fields
+        for (let i = 0; i < level.beats.length; i++) {
+            const beat = level.beats[i] as Record<string, unknown>;
+            if (typeof beat !== 'object' || beat === null) {
+                errors.push(`beats[${i}] must be an object`);
+                continue;
+            }
+            if (typeof beat.timestamp !== 'number') {
+                errors.push(`beats[${i}].timestamp must be a number`);
+            }
+            if (typeof beat.beatInMeasure !== 'number') {
+                errors.push(`beats[${i}].beatInMeasure must be a number`);
+            }
+            if (typeof beat.isDownbeat !== 'boolean') {
+                errors.push(`beats[${i}].isDownbeat must be a boolean`);
+            }
+            if (typeof beat.measureNumber !== 'number') {
+                errors.push(`beats[${i}].measureNumber must be a number`);
+            }
+            if (typeof beat.intensity !== 'number') {
+                errors.push(`beats[${i}].intensity must be a number`);
+            }
+            if (typeof beat.confidence !== 'number') {
+                errors.push(`beats[${i}].confidence must be a number`);
+            }
+            if (beat.requiredKey !== undefined && typeof beat.requiredKey !== 'string') {
+                errors.push(`beats[${i}].requiredKey must be a string if present`);
+            }
+        }
+    }
+
+    if (typeof level.subdivisionConfig !== 'object' || level.subdivisionConfig === null) {
+        errors.push('subdivisionConfig must be an object');
+    }
+
+    if (level.chartStyle !== 'ddr' && level.chartStyle !== 'guitar-hero') {
+        errors.push(`chartStyle must be 'ddr' or 'guitar-hero', got '${level.chartStyle}'`);
+    }
+
+    if (typeof level.metadata !== 'object' || level.metadata === null) {
+        errors.push('metadata must be an object');
+    } else {
+        const metadata = level.metadata as Record<string, unknown>;
+        if (typeof metadata.keyCount !== 'number') {
+            errors.push('metadata.keyCount must be a number');
+        }
+        if (!Array.isArray(metadata.usedKeys)) {
+            errors.push('metadata.usedKeys must be an array');
+        }
+    }
+
+    // Add warnings for optional fields
+    if (!level.audioTitle) {
+        warnings.push('audioTitle is missing - this is optional but recommended');
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors,
+        warnings,
+    };
+}

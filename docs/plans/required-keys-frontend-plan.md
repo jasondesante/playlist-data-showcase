@@ -117,7 +117,7 @@ The following decisions were made during planning:
 - Helper functions: `isDdrKey()`, `isGuitarKey()`, `getKeysForStyle()`, `getKeySymbol()`
 
 ### Task 1.5: Add Level Import/Export Types
-- [ ] Create `LevelExportData` interface for complete level export (beat map + chart together):
+- [x] Create `LevelExportData` interface for complete level export (beat map + chart together):
   ```typescript
   interface LevelExportData {
     version: 1;
@@ -145,6 +145,7 @@ The following decisions were made during planning:
     };
   }
   ```
+**Status:** Complete - Added `LevelExportBeat` interface, `LevelExportData` interface, `LevelImportValidationResult` interface, and `validateLevelExportData()` function in [src/types/index.ts](src/types/index.ts).
 
 ---
 
