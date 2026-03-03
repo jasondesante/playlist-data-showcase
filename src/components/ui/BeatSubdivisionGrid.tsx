@@ -185,6 +185,7 @@ export function BeatSubdivisionGrid({
     // Refs
     const gridRef = useRef<HTMLDivElement>(null);
     const lastSelectedBeatRef = useRef<number | null>(null);
+    const justFinishedDragRef = useRef(false);
 
     // Calculate beats per measure from downbeat config or use default
     const actualBeatsPerMeasure = useMemo(() => {
@@ -258,6 +259,12 @@ export function BeatSubdivisionGrid({
 
             event.stopPropagation();
 
+            // Skip if we just finished a drag operation - don't overwrite drag selection
+            if (justFinishedDragRef.current) {
+                justFinishedDragRef.current = false;
+                return;
+            }
+
             // Notify parent
             onBeatClick?.(beatIndex);
 
@@ -310,6 +317,8 @@ export function BeatSubdivisionGrid({
             // Only start drag on left mouse button
             if (event.button !== 0) return;
 
+            // Reset drag tracking
+            justFinishedDragRef.current = false;
             setIsDragging(true);
             setDragStartBeat(beatIndex);
 
@@ -328,6 +337,11 @@ export function BeatSubdivisionGrid({
     const handleMouseEnter = useCallback(
         (beatIndex: number) => {
             if (!isDragging || disabled || dragStartBeat === null) return;
+
+            // Mark that a drag operation is happening (more than just a click)
+            if (beatIndex !== dragStartBeat) {
+                justFinishedDragRef.current = true;
+            }
 
             // Update selection range
             const start = Math.min(dragStartBeat, beatIndex);
@@ -349,6 +363,8 @@ export function BeatSubdivisionGrid({
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
         setDragStartBeat(null);
+        // Note: We don't reset justFinishedDragRef here because onClick fires after mouseUp
+        // The onClick handler will reset it
     }, []);
 
     // Add global mouse up listener

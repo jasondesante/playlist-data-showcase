@@ -160,11 +160,11 @@ This plan covers:
 
 ### 4.3 Selection Interaction
 
-- [ ] Click single beat → select it
-- [ ] Shift+click → select range from last selection
-- [ ] Ctrl/Cmd+click → toggle selection
-- [ ] Drag across beats → select range
-- [ ] Double-click → cycle subdivision type
+- [x] Click single beat → select it
+- [x] Shift+click → select range from last selection
+- [x] Ctrl/Cmd+click → toggle selection
+- [x] Drag across beats → select range
+- [x] Double-click → cycle subdivision type
 
 ### 4.4 Measure Grouping Visualization
 
