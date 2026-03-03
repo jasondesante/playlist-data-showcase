@@ -168,10 +168,10 @@ This plan covers:
 
 ### 4.4 Measure Grouping Visualization
 
-- [ ] Draw measure boundaries (thicker lines)
-- [ ] Show measure numbers (M1, M2, etc.)
-- [ ] Use `beatsPerMeasure` from downbeat config
-- [ ] Handle different time signatures
+- [x] Draw measure boundaries (thicker lines)
+- [x] Show measure numbers (M1, M2, etc.)
+- [x] Use `beatsPerMeasure` from downbeat config
+- [x] Handle different time signatures
 
 ### 4.5 Styles
 

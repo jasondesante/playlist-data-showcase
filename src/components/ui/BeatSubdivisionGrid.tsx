@@ -20,6 +20,7 @@ import {
     useBeatDetectionStore,
     useUnifiedBeatMap,
     useSubdivisionConfig,
+    useTimeSignature,
 } from '../../store/beatDetectionStore';
 import type { SubdivisionType, BeatSubdivisionSelection } from '@/types';
 
@@ -141,7 +142,11 @@ interface BeatSubdivisionGridProps {
     disabled?: boolean;
     /** Initial zoom level */
     initialZoom?: ZoomLevel;
-    /** Number of beats per measure (from downbeat config) */
+    /**
+     * Number of beats per measure (optional override).
+     * If not provided, uses the value from downbeat config via useTimeSignature().
+     * Use this prop only for testing or special override cases.
+     */
     beatsPerMeasure?: number;
     /** Callback when selection changes */
     onSelectionChange?: (selection: BeatSubdivisionSelection) => void;
@@ -161,12 +166,15 @@ interface BeatSubdivisionGridProps {
 export function BeatSubdivisionGrid({
     disabled = false,
     initialZoom = 1,
-    beatsPerMeasure = 4,
+    beatsPerMeasure,
     onSelectionChange,
     onBeatClick,
 }: BeatSubdivisionGridProps) {
     const unifiedBeatMap = useUnifiedBeatMap();
     const subdivisionConfig = useSubdivisionConfig();
+
+    // Get beats per measure from downbeat config (Task 4.4: Measure Grouping Visualization)
+    const storeBeatsPerMeasure = useTimeSignature();
 
     // Store actions
     const setBeatSubdivision = useBeatDetectionStore((state) => state.actions.setBeatSubdivision);
@@ -187,17 +195,9 @@ export function BeatSubdivisionGrid({
     const lastSelectedBeatRef = useRef<number | null>(null);
     const justFinishedDragRef = useRef(false);
 
-    // Calculate beats per measure from downbeat config or use default
-    const actualBeatsPerMeasure = useMemo(() => {
-        if (!unifiedBeatMap) return beatsPerMeasure;
-        // Try to detect from the beat map
-        const beats = unifiedBeatMap.beats;
-        if (beats.length < 2) return beatsPerMeasure;
-
-        // Count beats until first downbeat repeat
-        const firstDownbeatIndex = beats.findIndex((b, i) => i > 0 && b.isDownbeat);
-        return firstDownbeatIndex > 0 ? firstDownbeatIndex : beatsPerMeasure;
-    }, [unifiedBeatMap, beatsPerMeasure]);
+    // Task 4.4: Use beatsPerMeasure from downbeat config
+    // Priority: prop override > store value (from downbeat config)
+    const actualBeatsPerMeasure = beatsPerMeasure ?? storeBeatsPerMeasure;
 
     // Total beats
     const totalBeats = unifiedBeatMap?.beats.length ?? 0;
