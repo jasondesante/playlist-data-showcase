@@ -49,7 +49,7 @@ import {
     // Subdivision types (Phase 2: Task 2.1)
     SubdivisionType,
     SubdivisionSegment,
-    SubdivisionConfig,
+    SegmentSubdivisionConfig,
     UnifiedBeatMap,
     SubdividedBeatMap,
     SubdivisionPlaybackOptions,
@@ -351,7 +351,7 @@ interface BeatDetectionState {
      * Defines subdivision segments with different patterns per beat range.
      * Persisted to localStorage.
      */
-    subdivisionConfig: SubdivisionConfig;
+    subdivisionConfig: SegmentSubdivisionConfig;
 
     /**
      * Current subdivision type for real-time mode.
@@ -673,7 +673,7 @@ interface BeatDetectionActions {
      * This triggers regeneration of the SubdividedBeatMap if one exists.
      * @param config - The new subdivision configuration
      */
-    setSubdivisionConfig: (config: SubdivisionConfig) => void;
+    setSubdivisionConfig: (config: SegmentSubdivisionConfig) => void;
 
     /**
      * Add a new subdivision segment.
@@ -1931,7 +1931,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     /**
                      * Update the subdivision configuration.
                      */
-                    setSubdivisionConfig: (config: SubdivisionConfig) => {
+                    setSubdivisionConfig: (config: SegmentSubdivisionConfig) => {
                         const state = get();
 
                         logger.info('BeatDetection', 'Updating subdivision config', {

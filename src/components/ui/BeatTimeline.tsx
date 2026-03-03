@@ -22,6 +22,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
 import type { Beat, BeatMap, ExtendedBeatEvent, ExtendedBeatAccuracy, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
+import { isSegmentSubdivisionConfig } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -583,8 +584,8 @@ export function BeatTimeline({
     /** Timestamp of the segment start (approximate, based on beat position) */
     timestamp: number;
   }> => {
-    // Only show if subdivision visualization is enabled and we have a subdivided beat map
-    if (!showSubdivisionVisualization || !subdividedBeatMap || !subdividedBeatMap.subdivisionConfig.segments.length) {
+    // Only show if subdivision visualization is enabled and we have a subdivided beat map with segment-based config
+    if (!showSubdivisionVisualization || !subdividedBeatMap || !isSegmentSubdivisionConfig(subdividedBeatMap.subdivisionConfig) || !subdividedBeatMap.subdivisionConfig.segments.length) {
       return [];
     }
 

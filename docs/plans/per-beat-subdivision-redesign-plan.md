@@ -2,7 +2,9 @@
 
 ## Overview
 
-Redesign the subdivision editing system from **segment-based** (max 8 segments covering large ranges) to **per-beat** assignment (each beat can have its own subdivision type). This enables creating rhythmic phrases for rhythm game levels.
+The subdivision system assigns a subdivision type to each beat. This is how it was always meant to work - each beat can have its own subdivision type, enabling rhythmic phrases for rhythm game levels.
+
+The old segment-based approach was a wrong turn. This plan completes the transition to per-beat.
 
 ### Current vs Target
 
@@ -25,56 +27,57 @@ This plan covers:
 
 ### 1.1 Update SubdivisionConfig Type
 
-- [ ] Add new `PerBeatSubdivisionConfig` interface to `BeatMap.ts`
+- [x] Add new `PerBeatSubdivisionConfig` interface to `BeatMap.ts`
   ```typescript
   interface PerBeatSubdivisionConfig {
-    /** Version for migration */
-    version: 2;
     /** Subdivision type for each beat index (sparse = use default) */
     beatSubdivisions: Map<number, SubdivisionType>;
     /** Default subdivision for beats not in map */
     defaultSubdivision: SubdivisionType;
   }
   ```
-- [ ] Keep old `SubdivisionConfig` as `SegmentSubdivisionConfig` for reference
-- [ ] Create union type: `type SubdivisionConfig = SegmentSubdivisionConfig | PerBeatSubdivisionConfig`
+- [x] Keep old `SubdivisionConfig` as `SegmentSubdivisionConfig` for reference
+- [x] Create union type: `type SubdivisionConfig = SegmentSubdivisionConfig | PerBeatSubdivisionConfig`
 
 ### 1.2 Update Validation Functions
 
-- [ ] Add `validatePerBeatSubdivisionConfig()` function
-- [ ] Add type guard `isPerBeatSubdivisionConfig()`
-- [ ] Update `validateSubdivisionConfig()` to handle both formats
+- [x] Add `validatePerBeatSubdivisionConfig()` function
+- [x] Add type guard `isPerBeatSubdivisionConfig()`
+- [x] Update `validateSubdivisionConfig()` to handle both formats
 
 ### 1.3 Update BeatSubdivider Processing
 
-- [ ] Add `processPerBeatBeats()` method to BeatSubdivider
+- [x] Add `subdividePerBeat()` method to BeatSubdivider (renamed from `processPerBeatBeats`)
   - Iterate beats instead of segments
   - For each beat, look up subdivision from config
   - Apply subdivision logic per beat
-- [ ] Update `subdivide()` to detect config type and route appropriately
-- [ ] Handle edge cases:
+- [x] Update `subdivide()` to detect config type and route appropriately
+- [x] Handle edge cases:
   - Adjacent beats with different subdivisions
   - Beats without explicit subdivision (use default)
 
 ### 1.4 Update SubdividedBeatMap Type
 
-- [ ] Update `SubdividedBeatMap.subdivisionConfig` type to support both formats
-- [ ] Add migration note to type definition
+- [x] Update `SubdividedBeatMap.subdivisionConfig` type to support both formats
 
 ### 1.5 Export New Types
 
-- [ ] Export `PerBeatSubdivisionConfig` from engine index
-- [ ] Export `isPerBeatSubdivisionConfig` type guard
-- [ ] Export `validatePerBeatSubdivisionConfig` function
+- [x] Export `PerBeatSubdivisionConfig` from engine index
+- [x] Export `isPerBeatSubdivisionConfig` type guard
+- [x] Export `validatePerBeatSubdivisionConfig` function
 
 ### 1.6 Update Engine Documentation
 
-- [ ] Update `DATA_ENGINE_REFERENCE.md` in playlist-data-engine project
+- [x] Update `DATA_ENGINE_REFERENCE.md` in playlist-data-engine project
   - Document new `PerBeatSubdivisionConfig` interface
   - Document `isPerBeatSubdivisionConfig` type guard
   - Document `validatePerBeatSubdivisionConfig` function
   - Update `BeatSubdivider` usage examples to show per-beat approach
-- [ ] Update or remove references to segment-based `SubdivisionConfig`
+- [x] Update `AUDIO_ANALYSIS.md` in playlist-data-engine project
+  - Check all examples for segment-based `SubdivisionConfig` usage
+  - Add examples showing new per-beat approach
+  - Update any outdated code snippets
+- [x] Update or remove references to segment-based `SubdivisionConfig`
   - Mark `SegmentSubdivisionConfig` as legacy/deprecated if kept for reference
   - Update any examples that used the old segment approach
 
@@ -84,7 +87,7 @@ This plan covers:
 
 ### 2.1 Update Type Exports
 
-- [ ] Import new types from engine in `src/types/index.ts`
+- [x] Import new types from engine in `src/types/index.ts`
   - `PerBeatSubdivisionConfig`
   - `isPerBeatSubdivisionConfig`
   - `validatePerBeatSubdivisionConfig`
@@ -106,10 +109,7 @@ This plan covers:
 
 ### 3.1 Update Subdivision State
 
-- [ ] Change `subdivisionConfig` type to support per-beat format
-- [ ] Add migration logic for existing segment-based configs
-  - Convert segments to per-beat assignments
-  - Log migration for debugging
+- [ ] Change `subdivisionConfig` type to per-beat format
 
 ### 3.2 Remove Segment-Based Actions
 
@@ -134,7 +134,6 @@ This plan covers:
 ### 3.5 Update Persistence
 
 - [ ] Update localStorage serialization for new format
-- [ ] Add migration for existing persisted segment configs
 
 ---
 
@@ -253,7 +252,6 @@ This plan covers:
 
 - [ ] Test `PerBeatSubdivisionConfig` validation
 - [ ] Test BeatSubdivider with per-beat config
-- [ ] Test migration from segment to per-beat format
 - [ ] Test edge cases:
   - Empty beat map
   - All beats same subdivision
@@ -264,7 +262,6 @@ This plan covers:
 
 - [ ] Test per-beat actions
 - [ ] Test selection state management
-- [ ] Test persistence/migration
 
 ### 8.3 Component Tests
 
@@ -325,7 +322,6 @@ Phase 4        Phase 5                    │
 
 | Question | Status | Resolution |
 |----------|--------|------------|
-| How to handle export format for per-beat? | Resolved | No backward compat needed - use new format |
 | Sparse vs full array for beatSubdivisions? | Resolved | Use Map<number, SubdivisionType> (sparse) |
 | Performance with 500+ beats in grid? | TBD | Implement virtualization in Phase 4 |
 | Keep real-time SubdivisionButtons separate? | Resolved | Yes - independent feature for practice mode |
@@ -338,14 +334,14 @@ Phase 4        Phase 5                    │
 |-------|-------|-------|
 | Phase 1: Engine Types | 2 | New interfaces + validation |
 | Phase 2: Showcase Types | 1 | Re-exports + helper types |
-| Phase 3: Store Updates | 3 | Actions, selectors, migration |
+| Phase 3: Store Updates | 2 | Actions, selectors |
 | Phase 4: BeatSubdivisionGrid | 5 | Complex virtualized grid |
 | Phase 5: SubdivisionToolbar | 2 | Button group + apply logic |
 | Phase 6: SubdivisionSettings | 2 | Integration |
 | Phase 7: Remove Timeline | 0.5 | Cleanup |
 | Phase 8: Testing | 4 | Unit + integration tests |
 | Phase 9: Documentation | 1 | JSDoc + user guide |
-| **Total** | **20.5** | |
+| **Total** | **19.5** | |
 
 ---
 

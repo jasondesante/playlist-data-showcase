@@ -16,6 +16,7 @@
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap } from 'lucide-react';
+import { BeatSubdivider } from 'playlist-data-engine';
 import './BeatPracticeView.css';
 import {
     useBeatDetectionStore,
@@ -33,6 +34,7 @@ import {
     useInterpolationStatistics,
     useTapStatistics,
     useSubdivisionTransitionMode,
+    useUnifiedBeatMap,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -44,7 +46,7 @@ import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
 import { logger } from '../../utils/logger';
-import type { ExtendedBeatAccuracy, DifficultyPreset } from '../../types';
+import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap } from '../../types';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -138,6 +140,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const interpolatedBeatMap = useInterpolatedBeatMap();
   const subdividedBeatMap = useSubdividedBeatMap();
 
+  // Get unified beat map (foundation for real-time subdivision)
+  const unifiedBeatMap = useUnifiedBeatMap();
+
+  // State for real-time generated subdivided beat map (for timeline visualization)
+  const [realtimeSubdividedBeatMap, setRealtimeSubdividedBeatMap] = useState<SubdividedBeatMap | null>(null);
+
   // Determine which beat map to use based on mode
   // When mode is 'merged' and we have an interpolated beat map, use it
   // When mode is 'subdivided' and we have a subdivided beat map, use it
@@ -216,6 +224,44 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Transition mode for subdivision changes (Phase 6: Task 6.7)
   const transitionMode = useSubdivisionTransitionMode();
   const setTransitionMode = useBeatDetectionStore((state) => state.actions.setSubdivisionTransitionMode);
+
+  /**
+   * Generate real-time subdivided beat map when subdivision changes.
+   * This feeds the BeatTimeline for visualization in real-time mode.
+   */
+  useEffect(() => {
+    // Don't generate if:
+    // - No unified beat map available
+    // - Subdivision playback not available
+    // - Subdivision is 'quarter' (no subdivision - use original beats)
+    if (!unifiedBeatMap || !subdivisionPlaybackAvailable || currentSubdivision === 'quarter') {
+      setRealtimeSubdividedBeatMap(null);
+      return;
+    }
+
+    // Generate SubdividedBeatMap for the current real-time subdivision
+    // This uses a single-segment config covering the whole track
+    const subdivider = new BeatSubdivider();
+    const config = {
+      segments: [{
+        startBeat: 0,
+        subdivision: currentSubdivision,
+      }],
+    };
+
+    try {
+      const subdivided = subdivider.subdivide(unifiedBeatMap, config);
+      setRealtimeSubdividedBeatMap(subdivided);
+      logger.debug('BeatDetection', 'Generated real-time subdivided beat map', {
+        subdivision: currentSubdivision,
+        beatCount: subdivided.beats.length,
+        originalBeatCount: unifiedBeatMap.beats.length,
+      });
+    } catch (error) {
+      logger.error('BeatDetection', 'Failed to generate real-time subdivided beat map', { error });
+      setRealtimeSubdividedBeatMap(null);
+    }
+  }, [unifiedBeatMap, subdivisionPlaybackAvailable, currentSubdivision]);
 
   /**
    * Handle tap action (spacebar or click)
@@ -564,7 +610,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             </span>
             <span className="beat-practice-stat-label">
               Subdivision
-              {subdivisionIsActive && <span className="beat-practice-subdivision-indicator">live</span>}
+              {subdivisionIsActive && currentSubdivision !== 'quarter' && <span className="beat-practice-subdivision-indicator">live</span>}
             </span>
           </div>
         )}
@@ -631,6 +677,18 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         enableBeatSelection={isDownbeatSelectionMode}
         onBeatClick={handleBeatClick}
         showMeasureBoundaries={showMeasureBoundaries}
+        // Pass subdivided beat map for visualization
+        // Priority: 1) Pre-calculated (beatStreamMode='subdivided'), 2) Real-time generated
+        subdividedBeatMap={
+          beatStreamMode === 'subdivided'
+            ? subdividedBeatMap
+            : realtimeSubdividedBeatMap
+        }
+        showSubdivisionVisualization={
+          beatStreamMode === 'subdivided'
+            ? !!subdividedBeatMap
+            : !!realtimeSubdividedBeatMap
+        }
       />
 
       {/* Playback Controls */}
@@ -668,8 +726,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <SubdivisionButtons
             currentSubdivision={currentSubdivision}
             onSubdivisionChange={setSubdivision}
-            disabled={!isPlaying}
-            isActive={isPlaying && subdivisionIsActive}
+            disabled={false}
+            isActive={isPlaying && subdivisionIsActive && currentSubdivision !== 'quarter'}
           />
 
           {/* Transition Mode Toggle (Phase 6: Task 6.7) */}
