@@ -1,0 +1,532 @@
+/* ============================================
+   SUBDIVISION TOOLBAR
+   Phase 5, Task 5.1: Subdivision brush toolbar
+   ============================================ */
+
+/* Main container */
+.subdivision-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 0.375rem;
+    flex-wrap: wrap;
+}
+
+/* Disabled state */
+.subdivision-toolbar--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Label */
+.subdivision-toolbar-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    margin-right: 0.25rem;
+}
+
+/* ============================================
+   SUBDIVISION TYPE BUTTONS CONTAINER
+   ============================================ */
+
+.subdivision-toolbar-types {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* ============================================
+   SUBDIVISION TYPE BUTTON
+   ============================================ */
+
+.subdivision-toolbar-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    min-width: 2.5rem;
+    padding: 0.375rem 0.5rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: hsl(var(--muted-foreground));
+    position: relative;
+}
+
+.subdivision-toolbar-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--border));
+    transform: translateY(-1px);
+}
+
+.subdivision-toolbar-btn:active:not(:disabled) {
+    transform: translateY(0);
+    transform: scale(0.98);
+}
+
+.subdivision-toolbar-btn:focus {
+    outline: none;
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.subdivision-toolbar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   ACTIVE BUTTON STATE
+   ============================================ */
+
+.subdivision-toolbar-btn--active {
+    border-width: 2px;
+}
+
+/* Quarter - Primary blue */
+.subdivision-toolbar-btn--quarter.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-quarter) / 0.18), hsl(var(--subdivision-quarter) / 0.12));
+    border-color: hsl(var(--subdivision-quarter));
+    color: hsl(var(--subdivision-quarter));
+    box-shadow: 0 0 10px hsl(var(--subdivision-quarter) / 0.25);
+}
+
+/* Half - Green */
+.subdivision-toolbar-btn--half.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-half) / 0.18), hsl(var(--subdivision-half) / 0.12));
+    border-color: hsl(var(--subdivision-half));
+    color: hsl(var(--subdivision-half));
+    box-shadow: 0 0 10px hsl(var(--subdivision-half) / 0.25);
+}
+
+/* Eighth - Orange */
+.subdivision-toolbar-btn--eighth.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-eighth) / 0.18), hsl(var(--subdivision-eighth) / 0.12));
+    border-color: hsl(var(--subdivision-eighth));
+    color: hsl(var(--subdivision-eighth));
+    box-shadow: 0 0 10px hsl(var(--subdivision-eighth) / 0.25);
+}
+
+/* Sixteenth - Red */
+.subdivision-toolbar-btn--sixteenth.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-sixteenth) / 0.18), hsl(var(--subdivision-sixteenth) / 0.12));
+    border-color: hsl(var(--subdivision-sixteenth));
+    color: hsl(var(--subdivision-sixteenth));
+    box-shadow: 0 0 10px hsl(var(--subdivision-sixteenth) / 0.25);
+}
+
+/* Triplet8 - Purple */
+.subdivision-toolbar-btn--triplet8.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-triplet8) / 0.18), hsl(var(--subdivision-triplet8) / 0.12));
+    border-color: hsl(var(--subdivision-triplet8));
+    color: hsl(var(--subdivision-triplet8));
+    box-shadow: 0 0 10px hsl(var(--subdivision-triplet8) / 0.25);
+}
+
+/* Triplet4 - Pink */
+.subdivision-toolbar-btn--triplet4.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-triplet4) / 0.18), hsl(var(--subdivision-triplet4) / 0.12));
+    border-color: hsl(var(--subdivision-triplet4));
+    color: hsl(var(--subdivision-triplet4));
+    box-shadow: 0 0 10px hsl(var(--subdivision-triplet4) / 0.25);
+}
+
+/* Dotted4 - Teal */
+.subdivision-toolbar-btn--dotted4.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-dotted4) / 0.18), hsl(var(--subdivision-dotted4) / 0.12));
+    border-color: hsl(var(--subdivision-dotted4));
+    color: hsl(var(--subdivision-dotted4));
+    box-shadow: 0 0 10px hsl(var(--subdivision-dotted4) / 0.25);
+}
+
+/* Dotted8 - Yellow/Gold */
+.subdivision-toolbar-btn--dotted8.subdivision-toolbar-btn--active {
+    background: linear-gradient(135deg, hsl(var(--subdivision-dotted8) / 0.18), hsl(var(--subdivision-dotted8) / 0.12));
+    border-color: hsl(var(--subdivision-dotted8));
+    color: hsl(var(--subdivision-dotted8));
+    box-shadow: 0 0 10px hsl(var(--subdivision-dotted8) / 0.25);
+}
+
+/* ============================================
+   BUTTON DENSITY INDICATOR
+   ============================================ */
+
+.subdivision-toolbar-btn-indicator {
+    display: flex;
+    gap: 0.125rem;
+    height: 0.375rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.subdivision-toolbar-btn-dot {
+    width: 0.25rem;
+    height: 0.25rem;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.7;
+    transition: transform 0.15s ease;
+}
+
+/* Half note - larger dot */
+.subdivision-toolbar-btn-dot--half {
+    width: 0.375rem;
+    height: 0.375rem;
+}
+
+.subdivision-toolbar-btn--active .subdivision-toolbar-btn-dot {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* ============================================
+   BUTTON LABEL
+   ============================================ */
+
+.subdivision-toolbar-btn-label {
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+}
+
+/* ============================================
+   SHORTCUT HINT (shown on hover/focus)
+   ============================================ */
+
+.subdivision-toolbar-btn-shortcut {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    font-size: 0.375rem;
+    font-weight: 700;
+    color: hsl(var(--muted-foreground) / 0.5);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.subdivision-toolbar-btn:hover .subdivision-toolbar-btn-shortcut,
+.subdivision-toolbar-btn:focus .subdivision-toolbar-btn-shortcut {
+    opacity: 1;
+}
+
+.subdivision-toolbar-btn--active .subdivision-toolbar-btn-shortcut {
+    opacity: 0.7;
+}
+
+/* ============================================
+   SEPARATOR
+   ============================================ */
+
+.subdivision-toolbar-separator {
+    width: 1px;
+    height: 1.5rem;
+    background: hsl(var(--border) / 0.5);
+    margin: 0 0.25rem;
+}
+
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+
+.subdivision-toolbar-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.subdivision-toolbar-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.subdivision-toolbar-action:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.subdivision-toolbar-action:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.subdivision-toolbar-action:focus {
+    outline: none;
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.subdivision-toolbar-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary action (Apply button) */
+.subdivision-toolbar-action--primary {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.1));
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.subdivision-toolbar-action--primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.25), hsl(var(--cute-purple) / 0.15));
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.2);
+}
+
+/* Danger action (Reset button) */
+.subdivision-toolbar-action--danger:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--destructive) / 0.15), hsl(var(--destructive) / 0.1));
+    border-color: hsl(var(--destructive) / 0.5);
+    color: hsl(var(--destructive));
+}
+
+/* Selection count badge */
+.subdivision-toolbar-action-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1rem;
+    height: 0.875rem;
+    padding: 0 0.25rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 0.4375rem;
+    font-weight: 700;
+    border-radius: 0.25rem;
+}
+
+/* ============================================
+   COMPACT MODE
+   ============================================ */
+
+.subdivision-toolbar--compact {
+    padding: 0.375rem 0.5rem;
+    gap: 0.375rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-label {
+    font-size: 0.5rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-types {
+    gap: 0.125rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-btn {
+    min-width: 2rem;
+    padding: 0.25rem 0.375rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-btn-label {
+    font-size: 0.4375rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-btn-indicator {
+    height: 0.25rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-btn-dot {
+    width: 0.1875rem;
+    height: 0.1875rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-btn-dot--half {
+    width: 0.25rem;
+    height: 0.25rem;
+}
+
+.subdivision-toolbar--compact .subdivision-toolbar-action {
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.4375rem;
+}
+
+/* ============================================
+   RESPONSIVE - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1026px) {
+    .subdivision-toolbar {
+        padding: 0.375rem 0.5rem;
+        gap: 0.375rem;
+    }
+
+    .subdivision-toolbar-label {
+        font-size: 0.5rem;
+    }
+
+    .subdivision-toolbar-types {
+        gap: 0.125rem;
+    }
+
+    .subdivision-toolbar-btn {
+        min-width: 2.25rem;
+        padding: 0.3125rem 0.375rem;
+    }
+
+    .subdivision-toolbar-btn-label {
+        font-size: 0.4375rem;
+    }
+
+    .subdivision-toolbar-action {
+        padding: 0.1875rem 0.375rem;
+        font-size: 0.4375rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+    .subdivision-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.375rem;
+        gap: 0.375rem;
+    }
+
+    .subdivision-toolbar-label {
+        font-size: 0.5rem;
+    }
+
+    .subdivision-toolbar-types {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.125rem;
+    }
+
+    .subdivision-toolbar-btn {
+        min-width: 1.75rem;
+        padding: 0.25rem 0.25rem;
+    }
+
+    .subdivision-toolbar-btn-label {
+        font-size: 0.375rem;
+    }
+
+    .subdivision-toolbar-btn-indicator {
+        height: 0.25rem;
+    }
+
+    .subdivision-toolbar-btn-dot {
+        width: 0.1875rem;
+        height: 0.1875rem;
+    }
+
+    .subdivision-toolbar-btn-shortcut {
+        display: none;
+    }
+
+    .subdivision-toolbar-separator {
+        display: none;
+    }
+
+    .subdivision-toolbar-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .subdivision-toolbar-action {
+        flex: 1;
+        max-width: 4rem;
+        padding: 0.25rem 0.25rem;
+        font-size: 0.4375rem;
+    }
+
+    .subdivision-toolbar-action--primary {
+        max-width: 5rem;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .subdivision-toolbar-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.5rem;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .subdivision-toolbar-btn-indicator {
+        height: 0.5rem;
+    }
+
+    .subdivision-toolbar-btn-dot {
+        width: 0.3125rem;
+        height: 0.3125rem;
+    }
+
+    .subdivision-toolbar-btn-label {
+        font-size: 0.5625rem;
+    }
+
+    .subdivision-toolbar-btn-shortcut {
+        display: none;
+    }
+
+    .subdivision-toolbar-action {
+        min-height: 44px;
+        padding: 0.5rem;
+    }
+
+    /* Disable hover transform on touch devices */
+    .subdivision-toolbar-btn:hover:not(:disabled),
+    .subdivision-toolbar-action:hover:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .subdivision-toolbar-btn,
+    .subdivision-toolbar-action {
+        transition: none;
+    }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+@media (prefers-contrast: more) {
+    .subdivision-toolbar-btn {
+        border-width: 2px;
+    }
+
+    .subdivision-toolbar-btn--active {
+        border-width: 3px;
+    }
+
+    .subdivision-toolbar-action {
+        border-width: 2px;
+    }
+}

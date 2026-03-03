@@ -187,28 +187,28 @@ This plan covers:
 
 ### 5.1 Create SubdivisionToolbar Component
 
-- [ ] Create `src/components/ui/SubdivisionToolbar.tsx`
+- [x] Create `src/components/ui/SubdivisionToolbar.tsx`
   - Horizontal bar with subdivision type buttons
   - Shows current "brush" subdivision
   - Apply to selection button
 
 ### 5.2 Subdivision Type Buttons
 
-- [ ] Render buttons for all 8 subdivision types
-- [ ] Show active state for current brush
-- [ ] Show subdivision info on hover (density, description)
-- [ ] Keyboard shortcuts (1-8 for types)
+- [x] Render buttons for all 8 subdivision types
+- [x] Show active state for current brush
+- [x] Show subdivision info on hover (density, description)
+- [x] Keyboard shortcuts (1-8 for types)
 
 ### 5.3 Selection Actions
 
-- [ ] "Apply to Selection" button
-- [ ] "Clear Selection" button
-- [ ] "Select All" button
-- [ ] "Reset All to Default" button
+- [x] "Apply to Selection" button
+- [x] "Clear Selection" button
+- [x] "Select All" button
+- [x] "Reset All to Default" button
 
 ### 5.4 Styles
 
-- [ ] Create `src/components/ui/SubdivisionToolbar.css`
+- [x] Create `src/components/ui/SubdivisionToolbar.css`
   - Horizontal button group
   - Active state highlighting
   - Touch-friendly sizing
