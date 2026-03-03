@@ -361,6 +361,16 @@ interface BeatDetectionState {
     currentSubdivision: SubdivisionType;
 
     /**
+     * Transition mode for subdivision changes in real-time mode.
+     * Controls how subdivision changes are applied during playback.
+     * - 'immediate': Switch instantly (default, more playful)
+     * - 'next-downbeat': Wait for beat 1 of next measure
+     * - 'next-measure': Wait for start of next measure
+     * Persisted to localStorage.
+     */
+    subdivisionTransitionMode: 'immediate' | 'next-downbeat' | 'next-measure';
+
+    /**
      * Cached unified beat maps indexed by audio ID for localStorage persistence.
      */
     cachedUnifiedBeatMaps: Record<string, UnifiedBeatMap>;
@@ -694,6 +704,13 @@ interface BeatDetectionActions {
     setCurrentSubdivision: (subdivision: SubdivisionType) => void;
 
     /**
+     * Set the transition mode for subdivision changes.
+     * Controls how subdivision changes are applied during playback.
+     * @param mode - The transition mode ('immediate', 'next-downbeat', 'next-measure')
+     */
+    setSubdivisionTransitionMode: (mode: 'immediate' | 'next-downbeat' | 'next-measure') => void;
+
+    /**
      * Initialize the SubdivisionPlaybackController for real-time mode.
      * Creates a new controller using the current UnifiedBeatMap.
      * Used in BeatPracticeView when entering practice mode.
@@ -811,6 +828,7 @@ const createInitialState = (): BeatDetectionState => ({
     subdividedBeatMap: null,
     subdivisionConfig: { ...DEFAULT_SUBDIVISION_CONFIG },
     currentSubdivision: 'quarter',
+    subdivisionTransitionMode: 'immediate',
     cachedUnifiedBeatMaps: {},
     cachedSubdividedBeatMaps: {},
 });
@@ -2032,6 +2050,20 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     /**
+                     * Set the transition mode for subdivision changes.
+                     * Note: The transition mode is applied when the controller is initialized.
+                     * To change mid-playback, the controller needs to be re-initialized.
+                     */
+                    setSubdivisionTransitionMode: (mode: 'immediate' | 'next-downbeat' | 'next-measure') => {
+                        logger.info('BeatDetection', 'Setting subdivision transition mode', {
+                            mode,
+                            previousMode: get().subdivisionTransitionMode,
+                        });
+
+                        set({ subdivisionTransitionMode: mode });
+                    },
+
+                    /**
                      * Initialize the SubdivisionPlaybackController for real-time mode.
                      */
                     initializeSubdivisionPlayback: (
@@ -2060,10 +2092,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             return null;
                         }
 
-                        // Merge provided options with defaults
+                        // Merge provided options with defaults and persisted state
                         const playbackOptions: SubdivisionPlaybackOptions = {
                             ...DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS,
                             initialSubdivision: state.currentSubdivision,
+                            transitionMode: state.subdivisionTransitionMode,
                             ...options,
                         };
 
@@ -2141,6 +2174,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 // Subdivision state (Phase 2: Task 2.1)
                 subdivisionConfig: state.subdivisionConfig,
                 currentSubdivision: state.currentSubdivision,
+                subdivisionTransitionMode: state.subdivisionTransitionMode,
                 cachedUnifiedBeatMaps: state.cachedUnifiedBeatMaps,
                 cachedSubdividedBeatMaps: state.cachedSubdividedBeatMaps,
             }) as BeatDetectionStoreState,
@@ -3042,6 +3076,16 @@ export const useSubdivisionConfig = () =>
  */
 export const useCurrentSubdivision = () =>
     useBeatDetectionStore((state) => state.currentSubdivision);
+
+/**
+ * Selector to get the subdivision transition mode.
+ * Controls how subdivision changes are applied during playback:
+ * - 'immediate': Switch instantly (default, more playful)
+ * - 'next-downbeat': Wait for beat 1 of next measure
+ * - 'next-measure': Wait for start of next measure
+ */
+export const useSubdivisionTransitionMode = () =>
+    useBeatDetectionStore((state) => state.subdivisionTransitionMode);
 
 /**
  * Selector to get the subdivision metadata from the SubdividedBeatMap.

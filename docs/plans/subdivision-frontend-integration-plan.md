@@ -404,7 +404,7 @@ Integrate the beat subdivision system from `playlist-data-engine` into the `play
 - [x] Default to `'immediate'` transition mode
   - [x] Switch subdivision instantly when button pressed
   - [x] More playful, immediate feedback
-- [ ] Optional: Add UI toggle for transition mode in settings (future enhancement)
+- [x] Optional: Add UI toggle for transition mode in settings (future enhancement)
 
 ---
 

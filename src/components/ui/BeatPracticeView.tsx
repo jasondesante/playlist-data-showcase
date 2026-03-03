@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap } from 'lucide-react';
 import './BeatPracticeView.css';
 import {
     useBeatDetectionStore,
@@ -32,6 +32,7 @@ import {
     useTimeSignature,
     useInterpolationStatistics,
     useTapStatistics,
+    useSubdivisionTransitionMode,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -211,6 +212,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     isActive: subdivisionIsActive,
     setSubdivision,
   } = useSubdivisionPlayback(true);
+
+  // Transition mode for subdivision changes (Phase 6: Task 6.7)
+  const transitionMode = useSubdivisionTransitionMode();
+  const setTransitionMode = useBeatDetectionStore((state) => state.actions.setSubdivisionTransitionMode);
 
   /**
    * Handle tap action (spacebar or click)
@@ -666,6 +671,50 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             disabled={!isPlaying}
             isActive={isPlaying && subdivisionIsActive}
           />
+
+          {/* Transition Mode Toggle (Phase 6: Task 6.7) */}
+          <div className="beat-practice-transition-mode">
+            <div className="beat-practice-transition-mode-header">
+              <Zap className="beat-practice-transition-mode-icon" />
+              <span className="beat-practice-transition-mode-label">Transition</span>
+            </div>
+            <div className="beat-practice-transition-mode-toggles">
+              <button
+                type="button"
+                className={`beat-practice-transition-toggle ${transitionMode === 'immediate' ? 'beat-practice-transition-toggle--active' : ''}`}
+                onClick={() => setTransitionMode('immediate')}
+                aria-pressed={transitionMode === 'immediate'}
+                title="Switch subdivision instantly"
+              >
+                <span className="beat-practice-transition-toggle-text">Instant</span>
+              </button>
+              <button
+                type="button"
+                className={`beat-practice-transition-toggle ${transitionMode === 'next-downbeat' ? 'beat-practice-transition-toggle--active' : ''}`}
+                onClick={() => setTransitionMode('next-downbeat')}
+                aria-pressed={transitionMode === 'next-downbeat'}
+                title="Wait for beat 1 of next measure"
+              >
+                <span className="beat-practice-transition-toggle-text">Downbeat</span>
+              </button>
+              <button
+                type="button"
+                className={`beat-practice-transition-toggle ${transitionMode === 'next-measure' ? 'beat-practice-transition-toggle--active' : ''}`}
+                onClick={() => setTransitionMode('next-measure')}
+                aria-pressed={transitionMode === 'next-measure'}
+                title="Wait for start of next measure"
+              >
+                <span className="beat-practice-transition-toggle-text">Measure</span>
+              </button>
+            </div>
+            <span className="beat-practice-transition-mode-description">
+              {transitionMode === 'immediate'
+                ? 'Subdivision changes apply instantly'
+                : transitionMode === 'next-downbeat'
+                  ? 'Changes apply on next downbeat (beat 1)'
+                  : 'Changes apply at start of next measure'}
+            </span>
+          </div>
         </div>
       )}
 
