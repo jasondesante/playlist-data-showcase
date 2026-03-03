@@ -24,3 +24,4 @@ export * from './useSpawnMode';
 export * from './useContentCreator';
 export * from './useBeatDetection';
 export * from './useSubdivisionPlayback';
+export * from './useKeyboardInput';

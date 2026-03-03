@@ -197,24 +197,27 @@ The following decisions were made during planning:
 
 ### Task 3.1: Create useKeyboardInput Hook
 Create new file: [src/hooks/useKeyboardInput.ts](src/hooks/useKeyboardInput.ts)
-- [ ] Support arrow keys: `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`
-- [ ] Support number keys: `1`, `2`, `3`, `4`, `5`
-- [ ] Map arrow keys to: `'up'`, `'down'`, `'left'`, `'right'`
-- [ ] Map number keys to: `'1'`, `'2'`, `'3'`, `'4'`, `'5'`
-- [ ] Both input modes active simultaneously
-- [ ] Return `pressedKey: string | null` state
-- [ ] Return `keyDownList: string[]` (currently held keys)
-- [ ] Handle key repeat prevention
+- [x] Support arrow keys: `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`
+- [x] Support number keys: `1`, `2`, `3`, `4`, `5`
+- [x] Map arrow keys to: `'up'`, `'down'`, `'left'`, `'right'`
+- [x] Map number keys to: `'1'`, `'2'`, `'3'`, `'4'`, `'5'`
+- [x] Both input modes active simultaneously
+- [x] Return `pressedKey: string | null` state
+- [x] Return `keyDownList: string[]` (currently held keys)
+- [x] Handle key repeat prevention
+**Status:** Complete - Created useKeyboardInput hook with full support for DDR arrow keys and Guitar Hero number keys. Includes key repeat prevention, timing tracking, and optional callbacks.
 
 ### Task 3.2: Add Key Event Handling
-- [ ] Listen to `keydown` events for key presses (global listener)
-- [ ] Listen to `keyup` events for key releases
-- [ ] Always prevent default browser behavior for arrow keys (block page scrolling)
-- [ ] Track timing of key press for accuracy checking
+- [x] Listen to `keydown` events for key presses (global listener)
+- [x] Listen to `keyup` events for key releases
+- [x] Always prevent default browser behavior for arrow keys (block page scrolling)
+- [x] Track timing of key press for accuracy checking
+**Status:** Complete - Included in useKeyboardInput hook. Global listeners on window, arrow key scroll blocking, and pressedAt timestamp tracking.
 
 ### Task 3.3: Export from hooks/index.ts
-- [ ] Export `useKeyboardInput` hook
-- [ ] Export `SupportedKey` type
+- [x] Export `useKeyboardInput` hook
+- [x] Export `SupportedKey` type
+**Status:** Complete - Added export for useKeyboardInput hook. SupportedKey type is already available via types/index.ts.
 
 ---
 
