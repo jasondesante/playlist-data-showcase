@@ -1938,3 +1938,90 @@
     animation: none;
   }
 }
+
+/* ============================================
+   CHART EDITOR PLACEHOLDER - Shown when no subdivided beat map
+   ============================================ */
+
+.audio-analysis-chart-editor-placeholder {
+  opacity: 0.9;
+}
+
+.audio-analysis-chart-editor-badge--disabled {
+  background: hsl(var(--muted) / 0.3);
+  color: hsl(var(--muted-foreground));
+  border-color: hsl(var(--muted) / 0.2);
+}
+
+.audio-analysis-chart-editor-placeholder-content {
+  padding: 1.5rem;
+  text-align: center;
+  animation: chart-editor-slide-down 0.2s ease-out;
+}
+
+.audio-analysis-chart-editor-placeholder-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
+}
+
+.audio-analysis-chart-editor-placeholder-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 0.5rem 0;
+}
+
+.audio-analysis-chart-editor-placeholder-text {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.audio-analysis-chart-editor-placeholder-text strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.audio-analysis-chart-editor-placeholder-hint {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground) / 0.8);
+  line-height: 1.4;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--surface-3) / 0.5);
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border) / 0.2);
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Placeholder responsive styles */
+@media (max-width: 640px) {
+  .audio-analysis-chart-editor-placeholder-content {
+    padding: 1rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-title {
+    font-size: 0.75rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-text {
+    font-size: 0.6875rem;
+  }
+
+  .audio-analysis-chart-editor-placeholder-hint {
+    font-size: 0.625rem;
+    padding: 0.375rem 0.5rem;
+  }
+}

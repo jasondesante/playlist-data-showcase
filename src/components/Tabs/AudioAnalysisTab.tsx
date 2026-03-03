@@ -945,6 +945,31 @@ export function AudioAnalysisTab() {
         </Card>
       )}
 
+      {/* Chart Editor Placeholder - Shown when no subdivided beat map exists yet */}
+      {selectedTrack && analysisMode === 'beat' && !subdividedBeatMap && interpolatedBeatMap && !isBeatGenerating && !practiceModeActive && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card audio-analysis-chart-editor-placeholder fade-in">
+          <details className="audio-analysis-chart-editor-section">
+            <summary className="audio-analysis-chart-editor-summary">
+              <span className="audio-analysis-chart-editor-summary-text">Chart Editor</span>
+              <span className="audio-analysis-chart-editor-badge audio-analysis-chart-editor-badge--disabled">Required Keys</span>
+              <ChevronDown className="audio-analysis-chart-editor-summary-icon" size={12} />
+            </summary>
+            <div className="audio-analysis-chart-editor-placeholder-content">
+              <div className="audio-analysis-chart-editor-placeholder-icon">🎹</div>
+              <h4 className="audio-analysis-chart-editor-placeholder-title">Subdivided Beat Map Required</h4>
+              <p className="audio-analysis-chart-editor-placeholder-text">
+                The Chart Editor requires a <strong>subdivided beat map</strong> to assign keys to beats.
+                Generate a subdivided beat map in the Subdivision Settings above to enable chart editing.
+              </p>
+              <p className="audio-analysis-chart-editor-placeholder-hint">
+                💡 Tip: Subdivided beat maps work with specific rhythm patterns (8th notes, 16th notes, etc.)
+                which are required for creating rhythm game charts.
+              </p>
+            </div>
+          </details>
+        </Card>
+      )}
+
       {/* Beat Detection Results - Full-width section below primary card */}
       {selectedTrack && analysisMode === 'beat' && !practiceModeActive && (
         <Card variant="elevated" padding="lg" className="audio-analysis-beat-results-card fade-in">

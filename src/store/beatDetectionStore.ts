@@ -3805,18 +3805,27 @@ export const useCanStartChartEditor = () =>
 /**
  * Selector to get chart statistics.
  * Returns key count and array of used keys from the subdivided beat map.
+ *
+ * Note: This uses a two-step approach to prevent infinite loops:
+ * 1. First, select raw data with useShallow to get stable references
+ * 2. Then, memoize the computed result based on those stable values
  */
-export const useChartStatistics = () =>
-    useBeatDetectionStore((state) => {
-        const beatMap = state.subdividedBeatMap;
-        if (!beatMap) {
+export const useChartStatistics = () => {
+    // Step 1: Select raw data with useShallow for stable references
+    const subdividedBeatMap = useBeatDetectionStore(
+        useShallow((state) => state.subdividedBeatMap)
+    );
+
+    // Step 2: Memoize the computed result based on stable raw data
+    return useMemo(() => {
+        if (!subdividedBeatMap) {
             return { keyCount: 0, usedKeys: [] };
         }
 
         const usedKeys = new Set<string>();
         let keyCount = 0;
 
-        for (const beat of beatMap.beats) {
+        for (const beat of subdividedBeatMap.beats) {
             if (beat.requiredKey) {
                 usedKeys.add(beat.requiredKey);
                 keyCount++;
@@ -3827,29 +3836,40 @@ export const useChartStatistics = () =>
             keyCount,
             usedKeys: Array.from(usedKeys).sort(),
         };
-    });
+    }, [subdividedBeatMap]);
+};
 
 /**
  * Selector to get the key map from the subdivided beat map.
  * Returns a Map of beat index to required key.
+ *
+ * Note: This uses a two-step approach to prevent infinite loops:
+ * 1. First, select raw data with useShallow to get stable references
+ * 2. Then, memoize the computed result based on those stable values
  */
-export const useKeyMap = () =>
-    useBeatDetectionStore((state) => {
-        const beatMap = state.subdividedBeatMap;
-        if (!beatMap) {
+export const useKeyMap = () => {
+    // Step 1: Select raw data with useShallow for stable references
+    const subdividedBeatMap = useBeatDetectionStore(
+        useShallow((state) => state.subdividedBeatMap)
+    );
+
+    // Step 2: Memoize the computed Map based on stable raw data
+    return useMemo(() => {
+        if (!subdividedBeatMap) {
             return new Map<number, string>();
         }
 
         const keyMap = new Map<number, string>();
-        for (let i = 0; i < beatMap.beats.length; i++) {
-            const beat = beatMap.beats[i];
+        for (let i = 0; i < subdividedBeatMap.beats.length; i++) {
+            const beat = subdividedBeatMap.beats[i];
             if (beat.requiredKey) {
                 keyMap.set(i, beat.requiredKey);
             }
         }
 
         return keyMap;
-    });
+    }, [subdividedBeatMap]);
+};
 
 /**
  * Selector to check if the subdivided beat map has any required keys.
