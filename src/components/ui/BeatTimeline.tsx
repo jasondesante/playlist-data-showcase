@@ -21,7 +21,8 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
-import type { Beat, BeatMap, ExtendedBeatEvent, ExtendedBeatAccuracy, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
+import type { Beat, BeatMap, ExtendedBeatEvent, ExtendedBeatAccuracy, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType, SupportedKey } from '@/types';
+import { KeyIndicatorMini } from './KeyIndicator';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -96,6 +97,12 @@ interface BeatTimelineProps {
    * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
    */
   showSubdivisionVisualization?: boolean;
+  /**
+   * Map of beat index to required key for rhythm game chart mode.
+   * When provided, key indicators are shown on beats with required keys.
+   * Part of Phase 5: Practice Mode Key Support (Task 5.2)
+   */
+  keyMap?: Map<number, string>;
 }
 
 /**
@@ -126,7 +133,10 @@ export function BeatTimeline({
   showMeasureBoundaries = false,
   subdividedBeatMap = null,
   showSubdivisionVisualization = true,
+  keyMap,
 }: BeatTimelineProps) {
+  // Default keyMap to empty Map if not provided
+  const beatKeyMap = keyMap ?? new Map<number, string>();
   // _audioContext is available for future precise timing enhancements
   void _audioContext; // Suppress unused variable warning
   const trackRef = useRef<HTMLDivElement>(null);
@@ -422,10 +432,17 @@ export function BeatTimeline({
      * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
      */
     beatInMeasure?: number;
+    /**
+     * Required key for this beat (for rhythm game chart mode).
+     * Part of Phase 5: Practice Mode Key Support (Task 5.2)
+     */
+    requiredKey?: string;
   };
 
   /**
    * Convert BeatMap beats to unified format.
+   * Includes required key lookup from keyMap for rhythm game chart mode.
+   * Part of Phase 5: Practice Mode Key Support (Task 5.2)
    */
   const convertBeatMapBeats = useCallback((beats: Beat[]): UnifiedBeat[] => {
     return beats.map((beat, index) => ({
@@ -436,12 +453,14 @@ export function BeatTimeline({
       key: `beat-${beat.timestamp.toFixed(3)}-${beat.measureNumber ?? index}`,
       beatIndex: index,
       measureNumber: beat.measureNumber ?? 0,
+      requiredKey: beatKeyMap.get(index),
     }));
-  }, []);
+  }, [beatKeyMap]);
 
   /**
    * Convert interpolation visualization beats to unified format.
    * Calculates measure numbers based on downbeat positions.
+   * Includes required key lookup for rhythm game chart mode.
    */
   const convertInterpolationBeats = useCallback((beats: InterpolationVisualizationData['beats']): UnifiedBeat[] => {
     // First pass: identify downbeat positions to calculate measure numbers
@@ -455,6 +474,7 @@ export function BeatTimeline({
         key: `interp-${beat.timestamp.toFixed(3)}-${beat.source}-${index}`,
         beatIndex: index,
         measureNumber: currentMeasure,
+        requiredKey: beatKeyMap.get(index),
       };
       // Increment measure counter after each downbeat
       if (beat.isDownbeat && index > 0) {
@@ -462,12 +482,14 @@ export function BeatTimeline({
       }
       return unifiedBeat;
     });
-  }, []);
+  }, [beatKeyMap]);
 
   /**
    * Convert SubdividedBeatMap beats to unified format.
    * Includes subdivision type and decimal beatInMeasure for visualization.
+   * Includes required key from beat data for rhythm game chart mode.
    * Part of Phase 5: SubdividedBeatMap Visualization (Task 5.4)
+   * Part of Phase 5: Practice Mode Key Support (Task 5.2)
    */
   const convertSubdividedBeats = useCallback((map: SubdividedBeatMap): UnifiedBeat[] => {
     return map.beats.map((beat, index) => ({
@@ -480,6 +502,8 @@ export function BeatTimeline({
       measureNumber: beat.measureNumber ?? 0,
       subdivisionType: beat.subdivisionType,
       beatInMeasure: beat.beatInMeasure,
+      // Use requiredKey from beat data (already assigned in chart editor)
+      requiredKey: beat.requiredKey,
     }));
   }, []);
 
@@ -913,6 +937,15 @@ export function BeatTimeline({
             <div className="beat-timeline-marker-dot" />
             {/* Downbeat accent ring */}
             {beat.isDownbeat && <div className="beat-timeline-marker-ring" />}
+            {/* Phase 5 Task 5.2: Required key indicator for rhythm game chart mode */}
+            {beat.requiredKey && (
+              <KeyIndicatorMini
+                requiredKey={beat.requiredKey as SupportedKey}
+                isUpcoming={isUpcoming}
+                isPast={isPast}
+                className="beat-timeline-marker-key"
+              />
+            )}
             {/* Task 3.4: Beat number label - shown when selection mode is enabled */}
             {enableBeatSelection && (
               <span className="beat-timeline-marker-number">

@@ -248,6 +248,21 @@
   animation: ring-pulse 2s ease-in-out infinite;
 }
 
+/* ============================================
+   Task 5.2: Key Indicator on Beat Markers
+   Shows required key for rhythm game chart mode
+   ============================================ */
+
+.beat-timeline-marker-key {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.25rem;
+  pointer-events: none;
+  z-index: 5;
+}
+
 @keyframes ring-pulse {
   0%, 100% {
     transform: scale(1);
