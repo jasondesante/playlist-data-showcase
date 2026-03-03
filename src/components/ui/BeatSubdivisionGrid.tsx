@@ -22,6 +22,7 @@ import {
     useSubdivisionConfig,
     useTimeSignature,
 } from '../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type { SubdivisionType, BeatSubdivisionSelection } from '@/types';
 
 /**
@@ -180,6 +181,11 @@ export function BeatSubdivisionGrid({
     const setBeatSubdivision = useBeatDetectionStore((state) => state.actions.setBeatSubdivision);
     const setBeatSubdivisionRange = useBeatDetectionStore((state) => state.actions.setBeatSubdivisionRange);
 
+    // Audio player state for playback follow
+    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
     // Local state
     const [zoom, setZoom] = useState<ZoomLevel>(initialZoom);
     const [selection, setSelection] = useState<BeatSubdivisionSelection>({
@@ -189,6 +195,11 @@ export function BeatSubdivisionGrid({
     });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStartBeat, setDragStartBeat] = useState<number | null>(null);
+
+    // Drag-to-pan state
+    const [isPanning, setIsPanning] = useState(false);
+    const panStartRef = useRef<{ x: number; scrollLeft: number }>({ x: 0, scrollLeft: 0 });
+    const PAN_THRESHOLD = 5; // pixels - movement beyond this triggers pan mode
 
     // Refs
     const gridRef = useRef<HTMLDivElement>(null);
@@ -375,6 +386,136 @@ export function BeatSubdivisionGrid({
         }
     }, [isDragging, handleMouseUp]);
 
+    // ========================================
+    // Drag-to-Pan Functionality
+    // ========================================
+
+    /**
+     * Handle mouse down on grid container - potentially start panning
+     * Pan works when clicking on:
+     * - The measure label area (above cells)
+     * - Empty areas of the grid
+     * - Cells (but only if mouse moves significantly before cell selection starts)
+     */
+    const handleGridMouseDown = useCallback((e: MouseEvent) => {
+        // Only handle left click
+        if (e.button !== 0) return;
+
+        // Check if clicking on a cell - we'll handle this differently
+        const cell = (e.target as HTMLElement).closest('.beat-subdivision-grid-cell');
+        if (cell) {
+            // For cells, we don't start pan immediately - let cell selection happen first
+            // But store the start position in case the user drags horizontally
+            panStartRef.current = {
+                x: e.clientX,
+                scrollLeft: gridRef.current?.scrollLeft ?? 0,
+            };
+            return;
+        }
+
+        // Clicking on measure label or empty area - start pan ready state
+        panStartRef.current = {
+            x: e.clientX,
+            scrollLeft: gridRef.current?.scrollLeft ?? 0,
+        };
+    }, []);
+
+    /**
+     * Handle mouse move - start panning if movement exceeds threshold
+     */
+    const handleGridMouseMove = useCallback((e: MouseEvent) => {
+        if (!gridRef.current || panStartRef.current.x === 0) return;
+
+        // Don't pan if we're in cell selection mode
+        if (isDragging) return;
+
+        const dx = e.clientX - panStartRef.current.x;
+
+        // Check if we should start panning (movement beyond threshold)
+        if (!isPanning && Math.abs(dx) > PAN_THRESHOLD) {
+            setIsPanning(true);
+        }
+
+        if (isPanning) {
+            gridRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+        }
+    }, [isPanning, isDragging]);
+
+    /**
+     * Handle mouse up - end panning
+     */
+    const handleGridMouseUp = useCallback(() => {
+        setIsPanning(false);
+        panStartRef.current = { x: 0, scrollLeft: 0 };
+    }, []);
+
+    /**
+     * Add/remove pan event listeners
+     */
+    useEffect(() => {
+        const container = gridRef.current;
+        if (!container) return;
+
+        container.addEventListener('mousedown', handleGridMouseDown);
+
+        if (isPanning) {
+            window.addEventListener('mousemove', handleGridMouseMove);
+            window.addEventListener('mouseup', handleGridMouseUp);
+        }
+
+        return () => {
+            container.removeEventListener('mousedown', handleGridMouseDown);
+            window.removeEventListener('mousemove', handleGridMouseMove);
+            window.removeEventListener('mouseup', handleGridMouseUp);
+        };
+    }, [isPanning, handleGridMouseDown, handleGridMouseMove, handleGridMouseUp]);
+
+    // ========================================
+    // Playback Follow - Auto-scroll to current beat
+    // ========================================
+
+    /**
+     * Auto-scroll the grid to follow the current playback position
+     * Only scrolls when playing and not currently panning/selection-dragging
+     */
+    useEffect(() => {
+        if (!isPlaying || !gridRef.current || !unifiedBeatMap || isPanning || isDragging) return;
+
+        // Find the beat closest to current time
+        const beats = unifiedBeatMap.beats;
+        let closestBeatIndex = 0;
+        let closestDiff = Infinity;
+
+        for (let i = 0; i < beats.length; i++) {
+            const diff = Math.abs(beats[i].timestamp - currentTime);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestBeatIndex = i;
+            }
+        }
+
+        // Calculate the scroll position to center the current beat
+        const container = gridRef.current;
+        const containerWidth = container.clientWidth;
+        const beatPosition = closestBeatIndex * cellWidth;
+        const targetScrollLeft = beatPosition - (containerWidth / 2);
+
+        // Smoothly scroll to keep the current beat in view
+        // Only auto-scroll if the beat is getting close to the edge
+        const currentScrollLeft = container.scrollLeft;
+        const visibleStart = currentScrollLeft;
+        const visibleEnd = currentScrollLeft + containerWidth;
+        const beatVisible = beatPosition >= visibleStart && beatPosition <= visibleEnd;
+
+        if (!beatVisible) {
+            // Beat is out of view, scroll to it
+            container.scrollTo({
+                left: Math.max(0, targetScrollLeft),
+                behavior: 'smooth',
+            });
+        }
+    }, [currentTime, isPlaying, unifiedBeatMap, cellWidth, isPanning, isDragging]);
+
     // Handle zoom change
     const handleZoomChange = useCallback((newZoom: ZoomLevel) => {
         setZoom(newZoom);
@@ -514,8 +655,14 @@ export function BeatSubdivisionGrid({
                 </div>
             </div>
 
-            {/* Grid container with horizontal scroll */}
-            <div className="beat-subdivision-grid-container" ref={gridRef}>
+            {/* Grid container with horizontal scroll and drag-to-pan */}
+            <div
+                className={cn(
+                    'beat-subdivision-grid-container',
+                    isPanning && 'beat-subdivision-grid-container--panning'
+                )}
+                ref={gridRef}
+            >
                 <div
                     className="beat-subdivision-grid-track"
                     style={{ width: `${totalBeats * cellWidth}px` }}
@@ -529,14 +676,18 @@ export function BeatSubdivisionGrid({
                         }}
                     >
                         {/* Measure groups */}
-                        {measures.map((measure) => {
+                        {measures.map((measure, measureIndex) => {
                             // Calculate actual measure number based on first beat in measure
                             const firstBeatIndex = measure[0]?.beatIndex ?? 0;
+                            const lastBeatIndex = measure[measure.length - 1]?.beatIndex ?? firstBeatIndex;
                             const actualMeasureNumber = Math.floor(firstBeatIndex / actualBeatsPerMeasure) + 1;
+
+                            // Use a unique key based on the beat range to avoid duplicates
+                            const measureKey = `measure-${firstBeatIndex}-${lastBeatIndex}-${measureIndex}`;
 
                             return (
                                 <div
-                                    key={`measure-${firstBeatIndex}`}
+                                    key={measureKey}
                                     className="beat-subdivision-grid-measure"
                                     style={{ width: `${measure.length * cellWidth}px` }}
                                 >

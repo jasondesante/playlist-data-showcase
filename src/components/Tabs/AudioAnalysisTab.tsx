@@ -813,26 +813,6 @@ export function AudioAnalysisTab() {
                   </span>
                 </div>
               )}
-
-              {/* Subdivision Settings - Phase 3, Task 8.2: Collapsible section shown when Beat mode is selected and beat map exists */}
-              {analysisMode === 'beat' && beatMap && !isBeatGenerating && (
-                <details className="audio-analysis-subdivision-section" open>
-                  <summary className="audio-analysis-subdivision-summary">
-                    <span className="audio-analysis-subdivision-summary-text">Beat Subdivision</span>
-                    {subdividedBeatMap && (
-                      <span className="audio-analysis-subdivision-badge">
-                        Generated
-                      </span>
-                    )}
-                    <ChevronDown className="audio-analysis-subdivision-summary-icon" size={12} />
-                  </summary>
-                  <div className="audio-analysis-subdivision-content">
-                    <SubdivisionSettings
-                      disabled={isBeatGenerating}
-                    />
-                  </div>
-                </details>
-              )}
             </div>
 
             {/* 4. Action Section */}
@@ -909,6 +889,24 @@ export function AudioAnalysisTab() {
               )}
             </div>
           </div>
+        </Card>
+      )}
+
+      {/* Beat Subdivision Card - Full-width section for subdivision editing */}
+      {selectedTrack && analysisMode === 'beat' && beatMap && !isBeatGenerating && !practiceModeActive && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card fade-in">
+          <details className="audio-analysis-subdivision-section" open>
+            <summary className="audio-analysis-subdivision-summary">
+              <span className="audio-analysis-subdivision-summary-text">Beat Subdivision</span>
+              {subdividedBeatMap && (
+                <span className="audio-analysis-subdivision-badge">Generated</span>
+              )}
+              <ChevronDown className="audio-analysis-subdivision-summary-icon" size={12} />
+            </summary>
+            <div className="audio-analysis-subdivision-content">
+              <SubdivisionSettings disabled={isBeatGenerating} />
+            </div>
+          </details>
         </Card>
       )}
 
