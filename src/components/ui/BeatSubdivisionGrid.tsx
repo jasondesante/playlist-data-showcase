@@ -37,16 +37,37 @@ const MIN_CELL_WIDTH = 20; // Minimum cell width for virtualization calculations
 type ZoomLevel = 0.5 | 1 | 2 | 4 | 8;
 
 /**
- * Virtualization state - which beats are visible
+ * Virtualization state - which beats are visible in the viewport.
+ * Used for rendering only the visible cells to maintain performance with large beat counts.
+ *
+ * @property startIndex - Index of the first visible beat (with buffer)
+ * @property endIndex - Index of the last visible beat (with buffer)
+ * @property offsetX - Pixel offset to position the rendered cells correctly
  */
 interface VirtualizationState {
     startIndex: number;
     endIndex: number;
-    offsetX: number; // Offset to position the rendered cells correctly
+    offsetX: number;
 }
 
 /**
- * Custom hook for virtualization - calculates visible beat range
+ * Custom hook for virtualization - calculates which beats are visible in the viewport.
+ *
+ * Uses scroll position and container dimensions to determine the range of beats
+ * that should be rendered. Adds a buffer on each side for smooth scrolling.
+ * Automatically updates on scroll and resize events.
+ *
+ * @param containerRef - Reference to the scrollable container element
+ * @param totalBeats - Total number of beats in the grid
+ * @param cellWidth - Width of each beat cell in pixels
+ * @returns VirtualizationState with startIndex, endIndex, and offsetX
+ *
+ * @example
+ * ```tsx
+ * const virtualization = useVirtualization(gridRef, totalBeats, cellWidth);
+ * // Render beats from virtualization.startIndex to virtualization.endIndex
+ * // Position them with transform: translateX(${virtualization.offsetX}px)
+ * ```
  */
 function useVirtualization(
     containerRef: RefObject<HTMLDivElement | null>,
@@ -114,7 +135,12 @@ function useVirtualization(
 }
 
 /**
- * Subdivision type configuration for display
+ * Subdivision type configuration for display purposes.
+ *
+ * @property id - The subdivision type identifier
+ * @property label - Full display label (e.g., "Quarter")
+ * @property shortLabel - Compact label for small cells (e.g., "1/4")
+ * @property color - CSS color theme key for styling
  */
 interface SubdivisionTypeConfig {
     id: SubdivisionType;
@@ -124,7 +150,9 @@ interface SubdivisionTypeConfig {
 }
 
 /**
- * All subdivision types with display properties
+ * All subdivision types with display properties.
+ * This array defines the visual representation and available subdivision options.
+ * Order matches the keyboard shortcuts (1-9) in SubdivisionToolbar.
  */
 const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
     { id: 'quarter', label: 'Quarter', shortLabel: '1/4', color: 'quarter' },
@@ -138,10 +166,13 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
     { id: 'rest', label: 'Rest', shortLabel: '-', color: 'rest' },
 ];
 
+/**
+ * Props for the BeatSubdivisionGrid component.
+ */
 interface BeatSubdivisionGridProps {
-    /** Whether the grid is disabled */
+    /** Whether the grid is disabled (prevents all interactions) */
     disabled?: boolean;
-    /** Initial zoom level */
+    /** Initial zoom level (0.5, 1, 2, 4, or 8). Default: 1 */
     initialZoom?: ZoomLevel;
     /**
      * Number of beats per measure (optional override).
@@ -149,9 +180,9 @@ interface BeatSubdivisionGridProps {
      * Use this prop only for testing or special override cases.
      */
     beatsPerMeasure?: number;
-    /** Callback when selection changes */
+    /** Callback when selection changes, receives the full selection state */
     onSelectionChange?: (selection: BeatSubdivisionSelection) => void;
-    /** Callback when a beat is clicked */
+    /** Callback when a beat is clicked, receives the beat index */
     onBeatClick?: (beatIndex: number) => void;
 }
 
@@ -161,8 +192,39 @@ interface BeatSubdivisionGridProps {
  * Renders a piano-roll style grid where each beat can be assigned a subdivision type.
  * Supports selection for batch operations and zoom for detailed editing.
  *
+ * Features:
+ * - Horizontal scrolling beat grid with virtualization for 500+ beats
+ * - Zoom support (0.5x - 8x) for detailed or overview editing
+ * - Beat cells grouped by measure with measure number labels
+ * - Color-coded by subdivision type (quarter, eighth, triplet, etc.)
+ * - Selection support (click, shift+click, ctrl/cmd+click, drag)
+ * - Double-click to cycle through subdivision types
+ * - Drag-to-pan for horizontal navigation
+ * - Auto-scroll during playback to follow current beat
+ *
  * @param props - Component props
+ * @param props.disabled - Whether the grid is disabled (default: false)
+ * @param props.initialZoom - Initial zoom level, one of 0.5, 1, 2, 4, or 8 (default: 1)
+ * @param props.beatsPerMeasure - Optional override for beats per measure; uses downbeat config if not provided
+ * @param props.onSelectionChange - Callback when selection changes, receives BeatSubdivisionSelection
+ * @param props.onBeatClick - Callback when a beat is clicked, receives beat index
  * @returns The rendered grid component
+ *
+ * @example
+ * ```tsx
+ * // Basic usage in SubdivisionSettings
+ * <BeatSubdivisionGrid
+ *   disabled={isGenerating}
+ *   onSelectionChange={handleSelectionChange}
+ * />
+ *
+ * // With custom beats per measure (for testing)
+ * <BeatSubdivisionGrid
+ *   beatsPerMeasure={3}
+ *   initialZoom={2}
+ *   onSelectionChange={(selection) => console.log(selection.selectedBeats)}
+ * />
+ * ```
  */
 export function BeatSubdivisionGrid({
     disabled = false,
@@ -768,7 +830,12 @@ export function BeatSubdivisionGrid({
 }
 
 /**
- * Export a typed interface for external control
+ * Typed interface for external control of BeatSubdivisionGrid via ref.
+ * Provides methods for programmatic selection control.
+ *
+ * @property applyToSelection - Apply a subdivision type to all currently selected beats
+ * @property clearSelection - Clear the current selection
+ * @property selectAll - Select all beats in the grid
  */
 export interface BeatSubdivisionGridRef {
     applyToSelection: (subdivision: SubdivisionType) => void;
