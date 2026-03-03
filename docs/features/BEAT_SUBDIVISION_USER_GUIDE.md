@@ -8,77 +8,116 @@ Beat subdivision allows you to transform a standard quarter-note beat grid into 
 
 | Mode | Location | Purpose |
 |------|----------|---------|
-| **Pre-calculated Subdivision** | Audio Analysis Tab | Create beat maps with custom subdivision patterns for level creation and export |
+| **Per-Beat Subdivision** | Audio Analysis Tab | Create beat maps with custom subdivision patterns for each individual beat - perfect for level creation and export |
 | **Real-Time Playground** | Practice View | Switch subdivision types on-the-fly during practice mode |
 
 ---
 
-## Pre-Calculated Subdivision (Audio Analysis Tab)
+## Per-Beat Subdivision (Audio Analysis Tab)
 
-Use pre-calculated subdivision when creating rhythm game levels or beat maps for export. The subdivision pattern is calculated once and saved with the beat map.
+Use per-beat subdivision when creating rhythm game levels or beat maps for export. Each beat can have its own subdivision type, enabling complex rhythmic phrases.
 
 ### Accessing Subdivision Settings
 
 1. Navigate to the **Audio Analysis** tab
 2. Load an audio file and generate a beat map
-3. Once the beat map is generated, the **Beat Subdivision** section appears below the beat detection settings
+3. Once the beat map is generated, the **Subdivision Settings** section appears below the beat detection settings
 
-### Configuring Segments
+### The Piano-Roll Grid
 
-Subdivision uses **segments** to define different rhythmic patterns throughout the track. Each segment specifies:
-- **Start Beat**: The beat index where this subdivision begins
-- **Subdivision Type**: The rhythmic pattern to use
+The subdivision system uses a **piano-roll style grid** where each beat is represented as a cell. This approach lets you assign different subdivision types to individual beats, creating varied rhythmic patterns throughout your track.
 
-By default, there's a single segment covering the entire track with quarter notes.
+#### Grid Features
 
-#### Adding Segments
+- **Beat Cells**: Each cell represents one beat from the original beat map
+- **Measure Grouping**: Beats are grouped by measure, with measure numbers (M1, M2, etc.) displayed above each group
+- **Color Coding**: Each subdivision type has a unique color for easy visual identification
+- **Zoom Controls**: Zoom from 0.5x to 8x for detailed editing or overview
+- **Virtualized Rendering**: Handles 500+ beats smoothly
 
-1. Click the **Add Segment** button
-2. A new segment appears with a suggested start beat
-3. Adjust the **Start Beat** value to position the segment
-4. Select the desired **Subdivision** type
+#### Selecting Beats
 
-#### Removing Segments
+You can select beats in several ways:
 
-- Click the trash icon next to any segment (except the first one)
-- The first segment cannot be removed
+| Action | Result |
+|--------|--------|
+| **Click** | Select a single beat (replaces current selection) |
+| **Shift+Click** | Select a range from the last selected beat to the clicked beat |
+| **Ctrl/Cmd+Click** | Toggle the clicked beat in/out of the selection |
+| **Drag** | Click and drag across beats to select a range |
+| **Double-Click** | Cycle through subdivision types on that beat |
 
-#### Maximum Segments
+#### Grid Controls
 
-- Up to 8 segments can be defined
-- Segments are automatically sorted by start beat
+At the top of the grid, you'll find:
 
-### Using the Timeline Editor
+- **Beat Count**: Total number of beats in the track
+- **Measure Count**: Number of measures
+- **Selection Count**: How many beats are currently selected
+- **Zoom Buttons**: 0.5x, 1x, 2x, 4x, 8x zoom levels
+- **Select All**: Select all beats in the track
+- **Clear**: Clear the current selection
 
-The Timeline Editor provides a visual interface for segment configuration:
+### The Subdivision Toolbar
 
-1. Click **Timeline Editor** to expand the visual timeline
-2. The timeline shows:
-   - Beat markers and measure divisions
-   - Colored regions for each subdivision segment
-   - Current position indicator
-3. Use zoom controls to navigate long tracks
-4. Click on the timeline to add segments at specific positions
+The toolbar appears above the grid and provides quick access to subdivision types and actions.
 
-### Subdivision Types
+#### Subdivision Types (Brush Selection)
 
-| Type | Label | Description | Best For |
-|------|-------|-------------|----------|
-| Quarter | 1x | Standard quarter notes (default) | Basic rhythm, beginners |
-| Half | 0.5x | Beats on 1 and 3 only | Slow passages, emphasis beats |
-| Eighth | 2x | Eighth notes (double density) | Faster passages, more challenge |
-| Sixteenth | 4x | Maximum density | Expert levels, intense sections |
-| Triplet 8th | 3/Q | Eighth triplets (3 per quarter) | Swing feel, jazz rhythms |
-| Triplet 4th | 3/H | Quarter triplets (3 per half) | Moderate swing |
-| Dotted Q | 1.5x | Every 1.5 quarters | Syncopated patterns |
-| Dotted 8th | Swing | Swing long-short pattern | Jazz, blues feel |
+The toolbar displays all available subdivision types as buttons. Click a type to select it as your "brush" - this is the subdivision that will be applied when you click Apply.
+
+| Button | Shortcut | Subdivision | Description |
+|--------|----------|-------------|-------------|
+| Quarter | 1 | Standard quarter notes | Default subdivision |
+| Half | 2 | Half notes | Beats on 1 and 3 only |
+| Eighth | 3 | Eighth notes | Double density |
+| 16th | 4 | Sixteenth notes | Maximum density |
+| Triplet 8 | 5 | Eighth triplets | 3 per quarter |
+| Triplet 4 | 6 | Quarter triplets | 3 per half |
+| Dotted 4 | 7 | Dotted quarter | Every 1.5 quarters |
+| Swing | 8 | Dotted eighth | Long-short pattern |
+| Rest | 9 | Rest | No beats |
+
+Each button shows:
+- A visual density indicator (dots representing beat frequency)
+- The subdivision label
+- The keyboard shortcut number
+
+#### Selection Actions
+
+| Button | Shortcut | Action |
+|--------|----------|--------|
+| **Apply** | Enter | Apply the selected subdivision to all selected beats |
+| **Clear** | Escape | Clear the current selection |
+| **All** | Ctrl+A | Select all beats |
+| **Reset** | - | Reset all beats to the default subdivision |
+
+### Workflow Example: Creating a Rhythmic Pattern
+
+1. **Generate a beat map** from your audio file
+2. **Select a range of beats** by clicking and dragging across the grid
+3. **Choose a subdivision type** from the toolbar (e.g., Eighth for double density)
+4. **Click Apply** (or press Enter) to apply the subdivision to selected beats
+5. **Repeat** for different sections of your track
+6. **Double-click** individual beats to quickly cycle through types
+7. **Click "Generate Subdivided Beat Map"** when done to create the final beat map
+
+### Summary Statistics
+
+The Subdivision Settings panel shows helpful statistics:
+
+- **Total Beats**: Number of beats in the original beat map
+- **Default**: The default subdivision type for beats without custom settings
+- **Custom**: Number of beats with custom subdivision assignments
+- **Unique**: Number of different subdivision types used
+- **Distribution**: A breakdown showing how many beats use each subdivision type
 
 ### Generating the Subdivided Beat Map
 
-1. Configure your segments as desired
+1. Configure your beat subdivisions as desired
 2. Click **Generate Subdivided Beat Map**
 3. The application calculates all subdivided beats
-4. A summary shows the total beats and subdivisions used
+4. A summary shows the original beat count, subdivided beat count, and average density
 
 ### Exporting with Subdivision
 
@@ -87,7 +126,7 @@ When you export a beat map, the subdivision configuration and subdivided beat ma
 1. Click the export button in the Audio Analysis tab
 2. The exported JSON includes:
    - Original beat map
-   - Subdivision configuration
+   - Subdivision configuration (per-beat assignments)
    - Subdivided beat map (if generated)
    - Subdivision metadata
 
@@ -180,6 +219,12 @@ Long-short pattern (2/3 + 1/3 of a quarter). The classic swing feel. Good for:
 - Hip-hop grooves
 - Any swing-based music
 
+### Rest
+No beats generated for this beat position. Good for:
+- Creating silence/gaps
+- Musical phrasing
+- Intro/outro sections
+
 ---
 
 ## Troubleshooting
@@ -195,12 +240,17 @@ Long-short pattern (2/3 + 1/3 of a quarter). The classic swing feel. Good for:
 ### Generated beat map has too many beats
 - Sixteenth notes create 4x the original beats
 - Consider using eighth notes (2x) for moderate density
-- Use segments to vary density throughout the track
+- Use per-beat subdivision to vary density throughout the track
 
 ### Subdivision doesn't match the music
 - Check if the track has swing feel (try Swing or Triplet)
 - Multi-tempo tracks are handled automatically
 - Consider manual downbeat configuration for complex tracks
+
+### Grid is slow or laggy
+- Try zooming out to reduce the number of visible beats
+- The grid is virtualized but very long tracks may still be demanding
+- Close other browser tabs to free up memory
 
 ---
 
@@ -219,6 +269,7 @@ Each subdivision type has a unique color for visual identification:
 | Triplet 4th | Pink |
 | Dotted Q | Teal |
 | Dotted 8th | Gold |
+| Rest | Gray |
 
 ### Data Persistence
 - Subdivision configuration is saved to localStorage
@@ -228,4 +279,14 @@ Each subdivision type has a unique color for visual identification:
 ### Performance
 - Pre-calculated subdivision generates beats upfront
 - Real-time subdivision generates beats on-the-fly
+- The piano-roll grid uses virtualization for smooth scrolling with 500+ beats
 - Both modes are optimized for smooth playback
+
+### Keyboard Shortcuts Summary
+
+| Shortcut | Action |
+|----------|--------|
+| 1-9 | Select subdivision type (brush) |
+| Enter | Apply brush to selection |
+| Escape | Clear selection |
+| Ctrl+A | Select all beats |

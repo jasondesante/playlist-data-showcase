@@ -276,8 +276,8 @@ This plan covers:
 
 ### 9.1 Update User Guide
 
-- [ ] Update beat subdivision user guide
-- [ ] Document new piano-roll editing paradigm
+- [x] Update beat subdivision user guide
+- [x] Document new piano-roll editing paradigm
 - [ ] Add screenshots of new UI
 
 ### 9.2 Update Component JSDoc
