@@ -1,0 +1,629 @@
+/* ============================================
+   KEY LANE - Rhythm Game Lane Visualization
+   Phase 10: KeyLane Views (Core Rhythm Game Visualization) - Task 10.1
+   ============================================ */
+
+/**
+ * KeyLane Component Styles
+ *
+ * Single lane for rhythm game visualization.
+ * Beats scroll from top to bottom toward the hit zone.
+ */
+
+/* ============================================
+   LANE CONTAINER
+   ============================================ */
+
+.key-lane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 60px;
+    max-width: 100px;
+    height: 100%;
+    overflow: hidden;
+    background: hsl(var(--background) / 0.5);
+    border-left: 1px solid hsl(var(--border) / 0.3);
+    border-right: 1px solid hsl(var(--border) / 0.3);
+}
+
+.key-lane:first-child {
+    border-left: none;
+}
+
+.key-lane:last-child {
+    border-right: none;
+}
+
+/* Active state */
+.key-lane--active {
+    background: hsl(var(--background) / 0.7);
+}
+
+/* Paused state - dim the lane */
+.key-lane--paused {
+    opacity: 0.7;
+}
+
+/* ============================================
+   LANE BACKGROUND
+   ============================================ */
+
+.key-lane-background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Lane divider lines */
+.key-lane-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+        to bottom,
+        hsl(var(--border) / 0) 0%,
+        hsl(var(--border) / 0.3) 20%,
+        hsl(var(--border) / 0.3) 80%,
+        hsl(var(--border) / 0) 100%
+    );
+}
+
+.key-lane-divider--left {
+    left: 0;
+}
+
+.key-lane-divider--right {
+    right: 0;
+}
+
+/* ============================================
+   LANE COLORS (DDR & Guitar Hero)
+   ============================================ */
+
+/* DDR Colors */
+.key-lane--blue {
+    --lane-color: hsl(210, 80%, 55%);
+}
+
+.key-lane--green {
+    --lane-color: hsl(140, 70%, 45%);
+}
+
+.key-lane--red {
+    --lane-color: hsl(0, 75%, 55%);
+}
+
+.key-lane--purple {
+    --lane-color: hsl(280, 65%, 55%);
+}
+
+/* Guitar Hero Colors */
+.key-lane--yellow {
+    --lane-color: hsl(45, 90%, 50%);
+}
+
+.key-lane--orange {
+    --lane-color: hsl(25, 90%, 50%);
+}
+
+/* ============================================
+   BEATS CONTAINER
+   ============================================ */
+
+.key-lane-beats-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+/* ============================================
+   BEAT MARKER
+   ============================================ */
+
+.key-lane-beat {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    aspect-ratio: 1;
+    max-width: 50px;
+    transition: opacity 0.15s ease;
+}
+
+/* Beat marker inner */
+.key-lane-beat-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--lane-color);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--lane-color);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Upcoming beat - glow animation */
+.key-lane-beat--upcoming .key-lane-beat-inner {
+    animation: key-lane-beat-glow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes key-lane-beat-glow {
+    from {
+        box-shadow: 0 0 10px var(--lane-color);
+    }
+    to {
+        box-shadow: 0 0 20px var(--lane-color), 0 0 30px var(--lane-color);
+    }
+}
+
+/* At hit zone - brighter */
+.key-lane-beat--hit-zone .key-lane-beat-inner {
+    box-shadow: 0 0 15px var(--lane-color), 0 0 25px var(--lane-color);
+    animation: key-lane-beat-pulse 0.3s ease-in-out infinite;
+}
+
+@keyframes key-lane-beat-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Past beat - fading out */
+.key-lane-beat--past {
+    opacity: 0.4;
+    animation: key-lane-beat-fade-out 0.2s ease-out forwards;
+}
+
+@keyframes key-lane-beat-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   BEAT SYMBOLS (Guitar Hero Numbers)
+   ============================================ */
+
+.key-lane-beat-symbol {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 1px 3px hsl(0, 0%, 0% / 0.5);
+    font-family: ui-monospace, monospace;
+}
+
+/* ============================================
+   BEAT ARROWS (DDR Style)
+   ============================================ */
+
+.key-lane-beat-arrow {
+    width: 60%;
+    height: 60%;
+    background: white;
+    clip-path: polygon(
+        50% 0%,
+        100% 50%,
+        70% 50%,
+        70% 100%,
+        30% 100%,
+        30% 50%,
+        0% 50%
+    );
+}
+
+/* Arrow directions */
+.key-lane-beat-arrow--up {
+    transform: rotate(0deg);
+}
+
+.key-lane-beat-arrow--down {
+    transform: rotate(180deg);
+}
+
+.key-lane-beat-arrow--left {
+    transform: rotate(-90deg);
+}
+
+.key-lane-beat-arrow--right {
+    transform: rotate(90deg);
+}
+
+/* ============================================
+   HIT EFFECTS
+   ============================================ */
+
+/* Hit ring expansion */
+.key-lane-beat-hit-ring {
+    position: absolute;
+    inset: -8px;
+    border: 2px solid var(--lane-color);
+    border-radius: 50%;
+    animation: key-lane-hit-ring-expand 0.4s ease-out forwards;
+}
+
+@keyframes key-lane-hit-ring-expand {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+/* Perfect hit */
+.key-lane-beat--perfect .key-lane-beat-inner {
+    background: hsl(142, 76%, 46%);
+    box-shadow: 0 0 20px hsl(142, 76%, 46%);
+}
+
+/* Great hit */
+.key-lane-beat--great .key-lane-beat-inner {
+    background: hsl(45, 93%, 47%);
+    box-shadow: 0 0 18px hsl(45, 93%, 47%);
+}
+
+/* Good hit */
+.key-lane-beat--good .key-lane-beat-inner {
+    background: hsl(25, 95%, 53%);
+    box-shadow: 0 0 15px hsl(25, 95%, 53%);
+}
+
+/* OK hit */
+.key-lane-beat--ok .key-lane-beat-inner {
+    background: hsl(0, 0%, 50%);
+    box-shadow: 0 0 12px hsl(0, 0%, 50%);
+}
+
+/* Wrong key */
+.key-lane-beat--wrong-key .key-lane-beat-inner {
+    background: hsl(0, 84%, 60%);
+    box-shadow: 0 0 20px hsl(0, 84%, 60%);
+    animation: key-lane-beat-wrong 0.3s ease-out;
+}
+
+@keyframes key-lane-beat-wrong {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Miss */
+.key-lane-beat--miss .key-lane-beat-inner {
+    background: hsl(0, 0%, 30%);
+    box-shadow: none;
+    opacity: 0.5;
+}
+
+/* ============================================
+   HIT ZONE (Bottom of Lane)
+   ============================================ */
+
+.key-lane-hit-zone {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        to top,
+        hsl(var(--surface-2) / 0.9) 0%,
+        hsl(var(--surface-2) / 0.5) 50%,
+        hsl(var(--surface-2) / 0) 100%
+    );
+}
+
+/* Hit zone glow line */
+.key-lane-hit-zone-glow {
+    position: absolute;
+    bottom: 25px;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background: var(--lane-color);
+    border-radius: 2px;
+    box-shadow: 0 0 10px var(--lane-color), 0 0 20px var(--lane-color);
+    opacity: 0.8;
+}
+
+/* Hit zone line */
+.key-lane-hit-zone-line {
+    position: absolute;
+    bottom: 26px;
+    left: 5%;
+    right: 5%;
+    height: 2px;
+    background: hsl(var(--border));
+}
+
+/* Hit zone label (key indicator) */
+.key-lane-hit-zone-label {
+    position: absolute;
+    bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: hsl(var(--surface-2));
+    border: 2px solid var(--lane-color);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--lane-color);
+}
+
+/* DDR arrow indicator in hit zone */
+.key-lane-arrow-indicator {
+    width: 16px;
+    height: 16px;
+    background: var(--lane-color);
+    clip-path: polygon(
+        50% 0%,
+        100% 50%,
+        70% 50%,
+        70% 100%,
+        30% 100%,
+        30% 50%,
+        0% 50%
+    );
+}
+
+.key-lane-arrow-indicator--up {
+    transform: rotate(0deg);
+}
+
+.key-lane-arrow-indicator--down {
+    transform: rotate(180deg);
+}
+
+.key-lane-arrow-indicator--left {
+    transform: rotate(-90deg);
+}
+
+.key-lane-arrow-indicator--right {
+    transform: rotate(90deg);
+}
+
+/* Guitar Hero key number in hit zone */
+.key-lane-key-number {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--lane-color);
+    font-family: ui-monospace, monospace;
+}
+
+/* Feedback animation on hit zone */
+.key-lane-hit-zone--feedback {
+    animation: key-lane-hit-zone-flash 0.2s ease-out;
+}
+
+@keyframes key-lane-hit-zone-flash {
+    0% {
+        background: linear-gradient(
+            to top,
+            hsl(var(--lane-color) / 0.5) 0%,
+            hsl(var(--surface-2) / 0.5) 50%,
+            hsl(var(--surface-2) / 0) 100%
+        );
+    }
+    100% {
+        background: linear-gradient(
+            to top,
+            hsl(var(--surface-2) / 0.9) 0%,
+            hsl(var(--surface-2) / 0.5) 50%,
+            hsl(var(--surface-2) / 0) 100%
+        );
+    }
+}
+
+/* Feedback flash overlay */
+.key-lane-feedback-flash {
+    position: absolute;
+    inset: 0;
+    animation: key-lane-feedback-flash 0.3s ease-out forwards;
+    pointer-events: none;
+}
+
+.key-lane-feedback-flash--perfect {
+    background: radial-gradient(circle at center, hsl(142, 76%, 46% / 0.5) 0%, transparent 70%);
+}
+
+.key-lane-feedback-flash--great {
+    background: radial-gradient(circle at center, hsl(45, 93%, 47% / 0.5) 0%, transparent 70%);
+}
+
+.key-lane-feedback-flash--good {
+    background: radial-gradient(circle at center, hsl(25, 95%, 53% / 0.5) 0%, transparent 70%);
+}
+
+.key-lane-feedback-flash--ok {
+    background: radial-gradient(circle at center, hsl(0, 0%, 50% / 0.5) 0%, transparent 70%);
+}
+
+.key-lane-feedback-flash--wrongKey {
+    background: radial-gradient(circle at center, hsl(0, 84%, 60% / 0.6) 0%, transparent 70%);
+}
+
+.key-lane-feedback-flash--miss {
+    background: radial-gradient(circle at center, hsl(0, 0%, 30% / 0.3) 0%, transparent 70%);
+}
+
+@keyframes key-lane-feedback-flash {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   LANE LABEL (Top)
+   ============================================ */
+
+.key-lane-label {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+}
+
+/* ============================================
+   DDR LANE SPECIFICS
+   ============================================ */
+
+.key-lane--ddr {
+    min-width: 70px;
+    max-width: 90px;
+}
+
+.key-lane--ddr .key-lane-beat-inner {
+    border-radius: 8px;
+}
+
+.key-lane--ddr .key-lane-beat {
+    max-width: 45px;
+}
+
+/* ============================================
+   GUITAR HERO LANE SPECIFICS
+   ============================================ */
+
+.key-lane--guitar {
+    min-width: 50px;
+    max-width: 70px;
+}
+
+.key-lane--guitar .key-lane-beat-inner {
+    border-radius: 50%;
+}
+
+.key-lane--guitar .key-lane-beat {
+    max-width: 40px;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .key-lane {
+        min-width: 45px;
+        max-width: 70px;
+    }
+
+    .key-lane--ddr {
+        min-width: 50px;
+        max-width: 70px;
+    }
+
+    .key-lane--guitar {
+        min-width: 40px;
+        max-width: 55px;
+    }
+
+    .key-lane-hit-zone {
+        height: 50px;
+    }
+
+    .key-lane-hit-zone-label {
+        width: 24px;
+        height: 24px;
+    }
+
+    .key-lane-arrow-indicator {
+        width: 12px;
+        height: 12px;
+    }
+
+    .key-lane-key-number {
+        font-size: 0.75rem;
+    }
+
+    .key-lane-beat-symbol {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .key-lane {
+        min-width: 35px;
+        max-width: 50px;
+    }
+
+    .key-lane--ddr {
+        min-width: 40px;
+        max-width: 55px;
+    }
+
+    .key-lane--guitar {
+        min-width: 32px;
+        max-width: 45px;
+    }
+
+    .key-lane-hit-zone {
+        height: 40px;
+    }
+
+    .key-lane-hit-zone-label {
+        width: 20px;
+        height: 20px;
+    }
+
+    .key-lane-arrow-indicator {
+        width: 10px;
+        height: 10px;
+    }
+
+    .key-lane-key-number {
+        font-size: 0.625rem;
+    }
+
+    .key-lane-beat-symbol {
+        font-size: 0.875rem;
+    }
+
+    .key-lane-label {
+        font-size: 0.5rem;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .key-lane-beat--upcoming .key-lane-beat-inner,
+    .key-lane-beat--hit-zone .key-lane-beat-inner,
+    .key-lane-beat--wrong-key .key-lane-beat-inner,
+    .key-lane-hit-zone--feedback {
+        animation: none;
+    }
+
+    .key-lane-beat--past {
+        animation: none;
+        opacity: 0;
+    }
+
+    .key-lane-beat-hit-ring,
+    .key-lane-feedback-flash {
+        animation: none;
+        opacity: 0;
+    }
+}
