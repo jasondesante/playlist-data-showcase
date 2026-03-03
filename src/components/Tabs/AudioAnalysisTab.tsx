@@ -169,7 +169,7 @@ export function AudioAnalysisTab() {
             originalBeatCount: subdividedBeatMap.subdivisionMetadata.originalBeatCount,
             subdividedBeatCount: subdividedBeatMap.subdivisionMetadata.subdividedBeatCount,
             averageDensityMultiplier: subdividedBeatMap.subdivisionMetadata.averageDensityMultiplier,
-            segmentCount: subdividedBeatMap.subdivisionMetadata.segmentCount,
+            explicitBeatCount: subdividedBeatMap.subdivisionMetadata.explicitBeatCount,
             subdivisionsUsed: subdividedBeatMap.subdivisionMetadata.subdivisionsUsed,
             hasMultipleTempos: subdividedBeatMap.subdivisionMetadata.hasMultipleTempos,
             maxDensity: subdividedBeatMap.subdivisionMetadata.maxDensity,
@@ -834,7 +834,7 @@ export function AudioAnalysisTab() {
                     <SubdivisionSettings
                       disabled={isBeatGenerating}
                       showTimeline={showSubdivisionTimeline}
-                      onToggleTimeline={setShowSubdivisionTimeline}
+                      onToggleTimeline={() => setShowSubdivisionTimeline(!showSubdivisionTimeline)}
                     />
                   </div>
                 </details>

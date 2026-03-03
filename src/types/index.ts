@@ -480,10 +480,7 @@ export type {
 
     // Beat Subdivision types
     SubdivisionType,
-    SubdivisionSegment,
     SubdivisionConfig,
-    SegmentSubdivisionConfig,
-    PerBeatSubdivisionConfig,
     UnifiedBeatMap,
     SubdividedBeat,
     SubdividedBeatMap,
@@ -557,11 +554,6 @@ export {
     validateSubdivisionConfig,
     validateSubdivisionConfigAgainstBeats,
     validateSubdivisionDensity,
-    // Per-beat subdivision type guards and validators
-    isPerBeatSubdivisionConfig,
-    isSegmentSubdivisionConfig,
-    validatePerBeatSubdivisionConfig,
-    validateSegmentSubdivisionConfig,
 } from 'playlist-data-engine';
 
 // Re-export the BeatSubdivider class and utility functions

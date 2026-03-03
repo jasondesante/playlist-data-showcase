@@ -711,7 +711,7 @@ export function BeatMapSummary({
           {/* Additional Metrics */}
           <div className="beat-map-subdivision-metrics">
             <span className="beat-map-subdivision-metric">
-              {subdivisionMetadata.segmentCount} {subdivisionMetadata.segmentCount === 1 ? 'segment' : 'segments'}
+              {subdivisionMetadata.explicitBeatCount} {subdivisionMetadata.explicitBeatCount === 1 ? 'beat' : 'beats with custom subdivision'}
             </span>
             <span className="beat-map-subdivision-metric">
               {subdivisionMetadata.averageDensityMultiplier.toFixed(1)}x avg density

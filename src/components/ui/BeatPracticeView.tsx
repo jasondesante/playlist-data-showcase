@@ -243,10 +243,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     // This uses a single-segment config covering the whole track
     const subdivider = new BeatSubdivider();
     const config = {
-      segments: [{
-        startBeat: 0,
-        subdivision: currentSubdivision,
-      }],
+      beatSubdivisions: new Map(), // Empty map = all beats use default
+      defaultSubdivision: currentSubdivision,
     };
 
     try {

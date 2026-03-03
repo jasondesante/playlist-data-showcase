@@ -22,7 +22,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
 import type { Beat, BeatMap, ExtendedBeatEvent, ExtendedBeatAccuracy, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
-import { isSegmentSubdivisionConfig } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -573,6 +572,9 @@ export function BeatTimeline({
   /**
    * Calculate visible subdivision segment boundaries.
    * Shows vertical lines at segment start positions with subdivision type labels.
+   *
+   * NOTE: With per-beat subdivision format, there are no segments to visualize.
+   * This feature will be replaced with per-beat visualization in Phase 6.
    */
   const getVisibleSubdivisionSegmentBoundaries = useCallback((): Array<{
     /** Position on timeline (0-1) */
@@ -584,53 +586,9 @@ export function BeatTimeline({
     /** Timestamp of the segment start (approximate, based on beat position) */
     timestamp: number;
   }> => {
-    // Only show if subdivision visualization is enabled and we have a subdivided beat map with segment-based config
-    if (!showSubdivisionVisualization || !subdividedBeatMap || !isSegmentSubdivisionConfig(subdividedBeatMap.subdivisionConfig) || !subdividedBeatMap.subdivisionConfig.segments.length) {
-      return [];
-    }
-
-    const segments = subdividedBeatMap.subdivisionConfig.segments;
-    const minTime = smoothTime - pastWindow;
-    const maxTime = smoothTime + anticipationWindow;
-
-    // Find segment boundaries by looking at the subdivided beats
-    // Each segment boundary is where the subdivision type changes
-    const boundaries: Array<{
-      position: number;
-      subdivisionType: SubdivisionType;
-      startBeat: number;
-      timestamp: number;
-    }> = [];
-
-    for (const segment of segments) {
-      // Find the beat at this segment's start position
-      const segmentStartBeat = subdividedBeatMap.beats.find(
-        (b) => b.subdivisionType === segment.subdivision &&
-               b.originalBeatIndex === segment.startBeat
-      );
-
-      // Or find any beat that marks the segment start (for generated beats)
-      const beatAtSegmentStart = segmentStartBeat || subdividedBeatMap.beats[segment.startBeat];
-
-      if (beatAtSegmentStart) {
-        const timestamp = beatAtSegmentStart.timestamp;
-
-        // Check if this boundary is within the visible window
-        if (timestamp >= minTime && timestamp <= maxTime) {
-          const position = calculateBeatPosition(timestamp);
-          if (position >= 0 && position <= 1) {
-            boundaries.push({
-              position,
-              subdivisionType: segment.subdivision,
-              startBeat: segment.startBeat,
-              timestamp,
-            });
-          }
-        }
-      }
-    }
-
-    return boundaries;
+    // Per-beat format doesn't have segments - return empty for now
+    // TODO: Phase 6 will implement per-beat subdivision visualization
+    return [];
   }, [showSubdivisionVisualization, subdividedBeatMap, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
 
   const visibleSubdivisionSegmentBoundaries = getVisibleSubdivisionSegmentBoundaries();

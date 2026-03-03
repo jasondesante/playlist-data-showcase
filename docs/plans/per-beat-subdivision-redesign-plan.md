@@ -109,31 +109,31 @@ This plan covers:
 
 ### 3.1 Update Subdivision State
 
-- [ ] Change `subdivisionConfig` type to per-beat format
+- [x] Change `subdivisionConfig` type to per-beat format
 
 ### 3.2 Remove Segment-Based Actions
 
-- [ ] Remove `addSubdivisionSegment()` action
-- [ ] Remove `removeSubdivisionSegment()` action
-- [ ] Remove `updateSubdivisionSegment()` action
+- [x] Remove `addSubdivisionSegment()` action
+- [x] Remove `removeSubdivisionSegment()` action
+- [x] Remove `updateSubdivisionSegment()` action
 
 ### 3.3 Add Per-Beat Actions
 
-- [ ] Add `setBeatSubdivision(beatIndex: number, subdivision: SubdivisionType)`
-- [ ] Add `setBeatSubdivisionRange(startBeat: number, endBeat: number, subdivision: SubdivisionType)`
-- [ ] Add `clearBeatSubdivision(beatIndex: number)` - reset to default
-- [ ] Add `clearAllBeatSubdivisions()` - reset all to default
-- [ ] Add `setAllBeatSubdivisions(subdivision: SubdivisionType)` - fill all
+- [x] Add `setBeatSubdivision(beatIndex: number, subdivision: SubdivisionType)`
+- [x] Add `setBeatSubdivisionRange(startBeat: number, endBeat: number, subdivision: SubdivisionType)`
+- [x] Add `clearBeatSubdivision(beatIndex: number)` - reset to default
+- [x] Add `clearAllBeatSubdivisions()` - reset all to default
+- [x] Add `setAllBeatSubdivisions(subdivision: SubdivisionType)` - fill all
 
 ### 3.4 Update Selectors
 
-- [ ] Update `useSubdivisionConfig()` return type
+- [x] Update `useSubdivisionConfig()` return type
 - [ ] Add `useBeatSubdivision(beatIndex: number)` selector
 - [ ] Add `useBeatSubdivisionsInRange(start: number, end: number)` selector
 
 ### 3.5 Update Persistence
 
-- [ ] Update localStorage serialization for new format
+- [x] Update localStorage serialization for new format (Map to array for JSON)
 
 ---
 

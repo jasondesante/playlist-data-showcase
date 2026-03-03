@@ -46,10 +46,9 @@ import {
     reapplyDownbeatConfig,
     // Multi-tempo types
     TempoSection,
-    // Subdivision types (Phase 2: Task 2.1)
+    // Subdivision types (Phase 3: Task 3.1 - Per-beat format)
     SubdivisionType,
-    SubdivisionSegment,
-    SegmentSubdivisionConfig,
+    SubdivisionConfig,
     UnifiedBeatMap,
     SubdividedBeatMap,
     SubdivisionPlaybackOptions,
@@ -348,10 +347,11 @@ interface BeatDetectionState {
 
     /**
      * Current subdivision configuration.
-     * Defines subdivision segments with different patterns per beat range.
+     * Per-beat subdivision format: each beat can have its own subdivision type.
+     * Beats not in the beatSubdivisions map use the defaultSubdivision.
      * Persisted to localStorage.
      */
-    subdivisionConfig: SegmentSubdivisionConfig;
+    subdivisionConfig: SubdivisionConfig;
 
     /**
      * Current subdivision type for real-time mode.
@@ -673,28 +673,39 @@ interface BeatDetectionActions {
      * This triggers regeneration of the SubdividedBeatMap if one exists.
      * @param config - The new subdivision configuration
      */
-    setSubdivisionConfig: (config: SegmentSubdivisionConfig) => void;
+    setSubdivisionConfig: (config: SubdivisionConfig) => void;
 
     /**
-     * Add a new subdivision segment.
-     * Segments are automatically sorted by startBeat after insertion.
-     * @param segment - The segment to add
+     * Set subdivision for a specific beat index.
+     * @param beatIndex - The beat index to set subdivision for
+     * @param subdivision - The subdivision type to apply
      */
-    addSubdivisionSegment: (segment: SubdivisionSegment) => void;
+    setBeatSubdivision: (beatIndex: number, subdivision: SubdivisionType) => void;
 
     /**
-     * Remove a subdivision segment by index.
-     * Cannot remove the first segment (index 0).
-     * @param segmentIndex - The index of the segment to remove
+     * Set subdivision for a range of beats.
+     * @param startBeat - The starting beat index (inclusive)
+     * @param endBeat - The ending beat index (inclusive)
+     * @param subdivision - The subdivision type to apply
      */
-    removeSubdivisionSegment: (segmentIndex: number) => void;
+    setBeatSubdivisionRange: (startBeat: number, endBeat: number, subdivision: SubdivisionType) => void;
 
     /**
-     * Update a subdivision segment by index.
-     * @param segmentIndex - The index of the segment to update
-     * @param updates - Partial segment properties to update
+     * Clear subdivision for a specific beat (reset to default).
+     * @param beatIndex - The beat index to clear
      */
-    updateSubdivisionSegment: (segmentIndex: number, updates: Partial<SubdivisionSegment>) => void;
+    clearBeatSubdivision: (beatIndex: number) => void;
+
+    /**
+     * Clear all beat subdivisions (reset all to default).
+     */
+    clearAllBeatSubdivisions: () => void;
+
+    /**
+     * Set all beats to a specific subdivision.
+     * @param subdivision - The subdivision type to apply to all beats
+     */
+    setAllBeatSubdivisions: (subdivision: SubdivisionType) => void;
 
     /**
      * Set the current subdivision type for real-time mode.
@@ -1906,7 +1917,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         try {
                             logger.info('BeatDetection', 'Generating SubdividedBeatMap', {
                                 unifiedBeatCount: unifiedBeatMap.beats.length,
-                                segmentCount: subdivisionConfig.segments.length,
+                                customSubdivisionsCount: subdivisionConfig.beatSubdivisions.size,
+                                defaultSubdivision: subdivisionConfig.defaultSubdivision,
                             });
 
                             const subdivider = new BeatSubdivider();
@@ -1931,11 +1943,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     /**
                      * Update the subdivision configuration.
                      */
-                    setSubdivisionConfig: (config: SegmentSubdivisionConfig) => {
+                    setSubdivisionConfig: (config: SubdivisionConfig) => {
                         const state = get();
 
                         logger.info('BeatDetection', 'Updating subdivision config', {
-                            segmentCount: config.segments.length,
+                            beatSubdivisionsCount: config.beatSubdivisions.size,
+                            defaultSubdivision: config.defaultSubdivision,
                         });
 
                         set({ subdivisionConfig: config });
@@ -1948,84 +1961,130 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     /**
-                     * Add a new subdivision segment.
+                     * Set subdivision for a specific beat index.
                      */
-                    addSubdivisionSegment: (segment: SubdivisionSegment) => {
+                    setBeatSubdivision: (beatIndex: number, subdivision: SubdivisionType) => {
                         const state = get();
                         const { subdivisionConfig } = state;
 
-                        // Add new segment and sort by startBeat
-                        const newSegments = [...subdivisionConfig.segments, segment].sort(
-                            (a, b) => a.startBeat - b.startBeat
-                        );
+                        if (beatIndex < 0) {
+                            logger.warn('BeatDetection', 'Invalid beat index', { beatIndex });
+                            return;
+                        }
 
-                        logger.info('BeatDetection', 'Adding subdivision segment', {
-                            startBeat: segment.startBeat,
-                            subdivision: segment.subdivision,
-                            newSegmentCount: newSegments.length,
+                        const newBeatSubdivisions = new Map(subdivisionConfig.beatSubdivisions);
+                        newBeatSubdivisions.set(beatIndex, subdivision);
+
+                        logger.info('BeatDetection', 'Setting beat subdivision', {
+                            beatIndex,
+                            subdivision,
                         });
 
-                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                        state.actions.setSubdivisionConfig({
+                            ...subdivisionConfig,
+                            beatSubdivisions: newBeatSubdivisions,
+                        });
                     },
 
                     /**
-                     * Remove a subdivision segment by index.
+                     * Set subdivision for a range of beats.
                      */
-                    removeSubdivisionSegment: (segmentIndex: number) => {
+                    setBeatSubdivisionRange: (startBeat: number, endBeat: number, subdivision: SubdivisionType) => {
                         const state = get();
                         const { subdivisionConfig } = state;
 
-                        // Can't remove the first segment
-                        if (segmentIndex === 0) {
-                            logger.warn('BeatDetection', 'Cannot remove the first subdivision segment');
+                        if (startBeat < 0 || endBeat < startBeat) {
+                            logger.warn('BeatDetection', 'Invalid beat range', { startBeat, endBeat });
                             return;
                         }
 
-                        if (segmentIndex < 0 || segmentIndex >= subdivisionConfig.segments.length) {
-                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
-                            return;
+                        const newBeatSubdivisions = new Map(subdivisionConfig.beatSubdivisions);
+                        for (let i = startBeat; i <= endBeat; i++) {
+                            newBeatSubdivisions.set(i, subdivision);
                         }
 
-                        const newSegments = subdivisionConfig.segments.filter(
-                            (_: SubdivisionSegment, index: number) => index !== segmentIndex
-                        );
-
-                        logger.info('BeatDetection', 'Removing subdivision segment', {
-                            removedIndex: segmentIndex,
-                            newSegmentCount: newSegments.length,
+                        logger.info('BeatDetection', 'Setting beat subdivision range', {
+                            startBeat,
+                            endBeat,
+                            subdivision,
+                            beatsAffected: endBeat - startBeat + 1,
                         });
 
-                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                        state.actions.setSubdivisionConfig({
+                            ...subdivisionConfig,
+                            beatSubdivisions: newBeatSubdivisions,
+                        });
                     },
 
                     /**
-                     * Update a subdivision segment by index.
+                     * Clear subdivision for a specific beat (reset to default).
                      */
-                    updateSubdivisionSegment: (segmentIndex: number, updates: Partial<SubdivisionSegment>) => {
+                    clearBeatSubdivision: (beatIndex: number) => {
                         const state = get();
                         const { subdivisionConfig } = state;
 
-                        if (segmentIndex < 0 || segmentIndex >= subdivisionConfig.segments.length) {
-                            logger.warn('BeatDetection', 'Invalid segment index', { segmentIndex });
+                        if (beatIndex < 0) {
+                            logger.warn('BeatDetection', 'Invalid beat index', { beatIndex });
                             return;
                         }
 
-                        const newSegments = subdivisionConfig.segments.map(
-                            (segment: SubdivisionSegment, index: number) =>
-                                index === segmentIndex ? { ...segment, ...updates } : segment
-                        );
+                        const newBeatSubdivisions = new Map(subdivisionConfig.beatSubdivisions);
+                        const hadSubdivision = newBeatSubdivisions.delete(beatIndex);
 
-                        // Re-sort if startBeat changed
-                        if (updates.startBeat !== undefined) {
-                            newSegments.sort((a: SubdivisionSegment, b: SubdivisionSegment) => a.startBeat - b.startBeat);
+                        if (hadSubdivision) {
+                            logger.info('BeatDetection', 'Cleared beat subdivision', { beatIndex });
+
+                            state.actions.setSubdivisionConfig({
+                                ...subdivisionConfig,
+                                beatSubdivisions: newBeatSubdivisions,
+                            });
+                        } else {
+                            logger.debug('BeatDetection', 'Beat had no custom subdivision', { beatIndex });
                         }
+                    },
 
-                        logger.info('BeatDetection', 'Updating subdivision segment', {
-                            segmentIndex,
-                            updates,
+                    /**
+                     * Clear all beat subdivisions (reset all to default).
+                     */
+                    clearAllBeatSubdivisions: () => {
+                        const state = get();
+                        const { subdivisionConfig } = state;
+
+                        logger.info('BeatDetection', 'Clearing all beat subdivisions');
+
+                        state.actions.setSubdivisionConfig({
+                            ...subdivisionConfig,
+                            beatSubdivisions: new Map(),
                         });
+                    },
 
-                        state.actions.setSubdivisionConfig({ segments: newSegments });
+                    /**
+                     * Set all beats to a specific subdivision.
+                     */
+                    setAllBeatSubdivisions: (subdivision: SubdivisionType) => {
+                        const state = get();
+                        const { subdivisionConfig, unifiedBeatMap } = state;
+
+                        logger.info('BeatDetection', 'Setting all beats to subdivision', { subdivision });
+
+                        // If we have a unified beat map, we know how many beats there are
+                        // Otherwise, we just change the default
+                        if (unifiedBeatMap && unifiedBeatMap.beats.length > 0) {
+                            const newBeatSubdivisions = new Map<number, SubdivisionType>();
+                            for (let i = 0; i < unifiedBeatMap.beats.length; i++) {
+                                newBeatSubdivisions.set(i, subdivision);
+                            }
+                            state.actions.setSubdivisionConfig({
+                                beatSubdivisions: newBeatSubdivisions,
+                                defaultSubdivision: subdivision,
+                            });
+                        } else {
+                            // Just change the default
+                            state.actions.setSubdivisionConfig({
+                                ...subdivisionConfig,
+                                defaultSubdivision: subdivision,
+                            });
+                        }
                     },
 
                     /**
@@ -2172,12 +2231,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 // Measure visualization toggle (Phase 4)
                 showMeasureBoundaries: state.showMeasureBoundaries,
                 // Subdivision state (Phase 2: Task 2.1)
-                subdivisionConfig: state.subdivisionConfig,
+                // Convert Map to array for JSON serialization (Maps serialize to {} otherwise)
+                subdivisionConfig: {
+                    beatSubdivisions: Array.from(state.subdivisionConfig.beatSubdivisions.entries()),
+                    defaultSubdivision: state.subdivisionConfig.defaultSubdivision,
+                },
                 currentSubdivision: state.currentSubdivision,
                 subdivisionTransitionMode: state.subdivisionTransitionMode,
                 cachedUnifiedBeatMaps: state.cachedUnifiedBeatMaps,
                 cachedSubdividedBeatMaps: state.cachedSubdividedBeatMaps,
-            }) as BeatDetectionStoreState,
+            }) as unknown as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as any;
@@ -2288,6 +2351,28 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 }
                 gaussianSmoothConfig = gaussianSmoothConfig ?? currentState.gaussianSmoothConfig;
 
+                // Handle subdivision config deserialization (Phase 3: Task 3.1)
+                // The beatSubdivisions Map is serialized as an array of entries
+                let subdivisionConfig = currentState.subdivisionConfig;
+                if (persisted?.subdivisionConfig) {
+                    const persistedSubdivision = persisted.subdivisionConfig;
+                    // Check if beatSubdivisions is an array (serialized) or already a Map
+                    if (Array.isArray(persistedSubdivision.beatSubdivisions)) {
+                        subdivisionConfig = {
+                            beatSubdivisions: new Map(persistedSubdivision.beatSubdivisions),
+                            defaultSubdivision: persistedSubdivision.defaultSubdivision ?? 'quarter',
+                        };
+                        logger.info('BeatDetection', 'Deserialized subdivisionConfig from array', {
+                            beatSubdivisionsCount: subdivisionConfig.beatSubdivisions.size,
+                            defaultSubdivision: subdivisionConfig.defaultSubdivision,
+                        });
+                    } else if (persistedSubdivision.beatSubdivisions instanceof Map) {
+                        // Already a Map (shouldn't happen, but handle it)
+                        subdivisionConfig = persistedSubdivision;
+                    }
+                    // If beatSubdivisions is empty object {} (old broken serialization), use default
+                }
+
                 return {
                     ...currentState,
                     cachedBeatMaps: persisted?.cachedBeatMaps ?? currentState.cachedBeatMaps,
@@ -2297,6 +2382,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     melBandsConfig,
                     gaussianSmoothConfig,
                     difficultySettings,
+                    // Subdivision state (Phase 3: Task 3.1)
+                    subdivisionConfig,
+                    currentSubdivision: persisted?.currentSubdivision ?? currentState.currentSubdivision,
+                    subdivisionTransitionMode: persisted?.subdivisionTransitionMode ?? currentState.subdivisionTransitionMode,
+                    cachedUnifiedBeatMaps: persisted?.cachedUnifiedBeatMaps ?? currentState.cachedUnifiedBeatMaps,
+                    cachedSubdividedBeatMaps: persisted?.cachedSubdividedBeatMaps ?? currentState.cachedSubdividedBeatMaps,
                 };
             },
             // Callback after rehydration
