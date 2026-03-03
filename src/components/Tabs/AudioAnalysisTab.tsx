@@ -74,8 +74,8 @@ export function AudioAnalysisTab() {
     error: beatError,
   } = useBeatDetection();
 
-  // Subdivision timeline editor visibility state (lifted from SubdivisionSettings for full-width rendering)
-  const [showSubdivisionTimeline, setShowSubdivisionTimeline] = useState(false);
+  // Subdivision timeline editor visibility state (Phase 7 will remove this)
+  const [showSubdivisionTimeline, _setShowSubdivisionTimeline] = useState(false);
 
   // Beat detection store for practice mode
   const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
@@ -833,8 +833,6 @@ export function AudioAnalysisTab() {
                   <div className="audio-analysis-subdivision-content">
                     <SubdivisionSettings
                       disabled={isBeatGenerating}
-                      showTimeline={showSubdivisionTimeline}
-                      onToggleTimeline={() => setShowSubdivisionTimeline(!showSubdivisionTimeline)}
                     />
                   </div>
                 </details>

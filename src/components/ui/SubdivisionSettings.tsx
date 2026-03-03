@@ -16,11 +16,11 @@
  * <SubdivisionSettings disabled={isGenerating} />
  * ```
  */
-import { useState, useCallback } from 'react';
-import { RefreshCw, Clock } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { RefreshCw, Clock, PieChart } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { BeatSubdivisionGrid } from './BeatSubdivisionGrid';
-import { SubdivisionToolbar } from './SubdivisionToolbar';
+import { SubdivisionToolbar, SUBDIVISION_TYPES } from './SubdivisionToolbar';
 import './SubdivisionSettings.css';
 import {
     useBeatDetectionStore,
@@ -70,6 +70,57 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
     // Check if we have a UnifiedBeatMap to work with
     const hasUnifiedBeatMap = unifiedBeatMap !== null;
     const totalBeats = unifiedBeatMap?.beats.length ?? 0;
+
+    // Task 6.2: Calculate subdivision distribution
+    const subdivisionDistribution = useMemo(() => {
+        if (!hasUnifiedBeatMap || totalBeats === 0) {
+            return { counts: new Map<SubdivisionType, number>(), uniqueCount: 0 };
+        }
+
+        const counts = new Map<SubdivisionType, number>();
+
+        // Initialize all counts to 0
+        for (const type of SUBDIVISION_TYPES) {
+            counts.set(type.id, 0);
+        }
+
+        // Count beats with explicit subdivisions
+        for (const [beatIndex, subdivision] of subdivisionConfig.beatSubdivisions) {
+            if (beatIndex < totalBeats) {
+                counts.set(subdivision, (counts.get(subdivision) ?? 0) + 1);
+            }
+        }
+
+        // Count beats using default subdivision
+        const explicitCount = subdivisionConfig.beatSubdivisions.size;
+        const defaultCount = Math.max(0, totalBeats - explicitCount);
+        const currentDefault = counts.get(subdivisionConfig.defaultSubdivision) ?? 0;
+        counts.set(subdivisionConfig.defaultSubdivision, currentDefault + defaultCount);
+
+        // Count unique subdivisions (those with count > 0)
+        let uniqueCount = 0;
+        for (const count of counts.values()) {
+            if (count > 0) uniqueCount++;
+        }
+
+        return { counts, uniqueCount };
+    }, [hasUnifiedBeatMap, totalBeats, subdivisionConfig]);
+
+    // Task 6.2: Format distribution for display
+    const distributionText = useMemo(() => {
+        const { counts } = subdivisionDistribution;
+        if (counts.size === 0) return '';
+
+        const parts: string[] = [];
+        for (const typeConfig of SUBDIVISION_TYPES) {
+            const count = counts.get(typeConfig.id) ?? 0;
+            if (count > 0) {
+                parts.push(`${count} ${typeConfig.label.toLowerCase()}`);
+            }
+        }
+
+        return parts.join(', ');
+    }, [subdivisionDistribution]);
 
     // Handle generating the SubdividedBeatMap
     const handleGenerate = () => {
@@ -165,13 +216,38 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                     </div>
                 )}
                 {hasUnifiedBeatMap && (
-                    <div className="subdivision-settings-info">
-                        <span>{totalBeats} beats available</span>
-                        <span className="subdivision-settings-separator">|</span>
-                        <span>Default: {subdivisionConfig.defaultSubdivision}</span>
-                        <span className="subdivision-settings-separator">|</span>
-                        <span>{subdivisionConfig.beatSubdivisions.size} custom</span>
-                    </div>
+                    <>
+                        {/* Task 6.2: Summary stats */}
+                        <div className="subdivision-settings-summary-row">
+                            <div className="subdivision-settings-summary-stat">
+                                <span className="subdivision-settings-summary-label">Total Beats</span>
+                                <span className="subdivision-settings-summary-value">{totalBeats}</span>
+                            </div>
+                            <div className="subdivision-settings-summary-stat">
+                                <span className="subdivision-settings-summary-label">Default</span>
+                                <span className="subdivision-settings-summary-value">
+                                    {SUBDIVISION_TYPES.find(t => t.id === subdivisionConfig.defaultSubdivision)?.label ?? subdivisionConfig.defaultSubdivision}
+                                </span>
+                            </div>
+                            <div className="subdivision-settings-summary-stat">
+                                <span className="subdivision-settings-summary-label">Custom</span>
+                                <span className="subdivision-settings-summary-value">{subdivisionConfig.beatSubdivisions.size}</span>
+                            </div>
+                            <div className="subdivision-settings-summary-stat">
+                                <span className="subdivision-settings-summary-label">Unique</span>
+                                <span className="subdivision-settings-summary-value">{subdivisionDistribution.uniqueCount}</span>
+                            </div>
+                        </div>
+
+                        {/* Task 6.2: Distribution breakdown */}
+                        {distributionText && (
+                            <div className="subdivision-settings-distribution">
+                                <PieChart size={12} />
+                                <span className="subdivision-settings-distribution-label">Distribution:</span>
+                                <span className="subdivision-settings-distribution-text">{distributionText}</span>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 

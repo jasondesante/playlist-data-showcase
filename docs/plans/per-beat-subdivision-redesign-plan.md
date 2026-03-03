@@ -225,9 +225,9 @@ This plan covers:
 
 ### 6.2 Update Summary Display
 
-- [ ] Show total beat count
-- [ ] Show subdivision distribution (e.g., "45 quarter, 32 eighth, 16 half")
-- [ ] Show unique subdivisions used
+- [x] Show total beat count
+- [x] Show subdivision distribution (e.g., "45 quarter, 32 eighth, 16 half")
+- [x] Show unique subdivisions used
 
 ### 6.3 Keep Generate Button
 
