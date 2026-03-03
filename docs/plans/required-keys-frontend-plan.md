@@ -225,13 +225,21 @@ Create new file: [src/hooks/useKeyboardInput.ts](src/hooks/useKeyboardInput.ts)
 
 ### Task 4.1: Create KeyPalette Component
 Create new file: [src/components/ui/KeyPalette.tsx](src/components/ui/KeyPalette.tsx)
-- [ ] Accept `chartStyle` prop to filter available keys (strict separation)
-- [ ] DDR mode: display arrows only (↑↓←→)
-- [ ] Guitar Hero mode: display numbers only (1-5)
-- [ ] Default style: DDR
-- [ ] Highlight currently selected key
-- [ ] Click to select key for painting
-- [ ] Keyboard shortcuts for quick selection (optional)
+- [x] Accept `chartStyle` prop to filter available keys (strict separation)
+- [x] DDR mode: display arrows only (↑↓←→)
+- [x] Guitar Hero mode: display numbers only (1-5)
+- [x] Default style: DDR
+- [x] Highlight currently selected key
+- [x] Click to select key for painting
+- [x] Keyboard shortcuts for quick selection (optional)
+**Status:** Complete - Created KeyPalette component with CSS styling. Features:
+- `chartStyle` prop filters available keys (DDR: 4 arrows, Guitar Hero: 5 numbers)
+- Classic DDR colors (left=blue, down=green, up=red, right=purple)
+- Classic Guitar Hero colors (1=green, 2=red, 3=yellow, 4=blue, 5=orange)
+- Selected key highlighting with glow animation
+- Keyboard shortcuts: arrow keys for DDR, 1-5 for Guitar Hero
+- Accessibility: role="radiogroup", aria-checked, aria-label
+- CSS file: [src/components/ui/KeyPalette.css](src/components/ui/KeyPalette.css)
 
 ### Task 4.2: Create ChartEditor Component
 Create new file: [src/components/ui/ChartEditor.tsx](src/components/ui/ChartEditor.tsx)
