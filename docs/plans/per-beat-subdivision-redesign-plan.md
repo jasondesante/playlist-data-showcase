@@ -240,9 +240,9 @@ This plan covers:
 
 ### 7.1 Deprecate Component
 
-- [ ] Mark `SubdivisionTimelineEditor.tsx` as deprecated
-- [ ] Remove imports from SubdivisionSettings
-- [ ] Delete component and CSS file
+- [x] Mark `SubdivisionTimelineEditor.tsx` as deprecated
+- [x] Remove imports from SubdivisionSettings
+- [x] Delete component and CSS file
 
 ---
 

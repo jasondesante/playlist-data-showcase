@@ -15,7 +15,6 @@ import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { SubdivisionSettings } from '../ui/SubdivisionSettings';
-import { SubdivisionTimelineEditor } from '../ui/SubdivisionTimelineEditor';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
@@ -73,9 +72,6 @@ export function AudioAnalysisTab() {
     beatMap,
     error: beatError,
   } = useBeatDetection();
-
-  // Subdivision timeline editor visibility state (Phase 7 will remove this)
-  const [showSubdivisionTimeline, _setShowSubdivisionTimeline] = useState(false);
 
   // Beat detection store for practice mode
   const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
@@ -913,14 +909,6 @@ export function AudioAnalysisTab() {
               )}
             </div>
           </div>
-        </Card>
-      )}
-
-
-      {/* Subdivision Timeline Editor - Full-width section for visual editing */}
-      {selectedTrack && analysisMode === 'beat' && !practiceModeActive && showSubdivisionTimeline && beatMap && !isBeatGenerating && (
-        <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card fade-in">
-          <SubdivisionTimelineEditor disabled={isBeatGenerating} />
         </Card>
       )}
 
