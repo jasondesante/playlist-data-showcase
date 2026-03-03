@@ -15,6 +15,8 @@ import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { SubdivisionSettings } from '../ui/SubdivisionSettings';
+import { ChartEditor } from '../ui/ChartEditor';
+import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
@@ -905,6 +907,26 @@ export function AudioAnalysisTab() {
             </summary>
             <div className="audio-analysis-subdivision-content">
               <SubdivisionSettings disabled={isBeatGenerating} />
+            </div>
+          </details>
+        </Card>
+      )}
+
+      {/* Chart Editor Card - Full-width section for rhythm game key assignment */}
+      {selectedTrack && analysisMode === 'beat' && subdividedBeatMap && !isBeatGenerating && !practiceModeActive && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card fade-in">
+          <details className="audio-analysis-chart-editor-section" open>
+            <summary className="audio-analysis-chart-editor-summary">
+              <span className="audio-analysis-chart-editor-summary-text">Chart Editor</span>
+              <span className="audio-analysis-chart-editor-badge">Required Keys</span>
+              <ChevronDown className="audio-analysis-chart-editor-summary-icon" size={12} />
+            </summary>
+            <div className="audio-analysis-chart-editor-content">
+              <ChartEditorToolbar
+                disabled={isBeatGenerating}
+                audioTitle={selectedTrack?.title}
+              />
+              <ChartEditor disabled={isBeatGenerating} />
             </div>
           </details>
         </Card>

@@ -1722,6 +1722,106 @@
 }
 
 /* ============================================
+   CHART EDITOR SECTION - Collapsible section
+   ============================================ */
+
+.audio-analysis-chart-editor-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.audio-analysis-chart-editor-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, hsl(var(--surface-2) / 0.5), hsl(var(--surface-1) / 0.8));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: all 0.2s ease;
+}
+
+.audio-analysis-chart-editor-summary::-webkit-details-marker {
+  display: none;
+}
+
+.audio-analysis-chart-editor-summary:hover {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--cute-purple) / 0.5);
+}
+
+.audio-analysis-chart-editor-summary-text {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(--foreground);
+}
+
+.audio-analysis-chart-editor-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.375rem;
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.2), hsl(var(--primary) / 0.15));
+  color: hsl(var(--cute-purple));
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--cute-purple) / 0.3);
+  margin-left: auto;
+}
+
+.audio-analysis-chart-editor-summary-icon {
+  color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.audio-analysis-chart-editor-section[open] .audio-analysis-chart-editor-summary-icon {
+  transform: rotate(180deg);
+}
+
+.audio-analysis-chart-editor-section[open] .audio-analysis-chart-editor-summary {
+  background: linear-gradient(135deg, hsl(var(--cute-purple) / 0.1), hsl(var(--primary) / 0.08));
+  border-color: hsl(var(--cute-purple) / 0.5);
+}
+
+.audio-analysis-chart-editor-content {
+  padding-top: 0.5rem;
+  animation: chart-editor-slide-down 0.2s ease-out;
+}
+
+@keyframes chart-editor-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   CHART EDITOR CARD - Full-width section
+   ============================================ */
+
+.audio-analysis-chart-editor-card {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.8), hsl(var(--surface-1) / 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--cute-purple) / 0.15);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 12px 40px hsl(0 0% 0% / 0.25);
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS - Subdivision Section
    ============================================ */
 
@@ -1748,6 +1848,29 @@
   .audio-analysis-subdivision-content {
     padding-top: 0.375rem;
   }
+
+  .audio-analysis-chart-editor-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .audio-analysis-chart-editor-summary {
+    padding: 0.375rem 0.5rem;
+    gap: 0.375rem;
+  }
+
+  .audio-analysis-chart-editor-summary-text {
+    font-size: 0.5625rem;
+  }
+
+  .audio-analysis-chart-editor-badge {
+    font-size: 0.4375rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .audio-analysis-chart-editor-content {
+    padding-top: 0.375rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1756,6 +1879,18 @@
   }
 
   .audio-analysis-subdivision-badge {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .audio-analysis-chart-editor-summary {
+    flex-wrap: wrap;
+  }
+
+  .audio-analysis-chart-editor-badge {
     order: 3;
     flex-basis: 100%;
     margin-left: 0;
@@ -1775,6 +1910,13 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+
+  .audio-analysis-chart-editor-summary {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
 }
 
 /* ============================================
@@ -1785,6 +1927,13 @@
   .audio-analysis-subdivision-summary,
   .audio-analysis-subdivision-summary-icon,
   .audio-analysis-subdivision-content {
+    transition: none;
+    animation: none;
+  }
+
+  .audio-analysis-chart-editor-summary,
+  .audio-analysis-chart-editor-summary-icon,
+  .audio-analysis-chart-editor-content {
     transition: none;
     animation: none;
   }

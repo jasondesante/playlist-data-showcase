@@ -279,10 +279,11 @@ Create new file: [src/components/ui/ChartEditorToolbar.tsx](src/components/ui/Ch
 - CSS file: [src/components/ui/ChartEditorToolbar.css](src/components/ui/ChartEditorToolbar.css)
 
 ### Task 4.4: Integrate Chart Editor into AudioAnalysisTab
-- [ ] Add "Chart Editor" collapsible section (like subdivision settings)
-- [ ] Only show when subdivided beat map exists (required keys only work with subdivided mode)
-- [ ] Pass beat map to ChartEditor component
-- [ ] Handle chart export/import via store actions
+- [x] Add "Chart Editor" collapsible section (like subdivision settings)
+- [x] Only show when subdivided beat map exists (required keys only work with subdivided mode)
+- [x] Pass beat map to ChartEditor component
+- [x] Handle chart export/import via store actions
+**Status:** Complete - Integrated ChartEditor and ChartEditorToolbar components into AudioAnalysisTab.tsx. Added collapsible section that only appears when subdivided beat map exists. Export/import is handled via ChartEditorToolbar which uses store actions.
 
 ---
 
