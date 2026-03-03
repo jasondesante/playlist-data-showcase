@@ -265,6 +265,8 @@ export interface DifficultySettings {
     preset: DifficultyPreset;
     /** Custom thresholds (used when preset is 'custom') */
     customThresholds: Partial<AccuracyThresholds>;
+    /** Ignore required key assignments on beats (easy mode - timing-only evaluation) */
+    ignoreKeyRequirements: boolean;
 }
 
 /**
@@ -274,6 +276,7 @@ export interface DifficultySettings {
 const DEFAULT_DIFFICULTY_SETTINGS: DifficultySettings = {
     preset: 'medium',
     customThresholds: {},
+    ignoreKeyRequirements: false,
 };
 
 interface BeatDetectionState {
@@ -577,6 +580,13 @@ interface BeatDetectionActions {
      * Reset difficulty settings to defaults.
      */
     resetDifficultySettings: () => void;
+
+    /**
+     * Set whether to ignore required key assignments on beats.
+     * When true, beats with requiredKey use timing-only evaluation (easy mode).
+     * @param ignore - Whether to ignore key requirements
+     */
+    setIgnoreKeyRequirements: (ignore: boolean) => void;
 
     /**
      * Get the current effective accuracy thresholds.
@@ -1562,6 +1572,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     resetDifficultySettings: () => {
                         logger.info('BeatDetection', 'Resetting difficulty settings');
                         set({ difficultySettings: { ...DEFAULT_DIFFICULTY_SETTINGS } });
+                    },
+
+                    setIgnoreKeyRequirements: (ignore) => {
+                        logger.info('BeatDetection', 'Setting ignore key requirements', { ignore });
+                        set((state) => ({
+                            difficultySettings: {
+                                ...state.difficultySettings,
+                                ignoreKeyRequirements: ignore,
+                            },
+                        }));
                     },
 
                     getAccuracyThresholds: () => {
@@ -2916,6 +2936,12 @@ export const useDifficultySettings = () =>
  */
 export const useDifficultyPreset = () =>
     useBeatDetectionStore((state) => state.difficultySettings.preset);
+
+/**
+ * Selector to get whether key requirements are ignored (easy mode).
+ */
+export const useIgnoreKeyRequirements = () =>
+    useBeatDetectionStore((state) => state.difficultySettings.ignoreKeyRequirements);
 
 /**
  * Selector to get the current effective accuracy thresholds.

@@ -160,9 +160,10 @@ The following decisions were made during planning:
 **Status:** Complete - Added all chart editor state fields to BeatDetectionState interface and initialized them in createInitialState().
 
 ### Task 2.2: Add ignoreKeyRequirements to Settings
-- [ ] Add `ignoreKeyRequirements: boolean` to difficulty settings state
-- [ ] Default to `false` (key requirements enforced)
-- [ ] Add `setIgnoreKeyRequirements(boolean)` action
+- [x] Add `ignoreKeyRequirements: boolean` to difficulty settings state
+- [x] Default to `false` (key requirements enforced)
+- [x] Add `setIgnoreKeyRequirements(boolean)` action
+**Status:** Complete - Added `ignoreKeyRequirements` to DifficultySettings interface, DEFAULT_DIFFICULTY_SETTINGS, BeatDetectionActions interface, and implemented the action. Also added `useIgnoreKeyRequirements()` selector.
 
 ### Task 2.3: Add Chart Editor Actions
 - [x] Add `startChartEditor()` action - only available when subdivided beat map exists
