@@ -185,10 +185,11 @@ The following decisions were made during planning:
 **Status:** Complete - Added all chart statistics selectors including useChartStatistics() which provides keyCount and usedKeys, useKeyMap(), useHasRequiredKeys(), and additional utility selectors.
 
 ### Task 2.5: Add Level Import/Export Actions
-- [ ] Add `exportLevel()` action - returns LevelExportData JSON (beat map + chart together)
-- [ ] Add `importLevel(data: LevelExportData)` action - validates and applies beat map + key assignments
-- [ ] Add validation: audioId must match exactly (block if mismatch)
-- [ ] Add validation: beat count must match (fail if mismatch)
+- [x] Add `exportLevel()` action - returns LevelExportData JSON (beat map + chart together)
+- [x] Add `importLevel(data: LevelExportData)` action - validates and applies beat map + key assignments
+- [x] Add validation: audioId must match exactly (block if mismatch)
+- [x] Add validation: beat count must match (fail if mismatch)
+**Status:** Complete - Added `exportLevel()` and `importLevel()` actions to BeatDetectionActions interface and implemented them in the store. Both actions validate structure and data integrity, with import requiring exact audioId and beat count match.
 
 ---
 

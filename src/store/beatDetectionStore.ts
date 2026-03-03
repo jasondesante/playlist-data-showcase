@@ -61,6 +61,13 @@ import {
     KeyLaneViewMode,
     DEFAULT_CHART_EDITOR_STATE,
     KeyAssignment,
+    // Level Import/Export types (Phase 2: Task 2.5)
+    LevelExportData,
+    LevelExportBeat,
+    LevelImportValidationResult,
+    validateLevelExportData,
+    getKeyCount,
+    getUsedKeys,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -856,6 +863,28 @@ interface BeatDetectionActions {
      * @param mode - The view mode ('off', 'ddr', or 'guitar-hero')
      */
     setKeyLaneViewMode: (mode: KeyLaneViewMode) => void;
+
+    // ============================================================
+    // Level Import/Export Actions (Phase 2: Task 2.5)
+    // ============================================================
+
+    /**
+     * Export the current level (beat map + chart) as LevelExportData.
+     * Returns null if no subdivided beat map exists.
+     * Includes all beat data with key assignments and subdivision config.
+     * @param audioTitle - Optional title for display purposes
+     * @returns The LevelExportData object, or null if no subdivided beat map
+     */
+    exportLevel: (audioTitle?: string) => LevelExportData | null;
+
+    /**
+     * Import a level (beat map + chart) from LevelExportData.
+     * Validates audioId match (required) and beat count match (required).
+     * Applies key assignments to the current subdivided beat map.
+     * @param data - The level data to import
+     * @returns Validation result with errors if import failed
+     */
+    importLevel: (data: LevelExportData) => LevelImportValidationResult;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -2511,6 +2540,170 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     setKeyLaneViewMode: (mode: KeyLaneViewMode) => {
                         logger.info('BeatDetection', 'Setting KeyLane view mode', { mode });
                         set({ keyLaneViewMode: mode });
+                    },
+
+                    // ============================================================
+                    // Level Import/Export Actions (Phase 2: Task 2.5)
+                    // ============================================================
+
+                    exportLevel: (audioTitle?: string) => {
+                        const state = get();
+
+                        if (!state.subdividedBeatMap) {
+                            logger.warn('BeatDetection', 'Cannot export level: no subdivided beat map');
+                            return null;
+                        }
+
+                        const beatMap = state.subdividedBeatMap;
+
+                        // Convert beats to LevelExportBeat format
+                        const exportBeats: LevelExportBeat[] = beatMap.beats.map((beat) => ({
+                            timestamp: beat.timestamp,
+                            beatInMeasure: beat.beatInMeasure,
+                            isDownbeat: beat.isDownbeat,
+                            measureNumber: beat.measureNumber,
+                            intensity: beat.intensity,
+                            confidence: beat.confidence,
+                            ...(beat.requiredKey !== undefined && { requiredKey: beat.requiredKey }),
+                        }));
+
+                        // Get chart metadata
+                        const keyCount = getKeyCount(beatMap);
+                        const usedKeys = getUsedKeys(beatMap);
+
+                        const levelData: LevelExportData = {
+                            version: 1,
+                            audioId: beatMap.audioId,
+                            audioTitle,
+                            exportedAt: Date.now(),
+                            beatCount: beatMap.beats.length,
+                            beats: exportBeats,
+                            subdivisionConfig: state.subdivisionConfig,
+                            chartStyle: state.chartStyle,
+                            metadata: {
+                                keyCount,
+                                usedKeys,
+                            },
+                        };
+
+                        logger.info('BeatDetection', 'Exported level', {
+                            audioId: levelData.audioId,
+                            beatCount: levelData.beatCount,
+                            keyCount: levelData.metadata.keyCount,
+                            chartStyle: levelData.chartStyle,
+                        });
+
+                        return levelData;
+                    },
+
+                    importLevel: (data: LevelExportData) => {
+                        const state = get();
+
+                        // First validate the structure
+                        const structureValidation = validateLevelExportData(data);
+                        if (!structureValidation.valid) {
+                            logger.warn('BeatDetection', 'Level import failed: invalid structure', {
+                                errors: structureValidation.errors,
+                            });
+                            return structureValidation;
+                        }
+
+                        // Check if we have a subdivided beat map
+                        if (!state.subdividedBeatMap) {
+                            const error: LevelImportValidationResult = {
+                                valid: false,
+                                errors: ['No subdivided beat map loaded. Generate a beat map first.'],
+                                warnings: [],
+                            };
+                            logger.warn('BeatDetection', 'Level import failed: no subdivided beat map');
+                            return error;
+                        }
+
+                        // Validate audioId match (exact match required)
+                        if (state.subdividedBeatMap.audioId !== data.audioId) {
+                            const error: LevelImportValidationResult = {
+                                valid: false,
+                                errors: [
+                                    `Audio ID mismatch. Current: "${state.subdividedBeatMap.audioId}", Import: "${data.audioId}". Level must be imported for the same audio.`,
+                                ],
+                                warnings: [],
+                            };
+                            logger.warn('BeatDetection', 'Level import failed: audioId mismatch', {
+                                currentAudioId: state.subdividedBeatMap.audioId,
+                                importAudioId: data.audioId,
+                            });
+                            return error;
+                        }
+
+                        // Validate beat count match
+                        if (state.subdividedBeatMap.beats.length !== data.beatCount) {
+                            const error: LevelImportValidationResult = {
+                                valid: false,
+                                errors: [
+                                    `Beat count mismatch. Current: ${state.subdividedBeatMap.beats.length}, Import: ${data.beatCount}. Beat map must be regenerated with the same subdivision settings.`,
+                                ],
+                                warnings: [],
+                            };
+                            logger.warn('BeatDetection', 'Level import failed: beat count mismatch', {
+                                currentBeatCount: state.subdividedBeatMap.beats.length,
+                                importBeatCount: data.beatCount,
+                            });
+                            return error;
+                        }
+
+                        // All validations passed - apply the key assignments
+                        logger.info('BeatDetection', 'Importing level', {
+                            audioId: data.audioId,
+                            beatCount: data.beatCount,
+                            keyCount: data.metadata.keyCount,
+                            chartStyle: data.chartStyle,
+                        });
+
+                        // Create a map of beat index to requiredKey from the import data
+                        const keyMap = new Map<number, string>();
+                        for (let i = 0; i < data.beats.length; i++) {
+                            const beat = data.beats[i];
+                            if (beat.requiredKey !== undefined) {
+                                keyMap.set(i, beat.requiredKey);
+                            }
+                        }
+
+                        // Apply key assignments to the subdivided beat map
+                        const updatedBeats = state.subdividedBeatMap.beats.map((beat, index) => {
+                            const updatedBeat = { ...beat };
+                            const requiredKey = keyMap.get(index);
+
+                            if (requiredKey !== undefined) {
+                                updatedBeat.requiredKey = requiredKey;
+                            } else {
+                                // Remove any existing requiredKey if the import doesn't have one
+                                delete updatedBeat.requiredKey;
+                            }
+
+                            return updatedBeat;
+                        });
+
+                        // Update the state
+                        set({
+                            subdividedBeatMap: {
+                                ...state.subdividedBeatMap,
+                                beats: updatedBeats,
+                            },
+                            chartStyle: data.chartStyle,
+                        });
+
+                        const successResult: LevelImportValidationResult = {
+                            valid: true,
+                            errors: [],
+                            warnings: [],
+                        };
+
+                        logger.info('BeatDetection', 'Level import successful', {
+                            keysAssigned: keyMap.size,
+                            chartStyle: data.chartStyle,
+                        });
+
+                        return successResult;
                     },
                 },
             };
