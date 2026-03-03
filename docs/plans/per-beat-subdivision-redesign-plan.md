@@ -175,7 +175,7 @@ This plan covers:
 
 ### 4.5 Styles
 
-- [ ] Create `src/components/ui/BeatSubdivisionGrid.css`
+- [x] Create `src/components/ui/BeatSubdivisionGrid.css`
   - Grid cell styles
   - Selection highlighting
   - Measure boundaries
