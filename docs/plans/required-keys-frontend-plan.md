@@ -101,14 +101,20 @@ The following decisions were made during planning:
 **Status:** Complete - All types and helper functions re-exported from playlist-data-engine.
 
 ### Task 1.4: Add Chart-Related Types
-- [ ] Create `ChartStyle` type: `'ddr' | 'guitar-hero'`
-- [ ] Create `ChartEditorMode` type: `'view' | 'paint' | 'erase'`
-- [ ] Create `ChartEditorTool` type: `'paint' | 'erase' | 'clear-all'`
-- [ ] Create `SupportedKey` type: `'up' | 'down' | 'left' | 'right' | '1' | '2' | '3' | '4' | '5'`
-- [ ] Create `DdrKey` type: `'up' | 'down' | 'left' | 'right'`
-- [ ] Create `GuitarKey` type: `'1' | '2' | '3' | '4' | '5'`
-- [ ] Create `ChartEditorState` interface for managing editor state
-- [ ] Create `KeyLaneViewMode` type: `'off' | 'ddr' | 'guitar-hero'`
+- [x] Create `ChartStyle` type: `'ddr' | 'guitar-hero'`
+- [x] Create `ChartEditorMode` type: `'view' | 'paint' | 'erase'`
+- [x] Create `ChartEditorTool` type: `'paint' | 'erase' | 'clear-all'`
+- [x] Create `SupportedKey` type: `'up' | 'down' | 'left' | 'right' | '1' | '2' | '3' | '4' | '5'`
+- [x] Create `DdrKey` type: `'up' | 'down' | 'left' | 'right'`
+- [x] Create `GuitarKey` type: `'1' | '2' | '3' | '4' | '5'`
+- [x] Create `ChartEditorState` interface for managing editor state
+- [x] Create `KeyLaneViewMode` type: `'off' | 'ddr' | 'guitar-hero'`
+**Status:** Complete - Added all chart-related types in [src/types/index.ts](src/types/index.ts):
+- `ChartStyle`, `ChartEditorMode`, `ChartEditorTool`, `SupportedKey`, `DdrKey`, `GuitarKey`, `KeyLaneViewMode` types
+- `ChartEditorState` interface with all required fields
+- `DEFAULT_CHART_EDITOR_STATE` constant for initialization
+- Helper constants: `DDR_KEYS`, `GUITAR_KEYS`
+- Helper functions: `isDdrKey()`, `isGuitarKey()`, `getKeysForStyle()`, `getKeySymbol()`
 
 ### Task 1.5: Add Level Import/Export Types
 - [ ] Create `LevelExportData` interface for complete level export (beat map + chart together):

@@ -867,3 +867,165 @@ export function detectInterpolationPreset(options: BeatInterpolationOptions): In
     // Custom configuration
     return 'research';
 }
+
+// ============================================================
+// Chart Editor Types (Required Keys Feature)
+// ============================================================
+
+/**
+ * Chart style determines the visual theme and available keys.
+ *
+ * - 'ddr': Dance Dance Revolution style with 4 arrow keys (up, down, left, right)
+ * - 'guitar-hero': Guitar Hero style with 5 number keys (1-5)
+ *
+ * Charts are authored for one style, and the KeyPalette filters available
+ * keys based on the selected style.
+ */
+export type ChartStyle = 'ddr' | 'guitar-hero';
+
+/**
+ * Chart editor mode for the current editing state.
+ *
+ * - 'view': Read-only view of the chart
+ * - 'paint': Assign the selected key to clicked/dragged beats
+ * - 'erase': Remove key assignments from clicked beats
+ */
+export type ChartEditorMode = 'view' | 'paint' | 'erase';
+
+/**
+ * Chart editor tool selection.
+ *
+ * - 'paint': Assign the selected key to beats
+ * - 'erase': Remove key assignments from beats
+ * - 'clear-all': Clear all key assignments (action, not a persistent mode)
+ */
+export type ChartEditorTool = 'paint' | 'erase' | 'clear-all';
+
+/**
+ * All supported keys for chart mode.
+ *
+ * Combines DDR arrow keys and Guitar Hero number keys.
+ * Both input modes are always active during practice - the chart style
+ * only affects which keys are shown in the palette and KeyLane view.
+ */
+export type SupportedKey = 'up' | 'down' | 'left' | 'right' | '1' | '2' | '3' | '4' | '5';
+
+/**
+ * DDR-style arrow keys.
+ *
+ * Used for Dance Dance Revolution style charts with 4 lanes.
+ * Classic colors: left=blue, down=green, up=red, right=purple
+ */
+export type DdrKey = 'up' | 'down' | 'left' | 'right';
+
+/**
+ * Guitar Hero-style number keys.
+ *
+ * Used for Guitar Hero style charts with 5 lanes.
+ * Classic colors: 1=green, 2=red, 3=yellow, 4=blue, 5=orange
+ */
+export type GuitarKey = '1' | '2' | '3' | '4' | '5';
+
+/**
+ * KeyLane view mode for rhythm game visualizations.
+ *
+ * - 'off': Use default TapArea view
+ * - 'ddr': Show 4-lane DDR visualization (left, down, up, right)
+ * - 'guitar-hero': Show 5-lane Guitar Hero visualization (1-5)
+ */
+export type KeyLaneViewMode = 'off' | 'ddr' | 'guitar-hero';
+
+/**
+ * Chart editor state for managing the editor UI.
+ *
+ * Tracks the current editing mode, selected key, chart style,
+ * and KeyLane visualization preferences.
+ */
+export interface ChartEditorState {
+    /** Whether the chart editor panel is open */
+    editorActive: boolean;
+    /** Current chart style (DDR or Guitar Hero) */
+    chartStyle: ChartStyle;
+    /** Currently selected key for painting (null when not painting) */
+    selectedKey: SupportedKey | null;
+    /** Current editor mode (view, paint, or erase) */
+    editorMode: ChartEditorMode;
+    /** KeyLane visualization mode preference */
+    keyLaneViewMode: KeyLaneViewMode;
+}
+
+/**
+ * Default chart editor state.
+ *
+ * Charts default to DDR style as per design decision.
+ */
+export const DEFAULT_CHART_EDITOR_STATE: ChartEditorState = {
+    editorActive: false,
+    chartStyle: 'ddr',
+    selectedKey: null,
+    editorMode: 'view',
+    keyLaneViewMode: 'off',
+};
+
+/**
+ * Array of all DDR keys for iteration.
+ */
+export const DDR_KEYS: readonly DdrKey[] = ['left', 'down', 'up', 'right'] as const;
+
+/**
+ * Array of all Guitar Hero keys for iteration.
+ */
+export const GUITAR_KEYS: readonly GuitarKey[] = ['1', '2', '3', '4', '5'] as const;
+
+/**
+ * Check if a key is a DDR arrow key.
+ *
+ * @param key - The key to check
+ * @returns True if the key is a DDR arrow key
+ */
+export function isDdrKey(key: string): key is DdrKey {
+    return DDR_KEYS.includes(key as DdrKey);
+}
+
+/**
+ * Check if a key is a Guitar Hero number key.
+ *
+ * @param key - The key to check
+ * @returns True if the key is a Guitar Hero number key
+ */
+export function isGuitarKey(key: string): key is GuitarKey {
+    return GUITAR_KEYS.includes(key as GuitarKey);
+}
+
+/**
+ * Get the keys available for a given chart style.
+ *
+ * @param style - The chart style
+ * @returns Array of keys available for that style
+ */
+export function getKeysForStyle(style: ChartStyle): readonly SupportedKey[] {
+    return style === 'ddr' ? DDR_KEYS : GUITAR_KEYS;
+}
+
+/**
+ * Display symbol for a supported key.
+ *
+ * Returns arrow symbols (↑↓←→) for DDR keys and numbers (1-5) for Guitar keys.
+ *
+ * @param key - The key to get the symbol for
+ * @returns The display symbol
+ */
+export function getKeySymbol(key: SupportedKey): string {
+    const symbols: Record<SupportedKey, string> = {
+        up: '↑',
+        down: '↓',
+        left: '←',
+        right: '→',
+        '1': '1',
+        '2': '2',
+        '3': '3',
+        '4': '4',
+        '5': '5',
+    };
+    return symbols[key];
+}
