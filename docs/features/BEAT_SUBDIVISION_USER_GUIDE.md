@@ -17,6 +17,47 @@ Beat subdivision allows you to transform a standard quarter-note beat grid into 
 
 Use per-beat subdivision when creating rhythm game levels or beat maps for export. Each beat can have its own subdivision type, enabling complex rhythmic phrases.
 
+### Complete Interface Overview
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Subdivision Settings                                                                  [ℹ️]            │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                        │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                                  │
+│  │ Total Beats  │ │    Default   │ │    Custom    │ │    Unique    │                                  │
+│  │     128      │ │    Quarter   │ │      24      │ │      3       │                                  │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘                                  │
+│  📊 Distribution: 104 quarter, 16 eighth, 8 sixteenth                                                 │
+│                                                                                                        │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  Brush │ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ │ ┌────────┐ ... │
+│        │ │ ● 1 │ │ ○ 2 │ │●● 3 │ │●●●●│ │●●● 5│ │ ● 6 │ │ ● 7 │ │●●● 8│ │ - 9│ │ │ Apply  │     │
+│        │ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ │ └────────┘     │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  128 beats │ 32 measures │ 8 selected     Zoom: [0.5x] [1x] [2x] [4x] [8x]  [Select All] [Clear]    │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│    M1        M2        M3        M4        M5        M6        M7        M8                            │
+│  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐   │
+│  │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │ 8 │ 9 │10 │11 │12 │13 │14 │15 │16 │17 │18 │19 │20 │21 │22 │23 │24 │...│
+│  │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │   │
+│  │1/4│1/4│1/8│1/8│1/8│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│   │
+│  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘   │
+│    ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔   ←selected→   ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔ default quarter ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔   │
+│                                                                                                        │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  Legend:  ● 1/4  ● 1/2  ● 1/8  ● 1/16  ● T8  ● T4  ● D4  ● D8  ○ -                                 │
+├────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                        │
+│   ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐ │
+│   │  🔄 Generate Subdivided Beat Map                                                                │ │
+│   └─────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+*Complete SubdivisionSettings interface showing: statistics, toolbar with brush selection, piano-roll grid with beat cells, and the generate button.*
+
 ### Accessing Subdivision Settings
 
 1. Navigate to the **Audio Analysis** tab
@@ -26,6 +67,27 @@ Use per-beat subdivision when creating rhythm game levels or beat maps for expor
 ### The Piano-Roll Grid
 
 The subdivision system uses a **piano-roll style grid** where each beat is represented as a cell. This approach lets you assign different subdivision types to individual beats, creating varied rhythmic patterns throughout your track.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  128 beats  │  32 measures  │  8 selected     Zoom: [0.5x] [1x] [2x] [4x] [8x]  [Select All] [Clear] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│    M1          M2          M3          M4          M5                       │
+│  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐     │
+│  │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │ 8 │ 9 │10 │11 │12 │13 │14 │15 │16 │17 │ ... │
+│  │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │ ● │     │
+│  │1/4│1/4│1/8│1/8│1/8│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│1/4│     │
+│  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘     │
+│    ▔▔▔▔▔▔▔▔▔▔▔   ▔▔▔▔▔▔▔   ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔                │
+│      selected      eighth    quarter (default)                              │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Legend:  ● 1/4  ● 1/2  ● 1/8  ● 1/16  ● T8  ● T4  ● D4  ● D8  ○ -        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+*The piano-roll grid showing beats grouped by measure with different subdivision types applied. Selected beats are highlighted with a border.*
 
 #### Grid Features
 
@@ -61,6 +123,19 @@ At the top of the grid, you'll find:
 ### The Subdivision Toolbar
 
 The toolbar appears above the grid and provides quick access to subdivision types and actions.
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Brush  │ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐ │ │ ┌────────┐ ┌────┐ ┌────┐ ┌──────┐ │
+│         │ │  ●  │ │  ○  │ │ ●● │ │●●●●│ │●●● │ │  ●  │ │  ●  │ │●●● │ │     │ │ │ │ Apply  │ │Clear│ │ All│ │ Reset│ │
+│         │ │1/4 1│ │1/2 2│ │1/8 3│ │1/16│ │ T8 5│ │ T4 6│ │ D4 7│ │ D8 8│ │ -  9│ │ │ │  [3]   │ │    │ │    │ │      │ │
+│         │ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ └─────┘ │ └────────┘ └────┘ └────┘ └──────┘ │
+│         │    ▲                                                                        │                          │
+│         │    └── Selected brush (highlighted)                                         │      Selection count badge│
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+*The Subdivision Toolbar showing all 9 subdivision types with density indicators, keyboard shortcuts, and action buttons. The currently selected "brush" is highlighted.*
 
 #### Subdivision Types (Brush Selection)
 
@@ -106,6 +181,23 @@ Each button shows:
 
 The Subdivision Settings panel shows helpful statistics:
 
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  Subdivision Settings                                          [ℹ️]            │
+├────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐          │
+│  │ Total Beats  │ │    Default   │ │    Custom    │ │    Unique    │          │
+│  │     128      │ │    Quarter   │ │      24      │ │      3       │          │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘          │
+│                                                                                │
+│  📊 Distribution: 104 quarter, 16 eighth, 8 sixteenth                         │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+*The summary statistics showing beat count, default subdivision, custom assignments, unique types used, and distribution breakdown.*
+
 - **Total Beats**: Number of beats in the original beat map
 - **Default**: The default subdivision type for beats without custom settings
 - **Custom**: Number of beats with custom subdivision assignments
@@ -113,6 +205,30 @@ The Subdivision Settings panel shows helpful statistics:
 - **Distribution**: A breakdown showing how many beats use each subdivision type
 
 ### Generating the Subdivided Beat Map
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│   ┌─────────────────────────────────────────────────────────────────────────┐  │
+│   │  🔄 Generate Subdivided Beat Map                                        │  │
+│   └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+                              ↓ After Generation ↓
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  Generated Beat Map                                                            │
+├────────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────────┐  ┌─────────────────┐            │
+│  │  Original Beats │  │  Subdivided Beats   │  │   Avg Density   │            │
+│  │       128       │  │         192         │  │      1.5x       │            │
+│  └─────────────────┘  └─────────────────────┘  └─────────────────┘            │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+*The Generate button creates the final subdivided beat map. The result shows original beat count, subdivided beat count, and average density multiplier.*
 
 1. Configure your beat subdivisions as desired
 2. Click **Generate Subdivided Beat Map**
@@ -135,6 +251,23 @@ When you export a beat map, the subdivision configuration and subdivided beat ma
 ## Real-Time Subdivision Playground (Practice View)
 
 The Real-Time Playground lets you switch subdivision types instantly during practice mode. This is perfect for experimenting with different rhythms while playing along.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Subdivision                                                                                        │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │    ●    │ │    ○    │ │   ●●    │ │  ●●●●   │ │  ●●●    │ │   ●     │ │   ●     │ │   ●     │   │
+│  │ Quarter │ │  Half   │ │ Eighth  │ │  16th   │ │ Triplet │ │Triplet 4│ │ Dotted 4│ │ Dotted 8│   │
+│  │   [1]   │ │  [2]    │ │  [3]    │ │  [4]    │ │  [5]    │ │  [6]    │ │  [7]    │ │  [8]    │   │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘   │
+│       ▲                                                                                             │
+│       └── Currently active subdivision (highlighted)                                                │
+│                                                                                                     │
+│  Current: Eighth notes (double density)                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+*The Real-Time Subdivision buttons in Practice View. Each button shows the density with dots, the name, and keyboard shortcut. The active subdivision is highlighted.*
 
 ### Accessing Subdivision Controls
 

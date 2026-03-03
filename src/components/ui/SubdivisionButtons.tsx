@@ -6,7 +6,7 @@
  *
  * Features:
  * - Row of quick subdivision buttons
- * - Buttons: Quarter, Half, Eighth, Sixteenth, Triplet, Swing
+ * - Buttons: Quarter, Half, Eighth, Sixteenth, Triplet 8, Triplet 4, Dotted 4, Swing
  * - Active state for current subdivision
  * - Disabled states when playback is inactive
  * - Touch-friendly sizing
@@ -42,8 +42,10 @@ interface QuickSubdivisionConfig {
 /**
  * Quick subdivision options for practice mode.
  *
- * Note: Triplet uses triplet8 (eighth triplets) as it's the most common
- * triplet feel. Swing uses dotted8 for the classic swing pattern.
+ * Includes all subdivision types from the engine for full flexibility:
+ * - Standard: quarter, half, eighth, sixteenth
+ * - Triplets: triplet8 (eighth triplets), triplet4 (quarter triplets)
+ * - Dotted: dotted4 (dotted quarter), dotted8 (swing pattern)
  */
 const QUICK_SUBDIVISIONS: QuickSubdivisionConfig[] = [
     {
@@ -80,17 +82,33 @@ const QUICK_SUBDIVISIONS: QuickSubdivisionConfig[] = [
     },
     {
         id: 'triplet8',
-        label: 'Triplet',
-        shortLabel: '3x',
+        label: 'Triplet 8',
+        shortLabel: 'T8',
         shortcut: '5',
         description: 'Eighth triplets (3 beats per quarter)',
         density: 3,
     },
     {
-        id: 'dotted8',
-        label: 'Swing',
-        shortLabel: 'Swing',
+        id: 'triplet4',
+        label: 'Triplet 4',
+        shortLabel: 'T4',
         shortcut: '6',
+        description: 'Quarter triplets',
+        density: 1.5,
+    },
+    {
+        id: 'dotted4',
+        label: 'Dotted 4',
+        shortLabel: 'D4',
+        shortcut: '7',
+        description: 'Dotted quarter notes',
+        density: 1.5,
+    },
+    {
+        id: 'dotted8',
+        label: 'Dotted 8',
+        shortLabel: 'D8',
+        shortcut: '8',
         description: 'Dotted eighth (swing pattern)',
         density: 1,
     },
@@ -175,9 +193,9 @@ export function SubdivisionButtons({
                     newIndex = QUICK_SUBDIVISIONS.length - 1;
                     break;
                 default:
-                    // Number keys 1-6 for quick access
+                    // Number keys 1-8 for quick access
                     const num = parseInt(e.key, 10);
-                    if (num >= 1 && num <= 6) {
+                    if (num >= 1 && num <= 8) {
                         e.preventDefault();
                         newIndex = num - 1;
                     }
@@ -238,7 +256,7 @@ export function SubdivisionButtons({
                                         <span className="subdivision-buttons-btn-dot" />
                                     </>
                                 )}
-                                {subdivision.density === 1 && (
+                                {(subdivision.density === 1 || subdivision.density === 1.5) && (
                                     <>
                                         <span className="subdivision-buttons-btn-dot" />
                                     </>
