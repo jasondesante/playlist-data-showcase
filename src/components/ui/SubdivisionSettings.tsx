@@ -1,19 +1,67 @@
 /**
  * SubdivisionSettings Component
  *
- * A settings panel for configuring beat subdivision patterns.
+ * The main settings panel for configuring per-beat subdivision patterns.
+ * This component orchestrates the subdivision editing workflow by combining
+ * the BeatSubdivisionGrid (visual beat selection) and SubdivisionToolbar
+ * (subdivision type selection) into a cohesive editing experience.
+ *
  * Part of Phase 6: Update SubdivisionSettings (Task 6.1)
  *
- * Features:
+ * ## Architecture
+ *
+ * SubdivisionSettings serves as the coordinator between:
+ * - **BeatSubdivisionGrid**: Piano-roll style grid for beat selection
+ * - **SubdivisionToolbar**: Subdivision type selection and actions
+ * - **Zustand Store**: Persistence and state management
+ *
+ * ## Features
+ *
  * - Piano-roll style BeatSubdivisionGrid for selecting beats
  * - SubdivisionToolbar for selecting subdivision brush and applying to selection
+ * - Real-time subdivision distribution statistics
  * - Generate button for creating SubdividedBeatMap
+ * - Summary display showing total beats, default subdivision, and distribution
+ * - Loading state during generation
+ *
+ * ## State Management
+ *
+ * The component maintains local state for:
+ * - `isGenerating`: Loading state during SubdividedBeatMap generation
+ * - `brushSubdivision`: Currently selected subdivision type in toolbar
+ * - `selection`: Current beat selection from the grid
+ *
+ * Global state (from beatDetectionStore):
+ * - `subdivisionConfig`: Per-beat subdivision configuration
+ * - `unifiedBeatMap`: Source beat map for subdivision
+ * - `subdividedBeatMap`: Generated result
+ * - `subdivisionMetadata`: Statistics about generated beat map
+ *
+ * ## Workflow
+ *
+ * 1. User views beat grid with current subdivision assignments
+ * 2. User selects beats in the grid (click, shift+click, drag)
+ * 3. User selects a subdivision type in the toolbar
+ * 4. User clicks "Apply to Selection" to assign subdivision
+ * 5. User clicks "Generate" to create the SubdividedBeatMap
+ *
+ * @module SubdivisionSettings
+ * @see BeatSubdivisionGrid - The grid component for beat selection
+ * @see SubdivisionToolbar - The toolbar for subdivision selection
+ * @see useBeatDetectionStore - Zustand store for subdivision state
+ * @see PerBeatSubdivisionConfig - The configuration type used
  *
  * @component
  * @example
  * ```tsx
  * // Basic usage in AudioAnalysisTab
  * <SubdivisionSettings disabled={isGenerating} />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With disabled state during other operations
+ * <SubdivisionSettings disabled={isLoading || isAnalyzing} />
  * ```
  */
 import { useState, useCallback, useMemo } from 'react';
@@ -31,17 +79,42 @@ import {
 } from '../../store/beatDetectionStore';
 import type { SubdivisionType, BeatSubdivisionSelection } from '@/types';
 
+/**
+ * Props for the SubdivisionSettings component.
+ *
+ * @property disabled - Whether all controls should be disabled.
+ *   When true, the grid, toolbar, and generate button are non-interactive.
+ *   Use this when other operations (e.g., beat detection) are in progress.
+ * @default false
+ */
 interface SubdivisionSettingsProps {
-    /** Whether controls should be disabled */
     disabled?: boolean;
 }
 
 /**
- * SubdivisionSettings component for configuring subdivision patterns.
+ * SubdivisionSettings component for configuring per-beat subdivision patterns.
+ *
+ * This is the main entry point for the subdivision editing feature. It combines
+ * the BeatSubdivisionGrid and SubdivisionToolbar components and manages the
+ * workflow for selecting beats and applying subdivision types.
+ *
+ * ## Rendering Structure
+ *
+ * ```
+ * <div class="subdivision-settings">
+ *   ├── Header with title and tooltip
+ *   ├── Status section (warnings or summary stats)
+ *   ├── SubdivisionToolbar (if UnifiedBeatMap exists)
+ *   ├── BeatSubdivisionGrid
+ *   ├── Actions section with Generate button
+ *   └── Result section (after generation)
+ * ```
  *
  * @param props - Component props
- * @param props.disabled - Whether controls should be disabled (default: false)
  * @returns The rendered settings panel
+ *
+ * @see BeatSubdivisionGrid
+ * @see SubdivisionToolbar
  */
 export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsProps) {
     const subdivisionConfig = useSubdivisionConfig();

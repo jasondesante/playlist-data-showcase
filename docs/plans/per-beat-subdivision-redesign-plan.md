@@ -284,7 +284,7 @@ This plan covers:
 
 - [x] Add JSDoc to BeatSubdivisionGrid
 - [x] Add JSDoc to SubdivisionToolbar
-- [ ] Update SubdivisionSettings JSDoc
+- [x] Update SubdivisionSettings JSDoc
 
 ---
 
