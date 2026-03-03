@@ -141,7 +141,7 @@ This plan covers:
 
 ### 4.1 Create BeatSubdivisionGrid Component
 
-- [ ] Create `src/components/ui/BeatSubdivisionGrid.tsx`
+- [x] Create `src/components/ui/BeatSubdivisionGrid.tsx`
   - Piano-roll style grid with beat cells
   - Scrollable horizontally (reuse timeline infrastructure)
   - Zoomable (0.5x - 8x)

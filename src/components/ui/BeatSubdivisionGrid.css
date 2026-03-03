@@ -1,0 +1,730 @@
+/* ============================================
+   BEAT SUBDIVISION GRID
+   Phase 4, Task 4.1: Piano-roll style beat grid
+   ============================================ */
+
+/* Main container */
+.beat-subdivision-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Empty state */
+.beat-subdivision-grid--empty {
+  padding: 1rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px dashed hsl(var(--border) / 0.5);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.beat-subdivision-grid-empty-message {
+  font-size: 0.6875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.beat-subdivision-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  flex-wrap: wrap;
+}
+
+/* Info section */
+.beat-subdivision-grid-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-subdivision-grid-info-item {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-subdivision-grid-info-separator {
+  color: hsl(var(--border));
+  font-size: 0.5rem;
+}
+
+/* Zoom controls */
+.beat-subdivision-grid-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.beat-subdivision-grid-zoom-label {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  margin-right: 0.25rem;
+}
+
+.beat-subdivision-grid-zoom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.5rem;
+  padding: 0.125rem 0.375rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.5rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.beat-subdivision-grid-zoom-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary));
+}
+
+.beat-subdivision-grid-zoom-btn--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
+.beat-subdivision-grid-zoom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Action buttons */
+.beat-subdivision-grid-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-subdivision-grid-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: all 0.15s ease;
+}
+
+.beat-subdivision-grid-action-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--primary) / 0.5);
+  color: hsl(var(--primary));
+}
+
+.beat-subdivision-grid-action-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-subdivision-grid-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   GRID CONTAINER (Scrollable)
+   ============================================ */
+
+.beat-subdivision-grid-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: hsl(var(--surface-1));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+.beat-subdivision-grid-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.beat-subdivision-grid-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.beat-subdivision-grid-container::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.beat-subdivision-grid-container::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Grid track (inner container) */
+.beat-subdivision-grid-track {
+  display: flex;
+  min-height: 4rem;
+  padding: 0.5rem 0;
+}
+
+/* ============================================
+   MEASURE GROUPS
+   ============================================ */
+
+.beat-subdivision-grid-measure {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  padding-top: 1.25rem; /* Space for measure label */
+}
+
+/* Measure label */
+.beat-subdivision-grid-measure-label {
+  position: absolute;
+  top: 0;
+  left: 0.25rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--primary) / 0.8);
+  background: hsl(var(--background) / 0.85);
+  padding: 0.0625rem 0.25rem;
+  border-radius: 0.1875rem;
+  border: 1px solid hsl(var(--primary) / 0.2);
+  z-index: 5;
+}
+
+/* Measure boundary line */
+.beat-subdivision-grid-measure-boundary {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: hsl(var(--primary) / 0.3);
+  box-shadow: 0 0 6px hsl(var(--primary) / 0.2);
+  pointer-events: none;
+}
+
+/* Hide boundary for last measure */
+.beat-subdivision-grid-measure:last-child .beat-subdivision-grid-measure-boundary {
+  display: none;
+}
+
+/* ============================================
+   BEAT CELLS
+   ============================================ */
+
+.beat-subdivision-grid-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  flex-shrink: 0;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.2);
+  border-right: none; /* Collapse borders */
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+/* Add right border to last cell in measure */
+.beat-subdivision-grid-measure:last-child .beat-subdivision-grid-cell:last-child {
+  border-right: 1px solid hsl(var(--border) / 0.2);
+}
+
+/* Hover state */
+.beat-subdivision-grid-cell:hover:not(.beat-subdivision-grid-cell--disabled) {
+  background: hsl(var(--surface-hover) / 0.6);
+  border-color: hsl(var(--border) / 0.4);
+}
+
+/* Selected state */
+.beat-subdivision-grid-cell--selected {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.5) !important;
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.beat-subdivision-grid-cell--selected:hover:not(.beat-subdivision-grid-cell--disabled) {
+  background: hsl(var(--primary) / 0.15);
+}
+
+/* Disabled state */
+.beat-subdivision-grid-cell--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Focus state */
+.beat-subdivision-grid-cell:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+/* Beat number */
+.beat-subdivision-grid-cell-number {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground) / 0.7);
+  margin-bottom: 0.25rem;
+}
+
+/* Selected beat number */
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-number {
+  color: hsl(var(--primary));
+}
+
+/* ============================================
+   SUBDIVISION INDICATORS
+   Color-coded visual indicators for each subdivision type
+   ============================================ */
+
+.beat-subdivision-grid-cell-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+/* Quarter - Primary blue */
+.beat-subdivision-grid-cell-indicator--quarter {
+  background: hsl(var(--subdivision-quarter));
+  box-shadow: 0 0 6px hsl(var(--subdivision-quarter) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--quarter {
+  box-shadow: 0 0 10px hsl(var(--subdivision-quarter) / 0.7);
+}
+
+/* Half - Green */
+.beat-subdivision-grid-cell-indicator--half {
+  background: hsl(var(--subdivision-half));
+  box-shadow: 0 0 6px hsl(var(--subdivision-half) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--half {
+  box-shadow: 0 0 10px hsl(var(--subdivision-half) / 0.7);
+}
+
+/* Eighth - Orange */
+.beat-subdivision-grid-cell-indicator--eighth {
+  background: hsl(var(--subdivision-eighth));
+  box-shadow: 0 0 6px hsl(var(--subdivision-eighth) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--eighth {
+  box-shadow: 0 0 10px hsl(var(--subdivision-eighth) / 0.7);
+}
+
+/* Sixteenth - Red */
+.beat-subdivision-grid-cell-indicator--sixteenth {
+  background: hsl(var(--subdivision-sixteenth));
+  box-shadow: 0 0 6px hsl(var(--subdivision-sixteenth) / 0.5);
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--sixteenth {
+  box-shadow: 0 0 10px hsl(var(--subdivision-sixteenth) / 0.7);
+}
+
+/* Triplet8 - Purple */
+.beat-subdivision-grid-cell-indicator--triplet8 {
+  background: hsl(var(--subdivision-triplet8));
+  box-shadow: 0 0 6px hsl(var(--subdivision-triplet8) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--triplet8 {
+  box-shadow: 0 0 10px hsl(var(--subdivision-triplet8) / 0.7);
+}
+
+/* Triplet4 - Pink */
+.beat-subdivision-grid-cell-indicator--triplet4 {
+  background: hsl(var(--subdivision-triplet4));
+  box-shadow: 0 0 6px hsl(var(--subdivision-triplet4) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--triplet4 {
+  box-shadow: 0 0 10px hsl(var(--subdivision-triplet4) / 0.7);
+}
+
+/* Dotted4 - Teal */
+.beat-subdivision-grid-cell-indicator--dotted4 {
+  background: hsl(var(--subdivision-dotted4));
+  box-shadow: 0 0 6px hsl(var(--subdivision-dotted4) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--dotted4 {
+  box-shadow: 0 0 10px hsl(var(--subdivision-dotted4) / 0.7);
+}
+
+/* Dotted8 - Yellow/Gold */
+.beat-subdivision-grid-cell-indicator--dotted8 {
+  background: hsl(var(--subdivision-dotted8));
+  box-shadow: 0 0 6px hsl(var(--subdivision-dotted8) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--dotted8 {
+  box-shadow: 0 0 10px hsl(var(--subdivision-dotted8) / 0.7);
+}
+
+/* Rest - Muted gray */
+.beat-subdivision-grid-cell-indicator--rest {
+  background: hsl(var(--muted-foreground) / 0.4);
+  box-shadow: none;
+  border: 1px dashed hsl(var(--muted-foreground) / 0.3);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--rest {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ============================================
+   CELL BACKGROUND COLORS BY SUBDIVISION
+   Subtle tinting based on subdivision type
+   ============================================ */
+
+.beat-subdivision-grid-cell--quarter {
+  background: hsl(var(--subdivision-quarter-bg));
+}
+
+.beat-subdivision-grid-cell--half {
+  background: hsl(var(--subdivision-half-bg));
+}
+
+.beat-subdivision-grid-cell--eighth {
+  background: hsl(var(--subdivision-eighth-bg));
+}
+
+.beat-subdivision-grid-cell--sixteenth {
+  background: hsl(var(--subdivision-sixteenth-bg));
+}
+
+.beat-subdivision-grid-cell--triplet8 {
+  background: hsl(var(--subdivision-triplet8-bg));
+}
+
+.beat-subdivision-grid-cell--triplet4 {
+  background: hsl(var(--subdivision-triplet4-bg));
+}
+
+.beat-subdivision-grid-cell--dotted4 {
+  background: hsl(var(--subdivision-dotted4-bg));
+}
+
+.beat-subdivision-grid-cell--dotted8 {
+  background: hsl(var(--subdivision-dotted8-bg));
+}
+
+.beat-subdivision-grid-cell--rest {
+  background: hsl(var(--muted) / 0.3);
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.beat-subdivision-grid-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.2);
+  border-radius: 0.375rem;
+}
+
+.beat-subdivision-grid-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.beat-subdivision-grid-legend-color {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.beat-subdivision-grid-legend-color--quarter {
+  background: hsl(var(--subdivision-quarter));
+  box-shadow: 0 0 4px hsl(var(--subdivision-quarter) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--half {
+  background: hsl(var(--subdivision-half));
+  box-shadow: 0 0 4px hsl(var(--subdivision-half) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--eighth {
+  background: hsl(var(--subdivision-eighth));
+  box-shadow: 0 0 4px hsl(var(--subdivision-eighth) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--sixteenth {
+  background: hsl(var(--subdivision-sixteenth));
+  box-shadow: 0 0 4px hsl(var(--subdivision-sixteenth) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--triplet8 {
+  background: hsl(var(--subdivision-triplet8));
+  box-shadow: 0 0 4px hsl(var(--subdivision-triplet8) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--triplet4 {
+  background: hsl(var(--subdivision-triplet4));
+  box-shadow: 0 0 4px hsl(var(--subdivision-triplet4) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--dotted4 {
+  background: hsl(var(--subdivision-dotted4));
+  box-shadow: 0 0 4px hsl(var(--subdivision-dotted4) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--dotted8 {
+  background: hsl(var(--subdivision-dotted8));
+  box-shadow: 0 0 4px hsl(var(--subdivision-dotted8) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--rest {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border: 1px dashed hsl(var(--muted-foreground) / 0.3);
+}
+
+.beat-subdivision-grid-legend-label {
+  font-size: 0.5rem;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1026px) {
+  .beat-subdivision-grid-header {
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-subdivision-grid-info-item {
+    font-size: 0.5rem;
+  }
+
+  .beat-subdivision-grid-zoom-btn {
+    min-width: 1.5rem;
+    height: 1.25rem;
+    font-size: 0.4375rem;
+  }
+
+  .beat-subdivision-grid-action-btn {
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.4375rem;
+  }
+
+  .beat-subdivision-grid-measure-label {
+    font-size: 0.4375rem;
+  }
+
+  .beat-subdivision-grid-cell-number {
+    font-size: 0.5rem;
+  }
+
+  .beat-subdivision-grid-cell-indicator {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .beat-subdivision-grid-legend {
+    gap: 0.375rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .beat-subdivision-grid-legend-color {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  .beat-subdivision-grid-legend-label {
+    font-size: 0.4375rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+  .beat-subdivision-grid-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
+    padding: 0.375rem;
+  }
+
+  .beat-subdivision-grid-info {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .beat-subdivision-grid-info-item {
+    font-size: 0.4375rem;
+  }
+
+  .beat-subdivision-grid-zoom {
+    justify-content: center;
+  }
+
+  .beat-subdivision-grid-zoom-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-subdivision-grid-zoom-btn {
+    min-width: 1.75rem;
+    height: 1.5rem;
+    font-size: 0.5rem;
+  }
+
+  .beat-subdivision-grid-actions {
+    justify-content: center;
+  }
+
+  .beat-subdivision-grid-action-btn {
+    flex: 1;
+    max-width: 5rem;
+    justify-content: center;
+  }
+
+  .beat-subdivision-grid-container {
+    border-radius: 0.25rem;
+  }
+
+  .beat-subdivision-grid-track {
+    min-height: 3.5rem;
+  }
+
+  .beat-subdivision-grid-measure {
+    padding-top: 1rem;
+  }
+
+  .beat-subdivision-grid-measure-label {
+    font-size: 0.375rem;
+    padding: 0.0625rem 0.1875rem;
+  }
+
+  .beat-subdivision-grid-cell {
+    height: 2.5rem;
+  }
+
+  .beat-subdivision-grid-cell-number {
+    font-size: 0.4375rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .beat-subdivision-grid-cell-indicator {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  .beat-subdivision-grid-cell-indicator--sixteenth {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  .beat-subdivision-grid-legend {
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .beat-subdivision-grid-legend-color {
+    width: 0.4375rem;
+    height: 0.4375rem;
+  }
+
+  .beat-subdivision-grid-legend-label {
+    font-size: 0.375rem;
+  }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .beat-subdivision-grid-cell {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .beat-subdivision-grid-cell-indicator {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .beat-subdivision-grid-zoom-btn,
+  .beat-subdivision-grid-action-btn {
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-subdivision-grid-cell,
+  .beat-subdivision-grid-cell-indicator,
+  .beat-subdivision-grid-zoom-btn,
+  .beat-subdivision-grid-action-btn {
+    transition: none;
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+@media (prefers-contrast: more) {
+  .beat-subdivision-grid-cell {
+    border-width: 2px;
+  }
+
+  .beat-subdivision-grid-cell--selected {
+    border-width: 3px;
+  }
+
+  .beat-subdivision-grid-measure-boundary {
+    width: 3px;
+  }
+}
