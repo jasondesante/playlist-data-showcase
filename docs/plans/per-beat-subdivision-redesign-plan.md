@@ -219,9 +219,9 @@ This plan covers:
 
 ### 6.1 Replace Segment List with Grid
 
-- [ ] Remove segment list UI from SubdivisionSettings
-- [ ] Integrate BeatSubdivisionGrid component
-- [ ] Integrate SubdivisionToolbar component
+- [x] Remove segment list UI from SubdivisionSettings
+- [x] Integrate BeatSubdivisionGrid component
+- [x] Integrate SubdivisionToolbar component
 
 ### 6.2 Update Summary Display
 

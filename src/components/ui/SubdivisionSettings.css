@@ -867,3 +867,219 @@
     animation: none;
   }
 }
+
+/* ============================================
+   PHASE 6: PER-BEAT SUBDIVISION UI (Task 6.1)
+   ============================================ */
+
+/* Status Section */
+.subdivision-settings-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.subdivision-settings-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.subdivision-settings-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  font-size: 0.5625rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.subdivision-settings-separator {
+  color: hsl(var(--border));
+}
+
+/* Actions Section */
+.subdivision-settings-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px dashed hsl(var(--border) / 0.3);
+}
+
+.subdivision-settings-generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--cute-purple) / 0.8));
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: hsl(var(--background));
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.subdivision-settings-generate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+}
+
+.subdivision-settings-generate-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px hsl(var(--primary) / 0.3);
+}
+
+.subdivision-settings-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.subdivision-settings-generate-btn .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Generated Result Section */
+.subdivision-settings-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: hsl(var(--muted) / 0.2);
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.375rem;
+}
+
+.subdivision-settings-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.subdivision-settings-result-header h4 {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--cute-green, 142 76% 36%));
+  margin: 0;
+}
+
+.subdivision-settings-result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subdivision-settings-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 4rem;
+}
+
+.subdivision-settings-stat-label {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.subdivision-settings-stat-value {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-family: ui-monospace, monospace;
+}
+
+.subdivision-settings-stat--multi-tempo {
+  background: hsl(var(--cute-amber, 38 92% 50%) / 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--cute-amber, 38 92% 50%) / 0.3);
+}
+
+.subdivision-settings-stat--multi-tempo .subdivision-settings-stat-value {
+  color: hsl(var(--cute-amber, 38 92% 50%));
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Phase 6
+   ============================================ */
+
+@media (max-width: 640px) {
+  .subdivision-settings-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .subdivision-settings-separator {
+    display: none;
+  }
+
+  .subdivision-settings-result-stats {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .subdivision-settings-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-width: auto;
+    width: 100%;
+  }
+
+  .subdivision-settings-generate-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .subdivision-settings-generate-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .subdivision-settings-generate-btn:active {
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .subdivision-settings-generate-btn {
+    transition: none;
+  }
+
+  .subdivision-settings-generate-btn .spinning {
+    animation: none;
+  }
+}

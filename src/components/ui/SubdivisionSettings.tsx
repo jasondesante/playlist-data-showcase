@@ -2,15 +2,12 @@
  * SubdivisionSettings Component
  *
  * A settings panel for configuring beat subdivision patterns.
- * Part of Phase 3: Store Updates (Task 3.1)
+ * Part of Phase 6: Update SubdivisionSettings (Task 6.1)
  *
- * This component is being redesigned for the per-beat subdivision format.
- * The segment-based UI has been replaced with a simplified interface.
- *
- * Phase 6 will introduce:
- * - Piano-roll style grid for selecting beats
- * - Click/drag to select beat ranges
- * - Apply subdivision to selected beats
+ * Features:
+ * - Piano-roll style BeatSubdivisionGrid for selecting beats
+ * - SubdivisionToolbar for selecting subdivision brush and applying to selection
+ * - Generate button for creating SubdividedBeatMap
  *
  * @component
  * @example
@@ -19,9 +16,11 @@
  * <SubdivisionSettings disabled={isGenerating} />
  * ```
  */
-import { useState, useEffect } from 'react';
-import { Info, RefreshCw, Clock } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { RefreshCw, Clock } from 'lucide-react';
 import { Tooltip } from './Tooltip';
+import { BeatSubdivisionGrid } from './BeatSubdivisionGrid';
+import { SubdivisionToolbar } from './SubdivisionToolbar';
 import './SubdivisionSettings.css';
 import {
     useBeatDetectionStore,
@@ -30,95 +29,11 @@ import {
     useSubdividedBeatMap,
     useSubdivisionMetadata,
 } from '../../store/beatDetectionStore';
-import type { SubdivisionType } from '@/types';
-
-/**
- * Subdivision type configuration for display.
- */
-interface SubdivisionTypeConfig {
-    id: SubdivisionType;
-    label: string;
-    shortLabel: string;
-    description: string;
-    density: number;
-}
-
-/**
- * All subdivision types with their display properties
- */
-const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
-    {
-        id: 'quarter',
-        label: 'Quarter',
-        shortLabel: '1x',
-        description: 'Quarter notes (default, no subdivision)',
-        density: 1,
-    },
-    {
-        id: 'half',
-        label: 'Half',
-        shortLabel: '0.5x',
-        description: 'Half notes (beats on 1 and 3)',
-        density: 0.5,
-    },
-    {
-        id: 'eighth',
-        label: 'Eighth',
-        shortLabel: '2x',
-        description: 'Eighth notes (double density)',
-        density: 2,
-    },
-    {
-        id: 'sixteenth',
-        label: 'Sixteenth',
-        shortLabel: '4x',
-        description: 'Sixteenth notes (maximum density)',
-        density: 4,
-    },
-    {
-        id: 'triplet8',
-        label: 'Triplet 8th',
-        shortLabel: '3x',
-        description: 'Eighth note triplets',
-        density: 3,
-    },
-    {
-        id: 'triplet4',
-        label: 'Triplet 4th',
-        shortLabel: '1.5x',
-        description: 'Quarter note triplets',
-        density: 1.5,
-    },
-    {
-        id: 'dotted4',
-        label: 'Dotted 4th',
-        shortLabel: '1.5x',
-        description: 'Dotted quarter notes',
-        density: 1.5,
-    },
-    {
-        id: 'dotted8',
-        label: 'Dotted 8th',
-        shortLabel: '3x',
-        description: 'Dotted eighth notes',
-        density: 3,
-    },
-    {
-        id: 'rest',
-        label: 'Rest',
-        shortLabel: '-',
-        description: 'No beat (rest)',
-        density: 0,
-    },
-];
+import type { SubdivisionType, BeatSubdivisionSelection } from '@/types';
 
 interface SubdivisionSettingsProps {
     /** Whether controls should be disabled */
     disabled?: boolean;
-    /** Whether to show the timeline editor */
-    showTimeline?: boolean;
-    /** Callback to toggle timeline visibility */
-    onToggleTimeline?: () => void;
 }
 
 /**
@@ -135,10 +50,22 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
     const subdivisionMetadata = useSubdivisionMetadata();
 
     const generateSubdividedBeatMap = useBeatDetectionStore((state) => state.actions.generateSubdividedBeatMap);
-    const setAllBeatSubdivisions = useBeatDetectionStore((state) => state.actions.setAllBeatSubdivisions);
+    const setBeatSubdivision = useBeatDetectionStore((state) => state.actions.setBeatSubdivision);
+    const setBeatSubdivisionRange = useBeatDetectionStore((state) => state.actions.setBeatSubdivisionRange);
+    const clearAllBeatSubdivisions = useBeatDetectionStore((state) => state.actions.clearAllBeatSubdivisions);
 
     // Task 5.1: Generation loading state
     const [isGenerating, setIsGenerating] = useState(false);
+
+    // Task 6.1: Brush subdivision state for toolbar
+    const [brushSubdivision, setBrushSubdivision] = useState<SubdivisionType>('quarter');
+
+    // Task 6.1: Selection state from BeatSubdivisionGrid
+    const [selection, setSelection] = useState<BeatSubdivisionSelection>({
+        selectedBeats: new Set(),
+        rangeStart: null,
+        rangeEnd: null,
+    });
 
     // Check if we have a UnifiedBeatMap to work with
     const hasUnifiedBeatMap = unifiedBeatMap !== null;
@@ -160,26 +87,64 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
         });
     };
 
-    // Handle setting all beats to a specific subdivision
-    const handleSetAllSubdivisions = (subdivision: SubdivisionType) => {
-        setAllBeatSubdivisions(subdivision);
-    };
+    // Task 6.1: Apply brush subdivision to selected beats
+    const handleApplyToSelection = useCallback(() => {
+        if (selection.selectedBeats.size === 0) return;
 
-    // Keyboard shortcut for subdivision types
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (disabled || !hasUnifiedBeatMap) return;
+        const beats = Array.from(selection.selectedBeats).sort((a, b) => a - b);
 
-            // Number keys 1-9 for quick subdivision selection
-            const typeIndex = parseInt(e.key) - 1;
-            if (typeIndex >= 0 && typeIndex < SUBDIVISION_TYPES.length) {
-                handleSetAllSubdivisions(SUBDIVISION_TYPES[typeIndex].id);
+        // Check if beats are contiguous
+        let isContiguous = true;
+        for (let i = 1; i < beats.length; i++) {
+            if (beats[i] !== beats[i - 1] + 1) {
+                isContiguous = false;
+                break;
             }
-        };
+        }
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [disabled, hasUnifiedBeatMap]);
+        if (isContiguous && beats.length > 1) {
+            // Use range action for contiguous selection
+            setBeatSubdivisionRange(beats[0], beats[beats.length - 1], brushSubdivision);
+        } else {
+            // Apply individually for non-contiguous selection
+            beats.forEach((beatIndex) => {
+                setBeatSubdivision(beatIndex, brushSubdivision);
+            });
+        }
+    }, [selection.selectedBeats, brushSubdivision, setBeatSubdivision, setBeatSubdivisionRange]);
+
+    // Task 6.1: Clear selection
+    const handleClearSelection = useCallback(() => {
+        setSelection({
+            selectedBeats: new Set(),
+            rangeStart: null,
+            rangeEnd: null,
+        });
+    }, []);
+
+    // Task 6.1: Select all beats
+    const handleSelectAll = useCallback(() => {
+        const allBeats = new Set<number>();
+        for (let i = 0; i < totalBeats; i++) {
+            allBeats.add(i);
+        }
+        setSelection({
+            selectedBeats: allBeats,
+            rangeStart: 0,
+            rangeEnd: totalBeats - 1,
+        });
+    }, [totalBeats]);
+
+    // Task 6.1: Reset all beats to default
+    const handleResetAll = useCallback(() => {
+        clearAllBeatSubdivisions();
+        handleClearSelection();
+    }, [clearAllBeatSubdivisions, handleClearSelection]);
+
+    // Task 6.1: Handle selection change from BeatSubdivisionGrid
+    const handleSelectionChange = useCallback((newSelection: BeatSubdivisionSelection) => {
+        setSelection(newSelection);
+    }, []);
 
     return (
         <div className="subdivision-settings">
@@ -210,29 +175,26 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                 )}
             </div>
 
-            {/* Quick Actions - Set All to Subdivision */}
-            <div className="subdivision-settings-section">
-                <div className="subdivision-settings-section-header">
-                    <h4>Set All Beats</h4>
-                    <Tooltip content="Set all beats to the same subdivision type" />
-                </div>
-                <div className="subdivision-settings-type-grid">
-                    {SUBDIVISION_TYPES.map((type) => (
-                        <button
-                            key={type.id}
-                            className={`subdivision-settings-type-btn ${
-                                subdivisionConfig.defaultSubdivision === type.id ? 'active' : ''
-                            }`}
-                            onClick={() => handleSetAllSubdivisions(type.id)}
-                            disabled={disabled || !hasUnifiedBeatMap}
-                            title={type.description}
-                        >
-                            <span className="subdivision-settings-type-label">{type.label}</span>
-                            <span className="subdivision-settings-type-density">{type.shortLabel}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {/* Task 6.1: SubdivisionToolbar */}
+            {hasUnifiedBeatMap && (
+                <SubdivisionToolbar
+                    currentBrush={brushSubdivision}
+                    onBrushChange={setBrushSubdivision}
+                    onApplyToSelection={handleApplyToSelection}
+                    onClearSelection={handleClearSelection}
+                    onSelectAll={handleSelectAll}
+                    onResetAll={handleResetAll}
+                    selectionCount={selection.selectedBeats.size}
+                    disabled={disabled}
+                    compact={false}
+                />
+            )}
+
+            {/* Task 6.1: BeatSubdivisionGrid */}
+            <BeatSubdivisionGrid
+                disabled={disabled}
+                onSelectionChange={handleSelectionChange}
+            />
 
             {/* Generate Button */}
             <div className="subdivision-settings-actions">
@@ -291,14 +253,6 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                     </div>
                 </div>
             )}
-
-            {/* Phase 6 Preview */}
-            <div className="subdivision-settings-phase6-preview">
-                <p>
-                    <Info size={12} />
-                    Per-beat subdivision editing coming in Phase 6
-                </p>
-            </div>
         </div>
     );
 }
