@@ -48,7 +48,7 @@ import type {
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
-import { useBeatDetectionStore } from '@/store/beatDetectionStore';
+import { useBeatDetectionStore, useIgnoreKeyRequirements } from '@/store/beatDetectionStore';
 import type {
     AccuracyThresholds,
     ExtendedBeatAccuracy,
@@ -244,6 +244,9 @@ export const useBeatStream = (
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
 
+    // Get key requirements setting from store (easy mode toggle)
+    const ignoreKeyRequirements = useIgnoreKeyRequirements();
+
     // ========================================
     // Interpolated Audio Time (matches BeatTimeline)
     // ========================================
@@ -325,11 +328,12 @@ export const useBeatStream = (
         // 2. beatStreamMode is 'merged'
         const useInterpolatedBeats = isInterpolated && beatStreamMode === 'merged';
 
-        // Merge options with defaults, including useInterpolatedBeats
+        // Merge options with defaults, including useInterpolatedBeats and ignoreKeyRequirements
         const streamOptions: BeatStreamOptions = {
             ...DEFAULT_BEAT_STREAM_OPTIONS,
             ...options,
             useInterpolatedBeats,
+            ignoreKeyRequirements,
         };
 
         try {
@@ -362,13 +366,14 @@ export const useBeatStream = (
                 isSubdivided,
                 beatStreamMode,
                 useInterpolatedBeats,
+                ignoreKeyRequirements,
             });
             return true;
         } catch (error) {
             logger.error('BeatDetection', 'Failed to create BeatStream', { error });
             return false;
         }
-    }, [beatMap, options, getAudioContext, beatStreamMode]);
+    }, [beatMap, options, getAudioContext, beatStreamMode, ignoreKeyRequirements]);
 
     /**
      * Subscribe to beat events.

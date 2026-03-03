@@ -312,10 +312,11 @@ Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndic
 - CSS file: [src/components/ui/KeyIndicator.css](src/components/ui/KeyIndicator.css)
 
 ### Task 5.3: Update useBeatStream Hook
-- [ ] Pass `ignoreKeyRequirements` from store to BeatStream options
-- [ ] Update `checkTap` to accept optional `pressedKey` parameter
-- [ ] Handle `wrongKey` accuracy result
-- [ ] Include key info in ExtendedButtonPressResult
+- [x] Pass `ignoreKeyRequirements` from store to BeatStream options
+- [x] Update `checkTap` to accept optional `pressedKey` parameter
+- [x] Handle `wrongKey` accuracy result
+- [x] Include key info in ExtendedButtonPressResult
+**Status:** Complete - Added `ignoreKeyRequirements` from `useIgnoreKeyRequirements()` selector to `BeatStreamOptions`. The hook already accepted `pressedKey` parameter, The `checkTap` function already handled `wrongKey` accuracy and included key info in `ExtendedButtonPressResult`. The stream now re-initializes when `ignoreKeyRequirements` changes via the dependency array.
 
 ---
 
