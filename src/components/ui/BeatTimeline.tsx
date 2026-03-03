@@ -21,7 +21,7 @@
  */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import './BeatTimeline.css';
-import type { Beat, BeatMap, ExtendedBeatEvent, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
+import type { Beat, BeatMap, ExtendedBeatEvent, ExtendedBeatAccuracy, InterpolationVisualizationData, SubdividedBeatMap, SubdivisionType } from '@/types';
 
 interface BeatTimelineProps {
   /** The generated beat map */
@@ -33,7 +33,7 @@ interface BeatTimelineProps {
   /** Timestamp of the last tap (for tap visual feedback) */
   lastTapTime?: number;
   /** The accuracy rating of the last tap (for color-coded feedback) */
-  lastTapAccuracy?: 'perfect' | 'great' | 'good' | 'ok' | 'miss' | null;
+  lastTapAccuracy?: ExtendedBeatAccuracy | null;
   /** Callback when user clicks on timeline to seek (optional) */
   onSeek?: (time: number) => void;
   /** Anticipation window in seconds for future beats (default: 2.0) */

@@ -242,9 +242,10 @@ export interface XPFormulaPreset {
  * Extended accuracy levels for button press detection.
  *
  * Extends the engine's BeatAccuracy with an 'ok' level for a more forgiving
- * difficulty curve. The engine only supports 'perfect' | 'great' | 'good' | 'miss'.
+ * difficulty curve, and 'wrongKey' for rhythm game chart mode where specific
+ * keys must be pressed. The engine only supports 'perfect' | 'great' | 'good' | 'miss'.
  */
-export type ExtendedBeatAccuracy = 'perfect' | 'great' | 'good' | 'ok' | 'miss';
+export type ExtendedBeatAccuracy = 'perfect' | 'great' | 'good' | 'ok' | 'miss' | 'wrongKey';
 
 /**
  * Extended button press result that includes 'ok' accuracy level and beat source.
