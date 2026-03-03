@@ -16,7 +16,12 @@ import { X, Settings, RotateCcw } from 'lucide-react';
 import './DifficultySettingsPanel.css';
 import { DifficultySelector } from './DifficultySelector';
 import { CustomThresholdEditor } from './CustomThresholdEditor';
-import { useBeatDetectionStore, useDifficultySettings, useAccuracyThresholds } from '../../store/beatDetectionStore';
+import {
+  useBeatDetectionStore,
+  useDifficultySettings,
+  useAccuracyThresholds,
+  useIgnoreKeyRequirements,
+} from '../../store/beatDetectionStore';
 import type { AccuracyThresholds, DifficultyPreset } from '../../types';
 
 export interface DifficultySettingsPanelProps {
@@ -60,9 +65,11 @@ export function DifficultySettingsPanel({
   // Store state and actions
   const difficultySettings = useDifficultySettings();
   const currentThresholds = useAccuracyThresholds();
+  const ignoreKeyRequirements = useIgnoreKeyRequirements();
   const setDifficultyPreset = useBeatDetectionStore((state) => state.actions.setDifficultyPreset);
   const setCustomThreshold = useBeatDetectionStore((state) => state.actions.setCustomThreshold);
   const resetDifficultySettings = useBeatDetectionStore((state) => state.actions.resetDifficultySettings);
+  const setIgnoreKeyRequirements = useBeatDetectionStore((state) => state.actions.setIgnoreKeyRequirements);
 
   // Ref for panel content (for focus management)
   const panelRef = useRef<HTMLDivElement>(null);
@@ -88,6 +95,13 @@ export function DifficultySettingsPanel({
   const handleReset = useCallback(() => {
     resetDifficultySettings();
   }, [resetDifficultySettings]);
+
+  /**
+   * Handle ignore key requirements toggle
+   */
+  const handleIgnoreKeyRequirementsToggle = useCallback(() => {
+    setIgnoreKeyRequirements(!ignoreKeyRequirements);
+  }, [setIgnoreKeyRequirements, ignoreKeyRequirements]);
 
   /**
    * Handle keyboard events for accessibility
@@ -229,6 +243,29 @@ export function DifficultySettingsPanel({
                   title={`OK: ±${toMilliseconds(currentThresholds.ok)}ms`}
                 />
               </div>
+            </div>
+          </section>
+
+          {/* Key Requirements Section */}
+          <section className="difficulty-panel__section">
+            <h3 className="difficulty-panel__section-title">Key Requirements</h3>
+            <div className="difficulty-panel__toggle-row">
+              <div className="difficulty-panel__toggle-info">
+                <div className="difficulty-panel__toggle-label">Ignore Key Requirements</div>
+                <div className="difficulty-panel__toggle-description">
+                  Easy mode - timing only, no key matching required
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleIgnoreKeyRequirementsToggle}
+                className={`difficulty-panel__toggle ${ignoreKeyRequirements ? 'difficulty-panel__toggle--active' : ''}`}
+                role="switch"
+                aria-checked={ignoreKeyRequirements}
+                aria-label="Ignore key requirements"
+              >
+                <span className="difficulty-panel__toggle-slider" />
+              </button>
             </div>
           </section>
 
