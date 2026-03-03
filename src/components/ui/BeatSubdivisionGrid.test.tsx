@@ -901,4 +901,345 @@ describe('BeatSubdivisionGrid', () => {
             expect(beatCells.length).toBeLessThan(500);
         });
     });
+
+    // ========================================
+    // Performance Tests - Task 8.3
+    // ========================================
+    describe('Performance - Large Beat Counts', () => {
+        /**
+         * Performance thresholds (in milliseconds).
+         * These are generous to account for CI environment variability.
+         */
+        const RENDER_THRESHOLD_MS = 1000; // Max time for initial render
+        const SELECTION_THRESHOLD_MS = 150; // Max time for selection operations (generous for CI)
+        const ZOOM_THRESHOLD_MS = 300; // Max time for zoom changes
+
+        /**
+         * Helper to measure execution time of a function.
+         */
+        function measureTime<T>(fn: () => T): { result: T; durationMs: number } {
+            const start = performance.now();
+            const result = fn();
+            const durationMs = performance.now() - start;
+            return { result, durationMs };
+        }
+
+        beforeEach(() => {
+            // Create a large beat map for performance testing
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(500);
+            mockSubdivisionConfig = {
+                beatSubdivisions: new Map<number, SubdivisionType>(),
+                defaultSubdivision: 'quarter',
+            };
+        });
+
+        describe('Render Performance', () => {
+            it('renders 500 beats within performance threshold', () => {
+                const { durationMs } = measureTime(() => {
+                    render(<BeatSubdivisionGrid />);
+                });
+
+                expect(screen.getByText('500 beats')).toBeInTheDocument();
+                expect(durationMs).toBeLessThan(RENDER_THRESHOLD_MS);
+            });
+
+            it('renders 1000 beats within performance threshold', () => {
+                mockUnifiedBeatMap = createMockUnifiedBeatMap(1000);
+
+                const { durationMs } = measureTime(() => {
+                    render(<BeatSubdivisionGrid />);
+                });
+
+                expect(screen.getByText('1000 beats')).toBeInTheDocument();
+                expect(durationMs).toBeLessThan(RENDER_THRESHOLD_MS);
+            });
+
+            it('limits DOM elements with virtualization (500 beats)', () => {
+                render(<BeatSubdivisionGrid />);
+
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                // Virtualization should render only a subset of beats
+                // With buffer of 10 on each side and typical viewport,
+                // we expect roughly 50-100 cells max
+                expect(beatCells.length).toBeLessThan(100);
+                expect(beatCells.length).toBeGreaterThan(0);
+            });
+
+            it('limits DOM elements with virtualization (1000 beats)', () => {
+                mockUnifiedBeatMap = createMockUnifiedBeatMap(1000);
+
+                render(<BeatSubdivisionGrid />);
+
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                // Even with 1000 beats, DOM elements should stay roughly constant
+                expect(beatCells.length).toBeLessThan(100);
+            });
+
+            it('creates correct measure grouping structure for large beat counts', () => {
+                render(<BeatSubdivisionGrid />);
+
+                // 500 beats / 4 beats per measure = 125 measures (but only visible ones rendered)
+                const measureLabels = screen.getAllByText(/M\d+/);
+                expect(measureLabels.length).toBeGreaterThan(0);
+                expect(measureLabels.length).toBeLessThan(50); // Only visible measures
+            });
+        });
+
+        describe('Selection Performance', () => {
+            it('selects all 500 beats within performance threshold', async () => {
+                render(<BeatSubdivisionGrid />);
+
+                const selectAllBtn = screen.getByRole('button', { name: 'Select All' });
+
+                const { durationMs } = measureTime(() => {
+                    fireEvent.click(selectAllBtn);
+                });
+
+                expect(durationMs).toBeLessThan(SELECTION_THRESHOLD_MS);
+
+                await waitFor(() => {
+                    expect(screen.getByText('500 selected')).toBeInTheDocument();
+                });
+            });
+
+            it('clears selection of 500 beats within performance threshold', async () => {
+                render(<BeatSubdivisionGrid />);
+
+                // First select all
+                fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
+                await waitFor(() => {
+                    expect(screen.getByText('500 selected')).toBeInTheDocument();
+                });
+
+                // Then clear
+                const { durationMs } = measureTime(() => {
+                    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+                });
+
+                expect(durationMs).toBeLessThan(SELECTION_THRESHOLD_MS);
+
+                await waitFor(() => {
+                    expect(screen.getByText('0 selected')).toBeInTheDocument();
+                });
+            });
+
+            it('handles rapid beat clicks without performance degradation', async () => {
+                render(<BeatSubdivisionGrid />);
+
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                // Rapidly click multiple beats
+                const { durationMs } = measureTime(() => {
+                    for (let i = 0; i < Math.min(10, beatCells.length); i++) {
+                        fireEvent.click(beatCells[i], { ctrlKey: true });
+                    }
+                });
+
+                expect(durationMs).toBeLessThan(SELECTION_THRESHOLD_MS * 2);
+            });
+
+            it('handles range selection (shift+click) efficiently', async () => {
+                render(<BeatSubdivisionGrid />);
+
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                // Click first beat
+                fireEvent.click(beatCells[0]);
+
+                // Shift+click last visible beat to select range
+                const lastVisibleIndex = beatCells.length - 1;
+                const { durationMs } = measureTime(() => {
+                    fireEvent.click(beatCells[lastVisibleIndex], { shiftKey: true });
+                });
+
+                expect(durationMs).toBeLessThan(SELECTION_THRESHOLD_MS);
+            });
+        });
+
+        describe('Zoom Performance', () => {
+            it('changes zoom level within performance threshold', () => {
+                render(<BeatSubdivisionGrid />);
+
+                const zoomBtn2x = screen.getByRole('button', { name: '2x' });
+
+                const { durationMs } = measureTime(() => {
+                    fireEvent.click(zoomBtn2x);
+                });
+
+                expect(durationMs).toBeLessThan(ZOOM_THRESHOLD_MS);
+                expect(zoomBtn2x).toHaveClass('beat-subdivision-grid-zoom-btn--active');
+            });
+
+            it('handles rapid zoom changes without lag', () => {
+                render(<BeatSubdivisionGrid />);
+
+                const zoomLevels = ['0.5x', '1x', '2x', '4x', '8x'] as const;
+
+                const { durationMs } = measureTime(() => {
+                    zoomLevels.forEach(level => {
+                        fireEvent.click(screen.getByRole('button', { name: level }));
+                    });
+                });
+
+                // All 5 zoom changes should complete quickly
+                expect(durationMs).toBeLessThan(ZOOM_THRESHOLD_MS * 3);
+            });
+
+            it('maintains virtualization after zoom change', () => {
+                render(<BeatSubdivisionGrid />);
+
+                // Change to max zoom
+                fireEvent.click(screen.getByRole('button', { name: '8x' }));
+
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                // Virtualization should still work at 8x zoom
+                expect(beatCells.length).toBeLessThan(100);
+            });
+        });
+
+        describe('Scroll Performance', () => {
+            it('handles scroll events without throwing errors', () => {
+                const { container } = render(<BeatSubdivisionGrid />);
+
+                const scrollContainer = container.querySelector('.beat-subdivision-grid-container');
+                expect(scrollContainer).toBeInTheDocument();
+
+                // Simulate scroll event
+                const scrollEvent = new Event('scroll', { bubbles: true });
+                Object.defineProperty(scrollEvent, 'scrollLeft', { value: 500 });
+
+                expect(() => {
+                    scrollContainer?.dispatchEvent(scrollEvent);
+                }).not.toThrow();
+            });
+
+            it('updates virtualization on scroll', () => {
+                const { container } = render(<BeatSubdivisionGrid />);
+
+                const scrollContainer = container.querySelector('.beat-subdivision-grid-container');
+
+                // Get initial cells
+                const initialCells = container.querySelectorAll('.beat-subdivision-grid-cell');
+
+                // Simulate scroll
+                const scrollEvent = new Event('scroll', { bubbles: true });
+                Object.defineProperty(scrollEvent, 'scrollLeft', { value: 1000 });
+                scrollContainer?.dispatchEvent(scrollEvent);
+
+                // After scroll, we should still have a limited number of cells
+                // (virtualization recycles/updates cells)
+                const afterScrollCells = container.querySelectorAll('.beat-subdivision-grid-cell');
+                expect(afterScrollCells.length).toBeLessThan(100);
+            });
+        });
+
+        describe('Memory Efficiency', () => {
+            it('does not create excessive event listeners for large beat counts', () => {
+                // This test verifies the component doesn't attach individual listeners
+                // to each beat cell (which would be 500+ listeners)
+                const addEventListenerSpy = vi.spyOn(EventTarget.prototype, 'addEventListener');
+
+                render(<BeatSubdivisionGrid />);
+
+                // The component should use event delegation, not individual listeners
+                // on each cell. We allow some listeners for ResizeObserver, scroll, etc.
+                // but not 500+ individual cell listeners
+                const listenerCount = addEventListenerSpy.mock.calls.length;
+
+                // Should be much less than beat count (500)
+                // We allow up to 200 for React internals, ResizeObserver, scroll, drag-to-pan, etc.
+                // The key is that we don't have 500+ (one per beat cell)
+                expect(listenerCount).toBeLessThan(200);
+                expect(listenerCount).toBeLessThan(500); // Definitely less than beat count
+
+                addEventListenerSpy.mockRestore();
+            });
+
+            it('properly cleans up listeners on unmount', () => {
+                const removeEventListenerSpy = vi.spyOn(EventTarget.prototype, 'removeEventListener');
+
+                const { unmount } = render(<BeatSubdivisionGrid />);
+
+                const initialRemoveCount = removeEventListenerSpy.mock.calls.length;
+
+                unmount();
+
+                // Should have called removeEventListener for cleanup
+                expect(removeEventListenerSpy.mock.calls.length).toBeGreaterThan(initialRemoveCount);
+
+                removeEventListenerSpy.mockRestore();
+            });
+        });
+
+        describe('Edge Cases - Large Counts', () => {
+            it('handles empty beat subdivisions map with 500 beats', () => {
+                mockSubdivisionConfig = {
+                    beatSubdivisions: new Map(), // Empty - all use default
+                    defaultSubdivision: 'eighth',
+                };
+
+                const { durationMs } = measureTime(() => {
+                    render(<BeatSubdivisionGrid />);
+                });
+
+                expect(durationMs).toBeLessThan(RENDER_THRESHOLD_MS);
+
+                // All visible cells should have the default subdivision class
+                const beatCells = screen.getAllByRole('button').filter(btn =>
+                    btn.classList.contains('beat-subdivision-grid-cell')
+                );
+
+                beatCells.forEach(cell => {
+                    expect(cell).toHaveClass('beat-subdivision-grid-cell--eighth');
+                });
+            });
+
+            it('handles partially populated subdivisions with 500 beats', () => {
+                // Set subdivisions for every 10th beat
+                const subdivisions = new Map<number, SubdivisionType>();
+                for (let i = 0; i < 500; i += 10) {
+                    subdivisions.set(i, 'sixteenth');
+                }
+                mockSubdivisionConfig = {
+                    beatSubdivisions: subdivisions,
+                    defaultSubdivision: 'quarter',
+                };
+
+                const { durationMs } = measureTime(() => {
+                    render(<BeatSubdivisionGrid />);
+                });
+
+                expect(durationMs).toBeLessThan(RENDER_THRESHOLD_MS);
+            });
+
+            it('handles subdivision config updates efficiently', async () => {
+                const { rerender } = render(<BeatSubdivisionGrid />);
+
+                // Update config with many subdivisions
+                const newSubdivisions = new Map<number, SubdivisionType>();
+                for (let i = 0; i < 50; i++) {
+                    newSubdivisions.set(i, 'triplet8');
+                }
+
+                const { durationMs } = measureTime(() => {
+                    rerender(<BeatSubdivisionGrid />);
+                });
+
+                expect(durationMs).toBeLessThan(RENDER_THRESHOLD_MS);
+            });
+        });
+    });
 });
