@@ -521,6 +521,31 @@ export {
 // Beat Subdivision Types
 // ============================================================
 
+/**
+ * Selection state for beat subdivision UI.
+ *
+ * Used by BeatSubdivisionGrid to track which beats are selected
+ * for applying subdivision changes. Supports single selection,
+ * multi-selection, and range selection.
+ *
+ * @example
+ * ```typescript
+ * const selection: BeatSubdivisionSelection = {
+ *   selectedBeats: new Set([0, 1, 2, 3]),
+ *   rangeStart: 0,
+ *   rangeEnd: 3,
+ * };
+ * ```
+ */
+export interface BeatSubdivisionSelection {
+    /** Set of currently selected beat indices */
+    selectedBeats: Set<number>;
+    /** Start index of current range selection (null if no active range) */
+    rangeStart: number | null;
+    /** End index of current range selection (null if no active range) */
+    rangeEnd: number | null;
+}
+
 // Re-export beat subdivision constants and validation functions
 export {
     DEFAULT_SUBDIVISION_CONFIG,

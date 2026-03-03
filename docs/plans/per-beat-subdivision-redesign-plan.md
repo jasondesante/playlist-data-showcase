@@ -94,7 +94,7 @@ This plan covers:
 
 ### 2.2 Add Helper Types
 
-- [ ] Add `BeatSubdivisionSelection` type for UI state
+- [x] Add `BeatSubdivisionSelection` type for UI state
   ```typescript
   interface BeatSubdivisionSelection {
     selectedBeats: Set<number>;  // Beat indices
