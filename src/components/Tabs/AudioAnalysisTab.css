@@ -1707,6 +1707,21 @@
 }
 
 /* ============================================
+   SUBDIVISION TIMELINE CARD - Full-width section
+   ============================================ */
+
+.audio-analysis-subdivision-timeline-card {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.8), hsl(var(--surface-1) / 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--primary) / 0.15);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 12px 40px hsl(0 0% 0% / 0.25);
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS - Subdivision Section
    ============================================ */
 

@@ -96,6 +96,17 @@
   text-align: center;
 }
 
+/* Fit to View button - slightly distinct from zoom buttons */
+.subdivision-timeline-editor-fit-btn {
+  margin-left: 0.25rem;
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.subdivision-timeline-editor-fit-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.1));
+  border-color: hsl(var(--primary));
+}
+
 /* ============================================
    TIMELINE TRACK
    ============================================ */
@@ -119,7 +130,22 @@
   border-radius: 0.375rem;
   overflow-x: auto;
   overflow-y: hidden;
-  cursor: crosshair;
+  cursor: grab;
+  user-select: none;
+}
+
+/* Panning state - cursor and visual feedback */
+.subdivision-timeline-editor-track--panning {
+  cursor: grabbing;
+}
+
+.subdivision-timeline-editor-track--panning * {
+  cursor: grabbing !important;
+  pointer-events: none; /* Prevent interaction with children during pan */
+}
+
+.subdivision-timeline-editor-track:active:not(.subdivision-timeline-editor-track--panning) {
+  cursor: grabbing;
 }
 
 .subdivision-timeline-editor-track::-webkit-scrollbar {

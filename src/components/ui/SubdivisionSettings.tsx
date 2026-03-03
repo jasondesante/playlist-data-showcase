@@ -33,7 +33,6 @@
 import { useState } from 'react';
 import { Info, Plus, Trash2, RefreshCw, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { Tooltip } from './Tooltip';
-import { SubdivisionTimelineEditor } from './SubdivisionTimelineEditor';
 import './SubdivisionSettings.css';
 import {
     useBeatDetectionStore,
@@ -115,7 +114,7 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
         label: 'Dotted Q',
         shortLabel: '1.5x',
         description: 'Dotted quarter (every 1.5 quarters)',
-        density: 2/3,
+        density: 2 / 3,
     },
     {
         id: 'dotted8',
@@ -136,6 +135,17 @@ interface SubdivisionSettingsProps {
      * @default false
      */
     disabled?: boolean;
+    /**
+     * Whether the timeline editor is currently visible.
+     * This state is managed by the parent component.
+     * @default false
+     */
+    showTimeline?: boolean;
+    /**
+     * Callback when the timeline editor visibility should be toggled.
+     * @param show - Whether to show the timeline editor
+     */
+    onToggleTimeline?: (show: boolean) => void;
 }
 
 /**
@@ -151,7 +161,7 @@ interface SubdivisionSettingsProps {
  * @param props.disabled - Whether controls should be disabled (default: false)
  * @returns The rendered settings panel
  */
-export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsProps) {
+export function SubdivisionSettings({ disabled = false, showTimeline = false, onToggleTimeline }: SubdivisionSettingsProps) {
     const subdivisionConfig = useSubdivisionConfig();
     const unifiedBeatMap = useUnifiedBeatMap();
     const subdividedBeatMap = useSubdividedBeatMap();
@@ -162,8 +172,7 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
     const updateSubdivisionSegment = useBeatDetectionStore((state) => state.actions.updateSubdivisionSegment);
     const generateSubdividedBeatMap = useBeatDetectionStore((state) => state.actions.generateSubdividedBeatMap);
 
-    // Task 4.6: Timeline editor state
-    const [showTimeline, setShowTimeline] = useState(false);
+    // Task 4.6: Timeline editor state (selectedSegmentIndex only, showTimeline lifted to parent)
     const [selectedSegmentIndex, setSelectedSegmentIndex] = useState<number | null>(null);
 
     // Task 5.1: Generation loading state
@@ -446,14 +455,14 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
             )}
 
             {/* ============================================================
-             * TIMELINE EDITOR (Task 4.6: Integrate with SubdivisionSettings)
+             * TIMELINE EDITOR TOGGLE (Timeline editor is rendered in parent for full-width)
              * ============================================================ */}
             {hasUnifiedBeatMap && (
                 <div className="subdivision-settings-timeline-section">
                     <button
                         type="button"
                         className={`subdivision-settings-timeline-toggle ${showTimeline || hasMultipleSegments ? 'subdivision-settings-timeline-toggle--active' : ''}`}
-                        onClick={() => setShowTimeline(!showTimeline)}
+                        onClick={() => onToggleTimeline?.(!showTimeline)}
                         aria-expanded={showTimeline || hasMultipleSegments}
                         aria-controls="subdivision-timeline-editor"
                     >
@@ -467,15 +476,6 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                             <ChevronDown className="subdivision-settings-timeline-toggle-chevron" />
                         )}
                     </button>
-
-                    {(showTimeline || hasMultipleSegments) && (
-                        <div
-                            id="subdivision-timeline-editor"
-                            className="subdivision-settings-timeline-wrapper"
-                        >
-                            <SubdivisionTimelineEditor disabled={disabled} />
-                        </div>
-                    )}
                 </div>
             )}
 

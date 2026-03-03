@@ -31,7 +31,7 @@
  * @see useUnifiedBeatMap - Store hook for beat positions
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { ZoomIn, ZoomOut, Plus, MoveHorizontal } from 'lucide-react';
+import { ZoomIn, ZoomOut, Plus, MoveHorizontal, Maximize2 } from 'lucide-react';
 import './SubdivisionTimelineEditor.css';
 import {
     useBeatDetectionStore,
@@ -195,6 +195,11 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     const [dragStartX, setDragStartX] = useState(0);
     const [dragStartBeat, setDragStartBeat] = useState(0);
 
+    // Panning state (click-drag to scroll)
+    const [isPanning, setIsPanning] = useState(false);
+    const panStartXRef = useRef<number>(0);
+    const panStartScrollRef = useRef<number>(0);
+
     // Adding segment state
     const [showTypePicker, setShowTypePicker] = useState(false);
     const [pendingSegmentBeat, setPendingSegmentBeat] = useState(0);
@@ -267,6 +272,20 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
+     * Handle "Fit to View" button click.
+     * Calculates the zoom level needed to fit the entire timeline in the container.
+     */
+    const handleFitToView = useCallback(() => {
+        if (!timelineRef.current || totalBeats === 0) return;
+
+        const containerWidth = timelineRef.current.clientWidth;
+        // Calculate zoom needed to fit all beats in the container
+        const newZoom = containerWidth / (totalBeats * basePixelsPerBeat);
+        // Clamp to valid range (allow going below 0.5x for very long tracks)
+        setZoom(Math.max(0.1, Math.min(newZoom, 8)));
+    }, [totalBeats]);
+
+    /**
      * Check if a beat position falls within any existing segment's range.
      *
      * Used to validate that new segments don't overlap existing ones.
@@ -299,8 +318,8 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
      *
      * @param e - The mouse click event
      */
-    const handleTimelineClick = (e: React.MouseEvent) => {
-        if (disabled || draggingSegment !== null) return;
+    const handleTimelineDoubleClick = (e: React.MouseEvent) => {
+        if (disabled || draggingSegment !== null || isPanning) return;
 
         // Only handle clicks on the timeline track, not on segments or handles
         if ((e.target as HTMLElement).closest('.subdivision-timeline-editor-segment') ||
@@ -318,6 +337,70 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
             setShowTypePicker(true);
         }
     };
+
+    /**
+     * Handle mouse down on track to start panning.
+     *
+     * Initiates a pan operation to scroll the timeline by dragging.
+     * Only starts pan if not clicking on handles or segments.
+     *
+     * @param e - The mouse down event
+     */
+    const handleTrackMouseDown = useCallback((e: React.MouseEvent) => {
+        if (disabled) return;
+
+        // Don't start pan if clicking on handles or segments
+        if ((e.target as HTMLElement).closest('.subdivision-timeline-editor-handle') ||
+            (e.target as HTMLElement).closest('.subdivision-timeline-editor-segment')) {
+            return;
+        }
+
+        if (!timelineRef.current) return;
+        e.preventDefault();
+        setIsPanning(true);
+        panStartXRef.current = e.clientX;
+        panStartScrollRef.current = timelineRef.current.scrollLeft;
+    }, [disabled]);
+
+    /**
+     * Handle mouse move and mouse up during panning.
+     *
+     * Uses window event listeners for smooth dragging outside the component.
+     */
+    useEffect(() => {
+        if (!isPanning) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!timelineRef.current) return;
+
+            const deltaX = e.clientX - panStartXRef.current;
+            const newScrollLeft = panStartScrollRef.current - deltaX;
+            timelineRef.current.scrollLeft = newScrollLeft;
+
+            // Also sync rulers
+            if (timeRulerRef.current) {
+                timeRulerRef.current.scrollLeft = newScrollLeft;
+            }
+            if (beatRulerRef.current) {
+                beatRulerRef.current.scrollLeft = newScrollLeft;
+            }
+
+            // Update scroll position state for visible markers calculation
+            setScrollPosition(newScrollLeft);
+        };
+
+        const handleMouseUp = () => {
+            setIsPanning(false);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isPanning]);
 
     /**
      * Handle adding a segment with the selected subdivision type.
@@ -673,6 +756,16 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
                     >
                         <ZoomIn className="subdivision-timeline-editor-zoom-icon" />
                     </button>
+                    <button
+                        type="button"
+                        className="subdivision-timeline-editor-zoom-btn subdivision-timeline-editor-fit-btn"
+                        onClick={handleFitToView}
+                        disabled={disabled || totalBeats === 0}
+                        aria-label="Fit to view"
+                        title="Fit entire timeline in view"
+                    >
+                        <Maximize2 className="subdivision-timeline-editor-zoom-icon" />
+                    </button>
                 </div>
             </div>
 
@@ -714,9 +807,10 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
                  * ============================================================ */}
                 <div
                     ref={timelineRef}
-                    className="subdivision-timeline-editor-track"
+                    className={`subdivision-timeline-editor-track ${isPanning ? 'subdivision-timeline-editor-track--panning' : ''}`}
                     onScroll={handleScroll}
-                    onClick={handleTimelineClick}
+                    onMouseDown={handleTrackMouseDown}
+                    onDoubleClick={handleTimelineDoubleClick}
                 >
                     {/* Timeline inner container with proper width */}
                     <div

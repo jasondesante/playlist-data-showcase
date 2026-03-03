@@ -15,6 +15,7 @@ import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { SubdivisionSettings } from '../ui/SubdivisionSettings';
+import { SubdivisionTimelineEditor } from '../ui/SubdivisionTimelineEditor';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
@@ -72,6 +73,9 @@ export function AudioAnalysisTab() {
     beatMap,
     error: beatError,
   } = useBeatDetection();
+
+  // Subdivision timeline editor visibility state (lifted from SubdivisionSettings for full-width rendering)
+  const [showSubdivisionTimeline, setShowSubdivisionTimeline] = useState(false);
 
   // Beat detection store for practice mode
   const startPracticeMode = useBeatDetectionStore((state) => state.actions.startPracticeMode);
@@ -609,74 +613,74 @@ export function AudioAnalysisTab() {
 
             {/* 2. Integrated EQ Section - Only shown for Normal/Timeline modes */}
             {analysisMode !== 'beat' && (
-            <div className="audio-analysis-eq-integration">
-              <div className="audio-analysis-eq-header-row">
-                <div className="audio-analysis-eq-title-main">EQ</div>
-                <div className="audio-analysis-eq-subtitle-main">Adjust for analysis</div>
+              <div className="audio-analysis-eq-integration">
+                <div className="audio-analysis-eq-header-row">
+                  <div className="audio-analysis-eq-title-main">EQ</div>
+                  <div className="audio-analysis-eq-subtitle-main">Adjust for analysis</div>
+                </div>
+
+                <div className="audio-analysis-eq-grid">
+                  {/* Bass Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={bassSliderPos}
+                        onChange={(e) => handleBassChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Bass</span>
+                      <span className="audio-analysis-eq-multiplier">{bassBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+
+                  {/* Mid Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={midSliderPos}
+                        onChange={(e) => handleMidChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Mid</span>
+                      <span className="audio-analysis-eq-multiplier">{midBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+
+                  {/* Treble Slider */}
+                  <div className="audio-analysis-eq-band-compact">
+                    <div className="audio-analysis-eq-slider-vertical">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={trebleSliderPos}
+                        onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
+                        className="audio-analysis-eq-slider"
+                        style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
+                      />
+                    </div>
+                    <div className="audio-analysis-eq-metadata">
+                      <span className="audio-analysis-eq-name">Treble</span>
+                      <span className="audio-analysis-eq-multiplier">{trebleBoost.toFixed(1)}x</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <div className="audio-analysis-eq-grid">
-                {/* Bass Slider */}
-                <div className="audio-analysis-eq-band-compact">
-                  <div className="audio-analysis-eq-slider-vertical">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="1"
-                      value={bassSliderPos}
-                      onChange={(e) => handleBassChange(parseFloat(e.target.value))}
-                      className="audio-analysis-eq-slider"
-                      style={{ '--slider-value': `${bassSliderPos}%` } as React.CSSProperties}
-                    />
-                  </div>
-                  <div className="audio-analysis-eq-metadata">
-                    <span className="audio-analysis-eq-name">Bass</span>
-                    <span className="audio-analysis-eq-multiplier">{bassBoost.toFixed(1)}x</span>
-                  </div>
-                </div>
-
-                {/* Mid Slider */}
-                <div className="audio-analysis-eq-band-compact">
-                  <div className="audio-analysis-eq-slider-vertical">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="1"
-                      value={midSliderPos}
-                      onChange={(e) => handleMidChange(parseFloat(e.target.value))}
-                      className="audio-analysis-eq-slider"
-                      style={{ '--slider-value': `${midSliderPos}%` } as React.CSSProperties}
-                    />
-                  </div>
-                  <div className="audio-analysis-eq-metadata">
-                    <span className="audio-analysis-eq-name">Mid</span>
-                    <span className="audio-analysis-eq-multiplier">{midBoost.toFixed(1)}x</span>
-                  </div>
-                </div>
-
-                {/* Treble Slider */}
-                <div className="audio-analysis-eq-band-compact">
-                  <div className="audio-analysis-eq-slider-vertical">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="1"
-                      value={trebleSliderPos}
-                      onChange={(e) => handleTrebleChange(parseFloat(e.target.value))}
-                      className="audio-analysis-eq-slider"
-                      style={{ '--slider-value': `${trebleSliderPos}%` } as React.CSSProperties}
-                    />
-                  </div>
-                  <div className="audio-analysis-eq-metadata">
-                    <span className="audio-analysis-eq-name">Treble</span>
-                    <span className="audio-analysis-eq-multiplier">{trebleBoost.toFixed(1)}x</span>
-                  </div>
-                </div>
-              </div>
-            </div>
             )}
 
             {/* 3. Analysis Mode Selector */}
@@ -827,7 +831,11 @@ export function AudioAnalysisTab() {
                     <ChevronDown className="audio-analysis-subdivision-summary-icon" size={12} />
                   </summary>
                   <div className="audio-analysis-subdivision-content">
-                    <SubdivisionSettings disabled={isBeatGenerating} />
+                    <SubdivisionSettings
+                      disabled={isBeatGenerating}
+                      showTimeline={showSubdivisionTimeline}
+                      onToggleTimeline={setShowSubdivisionTimeline}
+                    />
                   </div>
                 </details>
               )}
@@ -907,6 +915,14 @@ export function AudioAnalysisTab() {
               )}
             </div>
           </div>
+        </Card>
+      )}
+
+
+      {/* Subdivision Timeline Editor - Full-width section for visual editing */}
+      {selectedTrack && analysisMode === 'beat' && !practiceModeActive && showSubdivisionTimeline && beatMap && !isBeatGenerating && (
+        <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card fade-in">
+          <SubdivisionTimelineEditor disabled={isBeatGenerating} />
         </Card>
       )}
 
