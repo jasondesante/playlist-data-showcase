@@ -2126,11 +2126,16 @@ The subdivision system operates on a `UnifiedBeatMap` (created from an `Interpol
 | `eighth` | 2x | Beat between each quarter | 0, 0.5, 1, 1.5, 2, 2.5... |
 | `sixteenth` | 4x | Maximum density (hard limit) | 0, 0.25, 0.5, 0.75, 1... |
 | `triplet8` | 3x | Eighth triplets (3 per quarter) | 0, 0.33, 0.66, 1, 1.33... |
-| `triplet4` | 1.5x | Quarter triplets (3 per half) | 0, 0.66, 1.33, 2, 2.66... |
-| `dotted4` | 0.67x | Every 1.5 quarters (phase-independent) | 0, 1.5, 3, 4.5... |
-| `dotted8` | 2x | Swing long-short pattern (2/3 + 1/3) | 0, 0.667, 1, 1.667, 2... |
+| `triplet4` | 1.5x | Quarter triplets (3 per 2 beats, 2-beat structure) | 0, 0.66, 1.33, 2, 2.66... |
+| `dotted4` | 0.67x | Dotted quarter (2/3 density, 2-beat structure with interp at 0.5) | 0, 0.5, 2, 2.5, 4, 4.5... |
+| `dotted8` | 2x | Dotted eighth (3/4 + 1/4 pattern) | 0, 0.75, 1, 1.75, 2... |
+| `swing` | 2x | Swing feel (2/3 + 1/3 pattern) | 0, 0.667, 1, 1.667, 2... |
+| `offbeat8` | 1x | Offbeat eighth (8th rest + 8th note, skips downbeat) | 0.5, 1.5, 2.5, 3.5... |
+| `rest` | 0x | No beat generated (creates gaps) | N/A |
 
 **Note:** Sixteenth notes (4x) are the **maximum supported density**. Higher densities are not supported.
+
+**2-Beat Structure Types:** `triplet4` and `dotted4` are 2-beat structures that only process beats at even `beatInMeasure` positions (0, 2, 4, 6...). This allows proper triplet and dotted patterns across beat pairs.
 
 ---
 
@@ -2159,7 +2164,7 @@ console.log(`Density multiplier: ${subdivided.subdivisionMetadata.averageDensity
 
 #### Custom Subdivision Configuration
 
-Use segment-based configuration to change subdivisions over time:
+Use per-beat configuration for fine-grained control over rhythm patterns:
 
 ```typescript
 import { AudioAnalyzer, type SubdivisionConfig } from 'playlist-data-engine';
@@ -2167,23 +2172,25 @@ import { AudioAnalyzer, type SubdivisionConfig } from 'playlist-data-engine';
 const analyzer = new AudioAnalyzer();
 const interpolated = await analyzer.generateBeatMapWithInterpolation('song.mp3', 'track-001');
 
-// Create dynamic rhythm pattern
+// Create a rhythm phrase with varying subdivisions per beat
 const subdivisionConfig: SubdivisionConfig = {
-  segments: [
-    { startBeat: 0, subdivision: 'quarter' },      // Intro: quarter notes
-    { startBeat: 32, subdivision: 'eighth' },      // Verse: eighth notes
-    { startBeat: 96, subdivision: 'half' },        // Bridge: half notes
-    { startBeat: 128, subdivision: 'triplet8' },   // Solo: triplets
-  ],
+  beatSubdivisions: new Map([
+    // Intro (beats 0-31): quarter notes
+    ...Array.from({ length: 32 }, (_, i) => [i, 'quarter'] as const),
+
+    // Verse (beats 32-95): eighth notes
+    ...Array.from({ length: 64 }, (_, i) => [32 + i, 'eighth'] as const),
+
+    // Bridge (beats 96-127): half notes
+    ...Array.from({ length: 32 }, (_, i) => [96 + i, 'half'] as const),
+
+    // Solo (beats 128+): triplets
+    ...Array.from({ length: 32 }, (_, i) => [128 + i, 'triplet8'] as const),
+  ]),
+  defaultSubdivision: 'quarter',
 };
 
 const subdivided = analyzer.subdivideBeatMap(interpolated, subdivisionConfig);
-
-// Result:
-// - Beats 0-31: Quarter notes (standard grid)
-// - Beats 32-95: Eighth notes (double time)
-// - Beats 96-127: Half notes (half time)
-// - Beats 128+: Triplets (swing feel)
 ```
 
 ---
@@ -2218,11 +2225,15 @@ const interpolatedMap = interpolator.interpolate(beatMap);
 // Step 3: Unify into quarter-note grid
 const unifiedMap = unifyBeatMap(interpolatedMap);
 
-// Step 4: Subdivide with rhythm pattern
+// Step 4: Create per-beat subdivision configuration
 const config: SubdivisionConfig = {
-  segments: [
-    { startBeat: 0, subdivision: 'eighth' },
-  ],
+  beatSubdivisions: new Map([
+    [0, 'eighth'],   // Beat 0 gets eighth notes
+    [1, 'eighth'],   // Beat 1 gets eighth notes
+    [2, 'quarter'],  // Beat 2 gets quarter notes
+    [3, 'quarter'],  // Beat 3 gets quarter notes
+  ]),
+  defaultSubdivision: 'quarter',  // Default for unassigned beats
 };
 
 const subdividedMap = subdivider.subdivide(unifiedMap, config);
@@ -2236,13 +2247,16 @@ console.log(`Subdivisions used: ${subdividedMap.subdivisionMetadata.subdivisions
 
 ### Subdivision Types Explained
 
+Each subdivision type can be assigned to individual beats. Here are simple examples using the per-beat format with a single beat:
+
 #### Quarter Notes (No Change)
 
 Default subdivision - beats pass through unchanged:
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'quarter' }],
+  beatSubdivisions: new Map([[0, 'quarter']]),
+  defaultSubdivision: 'quarter',
 };
 // Result: 1x density (unchanged)
 ```
@@ -2253,7 +2267,8 @@ Keeps beats on positions 0 and 2 (downbeats and beat 3s). Measure numbers are pr
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'half' }],
+  beatSubdivisions: new Map([[0, 'half']]),
+  defaultSubdivision: 'half',
 };
 // Original: 0, 1, 2, 3, 4, 5, 6, 7...
 // Result:   0,    2,    4,    6...   (downbeats and beat 3s)
@@ -2265,7 +2280,8 @@ Inserts a new beat midway between each quarter note. Intensity/confidence is int
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'eighth' }],
+  beatSubdivisions: new Map([[0, 'eighth']]),
+  defaultSubdivision: 'eighth',
 };
 // Original: 0, 1, 2, 3...
 // Result:   0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5...
@@ -2277,7 +2293,8 @@ Inserts 3 beats evenly spaced between each quarter note. This is the **hard maxi
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'sixteenth' }],
+  beatSubdivisions: new Map([[0, 'sixteenth']]),
+  defaultSubdivision: 'sixteenth',
 };
 // Original: 0, 1, 2, 3...
 // Result:   0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2...
@@ -2289,7 +2306,8 @@ Three beats per quarter note, creating a triplet feel.
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'triplet8' }],
+  beatSubdivisions: new Map([[0, 'triplet8']]),
+  defaultSubdivision: 'triplet8',
 };
 // Original: 0, 1, 2, 3...
 // Result:   0, 0.33, 0.66, 1, 1.33, 1.66, 2, 2.33, 2.66...
@@ -2301,7 +2319,8 @@ Three beats per half note - same density as eighth notes but different feel.
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'triplet4' }],
+  beatSubdivisions: new Map([[0, 'triplet4']]),
+  defaultSubdivision: 'triplet4',
 };
 // Original: 0, 1, 2, 3...
 // Result:   0, 0.66, 1, 1.66, 2, 2.66, 3, 3.66...
@@ -2313,7 +2332,8 @@ Phase-independent pattern that creates 3-beat groups in 4/4 time (cross-rhythm).
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'dotted4' }],
+  beatSubdivisions: new Map([[0, 'dotted4']]),
+  defaultSubdivision: 'dotted4',
 };
 // Pattern: 0, 1.5, 3, 4.5, 6... (every 1.5 quarter notes)
 ```
@@ -2324,32 +2344,30 @@ Classic swing long-short pattern: long note is 2/3 of a quarter, short note is 1
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [{ startBeat: 0, subdivision: 'dotted8' }],
+  beatSubdivisions: new Map([[0, 'dotted8']]),
+  defaultSubdivision: 'dotted8',
 };
 // Pattern: 0, 0.667, 1, 1.667, 2, 2.667...
 //          ├───long───┤short├───long───┤short┤
 ```
 
----
+#### Rest (0x Density)
 
-### Segment-Based Configuration
-
-Subdivision can change at any beat index using segments. Segments are **contiguous** - each segment covers all beats from its `startBeat` until the next segment's `startBeat` (or end of track).
+No beats generated - used for creating gaps in rhythm patterns. Perfect for syncopated rhythms or dramatic pauses.
 
 ```typescript
 const config: SubdivisionConfig = {
-  segments: [
-    { startBeat: 0, subdivision: 'quarter' },     // Beats 0-31
-    { startBeat: 32, subdivision: 'eighth' },     // Beats 32-63
-    { startBeat: 64, subdivision: 'sixteenth' },  // Beats 64+
-  ],
+  beatSubdivisions: new Map([
+    [0, 'quarter'],   // Beat 0: quarter note
+    [1, 'rest'],      // Beat 1: no beat (rest)
+    [2, 'eighth'],    // Beat 2: eighth notes
+    [3, 'rest'],      // Beat 3: no beat (rest)
+  ]),
+  defaultSubdivision: 'quarter',
 };
+// Result: Beats only at positions 0 and 2 (with eighths on 2)
+// Creates a "hit, rest, hit-hit, rest" pattern
 ```
-
-**Segment Transitions:**
-- Changes happen **immediately** at the specified beat index
-- No waiting for measure boundaries
-- Pattern continues from that point with new subdivision
 
 ---
 
@@ -2402,7 +2420,8 @@ const interpolated = analyzer.interpolateBeatMap(beatMap, {
 
 // Subdivision uses correct intervals for each tempo section
 const subdivided = analyzer.subdivideBeatMap(interpolated, {
-  segments: [{ startBeat: 0, subdivision: 'eighth' }],
+  beatSubdivisions: new Map(),
+  defaultSubdivision: 'eighth',
 });
 
 // Check if multiple tempos were detected
@@ -2457,31 +2476,44 @@ type SubdivisionType =
   | 'half'       // 0.5x density (beats 1 and 3)
   | 'eighth'     // 2x density
   | 'sixteenth'  // 4x density (MAXIMUM)
-  | 'triplet8'   // 3 beats per quarter (eighth triplets)
-  | 'triplet4'   // 3 beats per half note (quarter triplets)
-  | 'dotted4'    // Every 1.5 quarters (phase-independent)
-  | 'dotted8';   // Swing pattern (2/3 + 1/3 quarters)
-```
-
-#### SubdivisionSegment
-
-```typescript
-interface SubdivisionSegment {
-  /** Beat index where this subdivision starts */
-  startBeat: number;
-
-  /** Type of subdivision to apply */
-  subdivision: SubdivisionType;
-}
+  | 'triplet8'   // 3x density - 3 beats per quarter (eighth triplets)
+  | 'triplet4'   // 1.5x density - 3 beats per 2 quarters (quarter triplets, 2-beat structure)
+  | 'dotted4'    // 0.67x density - 2-beat structure with original at 0 and interpolated at 0.5
+  | 'dotted8'    // 2x density - Dotted eighth pattern (3/4 + 1/4)
+  | 'swing'      // 2x density - Swing feel (2/3 + 1/3 pattern)
+  | 'offbeat8'   // 1x density - Offbeat eighth (8th rest + 8th note, skips downbeat)
+  | 'rest';      // No beat generated (creates gaps)
 ```
 
 #### SubdivisionConfig
 
+Configuration for per-beat subdivision. Each beat can have its own subdivision type for fine-grained rhythmic control.
+
 ```typescript
 interface SubdivisionConfig {
-  /** Array of subdivision segments ordered by startBeat */
-  segments: SubdivisionSegment[];
+  /**
+   * Subdivision type for each beat index (sparse map).
+   * Beats not in this map use the defaultSubdivision.
+   */
+  beatSubdivisions: Map<number, SubdivisionType>;
+
+  /** Default subdivision for beats not explicitly assigned */
+  defaultSubdivision: SubdivisionType;
 }
+```
+
+**Example:**
+
+```typescript
+const config: SubdivisionConfig = {
+  beatSubdivisions: new Map([
+    [0, 'quarter'],   // Beat 0: quarter note
+    [1, 'eighth'],    // Beat 1: eighth notes
+    [2, 'eighth'],    // Beat 2: eighth notes
+    [3, 'quarter'],   // Beat 3: quarter note
+  ]),
+  defaultSubdivision: 'quarter',  // All other beats
+};
 ```
 
 #### SubdividedBeat
@@ -2530,8 +2562,8 @@ interface SubdivisionMetadata {
   /** Overall density multiplier (2.0 = twice as many beats) */
   averageDensityMultiplier: number;
 
-  /** Number of subdivision segments */
-  segmentCount: number;
+  /** Number of beats with explicit non-default subdivision */
+  explicitBeatCount: number;
 
   /** Subdivision types used */
   subdivisionsUsed: SubdivisionType[];
@@ -2641,7 +2673,8 @@ const interpolatedMap = interpolator.interpolate(beatMap);
 
 // Subdivide to eighth notes
 const subdividedMap = subdivideBeatMap(interpolatedMap, {
-  segments: [{ startBeat: 0, subdivision: 'eighth' }]
+  beatSubdivisions: new Map(),
+  defaultSubdivision: 'eighth',
 });
 
 // Create BeatStream from SubdividedBeatMap
@@ -2679,14 +2712,16 @@ You can switch between different subdivision configurations during runtime:
 ```typescript
 // Start with quarter notes
 const quarterMap = subdivideBeatMap(interpolatedMap, {
-  segments: [{ startBeat: 0, subdivision: 'quarter' }]
+  beatSubdivisions: new Map(),
+  defaultSubdivision: 'quarter',
 });
 const stream = new BeatStream(quarterMap, audioContext);
 stream.start();
 
 // Later, switch to eighth notes
 const eighthMap = subdivideBeatMap(interpolatedMap, {
-  segments: [{ startBeat: 0, subdivision: 'eighth' }]
+  beatSubdivisions: new Map(),
+  defaultSubdivision: 'eighth',
 });
 stream.setBeatMap(eighthMap);
 ```
@@ -3033,14 +3068,6 @@ new SubdivisionPlaybackController(
 | Interactive beat visualization | ✅ Yes |
 | Live performance tools | ✅ Yes |
 | Pre-calculated level creation | ❌ Use SubdividedBeatMap directly |
-
----
-
-### Frontend Integration
-
-For a user-friendly guide on using beat subdivision in the Playlist Data Showcase application, see:
-
-- **[Beat Subdivision User Guide](../../../features/BEAT_SUBDIVISION_USER_GUIDE.md)** - How to use pre-calculated subdivision and real-time playground in the UI
 
 ---
 

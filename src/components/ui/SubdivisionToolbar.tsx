@@ -15,7 +15,7 @@
  * - Apply to selection button with selection count badge
  * - Selection actions: Clear, Select All, Reset All
  * - Full keyboard navigation support
- * - Keyboard shortcuts (1-9 for types, Enter to apply, Escape to clear)
+ * - Keyboard shortcuts (1-9, 0, - for types, Enter to apply, Escape to clear)
  * - Compact mode for smaller displays
  * - Accessibility support with ARIA attributes
  *
@@ -164,6 +164,24 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
         density: 0,
         color: 'rest',
     },
+    {
+        id: 'swing',
+        label: 'Swing',
+        shortLabel: 'Swing',
+        shortcut: '0',
+        description: 'Swing feel (2/3 + 1/3 pattern)',
+        density: 2,
+        color: 'swing',
+    },
+    {
+        id: 'offbeat8',
+        label: 'Offbeat 8',
+        shortLabel: 'Off',
+        shortcut: '-',
+        description: 'Offbeat eighth (8th rest + 8th note)',
+        density: 1,
+        color: 'offbeat8',
+    },
 ];
 
 /**
@@ -296,11 +314,29 @@ export function SubdivisionToolbar({
                 return;
             }
 
-            // Number keys 1-9 for subdivision types
+            // Number keys 1-9 for subdivision types (positions 1-9)
             const num = parseInt(e.key, 10);
             if (num >= 1 && num <= 9) {
                 e.preventDefault();
                 const type = SUBDIVISION_TYPES[num - 1];
+                if (type) {
+                    onBrushChange(type.id);
+                }
+            }
+
+            // 0 for swing (position 10)
+            if (e.key === '0') {
+                e.preventDefault();
+                const type = SUBDIVISION_TYPES[9];
+                if (type) {
+                    onBrushChange(type.id);
+                }
+            }
+
+            // - for offbeat8 (position 11)
+            if (e.key === '-') {
+                e.preventDefault();
+                const type = SUBDIVISION_TYPES[10];
                 if (type) {
                     onBrushChange(type.id);
                 }

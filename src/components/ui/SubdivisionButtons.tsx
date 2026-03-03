@@ -6,7 +6,7 @@
  *
  * Features:
  * - Row of quick subdivision buttons
- * - Buttons: Quarter, Half, Eighth, Sixteenth, Triplet 8, Triplet 4, Dotted 4, Swing
+ * - Buttons: Quarter, Half, Eighth, Sixteenth, Triplet 8, Triplet 4, Dotted 4, Dotted 8, Swing, Offbeat 8
  * - Active state for current subdivision
  * - Disabled states when playback is inactive
  * - Touch-friendly sizing
@@ -45,7 +45,8 @@ interface QuickSubdivisionConfig {
  * Includes all subdivision types from the engine for full flexibility:
  * - Standard: quarter, half, eighth, sixteenth
  * - Triplets: triplet8 (eighth triplets), triplet4 (quarter triplets)
- * - Dotted: dotted4 (dotted quarter), dotted8 (swing pattern)
+ * - Dotted: dotted4 (dotted quarter), dotted8 (3/4 + 1/4 pattern)
+ * - Special: swing (2/3 + 1/3 pattern), offbeat8 (8th rest + 8th note)
  */
 const QUICK_SUBDIVISIONS: QuickSubdivisionConfig[] = [
     {
@@ -109,7 +110,23 @@ const QUICK_SUBDIVISIONS: QuickSubdivisionConfig[] = [
         label: 'Dotted 8',
         shortLabel: 'D8',
         shortcut: '8',
-        description: 'Dotted eighth (swing pattern)',
+        description: 'Dotted eighth (3/4 + 1/4 pattern)',
+        density: 1,
+    },
+    {
+        id: 'swing',
+        label: 'Swing',
+        shortLabel: 'Swing',
+        shortcut: '9',
+        description: 'Swing feel (2/3 + 1/3 pattern)',
+        density: 2,
+    },
+    {
+        id: 'offbeat8',
+        label: 'Offbeat 8',
+        shortLabel: 'Off',
+        shortcut: '0',
+        description: 'Offbeat eighth (8th rest + 8th note)',
         density: 1,
     },
 ];
@@ -193,11 +210,13 @@ export function SubdivisionButtons({
                     newIndex = QUICK_SUBDIVISIONS.length - 1;
                     break;
                 default:
-                    // Number keys 1-8 for quick access
-                    const num = parseInt(e.key, 10);
-                    if (num >= 1 && num <= 8) {
+                    // Number keys 1-9, 0 for quick access (1-9 = indices 0-8, 0 = index 9)
+                    if (e.key >= '1' && e.key <= '9') {
                         e.preventDefault();
-                        newIndex = num - 1;
+                        newIndex = parseInt(e.key, 10) - 1;
+                    } else if (e.key === '0') {
+                        e.preventDefault();
+                        newIndex = 9;
                     }
                     return;
             }
