@@ -589,10 +589,17 @@ Create new file: [src/components/ui/KeyLaneView.tsx](src/components/ui/KeyLaneVi
 - CSS file: [src/components/ui/KeyLaneView.css](src/components/ui/KeyLaneView.css)
 
 ### Task 10.3: Create View Mode Toggle
-- [ ] Add toggle in BeatPracticeView: TapArea / DDR Lanes / Guitar Hero Lanes
-- [ ] Persist preference to store (`keyLaneViewMode`)
-- [ ] Auto-select matching view when chart has style
-- [ ] Show empty state if viewing "wrong" style (e.g., DDR lanes for Guitar Hero chart)
+- [x] Add toggle in BeatPracticeView: TapArea / DDR Lanes / Guitar Hero Lanes
+- [x] Persist preference to store (`keyLaneViewMode`)
+- [x] Auto-select matching view when chart has style
+- [x] Show empty state if viewing "wrong" style (e.g., DDR lanes for Guitar Hero chart)
+**Status:** Complete - Added View Mode Toggle in [src/components/ui/BeatPracticeView.tsx](src/components/ui/BeatPracticeView.tsx):
+- Toggle UI with three options: Tap Area, DDR Lanes, Guitar Lanes
+- Persists preference to store via `setKeyLaneViewMode()` action
+- Shows chart style indicator when chart has key assignments
+- Conditional rendering of TapArea or KeyLaneView based on `keyLaneViewMode`
+- Warning messages for style mismatch or missing key assignments
+- CSS styling in [src/components/ui/BeatPracticeView.css](src/components/ui/BeatPracticeView.css)
 
 ### Task 10.4: Integrate KeyLaneView with Practice Mode
 - [ ] Add KeyLaneView as alternative to TapArea in BeatPracticeView

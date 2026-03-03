@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap, Gamepad2 } from 'lucide-react';
 import { BeatSubdivider } from 'playlist-data-engine';
 import './BeatPracticeView.css';
 import {
@@ -35,6 +35,9 @@ import {
     useTapStatistics,
     useSubdivisionTransitionMode,
     useUnifiedBeatMap,
+    useKeyLaneViewMode,
+    useChartStyle,
+    useHasRequiredKeys,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -46,6 +49,7 @@ import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
+import { KeyLaneView } from './KeyLaneView';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap } from '../../types';
 
@@ -207,6 +211,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Tap statistics for session summary (accuracy %, total deviation)
   const tapStats = useTapStatistics();
+
+  // KeyLane view mode state (Phase 10: Task 10.3)
+  const keyLaneViewMode = useKeyLaneViewMode();
+  const chartStyle = useChartStyle();
+  const hasRequiredKeys = useHasRequiredKeys();
+  const setKeyLaneViewMode = useBeatDetectionStore((state) => state.actions.setKeyLaneViewMode);
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
@@ -813,16 +823,85 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         </div>
       )}
 
-      {/* Tap Area - Using the dedicated TapArea component */}
-      <TapArea
-        onTap={handleTap}
-        isActive={streamIsActive}
-        lastTapResult={lastTapResult}
-        showFeedback={showFeedback}
-        feedbackDuration={500}
-        onFeedbackComplete={hideTapFeedback}
-        showTooFast={showTooFast}
-      />
+      {/* View Mode Toggle (Phase 10: Task 10.3) - Switch between TapArea and KeyLane views */}
+      {subdividedBeatMap && (
+        <div className="beat-practice-view-mode-container">
+          <div className="beat-practice-view-mode-header">
+            <Gamepad2 className="beat-practice-view-mode-icon" />
+            <span className="beat-practice-view-mode-title">Practice View</span>
+            {hasRequiredKeys && (
+              <span className="beat-practice-view-mode-chart-style">
+                {chartStyle === 'ddr' ? 'DDR Chart' : 'Guitar Hero Chart'}
+              </span>
+            )}
+          </div>
+          <div className="beat-practice-view-mode-toggles">
+            <button
+              type="button"
+              className={`beat-practice-view-toggle ${keyLaneViewMode === 'off' ? 'beat-practice-view-toggle--active' : ''}`}
+              onClick={() => setKeyLaneViewMode('off')}
+              aria-pressed={keyLaneViewMode === 'off'}
+              title="Default tap area view"
+            >
+              <span className="beat-practice-view-toggle-text">Tap Area</span>
+            </button>
+            <button
+              type="button"
+              className={`beat-practice-view-toggle ${keyLaneViewMode === 'ddr' ? 'beat-practice-view-toggle--active' : ''}`}
+              onClick={() => setKeyLaneViewMode('ddr')}
+              aria-pressed={keyLaneViewMode === 'ddr'}
+              title="DDR 4-lane view (arrow keys)"
+            >
+              <span className="beat-practice-view-toggle-text">DDR Lanes</span>
+            </button>
+            <button
+              type="button"
+              className={`beat-practice-view-toggle ${keyLaneViewMode === 'guitar-hero' ? 'beat-practice-view-toggle--active' : ''}`}
+              onClick={() => setKeyLaneViewMode('guitar-hero')}
+              aria-pressed={keyLaneViewMode === 'guitar-hero'}
+              title="Guitar Hero 5-lane view (number keys 1-5)"
+            >
+              <span className="beat-practice-view-toggle-text">Guitar Lanes</span>
+            </button>
+          </div>
+          <span className="beat-practice-view-mode-description">
+            {keyLaneViewMode === 'off'
+              ? 'Classic tap area - use spacebar or click'
+              : keyLaneViewMode === 'ddr'
+                ? 'DDR style - use arrow keys to hit notes'
+                : 'Guitar Hero style - use number keys 1-5'}
+            {!hasRequiredKeys && keyLaneViewMode !== 'off' && (
+              <span className="beat-practice-view-mode-warning"> (no key assignments - edit chart first)</span>
+            )}
+            {hasRequiredKeys && keyLaneViewMode !== 'off' && chartStyle !== keyLaneViewMode && (
+              <span className="beat-practice-view-mode-warning"> (style mismatch - chart is {chartStyle})</span>
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* Practice View - TapArea or KeyLane based on view mode */}
+      {keyLaneViewMode === 'off' ? (
+        <TapArea
+          onTap={handleTap}
+          isActive={streamIsActive}
+          lastTapResult={lastTapResult}
+          showFeedback={showFeedback}
+          feedbackDuration={500}
+          onFeedbackComplete={hideTapFeedback}
+          showTooFast={showTooFast}
+        />
+      ) : (
+        <KeyLaneView
+          beatMap={subdividedBeatMap}
+          currentTime={currentTime}
+          chartStyle={keyLaneViewMode}
+          isActive={streamIsActive}
+          isPaused={streamIsPaused}
+          lastAccuracy={lastTapResult?.accuracy ?? null}
+          lastPressedKey={lastTapResult?.pressedKey ?? null}
+        />
+      )}
 
       {/* Tap Statistics - Using dedicated TapStats component */}
       <TapStats />
