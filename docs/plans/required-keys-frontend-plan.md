@@ -152,11 +152,12 @@ The following decisions were made during planning:
 ## Phase 2: Store Updates (beatDetectionStore)
 
 ### Task 2.1: Add Chart Editor State
-- [ ] Add `chartEditorActive: boolean` state
-- [ ] Add `chartStyle: ChartStyle` state ('ddr' or 'guitar-hero')
-- [ ] Add `selectedKey: SupportedKey | null` state (currently selected key for painting)
-- [ ] Add `editorMode: ChartEditorMode` state
-- [ ] Add `keyLaneViewMode: KeyLaneViewMode` state ('off' | 'ddr' | 'guitar-hero')
+- [x] Add `chartEditorActive: boolean` state
+- [x] Add `chartStyle: ChartStyle` state ('ddr' or 'guitar-hero')
+- [x] Add `selectedKey: SupportedKey | null` state (currently selected key for painting)
+- [x] Add `editorMode: ChartEditorMode` state
+- [x] Add `keyLaneViewMode: KeyLaneViewMode` state ('off' | 'ddr' | 'guitar-hero')
+**Status:** Complete - Added all chart editor state fields to BeatDetectionState interface and initialized them in createInitialState().
 
 ### Task 2.2: Add ignoreKeyRequirements to Settings
 - [ ] Add `ignoreKeyRequirements: boolean` to difficulty settings state
@@ -164,21 +165,23 @@ The following decisions were made during planning:
 - [ ] Add `setIgnoreKeyRequirements(boolean)` action
 
 ### Task 2.3: Add Chart Editor Actions
-- [ ] Add `startChartEditor()` action - only available when subdivided beat map exists
-- [ ] Add `stopChartEditor()` action
-- [ ] Add `setChartStyle(style: ChartStyle)` action
-- [ ] Add `setSelectedKey(key: SupportedKey | null)` action
-- [ ] Add `setEditorMode(mode: ChartEditorMode)` action
-- [ ] Add `assignKeyToBeat(beatIndex: number, key: string | null)` action
-- [ ] Add `assignKeysToBeats(assignments: KeyAssignment[])` action
-- [ ] Add `clearAllKeys()` action
-- [ ] Add `setKeyLaneViewMode(mode: KeyLaneViewMode)` action
+- [x] Add `startChartEditor()` action - only available when subdivided beat map exists
+- [x] Add `stopChartEditor()` action
+- [x] Add `setChartStyle(style: ChartStyle)` action
+- [x] Add `setSelectedKey(key: SupportedKey | null)` action
+- [x] Add `setEditorMode(mode: ChartEditorMode)` action
+- [x] Add `assignKeyToBeat(beatIndex: number, key: string | null)` action
+- [x] Add `assignKeysToBeats(assignments: KeyAssignment[])` action
+- [x] Add `clearAllKeys()` action
+- [x] Add `setKeyLaneViewMode(mode: KeyLaneViewMode)` action
+**Status:** Complete - Added all chart editor actions to BeatDetectionActions interface and implemented them in the store.
 
 ### Task 2.4: Add Chart Statistics Selectors
-- [ ] Add `useHasRequiredKeys()` selector (returns boolean)
-- [ ] Add `useKeyCount()` selector (returns number of beats with keys)
-- [ ] Add `useUsedKeys()` selector (returns array of unique keys used)
-- [ ] Add `useKeyMap()` selector (returns Map<number, string>)
+- [x] Add `useHasRequiredKeys()` selector (returns boolean)
+- [x] Add `useKeyCount()` selector (returns number of beats with keys)
+- [x] Add `useUsedKeys()` selector (returns array of unique keys used)
+- [x] Add `useKeyMap()` selector (returns Map<number, string>)
+**Status:** Complete - Added all chart statistics selectors including useChartStatistics() which provides keyCount and usedKeys, useKeyMap(), useHasRequiredKeys(), and additional utility selectors.
 
 ### Task 2.5: Add Level Import/Export Actions
 - [ ] Add `exportLevel()` action - returns LevelExportData JSON (beat map + chart together)

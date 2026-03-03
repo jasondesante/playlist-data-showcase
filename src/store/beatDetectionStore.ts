@@ -54,6 +54,13 @@ import {
     SubdivisionPlaybackOptions,
     DEFAULT_SUBDIVISION_CONFIG,
     DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS,
+    // Chart Editor types (Phase 2: Task 2.1 - Required Keys)
+    ChartStyle,
+    ChartEditorMode,
+    SupportedKey,
+    KeyLaneViewMode,
+    DEFAULT_CHART_EDITOR_STATE,
+    KeyAssignment,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -379,6 +386,46 @@ interface BeatDetectionState {
      * Cached subdivided beat maps indexed by audio ID for localStorage persistence.
      */
     cachedSubdividedBeatMaps: Record<string, SubdividedBeatMap>;
+
+    // ============================================================
+    // Chart Editor State (Phase 2: Task 2.1 - Required Keys)
+    // ============================================================
+
+    /**
+     * Whether the chart editor panel is open/active.
+     * Chart editor is only available when subdividedBeatMap exists.
+     */
+    chartEditorActive: boolean;
+
+    /**
+     * Current chart style - determines which keys are available.
+     * 'ddr' shows arrow keys (up/down/left/right)
+     * 'guitar-hero' shows number keys (1-5)
+     * Default is 'ddr'.
+     */
+    chartStyle: ChartStyle;
+
+    /**
+     * Currently selected key for painting beats.
+     * Null when no key is selected (view mode or no painting).
+     */
+    selectedKey: SupportedKey | null;
+
+    /**
+     * Current chart editor mode.
+     * - 'view': View-only mode, no editing
+     * - 'paint': Click/drag to assign selected key to beats
+     * - 'erase': Click to remove key from beats
+     */
+    editorMode: ChartEditorMode;
+
+    /**
+     * KeyLane visualization mode for practice/playback.
+     * - 'off': Use default TapArea view
+     * - 'ddr': Show DDR 4-lane view
+     * - 'guitar-hero': Show Guitar Hero 5-lane view
+     */
+    keyLaneViewMode: KeyLaneViewMode;
 }
 
 interface BeatDetectionActions {
@@ -739,6 +786,66 @@ interface BeatDetectionActions {
      * Should be called when exiting practice mode or when the controller is no longer needed.
      */
     cleanupSubdivisionPlayback: () => void;
+
+    // ============================================================
+    // Chart Editor Actions (Phase 2: Task 2.3 - Required Keys)
+    // ============================================================
+
+    /**
+     * Start the chart editor.
+     * Only available when a subdivided beat map exists.
+     * Required keys only work with subdivided mode.
+     */
+    startChartEditor: () => void;
+
+    /**
+     * Stop the chart editor.
+     */
+    stopChartEditor: () => void;
+
+    /**
+     * Set the chart style.
+     * This determines which keys are available for assignment.
+     * @param style - The chart style ('ddr' or 'guitar-hero')
+     */
+    setChartStyle: (style: ChartStyle) => void;
+
+    /**
+     * Set the currently selected key for painting.
+     * @param key - The key to select, or null to deselect
+     */
+    setSelectedKey: (key: SupportedKey | null) => void;
+
+    /**
+     * Set the chart editor mode.
+     * @param mode - The editor mode ('view', 'paint', or 'erase')
+     */
+    setEditorMode: (mode: ChartEditorMode) => void;
+
+    /**
+     * Assign a key to a specific beat in the subdivided beat map.
+     * @param beatIndex - The index of the beat in the subdivided beat map
+     * @param key - The key to assign, or null to clear
+     */
+    assignKeyToBeat: (beatIndex: number, key: string | null) => void;
+
+    /**
+     * Assign keys to multiple beats at once.
+     * Used for drag painting in the chart editor.
+     * @param assignments - Array of beat index and key pairs
+     */
+    assignKeysToBeats: (assignments: KeyAssignment[]) => void;
+
+    /**
+     * Clear all key assignments from the subdivided beat map.
+     */
+    clearAllKeys: () => void;
+
+    /**
+     * Set the KeyLane visualization mode.
+     * @param mode - The view mode ('off', 'ddr', or 'guitar-hero')
+     */
+    setKeyLaneViewMode: (mode: KeyLaneViewMode) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -842,6 +949,12 @@ const createInitialState = (): BeatDetectionState => ({
     subdivisionTransitionMode: 'immediate',
     cachedUnifiedBeatMaps: {},
     cachedSubdividedBeatMaps: {},
+    // Chart Editor state (Phase 2: Task 2.1 - Required Keys)
+    chartEditorActive: false,
+    chartStyle: DEFAULT_CHART_EDITOR_STATE.chartStyle,
+    selectedKey: null,
+    editorMode: DEFAULT_CHART_EDITOR_STATE.editorMode,
+    keyLaneViewMode: DEFAULT_CHART_EDITOR_STATE.keyLaneViewMode,
 });
 
 /**
@@ -2201,6 +2314,184 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             logger.debug('BeatDetection', 'No SubdivisionPlaybackController to clean up');
                         }
                     },
+
+                    // ============================================================
+                    // Chart Editor Actions (Phase 2: Task 2.3 - Required Keys)
+                    // ============================================================
+
+                    startChartEditor: () => {
+                        const state = get();
+
+                        // Chart editor only works with subdivided beat maps
+                        if (!state.subdividedBeatMap) {
+                            logger.warn('BeatDetection', 'Cannot start chart editor: no subdivided beat map');
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Starting chart editor');
+                        set({
+                            chartEditorActive: true,
+                            editorMode: 'view',
+                            selectedKey: null,
+                        });
+                    },
+
+                    stopChartEditor: () => {
+                        logger.info('BeatDetection', 'Stopping chart editor');
+                        set({
+                            chartEditorActive: false,
+                            editorMode: 'view',
+                            selectedKey: null,
+                        });
+                    },
+
+                    setChartStyle: (style: ChartStyle) => {
+                        const state = get();
+                        logger.info('BeatDetection', 'Setting chart style', { style });
+
+                        // If switching styles, clear the selected key if it's not valid for the new style
+                        let newSelectedKey = state.selectedKey;
+                        if (state.selectedKey) {
+                            const validKeys = style === 'ddr'
+                                ? ['up', 'down', 'left', 'right']
+                                : ['1', '2', '3', '4', '5'];
+                            if (!validKeys.includes(state.selectedKey)) {
+                                newSelectedKey = null;
+                            }
+                        }
+
+                        set({
+                            chartStyle: style,
+                            selectedKey: newSelectedKey,
+                        });
+                    },
+
+                    setSelectedKey: (key: SupportedKey | null) => {
+                        logger.debug('BeatDetection', 'Setting selected key', { key });
+                        set({ selectedKey: key });
+                    },
+
+                    setEditorMode: (mode: ChartEditorMode) => {
+                        logger.debug('BeatDetection', 'Setting editor mode', { mode });
+                        set({ editorMode: mode });
+                    },
+
+                    assignKeyToBeat: (beatIndex: number, key: string | null) => {
+                        const state = get();
+
+                        if (!state.subdividedBeatMap) {
+                            logger.warn('BeatDetection', 'Cannot assign key: no subdivided beat map');
+                            return;
+                        }
+
+                        if (beatIndex < 0 || beatIndex >= state.subdividedBeatMap.beats.length) {
+                            logger.warn('BeatDetection', 'Invalid beat index', { beatIndex, beatCount: state.subdividedBeatMap.beats.length });
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Assigning key to beat', { beatIndex, key });
+
+                        // Create a new beats array with the updated beat
+                        const updatedBeats = [...state.subdividedBeatMap.beats];
+                        const beat = { ...updatedBeats[beatIndex] };
+
+                        if (key === null) {
+                            // Remove the requiredKey
+                            delete beat.requiredKey;
+                        } else {
+                            // Set the requiredKey
+                            beat.requiredKey = key;
+                        }
+
+                        updatedBeats[beatIndex] = beat;
+
+                        // Update the subdivided beat map
+                        set({
+                            subdividedBeatMap: {
+                                ...state.subdividedBeatMap,
+                                beats: updatedBeats,
+                            },
+                        });
+                    },
+
+                    assignKeysToBeats: (assignments: KeyAssignment[]) => {
+                        const state = get();
+
+                        if (!state.subdividedBeatMap) {
+                            logger.warn('BeatDetection', 'Cannot assign keys: no subdivided beat map');
+                            return;
+                        }
+
+                        if (assignments.length === 0) {
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Assigning keys to multiple beats', { count: assignments.length });
+
+                        // Create a map of beat index to key for efficient lookup
+                        const assignmentMap = new Map<number, string | null>();
+                        for (const assignment of assignments) {
+                            assignmentMap.set(assignment.beatIndex, assignment.key);
+                        }
+
+                        // Create a new beats array with updated beats
+                        const updatedBeats = state.subdividedBeatMap.beats.map((beat, index) => {
+                            const newKey = assignmentMap.get(index);
+                            if (newKey === undefined) {
+                                // No assignment for this beat
+                                return beat;
+                            }
+
+                            const updatedBeat = { ...beat };
+                            if (newKey === null) {
+                                // Remove the requiredKey
+                                delete updatedBeat.requiredKey;
+                            } else {
+                                // Set the requiredKey
+                                updatedBeat.requiredKey = newKey;
+                            }
+                            return updatedBeat;
+                        });
+
+                        // Update the subdivided beat map
+                        set({
+                            subdividedBeatMap: {
+                                ...state.subdividedBeatMap,
+                                beats: updatedBeats,
+                            },
+                        });
+                    },
+
+                    clearAllKeys: () => {
+                        const state = get();
+
+                        if (!state.subdividedBeatMap) {
+                            logger.warn('BeatDetection', 'Cannot clear keys: no subdivided beat map');
+                            return;
+                        }
+
+                        logger.info('BeatDetection', 'Clearing all key assignments');
+
+                        // Create a new beats array with all requiredKey fields removed
+                        const updatedBeats = state.subdividedBeatMap.beats.map((beat) => {
+                            const updatedBeat = { ...beat };
+                            delete updatedBeat.requiredKey;
+                            return updatedBeat;
+                        });
+
+                        // Update the subdivided beat map
+                        set({
+                            subdividedBeatMap: {
+                                ...state.subdividedBeatMap,
+                                beats: updatedBeats,
+                            },
+                        });
+                    },
+
+                    setKeyLaneViewMode: (mode: KeyLaneViewMode) => {
+                        logger.info('BeatDetection', 'Setting KeyLane view mode', { mode });
+                        set({ keyLaneViewMode: mode });
+                    },
                 },
             };
         },
@@ -2240,6 +2531,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 subdivisionTransitionMode: state.subdivisionTransitionMode,
                 cachedUnifiedBeatMaps: state.cachedUnifiedBeatMaps,
                 cachedSubdividedBeatMaps: state.cachedSubdividedBeatMaps,
+                // Chart Editor state (Phase 2: Task 2.1 - Required Keys)
+                // Only persist user preferences, not temporary editing state
+                chartStyle: state.chartStyle,
+                editorMode: state.editorMode,
+                keyLaneViewMode: state.keyLaneViewMode,
             }) as unknown as BeatDetectionStoreState,
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
@@ -2388,6 +2684,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     subdivisionTransitionMode: persisted?.subdivisionTransitionMode ?? currentState.subdivisionTransitionMode,
                     cachedUnifiedBeatMaps: persisted?.cachedUnifiedBeatMaps ?? currentState.cachedUnifiedBeatMaps,
                     cachedSubdividedBeatMaps: persisted?.cachedSubdividedBeatMaps ?? currentState.cachedSubdividedBeatMaps,
+                    // Chart Editor state (Phase 2: Task 2.1 - Required Keys)
+                    chartStyle: persisted?.chartStyle ?? currentState.chartStyle,
+                    editorMode: persisted?.editorMode ?? currentState.editorMode,
+                    keyLaneViewMode: persisted?.keyLaneViewMode ?? currentState.keyLaneViewMode,
                 };
             },
             // Callback after rehydration
@@ -3229,3 +3529,109 @@ export const useSubdivisionTransitionMode = () =>
  */
 export const useSubdivisionMetadata = () =>
     useBeatDetectionStore((state) => state.subdividedBeatMap?.subdivisionMetadata ?? null);
+
+// ============================================================
+// Chart Editor Selectors (Phase 2: Task 2.4 - Required Keys)
+// ============================================================
+
+/**
+ * Selector to check if the chart editor is active.
+ * Returns true if the chart editor panel is open.
+ */
+export const useChartEditorActive = () =>
+    useBeatDetectionStore((state) => state.chartEditorActive);
+
+/**
+ * Selector to get the current chart style.
+ * Returns 'ddr' or 'guitar-hero'.
+ */
+export const useChartStyle = () =>
+    useBeatDetectionStore((state) => state.chartStyle);
+
+/**
+ * Selector to get the currently selected key for painting.
+ * Returns null if no key is selected.
+ */
+export const useSelectedKey = () =>
+    useBeatDetectionStore((state) => state.selectedKey);
+
+/**
+ * Selector to get the current chart editor mode.
+ * Returns 'view', 'paint', or 'erase'.
+ */
+export const useEditorMode = () =>
+    useBeatDetectionStore((state) => state.editorMode);
+
+/**
+ * Selector to get the KeyLane visualization mode.
+ * Returns 'off', 'ddr', or 'guitar-hero'.
+ */
+export const useKeyLaneViewMode = () =>
+    useBeatDetectionStore((state) => state.keyLaneViewMode);
+
+/**
+ * Selector to check if a subdivided beat map exists (required for chart editor).
+ * The chart editor only works with subdivided beat maps.
+ */
+export const useCanStartChartEditor = () =>
+    useBeatDetectionStore((state) => state.subdividedBeatMap !== null);
+
+/**
+ * Selector to get chart statistics.
+ * Returns key count and array of used keys from the subdivided beat map.
+ */
+export const useChartStatistics = () =>
+    useBeatDetectionStore((state) => {
+        const beatMap = state.subdividedBeatMap;
+        if (!beatMap) {
+            return { keyCount: 0, usedKeys: [] };
+        }
+
+        const usedKeys = new Set<string>();
+        let keyCount = 0;
+
+        for (const beat of beatMap.beats) {
+            if (beat.requiredKey) {
+                usedKeys.add(beat.requiredKey);
+                keyCount++;
+            }
+        }
+
+        return {
+            keyCount,
+            usedKeys: Array.from(usedKeys).sort(),
+        };
+    });
+
+/**
+ * Selector to get the key map from the subdivided beat map.
+ * Returns a Map of beat index to required key.
+ */
+export const useKeyMap = () =>
+    useBeatDetectionStore((state) => {
+        const beatMap = state.subdividedBeatMap;
+        if (!beatMap) {
+            return new Map<number, string>();
+        }
+
+        const keyMap = new Map<number, string>();
+        for (let i = 0; i < beatMap.beats.length; i++) {
+            const beat = beatMap.beats[i];
+            if (beat.requiredKey) {
+                keyMap.set(i, beat.requiredKey);
+            }
+        }
+
+        return keyMap;
+    });
+
+/**
+ * Selector to check if the subdivided beat map has any required keys.
+ */
+export const useHasRequiredKeys = () =>
+    useBeatDetectionStore((state) => {
+        const beatMap = state.subdividedBeatMap;
+        if (!beatMap) return false;
+
+        return beatMap.beats.some((beat) => beat.requiredKey !== undefined);
+    });
