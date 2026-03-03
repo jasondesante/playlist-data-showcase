@@ -18,7 +18,7 @@
  * @component
  */
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import { KeyLane, getLanesForStyle, type LaneBeat } from './KeyLane';
 import type {
@@ -29,6 +29,12 @@ import type {
     Beat,
 } from '@/types';
 import './KeyLaneView.css';
+
+/**
+ * Beat hit state for tracking which beats have been hit/missed.
+ * Key is the beat timestamp (rounded to avoid floating point issues).
+ */
+type BeatHitState = Map<number, { hit: boolean; missed: boolean; accuracy?: ExtendedBeatAccuracy }>;
 
 /**
  * Props for the KeyLaneView container component
@@ -52,18 +58,35 @@ export interface KeyLaneViewProps {
     lastAccuracy?: ExtendedBeatAccuracy | null;
     /** The key that was pressed in the last tap */
     lastPressedKey?: string | null;
+    /** Timestamp of the beat that was last hit (for marking beat as hit) */
+    lastHitBeatTimestamp?: number | null;
+}
+
+/**
+ * Round timestamp to avoid floating point comparison issues.
+ * Rounds to 3 decimal places (millisecond precision).
+ */
+function roundTimestamp(timestamp: number): number {
+    return Math.round(timestamp * 1000) / 1000;
 }
 
 /**
  * Convert a Beat from the beat map to a LaneBeat for the lane.
  */
-function beatToLaneBeat(beat: Beat, requiredKey: SupportedKey): LaneBeat {
+function beatToLaneBeat(
+    beat: Beat,
+    requiredKey: SupportedKey,
+    hitState?: BeatHitState
+): LaneBeat {
+    const roundedTime = roundTimestamp(beat.timestamp);
+    const state = hitState?.get(roundedTime);
     return {
         id: `beat-${beat.timestamp.toFixed(3)}-${requiredKey}`,
         timestamp: beat.timestamp,
         requiredKey,
-        hit: false,
-        missed: false,
+        hit: state?.hit ?? false,
+        missed: state?.missed ?? false,
+        accuracy: state?.accuracy,
     };
 }
 
@@ -76,7 +99,8 @@ function distributeBeatsToLanes(
     beatMap: SubdividedBeatMap | null,
     chartStyle: ChartStyle,
     currentTime: number,
-    visibilityWindow: number
+    visibilityWindow: number,
+    hitState: BeatHitState
 ): Map<SupportedKey, LaneBeat[]> {
     const laneMap = new Map<SupportedKey, LaneBeat[]>();
     const lanes = getLanesForStyle(chartStyle);
@@ -108,8 +132,7 @@ function distributeBeatsToLanes(
                     id: `beat-${beat.timestamp.toFixed(3)}`,
                     timestamp: beat.timestamp,
                     requiredKey: beat.requiredKey as SupportedKey,
-                    hit: false,
-                    missed: false,
+                    ...getBeatHitState(beat.timestamp, hitState),
                 });
             }
         } else {
@@ -117,13 +140,29 @@ function distributeBeatsToLanes(
             for (const laneKey of lanes) {
                 const laneBeats = laneMap.get(laneKey);
                 if (laneBeats) {
-                    laneBeats.push(beatToLaneBeat(beat, laneKey));
+                    laneBeats.push(beatToLaneBeat(beat, laneKey, hitState));
                 }
             }
         }
     }
 
     return laneMap;
+}
+
+/**
+ * Get hit state for a beat from the hit state map.
+ */
+function getBeatHitState(
+    timestamp: number,
+    hitState: BeatHitState
+): { hit: boolean; missed: boolean; accuracy?: ExtendedBeatAccuracy } {
+    const roundedTime = roundTimestamp(timestamp);
+    const state = hitState.get(roundedTime);
+    return {
+        hit: state?.hit ?? false,
+        missed: state?.missed ?? false,
+        accuracy: state?.accuracy,
+    };
 }
 
 /**
@@ -154,13 +193,64 @@ export function KeyLaneView({
     className,
     lastAccuracy,
     lastPressedKey,
+    lastHitBeatTimestamp,
 }: KeyLaneViewProps) {
+    // Track hit/miss state for beats (persists across renders)
+    const beatHitStateRef = useRef<BeatHitState>(new Map());
+    const lastProcessedHitRef = useRef<number | null>(null);
+
+    // Update beat hit state when a beat is hit
+    useEffect(() => {
+        if (
+            lastHitBeatTimestamp !== null &&
+            lastHitBeatTimestamp !== undefined &&
+            lastAccuracy &&
+            lastHitBeatTimestamp !== lastProcessedHitRef.current
+        ) {
+            const roundedTime = roundTimestamp(lastHitBeatTimestamp);
+            const isHit = lastAccuracy !== 'miss' && lastAccuracy !== 'wrongKey';
+            const isMiss = lastAccuracy === 'miss';
+
+            beatHitStateRef.current.set(roundedTime, {
+                hit: isHit,
+                missed: isMiss,
+                accuracy: lastAccuracy,
+            });
+
+            lastProcessedHitRef.current = lastHitBeatTimestamp;
+        }
+    }, [lastHitBeatTimestamp, lastAccuracy]);
+
+    // Clean up old beat states (beats that have passed more than 1 second ago)
+    useEffect(() => {
+        const cleanupThreshold = currentTime - 1.0;
+        const state = beatHitStateRef.current;
+
+        for (const [timestamp] of state) {
+            if (timestamp < cleanupThreshold) {
+                state.delete(timestamp);
+            }
+        }
+    }, [currentTime]);
+
+    // Reset beat hit state when beat map changes (new song/seek)
+    const beatMapIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        // Use beatMap reference to detect changes
+        const currentId = beatMap ? `map-${beatMap.beats.length}` : null;
+        if (currentId !== beatMapIdRef.current) {
+            beatHitStateRef.current.clear();
+            lastProcessedHitRef.current = null;
+            beatMapIdRef.current = currentId;
+        }
+    }, [beatMap]);
+
     // Get the lanes for this chart style
     const lanes = useMemo(() => getLanesForStyle(chartStyle), [chartStyle]);
 
     // Distribute beats to lanes based on requiredKey
     const beatsByLane = useMemo(
-        () => distributeBeatsToLanes(beatMap, chartStyle, currentTime, visibilityWindow),
+        () => distributeBeatsToLanes(beatMap, chartStyle, currentTime, visibilityWindow, beatHitStateRef.current),
         [beatMap, chartStyle, currentTime, visibilityWindow]
     );
 

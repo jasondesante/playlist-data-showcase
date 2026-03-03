@@ -900,6 +900,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           isPaused={streamIsPaused}
           lastAccuracy={lastTapResult?.accuracy ?? null}
           lastPressedKey={lastTapResult?.pressedKey ?? null}
+          lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
         />
       )}
 
