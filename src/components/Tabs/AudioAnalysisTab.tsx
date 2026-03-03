@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, Download } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, Download, ChevronDown } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -814,9 +814,22 @@ export function AudioAnalysisTab() {
                 </div>
               )}
 
-              {/* Subdivision Settings - Phase 3: shown when Beat mode is selected and beat map exists */}
+              {/* Subdivision Settings - Phase 3, Task 8.2: Collapsible section shown when Beat mode is selected and beat map exists */}
               {analysisMode === 'beat' && beatMap && !isBeatGenerating && (
-                <SubdivisionSettings disabled={isBeatGenerating} />
+                <details className="audio-analysis-subdivision-section" open>
+                  <summary className="audio-analysis-subdivision-summary">
+                    <span className="audio-analysis-subdivision-summary-text">Beat Subdivision</span>
+                    {subdividedBeatMap && (
+                      <span className="audio-analysis-subdivision-badge">
+                        Generated
+                      </span>
+                    )}
+                    <ChevronDown className="audio-analysis-subdivision-summary-icon" size={12} />
+                  </summary>
+                  <div className="audio-analysis-subdivision-content">
+                    <SubdivisionSettings disabled={isBeatGenerating} />
+                  </div>
+                </details>
               )}
             </div>
 
