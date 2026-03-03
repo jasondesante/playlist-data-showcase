@@ -1,0 +1,443 @@
+/* ============================================
+   CHART EDITOR TOOLBAR
+   Phase 4, Task 4.3: Chart editor controls
+   ============================================ */
+
+/* Main container */
+.chart-editor-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.75rem;
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 0.5rem;
+}
+
+/* Toolbar row */
+.chart-editor-toolbar-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.chart-editor-toolbar-row--palette {
+    padding: 0.25rem 0;
+}
+
+/* Toolbar group */
+.chart-editor-toolbar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.chart-editor-toolbar-group--style,
+.chart-editor-toolbar-group--tools {
+    min-width: 7rem;
+}
+
+.chart-editor-toolbar-group--clear {
+    align-self: flex-end;
+}
+
+.chart-editor-toolbar-group--stats {
+    flex: 1;
+}
+
+.chart-editor-toolbar-group--io {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-end;
+}
+
+/* Toolbar label */
+.chart-editor-toolbar-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   STYLE TOGGLE (DDR / Guitar Hero)
+   ============================================ */
+
+.chart-editor-style-toggle {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.chart-editor-style-btn {
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-style-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-style-btn--active {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--cute-purple) / 0.15));
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.25);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-style-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   TOOL BUTTONS (Paint / Erase)
+   ============================================ */
+
+.chart-editor-tools {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.chart-editor-tool-btn {
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-tool-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-tool-btn--active {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-tool-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   CLEAR ALL BUTTON
+   ============================================ */
+
+.chart-editor-clear-btn {
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(180deg, hsl(var(--destructive) / 0.12), hsl(var(--destructive) / 0.06));
+    border: 1px solid hsl(var(--destructive) / 0.4);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--destructive));
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-clear-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--destructive) / 0.2), hsl(var(--destructive) / 0.1));
+    border-color: hsl(var(--destructive) / 0.6);
+}
+
+.chart-editor-clear-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.chart-editor-clear-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   STATISTICS DISPLAY
+   ============================================ */
+
+.chart-editor-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.375rem 0.5rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border-radius: 0.25rem;
+    border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.chart-editor-stat {
+    font-size: 0.5625rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.chart-editor-stat--keys {
+    color: hsl(var(--primary));
+    font-size: 0.75rem;
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+/* ============================================
+   IMPORT/EXPORT BUTTONS
+   ============================================ */
+
+.chart-editor-io-btn {
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s ease;
+}
+
+.chart-editor-io-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--border));
+}
+
+.chart-editor-io-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Export button - primary styling */
+.chart-editor-io-btn--export {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.1));
+    border-color: hsl(var(--primary) / 0.4);
+    color: hsl(var(--primary));
+}
+
+.chart-editor-io-btn--export:hover:not(:disabled) {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.25), hsl(var(--primary) / 0.15));
+    border-color: hsl(var(--primary) / 0.6);
+}
+
+/* Import button - secondary styling */
+.chart-editor-io-btn--import {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.6), hsl(var(--surface-2) / 0.8));
+    border-color: hsl(var(--border) / 0.6);
+}
+
+.chart-editor-io-btn--import:hover:not(:disabled) {
+    background: linear-gradient(180deg, hsl(var(--surface-3) / 0.8), hsl(var(--surface-2) / 0.9));
+    border-color: hsl(var(--border));
+}
+
+/* ============================================
+   IMPORT STATUS MESSAGE
+   ============================================ */
+
+.chart-editor-import-status {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 500;
+    text-align: center;
+    animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-0.25rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-editor-import-status--success {
+    background: hsl(142 76% 46% / 0.15);
+    border: 1px solid hsl(142 76% 46% / 0.4);
+    color: hsl(142 76% 55%);
+}
+
+.chart-editor-import-status--error {
+    background: hsl(var(--destructive) / 0.12);
+    border: 1px solid hsl(var(--destructive) / 0.4);
+    color: hsl(var(--destructive));
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Tablet
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1026px) {
+    .chart-editor-toolbar {
+        padding: 0.625rem;
+        gap: 0.5rem;
+    }
+
+    .chart-editor-toolbar-row {
+        gap: 0.75rem;
+    }
+
+    .chart-editor-toolbar-group--style,
+    .chart-editor-toolbar-group--tools {
+        min-width: 6rem;
+    }
+
+    .chart-editor-style-btn,
+    .chart-editor-tool-btn,
+    .chart-editor-clear-btn,
+    .chart-editor-io-btn {
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat {
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat--keys {
+        font-size: 0.625rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+    .chart-editor-toolbar {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .chart-editor-toolbar-row {
+        gap: 0.5rem;
+    }
+
+    .chart-editor-toolbar-group {
+        min-width: 0;
+    }
+
+    .chart-editor-toolbar-group--style,
+    .chart-editor-toolbar-group--tools {
+        flex: 1;
+    }
+
+    .chart-editor-toolbar-group--clear {
+        width: 100%;
+    }
+
+    .chart-editor-clear-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .chart-editor-toolbar-group--stats {
+        width: 100%;
+    }
+
+    .chart-editor-toolbar-group--io {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .chart-editor-io-btn {
+        flex: 1;
+    }
+
+    .chart-editor-style-toggle,
+    .chart-editor-tools {
+        width: 100%;
+    }
+
+    .chart-editor-style-btn,
+    .chart-editor-tool-btn {
+        flex: 1;
+        padding: 0.375rem 0.5rem;
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-clear-btn,
+    .chart-editor-io-btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stats {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .chart-editor-stat {
+        font-size: 0.5rem;
+    }
+
+    .chart-editor-stat--keys {
+        font-size: 0.5625rem;
+    }
+
+    .chart-editor-toolbar-label {
+        font-size: 0.5rem;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .chart-editor-style-btn,
+    .chart-editor-tool-btn,
+    .chart-editor-clear-btn,
+    .chart-editor-io-btn {
+        min-height: 44px;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .chart-editor-toolbar,
+    .chart-editor-style-btn,
+    .chart-editor-tool-btn,
+    .chart-editor-clear-btn,
+    .chart-editor-io-btn {
+        transition: none;
+    }
+
+    .chart-editor-import-status {
+        animation: none;
+    }
+}

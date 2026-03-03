@@ -261,13 +261,22 @@ Create new file: [src/components/ui/ChartEditor.tsx](src/components/ui/ChartEdit
 
 ### Task 4.3: Create ChartEditorToolbar Component
 Create new file: [src/components/ui/ChartEditorToolbar.tsx](src/components/ui/ChartEditorToolbar.tsx)
-- [ ] Chart style selector: DDR / Guitar Hero toggle
-- [ ] Tool selection: Paint, Erase
-- [ ] Clear All button
-- [ ] Key palette integration (filtered by chart style)
-- [ ] Chart statistics display (key count, keys used)
-- [ ] Export Chart button
-- [ ] Import Chart button with file picker
+- [x] Chart style selector: DDR / Guitar Hero toggle
+- [x] Tool selection: Paint, Erase
+- [x] Clear All button
+- [x] Key palette integration (filtered by chart style)
+- [x] Chart statistics display (key count, keys used)
+- [x] Export Chart button
+- [x] Import Chart button with file picker
+**Status:** Complete - Created ChartEditorToolbar component with CSS styling. Features:
+- Chart style toggle (DDR/Guitar Hero) that also clears selected key on style change
+- Tool selection (Paint/Erase) with auto-switch to paint when selecting a key
+- Clear All button (disabled when no keys assigned)
+- KeyPalette component integration filtered by chart style
+- Statistics display showing key count and used key symbols
+- Export Level button that downloads JSON file with complete level data
+- Import Level button with hidden file picker and validation error/success feedback
+- CSS file: [src/components/ui/ChartEditorToolbar.css](src/components/ui/ChartEditorToolbar.css)
 
 ### Task 4.4: Integrate Chart Editor into AudioAnalysisTab
 - [ ] Add "Chart Editor" collapsible section (like subdivision settings)
