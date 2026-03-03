@@ -248,13 +248,14 @@ export interface XPFormulaPreset {
 export type ExtendedBeatAccuracy = 'perfect' | 'great' | 'good' | 'ok' | 'miss' | 'wrongKey';
 
 /**
- * Extended button press result that includes 'ok' accuracy level and beat source.
+ * Extended button press result that includes 'ok' accuracy level, beat source,
+ * and key matching information for rhythm game chart mode.
  *
  * Extends the engine's ButtonPressResult to use ExtendedBeatAccuracy and
  * includes source information to distinguish detected vs interpolated beats.
  */
 export interface ExtendedButtonPressResult {
-    /** Accuracy level of the press (includes 'ok') */
+    /** Accuracy level of the press (includes 'ok' and 'wrongKey') */
     accuracy: ExtendedBeatAccuracy;
 
     /** Time difference from nearest beat in seconds (negative = early, positive = late) */
@@ -273,6 +274,25 @@ export interface ExtendedButtonPressResult {
      * - undefined: Source information not available (e.g., using BeatMap without interpolation)
      */
     source?: BeatSourceType;
+
+    /**
+     * Whether the pressed key matched the required key (if any).
+     * True if: no key required, or pressedKey matches requiredKey.
+     * False if: key required but wrong key pressed (accuracy will be 'wrongKey').
+     */
+    keyMatch: boolean;
+
+    /**
+     * The key that was pressed (passed to checkButtonPress).
+     * Undefined if no key was provided (e.g., spacebar or generic tap).
+     */
+    pressedKey?: string;
+
+    /**
+     * The required key from the matched beat (convenience copy).
+     * Undefined if the beat has no required key.
+     */
+    requiredKey?: string;
 }
 
 /**

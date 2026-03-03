@@ -81,10 +81,11 @@ The following decisions were made during planning:
 **Status:** Already complete - type was previously defined with 'wrongKey' included.
 
 ### Task 1.2: Update ExtendedButtonPressResult Interface
-- [ ] Add `keyMatch: boolean` property
-- [ ] Add `pressedKey?: string` property
-- [ ] Add `requiredKey?: string` property
-- [ ] Update JSDoc to explain the new fields
+- [x] Add `keyMatch: boolean` property
+- [x] Add `pressedKey?: string` property
+- [x] Add `requiredKey?: string` property
+- [x] Update JSDoc to explain the new fields
+**Status:** Complete - Added key matching fields with comprehensive JSDoc comments.
 
 ### Task 1.3: Re-export Engine Types and Helpers
 - [ ] Re-export `BeatAccuracy` (now includes 'wrongKey') from engine
