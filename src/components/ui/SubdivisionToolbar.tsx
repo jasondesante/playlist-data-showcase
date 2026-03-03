@@ -2,17 +2,26 @@
  * SubdivisionToolbar Component
  *
  * A horizontal toolbar for selecting a subdivision "brush" and applying it
- * to selected beats in the BeatSubdivisionGrid.
+ * to selected beats in the BeatSubdivisionGrid. This component works in
+ * conjunction with the grid to provide a complete per-beat subdivision
+ * editing experience.
  *
  * Part of Phase 5: UI Component - SubdivisionToolbar (Task 5.1)
  *
  * Features:
- * - Horizontal bar with subdivision type buttons
- * - Shows current "brush" subdivision
- * - Apply to selection button
- * - Keyboard shortcuts (1-8 for types)
+ * - Horizontal bar with subdivision type buttons (9 types)
+ * - Visual density indicators on each button (dots showing note density)
+ * - Shows current "brush" subdivision with active state
+ * - Apply to selection button with selection count badge
+ * - Selection actions: Clear, Select All, Reset All
+ * - Full keyboard navigation support
+ * - Keyboard shortcuts (1-9 for types, Enter to apply, Escape to clear)
+ * - Compact mode for smaller displays
+ * - Accessibility support with ARIA attributes
  *
- * @component
+ * @module SubdivisionToolbar
+ * @see BeatSubdivisionGrid - The grid component this toolbar controls
+ * @see SubdivisionType - The subdivision type enum
  */
 import { useCallback, useEffect } from 'react';
 import { cn } from '@/utils/cn';
@@ -20,28 +29,58 @@ import './SubdivisionToolbar.css';
 import type { SubdivisionType } from '@/types';
 
 /**
- * Subdivision type configuration for the toolbar.
+ * Configuration for a single subdivision type button in the toolbar.
+ *
+ * Defines the visual representation, keyboard shortcut, and metadata
+ * for each of the 9 available subdivision types.
+ *
+ * @property id - The subdivision type identifier (e.g., 'quarter', 'eighth')
+ * @property label - Full display label shown on the button (e.g., "Quarter")
+ * @property shortLabel - Compact label for compact mode (e.g., "1/4", "T8")
+ * @property shortcut - Keyboard shortcut key (1-9)
+ * @property description - Human-readable description for tooltips and accessibility
+ * @property density - Visual density value used to render indicator dots:
+ *   - 0 = Rest (no dots)
+ *   - 0.5 = Half (half dot)
+ *   - 1 = Quarter (1 dot)
+ *   - 1.5 = Dotted/Triplet quarter (1 dot)
+ *   - 2 = Eighth (2 dots)
+ *   - 3 = Triplet 8th/Dotted 8th (3 dots)
+ *   - 4 = Sixteenth (4 dots)
+ * @property color - CSS color theme key for styling (matches SubdivisionType values)
  */
 interface SubdivisionTypeConfig {
-    /** The subdivision type ID */
     id: SubdivisionType;
-    /** Display label for the button */
     label: string;
-    /** Short label for compact displays */
     shortLabel: string;
-    /** Keyboard shortcut (1-8) */
     shortcut: string;
-    /** Description for tooltip/accessibility */
     description: string;
-    /** Visual density indicator */
     density: number;
-    /** Color theme key */
     color: string;
 }
 
 /**
  * All subdivision types available in the toolbar.
- * Ordered by keyboard shortcut (1-8).
+ *
+ * This array defines the complete set of subdivision options available for
+ * per-beat editing. Each type includes display properties and metadata.
+ *
+ * Order is significant: the array index + 1 corresponds to the keyboard shortcut
+ * (index 0 = shortcut "1", index 8 = shortcut "9").
+ *
+ * Available types:
+ * 1. Quarter - Standard quarter notes (default)
+ * 2. Half - Half notes (beats on 1 and 3 in 4/4 time)
+ * 3. Eighth - Eighth notes (double density)
+ * 4. Sixteenth - Sixteenth notes (maximum density)
+ * 5. Triplet 8 - Eighth note triplets (3 per quarter)
+ * 6. Triplet 4 - Quarter note triplets
+ * 7. Dotted 4 - Dotted quarter notes
+ * 8. Dotted 8 - Dotted eighth notes (swing pattern)
+ * 9. Rest - No beats (silence)
+ *
+ * @constant
+ * @see SubdivisionTypeConfig - Configuration interface for each type
  */
 const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
     {
@@ -116,26 +155,48 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
         density: 3,
         color: 'dotted8',
     },
+    {
+        id: 'rest',
+        label: 'Rest',
+        shortLabel: '-',
+        shortcut: '9',
+        description: 'Rest (no beats)',
+        density: 0,
+        color: 'rest',
+    },
 ];
 
+/**
+ * Props for the SubdivisionToolbar component.
+ *
+ * @property currentBrush - The currently selected subdivision "brush" type.
+ *   This is the subdivision that will be applied when the user clicks "Apply".
+ * @property onBrushChange - Callback fired when the user selects a different
+ *   subdivision type. Receives the new SubdivisionType as argument.
+ * @property onApplyToSelection - Callback fired when the user clicks the "Apply"
+ *   button or presses Enter. Should apply the currentBrush to all selected beats.
+ * @property onClearSelection - Optional callback to clear the current selection.
+ *   If provided, a "Clear" button is shown. Triggered by button click or Escape key.
+ * @property onSelectAll - Optional callback to select all beats.
+ *   If provided, an "All" button is shown. Triggered by button click or Ctrl/Cmd+A.
+ * @property onResetAll - Optional callback to reset all beats to the default subdivision.
+ *   If provided, a "Reset" button (danger styled) is shown.
+ * @property selectionCount - Number of beats currently selected.
+ *   Used to enable/disable the Apply button and show a count badge. Default: 0.
+ * @property disabled - Whether the entire toolbar is disabled.
+ *   When true, all buttons are disabled and keyboard shortcuts are ignored. Default: false.
+ * @property compact - Whether to use compact layout (short labels).
+ *   Useful for smaller screens or embedded contexts. Default: false.
+ */
 interface SubdivisionToolbarProps {
-    /** Currently selected brush subdivision */
     currentBrush: SubdivisionType;
-    /** Callback when brush subdivision changes */
     onBrushChange: (subdivision: SubdivisionType) => void;
-    /** Callback to apply current brush to selection */
     onApplyToSelection: () => void;
-    /** Callback to clear selection */
     onClearSelection?: () => void;
-    /** Callback to select all */
     onSelectAll?: () => void;
-    /** Callback to reset all beats to default */
     onResetAll?: () => void;
-    /** Number of beats currently selected */
     selectionCount?: number;
-    /** Whether the toolbar is disabled */
     disabled?: boolean;
-    /** Whether to show compact layout */
     compact?: boolean;
 }
 
@@ -145,14 +206,55 @@ interface SubdivisionToolbarProps {
  * Renders a horizontal toolbar with subdivision type buttons and action buttons.
  * Used in conjunction with BeatSubdivisionGrid for per-beat subdivision editing.
  *
+ * The toolbar provides:
+ * - A "brush" selection interface where users pick a subdivision type
+ * - Action buttons to apply the brush to selected beats
+ * - Selection management (clear, select all, reset all)
+ * - Full keyboard accessibility with shortcuts
+ *
+ * Keyboard Shortcuts:
+ * - 1-9: Select subdivision type (corresponds to position in toolbar)
+ * - Enter: Apply current brush to selection
+ * - Escape: Clear selection
+ * - Ctrl/Cmd+A: Select all
+ * - Arrow keys: Navigate between subdivision buttons (when focused)
+ *
+ * @param props - Component props
+ * @param props.currentBrush - The currently active subdivision brush
+ * @param props.onBrushChange - Callback when brush changes
+ * @param props.onApplyToSelection - Callback to apply brush to selection
+ * @param props.onClearSelection - Optional callback to clear selection
+ * @param props.onSelectAll - Optional callback to select all beats
+ * @param props.onResetAll - Optional callback to reset all to default
+ * @param props.selectionCount - Number of selected beats (default: 0)
+ * @param props.disabled - Whether toolbar is disabled (default: false)
+ * @param props.compact - Whether to use compact layout (default: false)
+ * @returns The rendered toolbar component
+ *
  * @example
  * ```tsx
+ * // Basic usage in SubdivisionSettings
  * <SubdivisionToolbar
  *   currentBrush={brushSubdivision}
  *   onBrushChange={setBrushSubdivision}
  *   onApplyToSelection={handleApply}
  *   selectionCount={selectedBeats.size}
  *   disabled={!hasBeatMap}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With all optional callbacks
+ * <SubdivisionToolbar
+ *   currentBrush={brush}
+ *   onBrushChange={setBrush}
+ *   onApplyToSelection={applyToSelection}
+ *   onClearSelection={clearSelection}
+ *   onSelectAll={selectAll}
+ *   onResetAll={resetAll}
+ *   selectionCount={selection.size}
+ *   compact={isMobile}
  * />
  * ```
  */
@@ -194,9 +296,9 @@ export function SubdivisionToolbar({
                 return;
             }
 
-            // Number keys 1-8 for subdivision types
+            // Number keys 1-9 for subdivision types
             const num = parseInt(e.key, 10);
-            if (num >= 1 && num <= 8) {
+            if (num >= 1 && num <= 9) {
                 e.preventDefault();
                 const type = SUBDIVISION_TYPES[num - 1];
                 if (type) {
@@ -434,14 +536,36 @@ export function SubdivisionToolbar({
 }
 
 /**
- * Get the subdivision type config by ID.
+ * Get the subdivision type configuration by ID.
+ *
+ * Looks up the display configuration for a given subdivision type,
+ * including label, shortcut, description, and visual properties.
+ *
+ * @param type - The subdivision type to look up
+ * @returns The configuration object, or undefined if not found
+ *
+ * @example
+ * ```tsx
+ * const config = getSubdivisionTypeConfig('eighth');
+ * console.log(config?.label); // "Eighth"
+ * console.log(config?.shortcut); // "3"
+ * ```
  */
 export function getSubdivisionTypeConfig(type: SubdivisionType): SubdivisionTypeConfig | undefined {
     return SUBDIVISION_TYPES.find((t) => t.id === type);
 }
 
 /**
- * All subdivision type configs for external use.
+ * All subdivision type configurations for external use.
+ *
+ * Exported for components that need direct access to the full list of
+ * subdivision types, such as for rendering legends or custom selectors.
+ *
+ * Note: This array is ordered by keyboard shortcut (1-9). Index 0 corresponds
+ * to shortcut "1" (Quarter), index 8 corresponds to shortcut "9" (Rest).
+ *
+ * @see SubdivisionTypeConfig - Configuration interface
+ * @see getSubdivisionTypeConfig - Lookup function for single type
  */
 export { SUBDIVISION_TYPES };
 

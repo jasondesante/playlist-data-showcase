@@ -283,7 +283,7 @@ This plan covers:
 ### 9.2 Update Component JSDoc
 
 - [x] Add JSDoc to BeatSubdivisionGrid
-- [ ] Add JSDoc to SubdivisionToolbar
+- [x] Add JSDoc to SubdivisionToolbar
 - [ ] Update SubdivisionSettings JSDoc
 
 ---
