@@ -423,10 +423,16 @@ Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/c
 ## Phase 9: Testing (Core First)
 
 ### Task 9.1: Unit Tests for Types
-- [ ] Test `ExtendedBeatAccuracy` includes 'wrongKey'
-- [ ] Test `ExtendedButtonPressResult` with key fields
-- [ ] Test helper function re-exports
-- [ ] Test `LevelExportData` type validation
+- [x] Test `ExtendedBeatAccuracy` includes 'wrongKey'
+- [x] Test `ExtendedButtonPressResult` with key fields
+- [x] Test helper function re-exports
+- [x] Test `LevelExportData` type validation
+**Status:** Complete - Created [src/__tests__/requiredKeysTypes.test.ts](src/__tests__/requiredKeysTypes.test.ts) with 65 tests covering:
+- ExtendedBeatAccuracy type (includes 'wrongKey')
+- ExtendedButtonPressResult interface (keyMatch, pressedKey, requiredKey fields)
+- Helper function re-exports (assignKeyToBeat, assignKeysToBeats, extractKeyMap, clearAllKeys, hasRequiredKeys, getKeyCount, getUsedKeys)
+- validateLevelExportData function (valid data, invalid data, multiple errors)
+- Chart-related types (ChartStyle, SupportedKey, DdrKey, GuitarKey)
 
 ### Task 9.2: Unit Tests for useKeyboardInput
 - [ ] Test arrow key mapping
