@@ -266,7 +266,7 @@ This plan covers:
 ### 8.3 Component Tests
 
 - [x] Test BeatSubdivisionGrid rendering
-- [ ] Test selection interactions
+- [x] Test selection interactions
 - [ ] Test toolbar apply action
 - [ ] Test with large beat counts (performance)
 

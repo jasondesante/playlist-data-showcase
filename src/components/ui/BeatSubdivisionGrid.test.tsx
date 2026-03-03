@@ -459,6 +459,403 @@ describe('BeatSubdivisionGrid', () => {
         });
     });
 
+    describe('Selection Interactions - Single Click', () => {
+        beforeEach(() => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(8);
+        });
+
+        it('selects a single beat on click', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 3 (index 2)
+            fireEvent.click(beatCells[2]);
+
+            await waitFor(() => {
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+            });
+        });
+
+        it('replaces selection when clicking a different beat', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 1
+            fireEvent.click(beatCells[0]);
+
+            await waitFor(() => {
+                expect(beatCells[0]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+
+            // Click beat 3 - should replace selection
+            fireEvent.click(beatCells[2]);
+
+            await waitFor(() => {
+                expect(beatCells[0]).not.toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+            });
+        });
+
+        it('sets rangeStart and rangeEnd on single click', async () => {
+            const onSelectionChange = vi.fn();
+
+            render(<BeatSubdivisionGrid onSelectionChange={onSelectionChange} />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            fireEvent.click(beatCells[3]);
+
+            await waitFor(() => {
+                expect(onSelectionChange).toHaveBeenCalled();
+                const lastCall = onSelectionChange.mock.calls[onSelectionChange.mock.calls.length - 1][0] as BeatSubdivisionSelection;
+                expect(lastCall.rangeStart).toBe(3);
+                expect(lastCall.rangeEnd).toBe(3);
+            });
+        });
+    });
+
+    describe('Selection Interactions - Shift+Click Range Selection', () => {
+        beforeEach(() => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(16);
+        });
+
+        it('selects range from last selected beat to clicked beat with shift+click', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // First, click beat 2 (index 1) to establish anchor
+            fireEvent.click(beatCells[1]);
+
+            await waitFor(() => {
+                expect(beatCells[1]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+
+            // Then shift+click beat 6 (index 5) to select range
+            fireEvent.click(beatCells[5], { shiftKey: true });
+
+            await waitFor(() => {
+                // Beats 2-6 should be selected (indices 1-5)
+                expect(screen.getByText('5 selected')).toBeInTheDocument();
+                expect(beatCells[1]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[3]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[4]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[5]).toHaveClass('beat-subdivision-grid-cell--selected');
+                // Beat 1 and 7+ should NOT be selected
+                expect(beatCells[0]).not.toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[6]).not.toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('selects range in reverse order (click higher then shift+click lower)', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 7 (index 6)
+            fireEvent.click(beatCells[6]);
+
+            await waitFor(() => {
+                expect(beatCells[6]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+
+            // Shift+click beat 3 (index 2) - should select range 3-7
+            fireEvent.click(beatCells[2], { shiftKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('5 selected')).toBeInTheDocument();
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[3]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[4]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[5]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[6]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('sets rangeStart and rangeEnd correctly for shift+click range', async () => {
+            const onSelectionChange = vi.fn();
+
+            render(<BeatSubdivisionGrid onSelectionChange={onSelectionChange} />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 2
+            fireEvent.click(beatCells[1]);
+
+            await waitFor(() => {
+                expect(onSelectionChange).toHaveBeenCalled();
+            });
+
+            onSelectionChange.mockClear();
+
+            // Shift+click beat 5
+            fireEvent.click(beatCells[4], { shiftKey: true });
+
+            await waitFor(() => {
+                expect(onSelectionChange).toHaveBeenCalled();
+                const lastCall = onSelectionChange.mock.calls[onSelectionChange.mock.calls.length - 1][0] as BeatSubdivisionSelection;
+                expect(lastCall.rangeStart).toBe(1);
+                expect(lastCall.rangeEnd).toBe(4);
+            });
+        });
+
+        it('does nothing on shift+click without prior selection', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Shift+click without prior selection - should just select that beat
+            fireEvent.click(beatCells[3], { shiftKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+                expect(beatCells[3]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+    });
+
+    describe('Selection Interactions - Ctrl/Cmd+Click Toggle', () => {
+        beforeEach(() => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(8);
+        });
+
+        it('adds beat to selection with ctrl+click on unselected beat', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 1
+            fireEvent.click(beatCells[0]);
+
+            await waitFor(() => {
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+            });
+
+            // Ctrl+click beat 3 to add it
+            fireEvent.click(beatCells[2], { ctrlKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('2 selected')).toBeInTheDocument();
+                expect(beatCells[0]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('removes beat from selection with ctrl+click on selected beat', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 1
+            fireEvent.click(beatCells[0]);
+
+            await waitFor(() => {
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+            });
+
+            // Ctrl+click beat 1 to remove it
+            fireEvent.click(beatCells[0], { ctrlKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('0 selected')).toBeInTheDocument();
+                expect(beatCells[0]).not.toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('supports metaKey (cmd) as alternative to ctrlKey', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 1
+            fireEvent.click(beatCells[0]);
+
+            await waitFor(() => {
+                expect(screen.getByText('1 selected')).toBeInTheDocument();
+            });
+
+            // Meta+click (cmd on Mac) beat 3 to add it
+            fireEvent.click(beatCells[2], { metaKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('2 selected')).toBeInTheDocument();
+                expect(beatCells[0]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('builds non-contiguous selection with multiple ctrl+clicks', async () => {
+            const onSelectionChange = vi.fn();
+
+            render(<BeatSubdivisionGrid onSelectionChange={onSelectionChange} />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Click beat 1
+            fireEvent.click(beatCells[0]);
+
+            // Ctrl+click beats 3 and 5
+            fireEvent.click(beatCells[2], { ctrlKey: true });
+            fireEvent.click(beatCells[4], { ctrlKey: true });
+
+            await waitFor(() => {
+                expect(screen.getByText('3 selected')).toBeInTheDocument();
+                expect(beatCells[0]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[4]).toHaveClass('beat-subdivision-grid-cell--selected');
+
+                // Non-contiguous selection should have null rangeStart/rangeEnd
+                const lastCall = onSelectionChange.mock.calls[onSelectionChange.mock.calls.length - 1][0] as BeatSubdivisionSelection;
+                expect(lastCall.rangeStart).toBeNull();
+                expect(lastCall.rangeEnd).toBeNull();
+            });
+        });
+    });
+
+    describe('Selection Interactions - Drag Selection', () => {
+        beforeEach(() => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(16);
+        });
+
+        it('selects range of beats when dragging across cells', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Start drag on beat 2 (index 1)
+            fireEvent.mouseDown(beatCells[1], { button: 0 });
+
+            // Simulate dragging across beats 3-5 (indices 2-4)
+            fireEvent.mouseEnter(beatCells[2]);
+            fireEvent.mouseEnter(beatCells[3]);
+            fireEvent.mouseEnter(beatCells[4]);
+
+            // End drag on beat 5 (index 4)
+            fireEvent.mouseUp(beatCells[4]);
+
+            await waitFor(() => {
+                // Beats 2-5 should be selected
+                expect(screen.getByText('4 selected')).toBeInTheDocument();
+                expect(beatCells[1]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[3]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[4]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('selects range when dragging backwards', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Start drag on beat 6 (index 5)
+            fireEvent.mouseDown(beatCells[5], { button: 0 });
+
+            // Drag backwards to beat 3 (index 2)
+            fireEvent.mouseEnter(beatCells[4]);
+            fireEvent.mouseEnter(beatCells[3]);
+            fireEvent.mouseEnter(beatCells[2]);
+
+            fireEvent.mouseUp(beatCells[2]);
+
+            await waitFor(() => {
+                // Beats 3-6 should be selected
+                expect(screen.getByText('4 selected')).toBeInTheDocument();
+                expect(beatCells[2]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[3]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[4]).toHaveClass('beat-subdivision-grid-cell--selected');
+                expect(beatCells[5]).toHaveClass('beat-subdivision-grid-cell--selected');
+            });
+        });
+
+        it('does not start drag on right mouse button', async () => {
+            render(<BeatSubdivisionGrid />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Try to start drag with right mouse button
+            fireEvent.mouseDown(beatCells[1], { button: 2 });
+
+            // Try to drag
+            fireEvent.mouseEnter(beatCells[2]);
+            fireEvent.mouseEnter(beatCells[3]);
+
+            // Should not have started a drag selection
+            expect(screen.getByText('0 selected')).toBeInTheDocument();
+        });
+
+        it('does not select when disabled', async () => {
+            render(<BeatSubdivisionGrid disabled />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Try to start drag
+            fireEvent.mouseDown(beatCells[1], { button: 0 });
+            fireEvent.mouseEnter(beatCells[2]);
+            fireEvent.mouseUp(beatCells[2]);
+
+            // Should not have selected anything
+            expect(screen.getByText('0 selected')).toBeInTheDocument();
+        });
+
+        it('sets rangeStart and rangeEnd during drag', async () => {
+            const onSelectionChange = vi.fn();
+
+            render(<BeatSubdivisionGrid onSelectionChange={onSelectionChange} />);
+
+            const beatCells = screen.getAllByRole('button').filter(btn =>
+                btn.classList.contains('beat-subdivision-grid-cell')
+            );
+
+            // Start drag on beat 2
+            fireEvent.mouseDown(beatCells[1], { button: 0 });
+
+            // Drag to beat 5
+            fireEvent.mouseEnter(beatCells[4]);
+
+            await waitFor(() => {
+                const lastCall = onSelectionChange.mock.calls[onSelectionChange.mock.calls.length - 1][0] as BeatSubdivisionSelection;
+                expect(lastCall.rangeStart).toBe(1);
+                expect(lastCall.rangeEnd).toBe(4);
+            });
+        });
+    });
+
     describe('Double-Click to Cycle Subdivision', () => {
         beforeEach(() => {
             mockUnifiedBeatMap = createMockUnifiedBeatMap(8);
