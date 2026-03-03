@@ -11,8 +11,24 @@
  * - Subdivision type selector per segment
  * - Start beat input for each segment
  * - Generate SubdividedBeatMap button
+ * - Integrated timeline editor for visual segment editing
+ *
+ * This component is used in the AudioAnalysisTab to configure
+ * pre-calculated subdivision patterns for level creation and export.
  *
  * @component
+ * @example
+ * ```tsx
+ * // Basic usage in AudioAnalysisTab
+ * <SubdivisionSettings disabled={isGenerating} />
+ *
+ * // With explicit disabled state
+ * <SubdivisionSettings disabled={true} />
+ * ```
+ *
+ * @see SubdivisionTimelineEditor - Visual timeline for segment editing
+ * @see useSubdivisionConfig - Store hook for accessing subdivision config
+ * @see useSubdividedBeatMap - Store hook for accessing generated beat map
  */
 import { useState } from 'react';
 import { Info, Plus, Trash2, RefreshCw, ChevronDown, ChevronUp, Clock } from 'lucide-react';
@@ -29,7 +45,16 @@ import {
 import type { SubdivisionType } from '@/types';
 
 /**
- * Subdivision type configuration for display
+ * Subdivision type configuration for display.
+ *
+ * Each subdivision type has display properties for the UI including
+ * labels, descriptions, and density multipliers.
+ *
+ * @property id - The subdivision type identifier
+ * @property label - Full display label (e.g., "Eighth")
+ * @property shortLabel - Compact label for buttons (e.g., "2x")
+ * @property description - User-friendly description of the subdivision
+ * @property density - Relative beat density multiplier (1 = quarter, 2 = eighth, etc.)
  */
 interface SubdivisionTypeConfig {
     id: SubdivisionType;
@@ -118,6 +143,13 @@ interface SubdivisionSettingsProps {
  *
  * Renders settings for beat subdivision including segment management,
  * subdivision type selection, and SubdividedBeatMap generation.
+ *
+ * The component integrates with the beatDetectionStore for state management
+ * and includes an expandable SubdivisionTimelineEditor for visual editing.
+ *
+ * @param props - Component props
+ * @param props.disabled - Whether controls should be disabled (default: false)
+ * @returns The rendered settings panel
  */
 export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsProps) {
     const subdivisionConfig = useSubdivisionConfig();

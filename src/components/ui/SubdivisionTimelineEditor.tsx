@@ -5,13 +5,30 @@
  * Part of Phase 4: SubdivisionTimelineEditor Component
  *
  * Features:
- * - Visual timeline showing beat positions
+ * - Visual timeline showing beat positions with measure markers
  * - Colored regions for each subdivision segment
- * - Drag handles to adjust segment boundaries
- * - Click to add new segment at position
- * - Zoom and scroll for long tracks
+ * - Drag handles to adjust segment boundaries (keyboard accessible)
+ * - Click to add new segment at position with type picker
+ * - Zoom and scroll controls for navigating long tracks
+ * - Time ruler (seconds/minutes) and beat ruler (beat numbers)
+ *
+ * This component provides a visual interface for editing the subdivision
+ * configuration managed by SubdivisionSettings. Changes are synced to the
+ * beatDetectionStore in real-time.
  *
  * @component
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <SubdivisionTimelineEditor />
+ *
+ * // With disabled state
+ * <SubdivisionTimelineEditor disabled={true} />
+ * ```
+ *
+ * @see SubdivisionSettings - Parent component that contains this editor
+ * @see useSubdivisionConfig - Store hook for accessing subdivision config
+ * @see useUnifiedBeatMap - Store hook for beat positions
  */
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { ZoomIn, ZoomOut, Plus, MoveHorizontal } from 'lucide-react';
@@ -24,7 +41,16 @@ import {
 import type { SubdivisionType } from '@/types';
 
 /**
- * Subdivision type configuration for display and coloring
+ * Subdivision type configuration for display and coloring.
+ *
+ * Each subdivision type has visual properties for timeline rendering
+ * including colors that match the CSS variables defined in base.css.
+ *
+ * @property id - The subdivision type identifier
+ * @property label - Full display label (e.g., "Eighth")
+ * @property shortLabel - Compact label for timeline display (e.g., "2x")
+ * @property color - Primary color for the subdivision (HSL format)
+ * @property backgroundColor - Background color for segment regions (HSLA format)
  */
 interface SubdivisionTypeConfig {
     id: SubdivisionType;
@@ -108,7 +134,13 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
 ];
 
 /**
- * Get subdivision type config by id
+ * Get subdivision type configuration by ID.
+ *
+ * Returns the color and display configuration for a subdivision type.
+ * Falls back to quarter notes if the type is not found.
+ *
+ * @param type - The subdivision type to look up
+ * @returns The subdivision type configuration object
  */
 const getTypeConfig = (type: SubdivisionType): SubdivisionTypeConfig => {
     return SUBDIVISION_TYPES.find(t => t.id === type) ?? SUBDIVISION_TYPES[0];
@@ -131,6 +163,14 @@ interface SubdivisionTimelineEditorProps {
  *
  * Renders a visual timeline for editing subdivision segments with
  * drag-and-drop boundary adjustment and click-to-add functionality.
+ *
+ * The editor supports both mouse/touch interaction and keyboard navigation
+ * for accessibility. Segment boundaries can be adjusted by dragging handles
+ * or using arrow keys when focused.
+ *
+ * @param props - Component props
+ * @param props.disabled - Whether the editor controls should be disabled (default: false)
+ * @returns The rendered timeline editor, or null if no UnifiedBeatMap exists
  */
 export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimelineEditorProps) {
     const subdivisionConfig = useSubdivisionConfig();
@@ -178,7 +218,13 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     const duration = unifiedBeatMap?.duration ?? 0;
 
     /**
-     * Calculate beat position from mouse X coordinate
+     * Calculate beat position from mouse X coordinate.
+     *
+     * Converts a pixel position to a beat index, accounting for scroll
+     * position and zoom level. The result is clamped to valid beat range.
+     *
+     * @param x - The mouse X coordinate (clientX)
+     * @returns The beat index at that position, clamped to [0, totalBeats-1]
      */
     const getBeatFromX = useCallback((x: number): number => {
         if (!timelineRef.current) return 0;
@@ -192,29 +238,42 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [pixelsPerBeat, totalBeats]);
 
     /**
-     * Calculate X position from beat index
+     * Calculate X position from beat index.
+     *
+     * Converts a beat index to a pixel position on the timeline,
+     * accounting for the current zoom level.
+     *
+     * @param beat - The beat index
+     * @returns The X position in pixels
      */
     const getXFromBeat = useCallback((beat: number): number => {
         return beat * pixelsPerBeat;
     }, [pixelsPerBeat]);
 
     /**
-     * Handle zoom in
+     * Handle zoom in button click.
+     * Increases zoom by 1.5x, up to a maximum of 8x.
      */
     const handleZoomIn = () => {
         setZoom(prev => Math.min(prev * 1.5, 8));
     };
 
     /**
-     * Handle zoom out
+     * Handle zoom out button click.
+     * Decreases zoom by 1.5x, down to a minimum of 0.5x.
      */
     const handleZoomOut = () => {
         setZoom(prev => Math.max(prev / 1.5, 0.5));
     };
 
     /**
-     * Check if a beat position falls within any existing segment's range
-     * (Phase 4, Task 4.4: Validate - can't overlap existing segments)
+     * Check if a beat position falls within any existing segment's range.
+     *
+     * Used to validate that new segments don't overlap existing ones.
+     * A beat is considered within a segment if it's >= startBeat and < endBeat.
+     *
+     * @param beat - The beat index to check
+     * @returns true if the beat falls within any segment's range
      */
     const isBeatWithinSegmentRange = useCallback((beat: number): boolean => {
         for (let i = 0; i < subdivisionConfig.segments.length; i++) {
@@ -231,8 +290,14 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [subdivisionConfig.segments, totalBeats]);
 
     /**
-     * Handle click on timeline to add segment
-     * (Phase 4, Task 4.4: Click to Add Segment)
+     * Handle click on timeline to add a new segment.
+     *
+     * Opens the type picker popup at the clicked position, allowing
+     * the user to select a subdivision type for the new segment.
+     * Validates that the click is not on an existing segment and
+     * not at beat 0 (which belongs to the first segment).
+     *
+     * @param e - The mouse click event
      */
     const handleTimelineClick = (e: React.MouseEvent) => {
         if (disabled || draggingSegment !== null) return;
@@ -255,7 +320,12 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
-     * Handle adding segment with selected type
+     * Handle adding a segment with the selected subdivision type.
+     *
+     * Called when the user selects a type from the type picker popup.
+     * Adds the segment to the store and closes the popup.
+     *
+     * @param type - The subdivision type for the new segment
      */
     const handleAddSegmentWithType = (type: SubdivisionType) => {
         addSubdivisionSegment({
@@ -266,7 +336,13 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
-     * Handle mouse down on segment boundary (start drag)
+     * Handle mouse down on a segment boundary handle (start drag).
+     *
+     * Initiates a drag operation to adjust the segment's start beat.
+     * Stores the initial position for calculating delta during drag.
+     *
+     * @param e - The mouse down event
+     * @param segmentIndex - The index of the segment whose boundary is being dragged
      */
     const handleHandleMouseDown = (e: React.MouseEvent, segmentIndex: number) => {
         if (disabled) return;
@@ -279,7 +355,11 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
-     * Handle mouse move during drag
+     * Handle mouse move during drag operation.
+     *
+     * Updates the segment's start beat based on the drag delta,
+     * constrained to valid ranges (no overlapping segments).
+     * Uses window event listeners for smooth dragging outside the component.
      */
     useEffect(() => {
         if (draggingSegment === null) return;
@@ -320,7 +400,14 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [draggingSegment, dragStartX, dragStartBeat, pixelsPerBeat, subdivisionConfig.segments, totalBeats, updateSubdivisionSegment]);
 
     /**
-     * Handle keyboard navigation for segment boundaries
+     * Handle keyboard navigation for segment boundary handles.
+     *
+     * Allows adjusting segment boundaries with arrow keys for accessibility.
+     * Left arrow moves the boundary one beat earlier, right arrow moves it
+     * one beat later. Boundaries are constrained to valid ranges.
+     *
+     * @param e - The keyboard event
+     * @param segmentIndex - The index of the segment whose boundary is being adjusted
      */
     const handleHandleKeyDown = (e: React.KeyboardEvent, segmentIndex: number) => {
         if (disabled) return;
@@ -356,7 +443,11 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     };
 
     /**
-     * Generate beat markers for the timeline
+     * Generate beat markers for the timeline grid.
+     *
+     * Creates an array of beat marker objects for rendering grid lines.
+     * Only generates markers for visible beats (plus buffer) for performance.
+     * Downbeat markers (first beat of each measure) are marked for special styling.
      */
     const beatMarkers = useMemo(() => {
         if (!hasUnifiedBeatMap || totalBeats === 0) return [];
@@ -379,8 +470,12 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [hasUnifiedBeatMap, totalBeats, scrollPosition, pixelsPerBeat, beatsPerMeasure, getXFromBeat]);
 
     /**
-     * Generate time ruler markers (Task 4.2)
-     * Shows seconds and minutes on a ruler above the timeline
+     * Generate time ruler markers (seconds/minutes).
+     *
+     * Creates markers for the time ruler above the timeline. Automatically
+     * adjusts interval based on visible duration to show appropriate granularity
+     * (1s, 5s, 10s, 15s, 30s, or 60s intervals).
+     * Only generates markers for the visible time range.
      */
     const timeMarkers = useMemo(() => {
         if (!hasUnifiedBeatMap || duration === 0) return [];
@@ -435,8 +530,11 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [hasUnifiedBeatMap, duration, scrollPosition, timelineWidth]);
 
     /**
-     * Generate beat ruler markers (Task 4.2)
-     * Shows beat numbers on a ruler below the timeline
+     * Generate beat ruler markers (beat numbers/measure numbers).
+     *
+     * Creates markers for the beat ruler below the timeline. Automatically
+     * adjusts interval based on zoom level to show appropriate granularity.
+     * Measure markers show "M1, M2, etc" instead of beat numbers.
      */
     const beatRulerMarkers = useMemo(() => {
         if (!hasUnifiedBeatMap || totalBeats === 0) return [];
@@ -489,7 +587,10 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [hasUnifiedBeatMap, totalBeats, scrollPosition, pixelsPerBeat, beatsPerMeasure, getXFromBeat]);
 
     /**
-     * Calculate segment positions for rendering
+     * Calculate segment positions and styling for rendering.
+     *
+     * Maps each segment in the configuration to renderable region data
+     * including position, width, colors, and end beat.
      */
     const segmentRegions = useMemo(() => {
         return subdivisionConfig.segments.map((segment, index) => {
@@ -509,7 +610,12 @@ export function SubdivisionTimelineEditor({ disabled = false }: SubdivisionTimel
     }, [subdivisionConfig.segments, totalBeats, getXFromBeat]);
 
     /**
-     * Handle scroll event to update visible markers and sync rulers
+     * Handle scroll event to update visible markers and sync rulers.
+     *
+     * Updates the scroll position state and synchronizes scroll across
+     * the time ruler, timeline track, and beat ruler for aligned scrolling.
+     *
+     * @param e - The scroll event
      */
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const scrollLeft = e.currentTarget.scrollLeft;
