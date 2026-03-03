@@ -169,10 +169,18 @@ export function BeatTimeline({
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Reset animation reference when playback starts to prevent initial jitter
-  // This ensures the animation loop has a fresh timestamp when starting
+  // Track previous isPlaying state to detect transitions
+  const prevIsPlayingRef = useRef(isPlaying);
+
+  // Reset animation reference ONLY when playback transitions from paused to playing
+  // This prevents initial jitter by ensuring the animation loop has a fresh timestamp
+  // IMPORTANT: This must NOT run on every currentTime change, only on isPlaying transition
   useEffect(() => {
-    if (isPlaying) {
+    const wasPlaying = prevIsPlayingRef.current;
+    prevIsPlayingRef.current = isPlaying;
+
+    // Only reset when transitioning from paused to playing
+    if (isPlaying && !wasPlaying) {
       lastAudioTimeRef.current = {
         time: currentTime,
         timestamp: performance.now(),

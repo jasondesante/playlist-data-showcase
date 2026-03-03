@@ -39,6 +39,7 @@ import type {
     SubdivisionType,
     SubdivisionBeatEvent,
     SubdividedBeat,
+    ButtonPressResult,
 } from 'playlist-data-engine';
 import {
     useBeatDetectionStore,
@@ -88,6 +89,8 @@ export interface UseSubdivisionPlaybackReturn {
     getCurrentBeat: () => SubdividedBeat | null;
     /** Get the next beat */
     getNextBeat: () => SubdividedBeat | null;
+    /** Check tap accuracy against current subdivision's beats */
+    checkTap: () => ButtonPressResult | null;
 }
 
 /**
@@ -150,6 +153,56 @@ export const useSubdivisionPlayback = (
     // Ref to check if playing in callbacks
     const isPlayingRef = useRef(isPlaying);
     isPlayingRef.current = isPlaying;
+
+    // Track audio time updates for interpolation
+    const [lastAudioUpdate, setLastAudioUpdate] = useState<{ time: number; timestamp: number }>({
+        time: currentTime,
+        timestamp: performance.now(),
+    });
+
+    // Update interpolation reference when audio time changes
+    useEffect(() => {
+        setLastAudioUpdate({
+            time: currentTime,
+            timestamp: performance.now(),
+        });
+    }, [currentTime]);
+
+    // Ref to access lastAudioUpdate in callbacks without stale closure issues
+    const lastAudioUpdateRef = useRef(lastAudioUpdate);
+    lastAudioUpdateRef.current = lastAudioUpdate;
+
+    /**
+     * Get interpolated audio time for precise tap checking.
+     */
+    const getInterpolatedTime = useCallback((): number => {
+        // When not playing, use the raw currentTime directly
+        if (!isPlayingRef.current) {
+            return currentTime;
+        }
+
+        // Interpolate between last known audio time updates for smooth precision
+        const { time: lastAudioTime, timestamp: lastUpdateTimestamp } = lastAudioUpdateRef.current;
+        const elapsedMs = performance.now() - lastUpdateTimestamp;
+        const elapsedSeconds = elapsedMs / 1000;
+        const interpolated = lastAudioTime + elapsedSeconds;
+
+        // Clamp to track duration
+        return Math.min(unifiedBeatMap?.duration ?? 0, interpolated);
+    }, [currentTime, unifiedBeatMap?.duration]);
+
+    /**
+     * Check tap accuracy against the current subdivision's beats.
+     */
+    const checkTap = useCallback((): ButtonPressResult | null => {
+        const controller = getActiveSubdivisionPlaybackController();
+        if (!controller || !isActive) {
+            return null;
+        }
+        const tapTime = getInterpolatedTime();
+        const thresholds = useBeatDetectionStore.getState().actions.getAccuracyThresholds();
+        return controller.checkButtonPress(tapTime, thresholds);
+    }, [isActive, getInterpolatedTime]);
 
     /**
      * Create or get the AudioContext.
@@ -498,6 +551,7 @@ export const useSubdivisionPlayback = (
         getBeatAtTime,
         getCurrentBeat,
         getNextBeat,
+        checkTap,
     };
 };
 

@@ -219,6 +219,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     currentSubdivision,
     isActive: subdivisionIsActive,
     setSubdivision,
+    checkTap: checkSubdivisionTap,
   } = useSubdivisionPlayback(true);
 
   // Transition mode for subdivision changes (Phase 6: Task 6.7)
@@ -298,7 +299,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     // Update last tap time
     lastTapTimeRef.current = now;
 
-    const result = checkTap();
+    // Use subdivision tap check when real-time subdivision is active
+    const useSubdivisionTap = subdivisionPlaybackAvailable && 
+                              currentSubdivision !== 'quarter' && 
+                              subdivisionIsActive;
+    
+    const result = useSubdivisionTap ? checkSubdivisionTap() : checkTap();
     if (result) {
       // Record in store
       recordTap(result);
@@ -319,7 +325,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       };
       setTapDebugHistory(prev => [debugInfo, ...prev]);
     }
-  }, [checkTap, recordTap, streamIsActive, showTapFeedback]);
+  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive]);
 
   /**
    * Handle keyboard events
