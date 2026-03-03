@@ -36,29 +36,39 @@ interface SubdivisionTypeConfig {
 
 /**
  * All subdivision types with their display properties and colors
- * Colors are defined per Phase 8 Task 8.1 specifications
+ * Colors match the CSS variables defined in base.css (Phase 8, Task 8.1)
+ *
+ * CSS Variables Reference:
+ * --subdivision-quarter: 210 100% 50% (Primary blue)
+ * --subdivision-half: 142 76% 46% (Green)
+ * --subdivision-eighth: 30 100% 50% (Orange)
+ * --subdivision-sixteenth: 0 84% 60% (Red)
+ * --subdivision-triplet8: 280 80% 55% (Purple)
+ * --subdivision-triplet4: 330 80% 55% (Pink)
+ * --subdivision-dotted4: 180 70% 45% (Teal)
+ * --subdivision-dotted8: 48 96% 53% (Yellow/Gold)
  */
 const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
     {
         id: 'quarter',
         label: 'Quarter',
         shortLabel: '1x',
-        color: 'hsl(217, 91%, 60%)', // Primary blue
-        backgroundColor: 'hsla(217, 91%, 60%, 0.2)',
+        color: 'hsl(210, 100%, 50%)', // Primary blue
+        backgroundColor: 'hsla(210, 100%, 50%, 0.2)',
     },
     {
         id: 'half',
         label: 'Half',
         shortLabel: '0.5x',
-        color: 'hsl(142, 76%, 36%)', // Green
-        backgroundColor: 'hsla(142, 76%, 36%, 0.2)',
+        color: 'hsl(142, 76%, 46%)', // Green
+        backgroundColor: 'hsla(142, 76%, 46%, 0.2)',
     },
     {
         id: 'eighth',
         label: 'Eighth',
         shortLabel: '2x',
-        color: 'hsl(38, 92%, 50%)', // Orange
-        backgroundColor: 'hsla(38, 92%, 50%, 0.2)',
+        color: 'hsl(30, 100%, 50%)', // Orange
+        backgroundColor: 'hsla(30, 100%, 50%, 0.2)',
     },
     {
         id: 'sixteenth',
@@ -71,15 +81,15 @@ const SUBDIVISION_TYPES: SubdivisionTypeConfig[] = [
         id: 'triplet8',
         label: 'Triplet 8th',
         shortLabel: '3/Q',
-        color: 'hsl(271, 91%, 65%)', // Purple
-        backgroundColor: 'hsla(271, 91%, 65%, 0.2)',
+        color: 'hsl(280, 80%, 55%)', // Purple
+        backgroundColor: 'hsla(280, 80%, 55%, 0.2)',
     },
     {
         id: 'triplet4',
         label: 'Triplet 4th',
         shortLabel: '3/H',
-        color: 'hsl(326, 100%, 74%)', // Pink
-        backgroundColor: 'hsla(326, 100%, 74%, 0.2)',
+        color: 'hsl(330, 80%, 55%)', // Pink
+        backgroundColor: 'hsla(330, 80%, 55%, 0.2)',
     },
     {
         id: 'dotted4',

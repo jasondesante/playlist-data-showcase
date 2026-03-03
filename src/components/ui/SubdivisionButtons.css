@@ -325,52 +325,52 @@
 
 /* ============================================
    SUBDIVISION TYPE COLOR VARIATIONS
-   Optional: Different colors per subdivision type
+   Phase 8, Task 8.1: Using centralized subdivision color variables
    ============================================ */
 
 /* Quarter - Primary blue (default) */
 .subdivision-buttons-btn[data-subdivision-index="0"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary) / 0.12));
-    border-color: hsl(var(--primary));
-    color: hsl(var(--primary));
+    background: linear-gradient(135deg, hsl(var(--subdivision-quarter) / 0.18), hsl(var(--subdivision-quarter) / 0.12));
+    border-color: hsl(var(--subdivision-quarter));
+    color: hsl(var(--subdivision-quarter));
 }
 
 /* Half - Green (slower) */
 .subdivision-buttons-btn[data-subdivision-index="1"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(142 76% 36% / 0.18), hsl(142 76% 36% / 0.12));
-    border-color: hsl(142 76% 36%);
-    color: hsl(142 76% 45%);
-    box-shadow: 0 0 12px hsl(142 76% 36% / 0.2);
+    background: linear-gradient(135deg, hsl(var(--subdivision-half) / 0.18), hsl(var(--subdivision-half) / 0.12));
+    border-color: hsl(var(--subdivision-half));
+    color: hsl(var(--subdivision-half));
+    box-shadow: 0 0 12px hsl(var(--subdivision-half) / 0.2);
 }
 
 /* Eighth - Orange (2x) */
 .subdivision-buttons-btn[data-subdivision-index="2"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(38 92% 50% / 0.18), hsl(38 92% 50% / 0.12));
-    border-color: hsl(38 92% 50%);
-    color: hsl(38 92% 55%);
-    box-shadow: 0 0 12px hsl(38 92% 50% / 0.2);
+    background: linear-gradient(135deg, hsl(var(--subdivision-eighth) / 0.18), hsl(var(--subdivision-eighth) / 0.12));
+    border-color: hsl(var(--subdivision-eighth));
+    color: hsl(var(--subdivision-eighth));
+    box-shadow: 0 0 12px hsl(var(--subdivision-eighth) / 0.2);
 }
 
 /* Sixteenth - Red (4x, max density) */
 .subdivision-buttons-btn[data-subdivision-index="3"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(0 84% 60% / 0.18), hsl(0 84% 60% / 0.12));
-    border-color: hsl(0 84% 60%);
-    color: hsl(0 84% 65%);
-    box-shadow: 0 0 12px hsl(0 84% 60% / 0.2);
+    background: linear-gradient(135deg, hsl(var(--subdivision-sixteenth) / 0.18), hsl(var(--subdivision-sixteenth) / 0.12));
+    border-color: hsl(var(--subdivision-sixteenth));
+    color: hsl(var(--subdivision-sixteenth));
+    box-shadow: 0 0 12px hsl(var(--subdivision-sixteenth) / 0.2);
 }
 
 /* Triplet - Purple */
 .subdivision-buttons-btn[data-subdivision-index="4"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(271 91% 65% / 0.18), hsl(271 91% 65% / 0.12));
-    border-color: hsl(271 91% 65%);
-    color: hsl(271 91% 75%);
-    box-shadow: 0 0 12px hsl(271 91% 65% / 0.2);
+    background: linear-gradient(135deg, hsl(var(--subdivision-triplet8) / 0.18), hsl(var(--subdivision-triplet8) / 0.12));
+    border-color: hsl(var(--subdivision-triplet8));
+    color: hsl(var(--subdivision-triplet8));
+    box-shadow: 0 0 12px hsl(var(--subdivision-triplet8) / 0.2);
 }
 
-/* Swing - Teal */
+/* Swing - Teal (uses dotted8) */
 .subdivision-buttons-btn[data-subdivision-index="5"].subdivision-buttons-btn--active {
-    background: linear-gradient(135deg, hsl(168 60% 45% / 0.18), hsl(168 60% 45% / 0.12));
-    border-color: hsl(168 60% 45%);
-    color: hsl(168 60% 55%);
-    box-shadow: 0 0 12px hsl(168 60% 45% / 0.2);
+    background: linear-gradient(135deg, hsl(var(--subdivision-dotted8) / 0.18), hsl(var(--subdivision-dotted8) / 0.12));
+    border-color: hsl(var(--subdivision-dotted8));
+    color: hsl(var(--subdivision-dotted8));
+    box-shadow: 0 0 12px hsl(var(--subdivision-dotted8) / 0.2);
 }

@@ -1066,95 +1066,95 @@
 
 /* Quarter notes - Primary blue (default, no subdivision) */
 .beat-timeline-marker--subdivision-quarter .beat-timeline-marker-dot {
-  background: hsl(210, 100%, 50%);
-  box-shadow: 0 0 8px hsl(210, 100%, 50% / 0.6);
+  background: hsl(var(--subdivision-quarter));
+  box-shadow: 0 0 8px hsl(var(--subdivision-quarter) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-quarter.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(210, 100%, 45%);
-  box-shadow: 0 0 12px hsl(210, 100%, 45% / 0.7);
+  background: hsl(var(--subdivision-quarter) / 0.9);
+  box-shadow: 0 0 12px hsl(var(--subdivision-quarter) / 0.7);
 }
 
 /* Half notes - Green (slower, more relaxed) */
 .beat-timeline-marker--subdivision-half .beat-timeline-marker-dot {
-  background: hsl(142, 76%, 46%);
-  box-shadow: 0 0 8px hsl(142, 76%, 46% / 0.6);
+  background: hsl(var(--subdivision-half));
+  box-shadow: 0 0 8px hsl(var(--subdivision-half) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-half.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(142, 76%, 40%);
-  box-shadow: 0 0 12px hsl(142, 76%, 40% / 0.7);
+  background: hsl(var(--subdivision-half) / 0.87);
+  box-shadow: 0 0 12px hsl(var(--subdivision-half) / 0.7);
 }
 
 /* Eighth notes - Orange (double time, energetic) */
 .beat-timeline-marker--subdivision-eighth .beat-timeline-marker-dot {
-  background: hsl(30, 100%, 50%);
-  box-shadow: 0 0 8px hsl(30, 100%, 50% / 0.6);
+  background: hsl(var(--subdivision-eighth));
+  box-shadow: 0 0 8px hsl(var(--subdivision-eighth) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-eighth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(30, 100%, 45%);
-  box-shadow: 0 0 12px hsl(30, 100%, 45% / 0.7);
+  background: hsl(var(--subdivision-eighth) / 0.9);
+  box-shadow: 0 0 12px hsl(var(--subdivision-eighth) / 0.7);
 }
 
 /* Sixteenth notes - Red (maximum density, intense) */
 .beat-timeline-marker--subdivision-sixteenth .beat-timeline-marker-dot {
-  background: hsl(0, 84%, 60%);
-  box-shadow: 0 0 8px hsl(0, 84%, 60% / 0.6);
+  background: hsl(var(--subdivision-sixteenth));
+  box-shadow: 0 0 8px hsl(var(--subdivision-sixteenth) / 0.6);
   /* Smaller size for sixteenth notes to fit more on screen */
   width: 0.625rem;
   height: 0.625rem;
 }
 
 .beat-timeline-marker--subdivision-sixteenth.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(0, 84%, 55%);
-  box-shadow: 0 0 12px hsl(0, 84%, 55% / 0.7);
+  background: hsl(var(--subdivision-sixteenth) / 0.92);
+  box-shadow: 0 0 12px hsl(var(--subdivision-sixteenth) / 0.7);
   width: 0.875rem;
   height: 0.875rem;
 }
 
 /* Triplet eighth (3 per quarter) - Purple */
 .beat-timeline-marker--subdivision-triplet8 .beat-timeline-marker-dot {
-  background: hsl(280, 80%, 55%);
-  box-shadow: 0 0 8px hsl(280, 80%, 55% / 0.6);
+  background: hsl(var(--subdivision-triplet8));
+  box-shadow: 0 0 8px hsl(var(--subdivision-triplet8) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-triplet8.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(280, 80%, 50%);
-  box-shadow: 0 0 12px hsl(280, 80%, 50% / 0.7);
+  background: hsl(var(--subdivision-triplet8) / 0.91);
+  box-shadow: 0 0 12px hsl(var(--subdivision-triplet8) / 0.7);
 }
 
 /* Triplet quarter (3 per half) - Pink */
 .beat-timeline-marker--subdivision-triplet4 .beat-timeline-marker-dot {
-  background: hsl(330, 80%, 55%);
-  box-shadow: 0 0 8px hsl(330, 80%, 55% / 0.6);
+  background: hsl(var(--subdivision-triplet4));
+  box-shadow: 0 0 8px hsl(var(--subdivision-triplet4) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-triplet4.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(330, 80%, 50%);
-  box-shadow: 0 0 12px hsl(330, 80%, 50% / 0.7);
+  background: hsl(var(--subdivision-triplet4) / 0.91);
+  box-shadow: 0 0 12px hsl(var(--subdivision-triplet4) / 0.7);
 }
 
 /* Dotted quarter (1.5x interval) - Teal */
 .beat-timeline-marker--subdivision-dotted4 .beat-timeline-marker-dot {
-  background: hsl(180, 70%, 45%);
-  box-shadow: 0 0 8px hsl(180, 70%, 45% / 0.6);
+  background: hsl(var(--subdivision-dotted4));
+  box-shadow: 0 0 8px hsl(var(--subdivision-dotted4) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-dotted4.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(180, 70%, 40%);
-  box-shadow: 0 0 12px hsl(180, 70%, 40% / 0.7);
+  background: hsl(var(--subdivision-dotted4) / 0.89);
+  box-shadow: 0 0 12px hsl(var(--subdivision-dotted4) / 0.7);
 }
 
 /* Dotted eighth (swing pattern) - Yellow/Gold */
 .beat-timeline-marker--subdivision-dotted8 .beat-timeline-marker-dot {
-  background: hsl(48, 96%, 53%);
-  box-shadow: 0 0 8px hsl(48, 96%, 53% / 0.6);
+  background: hsl(var(--subdivision-dotted8));
+  box-shadow: 0 0 8px hsl(var(--subdivision-dotted8) / 0.6);
 }
 
 .beat-timeline-marker--subdivision-dotted8.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
-  background: hsl(48, 96%, 48%);
-  box-shadow: 0 0 12px hsl(48, 96%, 48% / 0.7);
+  background: hsl(var(--subdivision-dotted8) / 0.91);
+  box-shadow: 0 0 12px hsl(var(--subdivision-dotted8) / 0.7);
 }
 
 /* Upcoming subdivided beats - glow animation with subdivision-specific colors */
@@ -1238,89 +1238,89 @@
 .beat-timeline-subdivision-boundary--quarter .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(210, 100%, 50% / 0.8) 0px,
-    hsl(210, 100%, 50% / 0.8) 4px,
+    hsl(var(--subdivision-quarter) / 0.8) 0px,
+    hsl(var(--subdivision-quarter) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(210, 100%, 50% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-quarter) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--half .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(142, 76%, 46% / 0.8) 0px,
-    hsl(142, 76%, 46% / 0.8) 4px,
+    hsl(var(--subdivision-half) / 0.8) 0px,
+    hsl(var(--subdivision-half) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(142, 76%, 46% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-half) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--eighth .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(30, 100%, 50% / 0.8) 0px,
-    hsl(30, 100%, 50% / 0.8) 4px,
+    hsl(var(--subdivision-eighth) / 0.8) 0px,
+    hsl(var(--subdivision-eighth) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(30, 100%, 50% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-eighth) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--sixteenth .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(0, 84%, 60% / 0.8) 0px,
-    hsl(0, 84%, 60% / 0.8) 4px,
+    hsl(var(--subdivision-sixteenth) / 0.8) 0px,
+    hsl(var(--subdivision-sixteenth) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(0, 84%, 60% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-sixteenth) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--triplet8 .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(280, 80%, 55% / 0.8) 0px,
-    hsl(280, 80%, 55% / 0.8) 4px,
+    hsl(var(--subdivision-triplet8) / 0.8) 0px,
+    hsl(var(--subdivision-triplet8) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(280, 80%, 55% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-triplet8) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--triplet4 .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(330, 80%, 55% / 0.8) 0px,
-    hsl(330, 80%, 55% / 0.8) 4px,
+    hsl(var(--subdivision-triplet4) / 0.8) 0px,
+    hsl(var(--subdivision-triplet4) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(330, 80%, 55% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-triplet4) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--dotted4 .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(180, 70%, 45% / 0.8) 0px,
-    hsl(180, 70%, 45% / 0.8) 4px,
+    hsl(var(--subdivision-dotted4) / 0.8) 0px,
+    hsl(var(--subdivision-dotted4) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(180, 70%, 45% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-dotted4) / 0.4);
 }
 
 .beat-timeline-subdivision-boundary--dotted8 .beat-timeline-subdivision-line {
   background: repeating-linear-gradient(
     180deg,
-    hsl(48, 96%, 53% / 0.8) 0px,
-    hsl(48, 96%, 53% / 0.8) 4px,
+    hsl(var(--subdivision-dotted8) / 0.8) 0px,
+    hsl(var(--subdivision-dotted8) / 0.8) 4px,
     transparent 4px,
     transparent 8px
   );
-  box-shadow: 0 0 8px hsl(48, 96%, 53% / 0.4);
+  box-shadow: 0 0 8px hsl(var(--subdivision-dotted8) / 0.4);
 }
 
 /* ============================================
@@ -1329,43 +1329,43 @@
    ============================================ */
 
 .beat-timeline-legend-marker--subdivision-quarter {
-  background: hsl(210, 100%, 50%);
-  box-shadow: 0 0 6px hsl(210, 100%, 50% / 0.6);
+  background: hsl(var(--subdivision-quarter));
+  box-shadow: 0 0 6px hsl(var(--subdivision-quarter) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-half {
-  background: hsl(142, 76%, 46%);
-  box-shadow: 0 0 6px hsl(142, 76%, 46% / 0.6);
+  background: hsl(var(--subdivision-half));
+  box-shadow: 0 0 6px hsl(var(--subdivision-half) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-eighth {
-  background: hsl(30, 100%, 50%);
-  box-shadow: 0 0 6px hsl(30, 100%, 50% / 0.6);
+  background: hsl(var(--subdivision-eighth));
+  box-shadow: 0 0 6px hsl(var(--subdivision-eighth) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-sixteenth {
-  background: hsl(0, 84%, 60%);
-  box-shadow: 0 0 6px hsl(0, 84%, 60% / 0.6);
+  background: hsl(var(--subdivision-sixteenth));
+  box-shadow: 0 0 6px hsl(var(--subdivision-sixteenth) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-triplet8 {
-  background: hsl(280, 80%, 55%);
-  box-shadow: 0 0 6px hsl(280, 80%, 55% / 0.6);
+  background: hsl(var(--subdivision-triplet8));
+  box-shadow: 0 0 6px hsl(var(--subdivision-triplet8) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-triplet4 {
-  background: hsl(330, 80%, 55%);
-  box-shadow: 0 0 6px hsl(330, 80%, 55% / 0.6);
+  background: hsl(var(--subdivision-triplet4));
+  box-shadow: 0 0 6px hsl(var(--subdivision-triplet4) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-dotted4 {
-  background: hsl(180, 70%, 45%);
-  box-shadow: 0 0 6px hsl(180, 70%, 45% / 0.6);
+  background: hsl(var(--subdivision-dotted4));
+  box-shadow: 0 0 6px hsl(var(--subdivision-dotted4) / 0.6);
 }
 
 .beat-timeline-legend-marker--subdivision-dotted8 {
-  background: hsl(48, 96%, 53%);
-  box-shadow: 0 0 6px hsl(48, 96%, 53% / 0.6);
+  background: hsl(var(--subdivision-dotted8));
+  box-shadow: 0 0 6px hsl(var(--subdivision-dotted8) / 0.6);
 }
 
 /* Segment boundary legend indicator */

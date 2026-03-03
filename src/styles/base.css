@@ -155,6 +155,39 @@
   --cute-purple-bg: hsl(var(--cute-purple) / 0.15);
   --cute-blue-bg: hsl(var(--cute-blue) / 0.15);
   --cute-gold-bg: hsl(var(--cute-gold) / 0.15);
+
+  /* ========================================
+     SUBDIVISION COLOR SCHEME (Phase 8, Task 8.1)
+     Consistent colors for beat subdivision types
+     ======================================== */
+
+  /* Subdivision colors - HSL values for use with hsl() function */
+  /* Quarter - Primary blue (default, standard beat) */
+  --subdivision-quarter: 210 100% 50%;
+  /* Half - Green (slower, more relaxed) */
+  --subdivision-half: 142 76% 46%;
+  /* Eighth - Orange (double time, energetic) */
+  --subdivision-eighth: 30 100% 50%;
+  /* Sixteenth - Red (maximum density, intense) */
+  --subdivision-sixteenth: 0 84% 60%;
+  /* Triplet8 - Purple (eighth triplets, 3 per quarter) */
+  --subdivision-triplet8: 280 80% 55%;
+  /* Triplet4 - Pink (quarter triplets, 3 per half) */
+  --subdivision-triplet4: 330 80% 55%;
+  /* Dotted4 - Teal (dotted quarter, 1.5x interval) */
+  --subdivision-dotted4: 180 70% 45%;
+  /* Dotted8 - Yellow/Gold (dotted eighth, swing pattern) */
+  --subdivision-dotted8: 48 96% 53%;
+
+  /* Subdivision background variants (with transparency for badges/tags/overlays) */
+  --subdivision-quarter-bg: hsl(var(--subdivision-quarter) / 0.18);
+  --subdivision-half-bg: hsl(var(--subdivision-half) / 0.18);
+  --subdivision-eighth-bg: hsl(var(--subdivision-eighth) / 0.18);
+  --subdivision-sixteenth-bg: hsl(var(--subdivision-sixteenth) / 0.18);
+  --subdivision-triplet8-bg: hsl(var(--subdivision-triplet8) / 0.18);
+  --subdivision-triplet4-bg: hsl(var(--subdivision-triplet4) / 0.18);
+  --subdivision-dotted4-bg: hsl(var(--subdivision-dotted4) / 0.18);
+  --subdivision-dotted8-bg: hsl(var(--subdivision-dotted8) / 0.18);
 }
 
 /* --------------------------------------------
