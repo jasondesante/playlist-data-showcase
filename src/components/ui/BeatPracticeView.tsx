@@ -548,9 +548,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <span className="beat-practice-stat-value">{formatTime(duration)}</span>
           <span className="beat-practice-stat-label">Duration</span>
         </div>
-        {/* Current Subdivision Display (Phase 6: Task 6.5) */}
+        {/* Current Subdivision Display (Phase 6: Task 6.5, Phase 8: Task 8.3) */}
         {subdivisionPlaybackAvailable && (
-          <div className="beat-practice-stat beat-practice-stat--subdivision">
+          <div
+            className="beat-practice-stat beat-practice-stat--subdivision"
+            data-subdivision={currentSubdivision}
+          >
             <span className={`beat-practice-stat-value beat-practice-stat-value--subdivision ${subdivisionIsActive ? 'beat-practice-stat-value--subdivision-active' : ''}`}>
               {currentSubdivision}
             </span>

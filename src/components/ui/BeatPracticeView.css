@@ -298,17 +298,21 @@
 /* ============================================
    SUBDIVISION STAT DISPLAY
    Phase 6: Task 6.5 - Show current subdivision in stats area
+   Phase 8: Task 8.3 - Use centralized subdivision color scheme
    ============================================ */
 
+/* Base subdivision stat styling - uses quarter as default */
 .beat-practice-stat--subdivision {
-  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--cute-purple) / 0.05));
-  border-color: hsl(var(--cute-purple) / 0.2);
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-quarter) / 0.05));
+  border-color: hsl(var(--subdivision-quarter) / 0.2);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .beat-practice-stat-value--subdivision {
   font-size: 1rem;
   text-transform: capitalize;
-  color: hsl(var(--cute-purple));
+  color: hsl(var(--subdivision-quarter));
+  transition: color 0.3s ease;
 }
 
 .beat-practice-stat-value--subdivision-active {
@@ -329,11 +333,138 @@
   font-size: 0.5rem;
   font-weight: 500;
   text-transform: lowercase;
-  color: hsl(var(--cute-purple));
-  background: hsl(var(--cute-purple) / 0.15);
+  color: hsl(var(--subdivision-quarter));
+  background: hsl(var(--subdivision-quarter) / 0.15);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   animation: indicator-fade 1.5s ease-in-out infinite;
+  transition: color 0.3s ease, background 0.3s ease;
+}
+
+/* ============================================
+   SUBDIVISION TYPE-SPECIFIC COLORS
+   Phase 8, Task 8.3: Dynamic colors based on data-subdivision attribute
+   Uses centralized subdivision color variables from base.css (Task 8.1)
+   ============================================ */
+
+/* Quarter - Primary blue (default) */
+.beat-practice-stat--subdivision[data-subdivision="quarter"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-quarter) / 0.05));
+  border-color: hsl(var(--subdivision-quarter) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="quarter"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-quarter));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="quarter"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-quarter));
+  background: hsl(var(--subdivision-quarter) / 0.15);
+}
+
+/* Half - Green (slower) */
+.beat-practice-stat--subdivision[data-subdivision="half"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-half) / 0.05));
+  border-color: hsl(var(--subdivision-half) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="half"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-half));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="half"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-half));
+  background: hsl(var(--subdivision-half) / 0.15);
+}
+
+/* Eighth - Orange (2x) */
+.beat-practice-stat--subdivision[data-subdivision="eighth"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-eighth) / 0.05));
+  border-color: hsl(var(--subdivision-eighth) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="eighth"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-eighth));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="eighth"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-eighth));
+  background: hsl(var(--subdivision-eighth) / 0.15);
+}
+
+/* Sixteenth - Red (4x, max density) */
+.beat-practice-stat--subdivision[data-subdivision="sixteenth"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-sixteenth) / 0.05));
+  border-color: hsl(var(--subdivision-sixteenth) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="sixteenth"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-sixteenth));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="sixteenth"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-sixteenth));
+  background: hsl(var(--subdivision-sixteenth) / 0.15);
+}
+
+/* Triplet8 - Purple */
+.beat-practice-stat--subdivision[data-subdivision="triplet8"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-triplet8) / 0.05));
+  border-color: hsl(var(--subdivision-triplet8) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="triplet8"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-triplet8));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="triplet8"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-triplet8));
+  background: hsl(var(--subdivision-triplet8) / 0.15);
+}
+
+/* Triplet4 - Pink */
+.beat-practice-stat--subdivision[data-subdivision="triplet4"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-triplet4) / 0.05));
+  border-color: hsl(var(--subdivision-triplet4) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="triplet4"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-triplet4));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="triplet4"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-triplet4));
+  background: hsl(var(--subdivision-triplet4) / 0.15);
+}
+
+/* Dotted4 - Teal */
+.beat-practice-stat--subdivision[data-subdivision="dotted4"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-dotted4) / 0.05));
+  border-color: hsl(var(--subdivision-dotted4) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="dotted4"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-dotted4));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="dotted4"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-dotted4));
+  background: hsl(var(--subdivision-dotted4) / 0.15);
+}
+
+/* Dotted8 - Yellow/Gold (Swing) */
+.beat-practice-stat--subdivision[data-subdivision="dotted8"] {
+  background: linear-gradient(135deg, hsl(var(--surface-2) / 0.5), hsl(var(--subdivision-dotted8) / 0.05));
+  border-color: hsl(var(--subdivision-dotted8) / 0.2);
+}
+
+.beat-practice-stat--subdivision[data-subdivision="dotted8"] .beat-practice-stat-value--subdivision {
+  color: hsl(var(--subdivision-dotted8));
+}
+
+.beat-practice-stat--subdivision[data-subdivision="dotted8"] .beat-practice-subdivision-indicator {
+  color: hsl(var(--subdivision-dotted8));
+  background: hsl(var(--subdivision-dotted8) / 0.15);
 }
 
 /* Progress Bar for Absolute Seeking */
@@ -1229,6 +1360,7 @@
 /* ============================================
    SUBDIVISION PLAYGROUND CONTAINER
    Phase 6: Task 6.4 - Real-time subdivision switching
+   Phase 8: Task 8.3 - Use centralized subdivision color scheme
    ============================================ */
 
 .beat-practice-subdivision-container {
@@ -1239,6 +1371,13 @@
   background: hsl(var(--surface-2) / 0.5);
   border-radius: 0.5rem;
   border: 1px solid hsl(var(--border) / 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Active state for container when playback is active */
+.beat-practice-subdivision-container:has(.subdivision-buttons--active) {
+  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.08);
 }
 
 .beat-practice-subdivision-header {
@@ -1250,7 +1389,33 @@
 .beat-practice-subdivision-icon {
   width: 1rem;
   height: 1rem;
-  color: hsl(var(--cute-purple));
+  color: hsl(var(--subdivision-quarter));
+  transition: color 0.3s ease;
+}
+
+/* Icon color updates based on active button */
+.beat-practice-subdivision-container:has([data-subdivision-index="0"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-quarter));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="1"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-half));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="2"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-eighth));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="3"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-sixteenth));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="4"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-triplet8));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="5"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-dotted8));
 }
 
 .beat-practice-subdivision-title {
