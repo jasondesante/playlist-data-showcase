@@ -4,7 +4,7 @@
  * Displays running statistics for the beat detection practice mode.
  * Features:
  * - Total taps count
- * - Hit distribution (Perfect, Great, Good, Ok, Miss)
+ * - Hit distribution (Perfect, Great, Good, Ok, Miss, Wrong Key)
  * - Average offset in milliseconds
  * - Standard deviation (timing consistency)
  * - Current streak
@@ -14,6 +14,7 @@
  *
  * Part of Task 5.3: TapStats Component
  * Updated Task 6.4: Source breakdown for detected vs interpolated beats
+ * Updated Task 6.3: Wrong key count display
  */
 import { useCallback } from 'react';
 import { RotateCcw } from 'lucide-react';
@@ -115,6 +116,10 @@ export function TapStats({
           <div className="tap-stats__item tap-stats__item--miss">
             <span className="tap-stats__value">{stats.miss}</span>
             <span className="tap-stats__label">Miss</span>
+          </div>
+          <div className="tap-stats__item tap-stats__item--wrong-key">
+            <span className="tap-stats__value">{stats.wrongKey}</span>
+            <span className="tap-stats__label">Wrong</span>
           </div>
         </div>
 

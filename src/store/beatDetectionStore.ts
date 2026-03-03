@@ -3017,6 +3017,7 @@ export const useTapStatistics = () =>
                 good: 0,
                 ok: 0,
                 miss: 0,
+                wrongKey: 0, // Task 6.3: Wrong key count
                 averageOffset: 0,
                 totalDeviation: 0,
                 standardDeviation: 0,
@@ -3031,13 +3032,14 @@ export const useTapStatistics = () =>
             };
         }
 
-        // Count by accuracy (including 'ok')
+        // Count by accuracy (including 'ok' and 'wrongKey')
         const counts: Record<string, number> = {
             perfect: 0,
             great: 0,
             good: 0,
             ok: 0,
             miss: 0,
+            wrongKey: 0, // Task 6.3: Wrong key count
         };
 
         let totalOffset = 0;
@@ -3056,8 +3058,9 @@ export const useTapStatistics = () =>
             // Offset is in seconds, convert to ms for display
             totalOffset += Math.abs(tap.offset) * 1000;
 
-            // Track streak (non-miss taps)
-            if (tap.accuracy !== 'miss') {
+            // Track streak (non-miss and non-wrongKey taps)
+            // Task 6.3: wrongKey counts as miss for scoring/streak purposes
+            if (tap.accuracy !== 'miss' && tap.accuracy !== 'wrongKey') {
                 currentStreak++;
                 if (currentStreak > bestStreak) {
                     bestStreak = currentStreak;
@@ -3069,14 +3072,15 @@ export const useTapStatistics = () =>
             // Track source breakdown (Task 6.4)
             // Taps without source info (e.g., using BeatMap without interpolation)
             // are not counted in the source breakdown
+            // Task 6.3: wrongKey counts as miss, so not counted as hit
             if (tap.source === 'detected') {
                 detectedBeatsTotal++;
-                if (tap.accuracy !== 'miss') {
+                if (tap.accuracy !== 'miss' && tap.accuracy !== 'wrongKey') {
                     detectedBeatsHit++;
                 }
             } else if (tap.source === 'interpolated') {
                 interpolatedBeatsTotal++;
-                if (tap.accuracy !== 'miss') {
+                if (tap.accuracy !== 'miss' && tap.accuracy !== 'wrongKey') {
                     interpolatedBeatsHit++;
                 }
             }
@@ -3091,9 +3095,11 @@ export const useTapStatistics = () =>
         });
         const standardDeviation = Math.sqrt(squaredDiffs / history.length);
 
-        // Calculate accuracy percentage (non-miss taps / total taps)
+        // Calculate accuracy percentage (non-miss and non-wrongKey taps / total taps)
+        // Task 6.3: wrongKey counts as miss for scoring purposes
+        const missCount = counts.miss + counts.wrongKey;
         const accuracyPercentage = history.length > 0
-            ? Math.round(((history.length - counts.miss) / history.length) * 100 * 10) / 10 // Round to 1 decimal
+            ? Math.round(((history.length - missCount) / history.length) * 100 * 10) / 10 // Round to 1 decimal
             : 0;
 
         return {
@@ -3103,6 +3109,7 @@ export const useTapStatistics = () =>
             good: counts.good,
             ok: counts.ok,
             miss: counts.miss,
+            wrongKey: counts.wrongKey, // Task 6.3: Wrong key count
             averageOffset: Math.round(avgOffset * 10) / 10, // Round to 1 decimal
             totalDeviation: Math.round(totalOffset * 10) / 10, // Sum of all absolute offsets in ms
             standardDeviation: Math.round(standardDeviation * 10) / 10,

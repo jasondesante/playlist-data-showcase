@@ -344,8 +344,9 @@ Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndic
 **Status:** Complete - KeyIndicatorMini component displays key symbols on beat markers. Added `beat-timeline-marker--has-key` CSS class with glow effects, pulsing animation for upcoming beats, and responsive styles for mobile screens. Includes reduced motion support for accessibility.
 
 ### Task 6.3: Update TapStats for Key Statistics
-- [ ] Add "Wrong Keys" count to statistics
-- [ ] Wrong key counts as miss for scoring purposes
+- [x] Add "Wrong Keys" count to statistics
+- [x] Wrong key counts as miss for scoring purposes
+**Status:** Complete - Updated `useTapStatistics` selector to track `wrongKey` count separately. Wrong key is counted as miss for accuracy percentage and streak calculations. Updated TapStats component to display wrong key count in hit distribution row. Added CSS styling for wrong key stat item with darker red color (#dc2626) to differentiate from miss.
 
 ### Task 6.4: Add CSS Variables for wrongKey
 - [ ] Add `--tap-wrong-key` color variable (red)

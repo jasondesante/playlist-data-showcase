@@ -48,9 +48,9 @@
   gap: 0.5rem;
 }
 
-/* Hit distribution row has 6 items */
+/* Hit distribution row has 7 items (Task 6.3: added Wrong Key) */
 .tap-stats__row--hits {
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
 }
 
 /* Source breakdown row has 2 items (Task 6.4) */
@@ -111,6 +111,11 @@
 
 .tap-stats__item--miss .tap-stats__value {
   color: #ef4444;
+}
+
+/* Task 6.3: Wrong key styling - darker red to differentiate from miss */
+.tap-stats__item--wrong-key .tap-stats__value {
+  color: #dc2626;
 }
 
 /* Source breakdown colors (Task 6.4) */
@@ -180,9 +185,9 @@
     gap: 0.375rem;
   }
 
-  /* Hit distribution: 3 columns on tablet/phone */
+  /* Hit distribution: 4 columns on tablet/phone (7 items total) */
   .tap-stats__row--hits {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   /* Source breakdown: keep 2 columns on tablet/phone */
@@ -236,9 +241,9 @@
     gap: 0.25rem;
   }
 
-  /* Hit distribution: 2 columns on very small screens */
+  /* Hit distribution: 4 columns on very small screens (7 items, 2 rows) */
   .tap-stats__row--hits {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   /* Source breakdown: keep 2 columns on very small screens */
