@@ -463,12 +463,20 @@ Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/c
 - Level export/import actions (exportLevel, importLevel with validation, audioId mismatch, beat count mismatch, round-trip)
 
 ### Task 9.4: Integration Tests
-- [ ] Test chart editor workflow (subdivided mode only)
-- [ ] Test practice mode with required keys
-- [ ] Test wrong key feedback (red with overlay)
-- [ ] Test ignore key requirements toggle
-- [ ] Test level export/import round-trip
-- [ ] Test practice without chart (falls back to quarter note stream)
+- [x] Test chart editor workflow (subdivided mode only)
+- [x] Test practice mode with required keys
+- [x] Test wrong key feedback (red with overlay)
+- [x] Test ignore key requirements toggle
+- [x] Test level export/import round-trip
+- [x] Test practice without chart (falls back to quarter note stream)
+**Status:** Complete - Created [src/__tests__/requiredKeysIntegration.test.ts](src/__tests__/requiredKeysIntegration.test.ts) with 45 tests covering:
+- Chart editor workflow (availability, key assignment, erase mode, clear all, bulk assignment, style switching)
+- Practice mode with required keys (key requirements toggle, KeyLane view mode, wrong key detection)
+- Wrong key feedback (ExtendedBeatAccuracy type with 'wrongKey', ButtonPressResult with key info)
+- Level export/import round-trip (export with keys, validation, import with matching/mismatched audioId and beat count, full round-trip)
+- Practice without chart (empty key assignments, KeyLane view without chart, ignore key requirements mode)
+- Store state consistency (state transitions, chart style and KeyLane view consistency)
+- Edge cases (empty beat map, large beat map, rapid key assignments, invalid beat index)
 
 ---
 
