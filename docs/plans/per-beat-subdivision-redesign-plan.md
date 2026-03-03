@@ -67,6 +67,17 @@ This plan covers:
 - [ ] Export `isPerBeatSubdivisionConfig` type guard
 - [ ] Export `validatePerBeatSubdivisionConfig` function
 
+### 1.6 Update Engine Documentation
+
+- [ ] Update `DATA_ENGINE_REFERENCE.md` in playlist-data-engine project
+  - Document new `PerBeatSubdivisionConfig` interface
+  - Document `isPerBeatSubdivisionConfig` type guard
+  - Document `validatePerBeatSubdivisionConfig` function
+  - Update `BeatSubdivider` usage examples to show per-beat approach
+- [ ] Update or remove references to segment-based `SubdivisionConfig`
+  - Mark `SegmentSubdivisionConfig` as legacy/deprecated if kept for reference
+  - Update any examples that used the old segment approach
+
 ---
 
 ## Phase 2: Showcase Type Updates
