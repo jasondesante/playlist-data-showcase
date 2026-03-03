@@ -323,11 +323,19 @@ Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndic
 ## Phase 6: Visual Feedback Updates
 
 ### Task 6.1: Update TapArea for wrongKey Feedback
-- [ ] Add "WRONG KEY" text overlay message
-- [ ] Use red color for wrong key feedback (keep existing color scheme)
-- [ ] Show which key was pressed vs required
-- [ ] Update `getAccuracyColorVar()` to handle 'wrongKey' (use red)
-- [ ] Update `getAccuracyText()` for 'wrongKey' (return "WRONG KEY")
+- [x] Add "WRONG KEY" text overlay message
+- [x] Use red color for wrong key feedback (keep existing color scheme)
+- [x] Show which key was pressed vs required
+- [x] Update `getAccuracyColorVar()` to handle 'wrongKey' (use red)
+- [x] Update `getAccuracyText()` for 'wrongKey' (return "WRONG KEY")
+**Status:** Complete - Updated TapArea component with wrong key feedback:
+- Added `--tap-wrong-key` CSS variable (slightly darker red: #dc2626)
+- Updated `getAccuracyColorVar()` to handle 'wrongKey' case
+- Updated `getAccuracyText()` to return "WRONG KEY" for wrong key
+- Added key mismatch display showing `pressed → required` with strikethrough on wrong key
+- Added CSS for wrong key feedback with shake animation and red glow
+- Added responsive adjustments for key mismatch display
+- Added reduced motion support for key mismatch animation
 
 ### Task 6.2: Update BeatTimeline for Key Display
 - [ ] Show required key indicator on beat markers (↑↓←→ and 1-5)

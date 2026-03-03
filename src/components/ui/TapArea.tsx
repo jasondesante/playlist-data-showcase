@@ -15,7 +15,8 @@
  */
 import { useCallback, useRef, useState, useEffect } from 'react';
 import './TapArea.css';
-import type { ExtendedButtonPressResult, ExtendedBeatAccuracy } from '@/types';
+import type { ExtendedButtonPressResult, ExtendedBeatAccuracy, SupportedKey } from '@/types';
+import { getKeySymbol } from '@/types';
 
 interface TapAreaProps {
   /** Callback when user taps (click or touch) */
@@ -49,6 +50,8 @@ function getAccuracyColorVar(accuracy: ExtendedBeatAccuracy): string {
       return 'var(--tap-good)';
     case 'ok':
       return 'var(--tap-ok)';
+    case 'wrongKey':
+      return 'var(--tap-wrong-key)';
     case 'miss':
     default:
       return 'var(--tap-miss)';
@@ -59,7 +62,22 @@ function getAccuracyColorVar(accuracy: ExtendedBeatAccuracy): string {
  * Get the display text for an accuracy rating.
  */
 function getAccuracyText(accuracy: ExtendedBeatAccuracy): string {
+  if (accuracy === 'wrongKey') {
+    return 'WRONG KEY';
+  }
   return accuracy.toUpperCase();
+}
+
+/**
+ * Get the display symbol for a key.
+ * Returns the key string as-is if it's not a recognized SupportedKey.
+ */
+function getKeyDisplaySymbol(key: string): string {
+  const validKeys: SupportedKey[] = ['up', 'down', 'left', 'right', '1', '2', '3', '4', '5'];
+  if (validKeys.includes(key as SupportedKey)) {
+    return getKeySymbol(key as SupportedKey);
+  }
+  return key.toUpperCase();
 }
 
 /**
@@ -197,7 +215,10 @@ export function TapArea({
       {/* Feedback overlay - shown when there's a tap result */}
       {showFeedback && lastTapResult && (
         <div
-          className="tap-area__feedback"
+          className={[
+            'tap-area__feedback',
+            lastTapResult.accuracy === 'wrongKey' ? 'tap-area__feedback--wrong-key' : '',
+          ].filter(Boolean).join(' ')}
           style={{
             '--tap-feedback-color': getAccuracyColorVar(lastTapResult.accuracy),
           } as React.CSSProperties}
@@ -205,9 +226,20 @@ export function TapArea({
           <span className="tap-area__accuracy">
             {getAccuracyText(lastTapResult.accuracy)}
           </span>
-          <span className="tap-area__offset">
-            {formatOffset(lastTapResult.offset * 1000)}
-          </span>
+          {/* Show key mismatch info for wrong key */}
+          {lastTapResult.accuracy === 'wrongKey' && lastTapResult.pressedKey && lastTapResult.requiredKey && (
+            <span className="tap-area__key-mismatch">
+              <span className="tap-area__key-pressed">{getKeyDisplaySymbol(lastTapResult.pressedKey)}</span>
+              <span className="tap-area__key-arrow">→</span>
+              <span className="tap-area__key-required">{getKeyDisplaySymbol(lastTapResult.requiredKey)}</span>
+            </span>
+          )}
+          {/* Show normal offset for non-wrong-key results */}
+          {lastTapResult.accuracy !== 'wrongKey' && (
+            <span className="tap-area__offset">
+              {formatOffset(lastTapResult.offset * 1000)}
+            </span>
+          )}
         </div>
       )}
 
