@@ -450,11 +450,17 @@ Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/c
 - clearKeys function, pressedAt timestamp, and edge cases
 
 ### Task 9.3: Unit Tests for Chart Editor Store
-- [ ] Test key assignment actions
-- [ ] Test bulk assignment
-- [ ] Test clear all keys
-- [ ] Test statistics selectors
-- [ ] Test level export/import actions
+- [x] Test key assignment actions
+- [x] Test bulk assignment
+- [x] Test clear all keys
+- [x] Test statistics selectors
+- [x] Test level export/import actions
+**Status:** Complete - Created [src/__tests__/chartEditorStore.test.ts](src/__tests__/chartEditorStore.test.ts) with 58 tests covering:
+- Key assignment actions (startChartEditor, stopChartEditor, assignKeyToBeat, setChartStyle, setSelectedKey, setEditorMode, setKeyLaneViewMode)
+- Bulk assignment (assignKeysToBeats with multiple beats, null keys, DDR and Guitar Hero keys)
+- Clear all keys (clearAllKeys action with various states)
+- Statistics selectors (useChartStatistics, useKeyMap, useHasRequiredKeys, useCanStartChartEditor)
+- Level export/import actions (exportLevel, importLevel with validation, audioId mismatch, beat count mismatch, round-trip)
 
 ### Task 9.4: Integration Tests
 - [ ] Test chart editor workflow (subdivided mode only)
