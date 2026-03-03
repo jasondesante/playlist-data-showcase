@@ -20,7 +20,7 @@ import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { ColorExtractor } from 'playlist-data-engine';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics } from '../../store/beatDetectionStore';
 import { logger } from '../../utils/logger';
 
 /**
@@ -87,10 +87,13 @@ export function AudioAnalysisTab() {
   const interpolatedBeatMap = useInterpolatedBeatMap();
   const subdividedBeatMap = useSubdividedBeatMap();
   const subdivisionConfig = useSubdivisionConfig();
+  const chartStyle = useChartStyle();
+  const chartStatistics = useChartStatistics();
 
   /**
    * Export interpolated beat map as JSON for debugging/analysis
    * Includes subdivision data when a SubdividedBeatMap has been generated.
+   * Includes chart data (requiredKey on beats, chart metadata) when keys are assigned.
    */
   const handleExportBeatMap = useCallback(() => {
     if (!interpolatedBeatMap || !beatMap) return;
@@ -160,6 +163,8 @@ export function AudioAnalysisTab() {
               isDetected: b.isDetected,
               originalBeatIndex: b.originalBeatIndex,
               subdivisionType: b.subdivisionType,
+              // Include requiredKey if assigned (for chart/rhythm game data)
+              ...(b.requiredKey !== undefined && { requiredKey: b.requiredKey }),
             })),
             detectedBeatIndices: subdividedBeatMap.detectedBeatIndices,
           },
@@ -174,6 +179,14 @@ export function AudioAnalysisTab() {
           },
         } : null),
       },
+      // Chart metadata (when keys are assigned)
+      ...(chartStatistics.keyCount > 0 && {
+        chart: {
+          style: chartStyle,
+          keyCount: chartStatistics.keyCount,
+          usedKeys: chartStatistics.usedKeys,
+        },
+      }),
     };
 
     const json = JSON.stringify(exportData, null, 2);
@@ -187,7 +200,7 @@ export function AudioAnalysisTab() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [interpolatedBeatMap, beatMap, subdivisionConfig, subdividedBeatMap]);
+  }, [interpolatedBeatMap, beatMap, subdivisionConfig, subdividedBeatMap, chartStyle, chartStatistics]);
 
   /**
    * Load cached beat map when the selected track changes.

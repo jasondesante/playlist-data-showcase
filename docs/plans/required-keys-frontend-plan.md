@@ -388,31 +388,35 @@ Update [src/components/ui/DifficultySettingsPanel.tsx](src/components/ui/Difficu
 
 ### Task 8.1: Update Beat Map Export
 Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/components/Tabs/AudioAnalysisTab.tsx)
-- [ ] Include `requiredKey` in beat export data
-- [ ] Add chart metadata (key count, keys used, chart style)
-- [ ] Export format includes complete "level" data (beat map + chart together)
+- [x] Include `requiredKey` in beat export data
+- [x] Add chart metadata (key count, keys used, chart style)
+- [x] Export format includes complete "level" data (beat map + chart together)
+**Status:** Complete - Updated `handleExportBeatMap` to include `requiredKey` on subdivided beats and added chart metadata section (style, keyCount, usedKeys) when keys are assigned.
 
 ### Task 8.2: Implement Level Export
-- [ ] Create `exportLevel()` function that exports beat map AND chart together
-- [ ] Include subdivision config in export (since required keys only work with subdivided mode)
-- [ ] Format as JSON with all beat data including requiredKey assignments
-- [ ] Trigger file download with descriptive filename (audioId + timestamp)
-- [ ] Include metadata: version, audioId, beatCount, subdivisionType, chartStyle, keyCount, usedKeys
+- [x] Create `exportLevel()` function that exports beat map AND chart together
+- [x] Include subdivision config in export (since required keys only work with subdivided mode)
+- [x] Format as JSON with all beat data including requiredKey assignments
+- [x] Trigger file download with descriptive filename (audioId + timestamp)
+- [x] Include metadata: version, audioId, beatCount, subdivisionType, chartStyle, keyCount, usedKeys
+**Status:** Complete - `exportLevel()` action implemented in beatDetectionStore.ts (see Task 2.5). Returns complete LevelExportData with beat map, chart, and metadata.
 
 ### Task 8.3: Implement Level Import
-- [ ] Create `importLevel()` function
-- [ ] File picker for selecting JSON file
-- [ ] Validate JSON structure (beat map + chart data)
-- [ ] Require exact audioId match (block import if mismatch)
-- [ ] Validate beat count matches (fail if mismatch - they're exported together)
-- [ ] Apply beat map and key assignments together
-- [ ] Show success/error feedback to user
+- [x] Create `importLevel()` function
+- [x] File picker for selecting JSON file
+- [x] Validate JSON structure (beat map + chart data)
+- [x] Require exact audioId match (block import if mismatch)
+- [x] Validate beat count matches (fail if mismatch - they're exported together)
+- [x] Apply beat map and key assignments together
+- [x] Show success/error feedback to user
+**Status:** Complete - `importLevel()` action implemented in beatDetectionStore.ts (see Task 2.5). Validates audioId and beat count, applies key assignments.
 
 ### Task 8.4: Import/Export UI
-- [ ] Add "Export Level" button to ChartEditorToolbar (exports beat map + chart)
-- [ ] Add "Import Level" button with file picker
-- [ ] Show validation errors in modal/toast
-- [ ] Require exact audioId match (no warning, just block if mismatch)
+- [x] Add "Export Level" button to ChartEditorToolbar (exports beat map + chart)
+- [x] Add "Import Level" button with file picker
+- [x] Show validation errors in modal/toast
+- [x] Require exact audioId match (no warning, just block if mismatch)
+**Status:** Complete - Export/Import Level buttons implemented in ChartEditorToolbar.tsx (see Task 4.3). Uses store actions, shows success/error feedback.
 
 ---
 
