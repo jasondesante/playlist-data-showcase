@@ -13,7 +13,7 @@
  *
  * @component
  */
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect, type RefObject } from 'react';
 import { cn } from '@/utils/cn';
 import './BeatSubdivisionGrid.css';
 import {
@@ -24,9 +24,92 @@ import {
 import type { SubdivisionType, BeatSubdivisionSelection } from '@/types';
 
 /**
+ * Virtualization configuration
+ */
+const VIRTUALIZATION_BUFFER = 10; // Extra cells to render on each side for smooth scrolling
+const MIN_CELL_WIDTH = 20; // Minimum cell width for virtualization calculations
+
+/**
  * Zoom level configuration
  */
 type ZoomLevel = 0.5 | 1 | 2 | 4 | 8;
+
+/**
+ * Virtualization state - which beats are visible
+ */
+interface VirtualizationState {
+    startIndex: number;
+    endIndex: number;
+    offsetX: number; // Offset to position the rendered cells correctly
+}
+
+/**
+ * Custom hook for virtualization - calculates visible beat range
+ */
+function useVirtualization(
+    containerRef: RefObject<HTMLDivElement | null>,
+    totalBeats: number,
+    cellWidth: number
+): VirtualizationState {
+    const [visibleRange, setVisibleRange] = useState<VirtualizationState>({
+        startIndex: 0,
+        endIndex: Math.min(totalBeats, 50), // Initial estimate
+        offsetX: 0,
+    });
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container || totalBeats === 0 || cellWidth < MIN_CELL_WIDTH) {
+            return;
+        }
+
+        const calculateVisibleRange = () => {
+            const scrollLeft = container.scrollLeft;
+            const containerWidth = container.clientWidth;
+
+            // Calculate which beats are visible
+            const firstVisibleIndex = Math.floor(scrollLeft / cellWidth);
+            const lastVisibleIndex = Math.ceil((scrollLeft + containerWidth) / cellWidth);
+
+            // Add buffer for smooth scrolling
+            const startIndex = Math.max(0, firstVisibleIndex - VIRTUALIZATION_BUFFER);
+            const endIndex = Math.min(totalBeats, lastVisibleIndex + VIRTUALIZATION_BUFFER);
+
+            // Calculate offset to position cells correctly
+            const offsetX = startIndex * cellWidth;
+
+            setVisibleRange({
+                startIndex,
+                endIndex,
+                offsetX,
+            });
+        };
+
+        // Calculate initially
+        calculateVisibleRange();
+
+        // Update on scroll
+        const handleScroll = () => {
+            // Use requestAnimationFrame for smooth updates
+            requestAnimationFrame(calculateVisibleRange);
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Recalculate on resize
+        const resizeObserver = new ResizeObserver(() => {
+            calculateVisibleRange();
+        });
+        resizeObserver.observe(container);
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+            resizeObserver.disconnect();
+        };
+    }, [containerRef, totalBeats, cellWidth]);
+
+    return visibleRange;
+}
 
 /**
  * Subdivision type configuration for display
@@ -124,19 +207,24 @@ export function BeatSubdivisionGrid({
         return baseWidth * zoom;
     }, [zoom]);
 
-    // Group beats by measure
+    // Virtualization - calculate visible beat range
+    const virtualization = useVirtualization(gridRef, totalBeats, cellWidth);
+
+    // Group beats by measure (for virtualized rendering)
     const measures = useMemo(() => {
         if (!unifiedBeatMap) return [];
 
+        const { startIndex, endIndex } = virtualization;
         const grouped: Array<Array<{ beatIndex: number; subdivision: SubdivisionType }>> = [];
         let currentMeasure: Array<{ beatIndex: number; subdivision: SubdivisionType }> = [];
 
-        for (let i = 0; i < totalBeats; i++) {
+        // Only iterate through visible beats
+        for (let i = startIndex; i < endIndex && i < totalBeats; i++) {
             const beat = unifiedBeatMap.beats[i];
             const subdivision = subdivisionConfig.beatSubdivisions.get(i) ?? subdivisionConfig.defaultSubdivision;
 
-            // Start new measure on downbeat (except for first beat)
-            if (beat.isDownbeat && i > 0) {
+            // Start new measure on downbeat (except for first visible beat)
+            if (beat.isDownbeat && i > startIndex) {
                 grouped.push(currentMeasure);
                 currentMeasure = [];
             }
@@ -156,7 +244,7 @@ export function BeatSubdivisionGrid({
         }
 
         return grouped;
-    }, [unifiedBeatMap, totalBeats, subdivisionConfig, actualBeatsPerMeasure]);
+    }, [unifiedBeatMap, totalBeats, subdivisionConfig, actualBeatsPerMeasure, virtualization]);
 
     // Notify parent of selection changes
     useEffect(() => {
@@ -416,57 +504,72 @@ export function BeatSubdivisionGrid({
                     className="beat-subdivision-grid-track"
                     style={{ width: `${totalBeats * cellWidth}px` }}
                 >
-                    {/* Measure groups */}
-                    {measures.map((measure, measureIndex) => (
-                        <div
-                            key={measureIndex}
-                            className="beat-subdivision-grid-measure"
-                            style={{ width: `${measure.length * cellWidth}px` }}
-                        >
-                            {/* Measure number label */}
-                            <div className="beat-subdivision-grid-measure-label">
-                                M{measureIndex + 1}
-                            </div>
+                    {/* Virtualized content container - positioned with offset */}
+                    <div
+                        className="beat-subdivision-grid-virtualized"
+                        style={{
+                            transform: `translateX(${virtualization.offsetX}px)`,
+                            willChange: 'transform',
+                        }}
+                    >
+                        {/* Measure groups */}
+                        {measures.map((measure) => {
+                            // Calculate actual measure number based on first beat in measure
+                            const firstBeatIndex = measure[0]?.beatIndex ?? 0;
+                            const actualMeasureNumber = Math.floor(firstBeatIndex / actualBeatsPerMeasure) + 1;
 
-                            {/* Beat cells */}
-                            {measure.map(({ beatIndex, subdivision }) => (
+                            return (
                                 <div
-                                    key={beatIndex}
-                                    className={cn(
-                                        'beat-subdivision-grid-cell',
-                                        `beat-subdivision-grid-cell--${subdivision}`,
-                                        selection.selectedBeats.has(beatIndex) && 'beat-subdivision-grid-cell--selected',
-                                        disabled && 'beat-subdivision-grid-cell--disabled'
-                                    )}
-                                    style={{ width: `${cellWidth}px` }}
-                                    onClick={(e) => handleBeatClick(beatIndex, e)}
-                                    onMouseDown={(e) => handleMouseDown(beatIndex, e)}
-                                    onMouseEnter={() => handleMouseEnter(beatIndex)}
-                                    onDoubleClick={() => handleDoubleClick(beatIndex)}
-                                    role="button"
-                                    tabIndex={disabled ? -1 : 0}
-                                    aria-label={`Beat ${beatIndex + 1}, ${subdivision}`}
-                                    aria-pressed={selection.selectedBeats.has(beatIndex)}
+                                    key={`measure-${firstBeatIndex}`}
+                                    className="beat-subdivision-grid-measure"
+                                    style={{ width: `${measure.length * cellWidth}px` }}
                                 >
-                                    {/* Beat number */}
-                                    <span className="beat-subdivision-grid-cell-number">
-                                        {beatIndex + 1}
-                                    </span>
+                                    {/* Measure number label */}
+                                    <div className="beat-subdivision-grid-measure-label">
+                                        M{actualMeasureNumber}
+                                    </div>
 
-                                    {/* Subdivision indicator */}
-                                    <div
-                                        className={cn(
-                                            'beat-subdivision-grid-cell-indicator',
-                                            `beat-subdivision-grid-cell-indicator--${subdivision}`
-                                        )}
-                                    />
+                                    {/* Beat cells */}
+                                    {measure.map(({ beatIndex, subdivision }) => (
+                                        <div
+                                            key={beatIndex}
+                                            className={cn(
+                                                'beat-subdivision-grid-cell',
+                                                `beat-subdivision-grid-cell--${subdivision}`,
+                                                selection.selectedBeats.has(beatIndex) && 'beat-subdivision-grid-cell--selected',
+                                                disabled && 'beat-subdivision-grid-cell--disabled'
+                                            )}
+                                            style={{ width: `${cellWidth}px` }}
+                                            onClick={(e) => handleBeatClick(beatIndex, e)}
+                                            onMouseDown={(e) => handleMouseDown(beatIndex, e)}
+                                            onMouseEnter={() => handleMouseEnter(beatIndex)}
+                                            onDoubleClick={() => handleDoubleClick(beatIndex)}
+                                            role="button"
+                                            tabIndex={disabled ? -1 : 0}
+                                            aria-label={`Beat ${beatIndex + 1}, ${subdivision}`}
+                                            aria-pressed={selection.selectedBeats.has(beatIndex)}
+                                        >
+                                            {/* Beat number */}
+                                            <span className="beat-subdivision-grid-cell-number">
+                                                {beatIndex + 1}
+                                            </span>
+
+                                            {/* Subdivision indicator */}
+                                            <div
+                                                className={cn(
+                                                    'beat-subdivision-grid-cell-indicator',
+                                                    `beat-subdivision-grid-cell-indicator--${subdivision}`
+                                                )}
+                                            />
+                                        </div>
+                                    ))}
+
+                                    {/* Measure boundary line */}
+                                    <div className="beat-subdivision-grid-measure-boundary" />
                                 </div>
-                            ))}
-
-                            {/* Measure boundary line */}
-                            <div className="beat-subdivision-grid-measure-boundary" />
-                        </div>
-                    ))}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

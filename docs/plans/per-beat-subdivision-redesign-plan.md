@@ -149,12 +149,12 @@ This plan covers:
 
 ### 4.2 Beat Cell Rendering
 
-- [ ] Render beat cells with:
+- [x] Render beat cells with:
   - Color-coded by subdivision type
   - Beat number label
   - Selection state (highlighted border)
   - Hover state
-- [ ] Virtualize rendering for performance (500+ beats)
+- [x] Virtualize rendering for performance (500+ beats)
   - Only render visible cells
   - Use intersection observer or scroll position calculation
 
