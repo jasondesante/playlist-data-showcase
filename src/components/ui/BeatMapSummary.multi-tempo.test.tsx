@@ -22,10 +22,23 @@ vi.mock('../../store/beatDetectionStore', () => ({
   useInterpolationVisualizationData: vi.fn(() => null),
   useShowGridOverlay: vi.fn(() => false),
   useShowTempoDriftVisualization: vi.fn(() => false),
+  useSubdividedBeatMap: vi.fn(() => null),
+  useSubdivisionMetadata: vi.fn(() => null),
   useBeatDetectionStore: vi.fn(() => ({
     actions: {
       setDownbeatPosition: vi.fn(),
     },
+  })),
+}));
+
+// Mock audio player store
+vi.mock('../../store/audioPlayerStore', () => ({
+  useAudioPlayerStore: vi.fn(() => ({
+    playbackState: 'paused',
+    currentTime: 0,
+    pause: vi.fn(),
+    resume: vi.fn(),
+    seek: vi.fn(),
   })),
 }));
 

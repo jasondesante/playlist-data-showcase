@@ -535,41 +535,41 @@ Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/c
 ## Success Criteria
 
 ### Type System
-- [ ] `ExtendedBeatAccuracy` includes `'wrongKey'`
-- [ ] `ExtendedButtonPressResult` includes `keyMatch`, `pressedKey`, `requiredKey`
-- [ ] All engine helper functions re-exported and usable
-- [ ] `LevelExportData` type defined and validated
+- [x] `ExtendedBeatAccuracy` includes `'wrongKey'`
+- [x] `ExtendedButtonPressResult` includes `keyMatch`, `pressedKey`, `requiredKey`
+- [x] All engine helper functions re-exported and usable
+- [x] `LevelExportData` type defined and validated
 
 ### Chart Editor
-- [ ] Can assign keys to beats via click/drag (real-time paint)
-- [ ] Can remove keys from beats via erase mode
-- [ ] Clear All button removes all key assignments
-- [ ] Only available when subdivided beat map exists
-- [ ] KeyPalette filters by chartStyle (DDR shows arrows, Guitar Hero shows numbers)
-- [ ] Export creates valid JSON file with complete level data (beat map + chart)
-- [ ] Import loads level data and applies to beat map
-- [ ] Import requires exact audioId match
+- [x] Can assign keys to beats via click/drag (real-time paint)
+- [x] Can remove keys from beats via erase mode
+- [x] Clear All button removes all key assignments
+- [x] Only available when subdivided beat map exists
+- [x] KeyPalette filters by chartStyle (DDR shows arrows, Guitar Hero shows numbers)
+- [x] Export creates valid JSON file with complete level data (beat map + chart)
+- [x] Import loads level data and applies to beat map
+- [x] Import requires exact audioId match
 
 ### Practice Mode
-- [ ] Keyboard input captured and passed to beat stream
-- [ ] Both arrow keys and number keys work simultaneously
-- [ ] Arrow key page scrolling blocked during practice
-- [ ] Required keys displayed on timeline beat markers
-- [ ] Wrong key press shows red "WRONG KEY" overlay
-- [ ] `ignoreKeyRequirements` toggle works correctly
-- [ ] Practice works without chart (falls back to quarter note stream)
+- [x] Keyboard input captured and passed to beat stream
+- [x] Both arrow keys and number keys work simultaneously
+- [x] Arrow key page scrolling blocked during practice
+- [x] Required keys displayed on timeline beat markers
+- [x] Wrong key press shows red "WRONG KEY" overlay
+- [x] `ignoreKeyRequirements` toggle works correctly
+- [x] Practice works without chart (falls back to quarter note stream)
 
 ### Visual Feedback
-- [ ] "WRONG KEY" message displays with red styling
-- [ ] Beat timeline shows required key indicators (↑↓←→ and 1-5)
-- [ ] Statistics include wrong key count
+- [x] "WRONG KEY" message displays with red styling
+- [x] Beat timeline shows required key indicators (↑↓←→ and 1-5)
+- [x] Statistics include wrong key count
 
 ### KeyLane Views
-- [ ] DDR mode shows 4 lanes with classic colors (left=blue, down=green, up=red, right=purple)
-- [ ] Guitar Hero mode shows 5 lanes with classic colors (green, red, yellow, blue, orange)
-- [ ] Beats without required key show in all lanes
-- [ ] Fixed scroll speed
-- [ ] Pause/resume pauses lane animations
+- [x] DDR mode shows 4 lanes with classic colors (left=blue, down=green, up=red, right=purple)
+- [x] Guitar Hero mode shows 5 lanes with classic colors (green, red, yellow, blue, orange)
+- [x] Beats without required key show in all lanes
+- [x] Fixed scroll speed
+- [x] Pause/resume pauses lane animations
 
 ---
 
