@@ -26,6 +26,8 @@ This application demonstrates all features of the `playlist-data-engine` library
 
 - **Playlist parsing from Arweave** - Load and parse blockchain-hosted music playlists
 - **Audio analysis and character generation** - Analyze audio characteristics to generate unique D&D characters
+- **Beat detection with subdivision** - Detect beats in audio and subdivide into rhythmic patterns (quarter, eighth, triplets, swing)
+- **Beat practice mode** - Practice rhythm with real-time subdivision switching and accuracy scoring
 - **D&D 5e combat simulation** - Full combat engine with dice rolling, damage calculations, and victory conditions
 - **Environmental sensor integration** - Mobile device sensors (accelerometer, gyroscope, ambient light)
 - **XP system with multipliers** - Experience point tracking with source-based multipliers
@@ -39,25 +41,31 @@ This application demonstrates all features of the `playlist-data-engine` library
 - [Architecture Overview](./docs/architecture/overview.md) - System design and patterns
 - [Bug Tracker](./docs/design/bugs-to-fix.md) - Known issues
 
+## Feature Guides
+
+- [Beat Subdivision User Guide](./docs/features/BEAT_SUBDIVISION_USER_GUIDE.md) - How to use beat subdivision and practice mode
+
 ## Data Engine Docs
 
 - [Data Engine Reference](./docs/engine/DATA_ENGINE_REFERENCE.md) - Complete API documentation
 - [Usage Examples](./docs/engine/USAGE_IN_OTHER_PROJECTS.md) - Integration examples
+- [Audio Analysis Docs](./docs/engine/docs/AUDIO_ANALYSIS.md) - Beat detection and subdivision engine docs
 
 ## Quick Tour
 
 The app is organized into tabs, each demonstrating a different engine feature:
 
 1. **Playlist Loader** - Load playlists from Arweave transaction IDs
-2. **Audio Analysis** - Analyze track audio and extract features
-3. **Character Generator** - Generate D&D 5e characters from audio profiles
-4. **Session Tracking** - Track play sessions with timing data
-5. **XP Calculator** - Calculate XP with source-based multipliers
-6. **Character Leveling** - Level up characters, apply stats, manage game modes
-7. **Environmental Sensors** - View real-time sensor data (mobile)
-8. **Gaming Platforms** - Detect and display connected gaming platforms
-9. **Combat Simulator** - Run full D&D 5e combat encounters
-10. **Settings** - Configure application options
+2. **Audio Analysis** - Analyze track audio, detect beats, configure subdivisions
+3. **Beat Practice** - Practice rhythm with real-time subdivision switching
+4. **Character Generator** - Generate D&D 5e characters from audio profiles
+5. **Session Tracking** - Track play sessions with timing data
+6. **XP Calculator** - Calculate XP with source-based multipliers
+7. **Character Leveling** - Level up characters, apply stats, manage game modes
+8. **Environmental Sensors** - View real-time sensor data (mobile)
+9. **Gaming Platforms** - Detect and display connected gaming platforms
+10. **Combat Simulator** - Run full D&D 5e combat encounters
+11. **Settings** - Configure application options
 
 ## License
 
