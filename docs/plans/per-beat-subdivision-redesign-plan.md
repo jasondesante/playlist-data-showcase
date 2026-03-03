@@ -267,7 +267,7 @@ This plan covers:
 
 - [x] Test BeatSubdivisionGrid rendering
 - [x] Test selection interactions
-- [ ] Test toolbar apply action
+- [x] Test toolbar apply action
 - [ ] Test with large beat counts (performance)
 
 ---
