@@ -191,6 +191,28 @@
   --subdivision-dotted4-bg: hsl(var(--subdivision-dotted4) / 0.18);
   --subdivision-dotted8-bg: hsl(var(--subdivision-dotted8) / 0.18);
   --subdivision-rest-bg: hsl(var(--subdivision-rest) / 0.18);
+
+  /* ========================================
+     RHYTHM GAME KEY INDICATOR COLORS (Phase 6, Task 6.4)
+     DDR: left=blue, down=green, up=red, right=purple
+     Guitar Hero: 1=green, 2=red, 3=yellow, 4=blue, 5=orange
+     ======================================== */
+
+  /* DDR Arrow Keys - HSL values for use with hsl() function */
+  --key-indicator-left: 210 80% 55%;      /* Blue - Left arrow */
+  --key-indicator-down: 140 70% 40%;      /* Green - Down arrow */
+  --key-indicator-up: 0 80% 50%;          /* Red - Up arrow */
+  --key-indicator-right: 280 65% 55%;     /* Purple - Right arrow */
+
+  /* Guitar Hero Number Keys - HSL values for use with hsl() function */
+  --key-indicator-1: 140 70% 40%;         /* Green - Fret 1 */
+  --key-indicator-2: 0 80% 50%;           /* Red - Fret 2 */
+  --key-indicator-3: 45 90% 50%;          /* Yellow - Fret 3 */
+  --key-indicator-4: 210 80% 55%;         /* Blue - Fret 4 */
+  --key-indicator-5: 25 90% 50%;          /* Orange - Fret 5 */
+
+  /* Wrong Key feedback color - HSL value for use with hsl() function */
+  --tap-wrong-key: 0 72% 50%;             /* Darker red for wrong key feedback */
 }
 
 /* --------------------------------------------

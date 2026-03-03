@@ -5,13 +5,18 @@
    ============================================ */
 
 /* CSS Custom Properties for accuracy colors */
+/* Note: Key indicator colors are defined globally in base.css as HSL values:
+   --key-indicator-up, --key-indicator-down, --key-indicator-left, --key-indicator-right
+   --key-indicator-1 through --key-indicator-5
+   --tap-wrong-key (HSL format for use with hsl())
+*/
 :root {
   --tap-perfect: #22c55e;
   --tap-great: #eab308;
   --tap-good: #f97316;
   --tap-ok: #38bdf8;
   --tap-miss: #ef4444;
-  --tap-wrong-key: #dc2626; /* Slightly darker red for wrong key */
+  --tap-wrong-key: #dc2626; /* Slightly darker red for wrong key - matches hsl(var(--tap-wrong-key) in base.css) */
 }
 
 /* Main tap area container */

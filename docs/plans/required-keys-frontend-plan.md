@@ -349,11 +349,21 @@ Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndic
 **Status:** Complete - Updated `useTapStatistics` selector to track `wrongKey` count separately. Wrong key is counted as miss for accuracy percentage and streak calculations. Updated TapStats component to display wrong key count in hit distribution row. Added CSS styling for wrong key stat item with darker red color (#dc2626) to differentiate from miss.
 
 ### Task 6.4: Add CSS Variables for wrongKey
-- [ ] Add `--tap-wrong-key` color variable (red)
-- [ ] Add `--key-indicator-up`, `--key-indicator-down`, `--key-indicator-left`, `--key-indicator-right`
-- [ ] Add `--key-indicator-1` through `--key-indicator-5`
-- [ ] Add animation keyframes for key press feedback
-- [ ] Add "WRONG KEY" text overlay styling
+- [x] Add `--tap-wrong-key` color variable (red)
+- [x] Add `--key-indicator-up`, `--key-indicator-down`, `--key-indicator-left`, `--key-indicator-right`
+- [x] Add `--key-indicator-1` through `--key-indicator-5`
+- [x] Add animation keyframes for key press feedback
+- [x] Add "WRONG KEY" text overlay styling
+**Status:** Complete - Added CSS variables and animations:
+- Added to [src/styles/base.css](src/styles/base.css):
+  - `--key-indicator-left` (blue), `--key-indicator-down` (green), `--key-indicator-up` (red), `--key-indicator-right` (purple)
+  - `--key-indicator-1` through `--key-indicator-5` (Guitar Hero colors: green, red, yellow, blue, orange)
+  - `--tap-wrong-key` (HSL format for global use)
+- Added to [src/styles/animations.css](src/styles/animations.css):
+  - `keyIndicatorGlow`, `keyIndicatorPress`, `keyIndicatorWrong` keyframes
+  - `feedbackRingExpand`, `wrongKeyFlash`, `miniIndicatorGlow` keyframes
+  - Utility classes: `.key-glow`, `.key-press`, `.key-wrong`, `.key-feedback-ring`, `.key-wrong-flash`
+- "WRONG KEY" text overlay styling already exists in TapArea.css and KeyIndicator.css from Task 6.1
 
 ---
 
