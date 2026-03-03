@@ -3161,6 +3161,43 @@ export const useSubdivisionConfig = () =>
     useBeatDetectionStore((state) => state.subdivisionConfig);
 
 /**
+ * Selector to get the subdivision type for a specific beat.
+ * Returns the custom subdivision if defined for this beat index,
+ * otherwise returns the default subdivision.
+ * @param beatIndex - The 0-based beat index
+ */
+export const useBeatSubdivision = (beatIndex: number): SubdivisionType =>
+    useBeatDetectionStore((state) => {
+        const config = state.subdivisionConfig;
+        return config.beatSubdivisions.get(beatIndex) ?? config.defaultSubdivision;
+    });
+
+/**
+ * Selector to get subdivision types for a range of beats.
+ * Returns an array of objects with beat index and subdivision type.
+ * Useful for rendering beat grids where you need multiple subdivisions at once.
+ * @param startBeat - Start beat index (inclusive)
+ * @param endBeat - End beat index (exclusive)
+ */
+export const useBeatSubdivisionsInRange = (
+    startBeat: number,
+    endBeat: number,
+): Array<{ beatIndex: number; subdivision: SubdivisionType }> =>
+    useBeatDetectionStore((state) => {
+        const config = state.subdivisionConfig;
+        const result: Array<{ beatIndex: number; subdivision: SubdivisionType }> = [];
+
+        for (let i = startBeat; i < endBeat; i++) {
+            result.push({
+                beatIndex: i,
+                subdivision: config.beatSubdivisions.get(i) ?? config.defaultSubdivision,
+            });
+        }
+
+        return result;
+    });
+
+/**
  * Selector to get the current subdivision type for real-time mode.
  * Used in BeatPracticeView for the subdivision playground.
  * Defaults to 'quarter' (no subdivision).

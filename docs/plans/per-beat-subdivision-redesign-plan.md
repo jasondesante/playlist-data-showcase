@@ -128,8 +128,8 @@ This plan covers:
 ### 3.4 Update Selectors
 
 - [x] Update `useSubdivisionConfig()` return type
-- [ ] Add `useBeatSubdivision(beatIndex: number)` selector
-- [ ] Add `useBeatSubdivisionsInRange(start: number, end: number)` selector
+- [x] Add `useBeatSubdivision(beatIndex: number)` selector
+- [x] Add `useBeatSubdivisionsInRange(start: number, end: number)` selector
 
 ### 3.5 Update Persistence
 
