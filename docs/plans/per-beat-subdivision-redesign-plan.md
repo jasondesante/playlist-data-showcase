@@ -231,8 +231,8 @@ This plan covers:
 
 ### 6.3 Keep Generate Button
 
-- [ ] Keep "Generate Subdivided Beat Map" button
-- [ ] Update to work with new config format
+- [x] Keep "Generate Subdivided Beat Map" button
+- [x] Update to work with new config format
 
 ---
 

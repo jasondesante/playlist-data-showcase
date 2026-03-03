@@ -2,29 +2,28 @@
  * Tests for SubdivisionSettings Component
  *
  * Phase 9, Task 9.2: Component Tests
- * - Test SubdivisionSettings component
- *   - Renders subdivision types
- *   - Handles segment add/remove
- *   - Calls store actions correctly
+ * - Test SubdivisionSettings component with per-beat subdivision format
+ * - Renders BeatSubdivisionGrid and SubdivisionToolbar
+ * - Generate button works with new config format
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SubdivisionSettings } from './SubdivisionSettings';
-import type { SubdivisionConfig, UnifiedBeatMap, SubdividedBeatMap } from '@/types';
+import type { SubdivisionConfig, UnifiedBeatMap, SubdividedBeatMap, SubdivisionType } from '@/types';
 
 // Mock the store module
 const mockActions = {
-    addSubdivisionSegment: vi.fn(),
-    removeSubdivisionSegment: vi.fn(),
-    updateSubdivisionSegment: vi.fn(),
     generateSubdividedBeatMap: vi.fn(),
+    setBeatSubdivision: vi.fn(),
+    setBeatSubdivisionRange: vi.fn(),
+    clearAllBeatSubdivisions: vi.fn(),
     setSubdivisionConfig: vi.fn(),
-    setCurrentSubdivision: vi.fn(),
 };
 
-// Mock store state
+// Mock store state - using per-beat format
 let mockSubdivisionConfig: SubdivisionConfig = {
-    segments: [{ startBeat: 0, subdivision: 'quarter' }],
+    beatSubdivisions: new Map<number, SubdivisionType>(),
+    defaultSubdivision: 'quarter',
 };
 let mockUnifiedBeatMap: UnifiedBeatMap | null = null;
 let mockSubdividedBeatMap: SubdividedBeatMap | null = null;
@@ -44,11 +43,28 @@ vi.mock('../../store/beatDetectionStore', () => ({
     useSubdivisionMetadata: () => mockSubdividedBeatMap?.subdivisionMetadata ?? null,
 }));
 
-// Mock SubdivisionTimelineEditor since it's a complex component we don't need to test here
-vi.mock('./SubdivisionTimelineEditor', () => ({
-    SubdivisionTimelineEditor: vi.fn(() => (
-        <div data-testid="subdivision-timeline-editor">Timeline Editor</div>
+// Mock BeatSubdivisionGrid since it's a complex component
+vi.mock('./BeatSubdivisionGrid', () => ({
+    BeatSubdivisionGrid: vi.fn(() => (
+        <div data-testid="beat-subdivision-grid">Beat Subdivision Grid</div>
     )),
+}));
+
+// Mock SubdivisionToolbar
+vi.mock('./SubdivisionToolbar', () => ({
+    SubdivisionToolbar: vi.fn(() => (
+        <div data-testid="subdivision-toolbar">Subdivision Toolbar</div>
+    )),
+    SUBDIVISION_TYPES: [
+        { id: 'half', label: 'Half', density: 0.5, description: 'Half notes' },
+        { id: 'quarter', label: 'Quarter', density: 1, description: 'Quarter notes' },
+        { id: 'eighth', label: 'Eighth', density: 2, description: 'Eighth notes' },
+        { id: 'sixteenth', label: 'Sixteenth', density: 4, description: 'Sixteenth notes' },
+        { id: 'triplet8', label: 'Triplet 8th', density: 1.5, description: 'Triplet eighth notes' },
+        { id: 'triplet4', label: 'Triplet 4th', density: 0.67, description: 'Triplet quarter notes' },
+        { id: 'dotted4', label: 'Dotted Q', density: 0.67, description: 'Dotted quarter notes' },
+        { id: 'dotted8', label: 'Swing', density: 1.5, description: 'Swing feel' },
+    ],
 }));
 
 /**
@@ -56,15 +72,20 @@ vi.mock('./SubdivisionTimelineEditor', () => ({
  */
 function createMockUnifiedBeatMap(beatCount: number, quarterNoteInterval: number = 0.5): UnifiedBeatMap {
     return {
+        audioId: 'test-audio',
+        duration: beatCount * quarterNoteInterval,
         beats: Array.from({ length: beatCount }, (_, i) => ({
             timestamp: i * quarterNoteInterval,
             beatInMeasure: i % 4,
             isDownbeat: i % 4 === 0,
             measureNumber: Math.floor(i / 4),
             confidence: 1.0,
+            intensity: 0.8,
         })),
         quarterNoteInterval,
         bpm: 60 / quarterNoteInterval,
+        detectedBeatIndices: Array.from({ length: beatCount }, (_, i) => i),
+        downbeatConfig: { segments: [] },
     };
 }
 
@@ -73,24 +94,29 @@ function createMockUnifiedBeatMap(beatCount: number, quarterNoteInterval: number
  */
 function createMockSubdividedBeatMap(beatCount: number): SubdividedBeatMap {
     return {
+        audioId: 'test-audio',
+        duration: beatCount * 0.25,
         beats: Array.from({ length: beatCount }, (_, i) => ({
             timestamp: i * 0.25,
             beatInMeasure: (i / 4) % 4,
             isDownbeat: i % 16 === 0,
             measureNumber: Math.floor(i / 16),
             confidence: 1.0,
+            intensity: 0.8,
             subdivisionType: 'eighth',
-            sourceBeatIndex: Math.floor(i / 2),
-            beatInSubdivision: i % 2,
+            isDetected: i % 2 === 0,
+            originalBeatIndex: Math.floor(i / 2),
         })),
-        quarterNoteInterval: 0.5,
+        detectedBeatIndices: Array.from({ length: Math.floor(beatCount / 2) }, (_, i) => i * 2),
+        subdivisionConfig: mockSubdivisionConfig,
         subdivisionMetadata: {
-            totalBeats: 100,
+            originalBeatCount: 100,
             subdividedBeatCount: beatCount,
-            subdivisionTypesUsed: ['quarter', 'eighth'],
-            averageDensity: 1.5,
-            segmentCount: 2,
+            averageDensityMultiplier: 1.5,
+            explicitBeatCount: 0,
             subdivisionsUsed: ['quarter', 'eighth'],
+            hasMultipleTempos: false,
+            maxDensity: 2,
         },
     };
 }
@@ -99,7 +125,8 @@ describe('SubdivisionSettings', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockSubdivisionConfig = {
-            segments: [{ startBeat: 0, subdivision: 'quarter' }],
+            beatSubdivisions: new Map<number, SubdivisionType>(),
+            defaultSubdivision: 'quarter',
         };
         mockUnifiedBeatMap = null;
         mockSubdividedBeatMap = null;
@@ -109,22 +136,21 @@ describe('SubdivisionSettings', () => {
         it('renders the component title', () => {
             render(<SubdivisionSettings />);
 
-            expect(screen.getByText('Beat Subdivision')).toBeInTheDocument();
+            expect(screen.getByText('Subdivision Settings')).toBeInTheDocument();
         });
 
         it('shows notice when no beat map is generated', () => {
             render(<SubdivisionSettings />);
 
             expect(
-                screen.getByText('Generate a beat map first to configure subdivisions.')
+                screen.getByText('Generate a beat map first to configure subdivisions')
             ).toBeInTheDocument();
         });
 
-        it('does not show segment controls when no unified beat map exists', () => {
+        it('does not show toolbar when no unified beat map exists', () => {
             render(<SubdivisionSettings />);
 
-            // The "Add Segment" button should not be present
-            expect(screen.queryByText('Add Segment')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('subdivision-toolbar')).not.toBeInTheDocument();
         });
     });
 
@@ -133,17 +159,16 @@ describe('SubdivisionSettings', () => {
             mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
         });
 
-        it('shows segment controls when unified beat map exists', () => {
+        it('shows toolbar when unified beat map exists', () => {
             render(<SubdivisionSettings />);
 
-            expect(screen.getByText('Add Segment')).toBeInTheDocument();
-            expect(screen.getByText('Segments')).toBeInTheDocument();
+            expect(screen.getByTestId('subdivision-toolbar')).toBeInTheDocument();
         });
 
-        it('shows beat count available', () => {
+        it('shows the BeatSubdivisionGrid', () => {
             render(<SubdivisionSettings />);
 
-            expect(screen.getByText('100 quarter notes available')).toBeInTheDocument();
+            expect(screen.getByTestId('beat-subdivision-grid')).toBeInTheDocument();
         });
 
         it('shows Generate button', () => {
@@ -151,302 +176,25 @@ describe('SubdivisionSettings', () => {
 
             expect(screen.getByText('Generate Subdivided Beat Map')).toBeInTheDocument();
         });
-    });
 
-    describe('Renders Subdivision Types (Task 9.2.1)', () => {
-        beforeEach(() => {
-            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
-        });
-
-        it('renders subdivision type toggles for each segment', () => {
+        it('shows summary stats', () => {
             render(<SubdivisionSettings />);
 
-            // Check that all 8 subdivision types are rendered as toggle buttons
-            // The short labels are used: 1x, 0.5x, 2x, 4x, 3/Q, 3/H, 1.5x, Swing
-            expect(screen.getByText('1x')).toBeInTheDocument(); // Quarter
-            expect(screen.getByText('0.5x')).toBeInTheDocument(); // Half
-            expect(screen.getByText('2x')).toBeInTheDocument(); // Eighth
-            expect(screen.getByText('4x')).toBeInTheDocument(); // Sixteenth
-            expect(screen.getByText('3/Q')).toBeInTheDocument(); // Triplet 8th
-            expect(screen.getByText('3/H')).toBeInTheDocument(); // Triplet 4th
-            expect(screen.getByText('1.5x')).toBeInTheDocument(); // Dotted Q
-            expect(screen.getByText('Swing')).toBeInTheDocument(); // Dotted 8th
+            expect(screen.getByText('Total Beats')).toBeInTheDocument();
+            expect(screen.getByText('100')).toBeInTheDocument();
         });
 
-        it('shows the active subdivision type for each segment', () => {
+        it('shows default subdivision in summary', () => {
             render(<SubdivisionSettings />);
 
-            // The default segment should have Quarter (1x) selected
-            const quarterButton = screen.getByRole('radio', { name: /Quarter.*default/i });
-            expect(quarterButton).toHaveAttribute('aria-checked', 'true');
-        });
-
-        it('displays subdivision type description for selected type', () => {
-            render(<SubdivisionSettings />);
-
-            // Should show the description for Quarter
-            expect(
-                screen.getByText('Quarter - Quarter notes (default, no subdivision)')
-            ).toBeInTheDocument();
-        });
-
-        it('shows start beat input for each segment', () => {
-            render(<SubdivisionSettings />);
-
-            expect(screen.getByLabelText('Start beat for segment 1')).toBeInTheDocument();
-        });
-
-        it('shows segment number for each segment', () => {
-            render(<SubdivisionSettings />);
-
-            expect(screen.getByText('#1')).toBeInTheDocument();
+            expect(screen.getByText('Default')).toBeInTheDocument();
+            expect(screen.getByText('Quarter')).toBeInTheDocument();
         });
     });
 
-    describe('Handles Segment Add/Remove (Task 9.2.2)', () => {
+    describe('Generate Button', () => {
         beforeEach(() => {
             mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
-        });
-
-        it('calls addSubdivisionSegment when Add Segment button is clicked', () => {
-            render(<SubdivisionSettings />);
-
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            fireEvent.click(addButton);
-
-            expect(mockActions.addSubdivisionSegment).toHaveBeenCalledTimes(1);
-            expect(mockActions.addSubdivisionSegment).toHaveBeenCalledWith({
-                startBeat: expect.any(Number),
-                subdivision: 'quarter',
-            });
-        });
-
-        it('adds segment with suggested start beat based on last segment', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            fireEvent.click(addButton);
-
-            // Should suggest startBeat at last segment's startBeat + 32 (0 + 32 = 32)
-            expect(mockActions.addSubdivisionSegment).toHaveBeenCalledWith({
-                startBeat: 32,
-                subdivision: 'quarter',
-            });
-        });
-
-        it('clamps suggested start beat to total beats', () => {
-            // Create a beat map with only 20 beats
-            mockUnifiedBeatMap = createMockUnifiedBeatMap(20);
-
-            render(<SubdivisionSettings />);
-
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            fireEvent.click(addButton);
-
-            // Should clamp to totalBeats - 1 (19)
-            expect(mockActions.addSubdivisionSegment).toHaveBeenCalledWith({
-                startBeat: 19,
-                subdivision: 'quarter',
-            });
-        });
-
-        it('disables Add Segment button when 8 segments exist', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 10, subdivision: 'eighth' as const },
-                    { startBeat: 20, subdivision: 'quarter' as const },
-                    { startBeat: 30, subdivision: 'eighth' as const },
-                    { startBeat: 40, subdivision: 'quarter' as const },
-                    { startBeat: 50, subdivision: 'eighth' as const },
-                    { startBeat: 60, subdivision: 'quarter' as const },
-                    { startBeat: 70, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            expect(addButton).toBeDisabled();
-        });
-
-        it('shows maximum segment limit message when at limit', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 10, subdivision: 'eighth' as const },
-                    { startBeat: 20, subdivision: 'quarter' as const },
-                    { startBeat: 30, subdivision: 'eighth' as const },
-                    { startBeat: 40, subdivision: 'quarter' as const },
-                    { startBeat: 50, subdivision: 'eighth' as const },
-                    { startBeat: 60, subdivision: 'quarter' as const },
-                    { startBeat: 70, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            expect(screen.getByText('Maximum 8 segments allowed')).toBeInTheDocument();
-        });
-
-        it('does not show remove button for first segment', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            // Only one segment, should not have any remove button
-            expect(screen.queryByLabelText('Remove segment 1')).not.toBeInTheDocument();
-        });
-
-        it('shows remove button for segments after the first', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            // Second segment should have a remove button
-            expect(screen.getByLabelText('Remove segment 2')).toBeInTheDocument();
-        });
-
-        it('calls removeSubdivisionSegment when remove button is clicked', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const removeButton = screen.getByLabelText('Remove segment 2');
-            fireEvent.click(removeButton);
-
-            expect(mockActions.removeSubdivisionSegment).toHaveBeenCalledTimes(1);
-            expect(mockActions.removeSubdivisionSegment).toHaveBeenCalledWith(1);
-        });
-
-        it('does not call removeSubdivisionSegment for first segment (index 0)', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            // The component doesn't render a remove button for segment 1 (index 0)
-            // So we verify by checking the component's handleRemoveSegment logic
-            // If we click on segment 1's area (which doesn't have a remove button),
-            // nothing should happen
-
-            // Verify that removeSubdivisionSegment was not called at all
-            expect(mockActions.removeSubdivisionSegment).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('Calls Store Actions Correctly (Task 9.2.3)', () => {
-        beforeEach(() => {
-            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
-        });
-
-        it('calls updateSubdivisionSegment when subdivision type is changed', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            // Click on the Eighth (2x) button
-            const eighthButton = screen.getByRole('radio', { name: /Eighth.*double/i });
-            fireEvent.click(eighthButton);
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledTimes(1);
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(0, {
-                startBeat: 0,
-                subdivision: 'eighth',
-            });
-        });
-
-        it('calls updateSubdivisionSegment when start beat is changed', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            // Find the start beat input for segment 2 and change it
-            const startBeatInput = screen.getByLabelText('Start beat for segment 2') as HTMLInputElement;
-            fireEvent.change(startBeatInput, { target: { value: '48' } });
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledTimes(1);
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(1, {
-                startBeat: 48,
-                subdivision: 'eighth',
-            });
-        });
-
-        it('clamps start beat to total beats when changed', () => {
-            mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const startBeatInput = screen.getByLabelText('Start beat for segment 2') as HTMLInputElement;
-            // Try to set a value higher than total beats
-            fireEvent.change(startBeatInput, { target: { value: '200' } });
-
-            // Should be clamped to totalBeats - 1 (99)
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(1, {
-                startBeat: 99,
-                subdivision: 'eighth',
-            });
-        });
-
-        it('ignores invalid start beat input', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const startBeatInput = screen.getByLabelText('Start beat for segment 1') as HTMLInputElement;
-            // Try to set an invalid value
-            fireEvent.change(startBeatInput, { target: { value: 'abc' } });
-
-            // Should not call the action for invalid input
-            expect(mockActions.updateSubdivisionSegment).not.toHaveBeenCalled();
-        });
-
-        it('ignores negative start beat input', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const startBeatInput = screen.getByLabelText('Start beat for segment 1') as HTMLInputElement;
-            fireEvent.change(startBeatInput, { target: { value: '-5' } });
-
-            // Should not call the action for negative input
-            expect(mockActions.updateSubdivisionSegment).not.toHaveBeenCalled();
         });
 
         it('calls generateSubdividedBeatMap when Generate button is clicked', async () => {
@@ -469,89 +217,17 @@ describe('SubdivisionSettings', () => {
             fireEvent.click(generateButton);
 
             // The button should show loading text immediately after click
-            // but before requestAnimationFrame runs
             await waitFor(() => {
                 expect(screen.getByText('Generating...')).toBeInTheDocument();
             });
         });
-    });
 
-    describe('Keyboard Navigation', () => {
-        beforeEach(() => {
-            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
-        });
-
-        it('supports keyboard navigation with arrow keys', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
+        it('disables generate button when no unified beat map exists', () => {
+            mockUnifiedBeatMap = null;
             render(<SubdivisionSettings />);
 
-            // Get the radiogroup container
-            const radiogroup = screen.getByRole('radiogroup', { name: /Subdivision type for segment 1/i });
-
-            // Press ArrowRight to move to next type
-            fireEvent.keyDown(radiogroup, { key: 'ArrowRight' });
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(0, {
-                startBeat: 0,
-                subdivision: 'half', // Second type in the list
-            });
-        });
-
-        it('wraps around when navigating past the last type', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const radiogroup = screen.getByRole('radiogroup', { name: /Subdivision type for segment 1/i });
-
-            // Press ArrowLeft to move to previous type (wraps to last)
-            fireEvent.keyDown(radiogroup, { key: 'ArrowLeft' });
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(0, {
-                startBeat: 0,
-                subdivision: 'dotted8', // Last type in the list
-            });
-        });
-
-        it('supports Home key to go to first type', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'eighth' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const radiogroup = screen.getByRole('radiogroup', { name: /Subdivision type for segment 1/i });
-
-            // Press Home to go to first type
-            fireEvent.keyDown(radiogroup, { key: 'Home' });
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(0, {
-                startBeat: 0,
-                subdivision: 'quarter',
-            });
-        });
-
-        it('supports End key to go to last type', () => {
-            mockSubdivisionConfig = {
-                segments: [{ startBeat: 0, subdivision: 'quarter' }],
-            };
-
-            render(<SubdivisionSettings />);
-
-            const radiogroup = screen.getByRole('radiogroup', { name: /Subdivision type for segment 1/i });
-
-            // Press End to go to last type
-            fireEvent.keyDown(radiogroup, { key: 'End' });
-
-            expect(mockActions.updateSubdivisionSegment).toHaveBeenCalledWith(0, {
-                startBeat: 0,
-                subdivision: 'dotted8',
-            });
+            const generateButton = screen.getByText('Generate Subdivided Beat Map').closest('button')!;
+            expect(generateButton).toBeDisabled();
         });
     });
 
@@ -565,62 +241,85 @@ describe('SubdivisionSettings', () => {
 
             render(<SubdivisionSettings />);
 
-            expect(screen.getByText('Generated')).toBeInTheDocument();
+            expect(screen.getByText('Generated Beat Map')).toBeInTheDocument();
         });
 
-        it('shows beat count from subdivision metadata', () => {
+        it('shows original beat count from subdivision metadata', () => {
             mockSubdividedBeatMap = createMockSubdividedBeatMap(200);
 
             render(<SubdivisionSettings />);
 
-            // The metadata shows subdividedBeatCount in the generated stats section
-            // There are multiple elements with "200 beats", so we use getAllByText
-            const elements = screen.getAllByText(/200 beats/);
-            expect(elements.length).toBeGreaterThan(0);
+            expect(screen.getByText('Original Beats')).toBeInTheDocument();
+            // Check the stat container for the value
+            const originalStat = screen.getByText('Original Beats').closest('.subdivision-settings-stat');
+            expect(originalStat).toHaveTextContent('100');
         });
 
-        it('shows subdivision types used from metadata', () => {
+        it('shows subdivided beat count from metadata', () => {
             mockSubdividedBeatMap = createMockSubdividedBeatMap(200);
 
             render(<SubdivisionSettings />);
 
-            // The metadata shows subdivisionsUsed joined by →
-            expect(screen.getByText(/quarter → eighth/)).toBeInTheDocument();
+            expect(screen.getByText('Subdivided Beats')).toBeInTheDocument();
+            expect(screen.getByText('200')).toBeInTheDocument();
+        });
+
+        it('shows average density from metadata', () => {
+            mockSubdividedBeatMap = createMockSubdividedBeatMap(200);
+
+            render(<SubdivisionSettings />);
+
+            expect(screen.getByText('Avg Density')).toBeInTheDocument();
+            expect(screen.getByText('1.5x')).toBeInTheDocument();
         });
     });
 
-    describe('Timeline Editor Integration', () => {
+    describe('Distribution Display', () => {
         beforeEach(() => {
             mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
         });
 
-        it('shows timeline toggle button', () => {
+        it('shows distribution when beats are configured', () => {
+            // All 100 beats use default 'quarter'
             render(<SubdivisionSettings />);
 
-            expect(screen.getByText('Timeline Editor')).toBeInTheDocument();
+            expect(screen.getByText('Distribution:')).toBeInTheDocument();
+            expect(screen.getByText(/100 quarter/)).toBeInTheDocument();
         });
 
-        it('shows timeline editor when toggle is clicked', () => {
-            render(<SubdivisionSettings />);
-
-            const toggleButton = screen.getByText('Timeline Editor').closest('button')!;
-            fireEvent.click(toggleButton);
-
-            expect(screen.getByTestId('subdivision-timeline-editor')).toBeInTheDocument();
-        });
-
-        it('auto-shows timeline when multiple segments exist', () => {
+        it('shows custom subdivision count', () => {
+            // Add some custom subdivisions
             mockSubdivisionConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'quarter' as const },
-                    { startBeat: 32, subdivision: 'eighth' as const },
-                ],
+                beatSubdivisions: new Map([
+                    [0, 'eighth'],
+                    [1, 'eighth'],
+                    [2, 'sixteenth'],
+                ]),
+                defaultSubdivision: 'quarter',
             };
 
             render(<SubdivisionSettings />);
 
-            // Timeline should be visible without clicking toggle
-            expect(screen.getByTestId('subdivision-timeline-editor')).toBeInTheDocument();
+            expect(screen.getByText('Custom')).toBeInTheDocument();
+            // 3 custom subdivisions - check the stat value container
+            const customStat = screen.getByText('Custom').closest('.subdivision-settings-summary-stat');
+            expect(customStat).toHaveTextContent('3');
+        });
+
+        it('counts unique subdivisions correctly', () => {
+            mockSubdivisionConfig = {
+                beatSubdivisions: new Map([
+                    [0, 'eighth'],
+                    [1, 'sixteenth'],
+                ]),
+                defaultSubdivision: 'quarter',
+            };
+
+            render(<SubdivisionSettings />);
+
+            // quarter (default), eighth, sixteenth = 3 unique
+            expect(screen.getByText('Unique')).toBeInTheDocument();
+            expect(screen.getByText('3')).toBeInTheDocument();
         });
     });
 
@@ -629,35 +328,67 @@ describe('SubdivisionSettings', () => {
             mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
         });
 
-        it('disables all controls when disabled prop is true', () => {
+        it('disables generate button when disabled prop is true', () => {
             render(<SubdivisionSettings disabled={true} />);
 
-            // Add segment button should be disabled
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            expect(addButton).toBeDisabled();
-
-            // Generate button should be disabled
             const generateButton = screen.getByText('Generate Subdivided Beat Map').closest('button')!;
             expect(generateButton).toBeDisabled();
-
-            // Subdivision type toggles should be disabled
-            const radioButton = screen.getByRole('radio', { name: /Quarter.*default/i });
-            expect(radioButton).toBeDisabled();
-
-            // Start beat input should be disabled
-            const startBeatInput = screen.getByLabelText('Start beat for segment 1');
-            expect(startBeatInput).toBeDisabled();
         });
 
-        it('does not call actions when disabled', () => {
+        it('does not call generateSubdividedBeatMap when disabled', async () => {
             render(<SubdivisionSettings disabled={true} />);
 
-            // Try to click add segment
-            const addButton = screen.getByText('Add Segment').closest('button')!;
-            fireEvent.click(addButton);
+            const generateButton = screen.getByText('Generate Subdivided Beat Map').closest('button')!;
+            fireEvent.click(generateButton);
 
             // Action should not be called since button is disabled
-            expect(mockActions.addSubdivisionSegment).not.toHaveBeenCalled();
+            expect(mockActions.generateSubdividedBeatMap).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Per-Beat Config Format', () => {
+        it('works with empty beatSubdivisions Map', () => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
+            mockSubdivisionConfig = {
+                beatSubdivisions: new Map(),
+                defaultSubdivision: 'quarter',
+            };
+
+            render(<SubdivisionSettings />);
+
+            expect(screen.getByText('Subdivision Settings')).toBeInTheDocument();
+        });
+
+        it('works with populated beatSubdivisions Map', () => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
+            mockSubdivisionConfig = {
+                beatSubdivisions: new Map([
+                    [0, 'eighth'],
+                    [1, 'eighth'],
+                    [2, 'quarter'],
+                    [3, 'sixteenth'],
+                ]),
+                defaultSubdivision: 'quarter',
+            };
+
+            render(<SubdivisionSettings />);
+
+            expect(screen.getByText('Subdivision Settings')).toBeInTheDocument();
+            // Shows 4 custom subdivisions - check the Custom stat
+            const customStat = screen.getByText('Custom').closest('.subdivision-settings-summary-stat');
+            expect(customStat).toHaveTextContent('4');
+        });
+
+        it('handles different default subdivisions', () => {
+            mockUnifiedBeatMap = createMockUnifiedBeatMap(100);
+            mockSubdivisionConfig = {
+                beatSubdivisions: new Map(),
+                defaultSubdivision: 'eighth',
+            };
+
+            render(<SubdivisionSettings />);
+
+            expect(screen.getByText('Eighth')).toBeInTheDocument();
         });
     });
 });
