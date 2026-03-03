@@ -261,11 +261,11 @@ This plan covers:
 ### 8.2 Store Tests
 
 - [x] Test per-beat actions
-- [ ] Test selection state management (component-level, see Task 8.3)
+- [x] Test selection state management (component-level, see Task 8.3)
 
 ### 8.3 Component Tests
 
-- [ ] Test BeatSubdivisionGrid rendering
+- [x] Test BeatSubdivisionGrid rendering
 - [ ] Test selection interactions
 - [ ] Test toolbar apply action
 - [ ] Test with large beat counts (performance)
