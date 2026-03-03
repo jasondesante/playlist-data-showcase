@@ -290,10 +290,11 @@ Create new file: [src/components/ui/ChartEditorToolbar.tsx](src/components/ui/Ch
 ## Phase 5: Practice Mode Key Support
 
 ### Task 5.1: Update BeatPracticeView for Key Input
-- [ ] Integrate `useKeyboardInput` hook
-- [ ] Pass `pressedKey` to `checkTap` function
-- [ ] Add key indicators showing which keys to press on timeline
-- [ ] Practice works without chart (optional) - falls back to quarter note stream
+- [x] Integrate `useKeyboardInput` hook
+- [x] Pass `pressedKey` to `checkTap` function
+- [ ] Add key indicators showing which keys to press on timeline (moved to Task 5.2)
+- [x] Practice works without chart (optional) - falls back to quarter note stream
+**Status:** Complete - Keyboard input hook integrated, `checkTap` functions in both `useBeatStream` and `useSubdivisionPlayback` updated to accept `pressedKey` parameter. Key indicators on timeline will be implemented in Task 5.2 (KeyIndicator component).
 
 ### Task 5.2: Create KeyIndicator Component
 Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndicator.tsx)

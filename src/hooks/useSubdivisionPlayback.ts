@@ -89,8 +89,8 @@ export interface UseSubdivisionPlaybackReturn {
     getCurrentBeat: () => SubdividedBeat | null;
     /** Get the next beat */
     getNextBeat: () => SubdividedBeat | null;
-    /** Check tap accuracy against current subdivision's beats */
-    checkTap: () => ButtonPressResult | null;
+    /** Check tap accuracy against current subdivision's beats (key matching not supported in subdivision mode) */
+    checkTap: (pressedKey?: string) => ButtonPressResult | null;
 }
 
 /**
@@ -193,8 +193,14 @@ export const useSubdivisionPlayback = (
 
     /**
      * Check tap accuracy against the current subdivision's beats.
+     *
+     * Note: Key matching is not supported in subdivision mode. The pressedKey
+     * parameter is accepted for API consistency but is not used. For key-matching
+     * gameplay, use the main beat stream mode instead.
+     *
+     * @param _pressedKey - Ignored in subdivision mode (for API consistency)
      */
-    const checkTap = useCallback((): ButtonPressResult | null => {
+    const checkTap = useCallback((_pressedKey?: string): ButtonPressResult | null => {
         const controller = getActiveSubdivisionPlaybackController();
         if (!controller || !isActive) {
             return null;

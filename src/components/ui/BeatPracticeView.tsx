@@ -38,6 +38,7 @@ import {
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
+import { useKeyboardInput } from '../../hooks/useKeyboardInput';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
 import { BeatTimeline } from './BeatTimeline';
@@ -226,6 +227,22 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const transitionMode = useSubdivisionTransitionMode();
   const setTransitionMode = useBeatDetectionStore((state) => state.actions.setSubdivisionTransitionMode);
 
+  // Keyboard input hook for rhythm game key input (Phase 5: Task 5.1)
+  // Tracks pressed keys for key-matching gameplay (DDR arrows + Guitar Hero numbers)
+  // Note: We use a ref to store handleTap to avoid stale closure issues in the callback
+  const handleTapRef = useRef<(pressedKey?: string) => void>(() => {});
+  const { pressedKey: _pressedKey, keyDownList, clearKeys } = useKeyboardInput({
+    enabled: true, // Always enabled in practice mode
+    onKeyDown: (key) => {
+      // Trigger handleTap with the pressed key for key-matching gameplay
+      handleTapRef.current(key);
+      logger.debug('BeatDetection', 'Key pressed, triggering tap', { key, keyDownList });
+    },
+    onKeyUp: (key) => {
+      logger.debug('BeatDetection', 'Key released', { key });
+    },
+  });
+
   /**
    * Generate real-time subdivided beat map when subdivision changes.
    * This feeds the BeatTimeline for visualization in real-time mode.
@@ -263,10 +280,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }, [unifiedBeatMap, subdivisionPlaybackAvailable, currentSubdivision]);
 
   /**
-   * Handle tap action (spacebar or click)
+   * Handle tap action (spacebar, click, or key press)
    * Includes debouncing to prevent rapid accidental taps.
+   *
+   * @param pressedKey - Optional key that was pressed (for rhythm game chart mode)
    */
-  const handleTap = useCallback(() => {
+  const handleTap = useCallback((pressedKey?: string) => {
     if (!streamIsActive) return;
 
     const now = Date.now();
@@ -300,11 +319,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     lastTapTimeRef.current = now;
 
     // Use subdivision tap check when real-time subdivision is active
-    const useSubdivisionTap = subdivisionPlaybackAvailable && 
-                              currentSubdivision !== 'quarter' && 
+    const useSubdivisionTap = subdivisionPlaybackAvailable &&
+                              currentSubdivision !== 'quarter' &&
                               subdivisionIsActive;
-    
-    const result = useSubdivisionTap ? checkSubdivisionTap() : checkTap();
+
+    // Pass pressedKey to checkTap for key-matching gameplay
+    const result = useSubdivisionTap ? checkSubdivisionTap(pressedKey) : checkTap(pressedKey);
     if (result) {
       // Record in store
       recordTap(result);
@@ -327,8 +347,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     }
   }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive]);
 
+  // Keep handleTapRef updated with the latest handleTap function
+  // This allows the keyboard hook callback to call the latest handleTap
+  handleTapRef.current = handleTap;
+
   /**
-   * Handle keyboard events
+   * Handle keyboard events (spacebar and escape only - game keys handled by useKeyboardInput)
    */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -482,6 +506,15 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       }
     };
   }, []);
+
+  /**
+   * Cleanup keyboard input state on unmount
+   */
+  useEffect(() => {
+    return () => {
+      clearKeys();
+    };
+  }, [clearKeys]);
 
   // Calculate progress percentage
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;

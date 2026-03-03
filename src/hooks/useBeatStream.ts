@@ -44,6 +44,7 @@ import type {
     InterpolatedBeatMap,
     BeatWithSource,
     SubdividedBeatMap,
+    BeatAccuracy,
 } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
@@ -150,8 +151,8 @@ export interface UseBeatStreamReturn {
     isActive: boolean;
     /** Whether the stream is paused (active but not animating) */
     isPaused: boolean;
-    /** Check tap accuracy against the nearest beat (includes 'ok' accuracy level) */
-    checkTap: () => ExtendedButtonPressResult | null;
+    /** Check tap accuracy against the nearest beat (includes 'ok' accuracy level and key matching) */
+    checkTap: (pressedKey?: string) => ExtendedButtonPressResult | null;
     /** Start the beat stream (call when practice mode begins) */
     startStream: () => void;
     /** Stop the beat stream (call when practice mode ends) */
@@ -627,11 +628,18 @@ export const useBeatStream = (
      * difficulty presets and the 'ok' accuracy level. The engine's checkButtonPress
      * only supports perfect/great/good/miss without 'ok'.
      *
+     * KEY MATCHING: When a pressedKey is provided, we pass it to the engine's
+     * checkButtonPress which handles key matching and returns keyMatch, pressedKey,
+     * and requiredKey fields. The engine also handles wrongKey accuracy when the
+     * key doesn't match. We respect the ignoreKeyRequirements option from the store.
+     *
      * SOURCE EXTRACTION: When using InterpolatedBeatMap with mergedBeats, the
      * matched beat contains a 'source' field indicating whether it was detected
      * or interpolated. We extract this for tap statistics breakdown.
+     *
+     * @param pressedKey - Optional key that was pressed (for rhythm game chart mode)
      */
-    const checkTap = useCallback((): ExtendedButtonPressResult | null => {
+    const checkTap = useCallback((pressedKey?: string): ExtendedButtonPressResult | null => {
         if (!beatStreamRef.current || !isActive) {
             return null;
         }
@@ -643,10 +651,18 @@ export const useBeatStream = (
         const tapTime = getInterpolatedTime();
 
         // Use engine's checkButtonPress to find the nearest beat and calculate offset
-        const engineResult = beatStreamRef.current.checkButtonPress(tapTime);
+        // Pass the pressedKey to the engine for key matching
+        const engineResult = beatStreamRef.current.checkButtonPress(tapTime, pressedKey);
 
         // Re-evaluate accuracy using our custom thresholds
-        const accuracy = evaluateAccuracy(engineResult.absoluteOffset, thresholds);
+        // Note: If the engine returned 'wrongKey', we keep it as-is
+        let accuracy: ExtendedBeatAccuracy;
+        if (engineResult.accuracy === 'wrongKey' as BeatAccuracy) {
+            // Engine returned wrongKey - keep it
+            accuracy = 'wrongKey';
+        } else {
+            accuracy = evaluateAccuracy(engineResult.absoluteOffset, thresholds);
+        }
 
         // Extract source from matched beat (BeatWithSource has source field)
         // At runtime, when using InterpolatedBeatMap.mergedBeats, the beat
@@ -655,10 +671,15 @@ export const useBeatStream = (
         const matchedBeatWithSource = engineResult.matchedBeat as BeatWithSource;
         const source: BeatSource | undefined = matchedBeatWithSource?.source;
 
+        // Build the extended result with key matching info
         const result: ExtendedButtonPressResult = {
             ...engineResult,
             accuracy,
             source,
+            // Include key matching fields from engine result
+            keyMatch: (engineResult as any).keyMatch ?? true,
+            pressedKey: (engineResult as any).pressedKey ?? pressedKey,
+            requiredKey: (engineResult as any).requiredKey,
         };
 
         logger.debug('BeatDetection', 'Tap checked', {
@@ -667,6 +688,9 @@ export const useBeatStream = (
             beatTime: result.matchedBeat?.timestamp,
             tapTime,
             source: source ?? 'unknown',
+            pressedKey: result.pressedKey,
+            requiredKey: result.requiredKey,
+            keyMatch: result.keyMatch,
             thresholds: {
                 perfect: thresholds.perfect * 1000,
                 great: thresholds.great * 1000,
