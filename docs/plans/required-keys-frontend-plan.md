@@ -435,11 +435,19 @@ Update `handleExportBeatMap` in [src/components/Tabs/AudioAnalysisTab.tsx](src/c
 - Chart-related types (ChartStyle, SupportedKey, DdrKey, GuitarKey)
 
 ### Task 9.2: Unit Tests for useKeyboardInput
-- [ ] Test arrow key mapping
-- [ ] Test number key mapping
-- [ ] Test key repeat prevention
-- [ ] Test multiple key tracking
-- [ ] Test scroll blocking
+- [x] Test arrow key mapping
+- [x] Test number key mapping
+- [x] Test key repeat prevention
+- [x] Test multiple key tracking
+- [x] Test scroll blocking
+**Status:** Complete - Created [src/__tests__/useKeyboardInput.test.ts](src/__tests__/useKeyboardInput.test.ts) with 45 tests covering:
+- Arrow key mapping (ArrowUp/Down/Left/Right to 'up'/'down'/'left'/'right')
+- Number key mapping (Digit1-5 and Numpad1-5 to '1'-'5')
+- Key repeat prevention (ignores events with repeat=true)
+- Multiple key tracking (keyDownList tracks all held keys)
+- Scroll blocking (preventDefault called on arrow key events)
+- Additional tests for hook configuration (enabled, onKeyDown, onKeyUp callbacks)
+- clearKeys function, pressedAt timestamp, and edge cases
 
 ### Task 9.3: Unit Tests for Chart Editor Store
 - [ ] Test key assignment actions
