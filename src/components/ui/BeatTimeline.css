@@ -263,6 +263,70 @@
   z-index: 5;
 }
 
+/* ============================================
+   Task 6.2: Beat Marker Styling for Chart Mode
+   Special styling for beats with required keys
+   ============================================ */
+
+/**
+ * Beat markers with required keys get enhanced visual treatment.
+ * This helps players identify which beats need specific key presses.
+ */
+.beat-timeline-marker--has-key .beat-timeline-marker-dot {
+  /* Add a subtle ring/glow effect */
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 12px hsl(var(--primary) / 0.6),
+    0 0 20px hsl(var(--primary) / 0.3);
+  /* Slightly larger for better visibility */
+  transform: scale(1.1);
+}
+
+/* Downbeat with required key - more prominent */
+.beat-timeline-marker--has-key.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+  box-shadow:
+    0 0 0 3px hsl(var(--background)),
+    0 0 16px hsl(var(--primary) / 0.7),
+    0 0 28px hsl(var(--primary) / 0.4);
+  transform: scale(1.15);
+}
+
+/* Upcoming beat with key - pulsing glow to draw attention */
+.beat-timeline-marker--has-key.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+  animation: key-beat-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes key-beat-pulse {
+  from {
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 12px hsl(var(--primary) / 0.6),
+      0 0 20px hsl(var(--primary) / 0.3);
+  }
+  to {
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 18px hsl(var(--primary) / 0.8),
+      0 0 30px hsl(var(--primary) / 0.5);
+  }
+}
+
+/* Past beat with key - dimmed but still visible */
+.beat-timeline-marker--has-key.beat-timeline-marker--past .beat-timeline-marker-dot {
+  opacity: 0.7;
+  box-shadow:
+    0 0 0 1px hsl(var(--background)),
+    0 0 8px hsl(var(--primary) / 0.4);
+  transform: scale(1.05);
+}
+
+/* Subdivided beat with key - inherits subdivision color with key glow */
+.beat-timeline-marker--has-key.beat-timeline-marker--subdivided .beat-timeline-marker-dot {
+  /* Keep the subdivision color but add key indicator glow via outline */
+  outline: 2px solid hsl(var(--primary) / 0.6);
+  outline-offset: 2px;
+}
+
 @keyframes ring-pulse {
   0%, 100% {
     transform: scale(1);
@@ -924,6 +988,23 @@
     font-size: 0.5rem;
     margin-top: 0.1875rem;
   }
+
+  /* Task 6.2: Chart mode beat marker responsive - mobile */
+  .beat-timeline-marker--has-key .beat-timeline-marker-dot {
+    box-shadow:
+      0 0 0 1px hsl(var(--background)),
+      0 0 8px hsl(var(--primary) / 0.5),
+      0 0 14px hsl(var(--primary) / 0.25);
+    transform: scale(1.05);
+  }
+
+  .beat-timeline-marker--has-key.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 12px hsl(var(--primary) / 0.6),
+      0 0 20px hsl(var(--primary) / 0.3);
+    transform: scale(1.1);
+  }
 }
 
 /* Extra small screens */
@@ -1062,6 +1143,23 @@
   .beat-timeline-marker-number {
     font-size: 0.5rem;
     margin-top: 0.1875rem;
+  }
+
+  /* Task 6.2: Chart mode beat marker responsive - extra small */
+  .beat-timeline-marker--has-key .beat-timeline-marker-dot {
+    box-shadow:
+      0 0 0 1px hsl(var(--background)),
+      0 0 6px hsl(var(--primary) / 0.5),
+      0 0 10px hsl(var(--primary) / 0.2);
+    transform: scale(1.02);
+  }
+
+  .beat-timeline-marker--has-key.beat-timeline-marker--downbeat .beat-timeline-marker-dot {
+    box-shadow:
+      0 0 0 1px hsl(var(--background)),
+      0 0 10px hsl(var(--primary) / 0.5),
+      0 0 16px hsl(var(--primary) / 0.25);
+    transform: scale(1.08);
   }
 }
 
@@ -1451,5 +1549,21 @@
   .beat-timeline-subdivision-label {
     font-size: 0.4375rem;
     padding: 0.0625rem 0.1875rem;
+  }
+}
+
+/* ============================================
+   Accessibility: Reduced Motion Support
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulsing animation for key beat markers */
+  .beat-timeline-marker--has-key.beat-timeline-marker--upcoming .beat-timeline-marker-dot {
+    animation: none;
+  }
+
+  /* Keep visual distinction without animation */
+  .beat-timeline-marker--has-key .beat-timeline-marker-dot {
+    transition: none;
   }
 }

@@ -338,9 +338,10 @@ Create new file: [src/components/ui/KeyIndicator.tsx](src/components/ui/KeyIndic
 - Added reduced motion support for key mismatch animation
 
 ### Task 6.2: Update BeatTimeline for Key Display
-- [ ] Show required key indicator on beat markers (↑↓←→ and 1-5)
-- [ ] Display key icon/text on beats with required keys
-- [ ] Update beat marker styling for chart mode
+- [x] Show required key indicator on beat markers (↑↓←→ and 1-5)
+- [x] Display key icon/text on beats with required keys
+- [x] Update beat marker styling for chart mode
+**Status:** Complete - KeyIndicatorMini component displays key symbols on beat markers. Added `beat-timeline-marker--has-key` CSS class with glow effects, pulsing animation for upcoming beats, and responsive styles for mobile screens. Includes reduced motion support for accessibility.
 
 ### Task 6.3: Update TapStats for Key Statistics
 - [ ] Add "Wrong Keys" count to statistics

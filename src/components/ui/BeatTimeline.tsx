@@ -901,6 +901,8 @@ export function BeatTimeline({
               selectedBeatIndex !== undefined && beat.beatIndex === selectedBeatIndex
                 ? 'beat-timeline-marker--selected'
                 : ''
+            } ${
+              beat.requiredKey ? 'beat-timeline-marker--has-key' : ''
             }`}
             style={{
               left: `${position * 100}%`,
