@@ -260,8 +260,8 @@ This plan covers:
 
 ### 8.2 Store Tests
 
-- [ ] Test per-beat actions
-- [ ] Test selection state management
+- [x] Test per-beat actions
+- [ ] Test selection state management (component-level, see Task 8.3)
 
 ### 8.3 Component Tests
 
