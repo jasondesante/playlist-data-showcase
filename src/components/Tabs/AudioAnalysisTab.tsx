@@ -1012,7 +1012,8 @@ export function AudioAnalysisTab() {
         <BeatPracticeView onExit={handleExitPracticeMode} />
       )}
 
-      {selectedTrack && audioProfile && (
+      {/* Audio Analysis Results - Hidden during practice mode to optimize performance */}
+      {selectedTrack && audioProfile && !(analysisMode === 'beat' && practiceModeActive) && (
         <div className="audio-analysis-results fade-in">
           {/* Frequency Band Bar Chart Visualization */}
           <Card variant="elevated" padding="md" className="audio-analysis-card">

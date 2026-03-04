@@ -15,6 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
+import { List } from 'react-window';
 import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap, Gamepad2 } from 'lucide-react';
 import { BeatSubdivider } from 'playlist-data-engine';
 import './BeatPracticeView.css';
@@ -51,7 +52,7 @@ import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
 import { logger } from '../../utils/logger';
-import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap } from '../../types';
+import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -114,6 +115,100 @@ function getDifficultyDisplayInfo(preset: DifficultyPreset): { label: string; cl
  */
 function formatThresholdMs(seconds: number): string {
   return `${Math.round(seconds * 1000)}ms`;
+}
+
+/**
+ * Props for the virtualized tap row (passed via rowProps)
+ */
+interface TapRowProps {
+  taps: TapDebugInfo[];
+  accuracyThresholds: AccuracyThresholds;
+}
+
+/**
+ * Row renderer for react-window virtualized tap history list
+ */
+function TapRow({
+  index,
+  style,
+  taps,
+  accuracyThresholds,
+}: {
+  index: number;
+  style: React.CSSProperties;
+  taps: TapDebugInfo[];
+  accuracyThresholds: AccuracyThresholds;
+}) {
+  const tap = taps[index];
+
+  if (!tap) return null;
+
+  // Calculate position percentage for visual comparison
+  const maxOffsetMs = Math.round(accuracyThresholds.ok * 1000);
+  const clampedOffset = Math.max(-maxOffsetMs, Math.min(maxOffsetMs, tap.offsetMs));
+  const positionPercent = ((clampedOffset + maxOffsetMs) / (maxOffsetMs * 2)) * 100;
+
+  // Calculate threshold boundaries for visualization
+  const perfectMs = Math.round(accuracyThresholds.perfect * 1000);
+  const greatMs = Math.round(accuracyThresholds.great * 1000);
+  const goodMs = Math.round(accuracyThresholds.good * 1000);
+  const okMs = Math.round(accuracyThresholds.ok * 1000);
+
+  // Calculate zone widths (each side from center)
+  const perfectWidth = (perfectMs / okMs) * 50;
+  const greatWidth = (greatMs / okMs) * 50;
+  const goodWidth = (goodMs / okMs) * 50;
+
+  return (
+    <div style={style}>
+      <div className={`beat-practice-debug-tap beat-practice-debug-tap--${tap.accuracy}`}>
+        <div className="beat-practice-debug-tap-main">
+          <span className="beat-practice-debug-accuracy">{tap.accuracy.toUpperCase()}</span>
+          <span className="beat-practice-debug-offset">
+            {tap.offsetMs >= 0 ? '+' : ''}{tap.offsetMs}ms
+          </span>
+        </div>
+
+        {/* Visual threshold comparison bar */}
+        <div className="beat-practice-debug-tap-visual">
+          <div className="beat-practice-debug-threshold-bar">
+            <div className="beat-practice-debug-zone beat-practice-debug-zone--miss-left" />
+            <div
+              className="beat-practice-debug-zone beat-practice-debug-zone--ok"
+              style={{ left: `${50 - goodWidth}%`, right: `${50 - goodWidth}%` }}
+            />
+            <div
+              className="beat-practice-debug-zone beat-practice-debug-zone--good"
+              style={{ left: `${50 - greatWidth}%`, right: `${50 - greatWidth}%` }}
+            />
+            <div
+              className="beat-practice-debug-zone beat-practice-debug-zone--great"
+              style={{ left: `${50 - perfectWidth}%`, right: `${50 - perfectWidth}%` }}
+            />
+            <div
+              className="beat-practice-debug-zone beat-practice-debug-zone--perfect"
+              style={{ left: `${50 - perfectWidth}%`, right: `${50 - perfectWidth}%` }}
+            />
+            <div className="beat-practice-debug-center-line" />
+            <div
+              className="beat-practice-debug-tap-marker"
+              style={{ left: `${positionPercent}%` }}
+            />
+          </div>
+          <div className="beat-practice-debug-scale">
+            <span>-{okMs}ms</span>
+            <span>0</span>
+            <span>+{okMs}ms</span>
+          </div>
+        </div>
+
+        <div className="beat-practice-debug-tap-details">
+          <span>Audio: {tap.audioTime.toFixed(3)}s</span>
+          <span>Beat: {tap.beatTime.toFixed(3)}s</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
@@ -188,31 +283,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for tap visual feedback on timeline
   const [tapVisualTime, setTapVisualTime] = useState<number>(0);
 
-  // Debug: track taps for timing analysis (limited to 1000, but virtualized for rendering performance)
+  // Debug: track taps for timing analysis (limited to 1000, virtualized with react-window)
   const MAX_DEBUG_HISTORY = 1000;
   const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
 
-  // Virtualization state for tap debug history
-  const tapListRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
-  const ITEM_HEIGHT = 80; // Approximate height of each tap item in pixels
-  const CONTAINER_HEIGHT = 300; // Max height of the visible container
-  const OVERSCAN = 5; // Extra items to render above/below viewport
-
-  // Calculate visible range for virtualization
-  const visibleStartIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
-  const visibleEndIndex = Math.min(
-    tapDebugHistory.length,
-    Math.ceil((scrollTop + CONTAINER_HEIGHT) / ITEM_HEIGHT) + OVERSCAN
-  );
-  const visibleTaps = tapDebugHistory.slice(visibleStartIndex, visibleEndIndex);
-  const totalHeight = tapDebugHistory.length * ITEM_HEIGHT;
-  const offsetY = visibleStartIndex * ITEM_HEIGHT;
-
-  // Handle scroll for virtualization
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
-  }, []);
+  // Virtualization constants for react-window
+  const TAP_ITEM_HEIGHT = 80; // Height of each tap item in pixels
+  const TAP_LIST_HEIGHT = 300; // Max height of the visible container
 
   // Track audio time for debug info
   const audioTimeRef = useRef<number>(currentTime);
@@ -1012,115 +1089,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         {tapDebugHistory.length === 0 ? (
           <div className="beat-practice-debug-empty">Tap to see timing details...</div>
         ) : (
-          <div
-            ref={tapListRef}
+          <List<TapRowProps>
             className="beat-practice-debug-taps beat-practice-debug-taps--virtualized"
-            onScroll={handleScroll}
-            style={{ height: `${CONTAINER_HEIGHT}px`, overflowY: 'auto' }}
-          >
-            {/* Spacer for items above viewport */}
-            <div style={{ height: `${offsetY}px` }} />
-
-            {/* Only render visible items */}
-            {visibleTaps.map((tap, relativeIndex) => {
-              const i = visibleStartIndex + relativeIndex;
-              // Calculate position percentage for visual comparison
-              // Max display range is ±ok threshold (everything beyond is a miss)
-              const maxOffsetMs = Math.round(accuracyThresholds.ok * 1000);
-              const clampedOffset = Math.max(-maxOffsetMs, Math.min(maxOffsetMs, tap.offsetMs));
-              const positionPercent = ((clampedOffset + maxOffsetMs) / (maxOffsetMs * 2)) * 100;
-
-              // Calculate threshold boundaries for visualization
-              const perfectMs = Math.round(accuracyThresholds.perfect * 1000);
-              const greatMs = Math.round(accuracyThresholds.great * 1000);
-              const goodMs = Math.round(accuracyThresholds.good * 1000);
-              const okMs = Math.round(accuracyThresholds.ok * 1000);
-
-              // Calculate zone widths (each side from center)
-              const perfectWidth = (perfectMs / okMs) * 50; // percentage from center
-              const greatWidth = (greatMs / okMs) * 50;
-              const goodWidth = (goodMs / okMs) * 50;
-
-              return (
-                <div key={i} className={`beat-practice-debug-tap beat-practice-debug-tap--${tap.accuracy}`}>
-                  <div className="beat-practice-debug-tap-main">
-                    <span className="beat-practice-debug-accuracy">{tap.accuracy.toUpperCase()}</span>
-                    <span className="beat-practice-debug-offset">
-                      {tap.offsetMs >= 0 ? '+' : ''}{tap.offsetMs}ms
-                    </span>
-                  </div>
-
-                  {/* Visual threshold comparison bar */}
-                  <div className="beat-practice-debug-tap-visual">
-                    <div className="beat-practice-debug-threshold-bar">
-                      {/* Miss zone (left) */}
-                      <div className="beat-practice-debug-zone beat-practice-debug-zone--miss-left" />
-
-                      {/* OK zone (outer) */}
-                      <div
-                        className="beat-practice-debug-zone beat-practice-debug-zone--ok"
-                        style={{
-                          left: `${50 - goodWidth}%`,
-                          right: `${50 - goodWidth}%`,
-                        }}
-                      />
-
-                      {/* Good zone */}
-                      <div
-                        className="beat-practice-debug-zone beat-practice-debug-zone--good"
-                        style={{
-                          left: `${50 - greatWidth}%`,
-                          right: `${50 - greatWidth}%`,
-                        }}
-                      />
-
-                      {/* Great zone */}
-                      <div
-                        className="beat-practice-debug-zone beat-practice-debug-zone--great"
-                        style={{
-                          left: `${50 - perfectWidth}%`,
-                          right: `${50 - perfectWidth}%`,
-                        }}
-                      />
-
-                      {/* Perfect zone (center) */}
-                      <div
-                        className="beat-practice-debug-zone beat-practice-debug-zone--perfect"
-                        style={{
-                          left: `${50 - perfectWidth}%`,
-                          right: `${50 - perfectWidth}%`,
-                        }}
-                      />
-
-                      {/* Center line (beat time) */}
-                      <div className="beat-practice-debug-center-line" />
-
-                      {/* Tap position marker */}
-                      <div
-                        className="beat-practice-debug-tap-marker"
-                        style={{ left: `${positionPercent}%` }}
-                      />
-                    </div>
-
-                    {/* Scale labels */}
-                    <div className="beat-practice-debug-scale">
-                      <span>-{okMs}ms</span>
-                      <span>0</span>
-                      <span>+{okMs}ms</span>
-                    </div>
-                  </div>
-
-                  <div className="beat-practice-debug-tap-details">
-                    <span>Audio: {tap.audioTime.toFixed(3)}s</span>
-                    <span>Beat: {tap.beatTime.toFixed(3)}s</span>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Spacer for items below viewport */}
-            <div style={{ height: `${totalHeight - offsetY - (visibleTaps.length * ITEM_HEIGHT)}px` }} />
-          </div>
+            style={{ height: TAP_LIST_HEIGHT }}
+            rowCount={tapDebugHistory.length}
+            rowHeight={TAP_ITEM_HEIGHT}
+            rowComponent={TapRow}
+            rowProps={{
+              taps: tapDebugHistory,
+              accuracyThresholds,
+            }}
+          />
         )}
       </div>
 
