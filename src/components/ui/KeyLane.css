@@ -46,7 +46,7 @@
     opacity: 0.7;
 }
 
-/* Pause all beat animations when paused */
+/* Pause scrolling beat animations when paused, but NOT feedback animations */
 .key-lane--paused .key-lane-beat-inner {
     animation-play-state: paused;
 }
@@ -55,12 +55,13 @@
     animation-play-state: paused;
 }
 
+/* Feedback animations should ALWAYS play, even when paused - this allows debugging timing while paused */
 .key-lane--paused .key-lane-feedback-flash {
-    animation-play-state: paused;
+    animation-play-state: running !important;
 }
 
-.key-lane--paused .key-lane-hit-zone--feedback {
-    animation-play-state: paused;
+.key-lane--paused .key-lane-target-zone--feedback .key-lane-target-circle {
+    animation-play-state: running !important;
 }
 
 /* ============================================

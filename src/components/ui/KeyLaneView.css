@@ -40,9 +40,21 @@
     opacity: 0.8;
 }
 
-/* Pause all animations in child lanes when paused */
-.key-lane-view--paused * {
+/* Pause lane animations when paused, but NOT feedback animations */
+.key-lane-view--paused .key-lane-beat,
+.key-lane-view--paused .key-lane-beat-inner,
+.key-lane-view--paused .key-lane-beat-hit-ring,
+.key-lane-view--paused .key-lane-target-zone {
     animation-play-state: paused !important;
+}
+
+/* Feedback animations should ALWAYS play, even when paused */
+.key-lane-view--paused .key-lane-feedback-flash,
+.key-lane-view--paused .key-lane-target-zone--feedback,
+.key-lane-view--paused .key-lane-view-feedback-result,
+.key-lane-view--paused .key-lane-view-feedback-accuracy,
+.key-lane-view--paused .key-lane-view-feedback-offset {
+    animation-play-state: running !important;
 }
 
 /* Empty state */
@@ -72,6 +84,19 @@
     display: flex;
     flex: 1 1 auto;
     min-height: 0; /* Allow flexbox to shrink */
+    cursor: grab;
+    user-select: none;
+    touch-action: none; /* Prevent scroll while dragging */
+}
+
+/* Draggable state - indicates lanes can be dragged to seek */
+.key-lane-view-lanes--draggable {
+    cursor: grab;
+}
+
+/* Active dragging state */
+.key-lane-view-lanes--dragging {
+    cursor: grabbing;
 }
 
 /* ============================================

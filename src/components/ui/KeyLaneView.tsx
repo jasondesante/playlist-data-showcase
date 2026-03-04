@@ -18,7 +18,7 @@
  * @component
  */
 
-import { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { cn } from '@/utils/cn';
 import { KeyLane, getLanesForStyle, type LaneBeat } from './KeyLane';
 import type {
@@ -63,6 +63,8 @@ export interface KeyLaneViewProps {
     lastHitBeatTimestamp?: number | null;
     /** The timing offset in milliseconds (positive = late, negative = early) */
     lastTapOffsetMs?: number | null;
+    /** Callback when user clicks/drags to seek in the lane area */
+    onSeek?: (time: number) => void;
 }
 
 /**
@@ -256,26 +258,158 @@ export function KeyLaneView({
     lastPressedKey,
     lastHitBeatTimestamp,
     lastTapOffsetMs,
+    onSeek,
 }: KeyLaneViewProps) {
     // ========================================
     // Smooth Animation with requestAnimationFrame
     // ========================================
-    
+
     // Refs for smooth animation
     const animationFrameRef = useRef<number | null>(null);
-    
+
     // Smooth time state - updated at 60fps during playback
     const [smoothTime, setSmoothTime] = useState(currentTime);
-    
+
     // Track audio time and when it was last updated (for interpolation)
     const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
         time: currentTime,
         timestamp: performance.now(),
     });
-    
+
     // Track playing state in ref for animation loop
     const isPlayingRef = useRef(!isPaused);
-    
+
+    // ========================================
+    // Click/Drag Seeking (Vertical)
+    // ========================================
+
+    const lanesContainerRef = useRef<HTMLDivElement>(null);
+    const [isDraggingToSeek, setIsDraggingToSeek] = useState(false);
+
+    // Refs to track drag state (refs don't trigger re-renders)
+    const dragStartYRef = useRef<number>(0);
+    const dragStartTimeRef = useRef<number>(0);
+
+    /**
+     * Handle mouse down on lanes container - start vertical dragging
+     * Captures the initial click position and time
+     */
+    const handleMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (!onSeek || !lanesContainerRef.current) return;
+
+            event.preventDefault();
+            setIsDraggingToSeek(true);
+
+            // Capture the initial position and time
+            dragStartYRef.current = event.clientY;
+            dragStartTimeRef.current = smoothTime;
+        },
+        [onSeek, smoothTime]
+    );
+
+    /**
+     * Handle mouse move during vertical drag
+     * Calculates delta from initial position and applies to initial time
+     */
+    const handleMouseMove = useCallback(
+        (event: MouseEvent) => {
+            if (!isDraggingToSeek || !onSeek || !lanesContainerRef.current) return;
+
+            const rect = lanesContainerRef.current.getBoundingClientRect();
+            const trackHeight = rect.height;
+
+            // Calculate how far we've moved from the start position (in pixels)
+            const deltaY = event.clientY - dragStartYRef.current;
+
+            // Convert pixel delta to time delta
+            // Full track height = visibilityWindow seconds
+            // Drag up = go backward in time, Drag down = go forward in time
+            const timePerPixel = visibilityWindow / trackHeight;
+            const deltaTime = deltaY * timePerPixel;
+
+            // Apply delta to the initial time
+            const duration = beatMap?.duration ?? 0;
+            const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+
+            onSeek(newTime);
+        },
+        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration]
+    );
+
+    /**
+     * Handle mouse up - end vertical drag
+     */
+    const handleMouseUp = useCallback(() => {
+        setIsDraggingToSeek(false);
+    }, []);
+
+    /**
+     * Handle touch start on lanes container - start vertical dragging
+     */
+    const handleTouchStart = useCallback(
+        (event: React.TouchEvent<HTMLDivElement>) => {
+            if (!onSeek || !lanesContainerRef.current) return;
+
+            const touch = event.touches[0];
+            setIsDraggingToSeek(true);
+
+            // Capture the initial position and time
+            dragStartYRef.current = touch.clientY;
+            dragStartTimeRef.current = smoothTime;
+        },
+        [onSeek, smoothTime]
+    );
+
+    /**
+     * Handle touch move during vertical drag
+     */
+    const handleTouchMove = useCallback(
+        (event: React.TouchEvent<HTMLDivElement>) => {
+            if (!isDraggingToSeek || !onSeek || !lanesContainerRef.current) return;
+
+            const touch = event.touches[0];
+            const rect = lanesContainerRef.current.getBoundingClientRect();
+            const trackHeight = rect.height;
+
+            // Calculate how far we've moved from the start position (in pixels)
+            const deltaY = touch.clientY - dragStartYRef.current;
+
+            // Convert pixel delta to time delta
+            // Drag up = go backward in time, Drag down = go forward in time
+            const timePerPixel = visibilityWindow / trackHeight;
+            const deltaTime = deltaY * timePerPixel;
+
+            // Apply delta to the initial time
+            const duration = beatMap?.duration ?? 0;
+            const newTime = Math.max(0, Math.min(duration, dragStartTimeRef.current + deltaTime));
+
+            onSeek(newTime);
+        },
+        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration]
+    );
+
+    /**
+     * Handle touch end - end vertical drag
+     */
+    const handleTouchEnd = useCallback(() => {
+        setIsDraggingToSeek(false);
+    }, []);
+
+    /**
+     * Add/remove global mouse event listeners when dragging
+     */
+    useEffect(() => {
+        if (isDraggingToSeek) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+            };
+        }
+    }, [isDraggingToSeek, handleMouseMove, handleMouseUp]);
+
     // Keep refs in sync with props
     useEffect(() => {
         lastAudioTimeRef.current = {
@@ -486,7 +620,25 @@ export function KeyLaneView({
             )}
 
             {/* Lanes container with feedback panel */}
-            <div className="key-lane-view-lanes" data-lanes={lanes.length}>
+            <div
+                ref={lanesContainerRef}
+                className={cn(
+                    'key-lane-view-lanes',
+                    onSeek && 'key-lane-view-lanes--draggable',
+                    isDraggingToSeek && 'key-lane-view-lanes--dragging'
+                )}
+                data-lanes={lanes.length}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                role={onSeek ? 'slider' : undefined}
+                aria-label="Timeline scrubber"
+                aria-valuemin={0}
+                aria-valuemax={beatMap?.duration ?? 0}
+                aria-valuenow={smoothTime}
+                tabIndex={onSeek ? 0 : undefined}
+            >
                 {lanes.map((laneKey) => {
                     const laneBeats = beatsByLane.get(laneKey) || [];
                     // Only show feedback on the lane that was pressed
