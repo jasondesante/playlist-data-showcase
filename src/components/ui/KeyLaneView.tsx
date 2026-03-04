@@ -476,24 +476,34 @@ export function KeyLaneView({
     const lastProcessedHitRef = useRef<number | null>(null);
 
     // Track last time to detect seeking backwards (rewind)
-    const lastTimeRef = useRef<number>(0);
+    const lastSmoothTimeRef = useRef<number>(0);
+
+    // State counter to force re-computation of beatsByLane when beats are cleared
+    const [beatStateVersion, setBeatStateVersion] = useState(0);
 
     // Clear future beat states when seeking backwards (rewind detection)
+    // Uses smoothTime since that's what's used for rendering
     useEffect(() => {
         // If time went backwards, this is a seek/rewind - clear future beat states
-        if (currentTime < lastTimeRef.current - 0.1) {
+        if (smoothTime < lastSmoothTimeRef.current - 0.05) {
             // Clear all beat states that are in the future relative to new time
             const state = beatHitStateRef.current;
+            let clearedAny = false;
             for (const [timestamp] of state) {
-                if (timestamp > currentTime) {
+                if (timestamp > smoothTime) {
                     state.delete(timestamp);
+                    clearedAny = true;
                 }
             }
             // Also reset the last processed hit so beats can be hit again
-            lastProcessedHitRef.current = null;
+            if (clearedAny) {
+                lastProcessedHitRef.current = null;
+                // Force re-render to update beatsByLane memo
+                setBeatStateVersion((v) => v + 1);
+            }
         }
-        lastTimeRef.current = currentTime;
-    }, [currentTime]);
+        lastSmoothTimeRef.current = smoothTime;
+    }, [smoothTime]);
 
     // Update beat hit state when a beat is hit
     useEffect(() => {
@@ -545,7 +555,7 @@ export function KeyLaneView({
         if (currentId !== beatMapIdRef.current) {
             beatHitStateRef.current.clear();
             lastProcessedHitRef.current = null;
-            lastTimeRef.current = 0;
+            lastSmoothTimeRef.current = 0;
             beatMapIdRef.current = currentId;
         }
     }, [beatMap]);
@@ -554,9 +564,10 @@ export function KeyLaneView({
     const lanes = useMemo(() => getLanesForStyle(chartStyle), [chartStyle]);
 
     // Distribute beats to lanes based on requiredKey
+    // Include beatStateVersion to force re-computation when beats are cleared on rewind
     const beatsByLane = useMemo(
         () => distributeBeatsToLanes(beatMap, chartStyle, smoothTime, visibilityWindow, beatHitStateRef.current),
-        [beatMap, chartStyle, smoothTime, visibilityWindow]
+        [beatMap, chartStyle, smoothTime, visibilityWindow, beatStateVersion]
     );
 
     // Determine if we're showing an empty state
