@@ -88,6 +88,13 @@ export interface TapResult extends ExtendedButtonPressResult {
 }
 
 /**
+ * Maximum number of taps to keep in history.
+ * Limits memory usage and prevents O(n) slowdown in statistics calculations.
+ * Increased to 1000 since the debug display is now virtualized.
+ */
+const MAX_TAP_HISTORY_SIZE = 1000;
+
+/**
  * Default OSE mode configurations.
  * These track the user's selected mode for each OSE parameter.
  */
@@ -1477,9 +1484,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             offset: result.offset,
                             tapIndex: tapResult.tapIndex,
                         });
-                        set((state) => ({
-                            tapHistory: [...state.tapHistory, tapResult],
-                        }));
+                        set((state) => {
+                            const newHistory = [...state.tapHistory, tapResult];
+                            // Limit history size to prevent memory/performance issues
+                            return {
+                                tapHistory: newHistory.slice(-MAX_TAP_HISTORY_SIZE),
+                            };
+                        });
                     },
 
                     clearTapHistory: () => {

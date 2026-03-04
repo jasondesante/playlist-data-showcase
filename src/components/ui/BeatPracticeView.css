@@ -1039,6 +1039,18 @@
   overflow-y: auto;
 }
 
+/* Virtualized tap list - optimized for large lists */
+.beat-practice-debug-taps--virtualized {
+  contain: strict;
+  will-change: transform;
+}
+
+.beat-practice-debug-taps--virtualized .beat-practice-debug-tap {
+  /* Fixed height for virtualization calculations */
+  min-height: 80px;
+  flex-shrink: 0;
+}
+
 .beat-practice-debug-tap {
   display: flex;
   flex-direction: column;

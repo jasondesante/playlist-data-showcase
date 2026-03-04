@@ -766,6 +766,9 @@ export const useBeatStream = (
      * Sync with audio player when time changes.
      * This handles the case where the user seeks via the audio player controls.
      * Also detects and corrects drift between BeatStream and audio player.
+     *
+     * Note: updateUpcomingBeats() is NOT called here because the animation loop
+     * already handles that at 60fps. Calling it here would be redundant.
      */
     useEffect(() => {
         if (!isActive || !beatStreamRef.current) return;
@@ -783,9 +786,8 @@ export const useBeatStream = (
             });
             beatStreamRef.current.seek(currentTime);
         }
-
-        updateUpcomingBeats();
-    }, [currentTime, isActive, updateUpcomingBeats]);
+        // Note: updateUpcomingBeats() is called by the animation loop, not here
+    }, [currentTime, isActive]);
 
     /**
      * Auto-start/stop based on practice mode and playback state.

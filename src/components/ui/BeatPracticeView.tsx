@@ -188,8 +188,31 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for tap visual feedback on timeline
   const [tapVisualTime, setTapVisualTime] = useState<number>(0);
 
-  // Debug: track all taps for timing analysis (no limit - shows full session history)
+  // Debug: track taps for timing analysis (limited to 1000, but virtualized for rendering performance)
+  const MAX_DEBUG_HISTORY = 1000;
   const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
+
+  // Virtualization state for tap debug history
+  const tapListRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const ITEM_HEIGHT = 80; // Approximate height of each tap item in pixels
+  const CONTAINER_HEIGHT = 300; // Max height of the visible container
+  const OVERSCAN = 5; // Extra items to render above/below viewport
+
+  // Calculate visible range for virtualization
+  const visibleStartIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
+  const visibleEndIndex = Math.min(
+    tapDebugHistory.length,
+    Math.ceil((scrollTop + CONTAINER_HEIGHT) / ITEM_HEIGHT) + OVERSCAN
+  );
+  const visibleTaps = tapDebugHistory.slice(visibleStartIndex, visibleEndIndex);
+  const totalHeight = tapDebugHistory.length * ITEM_HEIGHT;
+  const offsetY = visibleStartIndex * ITEM_HEIGHT;
+
+  // Handle scroll for virtualization
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
 
   // Track audio time for debug info
   const audioTimeRef = useRef<number>(currentTime);
@@ -353,7 +376,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         offsetMs: Math.round(result.offset * 1000),
         accuracy: result.accuracy,
       };
-      setTapDebugHistory(prev => [debugInfo, ...prev]);
+      setTapDebugHistory(prev => {
+        const newHistory = [debugInfo, ...prev];
+        // Limit to MAX_DEBUG_HISTORY to prevent memory/performance issues
+        return newHistory.slice(0, MAX_DEBUG_HISTORY);
+      });
     }
   }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive]);
 
@@ -985,8 +1012,18 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         {tapDebugHistory.length === 0 ? (
           <div className="beat-practice-debug-empty">Tap to see timing details...</div>
         ) : (
-          <div className="beat-practice-debug-taps">
-            {tapDebugHistory.map((tap, i) => {
+          <div
+            ref={tapListRef}
+            className="beat-practice-debug-taps beat-practice-debug-taps--virtualized"
+            onScroll={handleScroll}
+            style={{ height: `${CONTAINER_HEIGHT}px`, overflowY: 'auto' }}
+          >
+            {/* Spacer for items above viewport */}
+            <div style={{ height: `${offsetY}px` }} />
+
+            {/* Only render visible items */}
+            {visibleTaps.map((tap, relativeIndex) => {
+              const i = visibleStartIndex + relativeIndex;
               // Calculate position percentage for visual comparison
               // Max display range is ±ok threshold (everything beyond is a miss)
               const maxOffsetMs = Math.round(accuracyThresholds.ok * 1000);
@@ -1080,6 +1117,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
                 </div>
               );
             })}
+
+            {/* Spacer for items below viewport */}
+            <div style={{ height: `${totalHeight - offsetY - (visibleTaps.length * ITEM_HEIGHT)}px` }} />
           </div>
         )}
       </div>

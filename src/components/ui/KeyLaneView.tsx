@@ -92,9 +92,32 @@ function beatToLaneBeat(
 }
 
 /**
+ * Binary search to find the index of the first beat at or after the given time.
+ * Returns the index of the first beat >= targetTime, or beats.length if none found.
+ */
+function findFirstBeatAtOrAfter(beats: Beat[], targetTime: number): number {
+    let left = 0;
+    let right = beats.length;
+
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (beats[mid].timestamp < targetTime) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+
+    return left;
+}
+
+/**
  * Distribute beats from the beat map to their respective lanes.
  * - Beats with requiredKey go to their specific lane
  * - Beats without requiredKey go to ALL lanes (hittable with any key)
+ *
+ * Optimized to use binary search for finding visible beats instead of
+ * filtering the entire array on every frame.
  */
 function distributeBeatsToLanes(
     beatMap: SubdividedBeatMap | null,
@@ -111,7 +134,7 @@ function distributeBeatsToLanes(
         laneMap.set(laneKey, []);
     }
 
-    if (!beatMap || !beatMap.beats) {
+    if (!beatMap || !beatMap.beats || beatMap.beats.length === 0) {
         return laneMap;
     }
 
@@ -119,12 +142,18 @@ function distributeBeatsToLanes(
     const minTime = currentTime - 0.2; // Show slightly past for fade-out
     const maxTime = currentTime + visibilityWindow;
 
-    // Filter beats within visibility window and distribute to lanes
-    const visibleBeats = beatMap.beats.filter(
-        (beat) => beat.timestamp >= minTime && beat.timestamp <= maxTime
-    );
+    // Use binary search to find the starting index
+    const startIndex = findFirstBeatAtOrAfter(beatMap.beats, minTime);
 
-    for (const beat of visibleBeats) {
+    // Iterate only through visible beats
+    for (let i = startIndex; i < beatMap.beats.length; i++) {
+        const beat = beatMap.beats[i];
+
+        // Stop if we've gone past the visibility window
+        if (beat.timestamp > maxTime) {
+            break;
+        }
+
         if (beat.requiredKey) {
             // Beat has a required key - add to specific lane
             const laneBeats = laneMap.get(beat.requiredKey as SupportedKey);
@@ -251,7 +280,15 @@ export function KeyLaneView({
     }, [lastHitBeatTimestamp, lastAccuracy]);
 
     // Clean up old beat states (beats that have passed more than 1 second ago)
+    // Throttled to run every ~500ms instead of every frame for performance
+    const lastCleanupTimeRef = useRef<number>(0);
     useEffect(() => {
+        // Only cleanup every 500ms to avoid performance overhead
+        if (currentTime - lastCleanupTimeRef.current < 0.5) {
+            return;
+        }
+        lastCleanupTimeRef.current = currentTime;
+
         const cleanupThreshold = currentTime - 1.0;
         const state = beatHitStateRef.current;
 
@@ -284,14 +321,15 @@ export function KeyLaneView({
     );
 
     // Determine if we're showing an empty state
+    // Optimized: derive from beatsByLane instead of iterating through all beats
     const hasBeats = useMemo(() => {
         if (!beatMap || !beatMap.beats) return false;
-        return beatMap.beats.some(
-            (beat) =>
-                beat.timestamp >= currentTime - 0.2 &&
-                beat.timestamp <= currentTime + visibilityWindow
-        );
-    }, [beatMap, currentTime, visibilityWindow]);
+        // Check if any lane has beats
+        for (const [, laneBeats] of beatsByLane) {
+            if (laneBeats.length > 0) return true;
+        }
+        return false;
+    }, [beatMap, beatsByLane]);
 
     // Check if there are any beats with required keys (chart has notes)
     const hasChartNotes = useMemo(() => {
