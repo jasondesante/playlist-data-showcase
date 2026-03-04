@@ -253,6 +253,86 @@ export function KeyLaneView({
     lastPressedKey,
     lastHitBeatTimestamp,
 }: KeyLaneViewProps) {
+    // ========================================
+    // Smooth Animation with requestAnimationFrame
+    // ========================================
+    
+    // Refs for smooth animation
+    const animationFrameRef = useRef<number | null>(null);
+    
+    // Smooth time state - updated at 60fps during playback
+    const [smoothTime, setSmoothTime] = useState(currentTime);
+    
+    // Track audio time and when it was last updated (for interpolation)
+    const lastAudioTimeRef = useRef<{ time: number; timestamp: number }>({
+        time: currentTime,
+        timestamp: performance.now(),
+    });
+    
+    // Track playing state in ref for animation loop
+    const isPlayingRef = useRef(!isPaused);
+    
+    // Keep refs in sync with props
+    useEffect(() => {
+        lastAudioTimeRef.current = {
+            time: currentTime,
+            timestamp: performance.now(),
+        };
+    }, [currentTime]);
+    
+    useEffect(() => {
+        isPlayingRef.current = !isPaused;
+    }, [isPaused]);
+    
+    /**
+     * Animation loop for smooth scrolling.
+     * Uses requestAnimationFrame for 60fps updates.
+     * Interpolates time between audio player updates.
+     */
+    useEffect(() => {
+        if (isPaused) {
+            // When paused, just use the current time directly (no animation)
+            setSmoothTime(currentTime);
+            return;
+        }
+        
+        /**
+         * Animation loop function
+         */
+        const animate = () => {
+            const { time: lastAudioTime, timestamp: lastTimestamp } = lastAudioTimeRef.current;
+            const now = performance.now();
+            const elapsedMs = now - lastTimestamp;
+            const elapsedSeconds = elapsedMs / 1000;
+            
+            // Calculate interpolated time
+            const interpolatedTime = lastAudioTime + elapsedSeconds;
+            
+            // Clamp to beat map duration if available
+            const maxDuration = beatMap?.duration ?? Infinity;
+            const clampedTime = Math.min(interpolatedTime, maxDuration);
+            
+            // Update smooth time state
+            setSmoothTime(clampedTime);
+            
+            // Continue animation if still playing
+            if (isPlayingRef.current && clampedTime < maxDuration) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            }
+        };
+        
+        // Start the animation loop
+        animationFrameRef.current = requestAnimationFrame(animate);
+        
+        // Cleanup on unmount or when playback stops
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+        };
+    }, [isPaused, beatMap?.duration, currentTime]);
+
     // Track hit/miss state for beats (persists across renders)
     const beatHitStateRef = useRef<BeatHitState>(new Map());
     const lastProcessedHitRef = useRef<number | null>(null);
@@ -316,8 +396,8 @@ export function KeyLaneView({
 
     // Distribute beats to lanes based on requiredKey
     const beatsByLane = useMemo(
-        () => distributeBeatsToLanes(beatMap, chartStyle, currentTime, visibilityWindow, beatHitStateRef.current),
-        [beatMap, chartStyle, currentTime, visibilityWindow]
+        () => distributeBeatsToLanes(beatMap, chartStyle, smoothTime, visibilityWindow, beatHitStateRef.current),
+        [beatMap, chartStyle, smoothTime, visibilityWindow]
     );
 
     // Determine if we're showing an empty state
@@ -392,7 +472,7 @@ export function KeyLaneView({
                             key={laneKey}
                             laneKey={laneKey}
                             beats={laneBeats}
-                            currentTime={currentTime}
+                            currentTime={smoothTime}
                             visibilityWindow={visibilityWindow}
                             isActive={isActive}
                             isPaused={isPaused}
