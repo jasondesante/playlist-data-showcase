@@ -134,6 +134,7 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+    z-index: 2; /* Above target zone so beats appear on top when passing through */
 }
 
 /* ============================================
@@ -321,68 +322,117 @@
 }
 
 /* ============================================
-   HIT ZONE (Bottom of Lane)
+   TARGET ZONE (Stationary target circle)
    ============================================ */
 
-.key-lane-hit-zone {
+/**
+ * Target zone container - positioned at the "now" point
+ * For Guitar Hero: bottom of lane (notes scroll top-to-bottom)
+ * For DDR: top of lane (notes scroll bottom-to-top)
+ */
+.key-lane-target-zone {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 1; /* Below beat markers so beats appear on top when passing through */
+}
+
+/* Guitar Hero: Target positioned so full circle is visible (85% from top) */
+.key-lane--guitar .key-lane-target-zone {
+    top: 85%;
+}
+
+/* DDR: Target at 10% from top (where "now" beats appear after inversion) */
+.key-lane--ddr .key-lane-target-zone {
+    top: 10%;
+}
+
+/**
+ * Target circle - single circle with key inside
+ * Same size as beat markers for visual alignment
+ * This is the stationary target that falling notes must pass through
+ */
+.key-lane-target-circle {
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-        to top,
-        hsl(var(--surface-2) / 0.9) 0%,
-        hsl(var(--surface-2) / 0.5) 50%,
-        hsl(var(--surface-2) / 0) 100%
-    );
-}
-
-/* Hit zone glow line */
-.key-lane-hit-zone-glow {
-    position: absolute;
-    bottom: 25px;
-    left: 10%;
-    right: 10%;
-    height: 4px;
-    background: var(--lane-color);
-    border-radius: 2px;
-    box-shadow: 0 0 10px var(--lane-color), 0 0 20px var(--lane-color);
-    opacity: 0.8;
-}
-
-/* Hit zone line */
-.key-lane-hit-zone-line {
-    position: absolute;
-    bottom: 26px;
-    left: 5%;
-    right: 5%;
-    height: 2px;
-    background: hsl(var(--border));
-}
-
-/* Hit zone label (key indicator) */
-.key-lane-hit-zone-label {
-    position: absolute;
-    bottom: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    background: hsl(var(--surface-2));
-    border: 2px solid var(--lane-color);
+    border: 3px solid var(--lane-color);
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--lane-color);
+    background: hsl(var(--background) / 0.8);
+    box-shadow:
+        0 0 15px var(--lane-color),
+        inset 0 0 10px var(--lane-color) / 0.3;
+    transition: all 0.15s ease;
 }
 
-/* DDR arrow indicator in hit zone */
-.key-lane-arrow-indicator {
-    width: 16px;
-    height: 16px;
+/* Guitar Hero: Circle target matching beat size */
+.key-lane--guitar .key-lane-target-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+/* DDR: Slightly larger, rounded square to match arrow shape */
+.key-lane--ddr .key-lane-target-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+}
+
+/* Glow effect when lane is active */
+.key-lane--active .key-lane-target-circle {
+    box-shadow:
+        0 0 20px var(--lane-color),
+        inset 0 0 15px var(--lane-color) / 0.4;
+}
+
+/* Feedback animation when hit */
+.key-lane-target-zone--feedback .key-lane-target-circle {
+    animation: key-lane-target-pulse 0.2s ease-out;
+}
+
+@keyframes key-lane-target-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow:
+            0 0 20px var(--lane-color),
+            inset 0 0 15px var(--lane-color) / 0.4;
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow:
+            0 0 30px var(--lane-color),
+            inset 0 0 20px var(--lane-color) / 0.6;
+    }
+    100% {
+        transform: scale(1);
+        box-shadow:
+            0 0 20px var(--lane-color),
+            inset 0 0 15px var(--lane-color) / 0.4;
+    }
+}
+
+/**
+ * Key label inside target circle
+ */
+.key-lane-target-key {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--lane-color);
+    font-family: ui-monospace, monospace;
+    text-shadow: 0 0 8px var(--lane-color);
+}
+
+/* DDR arrow inside target circle */
+.key-lane-target-arrow {
+    width: 24px;
+    height: 24px;
     background: var(--lane-color);
     clip-path: polygon(
         50% 0%,
@@ -393,54 +443,23 @@
         30% 50%,
         0% 50%
     );
+    filter: drop-shadow(0 0 6px var(--lane-color));
 }
 
-.key-lane-arrow-indicator--up {
+.key-lane-target-arrow--up {
     transform: rotate(0deg);
 }
 
-.key-lane-arrow-indicator--down {
+.key-lane-target-arrow--down {
     transform: rotate(180deg);
 }
 
-.key-lane-arrow-indicator--left {
+.key-lane-target-arrow--left {
     transform: rotate(-90deg);
 }
 
-.key-lane-arrow-indicator--right {
+.key-lane-target-arrow--right {
     transform: rotate(90deg);
-}
-
-/* Guitar Hero key number in hit zone */
-.key-lane-key-number {
-    font-size: 0.875rem;
-    font-weight: 800;
-    color: var(--lane-color);
-    font-family: ui-monospace, monospace;
-}
-
-/* Feedback animation on hit zone */
-.key-lane-hit-zone--feedback {
-    animation: key-lane-hit-zone-flash 0.2s ease-out;
-}
-
-@keyframes key-lane-hit-zone-flash {
-    0% {
-        background: linear-gradient(
-            to top,
-            hsl(var(--lane-color) / 0.5) 0%,
-            hsl(var(--surface-2) / 0.5) 50%,
-            hsl(var(--surface-2) / 0) 100%
-        );
-    }
-    100% {
-        background: linear-gradient(
-            to top,
-            hsl(var(--surface-2) / 0.9) 0%,
-            hsl(var(--surface-2) / 0.5) 50%,
-            hsl(var(--surface-2) / 0) 100%
-        );
-    }
 }
 
 /* Feedback flash overlay */
@@ -518,35 +537,13 @@
     max-width: 45px;
 }
 
-/* DDR: Hit zone at TOP (notes scroll bottom-to-top) */
-.key-lane--ddr .key-lane-hit-zone {
-    top: 0;
-    bottom: auto;
-    background: linear-gradient(
-        to bottom,
-        hsl(var(--lane-color) / 0.15) 0%,
-        hsl(var(--lane-color) / 0.05) 50%,
-        hsl(var(--lane-color) / 0) 100%
-    );
-}
-
-.key-lane--ddr .key-lane-hit-zone-glow {
-    top: 0;
-    bottom: auto;
-}
-
-.key-lane--ddr .key-lane-hit-zone-line {
-    top: 0;
-    bottom: auto;
-}
-
 /* ============================================
    GUITAR HERO LANE SPECIFICS
    ============================================ */
 
 .key-lane--guitar {
-    min-width: 50px;
-    max-width: 70px;
+    min-width: 60px;
+    max-width: 85px;
 }
 
 .key-lane--guitar .key-lane-beat-inner {
@@ -554,8 +551,9 @@
 }
 
 .key-lane--guitar .key-lane-beat {
-    max-width: 40px;
+    max-width: 44px;
 }
+
 
 /* ============================================
    RESPONSIVE STYLES
@@ -573,26 +571,32 @@
     }
 
     .key-lane--guitar {
-        min-width: 40px;
-        max-width: 55px;
+        min-width: 50px;
+        max-width: 70px;
     }
 
-    .key-lane-hit-zone {
-        height: 50px;
+    .key-lane-target-circle {
+        width: 38px;
+        height: 38px;
     }
 
-    .key-lane-hit-zone-label {
-        width: 24px;
-        height: 24px;
+    .key-lane--ddr .key-lane-target-circle {
+        width: 40px;
+        height: 40px;
     }
 
-    .key-lane-arrow-indicator {
-        width: 12px;
-        height: 12px;
+    .key-lane--guitar .key-lane-target-circle {
+        width: 38px;
+        height: 38px;
     }
 
-    .key-lane-key-number {
-        font-size: 0.75rem;
+    .key-lane-target-key {
+        font-size: 1.25rem;
+    }
+
+    .key-lane-target-arrow {
+        width: 20px;
+        height: 20px;
     }
 
     .key-lane-beat-symbol {
@@ -612,26 +616,32 @@
     }
 
     .key-lane--guitar {
-        min-width: 32px;
-        max-width: 45px;
+        min-width: 40px;
+        max-width: 55px;
     }
 
-    .key-lane-hit-zone {
-        height: 40px;
+    .key-lane-target-circle {
+        width: 30px;
+        height: 30px;
     }
 
-    .key-lane-hit-zone-label {
-        width: 20px;
-        height: 20px;
+    .key-lane--ddr .key-lane-target-circle {
+        width: 34px;
+        height: 34px;
     }
 
-    .key-lane-arrow-indicator {
-        width: 10px;
-        height: 10px;
+    .key-lane--guitar .key-lane-target-circle {
+        width: 32px;
+        height: 32px;
     }
 
-    .key-lane-key-number {
-        font-size: 0.625rem;
+    .key-lane-target-key {
+        font-size: 1rem;
+    }
+
+    .key-lane-target-arrow {
+        width: 16px;
+        height: 16px;
     }
 
     .key-lane-beat-symbol {
@@ -651,7 +661,7 @@
     .key-lane-beat--upcoming .key-lane-beat-inner,
     .key-lane-beat--hit-zone .key-lane-beat-inner,
     .key-lane-beat--wrong-key .key-lane-beat-inner,
-    .key-lane-hit-zone--feedback {
+    .key-lane-target-zone--feedback {
         animation: none;
     }
 

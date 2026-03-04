@@ -122,23 +122,29 @@ export function getKeyLaneColor(key: SupportedKey): string {
 }
 
 /**
- * Calculate beat position as a percentage from top (0% = top, 100% = hit zone).
- * For Guitar Hero: beats scroll top to bottom, hit zone at bottom
- * For DDR: beats scroll bottom to top, hit zone at top (position inverted)
+ * Calculate beat position as a percentage from top.
+ * For Guitar Hero: beats scroll top to bottom, hit zone at target circle position
+ * For DDR: beats scroll bottom to top, hit zone at target circle position (inverted)
+ *
+ * The hit zone percentage aligns with the target circle position in CSS,
+ * so notes visually pass through the circle when their timing is exact.
  */
 function calculateBeatPosition(
     beatTime: number,
     currentTime: number,
     visibilityWindow: number,
-    invertDirection: boolean = false
+    invertDirection: boolean = false,
+    hitZonePercent: number = 85
 ): number {
     const timeUntilBeat = beatTime - currentTime;
-    // Map from [+visibilityWindow, 0] to [0, 100]
-    // +visibilityWindow seconds in future = 0% (far from hit zone)
-    // 0 seconds (now) = 100% (at hit zone)
-    const position = 100 - (timeUntilBeat / visibilityWindow) * 100;
-    
-    // For DDR, invert so hit zone is at top (0%) and notes come from bottom
+
+    // Map from [+visibilityWindow, 0] to [0, hitZonePercent]
+    // +visibilityWindow seconds in future = 0% (top of lane)
+    // 0 seconds (now) = hitZonePercent% (at target circle)
+    const position = hitZonePercent - (timeUntilBeat / visibilityWindow) * hitZonePercent;
+
+    // For DDR, invert so hit zone is at top and notes come from bottom
+    // DDR uses 10% for hit zone (90% inverted = 10%)
     return invertDirection ? 100 - position : position;
 }
 
@@ -306,21 +312,15 @@ export function KeyLane({
                 ))}
             </div>
 
-            {/* Hit zone at bottom */}
+            {/* Target circle at hit position - single circle with key inside */}
             {showHitZone && (
-                <div className={cn('key-lane-hit-zone', showHitFeedback && 'key-lane-hit-zone--feedback')}>
-                    {/* Hit zone glow */}
-                    <div className="key-lane-hit-zone-glow" />
-
-                    {/* Hit zone line */}
-                    <div className="key-lane-hit-zone-line" />
-
-                    {/* Key label */}
-                    <div className="key-lane-hit-zone-label">
+                <div className={cn('key-lane-target-zone', showHitFeedback && 'key-lane-target-zone--feedback')}>
+                    {/* Target circle with key label inside */}
+                    <div className="key-lane-target-circle">
                         {isDdrLane ? (
-                            <div className={cn('key-lane-arrow-indicator', `key-lane-arrow-indicator--${laneKey}`)} />
+                            <div className={cn('key-lane-target-arrow', `key-lane-target-arrow--${laneKey}`)} />
                         ) : (
-                            <span className="key-lane-key-number">{keySymbol}</span>
+                            <span className="key-lane-target-key">{keySymbol}</span>
                         )}
                     </div>
 
