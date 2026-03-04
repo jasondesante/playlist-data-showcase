@@ -1706,6 +1706,25 @@
   font-weight: 500;
 }
 
+/* ============================================
+   KEY LANE VIEW - Expanded for lane modes
+   Phase 10: DDR/Guitar Hero lane visualization
+   ============================================ */
+
+/* Give KeyLaneView more vertical space when in lane mode */
+.beat-practice-view .key-lane-view {
+  min-height: 400px;
+  max-height: 600px;
+  flex: 1;
+}
+
+/* Full-height variant for immersive lane experience */
+.beat-practice-view--lane-mode .key-lane-view {
+  min-height: 500px;
+  max-height: none;
+  flex: 1;
+}
+
 /* Responsive adjustments for view mode toggle */
 @media (max-width: 640px) {
   .beat-practice-view-mode-container {

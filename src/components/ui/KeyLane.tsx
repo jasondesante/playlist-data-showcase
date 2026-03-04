@@ -123,22 +123,23 @@ export function getKeyLaneColor(key: SupportedKey): string {
 
 /**
  * Calculate beat position as a percentage from top (0% = top, 100% = hit zone).
- * Beats scroll from top to bottom.
- * - At currentTime - visibilityWindow: position = 0% (just appeared at top)
- * - At currentTime: position = 100% (at hit zone)
- * - After currentTime: position > 100% (passed, fading out)
+ * For Guitar Hero: beats scroll top to bottom, hit zone at bottom
+ * For DDR: beats scroll bottom to top, hit zone at top (position inverted)
  */
 function calculateBeatPosition(
     beatTime: number,
     currentTime: number,
-    visibilityWindow: number
+    visibilityWindow: number,
+    invertDirection: boolean = false
 ): number {
     const timeUntilBeat = beatTime - currentTime;
-    // Map from [-visibilityWindow, 0] to [0, 100]
-    // -visibilityWindow seconds in future = 0% (top of lane)
-    // 0 seconds (now) = 100% (hit zone)
-    const position = 100 + (timeUntilBeat / visibilityWindow) * 100;
-    return position;
+    // Map from [+visibilityWindow, 0] to [0, 100]
+    // +visibilityWindow seconds in future = 0% (far from hit zone)
+    // 0 seconds (now) = 100% (at hit zone)
+    const position = 100 - (timeUntilBeat / visibilityWindow) * 100;
+    
+    // For DDR, invert so hit zone is at top (0%) and notes come from bottom
+    return invertDirection ? 100 - position : position;
 }
 
 /**
@@ -218,11 +219,14 @@ export function KeyLane({
     const visibleBeats = useMemo(() => {
         const minTime = currentTime - 0.2; // Show beats slightly in the past for fade-out
         const maxTime = currentTime + visibilityWindow;
+        
+        // DDR uses inverted direction (bottom-to-top), Guitar Hero uses normal (top-to-bottom)
+        const invertDirection = chartStyle === 'ddr';
 
         return beats
             .filter((beat) => beat.timestamp >= minTime && beat.timestamp <= maxTime)
             .map((beat) => {
-                const position = calculateBeatPosition(beat.timestamp, currentTime, visibilityWindow);
+                const position = calculateBeatPosition(beat.timestamp, currentTime, visibilityWindow, invertDirection);
                 const isPast = beat.timestamp < currentTime - 0.05;
                 const isUpcoming = beat.timestamp > currentTime + 0.05;
                 const isAtHitZone = !isPast && !isUpcoming;
@@ -236,7 +240,7 @@ export function KeyLane({
                 };
             })
             .filter((beat) => beat.position >= -10 && beat.position <= 110); // Allow some overflow for smooth transitions
-    }, [beats, currentTime, visibilityWindow]);
+    }, [beats, currentTime, visibilityWindow, chartStyle]);
 
     return (
         <div

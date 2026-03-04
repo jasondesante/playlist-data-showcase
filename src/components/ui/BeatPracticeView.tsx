@@ -811,36 +811,38 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         </div>
       </div>
 
-      {/* Beat Timeline Visualization */}
-      <BeatTimeline
-        beatMap={beatMap}
-        currentTime={currentTime}
-        lastBeatEvent={lastBeatEvent}
-        lastTapTime={tapVisualTime}
-        lastTapAccuracy={lastTapResult?.accuracy ?? null}
-        onSeek={handleSeek}
-        anticipationWindow={2.0}
-        isPlaying={isPlaying}
-        audioContext={null}
-        interpolationData={interpolationData}
-        showGridOverlay={showGridOverlay}
-        showTempoDriftVisualization={showTempoDriftVisualization}
-        enableBeatSelection={isDownbeatSelectionMode}
-        onBeatClick={handleBeatClick}
-        showMeasureBoundaries={showMeasureBoundaries}
-        // Pass subdivided beat map for visualization
-        // Priority: 1) Pre-calculated (beatStreamMode='subdivided'), 2) Real-time generated
-        subdividedBeatMap={
-          beatStreamMode === 'subdivided'
-            ? subdividedBeatMap
-            : realtimeSubdividedBeatMap
-        }
-        showSubdivisionVisualization={
-          beatStreamMode === 'subdivided'
-            ? !!subdividedBeatMap
-            : !!realtimeSubdividedBeatMap
-        }
-      />
+      {/* Beat Timeline Visualization - Hidden when in DDR/Guitar lane mode */}
+      {keyLaneViewMode === 'off' && (
+        <BeatTimeline
+          beatMap={beatMap}
+          currentTime={currentTime}
+          lastBeatEvent={lastBeatEvent}
+          lastTapTime={tapVisualTime}
+          lastTapAccuracy={lastTapResult?.accuracy ?? null}
+          onSeek={handleSeek}
+          anticipationWindow={2.0}
+          isPlaying={isPlaying}
+          audioContext={null}
+          interpolationData={interpolationData}
+          showGridOverlay={showGridOverlay}
+          showTempoDriftVisualization={showTempoDriftVisualization}
+          enableBeatSelection={isDownbeatSelectionMode}
+          onBeatClick={handleBeatClick}
+          showMeasureBoundaries={showMeasureBoundaries}
+          // Pass subdivided beat map for visualization
+          // Priority: 1) Pre-calculated (beatStreamMode='subdivided'), 2) Real-time generated
+          subdividedBeatMap={
+            beatStreamMode === 'subdivided'
+              ? subdividedBeatMap
+              : realtimeSubdividedBeatMap
+          }
+          showSubdivisionVisualization={
+            beatStreamMode === 'subdivided'
+              ? !!subdividedBeatMap
+              : !!realtimeSubdividedBeatMap
+          }
+        />
+      )}
 
       {/* Playback Controls */}
       <div className="beat-practice-controls">

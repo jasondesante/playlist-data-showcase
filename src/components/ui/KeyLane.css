@@ -18,10 +18,10 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 60px;
     max-width: 100px;
-    height: 100%;
+    min-height: 0; /* Allow flexbox to shrink */
     overflow: hidden;
     background: hsl(var(--background) / 0.5);
     border-left: 1px solid hsl(var(--border) / 0.3);
@@ -516,6 +516,28 @@
 
 .key-lane--ddr .key-lane-beat {
     max-width: 45px;
+}
+
+/* DDR: Hit zone at TOP (notes scroll bottom-to-top) */
+.key-lane--ddr .key-lane-hit-zone {
+    top: 0;
+    bottom: auto;
+    background: linear-gradient(
+        to bottom,
+        hsl(var(--lane-color) / 0.15) 0%,
+        hsl(var(--lane-color) / 0.05) 50%,
+        hsl(var(--lane-color) / 0) 100%
+    );
+}
+
+.key-lane--ddr .key-lane-hit-zone-glow {
+    top: 0;
+    bottom: auto;
+}
+
+.key-lane--ddr .key-lane-hit-zone-line {
+    top: 0;
+    bottom: auto;
 }
 
 /* ============================================

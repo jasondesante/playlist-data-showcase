@@ -18,7 +18,7 @@
  * @component
  */
 
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { KeyLane, getLanesForStyle, type LaneBeat } from './KeyLane';
 import type {
@@ -381,7 +381,7 @@ export function KeyLaneView({
             )}
 
             {/* Lanes container */}
-            <div className="key-lane-view-lanes">
+            <div className="key-lane-view-lanes" data-lanes={lanes.length}>
                 {lanes.map((laneKey) => {
                     const laneBeats = beatsByLane.get(laneKey) || [];
                     // Only show feedback on the lane that was pressed
