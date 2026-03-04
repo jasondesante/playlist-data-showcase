@@ -71,7 +71,6 @@
 .key-lane-view-lanes {
     display: flex;
     flex: 1 1 auto;
-    width: 100%;
     min-height: 0; /* Allow flexbox to shrink */
 }
 
@@ -119,6 +118,130 @@
     background: hsl(var(--surface-2) / 0.8);
     padding: 4px 8px;
     border-radius: 4px;
+}
+
+/* ============================================
+   TAP FEEDBACK PANEL
+   ============================================ */
+
+.key-lane-view-feedback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    padding: 12px 16px;
+    margin-left: 16px;
+    background: hsl(var(--surface-2) / 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px hsl(0, 0%, 0% / 0.2);
+    z-index: 10;
+    align-self: center;
+}
+
+.key-lane-view-feedback-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.key-lane-view-feedback-hint {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.key-lane-view-feedback-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.key-lane-view-feedback-accuracy {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    animation: key-lane-view-accuracy-pop 0.3s ease-out;
+}
+
+@keyframes key-lane-view-accuracy-pop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.key-lane-view-feedback-offset {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    background: hsl(var(--background) / 0.6);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    animation: key-lane-view-offset-slide 0.3s ease-out;
+}
+
+/* Early timing (negative offset) - blue tint */
+.key-lane-view-feedback-offset--early {
+    color: hsl(200, 80%, 55%);
+}
+
+/* Late timing (positive offset) - orange tint */
+.key-lane-view-feedback-offset--late {
+    color: hsl(25, 80%, 55%);
+}
+
+@keyframes key-lane-view-offset-slide {
+    0% {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Accuracy color variants */
+.key-lane-view-feedback-result--perfect {
+    --feedback-color: hsl(142, 76%, 46%);
+}
+
+.key-lane-view-feedback-result--great {
+    --feedback-color: hsl(45, 93%, 47%);
+}
+
+.key-lane-view-feedback-result--good {
+    --feedback-color: hsl(25, 95%, 53%);
+}
+
+.key-lane-view-feedback-result--ok {
+    --feedback-color: hsl(0, 0%, 60%);
+}
+
+.key-lane-view-feedback-result--miss {
+    --feedback-color: hsl(0, 0%, 40%);
+}
+
+.key-lane-view-feedback-result--wrongKey {
+    --feedback-color: hsl(0, 84%, 60%);
+}
+
+.key-lane-view-feedback-result .key-lane-view-feedback-accuracy,
+.key-lane-view-feedback-result .key-lane-view-feedback-offset {
+    color: var(--feedback-color);
+    text-shadow: 0 0 10px var(--feedback-color);
 }
 
 /* ============================================
@@ -210,6 +333,24 @@
         font-size: 0.75rem;
         padding: 8px 14px;
     }
+
+    .key-lane-view-feedback {
+        min-width: 60px;
+        padding: 8px 12px;
+        margin-left: 12px;
+    }
+
+    .key-lane-view-feedback-accuracy {
+        font-size: 0.875rem;
+    }
+
+    .key-lane-view-feedback-offset {
+        font-size: 1rem;
+    }
+
+    .key-lane-view-feedback-hint {
+        font-size: 0.625rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -245,6 +386,25 @@
     .key-lane-view-mismatch-text {
         font-size: 0.625rem;
         padding: 6px 10px;
+    }
+
+    .key-lane-view-feedback {
+        min-width: 50px;
+        padding: 6px 8px;
+        margin-left: 8px;
+        border-radius: 8px;
+    }
+
+    .key-lane-view-feedback-accuracy {
+        font-size: 0.75rem;
+    }
+
+    .key-lane-view-feedback-offset {
+        font-size: 0.875rem;
+    }
+
+    .key-lane-view-feedback-hint {
+        font-size: 0.5rem;
     }
 }
 

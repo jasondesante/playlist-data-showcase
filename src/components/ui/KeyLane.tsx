@@ -223,9 +223,10 @@ export function KeyLane({
 
     // Calculate visible beats and their positions
     const visibleBeats = useMemo(() => {
-        const minTime = currentTime - 0.2; // Show beats slightly in the past for fade-out
+        // Show 1.5 seconds into the past so hit effects linger longer
+        const minTime = currentTime - 1.5;
         const maxTime = currentTime + visibilityWindow;
-        
+
         // DDR uses inverted direction (bottom-to-top), Guitar Hero uses normal (top-to-bottom)
         const invertDirection = chartStyle === 'ddr';
 
@@ -245,7 +246,8 @@ export function KeyLane({
                     isAtHitZone,
                 };
             })
-            .filter((beat) => beat.position >= -10 && beat.position <= 110); // Allow some overflow for smooth transitions
+            // Allow beats to go past 100% so they fade out slowly instead of disappearing instantly
+            .filter((beat) => beat.position >= -10 && beat.position <= 140);
     }, [beats, currentTime, visibilityWindow, chartStyle]);
 
     return (

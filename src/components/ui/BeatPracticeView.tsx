@@ -1007,6 +1007,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           lastAccuracy={lastTapResult?.accuracy ?? null}
           lastPressedKey={lastTapResult?.pressedKey ?? null}
           lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
+          lastTapOffsetMs={lastTapResult ? Math.round(lastTapResult.offset * 1000) : null}
         />
       )}
 

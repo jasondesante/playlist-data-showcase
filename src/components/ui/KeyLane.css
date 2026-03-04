@@ -193,14 +193,27 @@
     }
 }
 
-/* Past beat - fading out */
+/* Past beat - fading out slowly */
 .key-lane-beat--past {
-    opacity: 0.4;
-    animation: key-lane-beat-fade-out 0.2s ease-out forwards;
+    opacity: 0.6;
 }
 
-@keyframes key-lane-beat-fade-out {
-    to {
+/* Hit beats stay visible longer with their accuracy color - applies to inner element */
+.key-lane-beat--past.key-lane-beat--perfect .key-lane-beat-inner,
+.key-lane-beat--past.key-lane-beat--great .key-lane-beat-inner,
+.key-lane-beat--past.key-lane-beat--good .key-lane-beat-inner,
+.key-lane-beat--past.key-lane-beat--ok .key-lane-beat-inner {
+    animation: key-lane-beat-fade-out-hit 1.2s ease-out forwards;
+}
+
+@keyframes key-lane-beat-fade-out-hit {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
         opacity: 0;
     }
 }

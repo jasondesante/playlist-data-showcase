@@ -61,6 +61,8 @@ export interface KeyLaneViewProps {
     lastPressedKey?: string | null;
     /** Timestamp of the beat that was last hit (for marking beat as hit) */
     lastHitBeatTimestamp?: number | null;
+    /** The timing offset in milliseconds (positive = late, negative = early) */
+    lastTapOffsetMs?: number | null;
 }
 
 /**
@@ -139,7 +141,8 @@ function distributeBeatsToLanes(
     }
 
     // Calculate visibility bounds
-    const minTime = currentTime - 0.2; // Show slightly past for fade-out
+    // Show 1.5 seconds into the past so hit effects linger longer
+    const minTime = currentTime - 1.5;
     const maxTime = currentTime + visibilityWindow;
 
     // Use binary search to find the starting index
@@ -252,6 +255,7 @@ export function KeyLaneView({
     lastAccuracy,
     lastPressedKey,
     lastHitBeatTimestamp,
+    lastTapOffsetMs,
 }: KeyLaneViewProps) {
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -337,6 +341,26 @@ export function KeyLaneView({
     const beatHitStateRef = useRef<BeatHitState>(new Map());
     const lastProcessedHitRef = useRef<number | null>(null);
 
+    // Track last time to detect seeking backwards (rewind)
+    const lastTimeRef = useRef<number>(0);
+
+    // Clear future beat states when seeking backwards (rewind detection)
+    useEffect(() => {
+        // If time went backwards, this is a seek/rewind - clear future beat states
+        if (currentTime < lastTimeRef.current - 0.1) {
+            // Clear all beat states that are in the future relative to new time
+            const state = beatHitStateRef.current;
+            for (const [timestamp] of state) {
+                if (timestamp > currentTime) {
+                    state.delete(timestamp);
+                }
+            }
+            // Also reset the last processed hit so beats can be hit again
+            lastProcessedHitRef.current = null;
+        }
+        lastTimeRef.current = currentTime;
+    }, [currentTime]);
+
     // Update beat hit state when a beat is hit
     useEffect(() => {
         if (
@@ -359,7 +383,7 @@ export function KeyLaneView({
         }
     }, [lastHitBeatTimestamp, lastAccuracy]);
 
-    // Clean up old beat states (beats that have passed more than 1 second ago)
+    // Clean up old beat states (beats that have passed more than 2 seconds ago)
     // Throttled to run every ~500ms instead of every frame for performance
     const lastCleanupTimeRef = useRef<number>(0);
     useEffect(() => {
@@ -369,7 +393,7 @@ export function KeyLaneView({
         }
         lastCleanupTimeRef.current = currentTime;
 
-        const cleanupThreshold = currentTime - 1.0;
+        const cleanupThreshold = currentTime - 2.0;
         const state = beatHitStateRef.current;
 
         for (const [timestamp] of state) {
@@ -387,6 +411,7 @@ export function KeyLaneView({
         if (currentId !== beatMapIdRef.current) {
             beatHitStateRef.current.clear();
             lastProcessedHitRef.current = null;
+            lastTimeRef.current = 0;
             beatMapIdRef.current = currentId;
         }
     }, [beatMap]);
@@ -460,7 +485,7 @@ export function KeyLaneView({
                 </div>
             )}
 
-            {/* Lanes container */}
+            {/* Lanes container with feedback panel */}
             <div className="key-lane-view-lanes" data-lanes={lanes.length}>
                 {lanes.map((laneKey) => {
                     const laneBeats = beatsByLane.get(laneKey) || [];
@@ -482,6 +507,27 @@ export function KeyLaneView({
                         />
                     );
                 })}
+
+                {/* Tap feedback panel - shows accuracy and timing offset */}
+                <div className="key-lane-view-feedback">
+                    {lastAccuracy && lastTapOffsetMs !== null && lastTapOffsetMs !== undefined ? (
+                        <div
+                            key={`${lastAccuracy}-${lastTapOffsetMs}-${lastHitBeatTimestamp}`}
+                            className={cn('key-lane-view-feedback-result', `key-lane-view-feedback-result--${lastAccuracy}`)}
+                        >
+                            <span className="key-lane-view-feedback-accuracy">
+                                {lastAccuracy.toUpperCase()}
+                            </span>
+                            <span className={cn('key-lane-view-feedback-offset', `key-lane-view-feedback-offset--${lastTapOffsetMs >= 0 ? 'late' : 'early'}`)}>
+                                {lastTapOffsetMs >= 0 ? '+' : ''}{lastTapOffsetMs}ms
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="key-lane-view-feedback-placeholder">
+                            <span className="key-lane-view-feedback-hint">Hit the notes!</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Chart info overlay */}
