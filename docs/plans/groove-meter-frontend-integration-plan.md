@@ -42,11 +42,11 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
 ## Phase 2: BeatDetectionStore Integration
 
 ### 2.1 Add Groove State to Store
-- [ ] Add groove state properties to [beatDetectionStore.ts](src/store/beatDetectionStore.ts)
-  - [ ] `grooveAnalyzer: GrooveAnalyzer | null` - The analyzer instance
-  - [ ] `grooveState: GrooveState | null` - Current groove state snapshot
-  - [ ] `bestGrooveHotness: number` - Highest hotness achieved in session (0-100)
-  - [ ] `bestGrooveStreak: number` - Highest streak achieved in session
+- [x] Add groove state properties to [beatDetectionStore.ts](src/store/beatDetectionStore.ts)
+  - [x] `grooveAnalyzer: GrooveAnalyzer | null` - The analyzer instance
+  - [x] `grooveState: GrooveState | null` - Current groove state snapshot
+  - [x] `bestGrooveHotness: number` - Highest hotness achieved in session (0-100)
+  - [x] `bestGrooveStreak: number` - Highest streak achieved in session
 
 ### 2.2 Add Groove Actions to Store
 - [ ] Add groove actions to beatDetectionStore

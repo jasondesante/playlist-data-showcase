@@ -68,6 +68,8 @@ import {
     validateLevelExportData,
     getKeyCount,
     getUsedKeys,
+    // Groove Analyzer types (Phase 2: Task 2.1 - Groove State)
+    GrooveState,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -75,6 +77,7 @@ import {
     BeatSubdivider,
     SubdivisionPlaybackController,
     unifyBeatMap,
+    GrooveAnalyzer,
 } from 'playlist-data-engine';
 
 /**
@@ -443,6 +446,34 @@ interface BeatDetectionState {
      * - 'guitar-hero': Show Guitar Hero 5-lane view
      */
     keyLaneViewMode: KeyLaneViewMode;
+
+    // ============================================================
+    // Groove Analyzer State (Phase 2: Task 2.1 - Groove State)
+    // ============================================================
+
+    /**
+     * The GrooveAnalyzer instance for tracking timing consistency.
+     * Created when practice mode starts, reset on seek/track change.
+     */
+    grooveAnalyzer: GrooveAnalyzer | null;
+
+    /**
+     * Current groove state snapshot from the analyzer.
+     * Updated after each recordHit() or recordMiss() call.
+     */
+    grooveState: GrooveState | null;
+
+    /**
+     * Highest hotness achieved in the current session (0-100).
+     * Persisted across groove resets to show best achievement.
+     */
+    bestGrooveHotness: number;
+
+    /**
+     * Highest streak achieved in the current session.
+     * Persisted across groove resets to show best achievement.
+     */
+    bestGrooveStreak: number;
 }
 
 interface BeatDetectionActions {
@@ -1001,6 +1032,11 @@ const createInitialState = (): BeatDetectionState => ({
     selectedKey: null,
     editorMode: DEFAULT_CHART_EDITOR_STATE.editorMode,
     keyLaneViewMode: DEFAULT_CHART_EDITOR_STATE.keyLaneViewMode,
+    // Groove Analyzer state (Phase 2: Task 2.1 - Groove State)
+    grooveAnalyzer: null,
+    grooveState: null,
+    bestGrooveHotness: 0,
+    bestGrooveStreak: 0,
 });
 
 /**
