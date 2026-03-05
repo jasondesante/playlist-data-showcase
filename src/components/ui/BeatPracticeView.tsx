@@ -39,6 +39,7 @@ import {
     useKeyLaneViewMode,
     useChartStyle,
     useHasRequiredKeys,
+    useGrooveState,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -51,6 +52,7 @@ import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
+import { GrooveMeter } from './GrooveMeter';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
 
@@ -327,6 +329,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const chartStyle = useChartStyle();
   const hasRequiredKeys = useHasRequiredKeys();
   const setKeyLaneViewMode = useBeatDetectionStore((state) => state.actions.setKeyLaneViewMode);
+
+  // Groove state for GrooveMeter display (Phase 5: Task 5.5)
+  const grooveState = useGrooveState();
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
@@ -896,6 +901,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       </div>
 
       {/* Beat Timeline Visualization - Hidden when in DDR/Guitar lane mode */}
+      {/* GrooveMeter for TapArea mode - inline with timeline (Phase 5: Task 5.5) */}
+      {keyLaneViewMode === 'off' && grooveState && (
+        <div className="beat-practice-groove-row">
+          <GrooveMeter
+            hotness={grooveState.hotness}
+            direction={grooveState.pocketDirection}
+            streak={grooveState.streakLength}
+            variant="compact"
+          />
+        </div>
+      )}
       {keyLaneViewMode === 'off' && (
         <BeatTimeline
           beatMap={beatMap}
@@ -1082,18 +1098,29 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           showTooFast={showTooFast}
         />
       ) : (
-        <KeyLaneView
-          beatMap={subdividedBeatMap}
-          currentTime={currentTime}
-          chartStyle={keyLaneViewMode}
-          isActive={streamIsActive}
-          isPaused={streamIsPaused}
-          lastAccuracy={lastTapResult?.accuracy ?? null}
-          lastPressedKey={lastTapResult?.pressedKey ?? null}
-          lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
-          lastTapOffsetMs={lastTapResult ? Math.round(lastTapResult.offset * 1000) : null}
-          onSeek={handleSeek}
-        />
+        <>
+          {/* GrooveMeter for KeyLane mode - above lanes (Phase 5: Task 5.5) */}
+          {grooveState && (
+            <GrooveMeter
+              hotness={grooveState.hotness}
+              direction={grooveState.pocketDirection}
+              streak={grooveState.streakLength}
+              variant="full"
+            />
+          )}
+          <KeyLaneView
+            beatMap={subdividedBeatMap}
+            currentTime={currentTime}
+            chartStyle={keyLaneViewMode}
+            isActive={streamIsActive}
+            isPaused={streamIsPaused}
+            lastAccuracy={lastTapResult?.accuracy ?? null}
+            lastPressedKey={lastTapResult?.pressedKey ?? null}
+            lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
+            lastTapOffsetMs={lastTapResult ? Math.round(lastTapResult.offset * 1000) : null}
+            onSeek={handleSeek}
+          />
+        </>
       )}
 
       {/* Tap Statistics - Using dedicated TapStats component */}

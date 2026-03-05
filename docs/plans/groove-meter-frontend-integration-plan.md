@@ -190,12 +190,12 @@ const handleTap = useCallback((key: string) => {
   - [x] Updated after each successful `recordGrooveHit()` call
 
 ### 5.5 Add GrooveMeter to UI
-- [ ] Add GrooveMeter component to BeatPracticeView layout with conditional placement
-  - [ ] **KeyLane mode** (`keyLaneViewMode !== 'off'`): Place above KeyLaneView
-  - [ ] **TapArea mode** (`keyLaneViewMode === 'off'`): Place inline next to BeatTimeline
-  - [ ] Pass `hotness`, `direction`, `streak` from groove state
-  - [ ] Show real-time updates as user plays
-  - [ ] Use compact variant for TapArea mode placement
+- [x] Add GrooveMeter component to BeatPracticeView layout with conditional placement
+  - [x] **KeyLane mode** (`keyLaneViewMode !== 'off'`): Place above KeyLaneView
+  - [x] **TapArea mode** (`keyLaneViewMode === 'off'`): Place inline next to BeatTimeline
+  - [x] Pass `hotness`, `direction`, `streak` from groove state
+  - [x] Show real-time updates as user plays
+  - [x] Use compact variant for TapArea mode placement
 
 ```tsx
 // Conditional placement example

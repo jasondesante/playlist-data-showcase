@@ -552,6 +552,13 @@
 
 /* Beat Timeline Visualization is now in BeatTimeline.css */
 
+/* Groove Meter Row for TapArea mode (Phase 5: Task 5.5) */
+.beat-practice-groove-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Playback Controls */
 .beat-practice-controls {
   display: flex;
