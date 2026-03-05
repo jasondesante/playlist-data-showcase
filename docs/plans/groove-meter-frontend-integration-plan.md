@@ -469,7 +469,20 @@ This keeps the visual display in sync with the actual game state and simplifies 
     - BeatPracticeView.groove.test.tsx Task 8.3.4b - verifies groove resets on track change (audioId change)
     - BeatPracticeView.groove.test.tsx:721-741 - verifies groove does NOT reset when audioId stays the same
     - beatDetectionStore.groove.test.ts:481-568 - verifies reset clears groove state and preserves best values
-- [ ] All types are properly exported and imported
+- [x] All types are properly exported and imported
+  - Verified: 2026-03-05
+  - Evidence:
+    - src/types/index.ts exports all groove types:
+      - Type exports (lines 35-39): GrooveDirection, GrooveResult, GrooveState, GrooveAnalyzerOptions
+      - Class/constant exports (lines 92-95): GrooveAnalyzer, DEFAULT_GROOVE_OPTIONS
+    - Imports verified in consuming files:
+      - beatDetectionStore.ts: imports GrooveState, GrooveResult from '@/types'; imports GrooveAnalyzer from 'playlist-data-engine'
+      - GrooveMeter.tsx: imports type GrooveDirection from '@/types'
+      - GrooveStats.tsx: receives numbers as props (no type imports needed)
+      - BeatPracticeView.tsx: uses groove selectors from store
+      - Tests import types correctly from '@/types'
+    - Build passes with no type errors (npm run build successful)
+    - All 92 groove-related tests pass
 - [ ] Store actions and selectors work correctly
 - [ ] UI is responsive and accessible
 - [ ] Animations are smooth and performant
