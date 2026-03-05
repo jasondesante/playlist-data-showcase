@@ -32,6 +32,12 @@ export type {
     ButtonPressResult,
     BeatMapGenerationProgress,
 
+    // Groove Analyzer
+    GrooveDirection,
+    GrooveResult,
+    GrooveState,
+    GrooveAnalyzerOptions,
+
     // Required Keys (Chart Mode)
     KeyAssignableBeatMap,
     KeyAssignment,
@@ -80,6 +86,12 @@ export {
     PRESTIGE_SCALING_FACTOR,
     isPrestigeLevel,
     toPrestigeLevel
+} from 'playlist-data-engine';
+
+// Re-export groove analyzer class and default options
+export {
+    GrooveAnalyzer,
+    DEFAULT_GROOVE_OPTIONS
 } from 'playlist-data-engine';
 
 import type { ListeningSession } from 'playlist-data-engine';

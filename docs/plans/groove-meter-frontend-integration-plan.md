@@ -26,13 +26,13 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
 ## Phase 1: Type Exports & Store Setup
 
 ### 1.1 Export Groove Types from Engine
-- [ ] Update [src/types/index.ts](src/types/index.ts) to export groove types from playlist-data-engine
-  - [ ] Export `GrooveDirection` type
-  - [ ] Export `GrooveResult` type
-  - [ ] Export `GrooveState` type
-  - [ ] Export `GrooveAnalyzerOptions` type
-  - [ ] Export `GrooveAnalyzer` class
-  - [ ] Export `DEFAULT_GROOVE_OPTIONS` constant
+- [x] Update [src/types/index.ts](src/types/index.ts) to export groove types from playlist-data-engine
+  - [x] Export `GrooveDirection` type
+  - [x] Export `GrooveResult` type
+  - [x] Export `GrooveState` type
+  - [x] Export `GrooveAnalyzerOptions` type
+  - [x] Export `GrooveAnalyzer` class
+  - [x] Export `DEFAULT_GROOVE_OPTIONS` constant
 
 **Files to modify:**
 - `src/types/index.ts`
