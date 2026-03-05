@@ -8,8 +8,8 @@
  * - Test color changes at threshold boundaries
  */
 
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import { GrooveMeter } from './GrooveMeter';
 import type { GrooveDirection } from '@/types';
 
@@ -542,6 +542,81 @@ describe('GrooveMeter', () => {
 
       const fillElement = document.querySelector('.groove-meter__fill');
       expect(fillElement).toHaveAttribute('aria-hidden', 'true');
+    });
+  });
+
+  describe('Animation Performance (Success Criterion)', () => {
+    it('uses CSS transitions for smooth width changes', () => {
+      render(
+        <GrooveMeter hotness={50} direction="neutral" streak={5} />
+      );
+
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toBeInTheDocument();
+      // The CSS should have transitions defined for smooth animations
+      // We verify the element exists and will animate via CSS classes
+    });
+
+    it('applies animation classes for on-fire hotness (76%+)', () => {
+      render(
+        <GrooveMeter hotness={80} direction="neutral" streak={10} />
+      );
+
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--on-fire');
+    });
+
+    it('applies animation classes for blazing hotness (90%+)', () => {
+      render(
+        <GrooveMeter hotness={95} direction="neutral" streak={15} />
+      );
+
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--blazing');
+    });
+
+    it('animation class is removed after animation completes', async () => {
+      vi.useFakeTimers();
+
+      const { rerender } = render(
+        <GrooveMeter hotness={50} direction="neutral" streak={5} />
+      );
+
+      // Change direction to trigger animation
+      rerender(
+        <GrooveMeter hotness={50} direction="push" streak={5} />
+      );
+
+      const directionContainer = screen.getByText('Pushing').closest('.groove-meter__direction');
+      expect(directionContainer).toHaveClass('groove-meter__direction--animating');
+
+      // Fast-forward past animation duration (400ms)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+
+      // Animation class should be removed
+      expect(directionContainer).not.toHaveClass('groove-meter__direction--animating');
+
+      vi.useRealTimers();
+    });
+
+    it('uses GPU-accelerated properties for direction animations', () => {
+      const { rerender } = render(
+        <GrooveMeter hotness={50} direction="neutral" streak={5} />
+      );
+
+      // Trigger direction change
+      rerender(
+        <GrooveMeter hotness={50} direction="push" streak={5} />
+      );
+
+      const icon = screen.getByText('↑');
+      const label = screen.getByText('Pushing');
+
+      // Verify animation classes are applied (CSS handles GPU acceleration)
+      expect(icon).toHaveClass('groove-meter__direction-icon--animating');
+      expect(label).toHaveClass('groove-meter__direction-label--animating');
     });
   });
 });

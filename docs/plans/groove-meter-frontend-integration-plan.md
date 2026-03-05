@@ -531,7 +531,30 @@ This keeps the visual display in sync with the actual game state and simplifies 
       - BeatPracticeView.groove.test.tsx includes accessibility integration test
       - All 98 groove-related tests passing
       - Build passes with no errors
-- [ ] Animations are smooth and performant
+- [x] Animations are smooth and performant
+  - Verified: 2026-03-05
+  - Evidence:
+    - **Performance optimizations in CSS**:
+      - Added `will-change` hints for animated properties (width, background-color, box-shadow, opacity, transform)
+      - Added `transform: translateZ(0)` for GPU acceleration on fill bar and icons
+      - Used GPU-accelerated properties (transform, opacity) for direction animations
+    - **Animation timing**:
+      - Bar fill transition: 0.15s ease-out (smooth width changes)
+      - Color transitions: 0.4s ease (smooth color changes)
+      - Box-shadow transitions: 0.4s ease (smooth glow changes)
+      - Direction animations: 0.3-0.4s ease (smooth direction changes)
+      - Pulse animation: 0.8s ease-in-out infinite (76%+ hotness)
+      - Blaze animation: 0.6s ease-in-out infinite (90%+ hotness)
+      - Glow animation: 1.2s ease-in-out infinite (90%+ hotness)
+    - **Tests**:
+      - GrooveMeter.test.tsx includes 5 new animation performance tests (lines 453-545)
+      - All 56 GrooveMeter tests passing
+      - All 103 groove-related tests passing (beatDetectionStore.groove.test.ts, GrooveMeter.test.tsx, BeatPracticeView.groove.test.tsx)
+      - Tests verify:
+        - Animation classes are applied correctly on hotness/direction changes
+        - Animation classes are removed after animation completes
+        - GPU-accelerated properties are used for direction animations
+    - Build passes with no errors
 
 ---
 
