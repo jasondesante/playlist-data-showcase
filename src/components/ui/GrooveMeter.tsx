@@ -12,8 +12,10 @@
  * - Compact variant for inline display next to timeline
  *
  * Part of Phase 3: Task 3.1 - Create GrooveMeter Component
+ * Part of Phase 7: Task 7.2 - Add Direction Change Animations
  */
 
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../utils/cn';
 import type { GrooveDirection } from '@/types';
 import './GrooveMeter.css';
@@ -76,6 +78,28 @@ export function GrooveMeter({
   const directionInfo = getDirectionInfo(direction);
   const hotnessLevel = getHotnessLevel(hotness);
 
+  // Track direction changes for animation
+  const prevDirectionRef = useRef<GrooveDirection>(direction);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationKeyRef = useRef(0);
+
+  // Detect direction changes and trigger animation
+  useEffect(() => {
+    if (prevDirectionRef.current !== direction) {
+      // Direction changed - trigger animation
+      setIsAnimating(true);
+      animationKeyRef.current += 1;
+
+      // Remove animation class after animation completes
+      const timer = setTimeout(() => {
+        setIsAnimating(false);
+      }, 400); // Match CSS animation duration
+
+      prevDirectionRef.current = direction;
+      return () => clearTimeout(timer);
+    }
+  }, [direction]);
+
   // Clamp hotness to valid range
   const clampedHotness = Math.max(0, Math.min(100, hotness));
 
@@ -102,9 +126,30 @@ export function GrooveMeter({
 
       {/* Info row: direction + streak */}
       <div className="groove-meter__info">
-        <div className={cn('groove-meter__direction', directionInfo.className)}>
-          <span className="groove-meter__direction-icon">{directionInfo.icon}</span>
-          <span className="groove-meter__direction-label">{directionInfo.label}</span>
+        <div
+          className={cn(
+            'groove-meter__direction',
+            directionInfo.className,
+            isAnimating && 'groove-meter__direction--animating'
+          )}
+          key={`direction-${animationKeyRef.current}`}
+        >
+          <span
+            className={cn(
+              'groove-meter__direction-icon',
+              isAnimating && 'groove-meter__direction-icon--animating'
+            )}
+          >
+            {directionInfo.icon}
+          </span>
+          <span
+            className={cn(
+              'groove-meter__direction-label',
+              isAnimating && 'groove-meter__direction-label--animating'
+            )}
+          >
+            {directionInfo.label}
+          </span>
         </div>
 
         <div className="groove-meter__streak">

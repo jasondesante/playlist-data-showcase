@@ -111,12 +111,16 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.3s ease;
 }
 
 .groove-meter__direction-icon {
   font-size: 1rem;
   font-weight: 700;
   line-height: 1;
+  transition: transform 0.3s ease, opacity 0.15s ease;
 }
 
 .groove-meter__direction-label {
@@ -124,6 +128,79 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  transition: opacity 0.15s ease;
+}
+
+/* ============================================
+   DIRECTION CHANGE ANIMATIONS (Task 7.2)
+   ============================================ */
+
+/* Background color shift animation for direction container */
+.groove-meter__direction--animating {
+  animation: direction-bg-shift 0.4s ease;
+}
+
+@keyframes direction-bg-shift {
+  0% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: hsl(var(--foreground) / 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Fade animation for direction label */
+.groove-meter__direction-label--animating {
+  animation: label-fade 0.4s ease;
+}
+
+@keyframes label-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  30% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Rotation animation for direction icon */
+.groove-meter__direction-icon--animating {
+  animation: icon-rotate 0.4s ease;
+}
+
+@keyframes icon-rotate {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-90deg);
+  }
+  30% {
+    opacity: 0.5;
+    transform: scale(0.8) rotate(-45deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) rotate(10deg);
+  }
+  80% {
+    transform: scale(1) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 /* Direction colors */
@@ -192,6 +269,7 @@
 
 .groove-meter--compact .groove-meter__direction {
   gap: 0.25rem;
+  padding: 0.0625rem 0.25rem;
 }
 
 .groove-meter--compact .groove-meter__direction-icon {
