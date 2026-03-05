@@ -483,7 +483,31 @@ This keeps the visual display in sync with the actual game state and simplifies 
       - Tests import types correctly from '@/types'
     - Build passes with no type errors (npm run build successful)
     - All 92 groove-related tests pass
-- [ ] Store actions and selectors work correctly
+- [x] Store actions and selectors work correctly
+  - Verified: 2026-03-05
+  - Evidence:
+    - All 5 selectors exported from beatDetectionStore.ts (lines 3378-3409):
+      - `useGrooveAnalyzer()` - returns analyzer instance
+      - `useGrooveState()` - returns current groove state
+      - `useGrooveHotness()` - returns current hotness (convenience selector)
+      - `useBestGrooveHotness()` - returns best hotness achieved
+      - `useBestGrooveStreak()` - returns best streak achieved
+    - All store actions working correctly:
+      - `initGrooveAnalyzer()` - creates GrooveAnalyzer instance
+      - `recordGrooveHit(offset, bpm)` - records hit and updates state
+      - `recordGrooveMiss()` - records miss and updates state
+      - `resetGrooveAnalyzer()` - resets analyzer state
+      - `updateGrooveState(state)` - updates current state snapshot
+      - `updateBestGroove(hotness, streak)` - tracks best achievements
+    - Selectors used correctly in BeatPracticeView.tsx (lines 337-341):
+      - `useGrooveState()` for current groove display
+      - `useBestGrooveHotness()` and `useBestGrooveStreak()` for GrooveStats
+    - Tests verify all functionality:
+      - beatDetectionStore.groove.test.ts - 24 store tests passing
+      - GrooveMeter.test.tsx - 41 component tests passing
+      - BeatPracticeView.groove.test.tsx - 27 integration tests passing
+      - Total: 92 groove-related tests passing
+    - Build passes with no errors
 - [ ] UI is responsive and accessible
 - [ ] Animations are smooth and performant
 
