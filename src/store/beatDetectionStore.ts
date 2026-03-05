@@ -70,6 +70,7 @@ import {
     getUsedKeys,
     // Groove Analyzer types (Phase 2: Task 2.1 - Groove State)
     GrooveState,
+    GrooveResult,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -923,6 +924,55 @@ interface BeatDetectionActions {
      * @returns Validation result with errors if import failed
      */
     importLevel: (data: LevelExportData) => LevelImportValidationResult;
+
+    // ============================================================
+    // Groove Analyzer Actions (Phase 2: Task 2.2 - Groove Actions)
+    // ============================================================
+
+    /**
+     * Initialize the GrooveAnalyzer instance.
+     * Creates a new analyzer with default options.
+     * Called when practice mode starts.
+     */
+    initGrooveAnalyzer: () => void;
+
+    /**
+     * Record a hit in the groove analyzer.
+     * Called after each button press during practice mode.
+     * @param offset - Timing offset in seconds (negative = early/push, positive = late/pull)
+     * @param bpm - Current BPM of the song
+     * @returns GrooveResult with current groove state and hit analysis
+     */
+    recordGrooveHit: (offset: number, bpm: number) => GrooveResult;
+
+    /**
+     * Record a missed beat in the groove analyzer.
+     * Called when user doesn't press on a beat.
+     * @returns GrooveResult with current groove state after miss
+     */
+    recordGrooveMiss: () => GrooveResult;
+
+    /**
+     * Reset the groove analyzer state.
+     * Called on seek, track change, or when practice mode restarts.
+     * Clears current groove state but preserves best stats.
+     */
+    resetGrooveAnalyzer: () => void;
+
+    /**
+     * Update the current groove state snapshot.
+     * Called after recordHit/recordMiss to sync the state for UI.
+     * @param state - The new groove state
+     */
+    updateGrooveState: (state: GrooveState) => void;
+
+    /**
+     * Update the best groove achievements.
+     * Called when a new best hotness or streak is achieved.
+     * @param hotness - The hotness value to compare
+     * @param streak - The streak value to compare
+     */
+    updateBestGroove: (hotness: number, streak: number) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -2752,6 +2802,120 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         return successResult;
                     },
+
+                    // ============================================================
+                    // Groove Analyzer Actions (Phase 2: Task 2.2 - Groove Actions)
+                    // ============================================================
+
+                    initGrooveAnalyzer: () => {
+                        const analyzer = new GrooveAnalyzer();
+                        set({
+                            grooveAnalyzer: analyzer,
+                            grooveState: analyzer.getState(),
+                        });
+                        logger.info('BeatDetection', 'GrooveAnalyzer initialized');
+                    },
+
+                    recordGrooveHit: (offset: number, bpm: number): GrooveResult => {
+                        const state = get();
+                        if (!state.grooveAnalyzer) {
+                            logger.warn('BeatDetection', 'recordGrooveHit called but grooveAnalyzer is null');
+                            // Return a default result
+                            return {
+                                pocketDirection: 'neutral',
+                                establishedOffset: 0,
+                                consistency: 0,
+                                hotness: 0,
+                                streakLength: 0,
+                                inPocket: false,
+                                pocketWindow: 0,
+                            };
+                        }
+
+                        const result = state.grooveAnalyzer.recordHit(offset, bpm);
+
+                        // Update groove state and track best achievements
+                        const newBestHotness = Math.max(state.bestGrooveHotness, result.hotness);
+                        const newBestStreak = Math.max(state.bestGrooveStreak, result.streakLength);
+
+                        set({
+                            grooveState: state.grooveAnalyzer.getState(),
+                            bestGrooveHotness: newBestHotness,
+                            bestGrooveStreak: newBestStreak,
+                        });
+
+                        logger.debug('BeatDetection', 'Groove hit recorded', {
+                            offset,
+                            bpm,
+                            hotness: result.hotness,
+                            streak: result.streakLength,
+                            direction: result.pocketDirection,
+                        });
+
+                        return result;
+                    },
+
+                    recordGrooveMiss: (): GrooveResult => {
+                        const state = get();
+                        if (!state.grooveAnalyzer) {
+                            logger.warn('BeatDetection', 'recordGrooveMiss called but grooveAnalyzer is null');
+                            // Return a default result
+                            return {
+                                pocketDirection: 'neutral',
+                                establishedOffset: 0,
+                                consistency: 0,
+                                hotness: 0,
+                                streakLength: 0,
+                                inPocket: false,
+                                pocketWindow: 0,
+                            };
+                        }
+
+                        const result = state.grooveAnalyzer.recordMiss();
+
+                        // Update groove state (hotness decreased, streak reset)
+                        set({
+                            grooveState: state.grooveAnalyzer.getState(),
+                        });
+
+                        logger.debug('BeatDetection', 'Groove miss recorded', {
+                            hotness: result.hotness,
+                        });
+
+                        return result;
+                    },
+
+                    resetGrooveAnalyzer: () => {
+                        const state = get();
+                        if (state.grooveAnalyzer) {
+                            state.grooveAnalyzer.reset();
+                            set({
+                                grooveState: state.grooveAnalyzer.getState(),
+                            });
+                            logger.info('BeatDetection', 'GrooveAnalyzer reset');
+                        }
+                    },
+
+                    updateGrooveState: (newState: GrooveState) => {
+                        set({ grooveState: newState });
+                    },
+
+                    updateBestGroove: (hotness: number, streak: number) => {
+                        const state = get();
+                        const newBestHotness = Math.max(state.bestGrooveHotness, hotness);
+                        const newBestStreak = Math.max(state.bestGrooveStreak, streak);
+
+                        if (newBestHotness !== state.bestGrooveHotness || newBestStreak !== state.bestGrooveStreak) {
+                            set({
+                                bestGrooveHotness: newBestHotness,
+                                bestGrooveStreak: newBestStreak,
+                            });
+                            logger.debug('BeatDetection', 'Best groove updated', {
+                                bestHotness: newBestHotness,
+                                bestStreak: newBestStreak,
+                            });
+                        }
+                    },
                 },
             };
         },
@@ -3202,6 +3366,47 @@ export const useAccuracyThresholds = () =>
             difficultySettings.customThresholds
         );
     }));
+
+// ============================================================
+// Groove Analyzer Selectors (Phase 2: Task 2.3 - Groove Selectors)
+// ============================================================
+
+/**
+ * Selector to get the groove analyzer instance.
+ * Returns null if no analyzer has been initialized.
+ */
+export const useGrooveAnalyzer = () =>
+    useBeatDetectionStore((state) => state.grooveAnalyzer);
+
+/**
+ * Selector to get the current groove state.
+ * Returns null if no groove analyzer has been initialized.
+ * Use this for full state access including direction and establishedOffset.
+ */
+export const useGrooveState = () =>
+    useBeatDetectionStore((state) => state.grooveState);
+
+/**
+ * Selector to get the current groove hotness value.
+ * Convenience selector for re-render optimization when only hotness is needed.
+ * Returns 0 if no groove state exists.
+ */
+export const useGrooveHotness = () =>
+    useBeatDetectionStore((state) => state.grooveState?.hotness ?? 0);
+
+/**
+ * Selector to get the best groove hotness achieved in the session.
+ * Persisted across groove resets to show best achievement.
+ */
+export const useBestGrooveHotness = () =>
+    useBeatDetectionStore((state) => state.bestGrooveHotness);
+
+/**
+ * Selector to get the best groove streak achieved in the session.
+ * Persisted across groove resets to show best achievement.
+ */
+export const useBestGrooveStreak = () =>
+    useBeatDetectionStore((state) => state.bestGrooveStreak);
 
 // ============================================================
 // OSE Config Selectors

@@ -49,21 +49,21 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
   - [x] `bestGrooveStreak: number` - Highest streak achieved in session
 
 ### 2.2 Add Groove Actions to Store
-- [ ] Add groove actions to beatDetectionStore
-  - [ ] `initGrooveAnalyzer()` - Create new GrooveAnalyzer instance
-  - [ ] `recordGrooveHit(offset: number, bpm: number)` - Call analyzer.recordHit()
-  - [ ] `recordGrooveMiss()` - Call analyzer.recordMiss()
-  - [ ] `resetGrooveAnalyzer()` - Reset analyzer state
-  - [ ] `updateGrooveState(state: GrooveState)` - Update current state snapshot
-  - [ ] `updateBestGroove(hotness: number, streak: number)` - Track best achievements
+- [x] Add groove actions to beatDetectionStore
+  - [x] `initGrooveAnalyzer()` - Create new GrooveAnalyzer instance
+  - [x] `recordGrooveHit(offset: number, bpm: number)` - Call analyzer.recordHit()
+  - [x] `recordGrooveMiss()` - Call analyzer.recordMiss()
+  - [x] `resetGrooveAnalyzer()` - Reset analyzer state
+  - [x] `updateGrooveState(state: GrooveState)` - Update current state snapshot
+  - [x] `updateBestGroove(hotness: number, streak: number)` - Track best achievements
 
 ### 2.3 Add Groove Selectors
-- [ ] Add selector hooks for components
-  - [ ] `useGrooveAnalyzer()` - Get analyzer instance
-  - [ ] `useGrooveState()` - Get current state
-  - [ ] `useGrooveHotness()` - Get current hotness (convenience selector for re-render optimization)
-  - [ ] `useBestGrooveHotness()` - Get best hotness
-  - [ ] `useBestGrooveStreak()` - Get best streak
+- [x] Add selector hooks for components
+  - [x] `useGrooveAnalyzer()` - Get analyzer instance
+  - [x] `useGrooveState()` - Get current state
+  - [x] `useGrooveHotness()` - Get current hotness (convenience selector for re-render optimization)
+  - [x] `useBestGrooveHotness()` - Get best hotness
+  - [x] `useBestGrooveStreak()` - Get best streak
 
 **Files to modify:**
 - `src/store/beatDetectionStore.ts`
