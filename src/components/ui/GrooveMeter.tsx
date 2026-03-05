@@ -54,6 +54,7 @@ function getDirectionInfo(direction: GrooveDirection): {
  * Get the hotness level for color gradient purposes
  */
 function getHotnessLevel(hotness: number): string {
+  if (hotness >= 90) return 'groove-meter__fill--blazing';
   if (hotness >= 76) return 'groove-meter__fill--on-fire';
   if (hotness >= 51) return 'groove-meter__fill--hot';
   if (hotness >= 26) return 'groove-meter__fill--warm';
