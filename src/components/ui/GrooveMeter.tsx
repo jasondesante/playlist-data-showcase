@@ -1,0 +1,118 @@
+/**
+ * GrooveMeter Component
+ *
+ * A Devil May Cry style horizontal bar that displays the current groove "hotness"
+ * based on timing consistency. Rewards maintaining a pocket feel rather than
+ * hitting perfectly on beat.
+ *
+ * Features:
+ * - Horizontal bar that fills based on hotness (0-100%)
+ * - Direction icon + label display (Pushing, Laid Back, On Point)
+ * - Streak counter display
+ * - Compact variant for inline display next to timeline
+ *
+ * Part of Phase 3: Task 3.1 - Create GrooveMeter Component
+ */
+
+import { cn } from '../../utils/cn';
+import type { GrooveDirection } from '@/types';
+import './GrooveMeter.css';
+
+export interface GrooveMeterProps {
+  /** Current hotness value (0-100) */
+  hotness: number;
+  /** Current groove direction */
+  direction: GrooveDirection;
+  /** Current streak length */
+  streak: number;
+  /** Visual variant - full for KeyLane mode, compact for TapArea mode */
+  variant?: 'full' | 'compact';
+  /** Optional className for additional styling */
+  className?: string;
+}
+
+/**
+ * Get the display info for a groove direction
+ */
+function getDirectionInfo(direction: GrooveDirection): {
+  icon: string;
+  label: string;
+  className: string;
+} {
+  switch (direction) {
+    case 'push':
+      return { icon: '↑', label: 'Pushing', className: 'groove-meter__direction--push' };
+    case 'pull':
+      return { icon: '↓', label: 'Laid Back', className: 'groove-meter__direction--pull' };
+    case 'neutral':
+    default:
+      return { icon: '●', label: 'On Point', className: 'groove-meter__direction--neutral' };
+  }
+}
+
+/**
+ * Get the hotness level for color gradient purposes
+ */
+function getHotnessLevel(hotness: number): string {
+  if (hotness >= 76) return 'groove-meter__fill--on-fire';
+  if (hotness >= 51) return 'groove-meter__fill--hot';
+  if (hotness >= 26) return 'groove-meter__fill--warm';
+  return 'groove-meter__fill--cool';
+}
+
+/**
+ * GrooveMeter Component
+ *
+ * Renders a horizontal groove meter bar with direction indicator and streak counter.
+ */
+export function GrooveMeter({
+  hotness,
+  direction,
+  streak,
+  variant = 'full',
+  className,
+}: GrooveMeterProps) {
+  const directionInfo = getDirectionInfo(direction);
+  const hotnessLevel = getHotnessLevel(hotness);
+
+  // Clamp hotness to valid range
+  const clampedHotness = Math.max(0, Math.min(100, hotness));
+
+  const containerClasses = cn(
+    'groove-meter',
+    `groove-meter--${variant}`,
+    className
+  );
+
+  return (
+    <div className={containerClasses}>
+      {/* Main bar section */}
+      <div className="groove-meter__bar-container">
+        <div
+          className={cn('groove-meter__fill', hotnessLevel)}
+          style={{ width: `${clampedHotness}%` }}
+          role="progressbar"
+          aria-valuenow={clampedHotness}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Groove meter: ${clampedHotness}%`}
+        />
+      </div>
+
+      {/* Info row: direction + streak */}
+      <div className="groove-meter__info">
+        <div className={cn('groove-meter__direction', directionInfo.className)}>
+          <span className="groove-meter__direction-icon">{directionInfo.icon}</span>
+          <span className="groove-meter__direction-label">{directionInfo.label}</span>
+        </div>
+
+        <div className="groove-meter__streak">
+          <span className="groove-meter__streak-value">{streak}</span>
+          <span className="groove-meter__streak-label">streak</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default GrooveMeter;
