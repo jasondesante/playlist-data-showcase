@@ -40,6 +40,8 @@ import {
     useChartStyle,
     useHasRequiredKeys,
     useGrooveState,
+    useBestGrooveHotness,
+    useBestGrooveStreak,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -53,6 +55,7 @@ import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
+import { GrooveStats } from './GrooveStats';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
 
@@ -332,6 +335,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Groove state for GrooveMeter display (Phase 5: Task 5.5)
   const grooveState = useGrooveState();
+
+  // Groove stats for GrooveStats display (Phase 5: Task 5.6)
+  const bestGrooveHotness = useBestGrooveHotness();
+  const bestGrooveStreak = useBestGrooveStreak();
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
@@ -1125,6 +1132,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       {/* Tap Statistics - Using dedicated TapStats component */}
       <TapStats />
+
+      {/* Groove Session Stats (Phase 5: Task 5.6) */}
+      {(bestGrooveHotness > 0 || bestGrooveStreak > 0) && (
+        <GrooveStats
+          bestHotness={bestGrooveHotness}
+          bestStreak={bestGrooveStreak}
+          currentHotness={grooveState?.hotness}
+          currentStreak={grooveState?.streakLength}
+          showComparison={true}
+        />
+      )}
 
       {/* Stream status indicator */}
       <div className="beat-practice-stream-status">

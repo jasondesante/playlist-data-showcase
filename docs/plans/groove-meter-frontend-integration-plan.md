@@ -215,10 +215,10 @@ const handleTap = useCallback((key: string) => {
 ```
 
 ### 5.6 Add GrooveStats to UI
-- [ ] Add GrooveStats component to BeatPracticeView
-  - [ ] Place below practice area or in stats panel
-  - [ ] Show best hotness and streak achieved in session
-  - [ ] Update when new best is achieved
+- [x] Add GrooveStats component to BeatPracticeView
+  - [x] Place below practice area or in stats panel
+  - [x] Show best hotness and streak achieved in session
+  - [x] Update when new best is achieved
 
 **Files to modify:**
 - `src/components/ui/BeatPracticeView.tsx`
