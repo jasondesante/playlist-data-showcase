@@ -276,10 +276,10 @@ const handleTap = useCallback((key: string) => {
   - [x] Test color changes at threshold boundaries
 
 ### 8.3 Integration Tests
-- [ ] Test groove meter integration with BeatPracticeView
-  - [ ] Test groove updates on tap
-  - [ ] Test decay behavior over time
-  - [ ] Test best groove tracking across session
+- [x] Test groove meter integration with BeatPracticeView
+  - [x] Test groove updates on tap
+  - [x] Test decay behavior over time (no visual decay - hotness only changes via recordHit/recordMiss)
+  - [x] Test best groove tracking across session
 
 **Files to create/modify:**
 - `src/store/beatDetectionStore.groove.test.ts`
