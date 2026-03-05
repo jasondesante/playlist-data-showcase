@@ -443,7 +443,20 @@ This keeps the visual display in sync with the actual game state and simplifies 
   - Tests:
     - GrooveMeter.test.tsx:152-201 (Task 8.2.3) verifies streak counter displays correctly
     - BeatPracticeView.groove.test.tsx:392-405 verifies streak updates when recordGrooveHit is called
-- [ ] Best hotness and streak are tracked and displayed
+- [x] Best hotness and streak are tracked and displayed
+  - Verified: 2026-03-05
+  - Evidence:
+    - beatDetectionStore.ts tracks `bestGrooveHotness` (line 471) and `bestGrooveStreak` (line 477)
+    - Selectors `useBestGrooveHotness()` (line 3401-3402) and `useBestGrooveStreak()` (line 3408-3409) provide access
+    - GrooveStats component displays best values with trophy icon and level badges (GrooveStats.tsx:55-143)
+    - BeatPracticeView renders GrooveStats when best values > 0 (BeatPracticeView.tsx:1137-1143)
+    - BeatMapSummary shows GrooveStats for session results (BeatMapSummary.tsx:737-743)
+    - Store updates best values on each hit via Math.max() (beatDetectionStore.ts:2838-2844, 2905-2911)
+  - Tests:
+    - beatDetectionStore.groove.test.ts:180-247 verifies bestGrooveHotness updates correctly
+    - beatDetectionStore.groove.test.ts:422-477 verifies bestGrooveStreak updates correctly
+    - BeatPracticeView.groove.test.tsx:303-318 verifies GrooveStats renders when best values exist
+    - BeatPracticeView.groove.test.tsx:561-568 verifies GrooveStats displays in session
 - [ ] Groove analyzer resets appropriately on track change/seek
 - [ ] All types are properly exported and imported
 - [ ] Store actions and selectors work correctly
