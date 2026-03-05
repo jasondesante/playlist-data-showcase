@@ -148,13 +148,13 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
   - [x] Update groove state after recording
 
 ### 5.3 Handle Missed Beats (Post-Hit Lookback)
-- [ ] Implement post-hit lookback for missed beat detection
-  - [ ] After `recordGrooveHit()` returns, perform lookback to find missed beats
-  - [ ] Store timestamp of previous hit for comparison
-  - [ ] Query beat map for beats between `previousHitTime` and `currentHitTime`
-  - [ ] Call `recordGrooveMiss()` for each beat found in that range
-  - [ ] Update groove state after processing misses
-  - [ ] **Important**: This runs AFTER the hit is recorded to keep latency low
+- [x] Implement post-hit lookback for missed beat detection
+  - [x] After `recordGrooveHit()` returns, perform lookback to find missed beats
+  - [x] Store timestamp of previous hit for comparison
+  - [x] Query beat map for beats between `previousHitTime` and `currentHitTime`
+  - [x] Call `recordGrooveMiss()` for each beat found in that range
+  - [x] Update groove state after processing misses
+  - [x] **Important**: This runs AFTER the hit is recorded to keep latency low
 
 ```typescript
 // Example integration in BeatPracticeView handleTap
@@ -184,10 +184,10 @@ const handleTap = useCallback((key: string) => {
 ```
 
 ### 5.4 Add Last Hit Time Tracking
-- [ ] Add state/ref to track the timestamp of the last recorded hit
-  - [ ] `lastHitTimeRef: Ref<number | null>` - stores timestamp of previous hit
-  - [ ] Reset to `null` when groove analyzer resets (on seek, track change)
-  - [ ] Updated after each successful `recordGrooveHit()` call
+- [x] Add state/ref to track the timestamp of the last recorded hit
+  - [x] `lastHitTimeRef: Ref<number | null>` - stores timestamp of previous hit
+  - [x] Reset to `null` when groove analyzer resets (on seek, track change)
+  - [x] Updated after each successful `recordGrooveHit()` call
 
 ### 5.5 Add GrooveMeter to UI
 - [ ] Add GrooveMeter component to BeatPracticeView layout with conditional placement

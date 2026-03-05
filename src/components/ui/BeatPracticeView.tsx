@@ -221,6 +221,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const initGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.initGrooveAnalyzer);
   const resetGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.resetGrooveAnalyzer);
   const recordGrooveHit = useBeatDetectionStore((state) => state.actions.recordGrooveHit);
+  const recordGrooveMiss = useBeatDetectionStore((state) => state.actions.recordGrooveMiss);
 
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
@@ -303,6 +304,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for showing "TOO FAST" indicator
   const [showTooFast, setShowTooFast] = useState(false);
   const tooFastTimeoutRef = useRef<number | null>(null);
+
+  // Ref for tracking last matched beat timestamp (Phase 5: Task 5.3 - Post-Hit Lookback)
+  // Used to detect missed beats between the current hit and the previous hit
+  const lastMatchedBeatTimestampRef = useRef<number | null>(null);
 
   // State for difficulty settings panel
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
@@ -448,6 +453,41 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Pass offset and current BPM to the groove analyzer
       recordGrooveHit(result.offset, currentBpm);
 
+      // Phase 5: Task 5.3 - Post-Hit Lookback for Missed Beats
+      // After recording the hit, look back at beats between previous hit and current hit
+      // to find any beats that were missed
+      const currentBeatTimestamp = result.matchedBeat.timestamp;
+      const previousBeatTimestamp = lastMatchedBeatTimestampRef.current;
+
+      if (previousBeatTimestamp !== null && activeBeatMap) {
+        // Get the beats array from the beat map, handling different types
+        // - BeatMap/SubdividedBeatMap/UnifiedBeatMap: use .beats
+        // - InterpolatedBeatMap: use .mergedBeats
+        const beats = 'mergedBeats' in activeBeatMap
+          ? activeBeatMap.mergedBeats
+          : activeBeatMap.beats;
+
+        // Find beats in the map between previous matched beat and current matched beat
+        const missedBeats = beats.filter((beat: { timestamp: number }) =>
+          beat.timestamp > previousBeatTimestamp &&
+          beat.timestamp < currentBeatTimestamp
+        );
+
+        // Record a miss for each missed beat
+        if (missedBeats.length > 0) {
+          logger.debug('BeatDetection', 'Missed beats detected via lookback', {
+            count: missedBeats.length,
+            previousBeatTimestamp,
+            currentBeatTimestamp,
+          });
+
+          missedBeats.forEach(() => recordGrooveMiss());
+        }
+      }
+
+      // Update last matched beat timestamp for next comparison
+      lastMatchedBeatTimestampRef.current = currentBeatTimestamp;
+
       // Show visual feedback using the hook
       showTapFeedback(result);
 
@@ -468,7 +508,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         return newHistory.slice(0, MAX_DEBUG_HISTORY);
       });
     }
-  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, currentBpm]);
+  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap]);
 
   // Keep handleTapRef updated with the latest handleTap function
   // This allows the keyboard hook callback to call the latest handleTap
@@ -505,6 +545,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     seekStream(time);
     // Reset groove analyzer on seek (Phase 5: Task 5.1)
     resetGrooveAnalyzer();
+    // Reset last matched beat timestamp (Phase 5: Task 5.3)
+    lastMatchedBeatTimestampRef.current = null;
     logger.debug('BeatDetection', 'GrooveAnalyzer reset due to seek', { time });
   }, [seek, seekStream, resetGrooveAnalyzer]);
 
@@ -664,6 +706,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   useEffect(() => {
     if (beatMap) {
       resetGrooveAnalyzer();
+      // Reset last matched beat timestamp (Phase 5: Task 5.3)
+      lastMatchedBeatTimestampRef.current = null;
       logger.info('BeatDetection', 'GrooveAnalyzer reset due to beat map change', {
         audioId: beatMap.audioId,
       });
