@@ -261,12 +261,12 @@ const handleTap = useCallback((key: string) => {
 ## Phase 8: Testing & Edge Cases
 
 ### 8.1 Unit Tests for Store
-- [ ] Create/update tests for beatDetectionStore groove functionality
-  - [ ] Test groove analyzer initialization
-  - [ ] Test `recordGrooveHit` updates state correctly
-  - [ ] Test `recordGrooveMiss` reduces hotness
-  - [ ] Test best groove tracking
-  - [ ] Test reset clears all groove state
+- [x] Create/update tests for beatDetectionStore groove functionality
+  - [x] Test groove analyzer initialization
+  - [x] Test `recordGrooveHit` updates state correctly
+  - [x] Test `recordGrooveMiss` reduces hotness
+  - [x] Test best groove tracking
+  - [x] Test reset clears all groove state
 
 ### 8.2 Component Tests
 - [ ] Create tests for GrooveMeter component
