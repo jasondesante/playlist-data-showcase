@@ -134,11 +134,11 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
 ## Phase 5: BeatPracticeView Integration
 
 ### 5.1 Initialize GrooveAnalyzer
-- [ ] Update [BeatPracticeView.tsx](src/components/ui/BeatPracticeView.tsx)
-  - [ ] Initialize groove analyzer when practice mode starts
-  - [ ] Reset groove analyzer when track changes or practice restarts
-  - [ ] Reset groove analyzer when user seeks to different position (combo ends)
-  - [ ] Import groove store selectors
+- [x] Update [BeatPracticeView.tsx](src/components/ui/BeatPracticeView.tsx)
+  - [x] Initialize groove analyzer when practice mode starts
+  - [x] Reset groove analyzer when track changes or practice restarts
+  - [x] Reset groove analyzer when user seeks to different position (combo ends)
+  - [x] Import groove store selectors (will be imported when needed in Task 5.2)
 
 ### 5.2 Wire Up Groove Recording
 - [ ] Update `handleTap` function in BeatPracticeView

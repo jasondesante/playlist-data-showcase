@@ -217,6 +217,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const stopPracticeMode = useBeatDetectionStore((state) => state.actions.stopPracticeMode);
   const recordTap = useBeatDetectionStore((state) => state.actions.recordTap);
 
+  // Groove analyzer actions (Phase 5: Task 5.1 - Initialize GrooveAnalyzer)
+  const initGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.initGrooveAnalyzer);
+  const resetGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.resetGrooveAnalyzer);
+
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
 
@@ -489,11 +493,15 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   /**
    * Handle seek events
+   * Also resets groove analyzer since the combo/streak ends on seek.
    */
   const handleSeek = useCallback((time: number) => {
     seek(time);
     seekStream(time);
-  }, [seek, seekStream]);
+    // Reset groove analyzer on seek (Phase 5: Task 5.1)
+    resetGrooveAnalyzer();
+    logger.debug('BeatDetection', 'GrooveAnalyzer reset due to seek', { time });
+  }, [seek, seekStream, resetGrooveAnalyzer]);
 
   /**
    * Handle play/pause toggle
@@ -629,6 +637,33 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       clearKeys();
     };
   }, [clearKeys]);
+
+  // ============================================================
+  // Groove Analyzer Initialization (Phase 5: Task 5.1)
+  // ============================================================
+
+  /**
+   * Initialize groove analyzer when practice mode starts.
+   * Creates a new GrooveAnalyzer instance with default options.
+   */
+  useEffect(() => {
+    initGrooveAnalyzer();
+    logger.info('BeatDetection', 'GrooveAnalyzer initialized for practice mode');
+  }, [initGrooveAnalyzer]);
+
+  /**
+   * Reset groove analyzer when beat map changes (track change).
+   * This clears the current groove state (hotness, streak, pocket) but
+   * preserves best stats for the session.
+   */
+  useEffect(() => {
+    if (beatMap) {
+      resetGrooveAnalyzer();
+      logger.info('BeatDetection', 'GrooveAnalyzer reset due to beat map change', {
+        audioId: beatMap.audioId,
+      });
+    }
+  }, [beatMap?.audioId, resetGrooveAnalyzer]);
 
   // Calculate progress percentage
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
