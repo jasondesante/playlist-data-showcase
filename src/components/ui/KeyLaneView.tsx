@@ -324,9 +324,11 @@ export function KeyLaneView({
 
             // Convert pixel delta to time delta
             // Full track height = visibilityWindow seconds
-            // Drag up = go backward in time, Drag down = go forward in time
+            // Guitar Hero: Drag up = go backward in time, Drag down = go forward in time
+            // DDR: Inverted - Drag up = go forward in time, Drag down = go backward in time
             const timePerPixel = visibilityWindow / trackHeight;
-            const deltaTime = deltaY * timePerPixel;
+            const directionMultiplier = chartStyle === 'ddr' ? -1 : 1;
+            const deltaTime = deltaY * timePerPixel * directionMultiplier;
 
             // Apply delta to the initial time
             const duration = beatMap?.duration ?? 0;
@@ -334,7 +336,7 @@ export function KeyLaneView({
 
             onSeek(newTime);
         },
-        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration]
+        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration, chartStyle]
     );
 
     /**
@@ -376,9 +378,11 @@ export function KeyLaneView({
             const deltaY = touch.clientY - dragStartYRef.current;
 
             // Convert pixel delta to time delta
-            // Drag up = go backward in time, Drag down = go forward in time
+            // Guitar Hero: Drag up = go backward in time, Drag down = go forward in time
+            // DDR: Inverted - Drag up = go forward in time, Drag down = go backward in time
             const timePerPixel = visibilityWindow / trackHeight;
-            const deltaTime = deltaY * timePerPixel;
+            const directionMultiplier = chartStyle === 'ddr' ? -1 : 1;
+            const deltaTime = deltaY * timePerPixel * directionMultiplier;
 
             // Apply delta to the initial time
             const duration = beatMap?.duration ?? 0;
@@ -386,7 +390,7 @@ export function KeyLaneView({
 
             onSeek(newTime);
         },
-        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration]
+        [isDraggingToSeek, onSeek, visibilityWindow, beatMap?.duration, chartStyle]
     );
 
     /**
