@@ -32,7 +32,7 @@ describe('GrooveMeter', () => {
       expect(progressbar).toHaveAttribute('aria-valuenow', '75');
       expect(progressbar).toHaveAttribute('aria-valuemin', '0');
       expect(progressbar).toHaveAttribute('aria-valuemax', '100');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 75%');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 75% hotness, on point timing, 10 streak');
     });
 
     it('fills bar to 0% when hotness is 0', () => {
@@ -40,8 +40,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={0} direction="neutral" streak={0} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '0%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '0%' });
     });
 
     it('fills bar to 50% when hotness is 50', () => {
@@ -49,8 +49,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={50} direction="neutral" streak={5} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '50%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '50%' });
     });
 
     it('fills bar to 100% when hotness is 100', () => {
@@ -58,8 +58,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={100} direction="neutral" streak={20} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '100%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '100%' });
     });
 
     it('clamps hotness to 0 when negative value is passed', () => {
@@ -68,7 +68,8 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '0%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '0%' });
       expect(progressbar).toHaveAttribute('aria-valuenow', '0');
     });
 
@@ -78,7 +79,8 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '100%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '100%' });
       expect(progressbar).toHaveAttribute('aria-valuenow', '100');
     });
 
@@ -88,7 +90,8 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveStyle({ width: '33.5%' });
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveStyle({ width: '33.5%' });
       expect(progressbar).toHaveAttribute('aria-valuenow', '33.5');
     });
   });
@@ -207,8 +210,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={0} direction="neutral" streak={0} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--cool');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--cool');
     });
 
     it('applies cool class (blue) for 25% hotness (boundary)', () => {
@@ -216,8 +219,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={25} direction="neutral" streak={3} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--cool');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--cool');
     });
 
     it('applies warm class (green) for 26% hotness (just above boundary)', () => {
@@ -225,8 +228,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={26} direction="neutral" streak={3} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--warm');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--warm');
     });
 
     it('applies warm class (green) for 50% hotness (middle of range)', () => {
@@ -234,8 +237,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={50} direction="neutral" streak={6} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--warm');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--warm');
     });
 
     it('applies hot class (orange) for 51% hotness (hot threshold)', () => {
@@ -243,8 +246,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={51} direction="neutral" streak={6} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--hot');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--hot');
     });
 
     it('applies hot class (orange) for 52% hotness (just above boundary)', () => {
@@ -252,8 +255,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={52} direction="neutral" streak={6} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--hot');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--hot');
     });
 
     it('applies hot class (orange) for 75% hotness (middle of range)', () => {
@@ -261,8 +264,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={75} direction="neutral" streak={10} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--hot');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--hot');
     });
 
     it('applies on-fire class (red/orange) for 76% hotness (on-fire threshold)', () => {
@@ -270,8 +273,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={76} direction="neutral" streak={10} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--on-fire');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--on-fire');
     });
 
     it('applies on-fire class (red/orange) for 77% hotness (just above boundary)', () => {
@@ -279,8 +282,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={77} direction="neutral" streak={12} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--on-fire');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--on-fire');
     });
 
     it('applies on-fire class (red/orange) for 89% hotness (end of range)', () => {
@@ -288,8 +291,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={89} direction="neutral" streak={18} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--on-fire');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--on-fire');
     });
 
     it('applies blazing class (gold) for 90% hotness (blazing threshold)', () => {
@@ -297,8 +300,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={90} direction="neutral" streak={20} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--blazing');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--blazing');
     });
 
     it('applies blazing class (gold) for 100% hotness (maximum)', () => {
@@ -306,8 +309,8 @@ describe('GrooveMeter', () => {
         <GrooveMeter hotness={100} direction="neutral" streak={25} />
       );
 
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveClass('groove-meter__fill--blazing');
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveClass('groove-meter__fill--blazing');
     });
 
     it('applies correct class for each 10% increment from 0 to 100', () => {
@@ -330,8 +333,8 @@ describe('GrooveMeter', () => {
           <GrooveMeter hotness={hotness} direction="neutral" streak={hotness / 5} />
         );
 
-        const progressbar = screen.getByRole('progressbar');
-        expect(progressbar).toHaveClass(expectedClass);
+        const fillElement = document.querySelector('.groove-meter__fill');
+        expect(fillElement).toHaveClass(expectedClass);
 
         unmount();
       });
@@ -476,13 +479,69 @@ describe('GrooveMeter', () => {
       expect(progressbar).toHaveAttribute('aria-valuemax', '100');
     });
 
-    it('has descriptive aria-label', () => {
+    it('has descriptive aria-label with hotness, direction, and streak', () => {
       render(
         <GrooveMeter hotness={42} direction="neutral" streak={4} />
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 42%');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 42% hotness, on point timing, 4 streak');
+    });
+
+    it('has descriptive aria-label for push direction', () => {
+      render(
+        <GrooveMeter hotness={50} direction="push" streak={5} />
+      );
+
+      const progressbar = screen.getByRole('progressbar');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 50% hotness, pushing timing, 5 streak');
+    });
+
+    it('has descriptive aria-label for pull direction', () => {
+      render(
+        <GrooveMeter hotness={50} direction="pull" streak={5} />
+      );
+
+      const progressbar = screen.getByRole('progressbar');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 50% hotness, laid back timing, 5 streak');
+    });
+
+    it('has aria-label on direction container', () => {
+      render(
+        <GrooveMeter hotness={50} direction="push" streak={5} />
+      );
+
+      const directionContainer = document.querySelector('.groove-meter__direction');
+      expect(directionContainer).toHaveAttribute('aria-label', 'Timing direction: Pushing');
+    });
+
+    it('has aria-label on streak container', () => {
+      render(
+        <GrooveMeter hotness={50} direction="neutral" streak={7} />
+      );
+
+      const streakContainer = document.querySelector('.groove-meter__streak');
+      expect(streakContainer).toHaveAttribute('aria-label', 'Current streak: 7 consecutive hits');
+    });
+
+    it('has live region for screen reader announcements', () => {
+      render(
+        <GrooveMeter hotness={50} direction="neutral" streak={5} />
+      );
+
+      const liveRegion = document.querySelector('[aria-live="polite"]');
+      expect(liveRegion).toBeInTheDocument();
+      expect(liveRegion).toHaveAttribute('role', 'status');
+      expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+    });
+
+    it('fill element is hidden from screen readers', () => {
+      render(
+        <GrooveMeter hotness={50} direction="neutral" streak={5} />
+      );
+
+      const fillElement = document.querySelector('.groove-meter__fill');
+      expect(fillElement).toHaveAttribute('aria-hidden', 'true');
     });
   });
 });

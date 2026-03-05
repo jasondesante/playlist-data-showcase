@@ -10,8 +10,10 @@
  * - Optional current vs best comparison
  * - Trophy/badge icon for best achievements
  * - Color coding for achievement levels
+ * - Accessible labels for screen readers
  *
  * Part of Phase 4: Task 4.1 - Create GrooveStats Component
+ * Success Criterion: UI is responsive and accessible
  */
 
 import { cn } from '../../utils/cn';
@@ -72,28 +74,35 @@ export function GrooveStats({
       : 100;
 
   return (
-    <div className={cn('groove-stats', className)}>
+    <div
+      className={cn('groove-stats', className)}
+      role="region"
+      aria-label="Groove session statistics"
+    >
       <div className="groove-stats__header">
-        <span className="groove-stats__title">Session Best</span>
+        <span className="groove-stats__title" id="groove-stats-title">Session Best</span>
       </div>
 
-      <div className="groove-stats__stats">
+      <div className="groove-stats__stats" aria-labelledby="groove-stats-title">
         {/* Best Hotness */}
-        <div className={cn('groove-stats__stat', hotnessLevel.className)}>
-          <div className="groove-stats__stat-icon">
+        <div
+          className={cn('groove-stats__stat', hotnessLevel.className)}
+          aria-label={`Best hotness: ${Math.round(bestHotness)} percent, ${hotnessLevel.label}`}
+        >
+          <div className="groove-stats__stat-icon" aria-hidden="true">
             <span className="groove-stats__trophy">🏆</span>
           </div>
           <div className="groove-stats__stat-content">
             <div className="groove-stats__stat-label">Best Hotness</div>
-            <div className="groove-stats__stat-value">
+            <div className="groove-stats__stat-value" aria-hidden="true">
               {Math.round(bestHotness)}
               <span className="groove-stats__stat-unit">%</span>
             </div>
-            <div className="groove-stats__stat-badge">{hotnessLevel.label}</div>
+            <div className="groove-stats__stat-badge" aria-hidden="true">{hotnessLevel.label}</div>
           </div>
           {/* Progress to next milestone */}
           {bestHotness < 100 && (
-            <div className="groove-stats__milestone-track">
+            <div className="groove-stats__milestone-track" aria-hidden="true">
               <div
                 className="groove-stats__milestone-fill"
                 style={{ width: `${progressToNext}%` }}
@@ -103,13 +112,16 @@ export function GrooveStats({
         </div>
 
         {/* Best Streak */}
-        <div className="groove-stats__stat groove-stats__stat--streak">
-          <div className="groove-stats__stat-icon">
+        <div
+          className="groove-stats__stat groove-stats__stat--streak"
+          aria-label={`Best streak: ${bestStreak} consecutive hits`}
+        >
+          <div className="groove-stats__stat-icon" aria-hidden="true">
             <span className="groove-stats__fire">🔥</span>
           </div>
           <div className="groove-stats__stat-content">
             <div className="groove-stats__stat-label">Best Streak</div>
-            <div className="groove-stats__stat-value">
+            <div className="groove-stats__stat-value" aria-hidden="true">
               {bestStreak}
               <span className="groove-stats__stat-unit">hits</span>
             </div>
@@ -118,14 +130,17 @@ export function GrooveStats({
 
         {/* Current vs Best Comparison */}
         {showComparison && (
-          <div className="groove-stats__comparison">
+          <div
+            className="groove-stats__comparison"
+            aria-label={`Current: ${Math.round(currentHotness ?? 0)}% hotness, ${currentStreak ?? 0} streak. Best: ${Math.round(bestHotness)}% hotness, ${bestStreak} streak`}
+          >
             <div className="groove-stats__comparison-row">
               <span className="groove-stats__comparison-label">Current</span>
-              <span className="groove-stats__comparison-current">
+              <span className="groove-stats__comparison-current" aria-hidden="true">
                 {Math.round(currentHotness ?? 0)}% / {currentStreak ?? 0}
               </span>
             </div>
-            <div className="groove-stats__comparison-bar">
+            <div className="groove-stats__comparison-bar" aria-hidden="true">
               <div
                 className="groove-stats__comparison-fill groove-stats__comparison-fill--current"
                 style={{ width: `${Math.min(100, currentHotness ?? 0)}%` }}

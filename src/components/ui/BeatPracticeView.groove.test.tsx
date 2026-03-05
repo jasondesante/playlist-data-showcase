@@ -813,7 +813,8 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       expect(progressbar).toHaveAttribute('aria-valuenow', '75');
       expect(progressbar).toHaveAttribute('aria-valuemin', '0');
       expect(progressbar).toHaveAttribute('aria-valuemax', '100');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 75%');
+      // Updated aria-label includes hotness, direction, and streak for better accessibility
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 75% hotness, on point timing, 0 streak');
     });
   });
 });

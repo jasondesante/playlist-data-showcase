@@ -10,9 +10,11 @@
  * - Direction icon + label display (Pushing, Laid Back, On Point)
  * - Streak counter display
  * - Compact variant for inline display next to timeline
+ * - Accessible with screen reader announcements for state changes
  *
  * Part of Phase 3: Task 3.1 - Create GrooveMeter Component
  * Part of Phase 7: Task 7.2 - Add Direction Change Animations
+ * Success Criterion: UI is responsive and accessible
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -83,6 +85,10 @@ export function GrooveMeter({
   const [isAnimating, setIsAnimating] = useState(false);
   const animationKeyRef = useRef(0);
 
+  // Track hotness milestones for screen reader announcements
+  const prevHotnessRef = useRef(hotness);
+  const [announcement, setAnnouncement] = useState<string | null>(null);
+
   // Detect direction changes and trigger animation
   useEffect(() => {
     if (prevDirectionRef.current !== direction) {
@@ -100,6 +106,41 @@ export function GrooveMeter({
     }
   }, [direction]);
 
+  // Announce hotness milestone changes to screen readers
+  useEffect(() => {
+    const milestones = [25, 50, 75, 90, 100];
+    const prevMilestone = milestones.find((m) => prevHotnessRef.current < m);
+    const currentMilestone = milestones.find((m) => hotness < m);
+
+    // Check if we crossed a milestone upward
+    if (prevMilestone !== currentMilestone && hotness > prevHotnessRef.current) {
+      const crossedMilestone = milestones.find(
+        (m) => m > prevHotnessRef.current && m <= hotness
+      );
+      if (crossedMilestone) {
+        let message = '';
+        if (crossedMilestone === 100) {
+          message = 'Perfect groove! Maximum hotness!';
+        } else if (crossedMilestone >= 90) {
+          message = 'Blazing! 90% hotness!';
+        } else if (crossedMilestone >= 75) {
+          message = 'On fire! 75% hotness!';
+        } else if (crossedMilestone >= 50) {
+          message = 'Hot groove! 50% hotness!';
+        } else if (crossedMilestone >= 25) {
+          message = 'Building groove! 25% hotness!';
+        }
+        if (message) {
+          setAnnouncement(message);
+          const timeout = setTimeout(() => setAnnouncement(null), 1000);
+          prevHotnessRef.current = hotness;
+          return () => clearTimeout(timeout);
+        }
+      }
+    }
+    prevHotnessRef.current = hotness;
+  }, [hotness]);
+
   // Clamp hotness to valid range
   const clampedHotness = Math.max(0, Math.min(100, hotness));
 
@@ -109,55 +150,78 @@ export function GrooveMeter({
     className
   );
 
+  // Build accessible label with all info
+  const accessibleLabel = `Groove meter: ${clampedHotness}% hotness, ${directionInfo.label.toLowerCase()} timing, ${streak} streak`;
+
   return (
-    <div className={containerClasses}>
-      {/* Main bar section */}
-      <div className="groove-meter__bar-container">
-        <div
-          className={cn('groove-meter__fill', hotnessLevel)}
-          style={{ width: `${clampedHotness}%` }}
-          role="progressbar"
-          aria-valuenow={clampedHotness}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`Groove meter: ${clampedHotness}%`}
-        />
+    <>
+      {/* Screen reader announcements for milestone changes */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="groove-meter__sr-only"
+      >
+        {announcement}
       </div>
 
-      {/* Info row: direction + streak */}
-      <div className="groove-meter__info">
-        <div
-          className={cn(
-            'groove-meter__direction',
-            directionInfo.className,
-            isAnimating && 'groove-meter__direction--animating'
-          )}
-          key={`direction-${animationKeyRef.current}`}
-        >
-          <span
-            className={cn(
-              'groove-meter__direction-icon',
-              isAnimating && 'groove-meter__direction-icon--animating'
-            )}
-          >
-            {directionInfo.icon}
-          </span>
-          <span
-            className={cn(
-              'groove-meter__direction-label',
-              isAnimating && 'groove-meter__direction-label--animating'
-            )}
-          >
-            {directionInfo.label}
-          </span>
+      <div
+        className={containerClasses}
+        role="progressbar"
+        aria-valuenow={clampedHotness}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={accessibleLabel}
+      >
+        {/* Main bar section */}
+        <div className="groove-meter__bar-container">
+          <div
+            className={cn('groove-meter__fill', hotnessLevel)}
+            style={{ width: `${clampedHotness}%` }}
+            aria-hidden="true"
+          />
         </div>
 
-        <div className="groove-meter__streak">
-          <span className="groove-meter__streak-value">{streak}</span>
-          <span className="groove-meter__streak-label">streak</span>
+        {/* Info row: direction + streak */}
+        <div className="groove-meter__info">
+          <div
+            className={cn(
+              'groove-meter__direction',
+              directionInfo.className,
+              isAnimating && 'groove-meter__direction--animating'
+            )}
+            key={`direction-${animationKeyRef.current}`}
+            aria-label={`Timing direction: ${directionInfo.label}`}
+          >
+            <span
+              className={cn(
+                'groove-meter__direction-icon',
+                isAnimating && 'groove-meter__direction-icon--animating'
+              )}
+              aria-hidden="true"
+            >
+              {directionInfo.icon}
+            </span>
+            <span
+              className={cn(
+                'groove-meter__direction-label',
+                isAnimating && 'groove-meter__direction-label--animating'
+              )}
+            >
+              {directionInfo.label}
+            </span>
+          </div>
+
+          <div
+            className="groove-meter__streak"
+            aria-label={`Current streak: ${streak} consecutive hits`}
+          >
+            <span className="groove-meter__streak-value" aria-hidden="true">{streak}</span>
+            <span className="groove-meter__streak-label" aria-hidden="true">streak</span>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

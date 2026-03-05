@@ -508,7 +508,29 @@ This keeps the visual display in sync with the actual game state and simplifies 
       - BeatPracticeView.groove.test.tsx - 27 integration tests passing
       - Total: 92 groove-related tests passing
     - Build passes with no errors
-- [ ] UI is responsive and accessible
+- [x] UI is responsive and accessible
+  - Verified: 2026-03-05
+  - Evidence:
+    - **Responsiveness**:
+      - GrooveMeter.css includes responsive breakpoints at 640px and 400px
+      - GrooveStats.css includes responsive breakpoints at 640px and 400px
+      - Compact variant for TapArea mode adapts to smaller screens
+      - Direction labels hide at very small screens (400px) to preserve core info
+      - All components use relative units (rem) for consistent scaling
+    - **Accessibility**:
+      - GrooveMeter has `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+      - Comprehensive aria-label includes hotness, direction, and streak info
+      - Live region (`aria-live="polite"`) for milestone announcements to screen readers
+      - Direction container has aria-label for timing direction
+      - Streak container has aria-label for consecutive hits count
+      - Fill element has `aria-hidden="true"` to prevent duplicate announcements
+      - GrooveStats has `role="region"` with `aria-label="Groove session statistics"`
+      - All emoji icons have `aria-hidden="true"` with text alternatives in aria-labels
+    - **Tests**:
+      - GrooveMeter.test.tsx includes 10 accessibility-specific tests
+      - BeatPracticeView.groove.test.tsx includes accessibility integration test
+      - All 98 groove-related tests passing
+      - Build passes with no errors
 - [ ] Animations are smooth and performant
 
 ---
