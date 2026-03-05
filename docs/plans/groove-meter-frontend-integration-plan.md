@@ -457,7 +457,18 @@ This keeps the visual display in sync with the actual game state and simplifies 
     - beatDetectionStore.groove.test.ts:422-477 verifies bestGrooveStreak updates correctly
     - BeatPracticeView.groove.test.tsx:303-318 verifies GrooveStats renders when best values exist
     - BeatPracticeView.groove.test.tsx:561-568 verifies GrooveStats displays in session
-- [ ] Groove analyzer resets appropriately on track change/seek
+- [x] Groove analyzer resets appropriately on track change/seek
+  - Verified: 2026-03-05
+  - Evidence:
+    - BeatPracticeView.tsx:555-563 - handleSeek callback calls resetGrooveAnalyzer() when user seeks
+    - BeatPracticeView.tsx:718-727 - useEffect resets groove when beatMap?.audioId changes (track change)
+    - beatDetectionStore.ts:2888-2897 - resetGrooveAnalyzer action calls analyzer.reset() and updates grooveState
+    - Best values (bestGrooveHotness, bestGrooveStreak) are preserved after reset
+  - Tests:
+    - BeatPracticeView.groove.test.tsx Task 8.3.4 - verifies groove resets on seek
+    - BeatPracticeView.groove.test.tsx Task 8.3.4b - verifies groove resets on track change (audioId change)
+    - BeatPracticeView.groove.test.tsx:721-741 - verifies groove does NOT reset when audioId stays the same
+    - beatDetectionStore.groove.test.ts:481-568 - verifies reset clears groove state and preserves best values
 - [ ] All types are properly exported and imported
 - [ ] Store actions and selectors work correctly
 - [ ] UI is responsive and accessible

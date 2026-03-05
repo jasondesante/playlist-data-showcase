@@ -20,6 +20,7 @@ function createMockBeatMap(overrides: Partial<BeatMap> = {}): BeatMap {
     })),
     bpm: 120,
     duration: 180,
+    audioId: 'test-audio-123',
     metadata: {
       sensitivity: 1.0,
       filter: 0.0,
@@ -57,8 +58,8 @@ function createMockGrooveState(overrides: Partial<GrooveState> = {}): GrooveStat
   };
 }
 
-// Create static mock beat map
-const mockBeatMap = createMockBeatMap();
+// Create mutable mock beat map for track change testing
+let currentMockBeatMap = createMockBeatMap();
 
 // Track groove state for testing
 let mockGrooveState: GrooveState | null = null;
@@ -66,7 +67,11 @@ let mockBestGrooveHotness = 0;
 let mockBestGrooveStreak = 0;
 let mockInitGrooveAnalyzerCalled = false;
 let mockRecordGrooveHitCalled = false;
+let mockResetGrooveAnalyzerCalled = false;
 let lastRecordedHit: { offset: number; bpm: number } | null = null;
+
+// Track onSeek callback from BeatTimeline for testing
+let capturedOnSeek: ((time: number) => void) | null = null;
 
 // Mock tap result to be returned by checkTap
 let mockTapResult: ExtendedButtonPressResult | null = null;
@@ -75,7 +80,7 @@ let mockTapResult: ExtendedButtonPressResult | null = null;
 vi.mock('../../store/beatDetectionStore', () => ({
   useBeatDetectionStore: vi.fn((selector?: (state: unknown) => unknown) => {
     const storeState = {
-      beatMap: mockBeatMap,
+      beatMap: currentMockBeatMap,
       actions: {
         stopPracticeMode: vi.fn(),
         recordTap: vi.fn(),
@@ -86,6 +91,7 @@ vi.mock('../../store/beatDetectionStore', () => ({
           mockGrooveState = createMockGrooveState();
         }),
         resetGrooveAnalyzer: vi.fn(() => {
+          mockResetGrooveAnalyzerCalled = true;
           if (mockGrooveState) {
             mockGrooveState = createMockGrooveState();
           }
@@ -230,7 +236,13 @@ vi.mock('../../hooks/useKeyboardInput', () => ({
 
 // Mock child components that aren't relevant to groove tests
 vi.mock('./BeatTimeline', () => ({
-  BeatTimeline: vi.fn(() => <div data-testid="beat-timeline" />),
+  BeatTimeline: vi.fn(({ onSeek }: { onSeek?: (time: number) => void }) => {
+    // Capture the onSeek callback for testing
+    if (onSeek) {
+      capturedOnSeek = onSeek;
+    }
+    return <div data-testid="beat-timeline" />;
+  }),
 }));
 
 vi.mock('./TapArea', () => ({
@@ -283,8 +295,12 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
     mockBestGrooveStreak = 0;
     mockInitGrooveAnalyzerCalled = false;
     mockRecordGrooveHitCalled = false;
+    mockResetGrooveAnalyzerCalled = false;
     lastRecordedHit = null;
     mockTapResult = createMockTapResult();
+    capturedOnSeek = null;
+    // Reset beat map to default for track change tests
+    currentMockBeatMap = createMockBeatMap();
   });
 
   afterEach(() => {
@@ -618,6 +634,142 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       // Best values should be preserved
       expect(mockBestGrooveHotness).toBe(40);
       expect(mockBestGrooveStreak).toBe(5);
+    });
+
+    it('should reset groove when handleSeek is called (via BeatTimeline onSeek)', async () => {
+      render(<BeatPracticeView onExit={mockOnExit} />);
+
+      // Build up some groove state
+      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      for (let i = 0; i < 5; i++) {
+        storeState.actions.recordGrooveHit(0.01, 120);
+      }
+
+      expect(mockGrooveState?.hotness).toBe(40);
+      // Reset the flag after initial mount effects run
+      mockResetGrooveAnalyzerCalled = false;
+
+      // Simulate seek by calling the captured onSeek callback
+      expect(capturedOnSeek).not.toBeNull();
+      await act(async () => {
+        capturedOnSeek!(30.0); // Seek to 30 seconds
+        vi.runAllTimers();
+      });
+
+      // Verify resetGrooveAnalyzer was called by seek
+      expect(mockResetGrooveAnalyzerCalled).toBe(true);
+      // Current groove should be reset
+      expect(mockGrooveState?.hotness).toBe(0);
+      expect(mockGrooveState?.streakLength).toBe(0);
+    });
+
+    it('should preserve best values after seek reset', async () => {
+      render(<BeatPracticeView onExit={mockOnExit} />);
+
+      // Build up some groove state
+      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      for (let i = 0; i < 5; i++) {
+        storeState.actions.recordGrooveHit(0.01, 120);
+      }
+
+      expect(mockBestGrooveHotness).toBe(40);
+      expect(mockBestGrooveStreak).toBe(5);
+
+      // Simulate seek
+      await act(async () => {
+        capturedOnSeek!(30.0);
+        vi.runAllTimers();
+      });
+
+      // Best values should be preserved after seek
+      expect(mockBestGrooveHotness).toBe(40);
+      expect(mockBestGrooveStreak).toBe(5);
+    });
+  });
+
+  describe('Task 8.3.4b: Groove Reset on Track Change', () => {
+    it('should reset groove when beatMap audioId changes (track change)', async () => {
+      const { rerender } = render(<BeatPracticeView onExit={mockOnExit} />);
+
+      // Build up some groove state
+      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      for (let i = 0; i < 5; i++) {
+        storeState.actions.recordGrooveHit(0.01, 120);
+      }
+
+      expect(mockGrooveState?.hotness).toBe(40);
+      // Reset the flag after initial mount effects run
+      mockResetGrooveAnalyzerCalled = false;
+
+      // Simulate track change by updating the beatMap's audioId
+      currentMockBeatMap = createMockBeatMap({ audioId: 'different-audio-456' });
+
+      // Trigger re-render which should cause the useEffect to detect the audioId change
+      await act(async () => {
+        rerender(<BeatPracticeView onExit={mockOnExit} />);
+        vi.runAllTimers();
+      });
+
+      // Verify resetGrooveAnalyzer was called due to track change
+      expect(mockResetGrooveAnalyzerCalled).toBe(true);
+      // Current groove should be reset
+      expect(mockGrooveState?.hotness).toBe(0);
+      expect(mockGrooveState?.streakLength).toBe(0);
+    });
+
+    it('should preserve best values after track change reset', async () => {
+      const { rerender } = render(<BeatPracticeView onExit={mockOnExit} />);
+
+      // Build up some groove state
+      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      for (let i = 0; i < 5; i++) {
+        storeState.actions.recordGrooveHit(0.01, 120);
+      }
+
+      expect(mockBestGrooveHotness).toBe(40);
+      expect(mockBestGrooveStreak).toBe(5);
+
+      // Simulate track change
+      currentMockBeatMap = createMockBeatMap({ audioId: 'different-audio-789' });
+
+      await act(async () => {
+        rerender(<BeatPracticeView onExit={mockOnExit} />);
+        vi.runAllTimers();
+      });
+
+      // Best values should be preserved after track change
+      expect(mockBestGrooveHotness).toBe(40);
+      expect(mockBestGrooveStreak).toBe(5);
+    });
+
+    it('should not reset groove when beatMap audioId is the same', async () => {
+      render(<BeatPracticeView onExit={mockOnExit} />);
+
+      // Build up some groove state
+      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      for (let i = 0; i < 5; i++) {
+        storeState.actions.recordGrooveHit(0.01, 120);
+      }
+
+      expect(mockGrooveState?.hotness).toBe(40);
+      mockResetGrooveAnalyzerCalled = false;
+
+      // Simulate re-render without changing audioId (same track)
+      currentMockBeatMap = createMockBeatMap({ audioId: 'test-audio-123' }); // Same ID
+
+      await act(async () => {
+        vi.runAllTimers();
+      });
+
+      // resetGrooveAnalyzer should NOT have been called
+      expect(mockResetGrooveAnalyzerCalled).toBe(false);
+      // Groove should still be at 40
+      expect(mockGrooveState?.hotness).toBe(40);
     });
   });
 
