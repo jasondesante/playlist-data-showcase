@@ -421,7 +421,17 @@ This keeps the visual display in sync with the actual game state and simplifies 
     - BeatPracticeView calls `recordGrooveHit(result.offset, currentBpm)` after each tap (BeatPracticeView.tsx:466)
     - Engine's GrooveAnalyzer increases hotness by 8 per consistent hit (DEFAULT_GROOVE_OPTIONS.hotnessGainPerHit)
   - Tests: GrooveMeter.test.tsx verifies bar fills at 0%, 50%, 100%
-- [ ] Direction label changes correctly based on established pocket
+- [x] Direction label changes correctly based on established pocket
+  - Verified: 2026-03-05
+  - Evidence:
+    - GrooveMeter component displays "Pushing" (↑), "Laid Back" (↓), or "On Point" (●) based on `direction` prop
+    - `getDirectionInfo()` function in GrooveMeter.tsx (lines 39-53) maps 'push', 'pull', 'neutral' to correct labels and icons
+    - beatDetectionStore.recordGrooveHit() returns GrooveResult with pocketDirection from engine
+    - BeatPracticeView passes `grooveState.pocketDirection` to GrooveMeter component (BeatPracticeView.tsx:916)
+    - Engine's GrooveAnalyzer computes pocketDirection based on establishedOffset relative to neutralDeadZone (±10ms)
+  - Tests:
+    - GrooveMeter.test.tsx:96-149 verifies direction labels display correctly for all directions
+    - BeatPracticeView.groove.test.tsx:Task 8.3.5 verifies direction display integration
 - [ ] Streak counter updates in real-time
 - [ ] Best hotness and streak are tracked and displayed
 - [ ] Groove analyzer resets appropriately on track change/seek
