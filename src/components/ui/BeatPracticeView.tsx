@@ -462,8 +462,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       recordTap(result);
 
       // Record groove hit (Phase 5: Task 5.2 - Wire Up Groove Recording)
-      // Pass offset and current BPM to the groove analyzer
-      recordGrooveHit(result.offset, currentBpm);
+      // Pass offset, BPM, currentTime (audio time from beat map), and accuracy
+      // Required: accuracy 'miss' or 'wrongKey' will decrease hotness
+      recordGrooveHit(result.offset, currentBpm, result.matchedBeat.timestamp, result.accuracy);
 
       // Phase 5: Task 5.3 - Post-Hit Lookback for Missed Beats
       // After recording the hit, look back at beats between previous hit and current hit

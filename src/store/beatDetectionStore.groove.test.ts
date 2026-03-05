@@ -138,9 +138,9 @@ describe('beatDetectionStore - Groove Functionality', () => {
             const analyzer = useBeatDetectionStore.getState().grooveAnalyzer;
             expect(analyzer).not.toBeNull();
 
-            store.actions.recordGrooveHit(0.02, 120);
+            store.actions.recordGrooveHit(0.02, 120, 1.0, 'perfect');
 
-            expect(analyzer?.recordHit).toHaveBeenCalledWith(0.02, 120);
+            expect(analyzer?.recordHit).toHaveBeenCalledWith(0.02, 120, 1.0, 'perfect');
         });
 
         it('should update grooveState after recording hit', async () => {
@@ -170,7 +170,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
                 pocketWindow: 0.03,
             });
 
-            store.actions.recordGrooveHit(0.02, 120);
+            store.actions.recordGrooveHit(0.02, 120, 1.0, 'perfect');
 
             const newState = useBeatDetectionStore.getState();
             expect(newState.grooveState?.hotness).toBe(15);
@@ -204,7 +204,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
                 pocketWindow: 0.03,
             });
 
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             const newState = useBeatDetectionStore.getState();
             expect(newState.bestGrooveHotness).toBe(50);
@@ -240,7 +240,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
                 pocketWindow: 0.03,
             });
 
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             const newState = useBeatDetectionStore.getState();
             // Best should remain at 80
@@ -376,7 +376,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
             (analyzer?.getState as ReturnType<typeof vi.fn>).mockReturnValueOnce({
                 hotness: 20, streakLength: 2, pocketDirection: 'neutral', establishedOffset: 0, consistency: 0.8, inPocket: true, pocketWindow: 0.03,
             });
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             expect(useBeatDetectionStore.getState().bestGrooveHotness).toBe(20);
 
@@ -387,7 +387,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
             (analyzer?.getState as ReturnType<typeof vi.fn>).mockReturnValueOnce({
                 hotness: 45, streakLength: 5, pocketDirection: 'neutral', establishedOffset: 0, consistency: 0.9, inPocket: true, pocketWindow: 0.03,
             });
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             expect(useBeatDetectionStore.getState().bestGrooveHotness).toBe(45);
 
@@ -398,7 +398,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
             (analyzer?.getState as ReturnType<typeof vi.fn>).mockReturnValueOnce({
                 hotness: 30, streakLength: 3, pocketDirection: 'neutral', establishedOffset: 0, consistency: 0.7, inPocket: true, pocketWindow: 0.03,
             });
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             // Best should still be 45
             expect(useBeatDetectionStore.getState().bestGrooveHotness).toBe(45);
@@ -417,7 +417,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
             (analyzer?.getState as ReturnType<typeof vi.fn>).mockReturnValueOnce({
                 hotness: 30, streakLength: 5, pocketDirection: 'neutral', establishedOffset: 0, consistency: 0.9, inPocket: true, pocketWindow: 0.03,
             });
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             expect(useBeatDetectionStore.getState().bestGrooveStreak).toBe(5);
 
@@ -428,7 +428,7 @@ describe('beatDetectionStore - Groove Functionality', () => {
             (analyzer?.getState as ReturnType<typeof vi.fn>).mockReturnValueOnce({
                 hotness: 60, streakLength: 10, pocketDirection: 'neutral', establishedOffset: 0, consistency: 1, inPocket: true, pocketWindow: 0.03,
             });
-            store.actions.recordGrooveHit(0, 120);
+            store.actions.recordGrooveHit(0, 120, 1.0, 'perfect');
 
             expect(useBeatDetectionStore.getState().bestGrooveStreak).toBe(10);
 

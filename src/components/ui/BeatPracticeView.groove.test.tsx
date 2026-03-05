@@ -96,7 +96,7 @@ vi.mock('../../store/beatDetectionStore', () => ({
             mockGrooveState = createMockGrooveState();
           }
         }),
-        recordGrooveHit: vi.fn((offset: number, bpm: number) => {
+        recordGrooveHit: vi.fn((offset: number, bpm: number, currentTime: number, accuracy: string) => {
           mockRecordGrooveHitCalled = true;
           lastRecordedHit = { offset, bpm };
           // Simulate hotness increase
@@ -398,8 +398,8 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Call recordGrooveHit directly to verify state update
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
-      storeState.actions.recordGrooveHit(0.01, 120);
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
+      storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
       // After hit, the mocked store should have updated hotness
       expect(mockGrooveState?.hotness).toBe(8);
@@ -413,8 +413,8 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Call recordGrooveHit directly to verify state update
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
-      storeState.actions.recordGrooveHit(0.01, 120);
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
+      storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
       // After hit, streak should increase
       expect(mockGrooveState?.streakLength).toBe(1);
@@ -443,10 +443,10 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // First hit to increase hotness
-      storeState.actions.recordGrooveHit(0.01, 120);
+      storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
       const hotnessAfterFirstHit = mockGrooveState?.hotness ?? 0;
       expect(hotnessAfterFirstHit).toBe(8);
@@ -460,7 +460,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       expect(mockGrooveState?.hotness).toBe(hotnessAfterFirstHit);
 
       // Another hit
-      storeState.actions.recordGrooveHit(0.01, 120);
+      storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
       // Hotness should increase from the previous value, not from a decayed value
       expect(mockGrooveState?.hotness).toBe(hotnessAfterFirstHit + 8);
@@ -473,11 +473,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock and call recordGrooveHit multiple times directly
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // Simulate multiple hits
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       // Best hotness should be 40 (5 hits * 8 hotness per hit)
@@ -489,11 +489,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock and call recordGrooveHit multiple times directly
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // Simulate multiple hits
       for (let i = 0; i < 3; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       // Best streak should be 3
@@ -505,11 +505,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // Simulate hits to increase hotness
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       // Best hotness should be 40
@@ -529,11 +529,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // Simulate hits to increase streak
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       // Best streak should be 5
@@ -553,11 +553,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // First session of hits
       for (let i = 0; i < 3; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockBestGrooveHotness).toBe(24);
@@ -567,7 +567,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // More hits to exceed previous best
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       // Best should now be higher: after miss hotness = 24 - 10 = 14, then 5 hits: 14 + 40 = 54
@@ -596,11 +596,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult; resetGrooveAnalyzer: () => void } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; resetGrooveAnalyzer: () => void } };
 
       // Build up some groove
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockGrooveState?.hotness).toBe(40);
@@ -618,11 +618,11 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Get the store mock
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult; resetGrooveAnalyzer: () => void } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; resetGrooveAnalyzer: () => void } };
 
       // Build up some groove
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockBestGrooveHotness).toBe(40);
@@ -641,9 +641,9 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Build up some groove state
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockGrooveState?.hotness).toBe(40);
@@ -669,9 +669,9 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Build up some groove state
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockBestGrooveHotness).toBe(40);
@@ -695,9 +695,9 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Build up some groove state
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockGrooveState?.hotness).toBe(40);
@@ -725,9 +725,9 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Build up some groove state
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockBestGrooveHotness).toBe(40);
@@ -751,9 +751,9 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
 
       // Build up some groove state
       const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
-      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number) => GrooveResult } };
+      const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
-        storeState.actions.recordGrooveHit(0.01, 120);
+        storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
       }
 
       expect(mockGrooveState?.hotness).toBe(40);

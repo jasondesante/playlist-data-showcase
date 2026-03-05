@@ -71,6 +71,7 @@ import {
     // Groove Analyzer types (Phase 2: Task 2.1 - Groove State)
     GrooveState,
     GrooveResult,
+    ExtendedBeatAccuracy,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -941,9 +942,11 @@ interface BeatDetectionActions {
      * Called after each button press during practice mode.
      * @param offset - Timing offset in seconds (negative = early/push, positive = late/pull)
      * @param bpm - Current BPM of the song
+     * @param currentTime - Audio time from the beat map (matchedBeat.time)
+     * @param accuracy - Accuracy level of the hit (miss/wrongKey will decrease hotness)
      * @returns GrooveResult with current groove state and hit analysis
      */
-    recordGrooveHit: (offset: number, bpm: number) => GrooveResult;
+    recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: ExtendedBeatAccuracy) => GrooveResult;
 
     /**
      * Record a missed beat in the groove analyzer.
@@ -2816,7 +2819,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         logger.info('BeatDetection', 'GrooveAnalyzer initialized');
                     },
 
-                    recordGrooveHit: (offset: number, bpm: number): GrooveResult => {
+                    recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: ExtendedBeatAccuracy): GrooveResult => {
                         const state = get();
                         if (!state.grooveAnalyzer) {
                             logger.warn('BeatDetection', 'recordGrooveHit called but grooveAnalyzer is null');
@@ -2832,7 +2835,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             };
                         }
 
-                        const result = state.grooveAnalyzer.recordHit(offset, bpm);
+                        const result = state.grooveAnalyzer.recordHit(offset, bpm, currentTime, accuracy);
 
                         // Update groove state and track best achievements
                         const newBestHotness = Math.max(state.bestGrooveHotness, result.hotness);
@@ -2847,6 +2850,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         logger.debug('BeatDetection', 'Groove hit recorded', {
                             offset,
                             bpm,
+                            currentTime,
+                            accuracy,
                             hotness: result.hotness,
                             streak: result.streakLength,
                             direction: result.pocketDirection,
