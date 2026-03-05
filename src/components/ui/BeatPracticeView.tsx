@@ -220,6 +220,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Groove analyzer actions (Phase 5: Task 5.1 - Initialize GrooveAnalyzer)
   const initGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.initGrooveAnalyzer);
   const resetGrooveAnalyzer = useBeatDetectionStore((state) => state.actions.resetGrooveAnalyzer);
+  const recordGrooveHit = useBeatDetectionStore((state) => state.actions.recordGrooveHit);
 
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
@@ -443,6 +444,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Record in store
       recordTap(result);
 
+      // Record groove hit (Phase 5: Task 5.2 - Wire Up Groove Recording)
+      // Pass offset and current BPM to the groove analyzer
+      recordGrooveHit(result.offset, currentBpm);
+
       // Show visual feedback using the hook
       showTapFeedback(result);
 
@@ -463,7 +468,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         return newHistory.slice(0, MAX_DEBUG_HISTORY);
       });
     }
-  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive]);
+  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, currentBpm]);
 
   // Keep handleTapRef updated with the latest handleTap function
   // This allows the keyboard hook callback to call the latest handleTap

@@ -141,11 +141,11 @@ Integrate the GrooveAnalyzer from playlist-data-engine into the front end to pro
   - [x] Import groove store selectors (will be imported when needed in Task 5.2)
 
 ### 5.2 Wire Up Groove Recording
-- [ ] Update `handleTap` function in BeatPracticeView
-  - [ ] After `checkTap()` call, also call `recordGrooveHit(offset, currentBpm)`
-  - [ ] Pass the offset from the tap result
-  - [ ] Pass the current BPM from beat stream
-  - [ ] Update groove state after recording
+- [x] Update `handleTap` function in BeatPracticeView
+  - [x] After `checkTap()` call, also call `recordGrooveHit(offset, currentBpm)`
+  - [x] Pass the offset from the tap result
+  - [x] Pass the current BPM from beat stream
+  - [x] Update groove state after recording
 
 ### 5.3 Handle Missed Beats (Post-Hit Lookback)
 - [ ] Implement post-hit lookback for missed beat detection
