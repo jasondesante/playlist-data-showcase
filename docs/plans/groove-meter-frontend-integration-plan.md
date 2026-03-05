@@ -229,10 +229,10 @@ const handleTap = useCallback((key: string) => {
 ## Phase 6: AudioAnalysisTab Integration
 
 ### 6.1 Add GrooveStats to Beat Map Summary
-- [ ] Update [BeatMapSummary.tsx](src/components/ui/BeatMapSummary.tsx) (optional)
-  - [ ] Show groove stats after practice session ends
-  - [ ] Display "Best Groove: X%" and "Best Streak: X"
-  - [ ] Only show if groove was active during session
+- [x] Update [BeatMapSummary.tsx](src/components/ui/BeatMapSummary.tsx) (optional)
+  - [x] Show groove stats after practice session ends
+  - [x] Display "Best Groove: X%" and "Best Streak: X"
+  - [x] Only show if groove was active during session
 
 **Files to modify:**
 - `src/components/ui/BeatMapSummary.tsx` (optional)

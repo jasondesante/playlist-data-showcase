@@ -1188,3 +1188,19 @@
     gap: 0.25rem;
   }
 }
+
+/* ============================================
+   Phase 6, Task 6.1: Groove Stats Section
+   Shows groove performance from previous practice session
+   ============================================ */
+
+.beat-map-groove-stats {
+  margin-top: 0.25rem;
+}
+
+/* Responsive adjustments for groove stats */
+@media (max-width: 480px) {
+  .beat-map-groove-stats {
+    margin-top: 0.125rem;
+  }
+}

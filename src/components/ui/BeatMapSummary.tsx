@@ -22,6 +22,7 @@ import { Button } from './Button';
 import { DownbeatConfigPanel } from './DownbeatConfigPanel';
 import { BeatTimeline } from './BeatTimeline';
 import { Tooltip } from './Tooltip';
+import { GrooveStats } from './GrooveStats';
 import type { BeatMap } from '@/types';
 import {
     useInterpolationStatistics,
@@ -34,6 +35,8 @@ import {
     useBeatDetectionStore,
     useSubdividedBeatMap,
     useSubdivisionMetadata,
+    useBestGrooveHotness,
+    useBestGrooveStreak,
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 
@@ -174,6 +177,11 @@ export function BeatMapSummary({
   // Subdivision info (Phase 5, Task 5.2: Subdivision display)
   const subdividedBeatMap = useSubdividedBeatMap();
   const subdivisionMetadata = useSubdivisionMetadata();
+
+  // Groove stats from practice session (Phase 6, Task 6.1: GrooveStats in BeatMapSummary)
+  const bestGrooveHotness = useBestGrooveHotness();
+  const bestGrooveStreak = useBestGrooveStreak();
+  const hasGrooveStats = bestGrooveHotness > 0 || bestGrooveStreak > 0;
 
   // Downbeat selection mode (Phase 5: BeatMapSummary Integration)
   const isDownbeatSelectionMode = useIsDownbeatSelectionMode();
@@ -722,6 +730,17 @@ export function BeatMapSummary({
               </span>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Groove Stats from Previous Practice Session (Phase 6, Task 6.1) */}
+      {hasGrooveStats && (
+        <div className="beat-map-groove-stats">
+          <GrooveStats
+            bestHotness={bestGrooveHotness}
+            bestStreak={bestGrooveStreak}
+            showComparison={false}
+          />
         </div>
       )}
 
