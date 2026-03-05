@@ -367,8 +367,8 @@ This keeps the visual display in sync with the actual game state and simplifies 
 
 - [x] `playlist-data-engine` GrooveAnalyzer implementation (complete)
 - [x] `playlist-data-engine` type exports (complete)
-- [ ] Frontend type imports (Phase 1)
-- [ ] Zustand store setup (Phase 2)
+- [x] Frontend type imports (Phase 1)
+- [x] Zustand store setup (Phase 2)
 
 ---
 
@@ -409,7 +409,10 @@ This keeps the visual display in sync with the actual game state and simplifies 
 
 ## Success Criteria
 
-- [ ] Groove meter displays in BeatPracticeView during practice mode
+- [x] Groove meter displays in BeatPracticeView during practice mode
+  - Verified: 2026-03-05
+  - Evidence: GrooveMeter component renders conditionally in both TapArea mode (keyLaneViewMode === 'off') and KeyLane mode
+  - Tests: BeatPracticeView.groove.test.tsx confirms GrooveMeter renders when practice mode is active
 - [ ] Hotness bar fills on consistent hits based on engine hotness value
 - [ ] Direction label changes correctly based on established pocket
 - [ ] Streak counter updates in real-time
