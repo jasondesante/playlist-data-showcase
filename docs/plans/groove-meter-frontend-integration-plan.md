@@ -432,7 +432,17 @@ This keeps the visual display in sync with the actual game state and simplifies 
   - Tests:
     - GrooveMeter.test.tsx:96-149 verifies direction labels display correctly for all directions
     - BeatPracticeView.groove.test.tsx:Task 8.3.5 verifies direction display integration
-- [ ] Streak counter updates in real-time
+- [x] Streak counter updates in real-time
+  - Verified: 2026-03-05
+  - Evidence:
+    - GrooveMeter component displays streak value with `streak` prop (GrooveMeter.tsx:156-158)
+    - BeatPracticeView passes `streak={grooveState.streakLength}` to GrooveMeter (BeatPracticeView.tsx:917)
+    - beatDetectionStore.recordGrooveHit() updates `grooveState` with `state.grooveAnalyzer.getState()` (beatDetectionStore.ts:2842)
+    - useGrooveState() hook subscribes to grooveState changes for real-time updates (beatDetectionStore.ts:3386-3387)
+    - Engine's GrooveAnalyzer tracks streakLength in GrooveResult after each recordHit()
+  - Tests:
+    - GrooveMeter.test.tsx:152-201 (Task 8.2.3) verifies streak counter displays correctly
+    - BeatPracticeView.groove.test.tsx:392-405 verifies streak updates when recordGrooveHit is called
 - [ ] Best hotness and streak are tracked and displayed
 - [ ] Groove analyzer resets appropriately on track change/seek
 - [ ] All types are properly exported and imported
