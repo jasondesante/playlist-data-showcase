@@ -413,7 +413,14 @@ This keeps the visual display in sync with the actual game state and simplifies 
   - Verified: 2026-03-05
   - Evidence: GrooveMeter component renders conditionally in both TapArea mode (keyLaneViewMode === 'off') and KeyLane mode
   - Tests: BeatPracticeView.groove.test.tsx confirms GrooveMeter renders when practice mode is active
-- [ ] Hotness bar fills on consistent hits based on engine hotness value
+- [x] Hotness bar fills on consistent hits based on engine hotness value
+  - Verified: 2026-03-05
+  - Evidence:
+    - GrooveMeter component renders bar with `style={{ width: \`${clampedHotness}%\` }}` (GrooveMeter.tsx:118)
+    - beatDetectionStore calls `grooveAnalyzer.recordHit()` and updates grooveState with engine hotness
+    - BeatPracticeView calls `recordGrooveHit(result.offset, currentBpm)` after each tap (BeatPracticeView.tsx:466)
+    - Engine's GrooveAnalyzer increases hotness by 8 per consistent hit (DEFAULT_GROOVE_OPTIONS.hotnessGainPerHit)
+  - Tests: GrooveMeter.test.tsx verifies bar fills at 0%, 50%, 100%
 - [ ] Direction label changes correctly based on established pocket
 - [ ] Streak counter updates in real-time
 - [ ] Best hotness and streak are tracked and displayed
