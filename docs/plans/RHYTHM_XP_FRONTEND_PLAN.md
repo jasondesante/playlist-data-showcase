@@ -258,12 +258,12 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
 ## Phase 2: BeatPracticeView Integration
 
 ### 2.1 Initialize Rhythm XP on Practice Start
-- [ ] Import XP actions from store in `BeatPracticeView.tsx`
+- [x] Import XP actions from store in `BeatPracticeView.tsx`
   ```typescript
   const initRhythmXP = useBeatDetectionStore((state) => state.actions.initRhythmXP);
   const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
   ```
-- [ ] Call `initRhythmXP()` in the groove analyzer initialization effect
+- [x] Call `initRhythmXP()` in the groove analyzer initialization effect
   - Initialize alongside `initGrooveAnalyzer()`
   - Log initialization for debugging
 

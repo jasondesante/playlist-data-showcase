@@ -228,6 +228,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const recordGrooveHit = useBeatDetectionStore((state) => state.actions.recordGrooveHit);
   const recordGrooveMiss = useBeatDetectionStore((state) => state.actions.recordGrooveMiss);
 
+  // Rhythm XP actions (Phase 2: Task 2.1 - Initialize Rhythm XP)
+  const initRhythmXP = useBeatDetectionStore((state) => state.actions.initRhythmXP);
+
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
 
@@ -710,6 +713,19 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     initGrooveAnalyzer();
     logger.info('BeatDetection', 'GrooveAnalyzer initialized for practice mode');
   }, [initGrooveAnalyzer]);
+
+  // ============================================================
+  // Rhythm XP Initialization (Phase 2: Task 2.1)
+  // ============================================================
+
+  /**
+   * Initialize Rhythm XP calculator when practice mode starts.
+   * Creates a new RhythmXPCalculator instance with default config.
+   */
+  useEffect(() => {
+    initRhythmXP();
+    logger.info('BeatDetection', 'RhythmXPCalculator initialized for practice mode');
+  }, [initRhythmXP]);
 
   /**
    * Reset groove analyzer when beat map changes (track change).
