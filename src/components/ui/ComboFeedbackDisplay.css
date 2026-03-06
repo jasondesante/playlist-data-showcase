@@ -1,0 +1,270 @@
+/* ============================================
+   COMBO FEEDBACK DISPLAY - Lane Feedback Panel
+   Phase 3.5: Task 3.5.2 - Combo UI Styles
+   ============================================ */
+
+/**
+ * ComboFeedbackDisplay Styles
+ *
+ * Compact display for combo streak and XP multiplier.
+ * Matches existing key-lane-view-feedback styling.
+ */
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
+.combo-feedback-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+/* ============================================
+   SCORE ROW
+   ============================================ */
+
+.combo-feedback-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.combo-feedback-score-label {
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.combo-feedback-score-value {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--cute-amber));
+    text-shadow: 0 0 8px hsl(var(--cute-amber) / 0.4);
+}
+
+/* ============================================
+   COMBO + MULTIPLIER ROW
+   ============================================ */
+
+.combo-feedback-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Combo section */
+.combo-feedback-combo {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.combo-feedback-combo-value {
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Combo emphasis for bigger combos */
+.combo-feedback-combo--good {
+    color: hsl(var(--cute-green));
+    transform: scale(1.05);
+}
+
+.combo-feedback-combo--great {
+    color: hsl(var(--cute-yellow));
+    transform: scale(1.1);
+}
+
+.combo-feedback-combo--epic {
+    color: hsl(var(--cute-gold));
+    transform: scale(1.15);
+    text-shadow: 0 0 10px hsl(var(--cute-gold) / 0.6);
+    animation: combo-epic-pulse 1s ease-in-out infinite;
+}
+
+@keyframes combo-epic-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+.combo-feedback-combo-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: lowercase;
+}
+
+/* Divider */
+.combo-feedback-divider {
+    font-size: 0.75rem;
+    color: hsl(var(--border));
+}
+
+/* Multiplier section */
+.combo-feedback-multiplier {
+    display: flex;
+    align-items: center;
+}
+
+.combo-feedback-multiplier-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Multiplier color gradient based on value */
+/* 1.0x = default (muted), 2.0x+ = yellow, 3.0x+ = orange, 4.0x+ = red, 5.0x = gold */
+
+.combo-feedback-multiplier--yellow {
+    color: hsl(var(--cute-yellow));
+    transform: scale(1.05);
+}
+
+.combo-feedback-multiplier--orange {
+    color: hsl(var(--cute-orange));
+    transform: scale(1.1);
+    text-shadow: 0 0 6px hsl(var(--cute-orange) / 0.4);
+}
+
+.combo-feedback-multiplier--red {
+    color: hsl(0, 80%, 55%);
+    transform: scale(1.15);
+    text-shadow: 0 0 8px hsl(0, 80%, 55% / 0.5);
+    animation: multiplier-pulse 1.2s ease-in-out infinite;
+}
+
+.combo-feedback-multiplier--gold {
+    color: hsl(var(--cute-gold));
+    transform: scale(1.2);
+    text-shadow: 0 0 12px hsl(var(--cute-gold) / 0.7);
+    animation: multiplier-gold-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes multiplier-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes multiplier-gold-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1.2);
+        text-shadow: 0 0 12px hsl(var(--cute-gold) / 0.7);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.15);
+        text-shadow: 0 0 18px hsl(var(--cute-gold) / 0.9);
+    }
+}
+
+/* ============================================
+   SCREEN READER ONLY (Accessibility)
+   ============================================ */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .combo-feedback-score-value {
+        font-size: 0.875rem;
+    }
+
+    .combo-feedback-combo-value {
+        font-size: 0.875rem;
+    }
+
+    .combo-feedback-combo-label {
+        font-size: 0.5rem;
+    }
+
+    .combo-feedback-multiplier-value {
+        font-size: 0.75rem;
+    }
+
+    .combo-feedback-stats {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .combo-feedback-score-value {
+        font-size: 0.75rem;
+    }
+
+    .combo-feedback-score-label {
+        font-size: 0.375rem;
+    }
+
+    .combo-feedback-combo-value {
+        font-size: 0.75rem;
+    }
+
+    .combo-feedback-combo-label {
+        font-size: 0.375rem;
+    }
+
+    .combo-feedback-multiplier-value {
+        font-size: 0.625rem;
+    }
+
+    .combo-feedback-divider {
+        font-size: 0.5rem;
+    }
+
+    .combo-feedback-stats {
+        gap: 4px;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .combo-feedback-combo-value,
+    .combo-feedback-multiplier-value {
+        transition: none;
+    }
+
+    .combo-feedback-combo--epic,
+    .combo-feedback-multiplier--red,
+    .combo-feedback-multiplier--gold {
+        animation: none;
+    }
+}

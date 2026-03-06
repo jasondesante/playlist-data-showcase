@@ -388,7 +388,7 @@ This phase adds real-time combo and multiplier display in the DDR/Guitar lane fe
 and TapArea mode, showing players their current streak and XP multiplier as they play.
 
 ### 3.5.1 Create ComboFeedbackDisplay Component
-- [ ] Create `src/components/ui/ComboFeedbackDisplay.tsx`
+- [x] Create `src/components/ui/ComboFeedbackDisplay.tsx`
   ```typescript
   interface ComboFeedbackDisplayProps {
     /** Current session score (for gameplay achievement) */
@@ -401,7 +401,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     className?: string;
   }
   ```
-- [ ] Display format:
+- [x] Display format:
   - Show **score** (e.g., "1,250")
   - Show combo count (e.g., "12 hits")
   - Show multiplier (e.g., "1.2x")
@@ -409,7 +409,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Compact design matching existing feedback panel
 
 ### 3.5.2 Create ComboFeedbackDisplay Styles
-- [ ] Create `src/components/ui/ComboFeedbackDisplay.css`
+- [x] Create `src/components/ui/ComboFeedbackDisplay.css`
   - Multiplier color gradient:
     - 1.0x = default (white/gray)
     - 2.0x+ = yellow
