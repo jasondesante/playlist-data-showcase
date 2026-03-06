@@ -60,7 +60,12 @@ import { RhythmXPStats } from './RhythmXPStats';
 import { RhythmXPSessionStats } from './RhythmXPSessionStats';
 import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import { logger } from '../../utils/logger';
+import { showToast } from './Toast';
+import { LevelUpDetailModal } from '../LevelUpDetailModal';
+import type { LevelUpDetail } from 'playlist-data-engine';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
+import { usePlaylistStore } from '../../store/playlistStore';
+import { useCharacterStore } from '../../store/characterStore';
 
 /**
  * Minimum time between taps in milliseconds.
@@ -368,6 +373,22 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for exit prompt modal (Phase 2: Task 2.6 - End Session on Practice Exit)
   const [showExitPrompt, setShowExitPrompt] = useState(false);
 
+  // State for level-up modal (Phase 8: Task 8.3 - Claim XP Handler)
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
+
+  // Get selected track and character store for XP claiming (Phase 8: Task 8.3)
+  const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+  const characters = useCharacterStore((state) => state.characters);
+  const addRhythmXP = useCharacterStore((state) => state.addRhythmXP);
+
+  // Check if there's a character associated with the current track
+  // The character's seed equals the track ID
+  const trackCharacter = selectedTrack
+    ? characters.find((c) => c.seed === selectedTrack.id)
+    : null;
+  const hasCharacter = !!trackCharacter;
+
   // Difficulty settings for visual feedback
   const difficultyPreset = useDifficultyPreset();
   const accuracyThresholds = useAccuracyThresholds();
@@ -659,17 +680,38 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }, [hasUnclaimedXP, stopPracticeMode, resetRhythmXP, onExit]);
 
   /**
-   * Handle claiming XP and exiting (Phase 2: Task 2.6)
-   * Note: Full character integration is in Phase 8, this just ends the session
+   * Handle claiming XP and exiting (Phase 2: Task 2.6, Phase 8: Task 8.3)
+   * Claims XP to character and exits practice mode.
    */
   const handleClaimXPAndExit = useCallback(() => {
-    // For now, just clear the session and exit
-    // Phase 8 will add actual character XP claiming
+    const xpToClaim = rhythmSessionTotals?.totalXP ?? 0;
+
+    if (xpToClaim > 0 && trackCharacter) {
+      // Claim XP using the character store
+      const result = addRhythmXP(trackCharacter.seed, xpToClaim);
+
+      if (result?.leveledUp && result.levelUpDetails) {
+        // Show level-up modal (will display on top after exit)
+        setLevelUpDetails(result.levelUpDetails);
+        setShowLevelUpModal(true);
+        logger.info('BeatDetection', 'Character leveled up from rhythm XP!', {
+          characterName: result.character.name,
+          newLevel: result.newLevel,
+          xpEarned: result.xpEarned,
+        });
+      } else if (result) {
+        showToast(`+${xpToClaim.toFixed(1)} XP added to ${trackCharacter.name}`, 'success');
+      } else {
+        showToast('Failed to add XP', 'error');
+      }
+    }
+
+    // Reset session and exit
     stopPracticeMode();
     resetRhythmXP();
     setShowExitPrompt(false);
     onExit();
-  }, [stopPracticeMode, resetRhythmXP, onExit]);
+  }, [rhythmSessionTotals, trackCharacter, addRhythmXP, stopPracticeMode, resetRhythmXP, onExit]);
 
   /**
    * Handle discarding XP and exiting (Phase 2: Task 2.6)
@@ -694,11 +736,36 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
    * Note: Phase 8 will add actual character XP claiming.
    */
   const handleClaimXP = useCallback((xp: number) => {
-    // For now, just log and reset the session
-    // Phase 8 will add actual character XP claiming
-    logger.info('BeatDetection', 'XP claimed from session', { xp });
+    // Check if there's a character associated with this track
+    if (!trackCharacter) {
+      showToast('No character associated with this track', 'warning');
+      return;
+    }
+
+    // Claim XP using the character store
+    const result = addRhythmXP(trackCharacter.seed, xp);
+
+    if (result) {
+      if (result.leveledUp && result.levelUpDetails) {
+        // Show level-up modal
+        setLevelUpDetails(result.levelUpDetails);
+        setShowLevelUpModal(true);
+        logger.info('BeatDetection', 'Character leveled up from rhythm XP!', {
+          characterName: result.character.name,
+          newLevel: result.newLevel,
+          xpEarned: result.xpEarned,
+        });
+      } else {
+        // Show success toast
+        showToast(`+${xp.toFixed(1)} XP added to ${trackCharacter.name}`, 'success');
+      }
+    } else {
+      showToast('Failed to add XP', 'error');
+    }
+
+    // Reset session after claiming
     resetRhythmXP();
-  }, [resetRhythmXP]);
+  }, [trackCharacter, addRhythmXP, resetRhythmXP]);
 
   /**
    * Handle beat click for downbeat selection.
@@ -1295,7 +1362,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         pendingGrooveBonus={pendingGrooveEndBonus}
         onClearBonuses={clearPendingBonuses}
         onClaimXP={handleClaimXP}
-        hasCharacter={false}
+        hasCharacter={hasCharacter}
       />
 
       {/* Groove Session Stats (Phase 5: Task 5.6) */}
@@ -1473,6 +1540,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           </div>
         </div>
       )}
+
+      {/* Level-Up Detail Modal (Phase 8: Task 8.3 - Claim XP Handler) */}
+      <LevelUpDetailModal
+        levelUpDetails={levelUpDetails}
+        isOpen={showLevelUpModal}
+        onClose={() => setShowLevelUpModal(false)}
+      />
     </div>
   );
 }

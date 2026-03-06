@@ -705,7 +705,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Logs level-up events
 
 ### 8.3 Claim XP Handler
-- [ ] Implement `handleClaimXP` in BeatPracticeView or RhythmXPSessionStats
+- [x] Implement `handleClaimXP` in BeatPracticeView or RhythmXPSessionStats
   ```typescript
   const handleClaimXP = useCallback((xp: number) => {
     const trackCharacter = getCharacterForTrack(selectedTrack?.id);
@@ -727,6 +727,12 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     resetRhythmXP();
   }, [selectedTrack, addRhythmXP, resetRhythmXP]);
   ```
+- [x] Added imports: usePlaylistStore, useCharacterStore, showToast, LevelUpDetailModal, LevelUpDetail
+- [x] Added level-up modal state (showLevelUpModal, levelUpDetails)
+- [x] Implemented track-character lookup (character.seed === selectedTrack.id)
+- [x] Updated handleClaimXPAndExit to claim XP before exiting
+- [x] Updated hasCharacter prop to be dynamic based on track-character relationship
+- [x] Added LevelUpDetailModal component to BeatPracticeView
 
 ### 8.4 Level-Up Notification
 - [ ] Reuse existing `LevelUpDetailModal` component
