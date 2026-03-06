@@ -268,12 +268,12 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   - Log initialization for debugging
 
 ### 2.2 Record XP on Each Hit
-- [ ] Import `recordRhythmHit` action
+- [x] Import `recordRhythmHit` action
   ```typescript
   const recordRhythmHit = useBeatDetectionStore((state) => state.actions.recordRhythmHit);
   const processGrooveEndBonus = useBeatDetectionStore((state) => state.actions.processGrooveEndBonus);
   ```
-- [ ] Update `handleTap` callback to record XP after each hit
+- [x] Update `handleTap` callback to record XP after each hit
   ```typescript
   // After grooveResult = recordGrooveHit(...)
 
@@ -287,21 +287,21 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   ```
 
 ### 2.3 Combo Tracking (Automatic in recordRhythmHit)
-- [ ] Combo is tracked automatically in `recordRhythmHit` action:
+- [x] Combo is tracked automatically in `recordRhythmHit` action:
   - On miss/wrongKey: `processComboEndBonus()` is called, combo resets to 0
   - On other accuracy: combo increments
   - `previousComboLength` stored for bonus calculation
-- [ ] No separate combo tracking needed in BeatPracticeView
+- [x] No separate combo tracking needed in BeatPracticeView
 
 ### 2.4 Handle Groove End Bonus (Same Callback)
-- [ ] Groove end bonus is processed in the same button press callback
+- [x] Groove end bonus is processed in the same button press callback
   - Check `grooveResult.endedGrooveStats` after `recordGrooveHit()`
   - If present, groove just ended (hotness=0 or direction changed)
   - Call `processGrooveEndBonus(grooveResult.endedGrooveStats)`
   - Bonus is stored in `pendingGrooveEndBonus` for UI display
 
 ### 2.5 Reset XP on Seek/Track Change
-- [ ] Call `resetRhythmXP()` in `handleSeek()` callback
+- [x] Call `resetRhythmXP()` in `handleSeek()` callback
   - Reset alongside groove analyzer
   - Ensures clean state when user jumps to different part of song
 

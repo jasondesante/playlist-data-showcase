@@ -235,6 +235,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const recordRhythmHit = useBeatDetectionStore((state) => state.actions.recordRhythmHit);
   const processGrooveEndBonus = useBeatDetectionStore((state) => state.actions.processGrooveEndBonus);
 
+  // Rhythm XP actions (Phase 2: Task 2.5 - Reset XP on Seek/Track Change)
+  const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
+
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
 
@@ -568,7 +571,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   /**
    * Handle seek events
-   * Also resets groove analyzer since the combo/streak ends on seek.
+   * Also resets groove analyzer and rhythm XP since the combo/streak ends on seek.
    */
   const handleSeek = useCallback((time: number) => {
     seek(time);
@@ -577,8 +580,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
     resetGrooveAnalyzer();
     // Reset last matched beat timestamp (Phase 5: Task 5.3)
     lastMatchedBeatTimestampRef.current = null;
-    logger.debug('BeatDetection', 'GrooveAnalyzer reset due to seek', { time });
-  }, [seek, seekStream, resetGrooveAnalyzer]);
+    // Reset rhythm XP on seek (Phase 2: Task 2.5)
+    resetRhythmXP();
+    logger.debug('BeatDetection', 'GrooveAnalyzer and RhythmXP reset due to seek', { time });
+  }, [seek, seekStream, resetGrooveAnalyzer, resetRhythmXP]);
 
   /**
    * Handle play/pause toggle
