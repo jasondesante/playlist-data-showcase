@@ -87,6 +87,7 @@ import {
     unifyBeatMap,
     GrooveAnalyzer,
     RhythmXPCalculator,
+    DEFAULT_RHYTHM_XP_CONFIG,
 } from 'playlist-data-engine';
 
 /**
@@ -3068,55 +3069,170 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     // ============================================================
-                    // Rhythm XP Actions (Phase 1: Task 1.3 - Stub implementations)
-                    // Full implementations will be added in Task 1.4
+                    // Rhythm XP Actions (Phase 1: Task 1.4 - Full implementations)
+                    // NOTE: Config is stored separately in rhythmXPConfigStore
                     // ============================================================
 
                     initRhythmXP: () => {
-                        // TODO: Task 1.4 - Implement full initialization
-                        logger.debug('BeatDetection', 'initRhythmXP called (stub)');
+                        // Create a new RhythmXPCalculator with config
+                        // TODO: Once rhythmXPConfigStore is created (Phase 7), get config from there
+                        // For now, use DEFAULT_RHYTHM_XP_CONFIG
+                        const calculator = new RhythmXPCalculator(DEFAULT_RHYTHM_XP_CONFIG);
+
+                        // Start the session to initialize tracking
+                        calculator.startSession();
+
+                        // Reset combo counters and store the calculator
+                        set({
+                            rhythmXPCalculator: calculator,
+                            rhythmSessionTotals: null,
+                            lastRhythmXPResult: null,
+                            currentCombo: 0,
+                            maxCombo: 0,
+                            previousComboLength: 0,
+                            pendingComboEndBonus: null,
+                            pendingGrooveEndBonus: null,
+                        });
+
+                        logger.info('BeatDetection', 'Rhythm XP session initialized');
                     },
 
                     recordRhythmHit: (
                         accuracy: ExtendedBeatAccuracy,
                         grooveHotness: number
                     ): RhythmXPResult | null => {
-                        // TODO: Task 1.4 - Implement full hit recording
-                        logger.debug('BeatDetection', 'recordRhythmHit called (stub)', { accuracy, grooveHotness });
-                        return null;
+                        const state = get();
+                        const calculator = state.rhythmXPCalculator;
+
+                        if (!calculator) {
+                            logger.warn('BeatDetection', 'recordRhythmHit called but calculator not initialized');
+                            return null;
+                        }
+
+                        // Store previous combo length for bonus calculation
+                        const previousComboLength = state.currentCombo;
+
+                        // Check if this accuracy breaks the combo
+                        const isComboBreaker = accuracy === 'miss' || accuracy === 'wrongKey';
+
+                        // Process combo end bonus BEFORE resetting combo
+                        if (isComboBreaker && previousComboLength > 0) {
+                            const comboBonus = calculator.calculateComboEndBonus(previousComboLength);
+                            set({ pendingComboEndBonus: comboBonus });
+                            logger.debug('BeatDetection', 'Combo ended', {
+                                comboLength: previousComboLength,
+                                bonusXP: comboBonus.bonusXP
+                            });
+                        }
+
+                        // Update combo count
+                        let newCombo: number;
+                        if (isComboBreaker) {
+                            newCombo = 0;
+                        } else {
+                            newCombo = state.currentCombo + 1;
+                        }
+
+                        // Update max combo if current exceeded
+                        const newMaxCombo = Math.max(state.maxCombo, newCombo);
+
+                        // Record the hit in the calculator
+                        const xpResult = calculator.recordHit(accuracy, {
+                            comboLength: newCombo,
+                            grooveHotness: grooveHotness
+                        });
+
+                        // Get updated session totals
+                        const sessionTotals = calculator.getSessionTotals();
+
+                        // Update state
+                        set({
+                            currentCombo: newCombo,
+                            maxCombo: newMaxCombo,
+                            previousComboLength: previousComboLength,
+                            lastRhythmXPResult: xpResult,
+                            rhythmSessionTotals: sessionTotals,
+                        });
+
+                        logger.debug('BeatDetection', 'Recorded rhythm hit', {
+                            accuracy,
+                            combo: newCombo,
+                            score: xpResult.finalScore,
+                            xp: xpResult.finalXP,
+                            multiplier: xpResult.totalMultiplier
+                        });
+
+                        return xpResult;
                     },
 
                     processComboEndBonus: (): ComboEndBonusResult | null => {
-                        // TODO: Task 1.4 - Implement combo end bonus calculation
-                        logger.debug('BeatDetection', 'processComboEndBonus called (stub)');
+                        const state = get();
+                        const calculator = state.rhythmXPCalculator;
+
+                        if (!calculator) {
+                            return null;
+                        }
+
+                        // Use previousComboLength for bonus calculation
+                        if (state.previousComboLength > 0) {
+                            const bonus = calculator.calculateComboEndBonus(state.previousComboLength);
+                            set({ pendingComboEndBonus: bonus });
+                            return bonus;
+                        }
+
                         return null;
                     },
 
                     processGrooveEndBonus: (grooveStats: GrooveStats): GrooveEndBonusResult | null => {
-                        // TODO: Task 1.4 - Implement groove end bonus calculation
-                        logger.debug('BeatDetection', 'processGrooveEndBonus called (stub)', { grooveStats });
-                        return null;
+                        const state = get();
+                        const calculator = state.rhythmXPCalculator;
+
+                        if (!calculator) {
+                            return null;
+                        }
+
+                        const bonus = calculator.calculateGrooveEndBonus(grooveStats);
+                        set({ pendingGrooveEndBonus: bonus });
+
+                        logger.debug('BeatDetection', 'Groove end bonus calculated', {
+                            bonusScore: bonus.bonusScore,
+                            bonusXP: bonus.bonusXP,
+                            grooveStats
+                        });
+
+                        return bonus;
                     },
 
                     getRhythmSessionTotals: (): RhythmSessionTotals | null => {
-                        // TODO: Task 1.4 - Implement session totals retrieval
                         return get().rhythmSessionTotals;
                     },
 
                     hasUnclaimedXP: (): boolean => {
-                        // TODO: Task 1.4 - Implement XP check
                         const totals = get().rhythmSessionTotals;
                         return totals !== null && totals.totalXP > 0;
                     },
 
                     endRhythmXPSession: (): RhythmSessionTotals | null => {
-                        // TODO: Task 1.4 - Implement session end
-                        logger.debug('BeatDetection', 'endRhythmXPSession called (stub)');
-                        return get().rhythmSessionTotals;
+                        const state = get();
+                        const calculator = state.rhythmXPCalculator;
+
+                        if (!calculator) {
+                            return null;
+                        }
+
+                        const finalTotals = calculator.endSession();
+
+                        logger.info('BeatDetection', 'Rhythm XP session ended', {
+                            totalScore: finalTotals?.totalScore,
+                            totalXP: finalTotals?.totalXP,
+                            maxCombo: finalTotals?.maxCombo,
+                            accuracy: finalTotals?.accuracyPercentage
+                        });
+
+                        return finalTotals;
                     },
 
                     clearPendingBonuses: () => {
-                        // TODO: Task 1.4 - Implement bonus clearing
                         set({
                             pendingComboEndBonus: null,
                             pendingGrooveEndBonus: null,
@@ -3124,7 +3240,6 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     resetRhythmXP: () => {
-                        // TODO: Task 1.4 - Implement full reset
                         set({
                             rhythmXPCalculator: null,
                             rhythmSessionTotals: null,
@@ -3135,7 +3250,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             pendingComboEndBonus: null,
                             pendingGrooveEndBonus: null,
                         });
-                        logger.debug('BeatDetection', 'resetRhythmXP called (stub)');
+                        logger.debug('BeatDetection', 'Rhythm XP state reset');
                     },
                 },
             };

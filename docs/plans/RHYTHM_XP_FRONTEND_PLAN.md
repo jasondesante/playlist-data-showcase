@@ -222,12 +222,12 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   ```
 
 ### 1.4 Implement Store Actions
-- [ ] Implement `initRhythmXP` action
+- [x] Implement `initRhythmXP` action
   - Import config from `rhythmXPConfigStore`
   - Create new `RhythmXPCalculator` with that config
   - Call `startSession()` to initialize session tracking
   - Reset combo counters to 0
-- [ ] Implement `recordRhythmHit` action
+- [x] Implement `recordRhythmHit` action
   - Store `previousComboLength = currentCombo`
   - If accuracy is `miss` or `wrongKey`:
     - Call `processComboEndBonus()` first (uses previousComboLength)
@@ -238,15 +238,15 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   - Call `rhythmXPCalculator.recordHit(accuracy, currentCombo, grooveHotness)`
   - Update `lastRhythmXPResult` state
   - Update `rhythmSessionTotals` from calculator
-- [ ] Implement `processComboEndBonus` action
+- [x] Implement `processComboEndBonus` action
   - If `previousComboLength > 0`:
     - Call `rhythmXPCalculator.calculateComboEndBonus(previousComboLength)`
     - Store in `pendingComboEndBonus`
   - Else return null (no bonus for 0 combo)
-- [ ] Implement `processGrooveEndBonus` action
+- [x] Implement `processGrooveEndBonus` action
   - Call `rhythmXPCalculator.calculateGrooveEndBonus(grooveStats)`
   - Store in `pendingGrooveEndBonus`
-- [ ] Implement session management actions
+- [x] Implement session management actions
   - `getRhythmSessionTotals()` - return snapshot
   - `hasUnclaimedXP()` - return `rhythmSessionTotals?.totalXP > 0`
   - `endRhythmXPSession()` - call endSession() and return final totals
