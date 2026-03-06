@@ -943,6 +943,38 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* Location row with toggle */
+.xp-context-row-location {
+  position: relative;
+  padding-right: 1.75rem; /* Make room for toggle button */
+}
+
+.xp-location-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.125rem;
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xp-location-toggle:hover {
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--foreground));
+}
+
+.xp-location-toggle:active {
+  transform: scale(0.95);
+}
+
 .xp-context-hint {
   font-size: 0.6875rem;
   color: hsl(var(--muted-foreground));

@@ -209,6 +209,30 @@
   color: hsl(var(--primary));
 }
 
+/* Location toggle button in card title */
+.sensor-location-toggle {
+  margin-left: auto;
+  padding: 0.25rem;
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sensor-location-toggle:hover {
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--foreground));
+}
+
+.sensor-location-toggle:active {
+  transform: scale(0.95);
+}
+
 /* GPS card */
 .sensor-gps-card {
   border-color: hsl(217 91% 60% / 0.3);

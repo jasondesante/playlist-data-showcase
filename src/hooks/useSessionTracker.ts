@@ -3,6 +3,7 @@ import { SessionTracker, ListeningSession, PlaylistTrack, EnvironmentalContext, 
 import { useSessionStore } from '@/store/sessionStore';
 import { useAudioPlayerStore } from '@/store/audioPlayerStore';
 import { usePlaylistStore } from '@/store/playlistStore';
+import { useSensorStore } from '@/store/sensorStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 
@@ -114,6 +115,7 @@ let hasRunZombieCleanup = false;
 export const useSessionTracker = () => {
     const { startSession: storeStartSession, endSession: storeEndSession, activeSession, sessionHistory } = useSessionStore();
     const { playbackState, currentUrl } = useAudioPlayerStore();
+    const { environmentalContext, gamingContext } = useSensorStore();
     // Use global singleton tracker instead of per-component instance
     const tracker = globalTracker;
 
@@ -268,9 +270,14 @@ export const useSessionTracker = () => {
                         usePlaylistStore.setState({ selectedTrack: trackFromPlaylist });
                         logger.debug('SessionTracker', 'Auto-starting session after setting selectedTrack', {
                             trackId: trackFromPlaylist.id,
-                            currentUrl
+                            currentUrl,
+                            hasEnvironmentalContext: !!environmentalContext,
+                            hasGamingContext: !!gamingContext
                         });
-                        startSession(trackFromPlaylist.id, trackFromPlaylist);
+                        startSession(trackFromPlaylist.id, trackFromPlaylist, {
+                            environmental_context: environmentalContext || undefined,
+                            gaming_context: gamingContext || undefined
+                        });
                         return;
                     }
                 }
@@ -278,12 +285,17 @@ export const useSessionTracker = () => {
                 logger.debug('SessionTracker', 'Auto-starting session', {
                     trackId: freshSelectedTrack.id,
                     trackTitle: freshSelectedTrack.title,
-                    currentUrl
+                    currentUrl,
+                    hasEnvironmentalContext: !!environmentalContext,
+                    hasGamingContext: !!gamingContext
                 });
-                startSession(freshSelectedTrack.id, freshSelectedTrack);
+                startSession(freshSelectedTrack.id, freshSelectedTrack, {
+                    environmental_context: environmentalContext || undefined,
+                    gaming_context: gamingContext || undefined
+                });
             }
         }
-    }, [playbackState, activeSession, startSession, currentUrl]);
+    }, [playbackState, activeSession, startSession, currentUrl, environmentalContext, gamingContext]);
 
     // Auto-end session when audio pauses or ends
     // This ensures pausing music stops the session and awards XP

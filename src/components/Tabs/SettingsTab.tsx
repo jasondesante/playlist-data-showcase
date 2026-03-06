@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff, ExternalLink, Info } from 'lucide-react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff, ExternalLink, Info, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
@@ -224,6 +224,7 @@ export function SettingsTab() {
   const [discordClientId, setDiscordClientId] = useState(settings.discordClientId);
   const [audioFftSize, setAudioFftSize] = useState(settings.audioFftSize);
   const [verboseLogging, setVerboseLogging] = useState(settings.verboseLogging);
+  const [hideRealLocation, setHideRealLocation] = useState(settings.hideRealLocation);
   const [saveIndicator, setSaveIndicator] = useState<'saved' | 'saving' | null>(null);
   const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
@@ -252,9 +253,10 @@ export function SettingsTab() {
       setDiscordClientId(settings.discordClientId);
       setAudioFftSize(settings.audioFftSize);
       setVerboseLogging(settings.verboseLogging);
+      setHideRealLocation(settings.hideRealLocation);
       isInitialized.current = true;
     }
-  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.verboseLogging]);
+  }, [settings.openWeatherApiKey, settings.steamApiKey, settings.discordClientId, settings.audioFftSize, settings.verboseLogging, settings.hideRealLocation]);
 
   // Sync verbose logging with logger utility
   useEffect(() => {
@@ -307,6 +309,16 @@ export function SettingsTab() {
     setTimeout(() => setSaveIndicator(null), 2000);
     if (checked) {
       logger.info('Settings', 'Verbose logging enabled');
+    }
+  };
+
+  const handleHideRealLocationChange = (checked: boolean) => {
+    setHideRealLocation(checked);
+    updateSettings({ hideRealLocation: checked });
+    setSaveIndicator('saved');
+    setTimeout(() => setSaveIndicator(null), 2000);
+    if (checked) {
+      logger.info('Settings', 'Location privacy mode enabled');
     }
   };
 
@@ -828,6 +840,39 @@ export function SettingsTab() {
               <span className="settings-fft-desc">Detailed, slower (offline)</span>
             </div>
           </div>
+        </Card>
+      </section>
+
+      {/* Privacy Settings Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <EyeOff className="settings-section-icon" />
+          <h2 className="settings-section-title">Privacy</h2>
+        </div>
+        <Card variant="elevated" padding="md" className="settings-debug-card">
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <div className="settings-toggle-label">Hide Real Location</div>
+              <div className="settings-description">
+                Replace your real coordinates with fake ones when displayed. Useful when sharing screenshots to avoid doxxing yourself.
+              </div>
+            </div>
+            <button
+              onClick={() => handleHideRealLocationChange(!hideRealLocation)}
+              className={`settings-toggle ${hideRealLocation ? 'settings-toggle-active' : ''}`}
+              role="switch"
+              aria-checked={hideRealLocation}
+              type="button"
+            >
+              <span className="settings-toggle-slider" />
+            </button>
+          </div>
+          {hideRealLocation && (
+            <div className="settings-verbose-notice">
+              <Check className="settings-verbose-icon" />
+              <span>Location privacy is enabled. Coordinates shown will be fake (18.3002° N, 64.8252° W).</span>
+            </div>
+          )}
         </Card>
       </section>
 

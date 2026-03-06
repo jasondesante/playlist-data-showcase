@@ -39,3 +39,32 @@ export const formatNumber = (num: number): string => {
 export const formatXP = (xp: number): string => {
   return formatNumber(xp) + ' XP';
 };
+
+/**
+ * Fake coordinates used for privacy mode (Epstein's Island)
+ */
+export const FAKE_COORDINATES = {
+  latitude: 18.3002,
+  longitude: -64.8252,
+} as const;
+
+/**
+ * Get coordinates, masking with fake ones if privacy mode is enabled
+ * @param lat - Real latitude
+ * @param lng - Real longitude
+ * @param hideRealLocation - Whether to hide real location
+ * @returns Object with latitude and longitude (real or fake)
+ */
+export const getMaskedCoordinates = (
+  lat: number | undefined | null,
+  lng: number | undefined | null,
+  hideRealLocation: boolean
+): { latitude: number; longitude: number } | { latitude: null; longitude: null } => {
+  if (lat == null || lng == null) {
+    return { latitude: null, longitude: null };
+  }
+  if (hideRealLocation) {
+    return FAKE_COORDINATES;
+  }
+  return { latitude: lat, longitude: lng };
+};

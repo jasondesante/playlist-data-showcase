@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Clock, Music, Zap, Gamepad2, Star, User, TrendingUp, Headphones } from 'lucide-react';
+import { Play, Pause, Clock, Music, Zap, Gamepad2, Star, User, TrendingUp, Headphones, Eye, EyeOff } from 'lucide-react';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useSessionStore } from '../../store/sessionStore';
@@ -9,6 +9,8 @@ import { useCharacterStore } from '../../store/characterStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useSensorStore } from '../../store/sensorStore';
 import { useMastery } from '../../hooks/useMastery';
+import { useAppStore } from '../../store/appStore';
+import { getMaskedCoordinates } from '../../utils/formatters';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatSelectionModal, type StatEffect } from '../StatSelectionModal';
@@ -130,8 +132,12 @@ export function SessionTrackingTab() {
   const { applyPendingStatIncrease } = useCharacterUpdater();
   const { getMasteryInfo, getTrackListenCount } = useMastery();
   const { sessionHistory, clearTrackSessions, getTrackXPTotal } = useSessionStore();
+  const { settings } = useAppStore();
   const [lastSession, setLastSession] = useState<ListeningSession | null>(null);
   const [showStatModal, setShowStatModal] = useState(false);
+
+  // Local state for hiding location (defaults to setting, can be toggled temporarily)
+  const [localHideLocation, setLocalHideLocation] = useState(settings.hideRealLocation);
 
   // Get active character for XP progress display
   const activeCharacter = getActiveCharacter();
@@ -723,11 +729,26 @@ export function SessionTrackingTab() {
                     <h4 className="session-context-title">Environmental Context</h4>
                     <div className="session-context-grid">
                       {lastSession.environmental_context.geolocation && (
-                        <div className="session-context-item">
+                        <div className="session-context-item session-context-item-location">
                           <span className="session-context-label">Location</span>
                           <span className="session-context-value">
-                            {lastSession.environmental_context.geolocation.latitude?.toFixed(4)}, {lastSession.environmental_context.geolocation.longitude?.toFixed(4)}
+                            {(() => {
+                              const coords = getMaskedCoordinates(
+                                lastSession.environmental_context.geolocation.latitude,
+                                lastSession.environmental_context.geolocation.longitude,
+                                localHideLocation
+                              );
+                              return `${coords.latitude?.toFixed(4)}, ${coords.longitude?.toFixed(4)}`;
+                            })()}
                           </span>
+                          <button
+                            onClick={() => setLocalHideLocation(!localHideLocation)}
+                            className="session-context-location-toggle"
+                            title={localHideLocation ? 'Show real location' : 'Hide real location'}
+                            type="button"
+                          >
+                            {localHideLocation ? <EyeOff size={12} /> : <Eye size={12} />}
+                          </button>
                         </div>
                       )}
                       {lastSession.environmental_context.biome && (
@@ -744,7 +765,13 @@ export function SessionTrackingTab() {
                           <span className="session-context-value">
                             {typeof lastSession.environmental_context.weather === 'string'
                               ? lastSession.environmental_context.weather
-                              : 'Recorded'}
+                              : (() => {
+                                  const w = lastSession.environmental_context.weather as { weatherType?: string; temperature?: number };
+                                  const parts: string[] = [];
+                                  if (w.weatherType) parts.push(w.weatherType);
+                                  if (w.temperature !== undefined) parts.push(`${Math.round(w.temperature)}°C`);
+                                  return parts.length > 0 ? parts.join(', ') : 'Recorded';
+                                })()}
                           </span>
                         </div>
                       )}

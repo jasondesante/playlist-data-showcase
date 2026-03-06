@@ -17,6 +17,8 @@ interface AppSettings {
     audioFftSize: number;
     /** Enable verbose console logging for debugging */
     verboseLogging: boolean;
+    /** Hide real location coordinates and show fake ones instead (privacy mode) */
+    hideRealLocation: boolean;
 }
 
 interface AppState {
@@ -39,6 +41,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     audioSampleRate: 44100,
     audioFftSize: 2048,
     verboseLogging: false,
+    hideRealLocation: false,
 };
 
 export const useAppStore = create<AppState>()(

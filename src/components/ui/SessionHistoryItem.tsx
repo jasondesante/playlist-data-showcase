@@ -1,6 +1,8 @@
 import { useState, useMemo, useId, memo } from 'react';
-import { Music, Zap, Gamepad2, MapPin, Sun, Cloud, ChevronDown, ChevronUp, Headphones } from 'lucide-react';
+import { Music, Zap, Gamepad2, MapPin, Sun, Cloud, ChevronDown, ChevronUp, Headphones, Eye, EyeOff } from 'lucide-react';
 import type { ListeningSessionWithTrack } from '@/types';
+import { useAppStore } from '@/store/appStore';
+import { getMaskedCoordinates } from '@/utils/formatters';
 import './SessionHistoryItem.css';
 
 /**
@@ -127,6 +129,9 @@ const SessionHistoryItemComponent = memo(function SessionHistoryItem({
   initiallyExpanded = false
 }: SessionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
+
+  // Local state for hiding location (defaults to setting, can be toggled temporarily)
+  const [localHideLocation, setLocalHideLocation] = useState(() => useAppStore.getState().settings.hideRealLocation);
 
   // Generate unique IDs for accessibility
   const uniqueId = useId();
@@ -306,7 +311,13 @@ const SessionHistoryItemComponent = memo(function SessionHistoryItem({
                     <span className="session-history-item-context-value">
                       {typeof session.environmental_context.weather === 'string'
                         ? session.environmental_context.weather
-                        : 'Recorded'}
+                        : (() => {
+                            const w = session.environmental_context.weather as { weatherType?: string; temperature?: number };
+                            const parts: string[] = [];
+                            if (w.weatherType) parts.push(w.weatherType);
+                            if (w.temperature !== undefined) parts.push(`${Math.round(w.temperature)}°C`);
+                            return parts.length > 0 ? parts.join(', ') : 'Recorded';
+                          })()}
                     </span>
                   </div>
                 )}
@@ -322,13 +333,27 @@ const SessionHistoryItemComponent = memo(function SessionHistoryItem({
                   </div>
                 )}
                 {session.environmental_context.geolocation && (
-                  <div className="session-history-item-context-item">
+                  <div className="session-history-item-context-item session-history-item-location">
                     <MapPin size={12} className="session-history-item-context-icon" />
                     <span className="session-history-item-context-label">Location</span>
                     <span className="session-history-item-context-value">
-                      {session.environmental_context.geolocation.latitude?.toFixed(4)},
-                      {session.environmental_context.geolocation.longitude?.toFixed(4)}
+                      {(() => {
+                        const coords = getMaskedCoordinates(
+                          session.environmental_context.geolocation.latitude,
+                          session.environmental_context.geolocation.longitude,
+                          localHideLocation
+                        );
+                        return `${coords.latitude?.toFixed(4)}, ${coords.longitude?.toFixed(4)}`;
+                      })()}
                     </span>
+                    <button
+                      onClick={() => setLocalHideLocation(!localHideLocation)}
+                      className="session-history-item-location-toggle"
+                      title={localHideLocation ? 'Show real location' : 'Hide real location'}
+                      type="button"
+                    >
+                      {localHideLocation ? <EyeOff size={12} /> : <Eye size={12} />}
+                    </button>
                   </div>
                 )}
               </div>

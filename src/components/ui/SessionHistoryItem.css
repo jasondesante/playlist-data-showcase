@@ -336,6 +336,34 @@
   white-space: nowrap;
 }
 
+/* Location item with toggle */
+.session-history-item-location {
+  grid-column: span 2;
+}
+
+.session-history-item-location-toggle {
+  margin-left: auto;
+  padding: 0.125rem;
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-history-item-location-toggle:hover {
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--foreground));
+}
+
+.session-history-item-location-toggle:active {
+  transform: scale(0.95);
+}
+
 /* ============================================
    RESPONSIVE STYLES
    ============================================ */

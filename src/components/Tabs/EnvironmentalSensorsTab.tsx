@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useEnvironmentalSensors, SevereWeatherAlert } from '../../hooks/useEnvironmentalSensors';
 import { useAppStore } from '../../store/appStore';
+import { getMaskedCoordinates } from '../../utils/formatters';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle, X, Zap as Lightning } from 'lucide-react';
+import { Activity, Navigation, Sun, Cloud, CloudDrizzle, CloudSnow, CloudLightning, Droplets, Wind, AlertTriangle, Settings, Zap, Clock, RefreshCw, XCircle, CheckCircle, AlertCircle, X, Zap as Lightning, Eye, EyeOff } from 'lucide-react';
 import './EnvironmentalSensorsTab.css';
 
 /**
@@ -333,6 +334,9 @@ export function EnvironmentalSensorsTab() {
   const [yData, setYData] = useState<number[]>([]);
   const [zData, setZData] = useState<number[]>([]);
 
+  // Local state for hiding location (defaults to setting, can be toggled temporarily)
+  const [localHideLocation, setLocalHideLocation] = useState(settings.hideRealLocation);
+
   // Track if user has dismissed the current severe weather alert
   const [dismissedAlertAt, setDismissedAlertAt] = useState<number | null>(null);
 
@@ -451,6 +455,14 @@ export function EnvironmentalSensorsTab() {
                 <div className="sensor-card-title">
                   <Navigation size={18} />
                   <span>GPS Location</span>
+                  <button
+                    onClick={() => setLocalHideLocation(!localHideLocation)}
+                    className="sensor-location-toggle"
+                    title={localHideLocation ? 'Show real location' : 'Hide real location'}
+                    type="button"
+                  >
+                    {localHideLocation ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
                 </div>
 
                 {/* Coordinates */}
@@ -458,13 +470,27 @@ export function EnvironmentalSensorsTab() {
                   <div className="sensor-coordinate-item">
                     <span className="sensor-coordinate-label">Latitude</span>
                     <span className="sensor-coordinate-value">
-                      {(environmentalContext as any).geolocation?.latitude?.toFixed(6) ?? 'N/A'}
+                      {(() => {
+                        const coords = getMaskedCoordinates(
+                          (environmentalContext as any).geolocation?.latitude,
+                          (environmentalContext as any).geolocation?.longitude,
+                          localHideLocation
+                        );
+                        return coords.latitude?.toFixed(6) ?? 'N/A';
+                      })()}
                     </span>
                   </div>
                   <div className="sensor-coordinate-item">
                     <span className="sensor-coordinate-label">Longitude</span>
                     <span className="sensor-coordinate-value">
-                      {(environmentalContext as any).geolocation?.longitude?.toFixed(6) ?? 'N/A'}
+                      {(() => {
+                        const coords = getMaskedCoordinates(
+                          (environmentalContext as any).geolocation?.latitude,
+                          (environmentalContext as any).geolocation?.longitude,
+                          localHideLocation
+                        );
+                        return coords.longitude?.toFixed(6) ?? 'N/A';
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -483,11 +509,25 @@ export function EnvironmentalSensorsTab() {
                   <div className="sensor-minimap-pin">
                     <Navigation size={32} />
                     <span className="sensor-minimap-coords">
-                      {(environmentalContext as any).geolocation?.latitude?.toFixed(4) ?? '0.0000'}, {(environmentalContext as any).geolocation?.longitude?.toFixed(4) ?? '0.0000'}
+                      {(() => {
+                        const coords = getMaskedCoordinates(
+                          (environmentalContext as any).geolocation?.latitude,
+                          (environmentalContext as any).geolocation?.longitude,
+                          localHideLocation
+                        );
+                        return `${coords.latitude?.toFixed(4) ?? '0.0000'}, ${coords.longitude?.toFixed(4) ?? '0.0000'}`;
+                      })()}
                     </span>
                   </div>
                   <a
-                    href={`https://www.google.com/maps?q=${(environmentalContext as any).geolocation?.latitude ?? 0},${(environmentalContext as any).geolocation?.longitude ?? 0}`}
+                    href={`https://www.google.com/maps?q=${(() => {
+                      const coords = getMaskedCoordinates(
+                        (environmentalContext as any).geolocation?.latitude,
+                        (environmentalContext as any).geolocation?.longitude,
+                        localHideLocation
+                      );
+                      return `${coords.latitude ?? 0},${coords.longitude ?? 0}`;
+                    })()}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="sensor-maps-link"

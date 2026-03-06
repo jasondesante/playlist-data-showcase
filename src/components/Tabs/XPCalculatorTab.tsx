@@ -6,12 +6,14 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useSessionStore } from '../../store/sessionStore';
 import { useCharacterUpdater } from '../../hooks/useCharacterUpdater';
 import { useMastery } from '../../hooks/useMastery';
+import { useAppStore } from '../../store/appStore';
+import { getMaskedCoordinates } from '../../utils/formatters';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { showToast } from '../ui/Toast';
-import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw, Music } from 'lucide-react';
+import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw, Music, Eye, EyeOff } from 'lucide-react';
 import type { LevelUpDetail } from 'playlist-data-engine';
 import { PrestigeSystem } from '@/types';
 import {
@@ -764,6 +766,10 @@ export function XPCalculatorTab() {
   const { addFakeSessions, clearTrackSessions, getTrackListenCount, getTrackXPTotal } = useSessionStore();
   const { getMasteryInfo } = useMastery();
   const { audioProfile, selectedTrack } = usePlaylistStore();
+  const { settings } = useAppStore();
+
+  // Local state for hiding location (defaults to setting, can be toggled temporarily)
+  const [localHideLocation, setLocalHideLocation] = useState(settings.hideRealLocation);
 
   // Progression config store - for reading and modifying XP multiplier values
   const config = useProgressionConfig();
@@ -1644,12 +1650,26 @@ export function XPCalculatorTab() {
                 )}
 
                 {(environmentalContext as any).geolocation && (
-                  <div className="xp-context-row">
+                  <div className="xp-context-row xp-context-row-location">
                     <span className="xp-context-label">GPS:</span>
                     <span className="xp-context-value">
-                      {(environmentalContext as any).geolocation.latitude?.toFixed(4) || 'N/A'},{' '}
-                      {(environmentalContext as any).geolocation.longitude?.toFixed(4) || 'N/A'}
+                      {(() => {
+                        const coords = getMaskedCoordinates(
+                          (environmentalContext as any).geolocation?.latitude,
+                          (environmentalContext as any).geolocation?.longitude,
+                          localHideLocation
+                        );
+                        return `${coords.latitude?.toFixed(4) || 'N/A'}, ${coords.longitude?.toFixed(4) || 'N/A'}`;
+                      })()}
                     </span>
+                    <button
+                      onClick={() => setLocalHideLocation(!localHideLocation)}
+                      className="xp-location-toggle"
+                      title={localHideLocation ? 'Show real location' : 'Hide real location'}
+                      type="button"
+                    >
+                      {localHideLocation ? <EyeOff size={12} /> : <Eye size={12} />}
+                    </button>
                   </div>
                 )}
 
