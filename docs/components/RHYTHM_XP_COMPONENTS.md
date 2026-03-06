@@ -21,6 +21,13 @@ This document describes the Rhythm XP frontend components that integrate the `pl
 5. [Data Flow](#data-flow)
 6. [Configuration](#configuration)
 7. [Key Concepts](#key-concepts)
+8. [Usage Examples](#usage-examples)
+   - [Complete BeatPracticeView Integration](#complete-beatpracticeview-integration)
+   - [KeyLaneView Integration with Combo Feedback](#keylaneview-integration-with-combo-feedback)
+   - [Custom Configuration Example](#custom-configuration-example)
+   - [Exit Prompt with Unclaimed XP](#exit-prompt-with-unclaimed-xp)
+   - [Configuration Store Selectors Usage](#configuration-store-selectors-usage)
+   - [Handling Bonus Notifications](#handling-bonus-notifications)
 
 ---
 
@@ -618,6 +625,423 @@ Characters are associated with tracks via their seed:
 - Character seed is derived from track ID
 - `character.seed === selectedTrack.id` defines the relationship
 - XP earned during practice is added to the track's character
+
+---
+
+## Usage Examples
+
+### Complete BeatPracticeView Integration
+
+This example shows how to fully integrate Rhythm XP into a practice view component:
+
+```tsx
+import { useCallback, useEffect, useState } from 'react';
+import { useBeatDetectionStore } from '@/store/beatDetectionStore';
+import { useCharacterStore } from '@/store/characterStore';
+import { usePlaylistStore } from '@/store/playlistStore';
+import { RhythmXPStats } from '@/components/ui/RhythmXPStats';
+import { RhythmXPSessionStats } from '@/components/ui/RhythmXPSessionStats';
+import { ComboFeedbackDisplay } from '@/components/ui/ComboFeedbackDisplay';
+import { LevelUpDetailModal } from '@/components/LevelUpDetailModal';
+import { showToast } from '@/components/ui/Toast';
+import type { LevelUpDetail } from '@/types';
+
+function BeatPracticeView() {
+    // Selectors for Rhythm XP state
+    const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
+    const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
+    const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
+    const pendingComboEndBonus = useBeatDetectionStore((state) => state.pendingComboEndBonus);
+    const pendingGrooveEndBonus = useBeatDetectionStore((state) => state.pendingGrooveEndBonus);
+
+    // Actions
+    const initRhythmXP = useBeatDetectionStore((state) => state.actions.initRhythmXP);
+    const recordRhythmHit = useBeatDetectionStore((state) => state.actions.recordRhythmHit);
+    const processGrooveEndBonus = useBeatDetectionStore((state) => state.actions.processGrooveEndBonus);
+    const clearPendingBonuses = useBeatDetectionStore((state) => state.actions.clearPendingBonuses);
+    const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
+    const hasUnclaimedXP = useBeatDetectionStore((state) => state.actions.hasUnclaimedXP);
+
+    // Character store for XP claiming
+    const addRhythmXP = useCharacterStore((state) => state.addRhythmXP);
+    const characters = useCharacterStore((state) => state.characters);
+
+    // Track selection
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+
+    // Level-up modal state
+    const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+    const [levelUpDetails, setLevelUpDetails] = useState<LevelUpDetail[]>([]);
+
+    // Find the character associated with this track
+    const trackCharacter = characters.find(c => c.seed === selectedTrack?.id);
+
+    // Initialize Rhythm XP when practice starts
+    useEffect(() => {
+        initRhythmXP();
+        return () => resetRhythmXP();
+    }, [initRhythmXP, resetRhythmXP]);
+
+    // Handle button tap - record XP
+    const handleTap = useCallback((accuracy: ExtendedBeatAccuracy, grooveResult: GrooveResult) => {
+        // Record the hit and get XP result
+        const xpResult = recordRhythmHit(accuracy, grooveResult.hotness);
+
+        // Check for groove end bonus
+        if (grooveResult.endedGrooveStats) {
+            processGrooveEndBonus(grooveResult.endedGrooveStats);
+        }
+
+        return xpResult;
+    }, [recordRhythmHit, processGrooveEndBonus]);
+
+    // Handle claiming XP with level-up detection
+    const handleClaimXP = useCallback((xp: number) => {
+        if (!trackCharacter) {
+            showToast('No character associated with this track', 'warning');
+            return;
+        }
+
+        const result = addRhythmXP(trackCharacter.seed, xp);
+
+        if (result?.leveledUp) {
+            setShowLevelUpModal(true);
+            setLevelUpDetails(result.levelUpDetails ?? []);
+        } else {
+            showToast(`+${xp.toFixed(1)} XP added to ${trackCharacter.name}`, 'success');
+        }
+
+        resetRhythmXP();
+    }, [trackCharacter, addRhythmXP, resetRhythmXP]);
+
+    return (
+        <div className="beat-practice-view">
+            {/* Header Stats Row */}
+            <div className="beat-practice-header">
+                <RhythmXPStats
+                    sessionTotals={rhythmSessionTotals}
+                    lastResult={lastRhythmXPResult}
+                    currentCombo={currentCombo}
+                />
+            </div>
+
+            {/* Practice Area with Combo Feedback */}
+            <div className="beat-practice-area">
+                <ComboFeedbackDisplay
+                    score={rhythmSessionTotals?.totalScore ?? 0}
+                    combo={currentCombo}
+                    multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
+                />
+                {/* ... practice content ... */}
+            </div>
+
+            {/* Session Stats with Claim Button */}
+            <RhythmXPSessionStats
+                sessionTotals={rhythmSessionTotals}
+                pendingComboBonus={pendingComboEndBonus}
+                pendingGrooveBonus={pendingGrooveEndBonus}
+                onClearBonuses={clearPendingBonuses}
+                onClaimXP={handleClaimXP}
+                hasCharacter={!!trackCharacter}
+            />
+
+            {/* Level-Up Modal */}
+            {showLevelUpModal && (
+                <LevelUpDetailModal
+                    isOpen={showLevelUpModal}
+                    onClose={() => setShowLevelUpModal(false)}
+                    levelUpDetails={levelUpDetails}
+                    characterName={trackCharacter?.name ?? 'Character'}
+                />
+            )}
+        </div>
+    );
+}
+```
+
+### KeyLaneView Integration with Combo Feedback
+
+This example shows how to integrate `ComboFeedbackDisplay` into the DDR-style lane view:
+
+```tsx
+import { ComboFeedbackDisplay } from '@/components/ui/ComboFeedbackDisplay';
+
+interface KeyLaneViewProps {
+    // Props passed from parent (BeatPracticeView)
+    score: number;
+    combo: number;
+    multiplier: number;
+    // ... other props
+}
+
+function KeyLaneView({ score, combo, multiplier, ...otherProps }: KeyLaneViewProps) {
+    const [lastAccuracy, setLastAccuracy] = useState<string | null>(null);
+
+    return (
+        <div className="key-lane-view">
+            {/* Lane lanes */}
+            <div className="key-lane-view-lanes">
+                {/* ... lane content ... */}
+            </div>
+
+            {/* Feedback panel with combo display */}
+            <div className="key-lane-view-feedback">
+                {/* ComboFeedbackDisplay at the top */}
+                <ComboFeedbackDisplay
+                    score={score}
+                    combo={combo}
+                    multiplier={multiplier}
+                    className="key-lane-view-combo-feedback"
+                />
+
+                {/* Accuracy feedback below */}
+                {lastAccuracy && (
+                    <div className={`accuracy-feedback accuracy-feedback--${lastAccuracy}`}>
+                        {lastAccuracy.toUpperCase()}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+```
+
+### Custom Configuration Example
+
+This example shows how to customize the Rhythm XP configuration:
+
+```tsx
+import { useEffect } from 'react';
+import { useRhythmXPConfigActions, useRhythmXPConfig } from '@/store/rhythmXPConfigStore';
+
+function RhythmXPConfigPanel() {
+    const config = useRhythmXPConfig();
+    const {
+        updateBaseXP,
+        updateXPRatio,
+        updateComboConfig,
+        updateGrooveConfig,
+        updateMaxMultiplier,
+        resetConfig,
+        hasCustomConfig,
+        isBaseXPModified
+    } = useRhythmXPConfigActions();
+
+    // Example: Increase perfect points and decrease miss penalty
+    const handleCustomizeForCasual = () => {
+        updateBaseXP('perfect', 15);  // More points for perfect
+        updateBaseXP('miss', -2);      // Small penalty for miss
+        updateXPRatio(0.15);           // Higher XP ratio
+        updateMaxMultiplier(3.0);      // Lower max multiplier
+    };
+
+    // Example: Hardcore mode configuration
+    const handleCustomizeForHardcore = () => {
+        updateBaseXP('perfect', 10);   // Standard points
+        updateBaseXP('great', 5);      // Less for great
+        updateBaseXP('miss', -10);     // Heavy penalty
+        updateXPRatio(0.05);           // Lower XP ratio
+        updateMaxMultiplier(10.0);     // High skill ceiling
+        updateComboConfig({ cap: 10.0 }); // Higher combo cap
+    };
+
+    return (
+        <div className="config-panel">
+            <h3>Current Configuration</h3>
+            <pre>{JSON.stringify(config, null, 2)}</pre>
+
+            {hasCustomConfig() && (
+                <p className="config-modified">Configuration has been customized</p>
+            )}
+
+            <div className="config-presets">
+                <button onClick={handleCustomizeForCasual}>
+                    Casual Mode Preset
+                </button>
+                <button onClick={handleCustomizeForHardcore}>
+                    Hardcore Mode Preset
+                </button>
+                <button onClick={resetConfig}>
+                    Reset to Defaults
+                </button>
+            </div>
+        </div>
+    );
+}
+```
+
+### Exit Prompt with Unclaimed XP
+
+This example shows how to prompt the user when they try to exit with unclaimed XP:
+
+```tsx
+import { useState, useCallback } from 'react';
+import { useBeatDetectionStore } from '@/store/beatDetectionStore';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+
+function BeatPracticeView() {
+    const hasUnclaimedXP = useBeatDetectionStore((state) => state.actions.hasUnclaimedXP);
+    const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
+    const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
+
+    const [showExitPrompt, setShowExitPrompt] = useState(false);
+    const [onExitCallback, setOnExitCallback] = useState<(() => void) | null>(null);
+
+    // Wrap exit handler to check for unclaimed XP
+    const handleExit = useCallback((onExit: () => void) => {
+        if (hasUnclaimedXP()) {
+            setOnExitCallback(() => onExit);
+            setShowExitPrompt(true);
+        } else {
+            onExit();
+        }
+    }, [hasUnclaimedXP]);
+
+    // Discard XP and exit
+    const handleDiscardAndExit = useCallback(() => {
+        resetRhythmXP();
+        setShowExitPrompt(false);
+        onExitCallback?.();
+    }, [resetRhythmXP, onExitCallback]);
+
+    // Claim XP and exit
+    const handleClaimAndExit = useCallback(() => {
+        // Claim XP logic here...
+        handleClaimXP(rhythmSessionTotals?.totalXP ?? 0);
+        setShowExitPrompt(false);
+        onExitCallback?.();
+    }, [rhythmSessionTotals, onExitCallback]);
+
+    return (
+        <>
+            {/* ... main content ... */}
+
+            {/* Exit Prompt Modal */}
+            <Modal
+                isOpen={showExitPrompt}
+                onClose={() => setShowExitPrompt(false)}
+                title="Unclaimed XP"
+            >
+                <div className="exit-prompt">
+                    <p>You have unclaimed XP!</p>
+                    <p className="exit-prompt-xp">
+                        Score: {rhythmSessionTotals?.totalScore ?? 0} |
+                        XP: {(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)}
+                    </p>
+
+                    <div className="exit-prompt-actions">
+                        <Button variant="primary" onClick={handleClaimAndExit}>
+                            Claim & Exit
+                        </Button>
+                        <Button variant="danger" onClick={handleDiscardAndExit}>
+                            Discard & Exit
+                        </Button>
+                        <Button variant="secondary" onClick={() => setShowExitPrompt(false)}>
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+        </>
+    );
+}
+```
+
+### Configuration Store Selectors Usage
+
+This example demonstrates the different ways to access the configuration store:
+
+```tsx
+import {
+    useRhythmXPConfigStore,
+    useRhythmXPConfig,
+    useRhythmXPConfigActions,
+    useRhythmXPConfigMetadata
+} from '@/store/rhythmXPConfigStore';
+
+function ConfigExample() {
+    // Method 1: Get entire store (not recommended for most cases)
+    const entireStore = useRhythmXPConfigStore();
+
+    // Method 2: Get config only (for read-only components)
+    const config = useRhythmXPConfig();
+    console.log('Base XP for perfect:', config.baseXP.perfect);
+
+    // Method 3: Get actions only (for components that only update config)
+    const actions = useRhythmXPConfigActions();
+    // Use actions.updateConfig(), actions.resetConfig(), etc.
+
+    // Method 4: Get metadata (for showing last modified, version info)
+    const metadata = useRhythmXPConfigMetadata();
+    console.log('Config version:', metadata.version);
+    console.log('Last modified:', new Date(metadata.lastModified));
+
+    // Method 5: Direct selector for specific config value (optimized)
+    const xpRatio = useRhythmXPConfigStore((state) => state.config.xpRatio);
+    const comboEnabled = useRhythmXPConfigStore((state) => state.config.combo.enabled);
+
+    return (
+        <div>
+            <p>XP Ratio: {xpRatio}</p>
+            <p>Combo Enabled: {comboEnabled ? 'Yes' : 'No'}</p>
+        </div>
+    );
+}
+```
+
+### Handling Bonus Notifications
+
+This example shows how to properly handle combo and groove end bonus notifications:
+
+```tsx
+import { useBeatDetectionStore } from '@/store/beatDetectionStore';
+import { RhythmXPSessionStats } from '@/components/ui/RhythmXPSessionStats';
+
+function PracticeViewWithBonuses() {
+    const pendingComboEndBonus = useBeatDetectionStore((state) => state.pendingComboEndBonus);
+    const pendingGrooveEndBonus = useBeatDetectionStore((state) => state.pendingGrooveEndBonus);
+    const clearPendingBonuses = useBeatDetectionStore((state) => state.actions.clearPendingBonuses);
+
+    // The RhythmXPSessionStats component handles bonus display automatically:
+    // - Shows combo bonus with "🔥 +X XP (Combo: N hits)"
+    // - Shows groove bonus with "🎵 +X XP (Groove Bonus)"
+    // - Auto-dismisses after 2 seconds
+    // - Calls onClearBonuses when dismissed
+
+    return (
+        <RhythmXPSessionStats
+            sessionTotals={/* ... */}
+            pendingComboBonus={pendingComboEndBonus}
+            pendingGrooveBonus={pendingGrooveEndBonus}
+            onClearBonuses={clearPendingBonuses}
+            onClaimXP={/* ... */}
+            hasCharacter={true}
+        />
+    );
+}
+
+// Manual bonus handling (if not using RhythmXPSessionStats):
+function ManualBonusHandling() {
+    const pendingComboEndBonus = useBeatDetectionStore((state) => state.pendingComboEndBonus);
+    const clearPendingBonuses = useBeatDetectionStore((state) => state.actions.clearPendingBonuses);
+
+    useEffect(() => {
+        if (pendingComboEndBonus) {
+            // Show notification
+            showToast(
+                `🔥 Combo Bonus: +${pendingComboEndBonus.bonusXP.toFixed(1)} XP (${pendingComboEndBonus.comboLength} hits)`,
+                'success'
+            );
+
+            // Clear the pending bonus
+            clearPendingBonuses();
+        }
+    }, [pendingComboEndBonus, clearPendingBonuses]);
+
+    return null;
+}
+```
 
 ---
 
