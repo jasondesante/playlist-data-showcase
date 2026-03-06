@@ -306,11 +306,11 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   - Ensures clean state when user jumps to different part of song
 
 ### 2.6 End Session on Practice Exit (With Prompt)
-- [ ] Add `hasUnclaimedXP` selector
+- [x] Add `hasUnclaimedXP` selector
   ```typescript
   const hasUnclaimedXP = useBeatDetectionStore((state) => state.actions.hasUnclaimedXP);
   ```
-- [ ] Update `handleExit()` callback to prompt user
+- [x] Update `handleExit()` callback to prompt user
   ```typescript
   const handleExit = useCallback(() => {
     if (hasUnclaimedXP()) {
@@ -323,7 +323,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
     }
   }, [hasUnclaimedXP, resetRhythmXP, onExit]);
   ```
-- [ ] Create exit prompt modal with:
+- [x] Create exit prompt modal with:
   - Session summary (Score, XP, Max Combo)
   - "Claim XP" button → calls `handleClaimXP()`, then exits
   - "Discard & Exit" button → calls `resetRhythmXP()`, then exits

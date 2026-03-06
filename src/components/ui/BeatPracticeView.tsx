@@ -238,6 +238,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Rhythm XP actions (Phase 2: Task 2.5 - Reset XP on Seek/Track Change)
   const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
 
+  // Rhythm XP state (Phase 2: Task 2.6 - End Session on Practice Exit)
+  const hasUnclaimedXP = useBeatDetectionStore((state) => state.actions.hasUnclaimedXP);
+  const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
+  const maxCombo = useBeatDetectionStore((state) => state.maxCombo);
+
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
 
@@ -326,6 +331,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // State for difficulty settings panel
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+
+  // State for exit prompt modal (Phase 2: Task 2.6 - End Session on Practice Exit)
+  const [showExitPrompt, setShowExitPrompt] = useState(false);
 
   // Difficulty settings for visual feedback
   const difficultyPreset = useDifficultyPreset();
@@ -598,11 +606,49 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   /**
    * Handle exit practice mode
+   * Phase 2: Task 2.6 - End Session on Practice Exit (With Prompt)
    */
   const handleExit = useCallback(() => {
+    if (hasUnclaimedXP()) {
+      // Show modal with session summary and Claim/Discard options
+      setShowExitPrompt(true);
+    } else {
+      // No XP to claim, exit directly
+      stopPracticeMode();
+      resetRhythmXP();
+      onExit();
+    }
+  }, [hasUnclaimedXP, stopPracticeMode, resetRhythmXP, onExit]);
+
+  /**
+   * Handle claiming XP and exiting (Phase 2: Task 2.6)
+   * Note: Full character integration is in Phase 8, this just ends the session
+   */
+  const handleClaimXPAndExit = useCallback(() => {
+    // For now, just clear the session and exit
+    // Phase 8 will add actual character XP claiming
     stopPracticeMode();
+    resetRhythmXP();
+    setShowExitPrompt(false);
     onExit();
-  }, [stopPracticeMode, onExit]);
+  }, [stopPracticeMode, resetRhythmXP, onExit]);
+
+  /**
+   * Handle discarding XP and exiting (Phase 2: Task 2.6)
+   */
+  const handleDiscardAndExit = useCallback(() => {
+    stopPracticeMode();
+    resetRhythmXP();
+    setShowExitPrompt(false);
+    onExit();
+  }, [stopPracticeMode, resetRhythmXP, onExit]);
+
+  /**
+   * Handle cancel exit (Phase 2: Task 2.6)
+   */
+  const handleCancelExit = useCallback(() => {
+    setShowExitPrompt(false);
+  }, []);
 
   /**
    * Handle beat click for downbeat selection.
@@ -1277,6 +1323,66 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         isOpen={isSettingsPanelOpen}
         onClose={() => setIsSettingsPanelOpen(false)}
       />
+
+      {/* Exit Prompt Modal (Phase 2: Task 2.6 - End Session on Practice Exit) */}
+      {showExitPrompt && (
+        <div
+          className="exit-prompt-overlay"
+          onClick={(e) => e.target === e.currentTarget && handleCancelExit()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="exit-prompt-title"
+        >
+          <div className="exit-prompt-container">
+            <h2 id="exit-prompt-title" className="exit-prompt-title">
+              Session Summary
+            </h2>
+
+            <div className="exit-prompt-summary">
+              <div className="exit-prompt-stat">
+                <span className="exit-prompt-stat-value">{rhythmSessionTotals?.totalScore ?? 0}</span>
+                <span className="exit-prompt-stat-label">Score</span>
+              </div>
+              <div className="exit-prompt-stat exit-prompt-stat--xp">
+                <span className="exit-prompt-stat-value">{(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)}</span>
+                <span className="exit-prompt-stat-label">XP</span>
+              </div>
+              <div className="exit-prompt-stat">
+                <span className="exit-prompt-stat-value">{maxCombo}</span>
+                <span className="exit-prompt-stat-label">Max Combo</span>
+              </div>
+            </div>
+
+            <p className="exit-prompt-message">
+              You have unclaimed XP from this session. What would you like to do?
+            </p>
+
+            <div className="exit-prompt-actions">
+              <button
+                type="button"
+                className="exit-prompt-btn exit-prompt-btn--primary"
+                onClick={handleClaimXPAndExit}
+              >
+                Claim {(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)} XP
+              </button>
+              <button
+                type="button"
+                className="exit-prompt-btn exit-prompt-btn--danger"
+                onClick={handleDiscardAndExit}
+              >
+                Discard & Exit
+              </button>
+              <button
+                type="button"
+                className="exit-prompt-btn exit-prompt-btn--secondary"
+                onClick={handleCancelExit}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
