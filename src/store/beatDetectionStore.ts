@@ -15,6 +15,7 @@ import { persist, createJSONStorage, type PersistStorage, type StorageValue } fr
 import { useShallow } from 'zustand/react/shallow';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
+import { useRhythmXPConfigStore } from './rhythmXPConfigStore';
 import {
     BeatMap,
     BeatMapGeneratorOptions,
@@ -90,7 +91,6 @@ import {
     unifyBeatMap,
     GrooveAnalyzer,
     RhythmXPCalculator,
-    DEFAULT_RHYTHM_XP_CONFIG,
 } from 'playlist-data-engine';
 
 /**
@@ -3144,10 +3144,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     // ============================================================
 
                     initRhythmXP: () => {
-                        // Create a new RhythmXPCalculator with config
-                        // TODO: Once rhythmXPConfigStore is created (Phase 7), get config from there
-                        // For now, use DEFAULT_RHYTHM_XP_CONFIG
-                        const calculator = new RhythmXPCalculator(DEFAULT_RHYTHM_XP_CONFIG);
+                        // Get config from rhythmXPConfigStore
+                        const config = useRhythmXPConfigStore.getState().config;
+
+                        // Create a new RhythmXPCalculator with config from store
+                        const calculator = new RhythmXPCalculator(config);
 
                         // Start the session to initialize tracking
                         calculator.startSession();

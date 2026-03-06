@@ -616,7 +616,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   ```
 
 ### 7.2 Create Rhythm XP Config Section Components
-- [ ] Create Base XP Configuration Card
+- [x] Create Base XP Configuration Card
   - Sliders for each accuracy level:
     - Perfect (default: 10, range: 1-50)
     - Great (default: 7, range: 1-30)
@@ -650,7 +650,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Max Multiplier slider (default: 5.0, range: 1.5-10.0)
 
 ### 7.3 Create Separate Config Store
-- [ ] Create `src/store/rhythmXPConfigStore.ts` (separate from beatDetectionStore)
+- [x] Create `src/store/rhythmXPConfigStore.ts` (separate from beatDetectionStore)
   ```typescript
   interface RhythmXPConfigState {
     config: RhythmXPConfig;
@@ -664,13 +664,13 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Runtime state is ephemeral and session-scoped
   - Separation of concerns: "How should XP be calculated?" vs "What's happening now?"
 
-- [ ] Persist to localStorage
+- [x] Persist to localStorage
   - Key: `rhythm-xp-config`
   - Load on mount, save on change
-- [ ] beatDetectionStore reads config from this store when initializing RhythmXPCalculator
+- [x] beatDetectionStore reads config from this store when initializing RhythmXPCalculator
 
 ### 7.4 Add Reset to Defaults Button
-- [ ] Add button at bottom of Rhythm XP tab
+- [x] Add button at bottom of Rhythm XP tab
   ```tsx
   <button className="xp-config-reset-button" onClick={handleResetRhythmConfig}>
     Reset Rhythm XP to Defaults
@@ -679,7 +679,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [ ] Show confirmation toast on reset
 
 ### 7.5 Style Rhythm XP Config Tab
-- [ ] Create `XPCalculatorTab.css` additions
+- [x] Create `XPCalculatorTab.css` additions
   - Match existing config tab styling
   - Organize into collapsible sections (Base XP, Combo, Groove, Global)
   - Use ConfigSlider component from existing implementation

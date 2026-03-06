@@ -18,7 +18,12 @@ import {
     useProgressionConfig,
     useProgressionConfigActions,
 } from '../../store/progressionConfigStore';
+import {
+    useRhythmXPConfig,
+    useRhythmXPConfigActions,
+} from '../../store/rhythmXPConfigStore';
 import { DEFAULT_PROGRESSION_CONFIG_SETTINGS, type ActivityBonuses } from '@/types';
+import { DEFAULT_RHYTHM_XP_CONFIG } from '@/types';
 import './XPCalculatorTab.css';
 
 /**
@@ -207,6 +212,227 @@ const ConfigSlider = React.memo(function ConfigSlider({
  * - Celebration animation when leveling up
  * - Progression config panel (Phase 3)
  */
+
+/**
+ * RhythmXPConfigSection Component (Task 7.2)
+ *
+ * Configuration UI for Rhythm XP settings including:
+ * - Base XP values for each accuracy level
+ * - XP Ratio (score-to-XP conversion)
+ * - Combo configuration
+ * - Groove configuration
+ * - Global settings
+ */
+function RhythmXPConfigSection() {
+  const rhythmConfig = useRhythmXPConfig();
+  const {
+    updateBaseXP,
+    updateXPRatio,
+    resetConfig,
+    isBaseXPModified,
+  } = useRhythmXPConfigActions();
+
+  return (
+    <div className="xp-config-section">
+      {/* Base XP Configuration Card (Task 7.2) */}
+      <Card variant="default" padding="md" className="xp-config-card">
+        <div className="xp-config-section-header">
+          <Activity size={18} className="xp-config-section-icon" />
+          <h3 className="xp-config-section-title">Base XP Configuration</h3>
+        </div>
+        <div className="xp-config-section-content">
+          {/* Perfect - default: 10, range: 1-50 */}
+          <ConfigSlider
+            label="Perfect"
+            description="Score points for perfect timing"
+            value={rhythmConfig.baseXP.perfect}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.perfect}
+            min={1}
+            max={50}
+            step={1}
+            onChange={(value) => updateBaseXP('perfect', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('perfect')}
+            marks={[
+              { value: 1, label: '1' },
+              { value: 25, label: '25' },
+              { value: 50, label: '50' },
+            ]}
+          />
+
+          {/* Great - default: 7, range: 1-30 */}
+          <ConfigSlider
+            label="Great"
+            description="Score points for great timing"
+            value={rhythmConfig.baseXP.great}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.great}
+            min={1}
+            max={30}
+            step={1}
+            onChange={(value) => updateBaseXP('great', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('great')}
+            marks={[
+              { value: 1, label: '1' },
+              { value: 15, label: '15' },
+              { value: 30, label: '30' },
+            ]}
+          />
+
+          {/* Good - default: 5, range: 1-20 */}
+          <ConfigSlider
+            label="Good"
+            description="Score points for good timing"
+            value={rhythmConfig.baseXP.good}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.good}
+            min={1}
+            max={20}
+            step={1}
+            onChange={(value) => updateBaseXP('good', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('good')}
+            marks={[
+              { value: 1, label: '1' },
+              { value: 10, label: '10' },
+              { value: 20, label: '20' },
+            ]}
+          />
+
+          {/* OK - default: 2, range: 0-10 */}
+          <ConfigSlider
+            label="OK"
+            description="Score points for OK timing"
+            value={rhythmConfig.baseXP.ok}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.ok}
+            min={0}
+            max={10}
+            step={1}
+            onChange={(value) => updateBaseXP('ok', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('ok')}
+            marks={[
+              { value: 0, label: '0' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+            ]}
+          />
+
+          {/* Miss - default: 0, range: -10 to 0 */}
+          <ConfigSlider
+            label="Miss"
+            description="Score penalty for missed beats"
+            value={rhythmConfig.baseXP.miss}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.miss}
+            min={-10}
+            max={0}
+            step={1}
+            onChange={(value) => updateBaseXP('miss', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('miss')}
+            isAdditive
+            marks={[
+              { value: -10, label: '-10' },
+              { value: -5, label: '-5' },
+              { value: 0, label: '0' },
+            ]}
+          />
+
+          {/* Wrong Key - default: 0, range: -10 to 0 */}
+          <ConfigSlider
+            label="Wrong Key"
+            description="Score penalty for wrong key press"
+            value={rhythmConfig.baseXP.wrongKey}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.baseXP.wrongKey}
+            min={-10}
+            max={0}
+            step={1}
+            onChange={(value) => updateBaseXP('wrongKey', value)}
+            formatValue={(v) => `${v} pts`}
+            isModified={isBaseXPModified('wrongKey')}
+            isAdditive
+            marks={[
+              { value: -10, label: '-10' },
+              { value: -5, label: '-5' },
+              { value: 0, label: '0' },
+            ]}
+          />
+
+          {/* XP Ratio - default: 0.1, range: 0.01-1.0 */}
+          <ConfigSlider
+            label="XP Ratio"
+            description="Score-to-XP conversion (10 score × 0.1 = 1 XP)"
+            value={rhythmConfig.xpRatio}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.xpRatio}
+            min={0.01}
+            max={1.0}
+            step={0.01}
+            onChange={updateXPRatio}
+            formatValue={(v) => `${v.toFixed(2)}`}
+            isModified={rhythmConfig.xpRatio !== DEFAULT_RHYTHM_XP_CONFIG.xpRatio}
+            marks={[
+              { value: 0.01, label: '0.01' },
+              { value: 0.5, label: '0.5' },
+              { value: 1.0, label: '1.0' },
+            ]}
+          />
+        </div>
+      </Card>
+
+      {/* Combo Configuration Card (Task 7.2) */}
+      <Card variant="default" padding="md" className="xp-config-card">
+        <div className="xp-config-section-header">
+          <Sparkles size={18} className="xp-config-section-icon" />
+          <h3 className="xp-config-section-title">Combo Configuration</h3>
+        </div>
+        <div className="xp-config-section-content">
+          <p className="xp-config-placeholder">Combo configuration will be added in Task 7.2</p>
+        </div>
+      </Card>
+
+      {/* Groove Configuration Card (Task 7.2) */}
+      <Card variant="default" padding="md" className="xp-config-card">
+        <div className="xp-config-section-header">
+          <Gauge size={18} className="xp-config-section-icon" />
+          <h3 className="xp-config-section-title">Groove Configuration</h3>
+        </div>
+        <div className="xp-config-section-content">
+          <p className="xp-config-placeholder">Groove configuration will be added in Task 7.2</p>
+        </div>
+      </Card>
+
+      {/* Global Settings Card (Task 7.2) */}
+      <Card variant="default" padding="md" className="xp-config-card">
+        <div className="xp-config-section-header">
+          <Crown size={18} className="xp-config-section-icon" />
+          <h3 className="xp-config-section-title">Global Settings</h3>
+        </div>
+        <div className="xp-config-section-content">
+          <p className="xp-config-placeholder">Global settings will be added in Task 7.2</p>
+        </div>
+      </Card>
+
+      {/* Reset Button (Task 7.4) */}
+      <div className="xp-config-reset-section">
+        <button
+          className="xp-config-reset-button"
+          onClick={resetConfig}
+          aria-label="Reset Rhythm XP settings to defaults"
+        >
+          Reset Rhythm XP to Defaults
+        </button>
+      </div>
+
+      {/* Config Info */}
+      <div className="xp-config-info">
+        <span className="xp-config-info-icon">💡</span>
+        <span className="xp-config-info-text">
+          Configure how XP is earned during rhythm practice. Changes affect the beat detection game mode.
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function XPCalculatorTab() {
   const { calculateXP } = useXPCalculator();
   const { environmentalContext, gamingContext } = useSensorStore();
@@ -1596,70 +1822,7 @@ export function XPCalculatorTab() {
 
         {/* Rhythm XP Tab Content (Task 7.1) */}
         {activeTab === 'rhythm' && (
-          <div className="xp-config-section">
-            {/* Base XP Configuration Card (Task 7.2) */}
-            <Card variant="default" padding="md" className="xp-config-card">
-              <div className="xp-config-section-header">
-                <Activity size={18} className="xp-config-section-icon" />
-                <h3 className="xp-config-section-title">Base XP Configuration</h3>
-              </div>
-              <div className="xp-config-section-content">
-                <p className="xp-config-placeholder">Base XP sliders will be added in Task 7.2</p>
-              </div>
-            </Card>
-
-            {/* Combo Configuration Card (Task 7.2) */}
-            <Card variant="default" padding="md" className="xp-config-card">
-              <div className="xp-config-section-header">
-                <Sparkles size={18} className="xp-config-section-icon" />
-                <h3 className="xp-config-section-title">Combo Configuration</h3>
-              </div>
-              <div className="xp-config-section-content">
-                <p className="xp-config-placeholder">Combo configuration will be added in Task 7.2</p>
-              </div>
-            </Card>
-
-            {/* Groove Configuration Card (Task 7.2) */}
-            <Card variant="default" padding="md" className="xp-config-card">
-              <div className="xp-config-section-header">
-                <Gauge size={18} className="xp-config-section-icon" />
-                <h3 className="xp-config-section-title">Groove Configuration</h3>
-              </div>
-              <div className="xp-config-section-content">
-                <p className="xp-config-placeholder">Groove configuration will be added in Task 7.2</p>
-              </div>
-            </Card>
-
-            {/* Global Settings Card (Task 7.2) */}
-            <Card variant="default" padding="md" className="xp-config-card">
-              <div className="xp-config-section-header">
-                <Crown size={18} className="xp-config-section-icon" />
-                <h3 className="xp-config-section-title">Global Settings</h3>
-              </div>
-              <div className="xp-config-section-content">
-                <p className="xp-config-placeholder">Global settings will be added in Task 7.2</p>
-              </div>
-            </Card>
-
-            {/* Reset Button (Task 7.4) */}
-            <div className="xp-config-reset-section">
-              <button
-                className="xp-config-reset-button"
-                disabled
-                aria-label="Reset Rhythm XP settings to defaults"
-              >
-                Reset Rhythm XP to Defaults
-              </button>
-            </div>
-
-            {/* Config Info */}
-            <div className="xp-config-info">
-              <span className="xp-config-info-icon">💡</span>
-              <span className="xp-config-info-text">
-                Configure how XP is earned during rhythm practice. Changes affect the beat detection game mode.
-              </span>
-            </div>
-          </div>
+          <RhythmXPConfigSection />
         )}
 
         {/* Level-Up Detail Modal */}
