@@ -735,9 +735,9 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [x] Added LevelUpDetailModal component to BeatPracticeView
 
 ### 8.4 Level-Up Notification
-- [ ] Reuse existing `LevelUpDetailModal` component
-- [ ] Show on level-up after claiming XP
-- [ ] Display new level, HP increase, stat increases
+- [x] Reuse existing `LevelUpDetailModal` component
+- [x] Show on level-up after claiming XP
+- [x] Display new level, HP increase, stat increases
 
 ---
 
