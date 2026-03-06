@@ -369,6 +369,12 @@ function RhythmXPConfigSection() {
   // Local state for combo formula preset (since formula is a function, we store the preset name)
   const [comboFormulaPreset, setComboFormulaPreset] = useState<ComboFormulaPreset>('default');
 
+  // Handle reset to defaults with confirmation toast (Task 7.4)
+  const handleResetRhythmConfig = useCallback(() => {
+    resetConfig();
+    showToast('Rhythm XP settings reset to defaults', 'success');
+  }, [resetConfig]);
+
   // Handle combo formula preset change
   const handleComboFormulaChange = useCallback((preset: ComboFormulaPreset) => {
     setComboFormulaPreset(preset);
@@ -732,7 +738,7 @@ function RhythmXPConfigSection() {
       <div className="xp-config-reset-section">
         <button
           className="xp-config-reset-button"
-          onClick={resetConfig}
+          onClick={handleResetRhythmConfig}
           aria-label="Reset Rhythm XP settings to defaults"
         >
           Reset Rhythm XP to Defaults

@@ -676,7 +676,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     Reset Rhythm XP to Defaults
   </button>
   ```
-- [ ] Show confirmation toast on reset
+- [x] Show confirmation toast on reset
 
 ### 7.5 Style Rhythm XP Config Tab
 - [x] Create `XPCalculatorTab.css` additions
