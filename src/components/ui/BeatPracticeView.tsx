@@ -57,6 +57,7 @@ import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
 import { GrooveStats } from './GrooveStats';
 import { RhythmXPStats } from './RhythmXPStats';
+import { RhythmXPSessionStats } from './RhythmXPSessionStats';
 import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
@@ -248,6 +249,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Rhythm XP state (Phase 3: Task 3.3 - Real-Time XP Display)
   const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
   const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
+
+  // Rhythm XP state (Phase 4: Task 4.5 - Session Stats)
+  const pendingComboEndBonus = useBeatDetectionStore((state) => state.pendingComboEndBonus);
+  const pendingGrooveEndBonus = useBeatDetectionStore((state) => state.pendingGrooveEndBonus);
+  const clearPendingBonuses = useBeatDetectionStore((state) => state.actions.clearPendingBonuses);
 
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
@@ -655,6 +661,18 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const handleCancelExit = useCallback(() => {
     setShowExitPrompt(false);
   }, []);
+
+  /**
+   * Handle claiming XP from session stats (Phase 4: Task 4.5)
+   * This claims XP without exiting the practice mode.
+   * Note: Phase 8 will add actual character XP claiming.
+   */
+  const handleClaimXP = useCallback((xp: number) => {
+    // For now, just log and reset the session
+    // Phase 8 will add actual character XP claiming
+    logger.info('BeatDetection', 'XP claimed from session', { xp });
+    resetRhythmXP();
+  }, [resetRhythmXP]);
 
   /**
    * Handle beat click for downbeat selection.
@@ -1239,6 +1257,16 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       {/* Tap Statistics - Using dedicated TapStats component */}
       <TapStats />
+
+      {/* Rhythm XP Session Stats (Phase 4: Task 4.5) */}
+      <RhythmXPSessionStats
+        sessionTotals={rhythmSessionTotals}
+        pendingComboBonus={pendingComboEndBonus}
+        pendingGrooveBonus={pendingGrooveEndBonus}
+        onClearBonuses={clearPendingBonuses}
+        onClaimXP={handleClaimXP}
+        hasCharacter={false}
+      />
 
       {/* Groove Session Stats (Phase 5: Task 5.6) */}
       {(bestGrooveHotness > 0 || bestGrooveStreak > 0) && (

@@ -523,8 +523,8 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Resets session totals after claiming
 
 ### 4.5 Integrate into BeatPracticeView Bottom Section
-- [ ] Add `RhythmXPSessionStats` below TapStats component
-- [ ] Wire up selectors
+- [x] Add `RhythmXPSessionStats` below TapStats component
+- [x] Wire up selectors:
   ```typescript
   const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
   const pendingComboEndBonus = useBeatDetectionStore((state) => state.pendingComboEndBonus);
