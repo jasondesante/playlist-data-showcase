@@ -1647,9 +1647,9 @@ constructor(beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap, audioCon
 
 | Preset | Perfect | Great | Good | Ok |
 |--------|---------|-------|------|-----|
-| Easy | ±75ms | ±125ms | ±175ms | ±250ms |
-| Medium | ±45ms | ±90ms | ±135ms | ±200ms |
-| Hard | ±10ms | ±25ms | ±50ms | ±100ms |
+| Easy | ±35ms | ±70ms | ±110ms | ±150ms |
+| Medium | ±10ms | ±25ms | ±50ms | ±100ms |
+| Hard | ±8ms | ±20ms | ±40ms | ±75ms |
 
 ### Beat Key Helper Functions
 
@@ -2496,9 +2496,9 @@ The `SubdivisionBeatEvent` includes:
 | `DEFAULT_BEATMAP_GENERATOR_OPTIONS` | See above | Default BeatMapGenerator options |
 | `DEFAULT_BEATSTREAM_OPTIONS` | See above | Default BeatStream options |
 | `BEAT_ACCURACY_THRESHOLDS` | Same as `HARD_ACCURACY_THRESHOLDS` | Accuracy thresholds in seconds (**deprecated**, use `HARD_ACCURACY_THRESHOLDS` or `getAccuracyThresholdsForPreset()`) |
-| `EASY_ACCURACY_THRESHOLDS` | `{ perfect: 0.075, great: 0.125, good: 0.175, ok: 0.250 }` | Easy difficulty thresholds (±75ms, ±125ms, ±175ms, ±250ms) |
-| `MEDIUM_ACCURACY_THRESHOLDS` | `{ perfect: 0.045, great: 0.090, good: 0.135, ok: 0.200 }` | Medium difficulty thresholds (±45ms, ±90ms, ±135ms, ±200ms) |
-| `HARD_ACCURACY_THRESHOLDS` | `{ perfect: 0.010, great: 0.025, good: 0.050, ok: 0.100 }` | Hard difficulty thresholds (±10ms, ±25ms, ±50ms, ±100ms) |
+| `EASY_ACCURACY_THRESHOLDS` | `{ perfect: 0.035, great: 0.070, good: 0.110, ok: 0.150 }` | Easy difficulty thresholds (±35ms, ±70ms, ±110ms, ±150ms) |
+| `MEDIUM_ACCURACY_THRESHOLDS` | `{ perfect: 0.010, great: 0.025, good: 0.050, ok: 0.100 }` | Medium difficulty thresholds (±10ms, ±25ms, ±50ms, ±100ms) |
+| `HARD_ACCURACY_THRESHOLDS` | `{ perfect: 0.008, great: 0.020, good: 0.040, ok: 0.075 }` | Hard difficulty thresholds (±8ms, ±20ms, ±40ms, ±75ms) |
 | `getAccuracyThresholdsForPreset(preset)` | Returns `AccuracyThresholds` | Get thresholds for a difficulty preset (`'easy'`, `'medium'`, `'hard'`, `'custom'`) |
 | `validateThresholds(thresholds)` | Returns `ThresholdValidationResult` | Validate custom thresholds for correctness (checks positive values and ascending order) |
 | `BEAT_DETECTION_VERSION` | `'1.0.0'` | Algorithm version |

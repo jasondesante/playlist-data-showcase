@@ -357,35 +357,35 @@ export type DifficultyPreset = 'easy' | 'medium' | 'hard' | 'custom';
 
 /**
  * Easy difficulty thresholds - forgiving timing for casual players.
- * Perfect window: ±75ms
+ * Perfect window: ±35ms
  */
 export const EASY_ACCURACY_THRESHOLDS: AccuracyThresholds = {
-    perfect: 0.075,  // ±75ms
-    great: 0.125,    // ±125ms
-    good: 0.175,     // ±175ms
-    ok: 0.250,       // ±250ms
+    perfect: 0.035,  // ±35ms
+    great: 0.070,    // ±70ms
+    good: 0.110,     // ±110ms
+    ok: 0.150,       // ±150ms
 };
 
 /**
  * Medium difficulty thresholds - balanced timing.
- * Perfect window: ±45ms
- */
-export const MEDIUM_ACCURACY_THRESHOLDS: AccuracyThresholds = {
-    perfect: 0.045,  // ±45ms
-    great: 0.090,    // ±90ms
-    good: 0.135,     // ±135ms
-    ok: 0.200,       // ±200ms
-};
-
-/**
- * Hard difficulty thresholds - strict timing for veterans.
  * Perfect window: ±10ms
  */
-export const HARD_ACCURACY_THRESHOLDS: AccuracyThresholds = {
+export const MEDIUM_ACCURACY_THRESHOLDS: AccuracyThresholds = {
     perfect: 0.010,  // ±10ms
     great: 0.025,    // ±25ms
     good: 0.050,     // ±50ms
     ok: 0.100,       // ±100ms
+};
+
+/**
+ * Hard difficulty thresholds - strict timing for veterans.
+ * Perfect window: ±8ms
+ */
+export const HARD_ACCURACY_THRESHOLDS: AccuracyThresholds = {
+    perfect: 0.008,  // ±8ms
+    great: 0.020,    // ±20ms
+    good: 0.040,     // ±40ms
+    ok: 0.075,       // ±75ms
 };
 
 /**
