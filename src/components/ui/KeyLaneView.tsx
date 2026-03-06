@@ -21,6 +21,7 @@
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { cn } from '@/utils/cn';
 import { KeyLane, getLanesForStyle, type LaneBeat } from './KeyLane';
+import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import type {
     ChartStyle,
     SupportedKey,
@@ -65,6 +66,12 @@ export interface KeyLaneViewProps {
     lastTapOffsetMs?: number | null;
     /** Callback when user clicks/drags to seek in the lane area */
     onSeek?: (time: number) => void;
+    /** Current session score for ComboFeedbackDisplay (Phase 3.5: Task 3.5.3) */
+    score?: number;
+    /** Current combo count for ComboFeedbackDisplay (Phase 3.5: Task 3.5.3) */
+    combo?: number;
+    /** Current XP multiplier for ComboFeedbackDisplay (Phase 3.5: Task 3.5.3) */
+    multiplier?: number;
 }
 
 /**
@@ -259,6 +266,9 @@ export function KeyLaneView({
     lastHitBeatTimestamp,
     lastTapOffsetMs,
     onSeek,
+    score = 0,
+    combo = 0,
+    multiplier = 1.0,
 }: KeyLaneViewProps) {
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -675,8 +685,16 @@ export function KeyLaneView({
                     );
                 })}
 
-                {/* Tap feedback panel - shows accuracy and timing offset */}
+                {/* Tap feedback panel - shows combo/stats and accuracy feedback */}
                 <div className="key-lane-view-feedback">
+                    {/* Combo feedback display (Phase 3.5: Task 3.5.3) - always visible */}
+                    <ComboFeedbackDisplay
+                        score={score}
+                        combo={combo}
+                        multiplier={multiplier}
+                    />
+
+                    {/* Accuracy feedback - shows accuracy rating and timing offset */}
                     {lastAccuracy && lastTapOffsetMs !== null && lastTapOffsetMs !== undefined ? (
                         <div
                             key={`${lastAccuracy}-${lastTapOffsetMs}-${lastHitBeatTimestamp}`}

@@ -421,7 +421,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Match existing `key-lane-view-feedback` styling
 
 ### 3.5.3 Integrate into KeyLaneView Feedback Panel
-- [ ] Update `src/components/ui/KeyLaneView.tsx`
+- [x] Update `src/components/ui/KeyLaneView.tsx`
   - Add `ComboFeedbackDisplay` ABOVE the existing accuracy feedback
   - Current layout:
     ```
@@ -433,16 +433,9 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     12 hits | 1.2x
     PERFECT +15ms
     ```
-- [ ] Wire to store (combo from store, NOT from lastRhythmXPResult.breakdown):
-  ```typescript
-  const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
-  const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
-  const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
-
-  const score = rhythmSessionTotals?.totalScore ?? 0;
-  const combo = currentCombo;  // From store, separate from groove streak
-  const multiplier = lastRhythmXPResult?.totalMultiplier ?? 1.0;
-  ```
+- [x] Wire to store (combo from store, NOT from lastRhythmXPResult.breakdown):
+  - Props passed from BeatPracticeView: score, combo, multiplier
+  - BeatPracticeView accesses: rhythmSessionTotals, currentCombo, lastRhythmXPResult from store
 
 ### 3.5.4 Add to TapArea Mode
 - [ ] Update `src/components/ui/BeatPracticeView.tsx`

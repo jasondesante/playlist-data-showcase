@@ -1219,6 +1219,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
             lastTapOffsetMs={lastTapResult ? Math.round(lastTapResult.offset * 1000) : null}
             onSeek={handleSeek}
+            score={rhythmSessionTotals?.totalScore ?? 0}
+            combo={currentCombo}
+            multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
           />
         </>
       )}
