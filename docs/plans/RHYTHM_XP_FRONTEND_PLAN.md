@@ -755,7 +755,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Auto-dismiss with fade out
 
 ### 9.3 Add Level-Up Celebration
-- [ ] Level-up notification when character levels up after claiming XP
+- [x] Level-up notification when character levels up after claiming XP
   - Full-screen celebration overlay
   - New level display
   - Stats increase summary
