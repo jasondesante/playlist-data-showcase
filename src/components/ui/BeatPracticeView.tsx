@@ -231,6 +231,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Rhythm XP actions (Phase 2: Task 2.1 - Initialize Rhythm XP)
   const initRhythmXP = useBeatDetectionStore((state) => state.actions.initRhythmXP);
 
+  // Rhythm XP actions (Phase 2: Task 2.2 - Record XP on Each Hit)
+  const recordRhythmHit = useBeatDetectionStore((state) => state.actions.recordRhythmHit);
+  const processGrooveEndBonus = useBeatDetectionStore((state) => state.actions.processGrooveEndBonus);
+
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
 
@@ -467,7 +471,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Record groove hit (Phase 5: Task 5.2 - Wire Up Groove Recording)
       // Pass offset, BPM, currentTime (audio time from beat map), and accuracy
       // Required: accuracy 'miss' or 'wrongKey' will decrease hotness
-      recordGrooveHit(result.offset, currentBpm, result.matchedBeat.timestamp, result.accuracy);
+      const grooveResult = recordGrooveHit(result.offset, currentBpm, result.matchedBeat.timestamp, result.accuracy);
+
+      // Record XP (Phase 2: Task 2.2 - Record XP on Each Hit)
+      // This also handles combo tracking internally
+      recordRhythmHit(result.accuracy, grooveResult.hotness);
+
+      // Check for groove end bonus (Phase 2: Task 2.4 - Handle Groove End Bonus)
+      // If present, groove just ended (hotness=0 or direction changed)
+      if (grooveResult.endedGrooveStats) {
+        processGrooveEndBonus(grooveResult.endedGrooveStats);
+      }
 
       // Phase 5: Task 5.3 - Post-Hit Lookback for Missed Beats
       // After recording the hit, look back at beats between previous hit and current hit
@@ -524,7 +538,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         return newHistory.slice(0, MAX_DEBUG_HISTORY);
       });
     }
-  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap]);
+  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap, recordRhythmHit, processGrooveEndBonus]);
 
   // Keep handleTapRef updated with the latest handleTap function
   // This allows the keyboard hook callback to call the latest handleTap
