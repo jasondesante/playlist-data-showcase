@@ -360,6 +360,7 @@ function RhythmXPConfigSection() {
     updateBaseXP,
     updateXPRatio,
     updateComboConfig,
+    updateGrooveConfig,
     resetConfig,
     isBaseXPModified,
   } = useRhythmXPConfigActions();
@@ -596,7 +597,105 @@ function RhythmXPConfigSection() {
           <h3 className="xp-config-section-title">Groove Configuration</h3>
         </div>
         <div className="xp-config-section-content">
-          <p className="xp-config-placeholder">Groove configuration will be added in Task 7.2</p>
+          {/* Per-Hit Multiplier Toggle */}
+          <ConfigToggle
+            label="Per-Hit Groove Multiplier"
+            description="Add bonus multiplier based on current hotness to each hit"
+            checked={rhythmConfig.groove.perHitMultiplier}
+            defaultChecked={DEFAULT_RHYTHM_XP_CONFIG.groove.perHitMultiplier}
+            onChange={(perHitMultiplier) => updateGrooveConfig({ perHitMultiplier })}
+            isModified={rhythmConfig.groove.perHitMultiplier !== DEFAULT_RHYTHM_XP_CONFIG.groove.perHitMultiplier}
+          />
+
+          {/* Per-Hit Scale Slider - only visible when perHitMultiplier is enabled */}
+          {rhythmConfig.groove.perHitMultiplier && (
+            <ConfigSlider
+              label="Per-Hit Scale"
+              description="Scale factor for groove bonus (100% hotness × scale = bonus multiplier)"
+              value={rhythmConfig.groove.perHitScale}
+              defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.perHitScale}
+              min={0.1}
+              max={2.0}
+              step={0.1}
+              onChange={(perHitScale) => updateGrooveConfig({ perHitScale })}
+              formatValue={(v) => `${v.toFixed(1)}`}
+              isModified={rhythmConfig.groove.perHitScale !== DEFAULT_RHYTHM_XP_CONFIG.groove.perHitScale}
+              marks={[
+                { value: 0.1, label: '0.1' },
+                { value: 1.0, label: '1.0' },
+                { value: 2.0, label: '2.0' },
+              ]}
+            />
+          )}
+
+          {/* Groove End Bonus Toggle */}
+          <ConfigToggle
+            label="Groove End Bonus"
+            description="Award bonus XP when a groove ends (hotness drops to 0)"
+            checked={rhythmConfig.groove.endBonus.enabled}
+            defaultChecked={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.enabled}
+            onChange={(enabled) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, enabled } })}
+            isModified={rhythmConfig.groove.endBonus.enabled !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.enabled}
+          />
+
+          {/* Weight Sliders - only visible when endBonus is enabled */}
+          {rhythmConfig.groove.endBonus.enabled && (
+            <>
+              <ConfigSlider
+                label="Max Streak Weight"
+                description="How much groove streak length affects the end bonus"
+                value={rhythmConfig.groove.endBonus.maxStreakWeight}
+                defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.maxStreakWeight}
+                min={0}
+                max={1}
+                step={0.1}
+                onChange={(maxStreakWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, maxStreakWeight } })}
+                formatValue={(v) => v.toFixed(1)}
+                isModified={rhythmConfig.groove.endBonus.maxStreakWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.maxStreakWeight}
+                marks={[
+                  { value: 0, label: '0' },
+                  { value: 0.5, label: '0.5' },
+                  { value: 1, label: '1' },
+                ]}
+              />
+
+              <ConfigSlider
+                label="Avg Hotness Weight"
+                description="How much average hotness affects the end bonus"
+                value={rhythmConfig.groove.endBonus.avgHotnessWeight}
+                defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.avgHotnessWeight}
+                min={0}
+                max={1}
+                step={0.1}
+                onChange={(avgHotnessWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, avgHotnessWeight } })}
+                formatValue={(v) => v.toFixed(1)}
+                isModified={rhythmConfig.groove.endBonus.avgHotnessWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.avgHotnessWeight}
+                marks={[
+                  { value: 0, label: '0' },
+                  { value: 0.5, label: '0.5' },
+                  { value: 1, label: '1' },
+                ]}
+              />
+
+              <ConfigSlider
+                label="Duration Weight"
+                description="How much groove duration affects the end bonus"
+                value={rhythmConfig.groove.endBonus.durationWeight}
+                defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.durationWeight}
+                min={0}
+                max={1}
+                step={0.1}
+                onChange={(durationWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, durationWeight } })}
+                formatValue={(v) => v.toFixed(1)}
+                isModified={rhythmConfig.groove.endBonus.durationWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.durationWeight}
+                marks={[
+                  { value: 0, label: '0' },
+                  { value: 0.5, label: '0.5' },
+                  { value: 1, label: '1' },
+                ]}
+              />
+            </>
+          )}
         </div>
       </Card>
 

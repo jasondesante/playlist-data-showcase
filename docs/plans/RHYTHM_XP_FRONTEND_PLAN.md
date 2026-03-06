@@ -637,7 +637,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - End Bonus Enable/Disable toggle
   - End Bonus Formula (combo × multiplier, default 2)
 
-- [ ] Create Groove Configuration Card
+- [x] Create Groove Configuration Card
   - Per-Hit Multiplier Enable/Disable toggle
   - Per-Hit Scale slider (default: 1.0, range: 0.1-2.0)
   - End Bonus Enable/Disable toggle
