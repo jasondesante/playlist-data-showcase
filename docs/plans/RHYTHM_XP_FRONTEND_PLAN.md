@@ -62,7 +62,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
 ## Phase 1: Core Types & State Setup
 
 ### 1.1 Add Rhythm XP Types to Frontend
-- [ ] Add type exports to `src/types/index.ts`
+- [x] Add type exports to `src/types/index.ts`
   ```typescript
   // Type exports (for interfaces)
   export type {

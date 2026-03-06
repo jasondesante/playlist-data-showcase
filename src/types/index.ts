@@ -73,7 +73,15 @@ export type {
     PrestigeInfo,
     PrestigeResult,
     CustomThresholds,
-    ISessionTracker
+    ISessionTracker,
+
+    // Rhythm XP System
+    RhythmXPConfig,
+    RhythmXPResult,
+    RhythmSessionTotals,
+    ComboEndBonusResult,
+    GrooveEndBonusResult,
+    GrooveStats
 } from 'playlist-data-engine';
 
 // Re-export prestige system class, constants and helper functions
@@ -92,6 +100,13 @@ export {
 export {
     GrooveAnalyzer,
     DEFAULT_GROOVE_OPTIONS
+} from 'playlist-data-engine';
+
+// Re-export Rhythm XP calculator and helpers
+export {
+    RhythmXPCalculator,
+    DEFAULT_RHYTHM_XP_CONFIG,
+    mergeRhythmXPConfig
 } from 'playlist-data-engine';
 
 import type { ListeningSession } from 'playlist-data-engine';
