@@ -184,6 +184,37 @@
 }
 
 /* ============================================
+   COMBO RESET ANIMATION (Phase 3.5: Task 3.5.5)
+   ============================================ */
+
+/**
+ * Animation played when combo breaks (miss or wrongKey).
+ * Provides visual feedback that the streak has ended.
+ */
+.combo-feedback--reset {
+    animation: combo-reset 0.3s ease-out;
+}
+
+@keyframes combo-reset {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    30% {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+    60% {
+        opacity: 0.7;
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ============================================
    SCREEN READER ONLY (Accessibility)
    ============================================ */
 
@@ -267,7 +298,8 @@
 
     .combo-feedback-combo--epic,
     .combo-feedback-multiplier--red,
-    .combo-feedback-multiplier--gold {
+    .combo-feedback-multiplier--gold,
+    .combo-feedback--reset {
         animation: none;
     }
 }

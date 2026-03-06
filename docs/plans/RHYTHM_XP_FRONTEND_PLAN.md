@@ -444,10 +444,10 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Same wire-up as lane mode (score, combo, multiplier)
 
 ### 3.5.5 Handle Combo Reset
-- [ ] Combo resets to 0 when accuracy is `miss` or `wrongKey`
-- [ ] Score persists (doesn't reset on combo break)
-- [ ] Display briefly shows "0 hits | 1.0x" after reset
-- [ ] Smooth animation for reset (fade out/in)
+- [x] Combo resets to 0 when accuracy is `miss` or `wrongKey`
+- [x] Score persists (doesn't reset on combo break)
+- [x] Display briefly shows "0 hits | 1.0x" after reset
+- [x] Smooth animation for reset (fade out/in)
 
 ### 3.5.6 Accessibility
 - [ ] Add ARIA live region for combo/multiplier changes

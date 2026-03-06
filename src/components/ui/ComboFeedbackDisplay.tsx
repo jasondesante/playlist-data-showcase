@@ -5,8 +5,10 @@
  * Shows Score, Combo count, and XP Multiplier - always visible during practice.
  *
  * Phase 3.5: Task 3.5.1 - Combo UI in Lane Feedback Panel
+ * Phase 3.5: Task 3.5.5 - Handle Combo Reset with animations
  */
 
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/utils/cn';
 import './ComboFeedbackDisplay.css';
 
@@ -63,11 +65,31 @@ export function ComboFeedbackDisplay({
     multiplier,
     className,
 }: ComboFeedbackDisplayProps) {
+    // Track previous combo for reset animation (Phase 3.5: Task 3.5.5)
+    const [showResetAnimation, setShowResetAnimation] = useState(false);
+    const previousComboRef = useRef(combo);
+
+    useEffect(() => {
+        // Detect combo reset: previous combo was > 0, now it's 0
+        if (previousComboRef.current > 0 && combo === 0) {
+            setShowResetAnimation(true);
+            // Clear animation after it plays
+            const timer = setTimeout(() => {
+                setShowResetAnimation(false);
+            }, 300); // Match animation duration in CSS
+            return () => clearTimeout(timer);
+        }
+        previousComboRef.current = combo;
+    }, [combo]);
+
     const multiplierClass = getMultiplierClass(multiplier);
     const comboClass = getComboClass(combo);
 
+    // Add reset animation class when combo breaks
+    const resetClass = showResetAnimation ? 'combo-feedback--reset' : '';
+
     return (
-        <div className={cn('combo-feedback-display', className)}>
+        <div className={cn('combo-feedback-display', resetClass, className)}>
             {/* Score - for gameplay achievement */}
             <div className="combo-feedback-score">
                 <span className="combo-feedback-score-label">Score</span>
