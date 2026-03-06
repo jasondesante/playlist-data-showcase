@@ -24,6 +24,12 @@ interface ComboFeedbackDisplayProps {
 }
 
 /**
+ * Multiplier milestone thresholds for accessibility announcements
+ * Announced when multiplier crosses these thresholds going UP
+ */
+const MULTIPLIER_MILESTONES = [2, 3, 4, 5] as const;
+
+/**
  * Format a number with commas for display
  */
 function formatScore(num: number): string {
@@ -69,6 +75,10 @@ export function ComboFeedbackDisplay({
     const [showResetAnimation, setShowResetAnimation] = useState(false);
     const previousComboRef = useRef(combo);
 
+    // Track multiplier milestone announcements (Phase 3.5: Task 3.5.6)
+    const [milestoneAnnouncement, setMilestoneAnnouncement] = useState<string>('');
+    const lastAnnouncedMilestoneRef = useRef<number>(0);
+
     useEffect(() => {
         // Detect combo reset: previous combo was > 0, now it's 0
         if (previousComboRef.current > 0 && combo === 0) {
@@ -81,6 +91,26 @@ export function ComboFeedbackDisplay({
         }
         previousComboRef.current = combo;
     }, [combo]);
+
+    // Detect multiplier milestone achievements (Phase 3.5: Task 3.5.6)
+    useEffect(() => {
+        // Find the highest milestone we've reached
+        const reachedMilestone = [...MULTIPLIER_MILESTONES]
+            .reverse()
+            .find(milestone => multiplier >= milestone);
+
+        if (reachedMilestone && reachedMilestone > lastAnnouncedMilestoneRef.current) {
+            // New milestone reached - announce it
+            lastAnnouncedMilestoneRef.current = reachedMilestone;
+            setMilestoneAnnouncement(`${reachedMilestone}x multiplier reached!`);
+
+            // Clear announcement after screen reader has had time to process
+            const timer = setTimeout(() => {
+                setMilestoneAnnouncement('');
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [multiplier]);
 
     const multiplierClass = getMultiplierClass(multiplier);
     const comboClass = getComboClass(combo);
@@ -118,6 +148,19 @@ export function ComboFeedbackDisplay({
             <div role="status" aria-live="polite" className="sr-only">
                 Score: {formatScore(score)}, Combo: {combo} hits, Multiplier: {formatMultiplier(multiplier)}
             </div>
+
+            {/* Accessibility: Milestone announcements (Phase 3.5: Task 3.5.6) */}
+            {/* aria-atomic ensures the entire content is announced, not just changes */}
+            {milestoneAnnouncement && (
+                <div
+                    role="alert"
+                    aria-live="assertive"
+                    aria-atomic="true"
+                    className="sr-only"
+                >
+                    {milestoneAnnouncement}
+                </div>
+            )}
         </div>
     );
 }

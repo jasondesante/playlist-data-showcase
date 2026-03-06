@@ -450,9 +450,9 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [x] Smooth animation for reset (fade out/in)
 
 ### 3.5.6 Accessibility
-- [ ] Add ARIA live region for combo/multiplier changes
-- [ ] Announce multiplier milestones (2x, 3x, 4x, 5x)
-- [ ] Screen reader summary includes score
+- [x] Add ARIA live region for combo/multiplier changes
+- [x] Announce multiplier milestones (2x, 3x, 4x, 5x)
+- [x] Screen reader summary includes score
   ```typescript
   <div role="status" aria-live="polite" className="sr-only">
     Score: {score}, Combo: {combo} hits, Multiplier: {multiplier}x
