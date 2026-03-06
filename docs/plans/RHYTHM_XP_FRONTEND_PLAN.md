@@ -690,29 +690,19 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 8: Character System Integration
 
 ### 8.1 Track-Character Relationship
-- [ ] Understand existing track-character relationship
+- [x] Understand existing track-character relationship
   - Character is generated from track audio profile
   - Character seed is derived from track ID
   - Active character during practice = character for current track
 
 ### 8.2 Add Rhythm XP to Character Store
-- [ ] Import `CharacterUpdater` from engine in `characterStore.ts`
-- [ ] Add `addRhythmXP` action to character store
-  ```typescript
-  addRhythmXP: (characterSeed: string, totalXP: number) => {
-    const character = getCharacterBySeed(characterSeed);
-    if (!character) return null;
-
-    const updater = new CharacterUpdater();
-    // Single source 'rhythm_game' at surface level
-    // Detailed breakdown preserved in RhythmSessionTotals
-    const result = updater.addXP(character, totalXP, 'rhythm_game');
-
-    // Update character in store
-    // Handle level-up events
-    return result;
-  }
-  ```
+- [x] Import `CharacterUpdater` and `StatManager` from engine in `characterStore.ts`
+- [x] Add `addRhythmXP` action to character store
+  - Uses StatManager with 'dnD5e_smart' strategy
+  - Calls updater.addXP() with source 'rhythm_game'
+  - Returns Omit<CharacterUpdateResult, 'masteredTrack' | 'masteryBonusXP'> | null
+  - Updates character in store
+  - Logs level-up events
 
 ### 8.3 Claim XP Handler
 - [ ] Implement `handleClaimXP` in BeatPracticeView or RhythmXPSessionStats

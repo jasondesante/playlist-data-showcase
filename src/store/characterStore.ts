@@ -5,7 +5,7 @@ import type { PrestigeInfo, PrestigeResult } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 import type { StatIncreaseStrategyType } from '@/components/ui/StatStrategySelector';
-import { CharacterUpdater, PrestigeSystem, type ISessionTracker } from 'playlist-data-engine';
+import { CharacterUpdater, PrestigeSystem, StatManager, type ISessionTracker, type CharacterUpdateResult } from 'playlist-data-engine';
 import { DEFAULT_XP_FORMULA_PRESET_ID } from '@/constants/xpFormulaPresets';
 
 // Internal state for track restoration retry logic (module-scoped, not persisted)
@@ -316,6 +316,16 @@ interface CharacterState {
      * @returns True if successful, false if character not found or invalid level
      */
     setPrestigeLevel: (characterId: string, prestigeLevel: number) => boolean;
+    /**
+     * Add Rhythm XP to a character.
+     * Called when user claims XP from a rhythm practice session.
+     * Uses the engine's CharacterUpdater.addXP() with source 'rhythm_game'.
+     *
+     * @param characterSeed - The seed (track ID) of the character to add XP to
+     * @param totalXP - Total XP to add from the rhythm session
+     * @returns Result with updated character and level-up details, or null if character not found
+     */
+    addRhythmXP: (characterSeed: string, totalXP: number) => Omit<CharacterUpdateResult, 'masteredTrack' | 'masteryBonusXP'> | null;
 }
 
 export const useCharacterStore = create<CharacterState>()(
@@ -935,6 +945,56 @@ export const useCharacterStore = create<CharacterState>()(
                     newLevel: prestigeLevel
                 });
                 return true;
+            },
+
+            addRhythmXP: (characterSeed: string, totalXP: number) => {
+                const character = get().characters.find((c) => c.seed === characterSeed);
+                if (!character) {
+                    logger.warn('Store', 'Character not found for rhythm XP', { characterSeed });
+                    return null;
+                }
+
+                logger.info('Store', 'Adding rhythm XP to character', {
+                    characterSeed,
+                    characterName: character.name,
+                    totalXP
+                });
+
+                try {
+                    // Use StatManager with smart strategy for rhythm game XP
+                    const statManager = new StatManager({ strategy: 'dnD5e_smart' });
+                    const updater = new CharacterUpdater(statManager);
+
+                    // Add XP with 'rhythm_game' source
+                    const result = updater.addXP(character, totalXP, 'rhythm_game');
+
+                    // Update character in store
+                    set((state) => ({
+                        characters: state.characters.map((c) =>
+                            c.seed === characterSeed ? result.character : c
+                        )
+                    }));
+
+                    if (result.leveledUp) {
+                        logger.info('Store', 'Character leveled up from rhythm XP!', {
+                            characterSeed,
+                            characterName: result.character.name,
+                            newLevel: result.newLevel,
+                            xpEarned: result.xpEarned
+                        });
+                    }
+
+                    return {
+                        character: result.character,
+                        xpEarned: result.xpEarned,
+                        leveledUp: result.leveledUp,
+                        newLevel: result.newLevel,
+                        levelUpDetails: result.levelUpDetails
+                    };
+                } catch (error) {
+                    logger.error('Store', 'Failed to add rhythm XP', { characterSeed, error });
+                    return null;
+                }
             }
         }),
         {
