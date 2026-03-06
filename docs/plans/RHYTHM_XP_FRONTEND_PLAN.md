@@ -537,17 +537,16 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 5: GrooveMeter Bonus Display
 
 ### 5.1 Add Bonus Display Next to GrooveMeter
-- [ ] Create `GrooveBonusDisplay` sub-component or inline display
+- [x] Create `GrooveBonusDisplay` sub-component or inline display
   - Position immediately adjacent to GrooveMeter
   - Show pending groove end bonus when available
   - Small animated indicator: "+X XP" with sparkle effect
-- [ ] Style integration
+- [x] Style integration
   - Match GrooveMeter visual language
   - Use same color scheme (hotness-based coloring)
   - Compact non-intrusive design
-
 ### 5.2 Update GrooveMeter Component
-- [ ] Add optional `pendingBonus` prop to GrooveMeter
+- [x] Add optional `pendingBonus` prop to GrooveMeter
   ```typescript
   interface GrooveMeterProps {
     // ... existing props ...
@@ -555,7 +554,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     onBonusDisplayed?: () => void;
   }
   ```
-- [ ] Display bonus animation when `pendingBonus` is set
+- [x] Display bonus animation when `pendingBonus` is set
   - Show XP gained from groove
   - Animate in sync with groove visual feedback
 

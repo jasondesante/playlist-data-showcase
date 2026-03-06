@@ -11,15 +11,17 @@
  * - Streak counter display
  * - Compact variant for inline display next to timeline
  * - Accessible with screen reader announcements for state changes
+ * - Groove end bonus display with sparkle animation
  *
  * Part of Phase 3: Task 3.1 - Create GrooveMeter Component
  * Part of Phase 7: Task 7.2 - Add Direction Change Animations
+ * Part of Phase 5: Task 5.1 - Add Bonus Display Next to GrooveMeter
  * Success Criterion: UI is responsive and accessible
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../utils/cn';
-import type { GrooveDirection } from '@/types';
+import type { GrooveDirection, GrooveEndBonusResult } from '@/types';
 import './GrooveMeter.css';
 
 export interface GrooveMeterProps {
@@ -31,6 +33,10 @@ export interface GrooveMeterProps {
   streak: number;
   /** Visual variant - full for KeyLane mode, compact for TapArea mode */
   variant?: 'full' | 'compact';
+  /** Pending groove end bonus to display (Phase 5: Task 5.1) */
+  pendingBonus?: GrooveEndBonusResult | null;
+  /** Callback when bonus has been displayed (for clearing state) */
+  onBonusDisplayed?: () => void;
   /** Optional className for additional styling */
   className?: string;
 }
@@ -75,6 +81,8 @@ export function GrooveMeter({
   direction,
   streak,
   variant = 'full',
+  pendingBonus,
+  onBonusDisplayed,
   className,
 }: GrooveMeterProps) {
   const directionInfo = getDirectionInfo(direction);
@@ -88,6 +96,26 @@ export function GrooveMeter({
   // Track hotness milestones for screen reader announcements
   const prevHotnessRef = useRef(hotness);
   const [announcement, setAnnouncement] = useState<string | null>(null);
+
+  // Track displayed bonus for animation (Phase 5: Task 5.1)
+  const [displayedBonus, setDisplayedBonus] = useState<GrooveEndBonusResult | null>(null);
+  const bonusKeyRef = useRef(0);
+
+  // Handle pending bonus - show and auto-dismiss (Phase 5: Task 5.1)
+  useEffect(() => {
+    if (pendingBonus) {
+      setDisplayedBonus(pendingBonus);
+      bonusKeyRef.current += 1;
+
+      // Auto-dismiss after 2 seconds
+      const timeout = setTimeout(() => {
+        setDisplayedBonus(null);
+        onBonusDisplayed?.();
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [pendingBonus, onBonusDisplayed]);
 
   // Detect direction changes and trigger animation
   useEffect(() => {
@@ -220,6 +248,26 @@ export function GrooveMeter({
             <span className="groove-meter__streak-label" aria-hidden="true">streak</span>
           </div>
         </div>
+
+        {/* Groove End Bonus Display (Phase 5: Task 5.1) */}
+        {displayedBonus && (
+          <div
+            className="groove-meter__bonus"
+            key={`bonus-${bonusKeyRef.current}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="groove-meter__bonus-icon" aria-hidden="true">✨</span>
+            <div className="groove-meter__bonus-content">
+              <span className="groove-meter__bonus-xp">
+                +{displayedBonus.bonusXP.toFixed(1)} XP
+              </span>
+              <span className="groove-meter__bonus-detail">
+                Groove Complete!
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

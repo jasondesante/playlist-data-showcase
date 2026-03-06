@@ -1028,6 +1028,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             direction={grooveState.pocketDirection}
             streak={grooveState.streakLength}
             variant="compact"
+            pendingBonus={pendingGrooveEndBonus}
+            onBonusDisplayed={clearPendingBonuses}
           />
         </div>
       )}
@@ -1235,6 +1237,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
               direction={grooveState.pocketDirection}
               streak={grooveState.streakLength}
               variant="full"
+              pendingBonus={pendingGrooveEndBonus}
+              onBonusDisplayed={clearPendingBonuses}
             />
           )}
           <KeyLaneView
