@@ -57,6 +57,7 @@ import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
 import { GrooveStats } from './GrooveStats';
 import { RhythmXPStats } from './RhythmXPStats';
+import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
 
@@ -1188,15 +1189,25 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       {/* Practice View - TapArea or KeyLane based on view mode */}
       {keyLaneViewMode === 'off' ? (
-        <TapArea
-          onTap={handleTap}
-          isActive={streamIsActive}
-          lastTapResult={lastTapResult}
-          showFeedback={showFeedback}
-          feedbackDuration={500}
-          onFeedbackComplete={hideTapFeedback}
-          showTooFast={showTooFast}
-        />
+        <>
+          {/* ComboFeedbackDisplay for TapArea mode (Phase 3.5: Task 3.5.4) */}
+          <div className="beat-practice-combo-feedback-row">
+            <ComboFeedbackDisplay
+              score={rhythmSessionTotals?.totalScore ?? 0}
+              combo={currentCombo}
+              multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
+            />
+          </div>
+          <TapArea
+            onTap={handleTap}
+            isActive={streamIsActive}
+            lastTapResult={lastTapResult}
+            showFeedback={showFeedback}
+            feedbackDuration={500}
+            onFeedbackComplete={hideTapFeedback}
+            showTooFast={showTooFast}
+          />
+        </>
       ) : (
         <>
           {/* GrooveMeter for KeyLane mode - above lanes (Phase 5: Task 5.5) */}

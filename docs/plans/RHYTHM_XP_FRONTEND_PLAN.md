@@ -438,7 +438,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - BeatPracticeView accesses: rhythmSessionTotals, currentCombo, lastRhythmXPResult from store
 
 ### 3.5.4 Add to TapArea Mode
-- [ ] Update `src/components/ui/BeatPracticeView.tsx`
+- [x] Update `src/components/ui/BeatPracticeView.tsx`
   - Add `ComboFeedbackDisplay` in TapArea mode (when `keyLaneViewMode === 'off'`)
   - Position near GrooveMeter or in similar feedback area
   - Same wire-up as lane mode (score, combo, multiplier)
