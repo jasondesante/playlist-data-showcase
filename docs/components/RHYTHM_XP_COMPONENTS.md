@@ -916,10 +916,135 @@ Detailed breakdown is preserved internally in `RhythmSessionTotals`:
 
 ### Track-Character Relationship
 
-Characters are associated with tracks via their seed:
-- Character seed is derived from track ID
-- `character.seed === selectedTrack.id` defines the relationship
-- XP earned during practice is added to the track's character
+Characters are uniquely associated with tracks through a deterministic seed-based relationship. This is a core concept in the Rhythm XP system that ensures XP earned during practice is attributed to the correct character.
+
+#### How the Relationship Works
+
+When a character is generated from a track:
+1. The track's `id` becomes the character's `seed`
+2. This creates a 1:1 mapping: `character.seed === track.id`
+3. The same track always produces the same character (deterministic generation)
+
+```typescript
+// Character generation from a track
+const character = await generateCharacter(audioProfile, track.id, 'uncapped', track);
+// character.seed === track.id  // Always true
+```
+
+#### Finding the Character for a Track
+
+To find the character associated with a track during practice:
+
+```typescript
+import { usePlaylistStore } from '@/store/playlistStore';
+import { useCharacterStore } from '@/store/characterStore';
+
+function BeatPracticeView() {
+    const selectedTrack = usePlaylistStore((state) => state.selectedTrack);
+    const characters = useCharacterStore((state) => state.characters);
+
+    // Find the character whose seed matches the track ID
+    const trackCharacter = selectedTrack
+        ? characters.find((c) => c.seed === selectedTrack.id)
+        : null;
+
+    const hasCharacter = !!trackCharacter;
+}
+```
+
+#### Claiming XP to the Track's Character
+
+When a user claims XP earned during practice, it's added to the track's associated character:
+
+```typescript
+const addRhythmXP = useCharacterStore((state) => state.addRhythmXP);
+
+const handleClaimXP = useCallback((xp: number) => {
+    if (!trackCharacter) {
+        showToast('No character associated with this track', 'warning');
+        return;
+    }
+
+    // Add XP using the character's seed (which equals the track ID)
+    const result = addRhythmXP(trackCharacter.seed, xp);
+
+    if (result?.leveledUp) {
+        // Show level-up celebration
+        setShowLevelUpModal(true);
+        setLevelUpDetails(result.levelUpDetails);
+    } else {
+        showToast(`+${xp.toFixed(1)} XP added to ${trackCharacter.name}`, 'success');
+    }
+
+    // Reset session after claiming
+    resetRhythmXP();
+}, [trackCharacter, addRhythmXP, resetRhythmXP]);
+```
+
+#### What If No Character Exists?
+
+If a track has no associated character:
+- The `hasCharacter` flag is `false`
+- The "Claim XP" button is disabled
+- A warning message is shown if the user tries to claim
+
+```typescript
+// UI shows disabled state when no character exists
+<RhythmXPSessionStats
+    sessionTotals={rhythmSessionTotals}
+    onClaimXP={handleClaimXP}
+    hasCharacter={hasCharacter}  // Disables button when false
+/>
+```
+
+#### Character Generation Flow
+
+1. **Track Selection**: User selects a track from the playlist
+2. **Audio Analysis**: The track's audio profile is analyzed
+3. **Character Generation**: A character is generated using the track ID as seed
+4. **One Character Per Track**: If a character already exists for this track, it's replaced
+
+```typescript
+// From useCharacterGenerator.ts
+// Enforce "one character per track" by clearing existing characters
+if (track) {
+    clearTrackCharacters(track.id);
+}
+addOrUpdateCharacter(character);
+```
+
+#### Key Implementation Details
+
+| Aspect | Detail |
+|--------|--------|
+| **Seed Source** | `character.seed = track.id` |
+| **Lookup Method** | `characters.find(c => c.seed === selectedTrack.id)` |
+| **XP Claim Target** | The character whose seed matches the current track |
+| **XP Source Label** | `'rhythm_game'` (used in character history) |
+| **Constraint** | One character per track (regenerating replaces existing) |
+
+#### Diagram: Track-Character-XP Flow
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Track Selected │────▶│ Audio Analysis   │────▶│ Character Gen   │
+│  (track.id)     │     │ (AudioProfile)   │     │ (seed=track.id) │
+└─────────────────┘     └──────────────────┘     └────────┬────────┘
+                                                          │
+                                                          ▼
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  XP Claimed     │◀────│ Session Totals   │◀────│ Practice Mode   │
+│  (to character) │     │ (totalXP)        │     │ (hit recording) │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ addRhythmXP(character.seed, totalXP)                            │
+│   → character.seed === track.id                                 │
+│   → XP added with source 'rhythm_game'                          │
+│   → May trigger level-up if XP threshold reached                │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
