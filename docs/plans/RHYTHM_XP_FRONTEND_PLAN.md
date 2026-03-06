@@ -766,11 +766,11 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 10: Testing & Documentation
 
 ### 10.1 Unit Tests
-- [ ] Test XP calculation accuracy with various configs
-- [ ] Test combo multiplier behavior (separate from groove streak)
-- [ ] Test groove end bonus calculation
-- [ ] Test session totals tracking
-- [ ] Test config persistence
+- [x] Test XP calculation accuracy with various configs
+- [x] Test combo multiplier behavior (separate from groove streak)
+- [x] Test groove end bonus calculation
+- [x] Test session totals tracking
+- [x] Test config persistence
 
 ### 10.2 Integration Tests
 - [ ] Test full practice session flow
