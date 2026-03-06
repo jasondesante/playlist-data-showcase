@@ -77,6 +77,7 @@ import {
     RhythmSessionTotals,
     ComboEndBonusResult,
     GrooveEndBonusResult,
+    GrooveStats,  // For groove end bonus parameter (Phase 1: Task 1.3)
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -1038,6 +1039,79 @@ interface BeatDetectionActions {
      * @param streak - The streak value to compare
      */
     updateBestGroove: (hotness: number, streak: number) => void;
+
+    // ============================================================
+    // Rhythm XP Actions (Phase 1: Task 1.3)
+    // NOTE: Config actions are in rhythmXPConfigStore, not here
+    // ============================================================
+
+    /**
+     * Initialize the RhythmXPCalculator for a practice session.
+     * Creates a new calculator with config from rhythmXPConfigStore
+     * and calls startSession().
+     */
+    initRhythmXP: () => void;
+
+    /**
+     * Record a hit in the XP calculator.
+     * Called after each button press during practice mode.
+     * Updates currentCombo and lastRhythmXPResult.
+     * @param accuracy - The accuracy rating from the button press
+     * @param grooveHotness - Current groove hotness (0-100)
+     * @returns RhythmXPResult with score/XP breakdown
+     */
+    recordRhythmHit: (
+        accuracy: ExtendedBeatAccuracy,
+        grooveHotness: number
+    ) => RhythmXPResult | null;
+
+    /**
+     * Process combo end bonus.
+     * Called when combo breaks (miss or wrongKey).
+     * Uses previousComboLength to calculate bonus.
+     * @returns ComboEndBonusResult for display
+     */
+    processComboEndBonus: () => ComboEndBonusResult | null;
+
+    /**
+     * Process groove end bonus.
+     * Called when grooveResult.endedGrooveStats is present.
+     * @param grooveStats - The ended groove stats from GrooveResult
+     * @returns GrooveEndBonusResult for display
+     */
+    processGrooveEndBonus: (grooveStats: GrooveStats) => GrooveEndBonusResult | null;
+
+    /**
+     * Get current session totals for UI display.
+     * @returns Current RhythmSessionTotals snapshot
+     */
+    getRhythmSessionTotals: () => RhythmSessionTotals | null;
+
+    /**
+     * Check if there is unclaimed XP in the current session.
+     * Used to prompt user on exit.
+     * @returns true if totalXP > 0
+     */
+    hasUnclaimedXP: () => boolean;
+
+    /**
+     * End the rhythm XP session and get final totals.
+     * Called when user confirms they want to claim XP.
+     * @returns Final RhythmSessionTotals
+     */
+    endRhythmXPSession: () => RhythmSessionTotals | null;
+
+    /**
+     * Clear pending bonus notifications.
+     * Called after UI displays the bonus.
+     */
+    clearPendingBonuses: () => void;
+
+    /**
+     * Reset rhythm XP state (session only, not config).
+     * Called on track change, practice mode restart, or after claiming XP.
+     */
+    resetRhythmXP: () => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -2991,6 +3065,77 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 bestStreak: newBestStreak,
                             });
                         }
+                    },
+
+                    // ============================================================
+                    // Rhythm XP Actions (Phase 1: Task 1.3 - Stub implementations)
+                    // Full implementations will be added in Task 1.4
+                    // ============================================================
+
+                    initRhythmXP: () => {
+                        // TODO: Task 1.4 - Implement full initialization
+                        logger.debug('BeatDetection', 'initRhythmXP called (stub)');
+                    },
+
+                    recordRhythmHit: (
+                        accuracy: ExtendedBeatAccuracy,
+                        grooveHotness: number
+                    ): RhythmXPResult | null => {
+                        // TODO: Task 1.4 - Implement full hit recording
+                        logger.debug('BeatDetection', 'recordRhythmHit called (stub)', { accuracy, grooveHotness });
+                        return null;
+                    },
+
+                    processComboEndBonus: (): ComboEndBonusResult | null => {
+                        // TODO: Task 1.4 - Implement combo end bonus calculation
+                        logger.debug('BeatDetection', 'processComboEndBonus called (stub)');
+                        return null;
+                    },
+
+                    processGrooveEndBonus: (grooveStats: GrooveStats): GrooveEndBonusResult | null => {
+                        // TODO: Task 1.4 - Implement groove end bonus calculation
+                        logger.debug('BeatDetection', 'processGrooveEndBonus called (stub)', { grooveStats });
+                        return null;
+                    },
+
+                    getRhythmSessionTotals: (): RhythmSessionTotals | null => {
+                        // TODO: Task 1.4 - Implement session totals retrieval
+                        return get().rhythmSessionTotals;
+                    },
+
+                    hasUnclaimedXP: (): boolean => {
+                        // TODO: Task 1.4 - Implement XP check
+                        const totals = get().rhythmSessionTotals;
+                        return totals !== null && totals.totalXP > 0;
+                    },
+
+                    endRhythmXPSession: (): RhythmSessionTotals | null => {
+                        // TODO: Task 1.4 - Implement session end
+                        logger.debug('BeatDetection', 'endRhythmXPSession called (stub)');
+                        return get().rhythmSessionTotals;
+                    },
+
+                    clearPendingBonuses: () => {
+                        // TODO: Task 1.4 - Implement bonus clearing
+                        set({
+                            pendingComboEndBonus: null,
+                            pendingGrooveEndBonus: null,
+                        });
+                    },
+
+                    resetRhythmXP: () => {
+                        // TODO: Task 1.4 - Implement full reset
+                        set({
+                            rhythmXPCalculator: null,
+                            rhythmSessionTotals: null,
+                            lastRhythmXPResult: null,
+                            currentCombo: 0,
+                            maxCombo: 0,
+                            previousComboLength: 0,
+                            pendingComboEndBonus: null,
+                            pendingGrooveEndBonus: null,
+                        });
+                        logger.debug('BeatDetection', 'resetRhythmXP called (stub)');
                     },
                 },
             };

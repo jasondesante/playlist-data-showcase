@@ -145,7 +145,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   ```
 
 ### 1.3 Add Rhythm XP Actions to Store
-- [ ] Add actions to `BeatDetectionActions` interface
+- [x] Add actions to `BeatDetectionActions` interface
   ```typescript
   // ============================================================
   // Rhythm XP Actions (Phase 1: Task 1.3)
