@@ -464,7 +464,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 4: XP Session Stats (Bottom Section)
 
 ### 4.1 Create RhythmXPSessionStats Component
-- [ ] Create `src/components/ui/RhythmXPSessionStats.tsx`
+- [x] Create `src/components/ui/RhythmXPSessionStats.tsx`
   ```typescript
   interface RhythmXPSessionStatsProps {
     /** Current session totals */
@@ -481,7 +481,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     hasCharacter: boolean;
   }
   ```
-- [ ] Display section similar to TapStats component
+- [x] Display section similar to TapStats component
   - **Total Score / Total XP** summary row (both values always visible)
   - **Accuracy Distribution** (perfect/great/good/ok/miss counts)
   - **Max Combo** achieved
@@ -489,24 +489,24 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - **Claim XP Button** - shows XP amount to claim, adds to track's character
 
 ### 4.2 Create RhythmXPSessionStats Styles
-- [ ] Create `src/components/ui/RhythmXPSessionStats.css`
+- [x] Create `src/components/ui/RhythmXPSessionStats.css`
   - Match existing `TapStats` and `GrooveStats` styling
   - Bonus notification animations (slide in, fade out)
   - Claim button styling (primary action)
   - Responsive grid layout
 
 ### 4.3 Bonus Notification Display
-- [ ] Show combo end bonus notification
+- [x] Show combo end bonus notification
   - Display when `pendingComboBonus` is set
   - Show: "+X XP (Combo: N hits)"
   - Auto-dismiss after 2 seconds, then call `clearPendingBonuses()`
-- [ ] Show groove end bonus notification
+- [x] Show groove end bonus notification
   - Display when `pendingGrooveBonus` is set
   - Show: "+X XP (Groove: Y% avg hotness)"
   - Auto-dismiss after 2 seconds, then call `clearPendingBonuses()`
 
 ### 4.4 Claim XP Button
-- [ ] Add "Claim XP" button to session stats
+- [x] Add "Claim XP" button to session stats
   - Only enabled if `hasCharacter` is true
   - **Shows both Score AND XP**:
     ```
