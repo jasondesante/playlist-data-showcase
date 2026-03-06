@@ -1,6 +1,7 @@
 /* ============================================
    RHYTHM XP STATS - Header Bar Stats Display
    Phase 3: Task 3.1 - Real-Time XP Display
+   Phase 9: Task 9.1 - Hit Feedback Animations
    ============================================ */
 
 .rhythm-xp-stats {
@@ -51,6 +52,103 @@
     color: hsl(var(--cute-purple));
     transform: scale(1.1);
     animation: multiplier-pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Phase 9: Task 9.1 - Hit Feedback Animations
+   ============================================ */
+
+/* Pulse animation on XP/Score change */
+.rhythm-xp-pulse {
+    animation: rhythm-xp-pulse-effect 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-pulse-effect {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Accuracy-based color flashes */
+.rhythm-xp-flash--perfect {
+    animation: rhythm-xp-flash-perfect 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-flash-perfect {
+    0% {
+        color: hsl(142, 76%, 80%);
+        text-shadow: 0 0 8px hsl(142, 76%, 60%);
+    }
+    100% {
+        color: inherit;
+        text-shadow: none;
+    }
+}
+
+.rhythm-xp-flash--great {
+    animation: rhythm-xp-flash-great 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-flash-great {
+    0% {
+        color: hsl(160, 70%, 75%);
+        text-shadow: 0 0 6px hsl(160, 70%, 55%);
+    }
+    100% {
+        color: inherit;
+        text-shadow: none;
+    }
+}
+
+.rhythm-xp-flash--good {
+    animation: rhythm-xp-flash-good 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-flash-good {
+    0% {
+        color: hsl(45, 90%, 75%);
+        text-shadow: 0 0 6px hsl(45, 90%, 55%);
+    }
+    100% {
+        color: inherit;
+        text-shadow: none;
+    }
+}
+
+.rhythm-xp-flash--ok {
+    animation: rhythm-xp-flash-ok 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-flash-ok {
+    0% {
+        color: hsl(35, 80%, 75%);
+        text-shadow: 0 0 5px hsl(35, 80%, 55%);
+    }
+    100% {
+        color: inherit;
+        text-shadow: none;
+    }
+}
+
+.rhythm-xp-flash--miss {
+    animation: rhythm-xp-flash-miss 0.3s ease-out;
+}
+
+@keyframes rhythm-xp-flash-miss {
+    0% {
+        color: hsl(0, 70%, 70%);
+        text-shadow: 0 0 6px hsl(0, 70%, 50%);
+    }
+    100% {
+        color: inherit;
+        text-shadow: none;
+    }
 }
 
 @keyframes multiplier-pulse {

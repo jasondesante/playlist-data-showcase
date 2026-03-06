@@ -744,7 +744,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 9: UI Polish & Animations
 
 ### 9.1 Add Hit Feedback Animations
-- [ ] Animate XP gain on each hit in header stats
+- [x] Animate XP gain on each hit in header stats
   - Pulse effect on XP value change
   - Color flash based on accuracy (green for perfect, etc.)
 

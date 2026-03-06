@@ -5,8 +5,10 @@
  * Shows Score, XP, Combo, and Multiplier - always visible during practice.
  *
  * Phase 3: Task 3.1 - Real-Time XP Display (Header Bar)
+ * Phase 9: Task 9.1 - Hit Feedback Animations
  */
 
+import { useEffect, useState, useRef } from 'react';
 import type { RhythmSessionTotals, RhythmXPResult } from '../../types';
 import './RhythmXPStats.css';
 
@@ -45,6 +47,11 @@ export function RhythmXPStats({
     lastResult,
     currentCombo,
 }: RhythmXPStatsProps) {
+    // Track previous XP value to detect changes (Phase 9: Task 9.1)
+    const prevXPRef = useRef(0);
+    const [showPulse, setShowPulse] = useState(false);
+    const [lastAccuracy, setLastAccuracy] = useState<string | null>(null);
+
     // Extract values from session totals (use defaults if null)
     const totalScore = sessionTotals?.totalScore ?? 0;
     const totalXP = sessionTotals?.totalXP ?? 0;
@@ -52,11 +59,49 @@ export function RhythmXPStats({
     // Get current multiplier from last result (or default to 1.0)
     const currentMultiplier = lastResult?.totalMultiplier ?? 1.0;
 
+    // Detect XP changes and trigger animation (Phase 9: Task 9.1)
+    useEffect(() => {
+        if (totalXP !== prevXPRef.current && totalXP > prevXPRef.current) {
+            // XP increased - trigger pulse animation
+            setShowPulse(true);
+            if (lastResult?.breakdown?.accuracy) {
+                setLastAccuracy(lastResult.breakdown.accuracy);
+            }
+            // Reset animation after it plays
+            const timer = setTimeout(() => {
+                setShowPulse(false);
+            }, 300);
+            prevXPRef.current = totalXP;
+            return () => clearTimeout(timer);
+        }
+        prevXPRef.current = totalXP;
+    }, [totalXP, lastResult]);
+
+    // Get accuracy class for color flash (Phase 9: Task 9.1)
+    const getAccuracyClass = (accuracy: string | null): string => {
+        if (!accuracy || !showPulse) return '';
+        switch (accuracy) {
+            case 'perfect':
+                return 'rhythm-xp-flash--perfect';
+            case 'great':
+                return 'rhythm-xp-flash--great';
+            case 'good':
+                return 'rhythm-xp-flash--good';
+            case 'ok':
+                return 'rhythm-xp-flash--ok';
+            case 'miss':
+            case 'wrongKey':
+                return 'rhythm-xp-flash--miss';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div className="rhythm-xp-stats">
             {/* Score - for gameplay achievement */}
             <div className="beat-practice-stat rhythm-xp-stat rhythm-xp-stat--score">
-                <span className="beat-practice-stat-value rhythm-xp-stat-value rhythm-xp-stat-value--score">
+                <span className={`beat-practice-stat-value rhythm-xp-stat-value rhythm-xp-stat-value--score ${showPulse ? 'rhythm-xp-pulse' : ''} ${getAccuracyClass(lastAccuracy)}`}>
                     {formatNumber(totalScore)}
                 </span>
                 <span className="beat-practice-stat-label">Score</span>
@@ -64,7 +109,7 @@ export function RhythmXPStats({
 
             {/* XP - for character progression */}
             <div className="beat-practice-stat rhythm-xp-stat rhythm-xp-stat--xp">
-                <span className="beat-practice-stat-value rhythm-xp-stat-value rhythm-xp-stat-value--xp">
+                <span className={`beat-practice-stat-value rhythm-xp-stat-value rhythm-xp-stat-value--xp ${showPulse ? 'rhythm-xp-pulse' : ''} ${getAccuracyClass(lastAccuracy)}`}>
                     {formatXP(totalXP)}
                 </span>
                 <span className="beat-practice-stat-label">XP</span>
