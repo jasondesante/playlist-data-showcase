@@ -56,6 +56,7 @@ import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
 import { GrooveStats } from './GrooveStats';
+import { RhythmXPStats } from './RhythmXPStats';
 import { logger } from '../../utils/logger';
 import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
 
@@ -242,6 +243,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const hasUnclaimedXP = useBeatDetectionStore((state) => state.actions.hasUnclaimedXP);
   const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
   const maxCombo = useBeatDetectionStore((state) => state.maxCombo);
+
+  // Rhythm XP state (Phase 3: Task 3.3 - Real-Time XP Display)
+  const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
+  const currentCombo = useBeatDetectionStore((state) => state.currentCombo);
 
   // Interpolation visualization data (Task 5.1)
   const interpolationData = useInterpolationVisualizationData();
@@ -928,6 +933,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <span className="beat-practice-stat-value">{formatTime(duration)}</span>
           <span className="beat-practice-stat-label">Duration</span>
         </div>
+        {/* Rhythm XP Stats (Phase 3: Task 3.3 - Real-Time XP Display) */}
+        <RhythmXPStats
+          sessionTotals={rhythmSessionTotals}
+          lastResult={lastRhythmXPResult}
+          currentCombo={currentCombo}
+        />
         {/* Current Subdivision Display (Phase 6: Task 6.5, Phase 8: Task 8.3) */}
         {subdivisionPlaybackAvailable && (
           <div

@@ -334,7 +334,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
 ## Phase 3: Real-Time XP Display (Header Bar)
 
 ### 3.1 Create RhythmXPStats Component
-- [ ] Create `src/components/ui/RhythmXPStats.tsx`
+- [x] Create `src/components/ui/RhythmXPStats.tsx`
   ```typescript
   interface RhythmXPStatsProps {
     /** Current session totals */
@@ -345,7 +345,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
     currentCombo: number;
   }
   ```
-- [ ] Display in header bar (next to BPM/Position stats)
+- [x] Display in header bar (next to BPM/Position stats)
   - **Score**: Current session score (for display) - **always visible during practice**
   - **XP**: Current session XP (for character progression) - **always visible during practice**
   - **Combo**: Current combo count (e.g., "12")
@@ -354,13 +354,13 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   - These stats update in real-time as you play
 
 ### 3.2 Create RhythmXPStats Styles
-- [ ] Create `src/components/ui/RhythmXPStats.css`
+- [x] Create `src/components/ui/RhythmXPStats.css`
   - Match existing `beat-practice-stats` styling
   - Color-coded XP value (highlight for progression)
   - Animate multiplier changes
 
 ### 3.3 Integrate RhythmXPStats into BeatPracticeView Header
-- [ ] Add `RhythmXPStats` to the stats row in header
+- [x] Add `RhythmXPStats` to the stats row in header
   ```typescript
   <div className="beat-practice-stat">
     <span className="beat-practice-stat-value">{sessionTotals?.totalScore ?? 0}</span>
@@ -373,7 +373,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
     <span className="beat-practice-stat-label">XP</span>
   </div>
   ```
-- [ ] Wire up selectors
+- [x] Wire up selectors
   ```typescript
   const rhythmSessionTotals = useBeatDetectionStore((state) => state.rhythmSessionTotals);
   const lastRhythmXPResult = useBeatDetectionStore((state) => state.lastRhythmXPResult);
