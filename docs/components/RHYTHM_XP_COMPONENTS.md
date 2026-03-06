@@ -543,6 +543,8 @@ function BeatPracticeView() {
 
 ## Configuration
 
+This section provides a comprehensive reference for all Rhythm XP configuration options. These settings control how score points and character XP are calculated during rhythm gameplay.
+
 ### Default Configuration
 
 ```typescript
@@ -578,16 +580,309 @@ const DEFAULT_RHYTHM_XP_CONFIG: RhythmXPConfig = {
 };
 ```
 
+### Configuration Options Reference
+
+#### Base XP (`baseXP`)
+
+Defines the raw score points awarded for each accuracy level. These values are the foundation of the scoring system before any multipliers are applied.
+
+| Option | Type | Default | Range | Description |
+|--------|------|---------|-------|-------------|
+| `perfect` | number | 10 | 1-50 | Excellent timing (within ±25ms) |
+| `great` | number | 7 | 1-30 | Good timing (within ±50ms) |
+| `good` | number | 5 | 1-20 | Acceptable timing (within ±100ms) |
+| `ok` | number | 2 | 0-10 | Marginal timing (within ±150ms) |
+| `miss` | number | 0 | -10 to 0 | No button press or way off timing |
+| `wrongKey` | number | 0 | -10 to 0 | Wrong button pressed |
+
+**Impact on Gameplay:**
+- Higher values increase the score ceiling, making high combos more rewarding
+- Negative values for `miss`/`wrongKey` add a penalty system
+- The ratio between values affects the skill gap (e.g., 10/7/5/2 vs 10/9/8/7)
+
+**Example - Hardcore Mode:**
+```typescript
+baseXP: {
+    perfect: 10,
+    great: 5,     // Less forgiving
+    good: 2,      // Much lower for off-beats
+    ok: 0,        // No points for marginal hits
+    miss: -5,     // Penalty for misses
+    wrongKey: -5, // Penalty for wrong keys
+}
+```
+
+**Example - Casual Mode:**
+```typescript
+baseXP: {
+    perfect: 15,  // More rewarding for perfect timing
+    great: 12,    // Still good points
+    good: 10,     // Nearly as good
+    ok: 8,        // Forgiving
+    miss: 0,      // No penalty
+    wrongKey: 0,  // No penalty
+}
+```
+
+---
+
+#### XP Ratio (`xpRatio`)
+
+Controls the conversion from score points to character XP. This separates gameplay score from character progression.
+
+| Option | Type | Default | Range | Description |
+|--------|------|---------|-------|-------------|
+| `xpRatio` | number | 0.1 | 0.01-1.0 | Multiplier to convert score to XP |
+
+**How It Works:**
+- `xpRatio: 0.1` → 10 score points = 1 character XP
+- `xpRatio: 0.5` → 10 score points = 5 character XP
+- `xpRatio: 1.0` → 10 score points = 10 character XP
+
+**Impact on Progression:**
+- Lower values (0.05-0.1) are tuned for D&D 5e-style level progression
+- Higher values (0.5-1.0) create faster character advancement
+- Adjust based on your game's progression curve and session length
+
+**Example Calculation:**
+```typescript
+// With default config:
+// Player hits a perfect note = 10 score points
+// With xpRatio: 0.1 → 10 × 0.1 = 1.0 XP earned
+
+// At 2.5x combo multiplier:
+// 10 × 2.5 = 25 score points
+// 25 × 0.1 = 2.5 XP earned
+```
+
+---
+
+#### Combo Configuration (`combo`)
+
+Controls how consecutive hits affect the XP multiplier. Combo is SEPARATE from groove streak (see Key Concepts).
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | boolean | true | Whether combo affects multiplier |
+| `cap` | number | 5.0 | Maximum combo multiplier (1.5-10.0) |
+| `endBonus.enabled` | boolean | true | Whether combo breaks award bonus XP |
+| `endBonus.multiplier` | number | 2 | XP multiplier for end bonus calculation |
+
+**Combo Multiplier Formula:**
+```typescript
+// Default formula: 1 + (combo / 50), capped at `cap`
+// At 0 combo: 1.0x
+// At 25 combo: 1.5x
+// At 50 combo: 2.0x
+// At 100 combo: 3.0x
+// At 200+ combo: 5.0x (capped)
+```
+
+**Combo End Bonus:**
+When a combo breaks (miss or wrongKey), a bonus is awarded:
+```typescript
+// End bonus = comboLength × endBonus.multiplier × xpRatio
+// Example: 50 combo × 2 × 0.1 = 10 bonus XP
+```
+
+**Impact on Gameplay:**
+- Higher `cap` values reward longer combo streaks
+- Enabling `endBonus` softens the blow of breaking a combo
+- Disable `enabled` for a flat scoring system without combo bonuses
+
+**Example - High Skill Ceiling:**
+```typescript
+combo: {
+    enabled: true,
+    cap: 10.0,  // Very high ceiling
+    endBonus: {
+        enabled: true,
+        multiplier: 3,  // Bigger end bonuses
+    },
+}
+```
+
+**Example - Relaxed Mode:**
+```typescript
+combo: {
+    enabled: true,
+    cap: 2.0,   // Lower ceiling
+    endBonus: {
+        enabled: false,  // No end bonus
+    },
+}
+```
+
+---
+
+#### Groove Configuration (`groove`)
+
+Controls how the groove meter (timing consistency) affects XP. Groove is tracked by the `GrooveAnalyzer` and reflects how well the player maintains their timing pocket.
+
+| Option | Type | Default | Range | Description |
+|--------|------|---------|-------|-------------|
+| `perHitMultiplier` | boolean | true | - | Add groove to each hit's multiplier |
+| `perHitScale` | number | 1.0 | 0.1-2.0 | Scale factor for per-hit groove bonus |
+| `endBonus.enabled` | boolean | true | - | Award bonus when groove ends |
+| `endBonus.maxStreakWeight` | number | 0.4 | 0-1 | Weight for max streak in end bonus |
+| `endBonus.avgHotnessWeight` | number | 0.4 | 0-1 | Weight for average hotness in end bonus |
+| `endBonus.durationWeight` | number | 0.2 | 0-1 | Weight for groove duration in end bonus |
+
+**Per-Hit Groove Multiplier:**
+When `perHitMultiplier` is enabled, groove hotness adds to each hit's multiplier:
+```typescript
+// Groove bonus = (hotness / 100) × perHitScale
+// At 80% hotness with perHitScale 1.0: +0.8x multiplier
+// At 100% hotness with perHitScale 1.0: +1.0x multiplier
+
+// Total multiplier = combo multiplier + groove bonus (capped at maxMultiplier)
+// Example: 2.0x combo + 0.8x groove = 2.8x total
+```
+
+**Groove End Bonus:**
+When a groove ends (hotness drops to 0 or direction changes), a bonus is awarded based on the groove's statistics:
+```typescript
+// End bonus = base calculation × weighted stats × xpRatio
+// Weights should sum to 1.0 for balanced scaling
+
+// Higher maxStreakWeight: Reward peak performance
+// Higher avgHotnessWeight: Reward consistency
+// Higher durationWeight: Reward sustained groove
+```
+
+**Impact on Gameplay:**
+- `perHitMultiplier: true` creates dynamic scoring based on real-time performance
+- Higher `perHitScale` makes groove more impactful
+- Weight adjustments change what the game rewards (peaks vs consistency vs endurance)
+
+**Example - Consistency Focus:**
+```typescript
+groove: {
+    perHitMultiplier: true,
+    perHitScale: 1.0,
+    endBonus: {
+        enabled: true,
+        maxStreakWeight: 0.2,    // Less emphasis on peaks
+        avgHotnessWeight: 0.6,   // More emphasis on consistency
+        durationWeight: 0.2,
+    },
+}
+```
+
+**Example - Peak Performance:**
+```typescript
+groove: {
+    perHitMultiplier: false,  // No per-hit bonus
+    perHitScale: 1.0,
+    endBonus: {
+        enabled: true,
+        maxStreakWeight: 0.6,   // Reward peak streaks
+        avgHotnessWeight: 0.2,
+        durationWeight: 0.2,
+    },
+}
+```
+
+---
+
+#### Max Multiplier (`maxMultiplier`)
+
+The absolute ceiling for the total XP multiplier, regardless of combo or groove.
+
+| Option | Type | Default | Range | Description |
+|--------|------|---------|-------|-------------|
+| `maxMultiplier` | number | 5.0 | 1.5-10.0 | Maximum total multiplier |
+
+**How It Works:**
+```typescript
+// Total multiplier = min(combo multiplier + groove bonus, maxMultiplier)
+// Even with 500 combo and 100% hotness:
+// - Without cap: could be 10x+10x = 20x
+// - With maxMultiplier 5.0: capped at 5.0x
+```
+
+**Impact on Gameplay:**
+- Lower values (1.5-3.0) create a flatter difficulty curve
+- Higher values (5.0-10.0) reward exceptional play
+- This is the final safety cap to prevent exploits or runaway scoring
+
+**Example - Competitive Play:**
+```typescript
+maxMultiplier: 5.0  // Standard competitive cap
+```
+
+**Example - Casual/Social:**
+```typescript
+maxMultiplier: 2.0  // Keeps scores closer together
+```
+
+---
+
 ### Configuration UI
 
 Configuration is exposed in the **Rhythm XP** tab of `XPCalculatorTab`:
 
-- **Base XP Configuration**: Sliders for each accuracy level
+- **Base XP Configuration**: Sliders for each accuracy level (Perfect, Great, Good, OK, Miss, Wrong Key)
 - **XP Ratio**: Slider (0.01-1.0)
-- **Combo Configuration**: Enable/disable, cap slider, formula preset, end bonus toggle
-- **Groove Configuration**: Per-hit multiplier toggle, scale slider, end bonus weights
-- **Global Settings**: Max multiplier slider
+- **Combo Configuration**:
+  - Enable/Disable toggle
+  - Cap slider (1.0-10.0)
+  - Formula preset selector (Default, Aggressive, Exponential, Step-based)
+  - End Bonus Enable/Disable toggle
+  - End Bonus multiplier
+- **Groove Configuration**:
+  - Per-Hit Multiplier Enable/Disable toggle
+  - Per-Hit Scale slider (0.1-2.0)
+  - End Bonus Enable/Disable toggle
+  - Weight sliders for max streak, avg hotness, duration
+- **Global Settings**: Max multiplier slider (1.5-10.0)
 - **Reset Button**: Reset all to defaults
+
+### Configuration Presets
+
+#### Default (Balanced)
+```typescript
+// Tuned for D&D 5e-style progression
+{
+    xpRatio: 0.1,
+    combo: { enabled: true, cap: 5.0, endBonus: { enabled: true, multiplier: 2 } },
+    groove: { perHitMultiplier: true, perHitScale: 1.0, endBonus: { enabled: true } },
+    maxMultiplier: 5.0,
+}
+```
+
+#### Casual (Forgiving)
+```typescript
+// Higher XP gain, lower skill ceiling
+{
+    xpRatio: 0.15,
+    combo: { enabled: true, cap: 3.0, endBonus: { enabled: false } },
+    groove: { perHitMultiplier: true, perHitScale: 0.5, endBonus: { enabled: false } },
+    maxMultiplier: 3.0,
+}
+```
+
+#### Hardcore (High Skill Ceiling)
+```typescript
+// Lower XP gain, high rewards for skill
+{
+    xpRatio: 0.05,
+    combo: { enabled: true, cap: 10.0, endBonus: { enabled: true, multiplier: 3 } },
+    groove: { perHitMultiplier: true, perHitScale: 1.5, endBonus: { enabled: true } },
+    maxMultiplier: 10.0,
+}
+```
+
+#### Speed Run (Fast Progression)
+```typescript
+// Quick leveling for testing or short sessions
+{
+    xpRatio: 0.5,
+    combo: { enabled: true, cap: 5.0, endBonus: { enabled: true, multiplier: 2 } },
+    groove: { perHitMultiplier: true, perHitScale: 1.0, endBonus: { enabled: true } },
+    maxMultiplier: 5.0,
+}
+```
 
 ---
 
