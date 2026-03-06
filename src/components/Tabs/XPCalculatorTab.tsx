@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -48,6 +48,137 @@ interface ManualOverrides {
   baseXP?: number;
   environmentalMultiplier?: number;
   gamingMultiplier?: number;
+}
+
+/**
+ * Combo formula preset types
+ */
+type ComboFormulaPreset = 'default' | 'aggressive' | 'exponential' | 'step-based';
+
+/**
+ * Combo formula preset configurations
+ */
+const COMBO_FORMULA_PRESETS: Record<ComboFormulaPreset, { name: string; description: string; formula: (combo: number) => number }> = {
+  default: {
+    name: 'Default',
+    description: '1 + (combo / 50), capped at 5x',
+    formula: (combo) => Math.min(1 + (combo / 50), 5),
+  },
+  aggressive: {
+    name: 'Aggressive',
+    description: '1 + (combo / 25), faster growth',
+    formula: (combo) => Math.min(1 + (combo / 25), 5),
+  },
+  exponential: {
+    name: 'Exponential',
+    description: '1 + log10(combo + 1)',
+    formula: (combo) => 1 + Math.log10(combo + 1),
+  },
+  'step-based': {
+    name: 'Step-Based',
+    description: '+0.1x every 10 hits',
+    formula: (combo) => 1 + Math.floor(combo / 10) * 0.1,
+  },
+};
+
+/**
+ * Props for ConfigToggle component
+ */
+interface ConfigToggleProps {
+  label: string;
+  description: string;
+  checked: boolean;
+  defaultChecked: boolean;
+  onChange: (checked: boolean) => void;
+  isModified?: boolean;
+}
+
+/**
+ * ConfigToggle component for boolean configuration settings
+ */
+const ConfigToggle = React.memo(function ConfigToggle({
+  label,
+  description,
+  checked,
+  defaultChecked,
+  onChange,
+  isModified = false,
+}: ConfigToggleProps) {
+  return (
+    <div className={`xp-config-row xp-config-row-toggle ${isModified ? 'xp-config-row-modified' : ''}`}>
+      <div className="xp-config-label-group">
+        <span className="xp-config-label">{label}</span>
+        <span className="xp-config-description">{description}</span>
+      </div>
+      <div className="xp-config-control">
+        <label className="xp-toggle-switch xp-toggle-switch--compact">
+          <input
+            type="checkbox"
+            className="xp-toggle-checkbox"
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
+            aria-label={label}
+          />
+          <span className="xp-toggle-label">{checked ? 'On' : 'Off'}</span>
+        </label>
+        <span className="xp-config-default">
+          {isModified ? `(default: ${defaultChecked ? 'On' : 'Off'})` : `(${defaultChecked ? 'On' : 'Off'})`}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * Props for ConfigSelect component
+ */
+interface ConfigSelectProps<T extends string> {
+  label: string;
+  description: string;
+  value: T;
+  defaultValue: T;
+  options: { value: T; label: string; description: string }[];
+  onChange: (value: T) => void;
+  isModified?: boolean;
+}
+
+/**
+ * ConfigSelect component for dropdown configuration settings
+ */
+function ConfigSelect<T extends string>({
+  label,
+  description,
+  value,
+  defaultValue,
+  options,
+  onChange,
+  isModified = false,
+}: ConfigSelectProps<T>) {
+  return (
+    <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
+      <div className="xp-config-label-group">
+        <span className="xp-config-label">{label}</span>
+        <span className="xp-config-description">{description}</span>
+      </div>
+      <div className="xp-config-control">
+        <select
+          className="xp-config-select"
+          value={value}
+          onChange={(e) => onChange(e.target.value as T)}
+          aria-label={label}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span className="xp-config-default">
+          {isModified ? `(default: ${options.find(o => o.value === defaultValue)?.label})` : `(${options.find(o => o.value === defaultValue)?.label})`}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -228,9 +359,21 @@ function RhythmXPConfigSection() {
   const {
     updateBaseXP,
     updateXPRatio,
+    updateComboConfig,
     resetConfig,
     isBaseXPModified,
   } = useRhythmXPConfigActions();
+
+  // Local state for combo formula preset (since formula is a function, we store the preset name)
+  const [comboFormulaPreset, setComboFormulaPreset] = useState<ComboFormulaPreset>('default');
+
+  // Handle combo formula preset change
+  const handleComboFormulaChange = useCallback((preset: ComboFormulaPreset) => {
+    setComboFormulaPreset(preset);
+    updateComboConfig({
+      formula: COMBO_FORMULA_PRESETS[preset].formula,
+    });
+  }, [updateComboConfig]);
 
   return (
     <div className="xp-config-section">
@@ -385,7 +528,64 @@ function RhythmXPConfigSection() {
           <h3 className="xp-config-section-title">Combo Configuration</h3>
         </div>
         <div className="xp-config-section-content">
-          <p className="xp-config-placeholder">Combo configuration will be added in Task 7.2</p>
+          {/* Combo Enable/Disable Toggle */}
+          <ConfigToggle
+            label="Combo Multiplier"
+            description="Multiply XP based on consecutive hits"
+            checked={rhythmConfig.combo.enabled}
+            defaultChecked={DEFAULT_RHYTHM_XP_CONFIG.combo.enabled}
+            onChange={(enabled) => updateComboConfig({ enabled })}
+            isModified={rhythmConfig.combo.enabled !== DEFAULT_RHYTHM_XP_CONFIG.combo.enabled}
+          />
+
+          {/* Combo Cap Slider - only visible when combo is enabled */}
+          {rhythmConfig.combo.enabled && (
+            <ConfigSlider
+              label="Combo Cap"
+              description="Maximum multiplier from combo streaks"
+              value={rhythmConfig.combo.cap}
+              defaultValue={DEFAULT_RHYTHM_XP_CONFIG.combo.cap}
+              min={1.0}
+              max={10.0}
+              step={0.5}
+              onChange={(cap) => updateComboConfig({ cap })}
+              formatValue={(v) => `${v.toFixed(1)}x`}
+              isModified={rhythmConfig.combo.cap !== DEFAULT_RHYTHM_XP_CONFIG.combo.cap}
+              marks={[
+                { value: 1.0, label: '1x' },
+                { value: 5.0, label: '5x' },
+                { value: 10.0, label: '10x' },
+              ]}
+            />
+          )}
+
+          {/* Combo Formula Preset - only visible when combo is enabled */}
+          {rhythmConfig.combo.enabled && (
+            <ConfigSelect<ComboFormulaPreset>
+              label="Combo Formula"
+              description="How multiplier scales with combo length"
+              value={comboFormulaPreset}
+              defaultValue="default"
+              options={[
+                { value: 'default', label: 'Default', description: '1 + (combo / 50), capped' },
+                { value: 'aggressive', label: 'Aggressive', description: '1 + (combo / 25)' },
+                { value: 'exponential', label: 'Exponential', description: '1 + log10(combo + 1)' },
+                { value: 'step-based', label: 'Step-Based', description: '+0.1x every 10 hits' },
+              ]}
+              onChange={handleComboFormulaChange}
+              isModified={comboFormulaPreset !== 'default'}
+            />
+          )}
+
+          {/* Combo End Bonus Toggle */}
+          <ConfigToggle
+            label="Combo End Bonus"
+            description="Award bonus XP when a combo breaks"
+            checked={rhythmConfig.combo.endBonus.enabled}
+            defaultChecked={DEFAULT_RHYTHM_XP_CONFIG.combo.endBonus.enabled}
+            onChange={(enabled) => updateComboConfig({ endBonus: { ...rhythmConfig.combo.endBonus, enabled } })}
+            isModified={rhythmConfig.combo.endBonus.enabled !== DEFAULT_RHYTHM_XP_CONFIG.combo.endBonus.enabled}
+          />
         </div>
       </Card>
 

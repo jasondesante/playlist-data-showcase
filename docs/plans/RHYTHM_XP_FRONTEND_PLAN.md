@@ -626,7 +626,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     - Wrong Key (default: 0, range: -10 to 0)
   - XP Ratio slider (default: 0.1, range: 0.01-1.0)
 
-- [ ] Create Combo Configuration Card
+- [x] Create Combo Configuration Card
   - Enable/Disable toggle
   - Combo Cap slider (default: 5.0, range: 1.0-10.0)
   - Combo Formula preset selector:

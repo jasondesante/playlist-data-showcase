@@ -1083,6 +1083,82 @@
   }
 }
 
+/* Compact toggle switch for config rows */
+.xp-toggle-switch--compact {
+  gap: 0.375rem;
+}
+
+.xp-toggle-switch--compact .xp-toggle-checkbox {
+  width: 1.75rem;
+  height: 1rem;
+}
+
+.xp-toggle-switch--compact .xp-toggle-checkbox::before {
+  width: 0.625rem;
+  height: 0.625rem;
+  top: 0.1875rem;
+  left: 0.1875rem;
+}
+
+.xp-toggle-switch--compact .xp-toggle-checkbox:checked::before {
+  transform: translateX(0.75rem);
+}
+
+.xp-toggle-switch--compact .xp-toggle-label {
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 768px) {
+  .xp-toggle-switch--compact .xp-toggle-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Config row variant for toggles */
+.xp-config-row-toggle .xp-config-control {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Config select dropdown */
+.xp-config-select {
+  appearance: none;
+  background-color: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.375rem;
+  padding: 0.375rem 1.5rem 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out-cubic),
+              background-color var(--duration-fast) var(--ease-out-cubic);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  min-width: 7rem;
+}
+
+.xp-config-select:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  background-color: hsl(var(--surface-2) / 0.8);
+}
+
+.xp-config-select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+@media (min-width: 768px) {
+  .xp-config-select {
+    font-size: 0.875rem;
+    padding: 0.5rem 1.75rem 0.5rem 0.625rem;
+    min-width: 8rem;
+  }
+}
+
 /* ========================================
    MANUAL OVERRIDES SECTION
    ======================================== */
