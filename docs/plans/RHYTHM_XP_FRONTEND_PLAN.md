@@ -563,7 +563,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 6: Tap Timing Debug Panel Enhancement
 
 ### 6.1 Extend TapDebugInfo and TapRow with XP Columns
-- [ ] Update `TapDebugInfo` interface in `BeatPracticeView.tsx`
+- [x] Update `TapDebugInfo` interface in `BeatPracticeView.tsx`
   ```typescript
   interface TapDebugInfo {
     // ... existing fields ...
@@ -572,24 +572,24 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     multiplier?: number;      // Total multiplier applied
   }
   ```
-- [ ] Add column headers to debug panel
+- [x] Add column headers to debug panel
   - Existing: Accuracy, Offset, Audio Time, Beat Time
   - New: Score, XP, Multiplier
-- [ ] Update `TapRow` component to display new columns
+- [x] Update `TapRow` component to display new columns
   - Add width for new columns in the virtualized list
   - Show score points (color-coded by accuracy)
   - Show XP earned (smaller text, progression-focused)
   - Show multiplier when > 1.0x (otherwise show "-")
 
 ### 6.2 Update Debug Panel Display
-- [ ] Extend the virtualized tap list to include XP data
+- [x] Extend the virtualized tap list to include XP data
   - Add width for new columns
   - Show score points (color-coded by accuracy)
   - Show XP earned (smaller text, progression-focused)
   - Show multiplier when > 1.0x
 
 ### 6.3 Update Session Stats Summary in Debug Panel
-- [ ] Add XP row to session stats summary
+- [x] Add XP row to session stats summary
   ```typescript
   <div className="beat-practice-debug-session-stat">
     <span className="beat-practice-debug-session-value">{totalXP.toFixed(1)}</span>

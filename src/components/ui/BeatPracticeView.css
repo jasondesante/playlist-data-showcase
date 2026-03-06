@@ -1007,7 +1007,7 @@
 /* Session Stats Summary */
 .beat-practice-debug-session-stats {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.5rem;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
@@ -1030,6 +1030,16 @@
   font-weight: 700;
   font-family: ui-monospace, monospace;
   color: hsl(var(--primary));
+}
+
+/* Phase 6: Task 6.3 - XP stat styling */
+.beat-practice-debug-session-stat--xp {
+  background: hsl(var(--accent-purple) / 0.1);
+  border-radius: 0.25rem;
+}
+
+.beat-practice-debug-session-value--xp {
+  color: hsl(var(--accent-purple));
 }
 
 .beat-practice-debug-session-label {
@@ -1121,6 +1131,62 @@
 
 .beat-practice-debug-tap-details span {
   opacity: 0.7;
+}
+
+/* ============================================
+   TAP XP STATS (Phase 6: Task 6.1)
+   XP display in debug panel
+   ============================================ */
+
+.beat-practice-debug-tap-xp {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.625rem;
+}
+
+.beat-practice-debug-score {
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-debug-score--perfect {
+  color: hsl(var(--accent-gold));
+}
+
+.beat-practice-debug-score--great {
+  color: hsl(142 76% 36%);
+}
+
+.beat-practice-debug-score--good {
+  color: hsl(221 83% 53%);
+}
+
+.beat-practice-debug-score--ok {
+  color: hsl(38 92% 50%);
+}
+
+.beat-practice-debug-score--miss,
+.beat-practice-debug-score--wrongKey {
+  color: hsl(var(--destructive));
+}
+
+.beat-practice-debug-xp {
+  color: hsl(var(--accent-purple));
+  font-weight: 500;
+}
+
+.beat-practice-debug-multiplier {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.5;
+  font-size: 0.5625rem;
+}
+
+.beat-practice-debug-multiplier--active {
+  color: hsl(var(--accent-gold));
+  opacity: 1;
+  font-weight: 600;
 }
 
 /* ============================================

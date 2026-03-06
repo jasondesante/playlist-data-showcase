@@ -84,6 +84,12 @@ interface TapDebugInfo {
   offsetMs: number;
   /** Accuracy rating (includes 'ok') */
   accuracy: ExtendedBeatAccuracy;
+  /** Raw score from hit (10 for perfect, 7 for great, etc.) - Phase 6: Task 6.1 */
+  scorePoints?: number;
+  /** XP earned (after ratio applied) - Phase 6: Task 6.1 */
+  characterXP?: number;
+  /** Total multiplier applied - Phase 6: Task 6.1 */
+  multiplier?: number;
 }
 
 interface BeatPracticeViewProps {
@@ -176,6 +182,21 @@ function TapRow({
             {tap.offsetMs >= 0 ? '+' : ''}{tap.offsetMs}ms
           </span>
         </div>
+
+        {/* Phase 6: Task 6.1 - XP Stats Display */}
+        {(tap.scorePoints !== undefined || tap.characterXP !== undefined) && (
+          <div className="beat-practice-debug-tap-xp">
+            <span className={`beat-practice-debug-score beat-practice-debug-score--${tap.accuracy}`}>
+              {tap.scorePoints ?? 0}pts
+            </span>
+            <span className="beat-practice-debug-xp">
+              +{(tap.characterXP ?? 0).toFixed(1)} XP
+            </span>
+            <span className={`beat-practice-debug-multiplier ${(tap.multiplier ?? 1) > 1 ? 'beat-practice-debug-multiplier--active' : ''}`}>
+              {(tap.multiplier ?? 1) > 1 ? `${(tap.multiplier ?? 1).toFixed(1)}x` : '-'}
+            </span>
+          </div>
+        )}
 
         {/* Visual threshold comparison bar */}
         <div className="beat-practice-debug-tap-visual">
@@ -498,7 +519,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       // Record XP (Phase 2: Task 2.2 - Record XP on Each Hit)
       // This also handles combo tracking internally
-      recordRhythmHit(result.accuracy, grooveResult.hotness);
+      // Phase 6: Task 6.1 - Capture XP result for debug panel
+      const xpResult = recordRhythmHit(result.accuracy, grooveResult.hotness);
 
       // Check for groove end bonus (Phase 2: Task 2.4 - Handle Groove End Bonus)
       // If present, groove just ended (hotness=0 or direction changed)
@@ -554,6 +576,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         beatTime: result.matchedBeat.timestamp,
         offsetMs: Math.round(result.offset * 1000),
         accuracy: result.accuracy,
+        // Phase 6: Task 6.1 - Add XP fields for debug panel
+        scorePoints: xpResult?.scorePoints,
+        characterXP: xpResult?.finalXP,
+        multiplier: xpResult?.totalMultiplier,
       };
       setTapDebugHistory(prev => {
         const newHistory = [debugInfo, ...prev];
@@ -1325,6 +1351,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             <div className="beat-practice-debug-session-stat">
               <span className="beat-practice-debug-session-value">{tapStats.miss}</span>
               <span className="beat-practice-debug-session-label">Missed Taps</span>
+            </div>
+            {/* Phase 6: Task 6.3 - Total XP in debug panel session stats */}
+            <div className="beat-practice-debug-session-stat beat-practice-debug-session-stat--xp">
+              <span className="beat-practice-debug-session-value beat-practice-debug-session-value--xp">
+                {(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)}
+              </span>
+              <span className="beat-practice-debug-session-label">Total XP</span>
             </div>
           </div>
         )}
