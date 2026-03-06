@@ -773,11 +773,11 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [x] Test config persistence
 
 ### 10.2 Integration Tests
-- [ ] Test full practice session flow
-- [ ] Test XP claiming and character update
-- [ ] Test level-up triggering
-- [ ] Test groove end bonus display
-- [ ] Test exit prompt when unclaimed XP
+- [x] Test full practice session flow
+- [x] Test XP claiming and character update
+- [x] Test level-up triggering
+- [x] Test groove end bonus display
+- [x] Test exit prompt when unclaimed XP
 
 ### 10.3 Documentation
 - [ ] Update component docs
