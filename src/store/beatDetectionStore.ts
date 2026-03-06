@@ -78,6 +78,9 @@ import {
     ComboEndBonusResult,
     GrooveEndBonusResult,
     GrooveStats,  // For groove end bonus parameter (Phase 1: Task 1.3)
+    // Groove Penalty types
+    GroovePenaltyConfig,
+    getGroovePenaltiesForPreset,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -286,12 +289,15 @@ export const createInterpolationConfigSnapshot = (
  * Difficulty settings for beat tap evaluation.
  *
  * Controls the timing thresholds used to rate tap accuracy.
+ * Also controls groove meter penalties for miss/wrongKey and breaking pocket.
  */
 export interface DifficultySettings {
     /** Current difficulty preset */
     preset: DifficultyPreset;
     /** Custom thresholds (used when preset is 'custom') */
     customThresholds: Partial<AccuracyThresholds>;
+    /** Custom groove penalties (used when preset is 'custom') */
+    customGroovePenalties: Partial<GroovePenaltyConfig>;
     /** Ignore required key assignments on beats (easy mode - timing-only evaluation) */
     ignoreKeyRequirements: boolean;
 }
@@ -303,6 +309,7 @@ export interface DifficultySettings {
 const DEFAULT_DIFFICULTY_SETTINGS: DifficultySettings = {
     preset: 'medium',
     customThresholds: {},
+    customGroovePenalties: {},
     ignoreKeyRequirements: false,
 };
 
@@ -686,6 +693,14 @@ interface BeatDetectionActions {
      * @param value - The threshold value in seconds
      */
     setCustomThreshold: (key: keyof AccuracyThresholds, value: number) => void;
+
+    /**
+     * Set a custom groove penalty value.
+     * Only used when preset is 'custom'.
+     * @param key - The penalty type to set (hotnessLossOnMiss, hotnessLossOnBreak)
+     * @param value - The penalty value (0-100)
+     */
+    setCustomGroovePenalty: (key: keyof GroovePenaltyConfig, value: number) => void;
 
     /**
      * Reset difficulty settings to defaults.
@@ -1828,6 +1843,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 preset,
                             },
                         }));
+                        // Also update groove analyzer if it exists
+                        const state = get();
+                        if (state.grooveAnalyzer) {
+                            state.grooveAnalyzer.setDifficulty({ preset });
+                            logger.info('BeatDetection', 'GrooveAnalyzer difficulty updated', { preset });
+                        }
                     },
 
                     setCustomThreshold: (key, value) => {
@@ -1847,6 +1868,36 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     resetDifficultySettings: () => {
                         logger.info('BeatDetection', 'Resetting difficulty settings');
                         set({ difficultySettings: { ...DEFAULT_DIFFICULTY_SETTINGS } });
+                        // Also update groove analyzer if it exists
+                        const state = get();
+                        if (state.grooveAnalyzer) {
+                            state.grooveAnalyzer.setDifficulty({ preset: 'medium' });
+                            logger.info('BeatDetection', 'GrooveAnalyzer difficulty reset to medium');
+                        }
+                    },
+
+                    setCustomGroovePenalty: (key, value) => {
+                        logger.debug('BeatDetection', 'Setting custom groove penalty', { key, value });
+                        set((state) => ({
+                            difficultySettings: {
+                                ...state.difficultySettings,
+                                preset: 'custom',
+                                customGroovePenalties: {
+                                    ...state.difficultySettings.customGroovePenalties,
+                                    [key]: value,
+                                },
+                            },
+                        }));
+                        // Update groove analyzer if it exists
+                        const state = get();
+                        if (state.grooveAnalyzer) {
+                            const penalties = getGroovePenaltiesForPreset('custom', get().difficultySettings.customGroovePenalties);
+                            state.grooveAnalyzer.setDifficulty({
+                                preset: 'custom',
+                                customPenalties: penalties
+                            });
+                            logger.debug('BeatDetection', 'GrooveAnalyzer custom penalties applied', penalties);
+                        }
                     },
 
                     setIgnoreKeyRequirements: (ignore) => {
@@ -2957,7 +3008,26 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     // ============================================================
 
                     initGrooveAnalyzer: () => {
+                        const state = get();
                         const analyzer = new GrooveAnalyzer();
+                        // Apply current difficulty preset
+                        const { difficultySettings } = state;
+                        if (difficultySettings.preset !== 'custom') {
+                            analyzer.setDifficulty({ preset: difficultySettings.preset });
+                            logger.info('BeatDetection', 'GrooveAnalyzer initialized with preset', { preset: difficultySettings.preset });
+                        } else {
+                            // Custom mode - apply custom groove penalties if provided
+                            const customPenalties = getGroovePenaltiesForPreset(
+                                difficultySettings.preset,
+                                difficultySettings.customGroovePenalties
+                            );
+                            analyzer.setDifficulty({
+                                preset: 'custom',
+                                customPenalties
+                            });
+                            logger.info('BeatDetection', 'GrooveAnalyzer initialized with custom penalties', customPenalties);
+                        }
+
                         set({
                             grooveAnalyzer: analyzer,
                             grooveState: analyzer.getState(),

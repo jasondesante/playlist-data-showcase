@@ -22,7 +22,10 @@ import {
   useAccuracyThresholds,
   useIgnoreKeyRequirements,
 } from '../../store/beatDetectionStore';
-import type { AccuracyThresholds, DifficultyPreset } from '../../types';
+import type { AccuracyThresholds, DifficultyPreset, GroovePenaltyConfig } from '../../types';
+import {
+  getGroovePenaltiesForPreset,
+} from '../../types';
 
 export interface DifficultySettingsPanelProps {
   /** Whether the panel is currently open */
@@ -68,6 +71,7 @@ export function DifficultySettingsPanel({
   const ignoreKeyRequirements = useIgnoreKeyRequirements();
   const setDifficultyPreset = useBeatDetectionStore((state) => state.actions.setDifficultyPreset);
   const setCustomThreshold = useBeatDetectionStore((state) => state.actions.setCustomThreshold);
+  const setCustomGroovePenalty = useBeatDetectionStore((state) => state.actions.setCustomGroovePenalty);
   const resetDifficultySettings = useBeatDetectionStore((state) => state.actions.resetDifficultySettings);
   const setIgnoreKeyRequirements = useBeatDetectionStore((state) => state.actions.setIgnoreKeyRequirements);
 
@@ -102,6 +106,19 @@ export function DifficultySettingsPanel({
   const handleIgnoreKeyRequirementsToggle = useCallback(() => {
     setIgnoreKeyRequirements(!ignoreKeyRequirements);
   }, [setIgnoreKeyRequirements, ignoreKeyRequirements]);
+
+  /**
+   * Handle custom groove penalty change
+   */
+  const handleGroovePenaltyChange = useCallback((key: keyof GroovePenaltyConfig, value: number) => {
+    setCustomGroovePenalty(key, value);
+  }, [setCustomGroovePenalty]);
+
+  // Get current groove penalties
+  const currentGroovePenalties = getGroovePenaltiesForPreset(
+    difficultySettings.preset,
+    difficultySettings.customGroovePenalties
+  );
 
   /**
    * Handle keyboard events for accessibility
@@ -266,6 +283,88 @@ export function DifficultySettingsPanel({
               >
                 <span className="difficulty-panel__toggle-slider" />
               </button>
+            </div>
+          </section>
+
+          {/* Groove Penalties Section */}
+          <section className="difficulty-panel__section">
+            <h3 className="difficulty-panel__section-title">Groove Meter Penalties</h3>
+            <p className="difficulty-panel__section-description">
+              Control how severely missed beats and breaking the pocket affect the groove meter.
+            </p>
+
+            <div className="difficulty-panel__groove-penalties">
+              {/* Current preset values (shown when not custom) */}
+              {!isCustomMode && (
+                <div className="difficulty-panel__groove-penalties-preset">
+                  <span className="difficulty-panel__groove-penalties-preset-label">
+                    {difficultySettings.preset.charAt(0).toUpperCase() + difficultySettings.preset.slice(1)} preset:
+                  </span>
+                  <span className="difficulty-panel__groove-penalties-preset-values">
+                    Miss: {currentGroovePenalties.hotnessLossOnMiss} | Break: {currentGroovePenalties.hotnessLossOnBreak}
+                  </span>
+                </div>
+              )}
+
+              {/* Custom penalty sliders (shown when custom is selected) */}
+              {isCustomMode && (
+                <div className="difficulty-panel__groove-penalties-custom">
+                  {/* Miss Penalty Slider */}
+                  <div className="difficulty-panel__penalty-slider">
+                    <div className="difficulty-panel__penalty-slider-header">
+                      <span className="difficulty-panel__penalty-slider-label">Miss Penalty</span>
+                      <span className="difficulty-panel__penalty-slider-value">
+                        {difficultySettings.customGroovePenalties?.hotnessLossOnMiss ?? currentGroovePenalties.hotnessLossOnMiss}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="60"
+                      step="1"
+                      value={difficultySettings.customGroovePenalties?.hotnessLossOnMiss ?? currentGroovePenalties.hotnessLossOnMiss}
+                      onChange={(e) => handleGroovePenaltyChange('hotnessLossOnMiss', parseFloat(e.target.value))}
+                      className="difficulty-panel__penalty-slider-input"
+                      aria-label="Miss penalty"
+                    />
+                    <div className="difficulty-panel__penalty-slider-labels">
+                      <span>Forgiving (5)</span>
+                      <span>Harsh (60)</span>
+                    </div>
+                  </div>
+
+                  {/* Break Penalty Slider */}
+                  <div className="difficulty-panel__penalty-slider">
+                    <div className="difficulty-panel__penalty-slider-header">
+                      <span className="difficulty-panel__penalty-slider-label">Break Penalty</span>
+                      <span className="difficulty-panel__penalty-slider-value">
+                        {difficultySettings.customGroovePenalties?.hotnessLossOnBreak ?? currentGroovePenalties.hotnessLossOnBreak}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="60"
+                      step="1"
+                      value={difficultySettings.customGroovePenalties?.hotnessLossOnBreak ?? currentGroovePenalties.hotnessLossOnBreak}
+                      onChange={(e) => handleGroovePenaltyChange('hotnessLossOnBreak', parseFloat(e.target.value))}
+                      className="difficulty-panel__penalty-slider-input"
+                      aria-label="Break penalty"
+                    />
+                    <div className="difficulty-panel__penalty-slider-labels">
+                      <span>Forgiving (5)</span>
+                      <span>Harsh (60)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Info text */}
+              <div className="difficulty-panel__groove-penalties-info">
+                <strong>Miss Penalty:</strong> Hotness lost when missing a beat or pressing wrong key
+                <br />
+                <strong>Break Penalty:</strong> Hotness lost when breaking established timing pocket
+              </div>
             </div>
           </section>
 

@@ -37,6 +37,7 @@ export type {
     GrooveResult,
     GrooveState,
     GrooveAnalyzerOptions,
+    GroovePenaltyConfig,
 
     // Required Keys (Chart Mode)
     KeyAssignableBeatMap,
@@ -99,7 +100,13 @@ export {
 // Re-export groove analyzer class and default options
 export {
     GrooveAnalyzer,
-    DEFAULT_GROOVE_OPTIONS
+    DEFAULT_GROOVE_OPTIONS,
+    // Groove penalty presets and helper
+    EASY_GROOVE_PENALTIES,
+    MEDIUM_GROOVE_PENALTIES,
+    HARD_GROOVE_PENALTIES,
+    GROOVE_PENALTY_PRESETS,
+    getGroovePenaltiesForPreset
 } from 'playlist-data-engine';
 
 // Re-export Rhythm XP calculator and helpers
