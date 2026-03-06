@@ -72,6 +72,11 @@ import {
     GrooveState,
     GrooveResult,
     ExtendedBeatAccuracy,
+    // Rhythm XP types (Phase 1: Task 1.2 - Runtime State)
+    RhythmXPResult,
+    RhythmSessionTotals,
+    ComboEndBonusResult,
+    GrooveEndBonusResult,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -80,6 +85,7 @@ import {
     SubdivisionPlaybackController,
     unifyBeatMap,
     GrooveAnalyzer,
+    RhythmXPCalculator,
 } from 'playlist-data-engine';
 
 /**
@@ -476,6 +482,62 @@ interface BeatDetectionState {
      * Persisted across groove resets to show best achievement.
      */
     bestGrooveStreak: number;
+
+    // ============================================================
+    // Rhythm XP Runtime State (Phase 1: Task 1.2)
+    // NOTE: Config is stored separately in rhythmXPConfigStore
+    // ============================================================
+
+    /**
+     * The RhythmXPCalculator instance for tracking XP during practice.
+     * Created when practice mode starts with config from rhythmXPConfigStore.
+     */
+    rhythmXPCalculator: RhythmXPCalculator | null;
+
+    /**
+     * Current session totals from the RhythmXPCalculator.
+     * Updated after each hit for real-time UI display.
+     */
+    rhythmSessionTotals: RhythmSessionTotals | null;
+
+    /**
+     * Last XP result from a button press.
+     * Used for real-time XP feedback display.
+     */
+    lastRhythmXPResult: RhythmXPResult | null;
+
+    /**
+     * Current combo count (consecutive hits without miss/wrongKey).
+     * IMPORTANT: This is DIFFERENT from groove streak!
+     * - Combo resets on: miss, wrongKey
+     * - Groove streak resets on: hotness=0, direction change
+     * Passed to RhythmXPCalculator.recordHit() as comboLength.
+     */
+    currentCombo: number;
+
+    /**
+     * Maximum combo achieved in current session.
+     * Updated when currentCombo exceeds previous max.
+     */
+    maxCombo: number;
+
+    /**
+     * Previous combo length (before current hit).
+     * Used to detect combo breaks for end bonus calculation.
+     */
+    previousComboLength: number;
+
+    /**
+     * Pending combo end bonus (displayed when combo breaks).
+     * Cleared after being shown in UI.
+     */
+    pendingComboEndBonus: ComboEndBonusResult | null;
+
+    /**
+     * Pending groove end bonus (displayed when groove ends).
+     * Cleared after being shown in UI.
+     */
+    pendingGrooveEndBonus: GrooveEndBonusResult | null;
 }
 
 interface BeatDetectionActions {
@@ -1090,6 +1152,15 @@ const createInitialState = (): BeatDetectionState => ({
     grooveState: null,
     bestGrooveHotness: 0,
     bestGrooveStreak: 0,
+    // Rhythm XP Runtime State (Phase 1: Task 1.2)
+    rhythmXPCalculator: null,
+    rhythmSessionTotals: null,
+    lastRhythmXPResult: null,
+    currentCombo: 0,
+    maxCombo: 0,
+    previousComboLength: 0,
+    pendingComboEndBonus: null,
+    pendingGrooveEndBonus: null,
 });
 
 /**

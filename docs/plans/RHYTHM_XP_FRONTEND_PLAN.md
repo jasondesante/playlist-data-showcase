@@ -83,7 +83,7 @@ However, detailed breakdown is preserved internally in `RhythmSessionTotals` for
   ```
 
 ### 1.2 Extend BeatDetectionStore State (Runtime State Only)
-- [ ] Add Rhythm XP runtime state to `beatDetectionStore.ts`
+- [x] Add Rhythm XP runtime state to `beatDetectionStore.ts`
   ```typescript
   // Add to BeatDetectionState interface:
 
