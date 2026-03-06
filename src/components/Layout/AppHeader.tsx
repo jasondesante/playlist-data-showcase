@@ -32,9 +32,12 @@ interface AppHeaderProps {
   onTabChange?: (tabId: string) => void;
 }
 
+// Default subtitle
+const defaultSubtitle = 'Explore the Data Engine visually';
+
 export function AppHeader({
   title = 'Playlist Data Engine Showcase',
-  subtitle = 'Technical validation • Console logging enabled',
+  subtitle = defaultSubtitle,
   tabs,
   activeTab,
   onTabChange

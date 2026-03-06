@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff } from 'lucide-react';
+import { Settings, Key, Cloud, Gamepad2, Volume2, Bug, Database, AlertTriangle, Check, X, Download, Upload, ServerOff, ExternalLink, Info } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { useCharacterStore } from '@/store/characterStore';
@@ -608,6 +608,61 @@ export function SettingsTab() {
           </div>
         )}
       </div>
+
+      {/* About Section */}
+      <section className="settings-section settings-section-about">
+        <Card variant="outlined" padding="md" className="settings-about-card">
+          <div className="settings-about-content">
+            <Info className="settings-about-icon" />
+            <div className="settings-about-text">
+              <p>
+                This demo showcases the features of the{' '}
+                <a
+                  href="https://github.com/jasondesante/playlist-data-engine"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="settings-about-link"
+                >
+                  Playlist Data Engine
+                  <ExternalLink size={12} className="settings-about-link-icon" />
+                </a>
+                {' '}— a library for parsing playlists and generating rich audio analysis data.
+              </p>
+              <p className="settings-about-links">
+                <a
+                  href="https://github.com/jasondesante/playlist-data-showcase"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="settings-about-link"
+                >
+                  Source Code
+                  <ExternalLink size={12} className="settings-about-link-icon" />
+                </a>
+                {' • '}
+                <a
+                  href="https://listen.ar.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="settings-about-link"
+                >
+                  listen.ar.io
+                  <ExternalLink size={12} className="settings-about-link-icon" />
+                </a>
+                {' • '}
+                <a
+                  href="https://x.com/jasondesante"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="settings-about-link"
+                >
+                  @jasondesante
+                  <ExternalLink size={12} className="settings-about-link-icon" />
+                </a>
+              </p>
+            </div>
+          </div>
+        </Card>
+      </section>
 
       {/* API Keys Section */}
       <section className="settings-section">

@@ -59,6 +59,50 @@
   height: 1rem;
 }
 
+/* About Section */
+.settings-about {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+}
+
+.settings-about-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: hsl(var(--primary));
+  flex-shrink: 0;
+}
+
+.settings-about-text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+}
+
+.settings-about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: hsl(var(--primary));
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.settings-about-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.settings-about-link-icon {
+  opacity: 0.6;
+}
+
 /* Section */
 .settings-section {
   display: flex;

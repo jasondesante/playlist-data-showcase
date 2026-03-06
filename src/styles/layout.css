@@ -59,6 +59,24 @@
   color: hsl(var(--muted-foreground));
 }
 
+.app-header-link {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.15s ease;
+}
+
+.app-header-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.app-header-link-icon {
+  opacity: 0.6;
+}
+
 /* ========================================
    MINI AUDIO PLAYER (Task 4.2)
    ======================================== */
