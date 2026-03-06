@@ -646,7 +646,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
     - Avg Hotness Weight (default: 0.4, range: 0-1)
     - Duration Weight (default: 0.2, range: 0-1)
 
-- [ ] Create Global Settings Card
+- [x] Create Global Settings Card
   - Max Multiplier slider (default: 5.0, range: 1.5-10.0)
 
 ### 7.3 Create Separate Config Store

@@ -361,6 +361,7 @@ function RhythmXPConfigSection() {
     updateXPRatio,
     updateComboConfig,
     updateGrooveConfig,
+    updateMaxMultiplier,
     resetConfig,
     isBaseXPModified,
   } = useRhythmXPConfigActions();
@@ -706,7 +707,24 @@ function RhythmXPConfigSection() {
           <h3 className="xp-config-section-title">Global Settings</h3>
         </div>
         <div className="xp-config-section-content">
-          <p className="xp-config-placeholder">Global settings will be added in Task 7.2</p>
+          {/* Max Multiplier Slider - default: 5.0, range: 1.5-10.0 */}
+          <ConfigSlider
+            label="Max Multiplier"
+            description="Maximum total XP multiplier cap (combo + groove combined)"
+            value={rhythmConfig.maxMultiplier}
+            defaultValue={DEFAULT_RHYTHM_XP_CONFIG.maxMultiplier}
+            min={1.5}
+            max={10.0}
+            step={0.5}
+            onChange={(maxMultiplier) => updateMaxMultiplier(maxMultiplier)}
+            formatValue={(v) => `${v.toFixed(1)}x`}
+            isModified={rhythmConfig.maxMultiplier !== DEFAULT_RHYTHM_XP_CONFIG.maxMultiplier}
+            marks={[
+              { value: 1.5, label: '1.5x' },
+              { value: 5.0, label: '5x' },
+              { value: 10.0, label: '10x' },
+            ]}
+          />
         </div>
       </Card>
 
