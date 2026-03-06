@@ -55,6 +55,7 @@ import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
+import { BonusNotification } from './BonusNotification';
 import { GrooveStats } from './GrooveStats';
 import { RhythmXPStats } from './RhythmXPStats';
 import { RhythmXPSessionStats } from './RhythmXPSessionStats';
@@ -1114,16 +1115,23 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
       {/* Beat Timeline Visualization - Hidden when in DDR/Guitar lane mode */}
       {/* GrooveMeter for TapArea mode - inline with timeline (Phase 5: Task 5.5) */}
+      {/* Combo Bonus Notification (Phase 9: Task 9.2) */}
       {keyLaneViewMode === 'off' && grooveState && (
         <div className="beat-practice-groove-row">
-          <GrooveMeter
-            hotness={grooveState.hotness}
-            direction={grooveState.pocketDirection}
-            streak={grooveState.streakLength}
-            variant="compact"
-            pendingBonus={pendingGrooveEndBonus}
-            onBonusDisplayed={clearPendingBonuses}
-          />
+          <div className="beat-practice-groove-container">
+            <GrooveMeter
+              hotness={grooveState.hotness}
+              direction={grooveState.pocketDirection}
+              streak={grooveState.streakLength}
+              variant="compact"
+              pendingBonus={pendingGrooveEndBonus}
+              onBonusDisplayed={clearPendingBonuses}
+            />
+            <BonusNotification
+              comboBonus={pendingComboEndBonus}
+              onBonusDisplayed={clearPendingBonuses}
+            />
+          </div>
         </div>
       )}
       {keyLaneViewMode === 'off' && (
@@ -1324,15 +1332,22 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       ) : (
         <>
           {/* GrooveMeter for KeyLane mode - above lanes (Phase 5: Task 5.5) */}
+          {/* Combo Bonus Notification (Phase 9: Task 9.2) */}
           {grooveState && (
-            <GrooveMeter
-              hotness={grooveState.hotness}
-              direction={grooveState.pocketDirection}
-              streak={grooveState.streakLength}
-              variant="full"
-              pendingBonus={pendingGrooveEndBonus}
-              onBonusDisplayed={clearPendingBonuses}
-            />
+            <div className="beat-practice-groove-container beat-practice-groove-container--keylane">
+              <GrooveMeter
+                hotness={grooveState.hotness}
+                direction={grooveState.pocketDirection}
+                streak={grooveState.streakLength}
+                variant="full"
+                pendingBonus={pendingGrooveEndBonus}
+                onBonusDisplayed={clearPendingBonuses}
+              />
+              <BonusNotification
+                comboBonus={pendingComboEndBonus}
+                onBonusDisplayed={clearPendingBonuses}
+              />
+            </div>
           )}
           <KeyLaneView
             beatMap={subdividedBeatMap}

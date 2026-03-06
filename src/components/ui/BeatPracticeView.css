@@ -559,6 +559,16 @@
   gap: 0.75rem;
 }
 
+/* Groove Container for positioning bonus notifications (Phase 9: Task 9.2) */
+.beat-practice-groove-container {
+  position: relative;
+  flex: 1;
+}
+
+.beat-practice-groove-container--keylane {
+  flex: none;
+}
+
 /* Combo Feedback Row for TapArea mode (Phase 3.5: Task 3.5.4) */
 .beat-practice-combo-feedback-row {
   display: flex;

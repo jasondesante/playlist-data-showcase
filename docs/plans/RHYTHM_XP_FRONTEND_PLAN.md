@@ -749,7 +749,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
   - Color flash based on accuracy (green for perfect, etc.)
 
 ### 9.2 Add Bonus Celebration Animations
-- [ ] Combo end bonus animation
+- [x] Combo end bonus animation
   - Slide-in notification from GrooveMeter area
   - XP amount with combo count
   - Auto-dismiss with fade out
