@@ -784,7 +784,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [x] Add usage examples
 - [x] Document configuration options
 - [x] Document track-character relationship
-- [ ] Document combo vs groove streak distinction
+- [x] Document combo vs groove streak distinction
 
 ---
 

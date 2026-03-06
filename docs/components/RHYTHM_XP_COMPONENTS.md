@@ -900,6 +900,30 @@ Configuration is exposed in the **Rhythm XP** tab of `XPCalculatorTab`:
 | **Used For** | XP multiplier calculation | Groove end bonus, hotness display |
 | **UI Display** | ComboFeedbackDisplay component | GrooveMeter component |
 
+**Why Combo Must Be Tracked Separately:**
+
+Combo is tracked in `beatDetectionStore` rather than derived from the `GrooveAnalyzer` for three critical reasons:
+
+1. **Different Reset Conditions**: Combo resets on `miss` or `wrongKey`, while groove streak resets when hotness drops to 0 or direction changes. A player could maintain a groove streak (timing pocket) but still break their combo by hitting a wrong key.
+
+2. **Parameter Requirement**: `RhythmXPCalculator.recordHit()` requires the combo length as a separate parameter (`comboLength`) to calculate the XP multiplier. The groove analyzer doesn't track this specific metric.
+
+3. **UI Selector Access**: UI components like `ComboFeedbackDisplay` need to access the current combo via store selectors (`state.currentCombo`). Storing it in the beat detection store makes it readily available to all components.
+
+**Example Scenario:**
+
+```typescript
+// Player hits 50 notes in a row with good timing:
+// - combo: 50 (used for XP multiplier)
+// - groove streak: 50, hotness: 85%
+
+// Player hits a wrong key but timing is still in pocket:
+// - combo: 0 (reset due to wrongKey)
+// - groove streak: 51, hotness: 82% (groove continues!)
+
+// This is why they must be tracked separately.
+```
+
 ### XP Source Tracking
 
 All Rhythm XP uses a single source `'rhythm_game'`:
