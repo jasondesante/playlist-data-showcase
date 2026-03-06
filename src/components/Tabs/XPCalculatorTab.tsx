@@ -11,7 +11,7 @@ import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { showToast } from '../ui/Toast';
-import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw } from 'lucide-react';
+import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw, Music } from 'lucide-react';
 import type { LevelUpDetail } from 'playlist-data-engine';
 import { PrestigeSystem } from '@/types';
 import {
@@ -24,7 +24,7 @@ import './XPCalculatorTab.css';
 /**
  * Tab type for XP Calculator
  */
-type XPCalculatorTabType = 'calculator' | 'results' | 'config';
+type XPCalculatorTabType = 'calculator' | 'results' | 'config' | 'rhythm';
 
 /**
  * Pie chart data for XP source visualization
@@ -592,6 +592,14 @@ export function XPCalculatorTab() {
             aria-current={activeTab === 'config' ? 'true' : undefined}
           >
             <span className="xp-calculator-tab-label">Config</span>
+          </button>
+          <button
+            className={`xp-calculator-tab ${activeTab === 'rhythm' ? 'xp-calculator-tab-active' : ''}`}
+            onClick={() => setActiveTab('rhythm')}
+            aria-current={activeTab === 'rhythm' ? 'true' : undefined}
+          >
+            <Music size={16} />
+            <span className="xp-calculator-tab-label">Rhythm XP</span>
           </button>
         </div>
 
@@ -1581,6 +1589,74 @@ export function XPCalculatorTab() {
               <span className="xp-config-info-text">
                 Changes are saved automatically and affect all XP calculations.
                 Config is synced with engine. Use Manual Mode for one-time overrides.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Rhythm XP Tab Content (Task 7.1) */}
+        {activeTab === 'rhythm' && (
+          <div className="xp-config-section">
+            {/* Base XP Configuration Card (Task 7.2) */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Activity size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Base XP Configuration</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <p className="xp-config-placeholder">Base XP sliders will be added in Task 7.2</p>
+              </div>
+            </Card>
+
+            {/* Combo Configuration Card (Task 7.2) */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Sparkles size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Combo Configuration</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <p className="xp-config-placeholder">Combo configuration will be added in Task 7.2</p>
+              </div>
+            </Card>
+
+            {/* Groove Configuration Card (Task 7.2) */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Gauge size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Groove Configuration</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <p className="xp-config-placeholder">Groove configuration will be added in Task 7.2</p>
+              </div>
+            </Card>
+
+            {/* Global Settings Card (Task 7.2) */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Crown size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Global Settings</h3>
+              </div>
+              <div className="xp-config-section-content">
+                <p className="xp-config-placeholder">Global settings will be added in Task 7.2</p>
+              </div>
+            </Card>
+
+            {/* Reset Button (Task 7.4) */}
+            <div className="xp-config-reset-section">
+              <button
+                className="xp-config-reset-button"
+                disabled
+                aria-label="Reset Rhythm XP settings to defaults"
+              >
+                Reset Rhythm XP to Defaults
+              </button>
+            </div>
+
+            {/* Config Info */}
+            <div className="xp-config-info">
+              <span className="xp-config-info-icon">💡</span>
+              <span className="xp-config-info-text">
+                Configure how XP is earned during rhythm practice. Changes affect the beat detection game mode.
               </span>
             </div>
           </div>

@@ -602,14 +602,15 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 ## Phase 7: XPCalculatorTab - Rhythm XP Config Tab
 
 ### 7.1 Add New "Rhythm XP" Tab
-- [ ] Add fourth tab to XPCalculatorTab
+- [x] Add fourth tab to XPCalculatorTab
   ```typescript
   type XPCalculatorTabType = 'calculator' | 'results' | 'config' | 'rhythm';
   ```
-- [ ] Add tab button
+- [x] Add tab button
   ```tsx
   <button className={`xp-calculator-tab ${activeTab === 'rhythm' ? 'xp-calculator-tab-active' : ''}`}
     onClick={() => setActiveTab('rhythm')}>
+    <Music size={16} />
     <span className="xp-calculator-tab-label">Rhythm XP</span>
   </button>
   ```

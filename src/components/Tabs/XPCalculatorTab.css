@@ -2744,3 +2744,17 @@
   text-align: center;
   padding-top: 0.25rem;
 }
+
+/* ========================================
+   RHYTHM XP CONFIG TAB (Phase 7)
+   ======================================== */
+
+.xp-config-placeholder {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+  background-color: hsl(var(--surface-1) / 0.5);
+  border-radius: var(--radius);
+}
