@@ -47,6 +47,18 @@ Adding new features from updated playlist-data-engine:
 - useHeroEquipment, useLootBox, useItemCreator, useDataViewer hooks
 - EquipmentDetail component for comprehensive item display
 
+**Recent Updates (March 2026):**
+- **Rhythm XP System**: Full integration of real-time Score/XP tracking during beat practice
+  - RhythmXPStats component for header bar display (Score, XP, Combo, Multiplier)
+  - RhythmXPSessionStats component for session summary with Claim XP button
+  - ComboFeedbackDisplay component for lane feedback panel
+  - rhythmXPConfigStore for configurable XP settings
+  - beatDetectionStore extended with Rhythm XP runtime state
+  - XPCalculatorTab extended with "Rhythm XP" configuration tab
+  - Level-up celebration modal on XP claim
+  - Combo end and groove end bonus notifications
+  - See [Rhythm XP Components](docs/components/RHYTHM_XP_COMPONENTS.md) for details
+
 ---
 
 ## Built Components
@@ -69,7 +81,7 @@ Adding new features from updated playlist-data-engine:
 | useItemCreator | Create custom equipment items | None |
 | useDataViewer | Browse all game data (spells, skills, etc.) | None |
 
-### Stores (6 total)
+### Stores (8 total)
 
 | Store | State Managed | Persistence |
 |-------|---------------|-------------|
@@ -79,6 +91,8 @@ Adding new features from updated playlist-data-engine:
 | sensorStore | Permissions, environmental/gaming context | LocalForage |
 | appStore | Settings (API keys, audio config, XP rate) | LocalForage |
 | dataViewerStore | Data change tracking, update notifications | Memory |
+| beatDetectionStore | Beat detection, groove analysis, Rhythm XP runtime | LocalForage |
+| rhythmXPConfigStore | Rhythm XP configuration | LocalForage |
 
 ### Tab Components (12 total)
 

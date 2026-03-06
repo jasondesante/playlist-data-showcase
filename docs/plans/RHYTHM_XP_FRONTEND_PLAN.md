@@ -780,7 +780,7 @@ and TapArea mode, showing players their current streak and XP multiplier as they
 - [x] Test exit prompt when unclaimed XP
 
 ### 10.3 Documentation
-- [ ] Update component docs
+- [x] Update component docs
 - [ ] Add usage examples
 - [ ] Document configuration options
 - [ ] Document track-character relationship

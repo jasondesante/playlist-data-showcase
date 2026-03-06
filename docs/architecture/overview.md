@@ -342,6 +342,8 @@ export const usePlaylistStore = create<PlaylistState>()(
 | `sessionStore` | Active listening sessions | `session-storage` |
 | `sensorStore` | Environmental & gaming context | `sensor-storage` |
 | `appStore` | App settings (API keys, etc.) | `app-settings` |
+| `beatDetectionStore` | Beat detection, groove, Rhythm XP runtime | `beat-detection-storage` |
+| `rhythmXPConfigStore` | Rhythm XP configuration | `rhythm-xp-config-storage` |
 
 ### Store Access Pattern
 
@@ -447,6 +449,11 @@ export function TabName() {
 | `StatusIndicator` | Health status badge | `status` ('healthy' | 'degraded' | 'error'), `label` |
 | `LoadingSpinner` | Loading animation | `size`, `label` |
 | `MotionGraph` | Motion sensor line graph | `xData`, `yData`, `zData`, `label` |
+| `RhythmXPStats` | Real-time Score/XP/Combo/Multiplier | `sessionTotals`, `lastResult`, `currentCombo` |
+| `RhythmXPSessionStats` | Session summary with Claim XP | `sessionTotals`, `pendingComboBonus`, `pendingGrooveBonus`, `onClearBonuses`, `onClaimXP`, `hasCharacter` |
+| `ComboFeedbackDisplay` | Lane combo/multiplier feedback | `score`, `combo`, `multiplier` |
+
+**Rhythm XP Components:** See [Rhythm XP Components Documentation](../components/RHYTHM_XP_COMPONENTS.md) for detailed documentation on the Rhythm XP system components.
 
 ---
 
