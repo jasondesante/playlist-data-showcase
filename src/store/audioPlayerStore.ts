@@ -145,8 +145,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 });
             } else if (state === 'ended') {
                 // Restart from beginning when song has ended
+                // Don't set playbackState to 'loading' here - the canplay event handler
+                // would override it to 'paused' before play() actually starts.
+                // Let the 'play' event naturally set state to 'playing'.
                 audio.currentTime = 0;
-                set({ currentTime: 0, playbackState: 'loading' });
+                set({ currentTime: 0 });
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });
@@ -164,7 +167,20 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
     resume: () => {
         const audio = getAudioElement();
-        if (get().playbackState === 'paused' && get().currentUrl) {
+        const state = get().playbackState;
+        
+        if (state === 'paused' && get().currentUrl) {
+            audio.play().catch((err) => {
+                console.error('Playback failed:', err);
+                set({ error: err.message, playbackState: 'error' });
+            });
+        } else if (state === 'ended' && get().currentUrl) {
+            // Restart from beginning when song has ended
+            // Don't set playbackState to 'loading' here - the canplay event handler
+            // would override it to 'paused' before play() actually starts.
+            // Let the 'play' event naturally set state to 'playing'.
+            audio.currentTime = 0;
+            set({ currentTime: 0 });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
                 set({ error: err.message, playbackState: 'error' });
@@ -195,8 +211,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 });
             } else if (playbackState === 'ended') {
                 // Restart from beginning when song has ended
+                // Don't set playbackState to 'loading' here - the canplay event handler
+                // would override it to 'paused' before play() actually starts.
+                // Let the 'play' event naturally set state to 'playing'.
                 audio.currentTime = 0;
-                set({ currentTime: 0, playbackState: 'loading' });
+                set({ currentTime: 0 });
                 audio.play().catch((err) => {
                     console.error('Playback failed:', err);
                     set({ error: err.message, playbackState: 'error' });
@@ -245,6 +264,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         const audio = getAudioElement();
         const clampedVolume = Math.max(0, Math.min(1, volume));
         audio.volume = clampedVolume;
+        // If user drags volume above 0, unmute the audio
+        // (they expect sound to come back when dragging up from muted state)
+        if (clampedVolume > 0 && audio.muted) {
+            audio.muted = false;
+        }
         set({ volume: clampedVolume, isMuted: clampedVolume === 0 });
     },
 

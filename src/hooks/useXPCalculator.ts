@@ -180,7 +180,7 @@ export const useXPCalculator = () => {
             gamingMultiplier?: number;
         }
     ): XPBreakdown | null => {
-        logger.info('XPCalculator', 'Calculating XP', { durationSeconds, isMastered });
+        logger.debug('XPCalculator', 'Calculating XP', { durationSeconds, isMastered });
 
         try {
             // Use manual overrides if provided, otherwise calculate automatically
@@ -309,7 +309,7 @@ export const useXPCalculator = () => {
                 gamingDetails: Object.keys(gamingDetails).length > 0 ? gamingDetails : undefined
             };
 
-            logger.info('XPCalculator', 'Calculation result', breakdown);
+            logger.debug('XPCalculator', 'Calculation result', breakdown);
             return breakdown;
         } catch (error) {
             handleError(error, 'XPCalculator');
