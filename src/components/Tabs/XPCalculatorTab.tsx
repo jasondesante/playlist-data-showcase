@@ -1677,12 +1677,13 @@ export function XPCalculatorTab() {
                   <div className="xp-context-row">
                     <span className="xp-context-label">Weather:</span>
                     <span className="xp-context-value">
-                      {(environmentalContext as any).weather.weather_type || 'Unknown'}
-                      {(environmentalContext as any).weather.temperature && (
-                        <span className="ml-2">
-                          {Math.round((environmentalContext as any).weather.temperature)}°C
-                        </span>
-                      )}
+                      {(() => {
+                        const w = (environmentalContext as any).weather;
+                        const parts: string[] = [];
+                        if (w.weatherType) parts.push(w.weatherType);
+                        if (w.temperature !== undefined) parts.push(`${Math.round(w.temperature)}°F`);
+                        return parts.length > 0 ? parts.join(', ') : 'Unknown';
+                      })()}
                     </span>
                   </div>
                 )}

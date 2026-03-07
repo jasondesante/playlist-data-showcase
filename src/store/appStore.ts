@@ -41,7 +41,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     audioSampleRate: 44100,
     audioFftSize: 2048,
     verboseLogging: false,
-    hideRealLocation: false,
+    hideRealLocation: true,
 };
 
 export const useAppStore = create<AppState>()(
