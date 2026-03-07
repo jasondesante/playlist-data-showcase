@@ -256,6 +256,12 @@ export function CharacterLevelingTab() {
   // D&D 5e XP thresholds for levels 1-20
   const xpThresholds = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
 
+  // Helper function to format XP values to 1 decimal place
+  const formatXP = (xp: number): string => {
+    const rounded = Math.round(xp * 10) / 10;
+    return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+  };
+
 
   const handleAddCustomXP = async (amount: number) => {
     if (!activeChar || isProcessing) return;
@@ -629,7 +635,7 @@ export function CharacterLevelingTab() {
         <div className="leveling-xp-section">
           <div className="leveling-xp-header">
             <span className="leveling-xp-label">Experience Progress</span>
-            <span className="leveling-xp-values">{currentXP.toLocaleString()} / {nextLevel.toLocaleString()}</span>
+            <span className="leveling-xp-values">{formatXP(currentXP)} / {formatXP(nextLevel)}</span>
           </div>
           <div className="leveling-progress-bar">
             <div
@@ -640,7 +646,7 @@ export function CharacterLevelingTab() {
             </div>
           </div>
           <div className="leveling-xp-hint">
-            {(levelXPNeeded - currentLevelProgress).toLocaleString()} XP needed for next level
+            {formatXP(levelXPNeeded - currentLevelProgress)} XP needed for next level
           </div>
         </div>
       </Card>

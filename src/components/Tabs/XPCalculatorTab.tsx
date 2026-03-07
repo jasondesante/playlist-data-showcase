@@ -1419,11 +1419,11 @@ export function XPCalculatorTab() {
                 <div className="xp-character-stats">
                   <div className="xp-character-stat">
                     <span className="xp-stat-label">Current XP</span>
-                    <span className="xp-stat-value">{activeCharacter.xp.current.toLocaleString()}</span>
+                    <span className="xp-stat-value">{activeCharacter.xp.current.toFixed(1)}</span>
                   </div>
                   <div className="xp-character-stat">
                     <span className="xp-stat-label">XP to Next Level</span>
-                    <span className="xp-stat-value xp-stat-highlight">{getXPToNextLevel().toLocaleString()}</span>
+                    <span className="xp-stat-value xp-stat-highlight">{getXPToNextLevel().toFixed(1)}</span>
                   </div>
                 </div>
                 {characters.length > 1 && (

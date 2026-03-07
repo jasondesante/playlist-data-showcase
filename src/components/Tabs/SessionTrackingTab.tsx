@@ -25,6 +25,11 @@ import './SessionTrackingTab.css';
 // XP thresholds for D&D 5e levels 1-20
 const XP_THRESHOLDS = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
 
+// Format XP to 1 decimal place
+const formatXP = (xp: number): string => {
+  return xp.toFixed(1);
+};
+
 /**
  * SessionTrackingTab Component
  *
@@ -509,10 +514,10 @@ export function SessionTrackingTab() {
                         <div className="session-combined-xp-stat">
                           <span className="session-combined-xp-label">Total XP</span>
                           <span className="session-combined-xp-value">
-                            {(activeCharacter.xp.current + displayedXP).toLocaleString()}
+                            {formatXP(activeCharacter.xp.current + displayedXP)}
                           </span>
                           {displayedXP > 0 && (
-                            <span className="session-combined-xp-session">+{displayedXP}</span>
+                            <span className="session-combined-xp-session">+{formatXP(displayedXP)}</span>
                           )}
                         </div>
                         <div className="session-combined-xp-stat">
@@ -527,7 +532,7 @@ export function SessionTrackingTab() {
                         />
                       </div>
                       <div className="session-combined-xp-hint">
-                        {xpProgress ? xpProgress.xpNeeded.toLocaleString() : activeCharacter.xp.next_level.toLocaleString()} XP to next level
+                        {formatXP(xpProgress ? xpProgress.xpNeeded : activeCharacter.xp.next_level)} XP to next level
                       </div>
                     </div>
 
@@ -622,19 +627,19 @@ export function SessionTrackingTab() {
                         {xpBreakdown.environmentalBonusXP > 0 && (
                           <div className="session-combined-bonus-item">
                             <Zap size={10} />
-                            <span>+{xpBreakdown.environmentalBonusXP} Env</span>
+                            <span>+{formatXP(xpBreakdown.environmentalBonusXP)} Env</span>
                           </div>
                         )}
                         {xpBreakdown.gamingBonusXP > 0 && (
                           <div className="session-combined-bonus-item">
                             <Gamepad2 size={10} />
-                            <span>+{xpBreakdown.gamingBonusXP} Gaming</span>
+                            <span>+{formatXP(xpBreakdown.gamingBonusXP)} Gaming</span>
                           </div>
                         )}
                         {xpBreakdown.masteryBonusXP > 0 && (
                           <div className="session-combined-bonus-item">
                             <Star size={10} />
-                            <span>+{xpBreakdown.masteryBonusXP} Mastery</span>
+                            <span>+{formatXP(xpBreakdown.masteryBonusXP)} Mastery</span>
                           </div>
                         )}
                       </div>
@@ -712,7 +717,7 @@ export function SessionTrackingTab() {
                   <div className="session-history-item">
                     <span className="session-history-label">XP Earned</span>
                     <span className="session-history-value">
-                      {lastSession.total_xp_earned} XP
+                      {formatXP(lastSession.total_xp_earned)} XP
                     </span>
                   </div>
                   <div className="session-history-item">

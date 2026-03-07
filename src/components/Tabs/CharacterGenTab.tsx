@@ -799,7 +799,7 @@ export function CharacterGenTab() {
                     Race: {character.race}{character.subrace ? ` (${character.subrace})` : ''} | Class: {character.class}
                   </div>
                   <div className="character-xp">
-                    XP: {character.xp.current} / {character.xp.next_level}
+                    XP: {character.xp.current.toFixed(1)} / {character.xp.next_level}
                   </div>
                 </div>
               </div>
