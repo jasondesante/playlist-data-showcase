@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useXPCalculator, type XPBreakdown } from '../../hooks/useXPCalculator';
 import { useSensorStore } from '../../store/sensorStore';
 import { useCharacterStore } from '../../store/characterStore';
@@ -13,7 +13,7 @@ import { Card } from '../ui/Card';
 import RawJsonDump from '../ui/RawJsonDump';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import { showToast } from '../ui/Toast';
-import { User, ChevronDown, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw, Music, Eye, EyeOff } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Settings, Activity, Cloud, Gamepad2, Gauge, Crown, Sparkles, RotateCcw, Music, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import type { LevelUpDetail } from 'playlist-data-engine';
 import { PrestigeSystem } from '@/types';
 import {
@@ -55,7 +55,7 @@ interface ManualOverrides {
 /**
  * Combo formula preset types
  */
-type ComboFormulaPreset = 'default' | 'aggressive' | 'exponential' | 'step-based';
+type ComboFormulaPreset = 'default' | 'aggressive' | 'square-root' | 'step-based';
 
 /**
  * Combo formula preset configurations
@@ -71,17 +71,151 @@ const COMBO_FORMULA_PRESETS: Record<ComboFormulaPreset, { name: string; descript
     description: '1 + (combo / 25), faster growth',
     formula: (combo) => Math.min(1 + (combo / 25), 5),
   },
-  exponential: {
-    name: 'Exponential',
-    description: '1 + log10(combo + 1)',
-    formula: (combo) => 1 + Math.log10(combo + 1),
+  'square-root': {
+    name: 'Square Root',
+    description: '1 + √combo / 3, capped at 5x',
+    formula: (combo) => Math.min(1 + Math.sqrt(combo) / 3, 5),
   },
   'step-based': {
     name: 'Step-Based',
-    description: '+0.1x every 10 hits',
-    formula: (combo) => 1 + Math.floor(combo / 10) * 0.1,
+    description: '+0.2x every 10 hits',
+    formula: (combo) => Math.min(1 + Math.floor(combo / 10) * 0.2, 5),
   },
 };
+
+/**
+ * ComboFormulaChart - SVG chart showing multiplier scaling for a formula
+ * Renders a simple line chart with combo on X-axis and multiplier on Y-axis
+ */
+function ComboFormulaChart({
+  formula,
+  maxCombo = 150,
+  maxMultiplier = 5,
+}: {
+  formula: (combo: number) => number;
+  maxCombo?: number;
+  maxMultiplier?: number;
+}) {
+  // Chart dimensions
+  const chartWidth = 200;
+  const chartHeight = 100;
+  const padding = { left: 35, right: 10, top: 10, bottom: 15 };
+  const plotWidth = chartWidth - padding.left - padding.right;
+  const plotHeight = chartHeight - padding.top - padding.bottom;
+
+  // Generate points for the line
+  const points: string[] = [];
+  const numPoints = 50;
+  for (let i = 0; i <= numPoints; i++) {
+    const combo = (i / numPoints) * maxCombo;
+    const multiplier = Math.min(formula(combo), maxMultiplier);
+    const x = padding.left + (combo / maxCombo) * plotWidth;
+    const y = padding.top + plotHeight - ((multiplier - 1) / (maxMultiplier - 1)) * plotHeight;
+    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+
+  // Generate Y-axis grid lines and labels (1x to 5x)
+  const yLines = [];
+  const yLabels = [];
+  for (let i = 0; i <= 4; i++) {
+    const multiplier = 1 + i;
+    const y = padding.top + plotHeight - (i / 4) * plotHeight;
+    yLines.push(
+      <line
+        key={`y-${i}`}
+        x1={padding.left}
+        y1={y}
+        x2={chartWidth - padding.right}
+        y2={y}
+        stroke="hsl(var(--border) / 0.5)"
+        strokeWidth="0.5"
+        strokeDasharray={i === 0 ? 'none' : '2,2'}
+      />
+    );
+    yLabels.push(
+      <text
+        key={`yl-${i}`}
+        x={padding.left - 4}
+        y={y + 3}
+        className="xp-chart-label"
+        textAnchor="end"
+        fontSize="7"
+        fill="hsl(var(--muted-foreground))"
+      >
+        {multiplier}x
+      </text>
+    );
+  }
+
+  // Generate X-axis labels
+  const xLabels = [0, 50, 100, 150].map((combo) => (
+    <text
+      key={`x-${combo}`}
+      x={padding.left + (combo / maxCombo) * plotWidth}
+      y={chartHeight - 2}
+      className="xp-chart-label"
+      textAnchor="middle"
+      fontSize="7"
+      fill="hsl(var(--muted-foreground))"
+    >
+      {combo}
+    </text>
+  ));
+
+  return (
+    <div className="xp-formula-chart">
+      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="xp-formula-chart-svg">
+        {/* Grid lines */}
+        {yLines}
+        {/* Y-axis labels */}
+        {yLabels}
+        {/* X-axis labels */}
+        {xLabels}
+        {/* Axis lines */}
+        <line
+          x1={padding.left}
+          y1={padding.top}
+          x2={padding.left}
+          y2={chartHeight - padding.bottom}
+          stroke="hsl(var(--border))"
+          strokeWidth="1"
+        />
+        <line
+          x1={padding.left}
+          y1={chartHeight - padding.bottom}
+          x2={chartWidth - padding.right}
+          y2={chartHeight - padding.bottom}
+          stroke="hsl(var(--border))"
+          strokeWidth="1"
+        />
+        {/* The line */}
+        <polyline
+          fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          points={points.join(' ')}
+        />
+        {/* Gradient fill under the line */}
+        <defs>
+          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary) / 0.3)" />
+            <stop offset="100%" stopColor="hsl(var(--primary) / 0.05)" />
+          </linearGradient>
+        </defs>
+        <polygon
+          fill="url(#chartGradient)"
+          points={`${padding.left},${chartHeight - padding.bottom} ${points.join(' ')} ${chartWidth - padding.right},${chartHeight - padding.bottom}`}
+        />
+      </svg>
+      <div className="xp-formula-chart-labels">
+        <span className="xp-chart-axis-label">Combo Hits →</span>
+        <span className="xp-chart-axis-label">Multiplier ↑</span>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Props for ConfigToggle component
@@ -132,58 +266,6 @@ const ConfigToggle = React.memo(function ConfigToggle({
 });
 
 /**
- * Props for ConfigSelect component
- */
-interface ConfigSelectProps<T extends string> {
-  label: string;
-  description: string;
-  value: T;
-  defaultValue: T;
-  options: { value: T; label: string; description: string }[];
-  onChange: (value: T) => void;
-  isModified?: boolean;
-}
-
-/**
- * ConfigSelect component for dropdown configuration settings
- */
-function ConfigSelect<T extends string>({
-  label,
-  description,
-  value,
-  defaultValue,
-  options,
-  onChange,
-  isModified = false,
-}: ConfigSelectProps<T>) {
-  return (
-    <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
-      <div className="xp-config-label-group">
-        <span className="xp-config-label">{label}</span>
-        <span className="xp-config-description">{description}</span>
-      </div>
-      <div className="xp-config-control">
-        <select
-          className="xp-config-select"
-          value={value}
-          onChange={(e) => onChange(e.target.value as T)}
-          aria-label={label}
-        >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <span className="xp-config-default">
-          {isModified ? `(default: ${options.find(o => o.value === defaultValue)?.label})` : `(${options.find(o => o.value === defaultValue)?.label})`}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Props for ConfigSlider component (Task 3.3)
  */
 interface ConfigSliderProps {
@@ -209,6 +291,10 @@ interface ConfigSliderProps {
  *
  * IMPORTANT: This component is defined outside XPCalculatorTab and memoized
  * to prevent re-creation on every parent render, which would break drag interactions.
+ *
+ * Custom Input Mode:
+ * - Click the unlock button to enter custom values beyond slider range
+ * - Press Enter or blur to confirm, Escape to cancel
  */
 const ConfigSlider = React.memo(function ConfigSlider({
   label,
@@ -225,8 +311,15 @@ const ConfigSlider = React.memo(function ConfigSlider({
   appSpecific = false,
   marks,
 }: ConfigSliderProps) {
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  const [customInputValue, setCustomInputValue] = useState<string>(value.toString());
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const displayValue = formatValue ? formatValue(value) : (isAdditive ? `+${value.toFixed(2)}` : `${value.toFixed(2)}x`);
   const defaultDisplay = formatValue ? formatValue(defaultValue) : (isAdditive ? `+${defaultValue}` : `${defaultValue}`);
+
+  // Check if value is outside slider range
+  const isOutOfRange = value < min || value > max;
 
   // Compute mark positions for linear scale
   const sliderMarks = useMemo(() => {
@@ -252,6 +345,47 @@ const ConfigSlider = React.memo(function ConfigSlider({
     return ((markValue - min) / (max - min)) * 100;
   };
 
+  // Handle entering custom mode
+  const handleEnterCustomMode = useCallback(() => {
+    setCustomInputValue(value.toString());
+    setIsCustomMode(true);
+  }, [value]);
+
+  // Handle exiting custom mode
+  const handleExitCustomMode = useCallback((confirm: boolean) => {
+    if (confirm) {
+      const parsed = parseFloat(customInputValue);
+      if (!isNaN(parsed)) {
+        onChange(parsed);
+      }
+    }
+    setIsCustomMode(false);
+  }, [customInputValue, onChange]);
+
+  // Handle input keydown
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleExitCustomMode(true);
+    } else if (e.key === 'Escape') {
+      handleExitCustomMode(false);
+    }
+  }, [handleExitCustomMode]);
+
+  // Focus input when entering custom mode
+  useEffect(() => {
+    if (isCustomMode && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isCustomMode]);
+
+  // Sync customInputValue with value when not in custom mode
+  useEffect(() => {
+    if (!isCustomMode) {
+      setCustomInputValue(value.toString());
+    }
+  }, [value, isCustomMode]);
+
   return (
     <div className={`xp-config-row ${isModified ? 'xp-config-row-modified' : ''}`}>
       <div className="xp-config-label-group">
@@ -270,7 +404,7 @@ const ConfigSlider = React.memo(function ConfigSlider({
               min={min}
               max={max}
               step={step}
-              value={value}
+              value={Math.min(Math.max(value, min), max)}
               onChange={(e) => onChange(parseFloat(e.target.value))}
               aria-label={label}
             />
@@ -288,9 +422,31 @@ const ConfigSlider = React.memo(function ConfigSlider({
               </div>
             )}
           </div>
-          <span className={`xp-config-value-display ${isModified ? 'xp-config-value-modified' : ''}`}>
-            {displayValue}
-          </span>
+          {isCustomMode ? (
+            <input
+              ref={inputRef}
+              type="number"
+              className="xp-config-custom-input"
+              value={customInputValue}
+              onChange={(e) => setCustomInputValue(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              onBlur={() => handleExitCustomMode(true)}
+              step={step}
+              aria-label={`${label} custom value`}
+            />
+          ) : (
+            <span className={`xp-config-value-display ${isModified ? 'xp-config-value-modified' : ''} ${isOutOfRange ? 'xp-config-value-out-of-range' : ''}`}>
+              {displayValue}
+            </span>
+          )}
+          <button
+            className={`xp-config-unlock-btn ${isCustomMode ? 'xp-config-unlock-btn-active' : ''} ${isOutOfRange ? 'xp-config-unlock-btn-out-of-range' : ''}`}
+            onClick={() => isCustomMode ? handleExitCustomMode(false) : handleEnterCustomMode()}
+            title={isCustomMode ? 'Lock value' : 'Enter custom value (beyond slider range)'}
+            aria-label={isCustomMode ? 'Lock value' : 'Unlock custom input'}
+          >
+            {isCustomMode ? '🔒' : '🔓'}
+          </button>
         </div>
         <span className="xp-config-default">
           {isModified ? '(default: ' : '('}
@@ -370,6 +526,9 @@ function RhythmXPConfigSection() {
 
   // Local state for combo formula preset (since formula is a function, we store the preset name)
   const [comboFormulaPreset, setComboFormulaPreset] = useState<ComboFormulaPreset>('default');
+
+  // State for showing/hiding combo formula details
+  const [showFormulaDetails, setShowFormulaDetails] = useState(false);
 
   // Handle reset to defaults with confirmation toast (Task 7.4)
   const handleResetRhythmConfig = useCallback(() => {
@@ -571,20 +730,101 @@ function RhythmXPConfigSection() {
 
           {/* Combo Formula Preset - only visible when combo is enabled */}
           {rhythmConfig.combo.enabled && (
-            <ConfigSelect<ComboFormulaPreset>
-              label="Combo Formula"
-              description="How multiplier scales with combo length"
-              value={comboFormulaPreset}
-              defaultValue="default"
-              options={[
-                { value: 'default', label: 'Default', description: '1 + (combo / 50), capped' },
-                { value: 'aggressive', label: 'Aggressive', description: '1 + (combo / 25)' },
-                { value: 'exponential', label: 'Exponential', description: '1 + log10(combo + 1)' },
-                { value: 'step-based', label: 'Step-Based', description: '+0.1x every 10 hits' },
-              ]}
-              onChange={handleComboFormulaChange}
-              isModified={comboFormulaPreset !== 'default'}
-            />
+            <>
+              <div className={`xp-config-row ${comboFormulaPreset !== 'default' ? 'xp-config-row-modified' : ''}`}>
+                <div className="xp-config-label-group">
+                  <span className="xp-config-label">
+                    Combo Formula
+                    <button
+                      type="button"
+                      className="xp-formula-help-btn"
+                      onClick={() => setShowFormulaDetails(!showFormulaDetails)}
+                      aria-expanded={showFormulaDetails}
+                      aria-label="Toggle formula reference"
+                    >
+                      <HelpCircle size={14} />
+                    </button>
+                  </span>
+                  <span className="xp-config-description">How multiplier scales with combo length</span>
+                </div>
+                <div className="xp-config-control">
+                  <select
+                    className="xp-config-select"
+                    value={comboFormulaPreset}
+                    onChange={(e) => handleComboFormulaChange(e.target.value as ComboFormulaPreset)}
+                    aria-label="Combo Formula"
+                  >
+                    <option value="default">Default</option>
+                    <option value="aggressive">Aggressive</option>
+                    <option value="square-root">Square Root</option>
+                    <option value="step-based">Step-Based</option>
+                  </select>
+                  <span className="xp-config-default">
+                    {comboFormulaPreset !== 'default' ? '(default: Default)' : '(Default)'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Chart for currently selected formula - always visible */}
+              <div className="xp-formula-chart-inline">
+                <div className="xp-formula-chart-header">
+                  <span className="xp-formula-chart-title">
+                    {COMBO_FORMULA_PRESETS[comboFormulaPreset].name} Scaling
+                  </span>
+                  <code className="xp-formula-chart-formula">
+                    {comboFormulaPreset === 'default' && 'min(1 + combo/50, 5)'}
+                    {comboFormulaPreset === 'aggressive' && 'min(1 + combo/25, 5)'}
+                    {comboFormulaPreset === 'square-root' && 'min(1 + √combo/3, 5)'}
+                    {comboFormulaPreset === 'step-based' && 'min(1 + floor(combo/10) × 0.2, 5)'}
+                  </code>
+                </div>
+                <ComboFormulaChart
+                  formula={COMBO_FORMULA_PRESETS[comboFormulaPreset].formula}
+                  maxCombo={150}
+                  maxMultiplier={5}
+                />
+              </div>
+
+              {/* Expandable Formula Reference */}
+              {showFormulaDetails && (
+                <div className="xp-formula-details">
+                  <div className="xp-formula-header">
+                    <span>Formula Reference</span>
+                    <button
+                      type="button"
+                      className="xp-formula-collapse-btn"
+                      onClick={() => setShowFormulaDetails(false)}
+                      aria-label="Collapse formula reference"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                  </div>
+
+                  <div className="xp-formula-list">
+                    <div className={`xp-formula-item ${comboFormulaPreset === 'default' ? 'xp-formula-active' : ''}`}>
+                      <span className="xp-formula-name">Default</span>
+                      <code className="xp-formula-code">min(1 + combo/50, 5)</code>
+                      <span className="xp-formula-desc">Caps at 5x multiplier</span>
+                    </div>
+                    <div className={`xp-formula-item ${comboFormulaPreset === 'aggressive' ? 'xp-formula-active' : ''}`}>
+                      <span className="xp-formula-name">Aggressive</span>
+                      <code className="xp-formula-code">min(1 + combo/25, 5)</code>
+                      <span className="xp-formula-desc">Faster growth, caps at 5x</span>
+                    </div>
+                    <div className={`xp-formula-item ${comboFormulaPreset === 'square-root' ? 'xp-formula-active' : ''}`}>
+                      <span className="xp-formula-name">Square Root</span>
+                      <code className="xp-formula-code">min(1 + √combo/3, 5)</code>
+                      <span className="xp-formula-desc">Reaches 5x at combo 144</span>
+                    </div>
+                    <div className={`xp-formula-item ${comboFormulaPreset === 'step-based' ? 'xp-formula-active' : ''}`}>
+                      <span className="xp-formula-name">Step-Based</span>
+                      <code className="xp-formula-code">min(1 + floor(combo/10) × 0.2, 5)</code>
+                      <span className="xp-formula-desc">+0.2x every 10 hits</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Combo End Bonus Toggle */}
