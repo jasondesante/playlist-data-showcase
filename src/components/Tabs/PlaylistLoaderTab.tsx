@@ -320,6 +320,15 @@ export function PlaylistLoaderTab() {
                 defaultOpen={false}
               />
             )}
+            {selectedTrack && (
+              <RawJsonDump
+                data={selectedTrack}
+                title="Selected Track Object"
+                timestamp={parsedTimestamp}
+                status="healthy"
+                defaultOpen={false}
+              />
+            )}
           </div>
         </div>
       )}
