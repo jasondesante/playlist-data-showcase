@@ -3268,6 +3268,41 @@ const grooveAnalyzer = new GrooveAnalyzer({
 | `getGrooveStats` | `currentAudioTime?: number` | `GrooveStats \| null` | Get groove statistics for end bonus calculation. Returns null if no groove was active. |
 | `resetGrooveStats` | - | `void` | Reset groove lifetime tracking (called internally when groove ends) |
 | `reset` | - | `void` | Clear all state and start fresh |
+| `setDifficulty` | `options: { preset: DifficultyPreset, customPenalties?: Partial<GroovePenaltyConfig> }` | `void` | Set difficulty level for groove penalties. Updates `hotnessLossOnMiss` and `hotnessLossOnBreak` based on preset. |
+
+---
+
+### Difficulty Presets
+
+Groove penalties can be adjusted based on difficulty level. Higher difficulties have more severe penalties for misses and wrong keys.
+
+| Preset | `hotnessLossOnMiss` | `hotnessLossOnBreak` | Description |
+|--------|---------------------|----------------------|-------------|
+| `easy` | 15 | 15 | Forgiving for casual players |
+| `medium` | 25 | 25 | Balanced difficulty |
+| `hard` | 45 | 45 | Strict for veterans |
+| `custom` | (varies) | (varies) | Use `customPenalties` parameter |
+
+```typescript
+// Set to hard difficulty
+grooveAnalyzer.setDifficulty({ preset: 'hard' });
+
+// Set to custom difficulty
+grooveAnalyzer.setDifficulty({
+    preset: 'custom',
+    customPenalties: { hotnessLossOnMiss: 30, hotnessLossOnBreak: 25 }
+});
+```
+
+**Related Exports:**
+
+| Export | Description |
+|--------|-------------|
+| `EASY_GROOVE_PENALTIES` | Easy difficulty penalty config |
+| `MEDIUM_GROOVE_PENALTIES` | Medium difficulty penalty config |
+| `HARD_GROOVE_PENALTIES` | Hard difficulty penalty config |
+| `GROOVE_PENALTY_PRESETS` | Map of preset names to penalty configs |
+| `getGroovePenaltiesForPreset(preset, customPenalties?)` | Get penalty config for a preset |
 
 ---
 

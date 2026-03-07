@@ -1546,6 +1546,7 @@ Beat detection system based on the Ellis Dynamic Programming algorithm. Provides
 | `GrooveResult` | Result returned after each hit recorded | `pocketDirection`, `establishedOffset`, `consistency`, `hotness`, `streakLength`, `inPocket`, `pocketWindow` |
 | `GrooveState` | Snapshot of current groove analyzer state | `pocketDirection`, `establishedOffset`, `hotness`, `streakLength`, `hitCount`, `pocketWindow` |
 | `GrooveAnalyzerOptions` | Configuration for GrooveAnalyzer | `minHitsForPocket`, `basePocketWindowFraction`, `minPocketWindowSeconds`, `hotnessGainPerHit`, `hotnessLossOnBreak`, `hotnessLossOnMiss`, `averagingWindowSize`, `neutralDeadZone` |
+| `GroovePenaltyConfig` | Groove penalty configuration for difficulty presets | `hotnessLossOnMiss`, `hotnessLossOnBreak` |
 
 ### BeatMapGenerator
 
@@ -1797,6 +1798,41 @@ constructor(options?: Partial<GrooveAnalyzerOptions>)
 | `recordMiss(): GrooveResult` | Record a missed beat (user didn't press). Reduces hotness by configured miss penalty, resets streak, but keeps established pocket. |
 | `getState(): GrooveState` | Get current groove analyzer state snapshot |
 | `reset(): void` | Reset the analyzer to initial state |
+| `setDifficulty(options: { preset: DifficultyPreset, customPenalties?: Partial<GroovePenaltyConfig> }): void` | Set difficulty level for groove penalties. Updates `hotnessLossOnMiss` and `hotnessLossOnBreak` based on preset or custom values. |
+
+**Difficulty Presets:**
+
+Groove penalties can be adjusted based on difficulty level. Higher difficulties have more severe penalties for misses and wrong keys.
+
+| Preset | `hotnessLossOnMiss` | `hotnessLossOnBreak` | Description |
+|--------|---------------------|----------------------|-------------|
+| `easy` | 15 | 15 | Forgiving for casual players |
+| `medium` | 25 | 25 | Balanced difficulty |
+| `hard` | 45 | 45 | Strict for veterans |
+| `custom` | (varies) | (varies) | Use `customPenalties` parameter |
+
+**Usage:**
+
+```typescript
+// Set to hard difficulty
+grooveAnalyzer.setDifficulty({ preset: 'hard' });
+
+// Set to custom difficulty
+grooveAnalyzer.setDifficulty({
+    preset: 'custom',
+    customPenalties: { hotnessLossOnMiss: 30, hotnessLossOnBreak: 25 }
+});
+```
+
+**Related Exports:**
+
+| Export | Description |
+|--------|-------------|
+| `EASY_GROOVE_PENALTIES` | Easy difficulty penalty config |
+| `MEDIUM_GROOVE_PENALTIES` | Medium difficulty penalty config |
+| `HARD_GROOVE_PENALTIES` | Hard difficulty penalty config |
+| `GROOVE_PENALTY_PRESETS` | Map of preset names to penalty configs |
+| `getGroovePenaltiesForPreset(preset, customPenalties?)` | Get penalty config for a preset |
 
 **Pocket Detection:**
 
@@ -3105,9 +3141,9 @@ const DEFAULT_RHYTHM_XP_CONFIG = {
         perHitScale: 1.0,
         endBonus: {
             enabled: true,
-            maxStreakWeight: 0.4,
-            avgHotnessWeight: 0.4,
-            durationWeight: 0.2
+            maxStreakWeight: 5,
+            avgHotnessWeight: 5,
+            durationWeight: 5
         }
     },
     maxMultiplier: 5.0
