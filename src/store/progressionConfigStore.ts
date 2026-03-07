@@ -219,12 +219,28 @@ export const useProgressionConfigStore = create<ProgressionConfigStoreState>()(
                 metadata: state.metadata,
             }),
             // Merge persisted state with initial state to preserve actions (functions)
-            // Explicitly only merge settings and metadata, never override actions
-            merge: (persistedState, currentState) => ({
-                ...currentState,
-                settings: (persistedState as any)?.settings ?? currentState.settings,
-                metadata: (persistedState as any)?.metadata ?? currentState.metadata,
-            }),
+            // Deep-merge activity_bonuses to ensure new keys get default values
+            merge: (persistedState, currentState) => {
+                const persisted = persistedState as any;
+                if (!persisted?.settings) {
+                    return currentState;
+                }
+
+                // Deep-merge activity_bonuses to fill in any missing keys
+                const mergedActivityBonuses = {
+                    ...DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses,
+                    ...(persisted.settings?.activity_bonuses || {}),
+                };
+
+                return {
+                    ...currentState,
+                    settings: {
+                        ...persisted.settings,
+                        activity_bonuses: mergedActivityBonuses,
+                    },
+                    metadata: persisted.metadata ?? currentState.metadata,
+                };
+            },
             // Migration function for future schema changes
             version: PROGRESSION_CONFIG_VERSION,
             migrate: (persistedState, version) => {
@@ -248,9 +264,18 @@ export const useProgressionConfigStore = create<ProgressionConfigStoreState>()(
                     };
                 }
 
-                // Return persisted data (partialized state is merged with initial state which includes actions)
+                // Return persisted data with deep-merged activity_bonuses to ensure new keys exist
+                const persistedSettings = state.settings ?? createInitialState().settings;
+                const mergedActivityBonuses = {
+                    ...DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses,
+                    ...(persistedSettings.activity_bonuses || {}),
+                };
+
                 return {
-                    settings: state.settings ?? createInitialState().settings,
+                    settings: {
+                        ...persistedSettings,
+                        activity_bonuses: mergedActivityBonuses,
+                    },
                     metadata: state.metadata ?? createInitialState().metadata,
                 };
             },

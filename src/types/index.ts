@@ -164,6 +164,12 @@ export interface ActivityBonuses {
     action_fps: number;
     /** Multiplayer bonus additive (default: 0.15) - added to gaming_base for multiplayer games */
     multiplayer: number;
+    /** Rhythm game base multiplier (default: 1.25) - applied to listening XP when rhythm game is active */
+    rhythm_game_base: number;
+    /** Rhythm game combo bonus additive (default: 0.5) - up to +50% at max combo */
+    rhythm_game_combo: number;
+    /** Rhythm game groove bonus additive (default: 0.5) - up to +50% at 100% hotness */
+    rhythm_game_groove: number;
     /** Max multiplier cap (default: 3.0) - total XP multiplier cannot exceed this value */
     max_multiplier: number;
     /**
@@ -230,6 +236,9 @@ export const DEFAULT_PROGRESSION_CONFIG_SETTINGS: ProgressionConfigSettings = {
         rpg_game: 0.20,
         action_fps: 0.15,
         multiplayer: 0.15,
+        rhythm_game_base: 1.25,
+        rhythm_game_combo: 0.5,
+        rhythm_game_groove: 0.5,
         max_multiplier: 3.0,
         altitude: 1.3, // App-specific
     },

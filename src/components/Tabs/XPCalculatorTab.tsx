@@ -2120,6 +2120,54 @@ export function XPCalculatorTab() {
               </div>
             </Card>
 
+            {/* Rhythm Game Bonuses Section - Listening XP crossover multipliers */}
+            <Card variant="default" padding="md" className="xp-config-card">
+              <div className="xp-config-section-header">
+                <Music size={18} className="xp-config-section-icon" />
+                <h3 className="xp-config-section-title">Rhythm Game (Listening XP)</h3>
+              </div>
+              <div className="xp-config-section-subtitle">
+                Multipliers applied to your listening XP when the rhythm game is active
+              </div>
+              <div className="xp-config-section-content">
+                <ConfigSlider
+                  label="Rhythm Game Base"
+                  description="Base multiplier when rhythm game is active"
+                  value={config.activity_bonuses.rhythm_game_base}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rhythm_game_base}
+                  min={1.0}
+                  max={2.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('rhythm_game_base')}
+                  isModified={isActivityBonusModified('rhythm_game_base')}
+                />
+                <ConfigSlider
+                  label="Combo Bonus"
+                  description="Additive bonus up to max combo streak"
+                  value={config.activity_bonuses.rhythm_game_combo}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rhythm_game_combo}
+                  min={0.0}
+                  max={1.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('rhythm_game_combo')}
+                  isAdditive
+                  isModified={isActivityBonusModified('rhythm_game_combo')}
+                />
+                <ConfigSlider
+                  label="Groove Bonus"
+                  description="Additive bonus up to 100% hotness"
+                  value={config.activity_bonuses.rhythm_game_groove}
+                  defaultValue={DEFAULT_PROGRESSION_CONFIG_SETTINGS.activity_bonuses.rhythm_game_groove}
+                  min={0.0}
+                  max={1.0}
+                  step={0.05}
+                  onChange={handleActivityBonusChange('rhythm_game_groove')}
+                  isAdditive
+                  isModified={isActivityBonusModified('rhythm_game_groove')}
+                />
+              </div>
+            </Card>
+
             {/* Global Cap Section */}
             <Card variant="default" padding="md" className="xp-config-card">
               <div className="xp-config-section-header">

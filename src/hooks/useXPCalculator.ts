@@ -104,6 +104,10 @@ const mapConfigToEngineFormat = (config: ProgressionConfigSettings) => {
                 night_time: config.activity_bonuses.night_time,
                 extreme_weather: maxWeatherBonus,
                 high_altitude: config.activity_bonuses.altitude,
+                // Rhythm game bonuses - boost listening XP when rhythm game is active
+                rhythm_game_base: config.activity_bonuses.rhythm_game_base,
+                rhythm_game_combo: config.activity_bonuses.rhythm_game_combo,
+                rhythm_game_groove: config.activity_bonuses.rhythm_game_groove,
             }
         }
     } as Partial<ProgressionConfig>;
