@@ -3,9 +3,15 @@
  *
  * Manages audio playback state using HTML5 Audio API.
  * Provides a global audio player instance that can be controlled from any component.
+ *
+ * Includes Arweave gateway fallback support - when playing Arweave URLs,
+ * automatically tries alternate gateways if the primary gateway fails.
  */
 
 import { create } from 'zustand';
+import { isArweaveUrl } from '@/utils/arweaveUtils';
+import { arweaveGatewayManager } from '@/utils/arweaveGatewayManager';
+import { logger } from '@/utils/logger';
 
 export type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
 
@@ -26,10 +32,10 @@ interface AudioPlayerState {
     error: string | null;
 
     /** Actions */
-    play: (url: string) => void;
+    play: (url: string) => Promise<void>;
     pause: () => void;
     resume: () => void;
-    togglePlay: (url: string) => void;  // Toggle play/pause for given URL
+    togglePlay: (url: string) => Promise<void>;  // Toggle play/pause for given URL
     stop: () => void;
     seek: (time: number) => void;
     setVolume: (volume: number) => void;
@@ -39,7 +45,7 @@ interface AudioPlayerState {
     setPlaybackState: (state: PlaybackState) => void;
     setError: (error: string | null) => void;
     /** Load a track URL without starting playback (preloads the audio) */
-    load: (url: string) => void;
+    load: (url: string) => Promise<void>;
 }
 
 // Global HTML5 Audio instance
@@ -123,13 +129,32 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     isMuted: false,
     error: null,
 
-    play: (url: string) => {
+    play: async (url: string) => {
         const audio = getAudioElement();
         const currentUrl = get().currentUrl;
 
+        // Resolve Arweave URLs through gateway manager (handles non-Arweave URLs too)
+        let resolvedUrl = url;
+        if (isArweaveUrl(url)) {
+            set({ playbackState: 'loading' });
+            try {
+                resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
+                if (resolvedUrl !== url) {
+                    logger.info('Store', 'Arweave URL resolved to alternate gateway', {
+                        originalUrl: url,
+                        resolvedUrl,
+                    });
+                }
+            } catch (err) {
+                logger.error('Store', 'Arweave gateway resolution failed', { url, error: err });
+                // Fall back to original URL
+                resolvedUrl = url;
+            }
+        }
+
         if (currentUrl !== url) {
             // New track - load and play
-            audio.src = url;
+            audio.src = resolvedUrl;
             set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
@@ -188,7 +213,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         }
     },
 
-    togglePlay: (url: string) => {
+    togglePlay: async (url: string) => {
         const audio = getAudioElement();
         const currentUrl = get().currentUrl;
         const playbackState = get().playbackState;
@@ -222,8 +247,26 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
                 });
             }
         } else {
-            // Different track - load and play
-            audio.src = url;
+            // Different track - resolve URL and play
+            let resolvedUrl = url;
+            if (isArweaveUrl(url)) {
+                set({ playbackState: 'loading' });
+                try {
+                    resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
+                    if (resolvedUrl !== url) {
+                        logger.info('Store', 'Arweave URL resolved to alternate gateway', {
+                            originalUrl: url,
+                            resolvedUrl,
+                        });
+                    }
+                } catch (err) {
+                    logger.error('Store', 'Arweave gateway resolution failed', { url, error: err });
+                    // Fall back to original URL
+                    resolvedUrl = url;
+                }
+            }
+
+            audio.src = resolvedUrl;
             set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });
             audio.play().catch((err) => {
                 console.error('Playback failed:', err);
@@ -239,13 +282,32 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
         set({ currentUrl: null, playbackState: 'idle', currentTime: 0, duration: 0, error: null });
     },
 
-    load: (url: string) => {
+    load: async (url: string) => {
         const audio = getAudioElement();
         const currentUrl = get().currentUrl;
 
         // Only load if it's a different URL
         if (currentUrl !== url) {
-            audio.src = url;
+            // Resolve Arweave URLs through gateway manager
+            let resolvedUrl = url;
+            if (isArweaveUrl(url)) {
+                set({ playbackState: 'loading' });
+                try {
+                    resolvedUrl = await arweaveGatewayManager.resolveUrl(url);
+                    if (resolvedUrl !== url) {
+                        logger.info('Store', 'Arweave URL resolved to alternate gateway', {
+                            originalUrl: url,
+                            resolvedUrl,
+                        });
+                    }
+                } catch (err) {
+                    logger.error('Store', 'Arweave gateway resolution failed', { url, error: err });
+                    // Fall back to original URL
+                    resolvedUrl = url;
+                }
+            }
+
+            audio.src = resolvedUrl;
             // Set to paused state (ready to play) rather than loading
             // The canplay event will transition to 'paused' when ready
             set({ currentUrl: url, currentTime: 0, error: null, playbackState: 'loading' });

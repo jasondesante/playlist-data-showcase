@@ -115,21 +115,21 @@ The following decisions were clarified during planning:
 
 ## Phase 4: Audio Player Integration
 
-### Task 4.1: Integrate gateway manager with audio player
-- [ ] Modify `src/store/audioPlayerStore.ts`
-  - [ ] Import `isArweaveUrl` from `playlist-data-engine`
-  - [ ] Import `arweaveGatewayManager` from `@/utils/arweaveGatewayManager`
-  - [ ] Import `config` from `@/utils/env`
-  - [ ] Modify `play(url: string)` method:
+### Task 4.1: Integrate gateway manager with audio player ✅
+- [x] Modify `src/store/audioPlayerStore.ts`
+  - [x] Import `isArweaveUrl` from `playlist-data-engine`
+  - [x] Import `arweaveGatewayManager` from `@/utils/arweaveGatewayManager`
+  - [x] Import `config` from `@/utils/env`
+  - [x] Modify `play(url: string)` method:
     - Check if URL is Arweave
     - If Arweave, await `gatewayManager.resolveUrl(url)`
     - Use resolved URL for `audio.src`
-  - [ ] Modify `togglePlay(url: string)` method:
+  - [x] Modify `togglePlay(url: string)` method:
     - Same pattern as `play()`
-  - [ ] Modify `load(url: string)` method:
+  - [x] Modify `load(url: string)` method:
     - Same pattern as `play()`
-  - [ ] Add error handling for gateway resolution failures
-  - [ ] Add logging for gateway fallback events
+  - [x] Add error handling for gateway resolution failures
+  - [x] Add logging for gateway fallback events
 
 ---
 
