@@ -103,13 +103,13 @@ The following decisions were clarified during planning:
     - `arweaveGatewayTimeout: number`
     - `arweaveCacheTTL: number`
 
-### Task 3.2: Update .env.example
-- [ ] Modify `.env.example`
-  - [ ] Add `VITE_ARWEAVE_GATEWAY=https://arweave.net`
-  - [ ] Add `VITE_ARWEAVE_FALLBACK_GATEWAYS=ardrive.net,turbo-gateway.com`
-  - [ ] Add `VITE_ARWEAVE_GATEWAY_TIMEOUT=5000`
-  - [ ] Add `VITE_ARWEAVE_CACHE_TTL=7200000` (2 hours)
-  - [ ] Add comments explaining each variable
+### Task 3.2: Update .env.example ✅
+- [x] Modify `.env.example`
+  - [x] Add `VITE_ARWEAVE_GATEWAY=https://arweave.net`
+  - [x] Add `VITE_ARWEAVE_FALLBACK_GATEWAYS=ardrive.net,turbo-gateway.com`
+  - [x] Add `VITE_ARWEAVE_GATEWAY_TIMEOUT=5000`
+  - [x] Add `VITE_ARWEAVE_CACHE_TTL=7200000` (2 hours)
+  - [x] Add comments explaining each variable
 
 ---
 
