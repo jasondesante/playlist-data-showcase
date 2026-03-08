@@ -112,36 +112,37 @@ export class ArweaveGatewayManager {
             return url;
         }
 
-        // Parse the URL to get txId
+        // Parse the URL to get txId and pathSuffix
         const parsed = parseArweaveUrl(url);
         if (!parsed) {
             logger.warn('ArweaveGateway', 'Failed to parse Arweave URL, returning original', { url });
             return url;
         }
 
-        const { txId } = parsed;
+        const { txId, pathSuffix } = parsed;
 
         // Check cache first
         const cachedGateway = this.getCachedGateway(txId);
         if (cachedGateway) {
-            const workingUrl = constructGatewayUrl(txId, cachedGateway);
-            logger.debug('ArweaveGateway', 'Cache hit for txId', { txId, gateway: cachedGateway.host });
+            const workingUrl = constructGatewayUrl(txId, cachedGateway, pathSuffix);
+            logger.debug('ArweaveGateway', 'Cache hit for txId', { txId, gateway: cachedGateway.host, pathSuffix });
             return workingUrl;
         }
 
-        logger.debug('ArweaveGateway', 'Cache miss, checking gateways', { txId });
+        logger.debug('ArweaveGateway', 'Cache miss, checking gateways', { txId, pathSuffix });
 
         // Try each gateway in priority order
         for (const gateway of this.gateways) {
             try {
-                const isWorking = await this.checkGateway(txId, gateway);
+                const isWorking = await this.checkGateway(txId, gateway, pathSuffix);
                 if (isWorking) {
                     // Cache the working gateway
                     this.setCache(txId, gateway);
-                    const workingUrl = constructGatewayUrl(txId, gateway);
+                    const workingUrl = constructGatewayUrl(txId, gateway, pathSuffix);
                     logger.info('ArweaveGateway', 'Gateway check succeeded', {
                         txId,
                         gateway: gateway.host,
+                        pathSuffix,
                         workingUrl,
                     });
                     return workingUrl;
@@ -151,13 +152,14 @@ export class ArweaveGatewayManager {
                 logger.debug('ArweaveGateway', 'Gateway check failed', {
                     txId,
                     gateway: gateway.host,
+                    pathSuffix,
                     error: error instanceof Error ? error.message : String(error),
                 });
             }
         }
 
         // All gateways failed, return original URL
-        logger.warn('ArweaveGateway', 'All gateways failed, returning original URL', { txId, originalUrl: url });
+        logger.warn('ArweaveGateway', 'All gateways failed, returning original URL', { txId, pathSuffix, originalUrl: url });
         return url;
     }
 
@@ -169,10 +171,11 @@ export class ArweaveGatewayManager {
      *
      * @param txId - The transaction ID to check
      * @param gateway - The gateway to check
+     * @param pathSuffix - Optional path suffix to append after txId
      * @returns true if the gateway can serve the transaction
      */
-    async checkGateway(txId: string, gateway: GatewayConfig): Promise<boolean> {
-        const url = constructGatewayUrl(txId, gateway);
+    async checkGateway(txId: string, gateway: GatewayConfig, pathSuffix: string = ''): Promise<boolean> {
+        const url = constructGatewayUrl(txId, gateway, pathSuffix);
 
         // Create AbortController for timeout
         const controller = new AbortController();

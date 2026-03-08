@@ -27,6 +27,8 @@ export interface ArweaveUrlInfo {
     txId: string;
     /** The original URL that was parsed */
     originalUrl: string;
+    /** Additional path after the txId (e.g., '/cs-plate.jpeg-image_small') */
+    pathSuffix: string;
 }
 
 /**
@@ -84,12 +86,12 @@ export function isArweaveUrl(url: string): boolean {
 }
 
 /**
- * Parse an Arweave URL to extract the transaction ID
+ * Parse an Arweave URL to extract the transaction ID and any path suffix
  *
  * Handles both formats:
  * - `ar://{txId}` - Native Arweave protocol
  * - `https://arweave.net/{txId}` - HTTP gateway URLs
- * - `https://arweave.net/path/{txId}` - URLs with path prefix
+ * - `https://arweave.net/{txId}/path/to/file` - URLs with path suffix
  *
  * @param url - The Arweave URL to parse
  * @returns ArweaveUrlInfo if valid, null if not an Arweave URL or no txId found
@@ -105,26 +107,53 @@ export function parseArweaveUrl(url: string): ArweaveUrlInfo | null {
     }
 
     let txId: string | null = null;
+    let pathSuffix = '';
 
     // Handle ar:// protocol
     if (url.startsWith('ar://')) {
-        txId = url.slice(5); // Remove 'ar://' prefix
+        const afterProtocol = url.slice(5); // Remove 'ar://' prefix
+        // Check if there's a path after the txId
+        const slashIndex = afterProtocol.indexOf('/');
+        if (slashIndex !== -1) {
+            txId = afterProtocol.slice(0, slashIndex);
+            pathSuffix = afterProtocol.slice(slashIndex);
+        } else {
+            txId = afterProtocol;
+        }
         // Validate it's a proper txId (43 chars)
         if (txId.length === 43 && /^[A-Za-z0-9_-]+$/.test(txId)) {
-            return { txId, originalUrl: url };
+            return { txId, originalUrl: url, pathSuffix };
         }
+        return null;
     }
 
     // For HTTP URLs, try to extract txId using regex
     // This handles various URL patterns like:
     // - https://arweave.net/{txId}
-    // - https://arweave.net/path/{txId}
+    // - https://arweave.net/{txId}/path/to/file
     // - https://ardrive.net/{txId}?query=...
     const matches = url.match(ARWEAVE_TXID_REGEX);
     if (matches && matches.length > 0) {
-        // Return the first 43-character match that looks like a txId
+        // Get the first 43-character match that looks like a txId
         txId = matches[0];
-        return { txId, originalUrl: url };
+
+        // Find where the txId ends in the URL and extract any path suffix
+        const txIdIndex = url.indexOf(txId);
+        if (txIdIndex !== -1) {
+            const afterTxId = url.slice(txIdIndex + 43);
+            // Extract path (everything before query string or fragment)
+            const queryIndex = Math.min(
+                afterTxId.indexOf('?') === -1 ? Infinity : afterTxId.indexOf('?'),
+                afterTxId.indexOf('#') === -1 ? Infinity : afterTxId.indexOf('#')
+            );
+            if (queryIndex === Infinity) {
+                pathSuffix = afterTxId;
+            } else {
+                pathSuffix = afterTxId.slice(0, queryIndex);
+            }
+        }
+
+        return { txId, originalUrl: url, pathSuffix };
     }
 
     return null;
@@ -135,11 +164,12 @@ export function parseArweaveUrl(url: string): ArweaveUrlInfo | null {
  *
  * @param txId - The 43-character Arweave transaction ID
  * @param gateway - The gateway configuration to use
+ * @param pathSuffix - Optional path suffix to append after txId (e.g., '/file.jpg')
  * @returns The full gateway URL
  */
-export function constructGatewayUrl(txId: string, gateway: GatewayConfig): string {
+export function constructGatewayUrl(txId: string, gateway: GatewayConfig, pathSuffix: string = ''): string {
     const protocol = gateway.protocol || 'https';
-    return `${protocol}://${gateway.host}/${txId}`;
+    return `${protocol}://${gateway.host}/${txId}${pathSuffix}`;
 }
 
 /**
@@ -147,13 +177,15 @@ export function constructGatewayUrl(txId: string, gateway: GatewayConfig): strin
  *
  * @param txId - The 43-character Arweave transaction ID
  * @param gateways - Array of gateway configs (defaults to DEFAULT_GATEWAYS)
+ * @param pathSuffix - Optional path suffix to append after txId (e.g., '/file.jpg')
  * @returns Array of gateway URLs in priority order
  */
 export function getAllGatewayUrls(
     txId: string,
-    gateways: GatewayConfig[] = DEFAULT_GATEWAYS
+    gateways: GatewayConfig[] = DEFAULT_GATEWAYS,
+    pathSuffix: string = ''
 ): string[] {
     return gateways
         .sort((a, b) => a.priority - b.priority)
-        .map(gateway => constructGatewayUrl(txId, gateway));
+        .map(gateway => constructGatewayUrl(txId, gateway, pathSuffix));
 }

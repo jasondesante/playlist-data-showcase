@@ -143,6 +143,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: 'ar://' + VALID_TX_ID,
+                pathSuffix: '',
             });
         });
 
@@ -164,6 +165,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
 
@@ -173,6 +175,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
 
@@ -182,6 +185,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
 
@@ -191,6 +195,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
     });
@@ -202,6 +207,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
     });
@@ -213,6 +219,7 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
             });
         });
     });
@@ -224,6 +231,59 @@ describe('parseArweaveUrl', () => {
             expect(result).toEqual({
                 txId: VALID_TX_ID,
                 originalUrl: url,
+                pathSuffix: '',
+            });
+        });
+    });
+
+    describe('URLs with path suffix', () => {
+        it('should extract txId and path suffix from URL with additional path', () => {
+            const url = 'https://arweave.net/' + VALID_TX_ID + '/cs-plate.jpeg-image_small';
+            const result = parseArweaveUrl(url);
+            expect(result).toEqual({
+                txId: VALID_TX_ID,
+                originalUrl: url,
+                pathSuffix: '/cs-plate.jpeg-image_small',
+            });
+        });
+
+        it('should extract path suffix with multiple segments', () => {
+            const url = 'https://arweave.net/' + VALID_TX_ID + '/path/to/file.jpg';
+            const result = parseArweaveUrl(url);
+            expect(result).toEqual({
+                txId: VALID_TX_ID,
+                originalUrl: url,
+                pathSuffix: '/path/to/file.jpg',
+            });
+        });
+
+        it('should extract path suffix and ignore query string', () => {
+            const url = 'https://arweave.net/' + VALID_TX_ID + '/file.jpg?width=100';
+            const result = parseArweaveUrl(url);
+            expect(result).toEqual({
+                txId: VALID_TX_ID,
+                originalUrl: url,
+                pathSuffix: '/file.jpg',
+            });
+        });
+
+        it('should extract path suffix and ignore hash fragment', () => {
+            const url = 'https://arweave.net/' + VALID_TX_ID + '/file.jpg#section';
+            const result = parseArweaveUrl(url);
+            expect(result).toEqual({
+                txId: VALID_TX_ID,
+                originalUrl: url,
+                pathSuffix: '/file.jpg',
+            });
+        });
+
+        it('should handle ar:// protocol with path suffix', () => {
+            const url = 'ar://' + VALID_TX_ID + '/image.png';
+            const result = parseArweaveUrl(url);
+            expect(result).toEqual({
+                txId: VALID_TX_ID,
+                originalUrl: url,
+                pathSuffix: '/image.png',
             });
         });
     });
@@ -289,6 +349,18 @@ describe('constructGatewayUrl', () => {
         const result = constructGatewayUrl(VALID_TX_ID, gateway);
         expect(result).toBe('http://localhost:8080/' + VALID_TX_ID);
     });
+
+    it('should construct URL with path suffix', () => {
+        const gateway: GatewayConfig = { host: 'arweave.net', protocol: 'https', priority: 0 };
+        const result = constructGatewayUrl(VALID_TX_ID, gateway, '/cs-plate.jpeg-image_small');
+        expect(result).toBe('https://arweave.net/' + VALID_TX_ID + '/cs-plate.jpeg-image_small');
+    });
+
+    it('should construct URL with path suffix for alternate gateway', () => {
+        const gateway: GatewayConfig = { host: 'ardrive.net', protocol: 'https', priority: 1 };
+        const result = constructGatewayUrl(VALID_TX_ID, gateway, '/image.png');
+        expect(result).toBe('https://ardrive.net/' + VALID_TX_ID + '/image.png');
+    });
 });
 
 // ============================================================
@@ -320,6 +392,14 @@ describe('getAllGatewayUrls', () => {
     it('should return empty array for empty gateways list', () => {
         const urls = getAllGatewayUrls(VALID_TX_ID, []);
         expect(urls).toEqual([]);
+    });
+
+    it('should return URLs with path suffix in priority order', () => {
+        const urls = getAllGatewayUrls(VALID_TX_ID, DEFAULT_GATEWAYS, '/image.png');
+        expect(urls).toHaveLength(3);
+        expect(urls[0]).toBe('https://arweave.net/' + VALID_TX_ID + '/image.png');
+        expect(urls[1]).toBe('https://ardrive.net/' + VALID_TX_ID + '/image.png');
+        expect(urls[2]).toBe('https://turbo-gateway.com/' + VALID_TX_ID + '/image.png');
     });
 });
 
