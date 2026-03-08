@@ -86,8 +86,10 @@ Both `React.MouseEvent` and `React.KeyboardEvent` satisfy this interface, so the
 **Context:** These are intentional debug casts to attach debug data to the window object.
 
 **Verdict:** These are acceptable as debug utilities. Consider:
-- [ ] Create a typed global debug interface if this pattern is used frequently
-- [ ] Add a comment explaining the purpose of these debug globals
+- [x] Create a typed global debug interface if this pattern is used frequently
+- [x] Add a comment explaining the purpose of these debug globals
+
+**Fix Applied:** Created `src/global.d.ts` with a typed `ItemCreatorDebugData` interface and extended the Window interface. Updated both `useItemCreator.ts` and `useHeroEquipment.ts` to use the typed `window.__itemCreatorDebug` property instead of the unsafe `as unknown as Record<string, unknown>` cast. Added JSDoc comments explaining the debug utility's purpose.
 
 ---
 
@@ -257,7 +259,7 @@ Both `React.MouseEvent` and `React.KeyboardEvent` satisfy this interface, so the
 ### Priority 1: Type Fixes (Quick Wins)
 1. ~~Fix `setActiveCharacter` type signature to accept `null`~~ ✅ DONE
 2. ~~Create proper type for ChartEditor event handling~~ ✅ DONE
-3. Document window debug globals
+3. ~~Document window debug globals~~ ✅ DONE
 
 ### Priority 2: Migration Research
 1. Deep dive into intensityThreshold → filter semantics

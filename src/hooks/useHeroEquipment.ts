@@ -237,7 +237,8 @@ export const useHeroEquipment = (): UseHeroEquipmentReturn => {
                     extensionManagerCustomItems: customEquipment?.length || 0,
                     allEquipmentNames: allEquipment?.map(e => e.name).slice(0, 20) || [], // First 20 names
                     customEquipmentNames: customEquipment?.map(e => e.name) || [],
-                    windowDebugState: (window as unknown as Record<string, unknown>).__itemCreatorDebug
+                    // Include window debug state (set by useItemCreator) for diagnostics
+                    windowDebugState: window.__itemCreatorDebug
                 });
                 return { success: false, error: `Equipment data not found for "${item.name}"` };
             }

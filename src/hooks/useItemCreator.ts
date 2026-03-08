@@ -661,8 +661,9 @@ export const useItemCreator = (): UseItemCreatorReturn => {
                     itemFoundInAll: allEquipment?.some(e => e.name === equipment.name) || false,
                     itemFoundInCustom: customEquipment?.some(e => e.name === equipment.name) || false
                 };
-                // Use a global variable to store last debug state instead of writing to file
-                (window as unknown as Record<string, unknown>).__itemCreatorDebug = debugData;
+                // Store debug state on window for browser console inspection.
+                // Useful for diagnosing equipment lookup issues: type `window.__itemCreatorDebug` in console.
+                window.__itemCreatorDebug = debugData;
                 logger.info('ItemCreator', 'Debug state stored in window.__itemCreatorDebug', debugData);
             } catch (e) {
                 logger.warn('ItemCreator', 'Failed to store debug state', { error: String(e) });
