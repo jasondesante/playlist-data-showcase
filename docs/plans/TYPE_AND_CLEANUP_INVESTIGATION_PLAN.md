@@ -111,7 +111,7 @@ The persisted state differs from runtime state in one key way: `subdivisionConfi
 
 ---
 
-### 1.6 characterStore.ts - Interval cleanup cast
+### 1.6 characterStore.ts - Interval cleanup cast ✅ DONE
 **File:** `src/store/characterStore.ts:161`
 ```typescript
 (checkInterval as unknown as { _unsubscribe?: () => void })._unsubscribe = unsubscribe;
@@ -120,8 +120,19 @@ The persisted state differs from runtime state in one key way: `subdivisionConfi
 **Context:** Attaching a property to a `NodeJS.Timeout` object.
 
 **Investigation Tasks:**
-- [ ] Consider using a wrapper object or Map to store the unsubscribe function
-- [ ] This is a common pattern but could be cleaner with a proper data structure
+- [x] Consider using a wrapper object or Map to store the unsubscribe function
+- [x] This is a common pattern but could be cleaner with a proper data structure
+
+**Fix Applied:** Created a `PlaylistListenerHandles` interface to properly store both the interval and unsubscribe function:
+
+```typescript
+interface PlaylistListenerHandles {
+    interval: ReturnType<typeof setInterval> | null;
+    unsubscribe: (() => void) | null;
+}
+```
+
+Added a `cleanup()` function that handles both resources consistently. This fix also addresses a bug: the original code stored `_unsubscribe` but never used it from the interval callback, meaning if the interval finished first (timeout/max retries/success), the playlist load subscription would never be cleaned up. Now both cleanup paths properly call `cleanup()` which handles both resources.
 
 ---
 
@@ -264,6 +275,7 @@ The persisted state differs from runtime state in one key way: `subdivisionConfi
 1. ~~Fix `setActiveCharacter` type signature to accept `null`~~ ✅ DONE
 2. ~~Create proper type for ChartEditor event handling~~ ✅ DONE
 3. ~~Document window debug globals~~ ✅ DONE
+4. ~~Fix characterStore interval cleanup cast~~ ✅ DONE
 
 ### Priority 2: Migration Research
 1. Deep dive into intensityThreshold → filter semantics

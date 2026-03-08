@@ -84,28 +84,59 @@ async function attemptTrackRestorationAsync(activeCharacterId: string, character
 }
 
 /**
+ * Interface for cleanup handles used by playlist listener.
+ * Stores references to both the polling interval and the event subscription
+ * so they can be properly cleaned up together.
+ */
+interface PlaylistListenerHandles {
+    interval: ReturnType<typeof setInterval> | null;
+    unsubscribe: (() => void) | null;
+}
+
+/**
  * Setup a listener for playlist loading events.
  * Uses a callback-based approach that will be notified when the playlist is loaded
  * (either via setPlaylist or via zustand rehydration from localStorage).
  */
 function setupPlaylistListener(activeCharacterId: string, characters: CharacterSheet[]) {
+    // Handles for cleanup - stores both the interval and unsubscribe function
+    const handles: PlaylistListenerHandles = {
+        interval: null,
+        unsubscribe: null
+    };
+
+    /**
+     * Clean up all resources (interval and subscription).
+     * Safe to call multiple times.
+     */
+    const cleanup = (): void => {
+        if (handles.interval !== null) {
+            clearInterval(handles.interval);
+            handles.interval = null;
+        }
+        if (handles.unsubscribe !== null) {
+            handles.unsubscribe();
+            handles.unsubscribe = null;
+        }
+        // Reset restoration state
+        restorationState = { needsRetry: false, attemptTime: 0, retryCount: 0 };
+    };
+
     // Use a polling fallback approach to check for playlist availability
     // This is a safety net in case the callback doesn't fire
-    const checkInterval = setInterval(async () => {
+    handles.interval = setInterval(async () => {
         // Check timeout
         const elapsed = Date.now() - restorationState.attemptTime;
         if (elapsed > RESTORATION_TIMEOUT_MS) {
             logger.warn('Store', 'Track restoration timeout - playlist not loaded within timeout period');
-            clearInterval(checkInterval);
-            restorationState = { needsRetry: false, attemptTime: 0, retryCount: 0 };
+            cleanup();
             return;
         }
 
         // Check max retries
         if (restorationState.retryCount >= MAX_RETRIES) {
             logger.warn('Store', 'Track restoration max retries reached');
-            clearInterval(checkInterval);
-            restorationState = { needsRetry: false, attemptTime: 0, retryCount: 0 };
+            cleanup();
             return;
         }
 
@@ -114,14 +145,14 @@ function setupPlaylistListener(activeCharacterId: string, characters: CharacterS
         // Try to restore asynchronously (handles dynamic imports properly)
         const result = await attemptTrackRestorationAsync(activeCharacterId, characters);
         if (result.stopRetrying) {
-            clearInterval(checkInterval);
+            cleanup();
         }
     }, RESTORATION_RETRY_INTERVAL_MS);
 
     // Also subscribe to playlist load events for immediate response
     // This handles the case where playlist is set or rehydrated after we start listening
     import('@/store/playlistStore').then(({ onPlaylistLoad }) => {
-        const unsubscribe = onPlaylistLoad(async (playlist) => {
+        handles.unsubscribe = onPlaylistLoad(async (playlist) => {
             logger.info('Store', 'Playlist load callback triggered', {
                 hasRestorationState: restorationState.needsRetry,
                 hasPlaylist: !!playlist,
@@ -133,8 +164,7 @@ function setupPlaylistListener(activeCharacterId: string, characters: CharacterS
             if (!restorationState.needsRetry) {
                 // Restoration already completed or abandoned, unsubscribe
                 logger.info('Store', 'Playlist load callback: No restoration needed, unsubscribing');
-                unsubscribe();
-                clearInterval(checkInterval);
+                cleanup();
                 return;
             }
 
@@ -151,14 +181,10 @@ function setupPlaylistListener(activeCharacterId: string, characters: CharacterS
                 });
                 if (result.stopRetrying) {
                     // Success or permanent failure - clean up
-                    unsubscribe();
-                    clearInterval(checkInterval);
+                    cleanup();
                 }
             }
         });
-
-        // Store unsubscribe function on the interval for cleanup
-        (checkInterval as unknown as { _unsubscribe?: () => void })._unsubscribe = unsubscribe;
     }).catch((error) => {
         logger.error('Store', 'Failed to subscribe to playlist load events', error);
         // Continue with polling as fallback
