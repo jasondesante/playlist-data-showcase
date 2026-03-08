@@ -60,30 +60,30 @@ The following decisions were clarified during planning:
 
 ## Phase 2: Gateway Manager in Frontend
 
-### Task 2.1: Create ArweaveGatewayManager class
-- [ ] Create `src/utils/arweaveGatewayManager.ts`
-  - [ ] Define `GatewayCache` interface (txId, workingGateway, timestamp, ttl)
-  - [ ] Define `GatewayCheckResult` interface (workingUrl, gateway, cached)
-  - [ ] Implement `ArweaveGatewayManager` class
-    - [ ] Constructor with config options (gateways, timeout, cacheTTL)
-    - [ ] Private cache: `Map<string, GatewayCache>`
-    - [ ] Implement `resolveUrl(url: string): Promise<string>`
+### Task 2.1: Create ArweaveGatewayManager class ✅
+- [x] Create `src/utils/arweaveGatewayManager.ts`
+  - [x] Define `GatewayCache` interface (txId, workingGateway, timestamp, ttl)
+  - [x] Define `GatewayCheckResult` interface (workingUrl, gateway, cached)
+  - [x] Implement `ArweaveGatewayManager` class
+    - [x] Constructor with config options (gateways, timeout, cacheTTL)
+    - [x] Private cache: `Map<string, GatewayCache>`
+    - [x] Implement `resolveUrl(url: string): Promise<string>`
       - Check if URL is Arweave
       - Check cache for known working gateway
       - Try each gateway in priority order with timeout
       - Cache successful result
       - Return original URL if all fail
-    - [ ] Implement `checkGateway(txId: string, gateway: GatewayConfig): Promise<boolean>`
+    - [x] Implement `checkGateway(txId: string, gateway: GatewayConfig): Promise<boolean>`
       - Use HEAD request with AbortController for timeout
       - Handle CORS errors gracefully
-    - [ ] Implement `getCachedGateway(txId: string): GatewayConfig | null`
-    - [ ] Implement `setCache(txId: string, gateway: GatewayConfig): void`
-    - [ ] Implement `clearCache(): void`
-    - [ ] Implement private `isCacheValid(cache: GatewayCache): boolean`
+    - [x] Implement `getCachedGateway(txId: string): GatewayConfig | null`
+    - [x] Implement `setCache(txId: string, gateway: GatewayConfig): void`
+    - [x] Implement `clearCache(): void`
+    - [x] Implement private `isCacheValid(cache: GatewayCache): boolean`
 
-### Task 2.2: Create singleton instance
-- [ ] Export singleton instance from `arweaveGatewayManager.ts`
-- [ ] Initialize with config from env.ts
+### Task 2.2: Create singleton instance ✅
+- [x] Export singleton instance from `arweaveGatewayManager.ts`
+- [x] Initialize with config from env.ts (uses defaults for now, will integrate in Phase 3)
 
 ---
 

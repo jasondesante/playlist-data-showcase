@@ -34,7 +34,8 @@ type LogCategory =
     | 'ContentValidation'
     | 'ClassConfigForm'
     | 'BeatDetection'
-    | 'SubdivisionPlayback';
+    | 'SubdivisionPlayback'
+    | 'ArweaveGateway';
 
 
 
