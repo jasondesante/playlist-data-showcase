@@ -324,7 +324,7 @@ export function PlaylistLoaderTab() {
               <RawJsonDump
                 data={selectedTrack}
                 title="Selected Track Object"
-                timestamp={parsedTimestamp}
+                timestamp={parsedTimestamp ?? undefined}
                 status="healthy"
                 defaultOpen={false}
               />

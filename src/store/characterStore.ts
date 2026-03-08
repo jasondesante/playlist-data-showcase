@@ -193,8 +193,8 @@ interface CharacterState {
     updateCharacter: (character: CharacterSheet) => void;
     /** Add a new character or update existing one (finds by seed) */
     addOrUpdateCharacter: (character: CharacterSheet) => void;
-    /** Set the active character by seed ID */
-    setActiveCharacter: (id: string) => void;
+    /** Set the active character by seed ID, or pass null to clear the active character */
+    setActiveCharacter: (id: string | null) => void;
     /** Delete a character by seed ID */
     deleteCharacter: (id: string) => void;
     /** Get the currently active character object */

@@ -324,7 +324,7 @@ export function CharacterGenTab() {
       } else {
         // No character exists for this track yet, and current active isn't related
         // Clear active character to show the "Ready to generate" state
-        setActiveCharacter(null as unknown as string);
+        setActiveCharacter(null);
       }
 
       // Reset game mode selection state when switching tracks
