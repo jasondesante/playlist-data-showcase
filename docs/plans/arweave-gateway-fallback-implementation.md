@@ -170,11 +170,11 @@ The following decisions were clarified during planning:
 
 ## Phase 6: Remove Hardcoded Gateways
 
-### Task 6.1: Update usePlaylistParser
-- [ ] Modify `src/hooks/usePlaylistParser.ts`
-  - [ ] Import `config` from `@/utils/env`
-  - [ ] Replace hardcoded `https://arweave.net/${trimmedInput}` with `https://${config.arweaveGateway}/${trimmedInput}`
-  - [ ] Add comment explaining gateway configuration
+### Task 6.1: Update usePlaylistParser ✅
+- [x] Modify `src/hooks/usePlaylistParser.ts`
+  - [x] Import `config` from `@/utils/env`
+  - [x] Replace hardcoded `https://arweave.net/${trimmedInput}` with `https://${config.arweaveGateway}/${trimmedInput}`
+  - [x] Add comment explaining gateway configuration
 
 ### Task 6.2: Update CombatSimulatorTab
 - [ ] Modify `src/components/Tabs/CombatSimulatorTab.tsx`

@@ -3,6 +3,7 @@ import { PlaylistParser } from 'playlist-data-engine';
 import { usePlaylistStore } from '@/store/playlistStore';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
+import { config } from '@/utils/env';
 
 /**
  * React hook for parsing playlists from the Playlist Data Engine.
@@ -60,7 +61,8 @@ export const usePlaylistParser = () => {
                 logger.info('PlaylistParser', 'Fetching from Arweave', trimmedInput);
                 let response: Response;
                 try {
-                    response = await fetch(`https://arweave.net/${trimmedInput}`);
+                    // Use configured Arweave gateway (can be overridden via VITE_ARWEAVE_GATEWAY env var)
+                    response = await fetch(`https://${config.arweaveGateway}/${trimmedInput}`);
                 } catch (fetchError) {
                     // Handle network errors (CORS, offline, etc.)
                     if (fetchError instanceof TypeError) {
