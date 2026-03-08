@@ -398,7 +398,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 ### Priority 2: Migration Research
 1. ~~Deep dive into intensityThreshold → filter semantics~~ ✅ DONE (findings documented in Section 2.1)
 2. ~~Document findings and verify correctness~~ ✅ DONE
-3. Create plan for eventual migration code removal (optional - migration is stable)
+3. ~~Create plan for eventual migration code removal (optional - migration is stable)~~ ✅ DONE (see docs/plans/MIGRATION_REMOVAL_PLAN.md)
 
 ### Priority 3: Comment Cleanup
 1. ~~Remove completed Phase/Task references~~ ✅ DONE
@@ -414,7 +414,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 ## Questions/Unknowns
 
 1. ~~**intensityThreshold semantics** - Need to verify the exact behavior of the old parameter vs new filter parameter~~ ✅ RESOLVED: Migration is pragmatically correct but semantically different (see Section 2.1 for details)
-2. **Migration timeline** - When can we safely remove migration code for old configs?
+2. ~~**Migration timeline** - When can we safely remove migration code for old configs?~~ ✅ RESOLVED: See docs/plans/MIGRATION_REMOVAL_PLAN.md for detailed removal schedule
 3. **Phase/Task tracking** - Is there a master task list that can be referenced to verify completion?
 
 ---
