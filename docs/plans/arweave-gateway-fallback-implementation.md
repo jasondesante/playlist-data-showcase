@@ -185,11 +185,13 @@ The following decisions were clarified during planning:
 
 ## Phase 7: Testing & Documentation
 
-### Task 7.1: Write unit tests for arweaveUtils
-- [ ] Create `playlist-data-engine/src/utils/__tests__/arweaveUtils.test.ts`
-  - [ ] Test `isArweaveUrl()` with various URL formats
-  - [ ] Test `parseArweaveUrl()` extracts correct txId
-  - [ ] Test `constructGatewayUrl()` builds correct URLs
+### Task 7.1: Write unit tests for arweaveUtils ✅
+- [x] Create `src/utils/__tests__/arweaveUtils.test.ts` (Note: Created in src/utils not playlist-data-engine)
+  - [x] Test `isArweaveUrl()` with various URL formats
+  - [x] Test `parseArweaveUrl()` extracts correct txId
+  - [x] Test `constructGatewayUrl()` builds correct URLs
+  - [x] Test `getAllGatewayUrls()` returns URLs in priority order
+  - [x] Test constants `DEFAULT_GATEWAYS` and `KNOWN_GATEWAY_HOSTS`
 
 ### Task 7.2: Write unit tests for ArweaveGatewayManager
 - [ ] Create `src/utils/__tests__/arweaveGatewayManager.test.ts`
@@ -250,12 +252,13 @@ Unit tests in Tasks 7.1-7.3 cover the fallback behavior. Manual verification is 
 
 ## Files Summary
 
-### New Files (3)
+### New Files (4)
 | File | Purpose |
 |------|---------|
 | `playlist-data-engine/src/utils/arweaveUtils.ts` | URL parsing utilities |
 | `src/utils/arweaveGatewayManager.ts` | Gateway fallback manager |
 | `src/components/shared/ArweaveImage.tsx` | Async image component |
+| `src/utils/__tests__/arweaveUtils.test.ts` | Unit tests for arweaveUtils |
 
 ### Modified Files (9)
 | File | Changes |
