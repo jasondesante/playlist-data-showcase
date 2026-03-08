@@ -16,6 +16,7 @@ import { usePlaylistStore } from '@/store/playlistStore';
 import { formatTime } from '@/utils/formatters';
 import { logger } from '@/utils/logger';
 import { TabBadge } from '@/components/ui/TabBadge';
+import { ArweaveImage } from '@/components/shared/ArweaveImage';
 import type { TabItem } from './Sidebar';
 
 interface AppHeaderProps {
@@ -134,7 +135,16 @@ export function AppHeader({
                     <div className="mini-player-track-info">
                       <div className="mini-player-artwork">
                         {track.image_url ? (
-                          <img src={track.image_url} alt={track.title} className="mini-player-artwork-image" />
+                          <ArweaveImage
+                            src={track.image_url}
+                            alt={track.title}
+                            className="mini-player-artwork-image"
+                            fallback={
+                              <div className="mini-player-artwork-placeholder">
+                                <Music size={16} />
+                              </div>
+                            }
+                          />
                         ) : (
                           <div className="mini-player-artwork-placeholder">
                             <Music size={16} />

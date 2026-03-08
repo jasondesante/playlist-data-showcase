@@ -161,10 +161,10 @@ The following decisions were clarified during planning:
   - [x] Replace preview `<img>` with `<ArweaveImage>`
   - [x] Add icon fallback for loading state
 
-### Task 5.4: Update AppHeader component
-- [ ] Modify `src/components/Layout/AppHeader.tsx`
-  - [ ] Import `ArweaveImage` component
-  - [ ] Replace mini-player artwork `<img>` with `<ArweaveImage>`
+### Task 5.4: Update AppHeader component ✅
+- [x] Modify `src/components/Layout/AppHeader.tsx`
+  - [x] Import `ArweaveImage` component
+  - [x] Replace mini-player artwork `<img>` with `<ArweaveImage>`
 
 ---
 
