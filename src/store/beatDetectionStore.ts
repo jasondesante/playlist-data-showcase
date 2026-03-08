@@ -1135,6 +1135,59 @@ interface BeatDetectionStoreState extends BeatDetectionState {
 }
 
 /**
+ * Serialized format for subdivision config in localStorage.
+ * Maps are serialized as arrays for JSON compatibility.
+ */
+interface PersistedSubdivisionConfig {
+    beatSubdivisions: [number, SubdivisionType][];
+    defaultSubdivision: SubdivisionType;
+}
+
+/**
+ * Subset of BeatDetectionStoreState that is persisted to localStorage.
+ * This type represents the exact shape of data stored in localStorage,
+ * which may differ from runtime types (e.g., Maps are serialized as arrays).
+ *
+ * Used by the Zustand persist middleware's partialize function to ensure
+ * type safety without needing `as unknown as` casts.
+ */
+interface PersistedBeatDetectionState {
+    // Beat map cache
+    cachedBeatMaps: Record<string, BeatMap>;
+    cacheOrder: string[];
+
+    // Generator options (OSE parameters)
+    generatorOptions: BeatMapGeneratorOptions;
+    hopSizeConfig: HopSizeConfig;
+    melBandsConfig: MelBandsConfig;
+    gaussianSmoothConfig: GaussianSmoothConfig;
+
+    // Difficulty and gameplay settings
+    difficultySettings: DifficultySettings;
+
+    // Interpolation state
+    interpolationOptions: BeatInterpolationOptions;
+    beatStreamMode: BeatStreamMode;
+    cachedInterpolatedBeatMaps: Record<string, InterpolatedBeatMap>;
+
+    // Downbeat configuration
+    downbeatConfig: DownbeatConfig | null;
+    showMeasureBoundaries: boolean;
+
+    // Subdivision state (serialized format - Maps become arrays)
+    subdivisionConfig: PersistedSubdivisionConfig;
+    currentSubdivision: SubdivisionType;
+    subdivisionTransitionMode: 'immediate' | 'next-downbeat' | 'next-measure';
+    cachedUnifiedBeatMaps: Record<string, UnifiedBeatMap>;
+    cachedSubdividedBeatMaps: Record<string, SubdividedBeatMap>;
+
+    // Chart Editor state (user preferences only)
+    chartStyle: ChartStyle;
+    editorMode: ChartEditorMode;
+    keyLaneViewMode: KeyLaneViewMode;
+}
+
+/**
  * Active generator instance for cancellation support.
  * This is set during generation and cleared when complete.
  */
@@ -3335,7 +3388,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 }
             }),
             // Only persist cached beat maps, cache order, generator options, and difficulty settings
-            partialize: (state) => ({
+            partialize: (state): PersistedBeatDetectionState => ({
                 cachedBeatMaps: state.cachedBeatMaps,
                 cacheOrder: state.cacheOrder,
                 generatorOptions: state.generatorOptions,
@@ -3367,7 +3420,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 chartStyle: state.chartStyle,
                 editorMode: state.editorMode,
                 keyLaneViewMode: state.keyLaneViewMode,
-            }) as unknown as BeatDetectionStoreState,
+            }),
             // Merge persisted state with initial state
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as any;

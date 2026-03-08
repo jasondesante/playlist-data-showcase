@@ -93,7 +93,7 @@ Both `React.MouseEvent` and `React.KeyboardEvent` satisfy this interface, so the
 
 ---
 
-### 1.5 beatDetectionStore.ts - Persisted state cast
+### 1.5 beatDetectionStore.ts - Persisted state cast ✅ DONE
 **File:** `src/store/beatDetectionStore.ts:3370`
 ```typescript
 }) as unknown as BeatDetectionStoreState
@@ -102,8 +102,12 @@ Both `React.MouseEvent` and `React.KeyboardEvent` satisfy this interface, so the
 **Context:** Persist middleware partial state cast.
 
 **Investigation Tasks:**
-- [ ] Verify the Zustand persist middleware pattern is correct
-- [ ] Check if there's a better way to type the partial state
+- [x] Verify the Zustand persist middleware pattern is correct
+- [x] Check if there's a better way to type the partial state
+
+**Fix Applied:** Created `PersistedBeatDetectionState` and `PersistedSubdivisionConfig` interfaces to properly type the partial state returned by `partialize`. The key insight is that Zustand's `PersistOptions<S, PersistedState>` has a `PersistedState` generic parameter that defaults to `S`, and the `partialize` function returns `PersistedState`. By adding an explicit return type annotation `partialize: (state): PersistedBeatDetectionState => ({...})`, TypeScript correctly infers the persisted state type without needing the `as unknown as` cast.
+
+The persisted state differs from runtime state in one key way: `subdivisionConfig.beatSubdivisions` is serialized as `[number, SubdivisionType][]` (array of tuples) instead of `Map<number, SubdivisionType>` because Maps don't serialize to JSON properly.
 
 ---
 
