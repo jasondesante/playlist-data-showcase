@@ -22,6 +22,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { ImageIcon, ExternalLink, AlertCircle } from 'lucide-react';
+import { ArweaveImage } from './ArweaveImage';
 import './ImageFieldInput.css';
 
 /**
@@ -190,12 +191,19 @@ export function ImageFieldInput({
             }}
           >
             {showImagePreview ? (
-              <img
+              <ArweaveImage
                 src={value}
                 alt="Preview"
                 className="image-field-preview-img"
                 onError={handleImageError}
                 onLoad={handleImageLoad}
+                showShimmer={false}
+                fallback={
+                  <ImageIcon
+                    size={previewSize === 'sm' ? 16 : previewSize === 'lg' ? 32 : 24}
+                    className="image-field-preview-placeholder"
+                  />
+                }
               />
             ) : (
               <ImageIcon

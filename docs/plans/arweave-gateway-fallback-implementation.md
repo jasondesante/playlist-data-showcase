@@ -155,11 +155,11 @@ The following decisions were clarified during planning:
   - [x] Use existing shimmer fallback component
   - [x] When all gateways fail, ArweaveImage renders Music icon/gradient (same visual as current missing artwork)
 
-### Task 5.3: Update ImageFieldInput component
-- [ ] Modify `src/components/shared/ImageFieldInput.tsx`
-  - [ ] Import `ArweaveImage` component
-  - [ ] Replace preview `<img>` with `<ArweaveImage>`
-  - [ ] Add icon fallback for loading state
+### Task 5.3: Update ImageFieldInput component ✅
+- [x] Modify `src/components/shared/ImageFieldInput.tsx`
+  - [x] Import `ArweaveImage` component
+  - [x] Replace preview `<img>` with `<ArweaveImage>`
+  - [x] Add icon fallback for loading state
 
 ### Task 5.4: Update AppHeader component
 - [ ] Modify `src/components/Layout/AppHeader.tsx`
