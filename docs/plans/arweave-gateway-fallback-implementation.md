@@ -193,12 +193,12 @@ The following decisions were clarified during planning:
   - [x] Test `getAllGatewayUrls()` returns URLs in priority order
   - [x] Test constants `DEFAULT_GATEWAYS` and `KNOWN_GATEWAY_HOSTS`
 
-### Task 7.2: Write unit tests for ArweaveGatewayManager
-- [ ] Create `src/utils/__tests__/arweaveGatewayManager.test.ts`
-  - [ ] Test gateway priority ordering
-  - [ ] Test cache hit/miss scenarios
-  - [ ] Test timeout behavior
-  - [ ] Test fallback to alternate gateways
+### Task 7.2: Write unit tests for ArweaveGatewayManager ✅
+- [x] Create `src/utils/__tests__/arweaveGatewayManager.test.ts`
+  - [x] Test gateway priority ordering
+  - [x] Test cache hit/miss scenarios
+  - [x] Test timeout behavior
+  - [x] Test fallback to alternate gateways
 
 ### Task 7.3: Write tests for ArweaveImage component
 - [ ] Create `src/components/shared/__tests__/ArweaveImage.test.tsx`
@@ -252,13 +252,14 @@ Unit tests in Tasks 7.1-7.3 cover the fallback behavior. Manual verification is 
 
 ## Files Summary
 
-### New Files (4)
+### New Files (5)
 | File | Purpose |
 |------|---------|
 | `playlist-data-engine/src/utils/arweaveUtils.ts` | URL parsing utilities |
 | `src/utils/arweaveGatewayManager.ts` | Gateway fallback manager |
 | `src/components/shared/ArweaveImage.tsx` | Async image component |
 | `src/utils/__tests__/arweaveUtils.test.ts` | Unit tests for arweaveUtils |
+| `src/utils/__tests__/arweaveGatewayManager.test.ts` | Unit tests for ArweaveGatewayManager |
 
 ### Modified Files (9)
 | File | Changes |
