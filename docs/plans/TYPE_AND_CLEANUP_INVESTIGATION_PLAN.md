@@ -237,19 +237,42 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ---
 
-### 2.3 progressionConfigStore & rhythmXPConfigStore Migrations
+### 2.3 progressionConfigStore & rhythmXPConfigStore Migrations ✅ DONE
 
 **Locations:**
-- `src/store/progressionConfigStore.ts:244-256`
-- `src/store/rhythmXPConfigStore.ts:377-379`
+- `src/store/progressionConfigStore.ts:244-281`
+- `src/store/rhythmXPConfigStore.ts:377-396`
 
-**Context:** Version-based migration placeholders for future schema changes.
+**Context:** Version-based migration for config stores.
 
-**Status:** Currently empty migration functions (no actual migrations yet).
+**Investigation Completed: 2026-03-08**
+
+**Key Findings:**
+
+**progressionConfigStore (version 3):**
+- Version bumped from 1→2→3 as a "nuclear reset" mechanism
+- No actual migration logic - resets to defaults when version changes
+- Commits 3882442 and 2eb5fb6 used version bumps to force-reset user settings
+- This is intentional: config stores don't need complex migrations since users can easily reconfigure
+
+**rhythmXPConfigStore (version 1):**
+- Still at version 1 with no migrations needed yet
+- Same reset-to-defaults pattern as progressionConfigStore
+- Ready for future migrations if needed
+
+**Pattern Comparison:**
+- `beatDetectionStore` has REAL migrations (intensityThreshold→filter, OSE config, etc.)
+- Config stores use simpler "reset" approach vs. complex data migrations
+- This is appropriate: config settings are user-customizable and easy to restore
+
+**Verdict:** The migration logic is NOT unnecessary complexity. It's a valid pattern for config stores where:
+1. Settings are easily reconfigurable by users
+2. Breaking changes don't need to preserve old values
+3. Reset-to-defaults is acceptable behavior
 
 **Investigation Tasks:**
-- [ ] Verify these are just placeholders
-- [ ] Consider if the empty migration logic adds unnecessary complexity
+- [x] Verify these are just placeholders → **Confirmed**: They're intentional reset mechanisms
+- [x] Consider if the empty migration logic adds unnecessary complexity → **No**: Pattern is appropriate for config stores
 
 ---
 
