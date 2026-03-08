@@ -208,7 +208,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ---
 
-### 2.2 CombatSimulatorTab Migration
+### 2.2 CombatSimulatorTab Migration ✅ DONE
 
 **Location:** `src/components/Tabs/CombatSimulatorTab.tsx:500-605`
 
@@ -216,10 +216,24 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 **Status:** Active migration code that converts legacy `consumable`/`misc` types to `item` with tags.
 
+**Investigation Completed: 2026-03-08**
+
+**Key Findings:**
+- Migration introduced: 2026-02-19 (commit `9ca36804bcf82055ad5171db9ed4586ad1254d21`)
+- Time since introduction: 17 days (as of 2026-03-08)
+- This is a client-side localStorage migration - cannot track if all users have run it
+- Migration runs automatically on page load when config version < 2
+
 **Investigation Tasks:**
-- [ ] Verify this migration has run for all users (check if version can be bumped higher)
-- [ ] Consider if migration code can be removed after sufficient time has passed
-- [ ] Document when this migration was introduced and when it can be safely removed
+- [x] Verify this migration has run for all users (check if version can be bumped higher)
+  - Cannot verify - this is client-side localStorage, no server tracking
+  - Migration runs automatically on page load
+- [x] Consider if migration code can be removed after sufficient time has passed
+  - 17 days is too short - recommend keeping for at least 3-6 months
+  - Users may not visit the app for weeks or months
+- [x] Document when this migration was introduced and when it can be safely removed
+  - Added documentation to `COMBAT_SIMULATOR_CONFIG_VERSION` constant
+  - Recommended removal date: 2026-08-19 (6 months after introduction)
 
 ---
 

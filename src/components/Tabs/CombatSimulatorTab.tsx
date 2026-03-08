@@ -505,12 +505,20 @@ const COMBAT_SIMULATOR_CONFIG_KEY = 'combat-simulator-config';
 /**
  * Config version for migration support
  * Increment when making breaking changes to the config structure
+ *
+ * Version History:
+ * - v1: Initial config structure with 'consumable' and 'misc' item types
+ * - v2 (2026-02-19): Aligned with playlist-data-engine EquipmentType ('weapon' | 'armor' | 'item')
+ *                    Migration converts legacy types to 'item' with appropriate tags
+ *                    Safe to remove migration code after 2026-08-19 (6 months)
  */
 const COMBAT_SIMULATOR_CONFIG_VERSION = 2;
 
 /**
  * Migrate legacy treasure items to the new format
  * Converts 'consumable' and 'misc' types to 'item' with appropriate tags
+ *
+ * @see COMBAT_SIMULATOR_CONFIG_VERSION - Remove this function after 2026-08-19
  */
 function migrateTreasureItems(items: any[]): TreasureCustomItem[] {
   return items.map((item: any): TreasureCustomItem => {
