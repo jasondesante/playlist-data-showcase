@@ -1,21 +1,19 @@
 /**
  * Tests for Data Refresh Functionality in useDataViewer Hook
  *
- * Task 8.1: Test data refresh for all categories
- *
  * This test file verifies that:
  * 1. The refreshData function invalidates all query caches
  * 2. The lastDataChange timestamp is updated
  * 3. All useMemo hooks re-compute when lastDataChange changes
  * 4. All content creators call notifyDataChanged after creating content
  *
- * VERIFIED IMPLEMENTATION:
+ * VERIFIED IMPLEMENTATION (line numbers as of 2026-03-08):
  *
  * ==================
  * useDataViewer Hook (src/hooks/useDataViewer.ts)
  * ==================
  *
- * All useMemo hooks have lastDataChange dependency:
+ * useMemo hooks with lastDataChange dependency:
  * - spells (line 269-278): [spellQuery, lastDataChange]
  * - skills (line 285-294): [skillQuery, lastDataChange]
  * - classFeatures (line 301-316): [featureQuery, lastDataChange]
@@ -23,7 +21,9 @@
  * - races (line 347-409): [featureQuery, lastDataChange]
  * - classes (line 416-438): [lastDataChange]
  * - equipment (line 446-471): [lastDataChange]
- * - appearance (line 484-549): [lastDataChange]
+ *
+ * NOTE: appearance (line 484-555) has empty dependency [] - does NOT re-compute on lastDataChange
+ * (appearance data is static defaults from ExtensionManager, not user-created content)
  *
  * refreshData function (line 775-797):
  * - Invalidates spellQuery cache
@@ -43,28 +43,28 @@
  * useContentCreator Hook (src/hooks/useContentCreator.ts)
  * ==================
  *
- * createContent function (line 388): calls notifyDataChanged()
- * createMultiple function (line 481): calls notifyDataChanged()
- * createSpell function (line 568): calls notifyDataChanged()
- * createSkill function (line 628): calls notifyDataChanged()
- * createClassFeature function (line 706): calls notifyDataChanged()
+ * createContent function (line 390): calls notifyDataChanged()
+ * createMultiple function (line 483): calls notifyDataChanged()
+ * updateContent function (line 570): calls notifyDataChanged()
+ * deleteContent function (line 630): calls notifyDataChanged()
+ * duplicateContent function (line 708): calls notifyDataChanged()
  *
  * ==================
  * useItemCreator Hook (src/hooks/useItemCreator.ts)
  * ==================
  *
- * addItemToCharacter function (line 633): calls notifyDataChanged()
+ * addItemToCharacter function (line 640): calls notifyDataChanged()
  *
  * ==================
  * useSpawnMode Hook (src/hooks/useSpawnMode.ts)
  * ==================
  *
- * setMode function (line 255): calls notifyDataChanged()
- * setWeights function (line 289): calls notifyDataChanged()
- * setWeight function (line 308): calls notifyDataChanged()
- * resetMode function (line 327): calls notifyDataChanged()
- * resetAllModes function (line 346): calls notifyDataChanged()
- * importWeights function (line 451): calls notifyDataChanged()
+ * setMode function (line 250): calls notifyDataChanged()
+ * setWeight function (line 289): calls notifyDataChanged()
+ * setWeights function (line 308): calls notifyDataChanged()
+ * resetCategory function (line 327): calls notifyDataChanged()
+ * resetAll function (line 346): calls notifyDataChanged()
+ * importSpawnConfig function (line 451): calls notifyDataChanged()
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';

@@ -322,15 +322,30 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ---
 
-### 3.4 "Verified" Comments
+### 3.4 "Verified" Comments ✅ DONE
 
 **Files with "verified" or "VERIFIED" comments:**
 - `src/hooks/__tests__/useDataViewer.refresh.test.ts` - "VERIFIED IMPLEMENTATION"
 - `src/store/beatDetectionStore.autoMultitempo.test.ts` - "This is verified by..."
 
 **Investigation Tasks:**
-- [ ] Review if these test comments are still accurate
-- [ ] Clean up any outdated verification comments
+- [x] Review if these test comments are still accurate
+- [x] Clean up any outdated verification comments
+
+**Changes Made:**
+
+**useDataViewer.refresh.test.ts:**
+- Removed "Task 8.1" reference from file header
+- Updated VERIFIED IMPLEMENTATION comment with accurate line numbers
+- Fixed `appearance` useMemo dependency - documented that it uses `[]` not `[lastDataChange]`
+- Removed references to non-existent functions: `createSpell`, `createSkill`, `createClassFeature`
+- Updated line numbers for functions that moved: `createContent` (390), `createMultiple` (483), `addItemToCharacter` (640)
+- Updated useSpawnMode function names to match actual API: `resetCategory`, `resetAll`, `importSpawnConfig`
+
+**beatDetectionStore.autoMultitempo.test.ts:**
+- Removed "Task 5.3" reference from file header and describe block
+- Updated `enableMultiTempo` line references from ~836, ~951 to ~1500, ~1625, ~2052, ~2133, ~2185
+- Removed reference to non-existent `settingsChangedForReanalysis` function
 
 ---
 
@@ -350,7 +365,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 ### Priority 3: Comment Cleanup
 1. ~~Remove completed Phase/Task references~~ ✅ DONE
 2. ~~Update or remove stale TODOs~~ ✅ DONE
-3. Clean up test verification comments
+3. ~~Clean up test verification comments~~ ✅ DONE
 
 ---
 
@@ -371,5 +386,5 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 - [x] All `as unknown as` casts in production code are either fixed or documented as intentional (1.1 fixed, others remain)
 - [x] intensityThreshold → filter migration is fully understood and verified correct (findings documented in Section 2.1)
 - [ ] All deprecated items are either removed or have cleanup tasks created
-- [ ] Comment cleanup reduces noise while preserving valuable documentation
+- [x] Comment cleanup reduces noise while preserving valuable documentation
 - [x] No runtime behavior changes from type fixes (verified via testing)

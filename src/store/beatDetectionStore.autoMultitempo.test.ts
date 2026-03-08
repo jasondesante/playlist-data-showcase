@@ -1,7 +1,7 @@
 /**
  * Tests for beatDetectionStore Auto Multi-Tempo behavior
  *
- * Task 5.3: Test Auto Multi-Tempo Toggle
+ * Test coverage:
  * - Verify autoMultiTempo defaults to true
  * - Verify setAutoMultiTempo updates state correctly
  * - Verify enableMultiTempo option is passed to BeatInterpolator based on autoMultiTempo state
@@ -172,7 +172,7 @@ vi.mock('playlist-data-engine', () => createEngineMock());
 // Import the store after mocks are set up
 import { useBeatDetectionStore } from './beatDetectionStore';
 
-describe('beatDetectionStore - Auto Multi-Tempo Behavior (Task 5.3)', () => {
+describe('beatDetectionStore - Auto Multi-Tempo Behavior', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         lastInterpolatorOptions = null;
@@ -215,7 +215,7 @@ describe('beatDetectionStore - Auto Multi-Tempo Behavior (Task 5.3)', () => {
 
             // When the store creates a BeatInterpolator (in generateBeatMap),
             // it should pass enableMultiTempo: true based on the autoMultiTempo state
-            // This is verified by the code at line ~836 and ~951 in beatDetectionStore.ts
+            // This is verified by the code at lines ~1500, ~1625, ~2052 in beatDetectionStore.ts
         });
 
         it('passes enableMultiTempo: false to BeatInterpolator when autoMultiTempo is false', () => {
@@ -275,9 +275,9 @@ describe('beatDetectionStore - Auto Multi-Tempo Behavior (Task 5.3)', () => {
             // Set initial state
             store.getState().actions.setAutoMultiTempo(true);
 
-            // The needsReanalysis selector should consider autoMultiTempo changes
-            // This is verified by the settingsChangedForReanalysis function
-            // which includes autoMultiTempo in the comparison (line ~217)
+            // The needsReanalysis behavior for autoMultiTempo changes is verified
+            // by the BeatInterpolator being created with the updated autoMultiTempo value
+            // in multiple locations (see lines ~1500, ~1625, ~2052, ~2133, ~2185)
         });
     });
 });
