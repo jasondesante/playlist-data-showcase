@@ -148,12 +148,12 @@ The following decisions were clarified during planning:
     - [x] If all gateways fail, render the fallback (Music icon with gradient, same as TrackCard missing artwork)
   - [x] Export component
 
-### Task 5.2: Update TrackCard component
-- [ ] Modify `src/components/ui/TrackCard.tsx`
-  - [ ] Import `ArweaveImage` component
-  - [ ] Replace `<img src={track.image_url}>` with `<ArweaveImage src={track.image_url}>`
-  - [ ] Use existing shimmer fallback component
-  - [ ] When all gateways fail, ArweaveImage renders Music icon/gradient (same visual as current missing artwork)
+### Task 5.2: Update TrackCard component ✅
+- [x] Modify `src/components/ui/TrackCard.tsx`
+  - [x] Import `ArweaveImage` component
+  - [x] Replace `<img src={track.image_url}>` with `<ArweaveImage src={track.image_url}>`
+  - [x] Use existing shimmer fallback component
+  - [x] When all gateways fail, ArweaveImage renders Music icon/gradient (same visual as current missing artwork)
 
 ### Task 5.3: Update ImageFieldInput component
 - [ ] Modify `src/components/shared/ImageFieldInput.tsx`

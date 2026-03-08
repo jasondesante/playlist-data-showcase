@@ -22,6 +22,7 @@ import type { PlaylistTrack, CharacterSheet } from 'playlist-data-engine';
 import { Music, Play, Pause, Star } from 'lucide-react';
 import { useXPCalculator } from '../../hooks/useXPCalculator';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
+import { ArweaveImage } from '../shared/ArweaveImage';
 import './TrackCard.css';
 
 export type TrackCardSize = 'compact' | 'default' | 'large';
@@ -108,7 +109,6 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
   ) => {
     const { calculateXP } = useXPCalculator();
     const { elapsedTime, isActive: isSessionActive } = useSessionTracker();
-    const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [shouldAnimateSelection, setShouldAnimateSelection] = useState(false);
@@ -128,12 +128,11 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
     }, [isSelected]);
 
     const handleImageLoad = useCallback(() => {
-      setImageLoaded(true);
+      setImageError(false);
     }, []);
 
     const handleImageError = useCallback(() => {
       setImageError(true);
-      setImageLoaded(true);
     }, []);
 
     const handlePlayClick = useCallback(
@@ -176,22 +175,22 @@ export const TrackCard = forwardRef<HTMLDivElement, TrackCardProps>(
 
         {/* Album art */}
         <div className={cn('track-card-art', styles.image)}>
-          {isLoading && !imageLoaded ? (
-            <div className="track-art-shimmer" />
-          ) : hasImage ? (
-            <>
-              {!imageLoaded && <div className="track-art-shimmer" />}
-              <img
-                src={track.image_url}
-                alt={`${track.title} album art`}
-                className="track-art-image"
-                width={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
-                height={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                loading="lazy"
-              />
-            </>
+          {track.image_url ? (
+            <ArweaveImage
+              src={track.image_url}
+              alt={`${track.title} album art`}
+              className="track-art-image"
+              width={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
+              height={size === 'compact' ? 40 : size === 'large' ? 56 : 48}
+              showShimmer={true}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              fallback={
+                <div className="track-art-fallback">
+                  <Music className="track-art-icon" />
+                </div>
+              }
+            />
           ) : (
             /* Fallback: gradient background with music icon */
             <div className="track-art-fallback">
