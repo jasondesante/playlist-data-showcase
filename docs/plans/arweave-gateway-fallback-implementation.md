@@ -135,18 +135,18 @@ The following decisions were clarified during planning:
 
 ## Phase 5: Image Loading Component
 
-### Task 5.1: Create ArweaveImage component
-- [ ] Create `src/components/shared/ArweaveImage.tsx`
-  - [ ] Define props interface extending `React.ImgHTMLAttributes<HTMLImageElement>`
-  - [ ] Add `fallback?: React.ReactNode` prop for loading/error state (defaults to existing Music icon/gradient)
-  - [ ] Implement component:
-    - [ ] State: `resolvedUrl`, `isLoading`, `error`
-    - [ ] Effect to resolve Arweave URL on mount/URL change
-    - [ ] Render fallback while loading (use existing TrackCard-style Music icon with gradient)
-    - [ ] Render `<img>` with resolved URL when ready
-    - [ ] Handle `onError` for image load failures - render fallback component
-    - [ ] If all gateways fail, render the fallback (Music icon with gradient, same as TrackCard missing artwork)
-  - [ ] Export component
+### Task 5.1: Create ArweaveImage component ✅
+- [x] Create `src/components/shared/ArweaveImage.tsx`
+  - [x] Define props interface extending `React.ImgHTMLAttributes<HTMLImageElement>`
+  - [x] Add `fallback?: React.ReactNode` prop for loading/error state (defaults to existing Music icon/gradient)
+  - [x] Implement component:
+    - [x] State: `resolvedUrl`, `isLoading`, `error`
+    - [x] Effect to resolve Arweave URL on mount/URL change
+    - [x] Render fallback while loading (use existing TrackCard-style Music icon with gradient)
+    - [x] Render `<img>` with resolved URL when ready
+    - [x] Handle `onError` for image load failures - render fallback component
+    - [x] If all gateways fail, render the fallback (Music icon with gradient, same as TrackCard missing artwork)
+  - [x] Export component
 
 ### Task 5.2: Update TrackCard component
 - [ ] Modify `src/components/ui/TrackCard.tsx`
