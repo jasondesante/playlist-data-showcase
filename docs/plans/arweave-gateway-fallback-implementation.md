@@ -176,10 +176,10 @@ The following decisions were clarified during planning:
   - [x] Replace hardcoded `https://arweave.net/${trimmedInput}` with `https://${config.arweaveGateway}/${trimmedInput}`
   - [x] Add comment explaining gateway configuration
 
-### Task 6.2: Update CombatSimulatorTab
-- [ ] Modify `src/components/Tabs/CombatSimulatorTab.tsx`
-  - [ ] Import `config` from `@/utils/env`
-  - [ ] Replace hardcoded `https://arweave.net/${trimmedInput}` with `https://${config.arweaveGateway}/${trimmedInput}`
+### Task 6.2: Update CombatSimulatorTab ✅
+- [x] Modify `src/components/Tabs/CombatSimulatorTab.tsx`
+  - [x] Import `config` from `@/utils/env`
+  - [x] Replace hardcoded `https://arweave.net/${trimmedInput}` with `https://${config.arweaveGateway}/${trimmedInput}`
 
 ---
 

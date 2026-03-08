@@ -30,6 +30,7 @@ import {
 } from 'playlist-data-engine';
 import { useCombatEngine, type Combatant, type TreasureConfig } from '../../hooks/useCombatEngine';
 import { logger } from '../../utils/logger';
+import { config } from '../../utils/env';
 import type { PlaylistTrack, ServerlessPlaylist } from '../../types';
 import { PartyAnalyzerCard } from '../combat/PartyAnalyzerCard';
 import { TemplateBrowser } from '../combat/TemplateBrowser';
@@ -996,8 +997,8 @@ export function CombatSimulatorTab() {
         const json = JSON.parse(trimmedInput);
         playlist = await playlistParser.parse(json);
       } else {
-        // Fetch from Arweave
-        const response = await fetch(`https://arweave.net/${trimmedInput}`);
+        // Fetch from Arweave using configured gateway
+        const response = await fetch(`https://${config.arweaveGateway}/${trimmedInput}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch playlist: ${response.status}`);
         }
