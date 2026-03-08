@@ -89,15 +89,15 @@ The following decisions were clarified during planning:
 
 ## Phase 3: Environment Configuration
 
-### Task 3.1: Add Arweave config to env.ts
-- [ ] Modify `src/utils/env.ts`
-  - [ ] Add to `envSchema`:
+### Task 3.1: Add Arweave config to env.ts ✅
+- [x] Modify `src/utils/env.ts`
+  - [x] Add to `envSchema`:
     - `VITE_ARWEAVE_GATEWAY: z.string().optional()`
     - `VITE_ARWEAVE_FALLBACK_GATEWAYS: z.string().optional()`
     - `VITE_ARWEAVE_GATEWAY_TIMEOUT: z.string().optional()`
     - `VITE_ARWEAVE_CACHE_TTL: z.string().optional()`
-  - [ ] Add to `processEnv` object
-  - [ ] Add to `config` export:
+  - [x] Add to `processEnv` object
+  - [x] Add to `config` export:
     - `arweaveGateway: string`
     - `arweaveFallbackGateways: string[]`
     - `arweaveGatewayTimeout: number`
