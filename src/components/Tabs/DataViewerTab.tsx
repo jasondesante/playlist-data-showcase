@@ -583,7 +583,7 @@ export function DataViewerTab() {
    * (Phase 3.3: Equipment Creation in DataViewerTab)
    */
   const handleCreateEquipment = useCallback(async (_formData: EquipmentCreatorFormData, equipment: Equipment) => {
-    const result = createContent('equipment', equipment as unknown as Record<string, unknown>, { mode: 'relative' });
+    const result = createContent('equipment', equipment, { mode: 'relative' });
 
     if (result.success) {
       logger.info('DataViewer', `Created equipment: ${equipment.name}`);

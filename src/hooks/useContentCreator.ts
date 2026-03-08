@@ -37,8 +37,10 @@ export type ContentType =
 
 /**
  * Generic content item type - represents any content that can be registered.
+ * Uses a permissive type to accept various structured objects (Equipment, Spell, etc.)
+ * while still allowing generic type inference for return types.
  */
-export type ContentItem = Record<string, unknown>;
+export type ContentItem = { [key: string]: any };
 
 /**
  * Validation result for content items.

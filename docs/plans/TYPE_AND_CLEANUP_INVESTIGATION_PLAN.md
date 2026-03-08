@@ -33,7 +33,7 @@ setActiveCharacter: (id: string | null) => void;
 
 ---
 
-### 1.2 DataViewerTab.tsx - `equipment as unknown as Record<string, unknown>`
+### 1.2 DataViewerTab.tsx - `equipment as unknown as Record<string, unknown>` ✅ DONE
 **File:** `src/components/Tabs/DataViewerTab.tsx:586`
 ```typescript
 const result = createContent('equipment', equipment as unknown as Record<string, unknown>, { mode: 'relative' });
@@ -42,10 +42,12 @@ const result = createContent('equipment', equipment as unknown as Record<string,
 **Context:** The `createContent` function expects `Record<string, unknown>` but `Equipment` type may have a more specific structure.
 
 **Investigation Tasks:**
-- [ ] Examine the `createContent` function signature and what it expects
-- [ ] Check if `Equipment` type is compatible with `Record<string, unknown>`
-- [ ] If types are incompatible, consider creating a proper type converter or updating `createContent`
-- [ ] Add debug logging to inspect the actual structure of `equipment` at runtime
+- [x] Examine the `createContent` function signature and what it expects
+- [x] Check if `Equipment` type is compatible with `Record<string, unknown>`
+- [x] If types are incompatible, consider creating a proper type converter or updating `createContent`
+- [x] Add debug logging to inspect the actual structure of `equipment` at runtime (not needed - type fix resolved this)
+
+**Fix Applied:** Changed `ContentItem` type in `useContentCreator.ts` from `Record<string, unknown>` to `{ [key: string]: any }` to accept any object with string keys. This allows typed interfaces like `Equipment` to be passed directly without a type cast. The type cast in `DataViewerTab.tsx` was removed.
 
 ---
 
