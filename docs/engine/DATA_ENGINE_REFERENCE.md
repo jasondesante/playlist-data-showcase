@@ -2531,7 +2531,7 @@ The `SubdivisionBeatEvent` includes:
 |----------|-------|-------------|
 | `DEFAULT_BEATMAP_GENERATOR_OPTIONS` | See above | Default BeatMapGenerator options |
 | `DEFAULT_BEATSTREAM_OPTIONS` | See above | Default BeatStream options |
-| `BEAT_ACCURACY_THRESHOLDS` | Same as `HARD_ACCURACY_THRESHOLDS` | Accuracy thresholds in seconds (**deprecated**, use `HARD_ACCURACY_THRESHOLDS` or `getAccuracyThresholdsForPreset()`) |
+| `BEAT_ACCURACY_THRESHOLDS` | Same as `HARD_ACCURACY_THRESHOLDS` | Default accuracy thresholds (Hard difficulty preset) - equivalent to `HARD_ACCURACY_THRESHOLDS` |
 | `EASY_ACCURACY_THRESHOLDS` | `{ perfect: 0.035, great: 0.070, good: 0.110, ok: 0.150 }` | Easy difficulty thresholds (±35ms, ±70ms, ±110ms, ±150ms) |
 | `MEDIUM_ACCURACY_THRESHOLDS` | `{ perfect: 0.010, great: 0.025, good: 0.050, ok: 0.100 }` | Medium difficulty thresholds (±10ms, ±25ms, ±50ms, ±100ms) |
 | `HARD_ACCURACY_THRESHOLDS` | `{ perfect: 0.008, great: 0.020, good: 0.040, ok: 0.075 }` | Hard difficulty thresholds (±8ms, ±20ms, ±40ms, ±75ms) |

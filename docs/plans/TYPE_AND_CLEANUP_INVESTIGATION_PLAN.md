@@ -276,18 +276,33 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ---
 
-### 2.4 Deprecated Items in DATA_ENGINE_REFERENCE.md
+### 2.4 Deprecated Items in DATA_ENGINE_REFERENCE.md ✅ DONE
 
 **Location:** `docs/engine/DATA_ENGINE_REFERENCE.md`
 
-**Items to verify:**
-- [ ] `bonus` field on attacks - marked as "Legacy bonus field (deprecated)"
-- [ ] `BEAT_ACCURACY_THRESHOLDS` - deprecated in favor of `HARD_ACCURACY_THRESHOLDS`
+**Investigation Completed: 2026-03-08**
+
+**Items verified:**
+- [x] `bonus` field on attacks - marked as "Legacy bonus field (deprecated)"
+- [x] `BEAT_ACCURACY_THRESHOLDS` - was marked as deprecated in favor of `HARD_ACCURACY_THRESHOLDS`
+
+**Key Findings:**
+
+**`bonus` field on attacks:**
+- The `bonus` field exists in the engine's `Attack` interface (see `node_modules/playlist-data-engine/dist/core/types/Character.d.ts:149`)
+- The codebase uses `attack_bonus` instead of `bonus` (see `src/hooks/useCombatEngine.ts:135,142`)
+- Documentation is accurate - keep the "Legacy" note since the field is superseded by `attack_bonus`
+
+**`BEAT_ACCURACY_THRESHOLDS`:**
+- The engine has **removed** the `@deprecated` tag from `BEAT_ACCURACY_THRESHOLDS` (see `node_modules/playlist-data-engine/ralph wiggum/old plans/DEPRECATED_CLEANUP_PLAN.md` Task 1.2)
+- The engine determined it's actively used (8 files reference it) and should NOT be deprecated
+- It's equivalent to `HARD_ACCURACY_THRESHOLDS` - both are valid
+- **Fix Applied:** Updated `DATA_ENGINE_REFERENCE.md` line 2534 to remove the "(**deprecated**...)" note
 
 **Investigation Tasks:**
-- [ ] Search codebase for usages of these deprecated items
-- [ ] If unused, remove from documentation
-- [ ] If still used, create cleanup tasks
+- [x] Search codebase for usages of these deprecated items
+- [x] If unused, remove from documentation
+- [x] If still used, create cleanup tasks
 
 ---
 
@@ -408,6 +423,6 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 - [x] All `as unknown as` casts in production code are either fixed or documented as intentional (1.1 fixed, others remain)
 - [x] intensityThreshold → filter migration is fully understood and verified correct (findings documented in Section 2.1)
-- [ ] All deprecated items are either removed or have cleanup tasks created
+- [x] All deprecated items are either removed or have cleanup tasks created (Section 2.4: BEAT_ACCURACY_THRESHOLDS deprecation removed, bonus field is correctly documented)
 - [x] Comment cleanup reduces noise while preserving valuable documentation
 - [x] No runtime behavior changes from type fixes (verified via testing)
