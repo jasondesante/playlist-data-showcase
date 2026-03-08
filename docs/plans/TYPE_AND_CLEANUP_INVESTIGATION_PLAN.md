@@ -305,16 +305,20 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ---
 
-### 3.3 TODO Comments Review
+### 3.3 TODO Comments Review ✅ DONE
 
 **Current TODOs:**
 - `src/components/Tabs/DataViewerTab.tsx:537` - "TODO: Open edit modal - will be implemented in Phase 3+"
 - `src/components/ui/BeatTimeline.tsx:622` - "TODO: Phase 6 will implement per-beat subdivision visualization"
 
 **Investigation Tasks:**
-- [ ] Verify if DataViewerTab edit modal is still planned
-- [ ] Verify if BeatTimeline Phase 6 is still planned
-- [ ] Update or remove stale TODOs
+- [x] Verify if DataViewerTab edit modal is still planned
+- [x] Verify if BeatTimeline Phase 6 is still planned
+- [x] Update or remove stale TODOs
+
+**Changes Made:**
+- **DataViewerTab.tsx**: Updated TODO comment to accurately reflect current state. Edit infrastructure exists (creator forms support `initialData`, `updateContent` exists) but isn't wired up to the UI. Updated comment to explain this.
+- **BeatTimeline.tsx**: Removed confusing "Phase 6" TODO. The per-beat subdivision system is complete and handled by BeatSubdivisionGrid component. This function returns empty because per-beat format doesn't have "segments". Updated comment to clarify.
 
 ---
 
@@ -345,7 +349,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ### Priority 3: Comment Cleanup
 1. ~~Remove completed Phase/Task references~~ ✅ DONE
-2. Update or remove stale TODOs
+2. ~~Update or remove stale TODOs~~ ✅ DONE
 3. Clean up test verification comments
 
 ---

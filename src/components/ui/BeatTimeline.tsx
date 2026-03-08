@@ -606,7 +606,8 @@ export function BeatTimeline({
    * Shows vertical lines at segment start positions with subdivision type labels.
    *
    * NOTE: With per-beat subdivision format, there are no segments to visualize.
-   * This feature will be replaced with per-beat visualization in Phase 6.
+   * Per-beat subdivision visualization is handled by the BeatSubdivisionGrid component.
+   * This function returns empty since the segment-based format is no longer used.
    */
   const getVisibleSubdivisionSegmentBoundaries = useCallback((): Array<{
     /** Position on timeline (0-1) */
@@ -618,8 +619,8 @@ export function BeatTimeline({
     /** Timestamp of the segment start (approximate, based on beat position) */
     timestamp: number;
   }> => {
-    // Per-beat format doesn't have segments - return empty for now
-    // TODO: Phase 6 will implement per-beat subdivision visualization
+    // Per-beat format doesn't have segments - return empty
+    // Per-beat visualization is handled by BeatSubdivisionGrid component
     return [];
   }, [showSubdivisionVisualization, subdividedBeatMap, smoothTime, pastWindow, anticipationWindow, calculateBeatPosition]);
 

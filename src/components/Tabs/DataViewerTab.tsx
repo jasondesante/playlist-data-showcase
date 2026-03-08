@@ -530,12 +530,18 @@ export function DataViewerTab() {
 
   /**
    * Handle edit of a custom item
-   * Note: Actual edit forms will be added in later phases (Phase 3+)
+   *
+   * NOTE: Edit infrastructure exists but is not yet wired up:
+   * - Creator forms support initialData prop for pre-filling
+   * - useContentCreator.updateContent() exists for saving changes
+   * - This handler needs to: (1) load item data, (2) open creator modal with initialData
+   *
+   * For now, this just logs the action. See handleDeleteItem and handleDuplicateItem
+   * for working examples of custom content operations.
    */
   const handleEditItem = useCallback((category: DataCategory, itemName: string) => {
     logger.info('DataViewer', `Edit requested for ${category}/${itemName}`);
-    // TODO: Open edit modal - will be implemented in Phase 3+ with creator forms
-    // For now, just log the action
+    // TODO: Wire up edit functionality - load item, open creator modal with initialData
   }, []);
 
   /**
