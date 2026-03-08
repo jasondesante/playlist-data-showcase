@@ -28,6 +28,14 @@ import {
     useEditorMode,
     useKeyMap,
 } from '../../store/beatDetectionStore';
+
+/**
+ * Minimal event interface for beat click handling.
+ * Both React.MouseEvent and React.KeyboardEvent satisfy this interface.
+ */
+interface BeatClickEvent {
+    stopPropagation: () => void;
+}
 import type { SupportedKey } from '@/types';
 import { getKeySymbol } from '@/types';
 
@@ -225,7 +233,7 @@ export function ChartEditor({
 
     // Handle beat click
     const handleBeatClick = useCallback(
-        (beatIndex: number, event: React.MouseEvent) => {
+        (beatIndex: number, event: BeatClickEvent) => {
             if (disabled) return;
             event.stopPropagation();
 
@@ -454,7 +462,7 @@ export function ChartEditor({
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' || e.key === ' ') {
                                                         e.preventDefault();
-                                                        handleBeatClick(beatIndex, e as unknown as React.MouseEvent);
+                                                        handleBeatClick(beatIndex, e);
                                                     }
                                                 }}
                                             >

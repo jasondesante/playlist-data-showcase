@@ -49,7 +49,7 @@ const result = createContent('equipment', equipment as unknown as Record<string,
 
 ---
 
-### 1.3 ChartEditor.tsx - `e as unknown as React.MouseEvent`
+### 1.3 ChartEditor.tsx - `e as unknown as React.MouseEvent` ✅ DONE
 **File:** `src/components/ui/ChartEditor.tsx:457`
 ```typescript
 handleBeatClick(beatIndex, e as unknown as React.MouseEvent);
@@ -58,17 +58,17 @@ handleBeatClick(beatIndex, e as unknown as React.MouseEvent);
 **Context:** A keyboard event is being cast to a mouse event to reuse the same handler.
 
 **Investigation Tasks:**
-- [ ] Verify what `handleBeatClick` actually needs from the event object
-- [ ] Consider if the handler should accept a union type or a custom event interface
-- [ ] Check if this causes any runtime issues (accessing mouse-specific properties on keyboard event)
+- [x] Verify what `handleBeatClick` actually needs from the event object
+- [x] Consider if the handler should accept a union type or a custom event interface
+- [x] Check if this causes any runtime issues (accessing mouse-specific properties on keyboard event)
 
-**Recommended Fix:** Create a unified event type:
+**Fix Applied:** Created a minimal `BeatClickEvent` interface and updated `handleBeatClick` to accept it:
 ```typescript
 interface BeatClickEvent {
-  preventDefault: () => void;
-  stopPropagation?: () => void;
+    stopPropagation: () => void;
 }
 ```
+Both `React.MouseEvent` and `React.KeyboardEvent` satisfy this interface, so the type cast was removed.
 
 ---
 
@@ -254,7 +254,7 @@ interface BeatClickEvent {
 
 ### Priority 1: Type Fixes (Quick Wins)
 1. ~~Fix `setActiveCharacter` type signature to accept `null`~~ ✅ DONE
-2. Create proper type for ChartEditor event handling
+2. ~~Create proper type for ChartEditor event handling~~ ✅ DONE
 3. Document window debug globals
 
 ### Priority 2: Migration Research
