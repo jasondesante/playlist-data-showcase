@@ -200,12 +200,12 @@ The following decisions were clarified during planning:
   - [x] Test timeout behavior
   - [x] Test fallback to alternate gateways
 
-### Task 7.3: Write tests for ArweaveImage component
-- [ ] Create `src/components/shared/__tests__/ArweaveImage.test.tsx`
-  - [ ] Test rendering with non-Arweave URL
-  - [ ] Test rendering with Arweave URL
-  - [ ] Test fallback rendering during load
-  - [ ] Test error handling
+### Task 7.3: Write tests for ArweaveImage component ✅
+- [x] Create `src/components/shared/__tests__/ArweaveImage.test.tsx`
+  - [x] Test rendering with non-Arweave URL
+  - [x] Test rendering with Arweave URL
+  - [x] Test fallback rendering during load
+  - [x] Test error handling
 
 ### Task 7.4: Manual verification (Optional)
 Unit tests in Tasks 7.1-7.3 cover the fallback behavior. Manual verification is optional:
