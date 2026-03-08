@@ -268,7 +268,7 @@ export function BeatSubdivisionGrid({
     const lastSelectedBeatRef = useRef<number | null>(null);
     const justFinishedDragRef = useRef(false);
 
-    // Task 4.4: Use beatsPerMeasure from downbeat config
+    // Use beatsPerMeasure from downbeat config
     // Priority: prop override > store value (from downbeat config)
     const actualBeatsPerMeasure = beatsPerMeasure ?? storeBeatsPerMeasure;
 

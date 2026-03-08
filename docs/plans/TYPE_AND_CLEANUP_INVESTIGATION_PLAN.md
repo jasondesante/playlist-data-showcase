@@ -270,22 +270,27 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 
 ## Phase 3: Comment Cleanup
 
-### 3.1 Phase/Task Reference Comments
+### 3.1 Phase/Task Reference Comments ✅ DONE
 
 **Files with "Task X.X" or "Phase X" comments:**
 
 | File | Pattern | Lines | Status |
 |------|---------|-------|--------|
-| `src/components/ui/BeatSubdivisionGrid.tsx` | `Task 4.4` | 271 | Needs review |
-| `src/components/ui/DownbeatConfigPanel.tsx` | `Task 2.8 / Task 5.3`, `Task 5.3` | 574, 576 | Needs review |
-| `src/components/Layout/AppHeader.tsx` | `Phase 3.2.1`, `Task 4.2` | 5, 6 | Needs review |
-| `src/components/Tabs/DataViewerTab.tsx` | `Phase 3.3`, `Phase 4.1`, `Phase 4.3` | 583, 608, 618 | Needs review |
-| `src/components/Tabs/CharacterLevelingTab.tsx` | `Task 2.2.2` | 334 | Needs review |
+| `src/components/ui/BeatSubdivisionGrid.tsx` | `Task 4.4` | 271 | ✅ Cleaned |
+| `src/components/ui/DownbeatConfigPanel.tsx` | `Task 2.8 / Task 5.3`, `Task 5.3` | 574, 576 | ✅ Cleaned |
+| `src/components/Layout/AppHeader.tsx` | `Phase 3.2.1`, `Task 4.2` | 5, 6 | ✅ Cleaned |
+| `src/components/Tabs/DataViewerTab.tsx` | `Phase 3.3`, `Phase 4.1`, `Phase 4.3` | 583, 608, 618 | ✅ Cleaned |
+| `src/components/Tabs/CharacterLevelingTab.tsx` | `Task 2.2.2` | 334 | ✅ Cleaned |
 
 **Investigation Tasks:**
-- [ ] Review each "Task X.X" comment to determine if the task is complete
-- [ ] Remove or update comments for completed tasks
-- [ ] Keep only comments that provide ongoing value (explaining complex logic)
+- [x] Review each "Task X.X" comment to determine if the task is complete
+- [x] Remove or update comments for completed tasks
+- [x] Keep only comments that provide ongoing value (explaining complex logic)
+
+**Changes Made:**
+- Removed all "Task X.X" and "Phase X" prefixes from comments
+- Kept the descriptive parts that explain the code's purpose
+- All tasks were verified complete; comments now serve as documentation only
 
 ---
 
@@ -339,7 +344,7 @@ The migration tests in `beatDetectionStore.migration.test.ts` are failing (4/9 t
 3. Create plan for eventual migration code removal (optional - migration is stable)
 
 ### Priority 3: Comment Cleanup
-1. Remove completed Phase/Task references
+1. ~~Remove completed Phase/Task references~~ ✅ DONE
 2. Update or remove stale TODOs
 3. Clean up test verification comments
 

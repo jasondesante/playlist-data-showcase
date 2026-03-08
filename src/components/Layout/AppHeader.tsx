@@ -2,8 +2,7 @@
  * AppHeader Component
  *
  * Displays the application header with title and subtitle.
- * Extracted from App.tsx lines 35-40 as part of Phase 3.2.1 refactoring.
- * Extended with mini audio player for Task 4.2.
+ * Includes mini audio player controls.
  *
  * XP processing and level-up modals are handled by useSessionCompletion hook at the App level.
  */

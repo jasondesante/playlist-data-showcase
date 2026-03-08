@@ -331,7 +331,7 @@ export function CharacterLevelingTab() {
 
   // XP Source Configuration
   // Centralized config for all XP sources with metadata
-  // Task 2.2.2: Added description field for hover tooltips
+  // Includes description field for hover tooltips
   const XP_SOURCES = [
     { id: 'quest', label: 'Complete Quest', xp: 500, toastIcon: '✅', toastMessage: 'Quest completed!', description: 'Complete a story quest or major objective' },
     { id: 'boss_defeat', label: 'Defeat Boss', xp: 5000, toastIcon: '⚔️', toastMessage: 'Boss defeated!', description: 'Defeat a major boss or powerful enemy' },

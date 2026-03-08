@@ -571,9 +571,9 @@ export function DownbeatConfigPanel({ disabled = false }: DownbeatConfigPanelPro
                         )}
                     </div>
 
-                    {/* Actions - Task 2.8 / Task 5.3 */}
+                    {/* Actions */}
                     <div className="downbeat-config-panel-actions">
-                        {/* Task 5.3: Edit Downbeat / Done toggle button */}
+                        {/* Edit Downbeat / Done toggle button */}
                         <Button
                             variant={isSelectionMode ? 'primary' : 'outline'}
                             size="sm"

@@ -580,7 +580,6 @@ export function DataViewerTab() {
 
   /**
    * Handle creation of new equipment via EquipmentCreatorForm
-   * (Phase 3.3: Equipment Creation in DataViewerTab)
    */
   const handleCreateEquipment = useCallback(async (_formData: EquipmentCreatorFormData, equipment: Equipment) => {
     const result = createContent('equipment', equipment, { mode: 'relative' });
@@ -598,7 +597,6 @@ export function DataViewerTab() {
 
   /**
    * Handle creation of new appearance option via AppearanceOptionCreator
-   * (Phase 4.1: Appearance Options Creator)
    */
   const handleCreateAppearanceOption = useCallback((category: ContentType, value: string) => {
     logger.info('DataViewer', `Created appearance option: ${value} in ${category}`);
@@ -609,7 +607,6 @@ export function DataViewerTab() {
 
   /**
    * Handle creation of new skill via SkillCreatorForm
-   * (Phase 4.3: Skills Creation in DataViewerTab)
    *
    * Note: The SkillCreatorForm handles content creation internally via useContentCreator.
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
@@ -623,7 +620,6 @@ export function DataViewerTab() {
 
   /**
    * Handle creation of new spell via SpellCreatorForm
-   * (Phase 5.4: Spells Creation in DataViewerTab)
    */
   const handleCreateSpell = useCallback((spell: SpellFormData) => {
     const spellItem: Record<string, unknown> = {
