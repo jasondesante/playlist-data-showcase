@@ -30,34 +30,31 @@ The following decisions were clarified during planning:
 
 ---
 
-## Phase 1: Core Utilities in playlist-data-engine
+## Phase 1: Core Utilities
 
-### Task 1.1: Create Arweave URL utilities
-- [ ] Create `playlist-data-engine/src/utils/arweaveUtils.ts`
-  - [ ] Define `GatewayConfig` interface (host, protocol, priority)
-  - [ ] Define `ArweaveUrlInfo` interface (txId, originalUrl)
-  - [ ] Define `DEFAULT_GATEWAYS` constant array
-  - [ ] Implement `isArweaveUrl(url: string): boolean`
+> **Note**: Project doesn't have a separate `playlist-data-engine` package. Utilities are created in `src/utils/` instead.
+
+### Task 1.1: Create Arweave URL utilities ✅
+- [x] Create `src/utils/arweaveUtils.ts`
+  - [x] Define `GatewayConfig` interface (host, protocol, priority)
+  - [x] Define `ArweaveUrlInfo` interface (txId, originalUrl)
+  - [x] Define `DEFAULT_GATEWAYS` constant array
+  - [x] Implement `isArweaveUrl(url: string): boolean`
     - Detect `ar://` protocol
     - Detect URLs containing any known Arweave gateway:
       - `arweave.net`
       - `ar.io`
       - `ardrive.net`
       - `turbo-gateway.com`
-  - [ ] Implement `parseArweaveUrl(url: string): ArweaveUrlInfo | null`
+  - [x] Implement `parseArweaveUrl(url: string): ArweaveUrlInfo | null`
     - Extract 43-character transaction ID
     - Handle both `ar://{txId}` and `https://arweave.net/{txId}` formats
-  - [ ] Implement `constructGatewayUrl(txId: string, gateway: GatewayConfig): string`
+  - [x] Implement `constructGatewayUrl(txId: string, gateway: GatewayConfig): string`
     - Build URL: `https://{host}/{txId}`
 
-### Task 1.2: Export utilities from engine
-- [ ] Modify `playlist-data-engine/src/index.ts`
-  - [ ] Export `GatewayConfig` type
-  - [ ] Export `ArweaveUrlInfo` type
-  - [ ] Export `DEFAULT_GATEWAYS` constant
-  - [ ] Export `isArweaveUrl` function
-  - [ ] Export `parseArweaveUrl` function
-  - [ ] Export `constructGatewayUrl` function
+### Task 1.2: Export utilities (N/A)
+- [x] ~~Modify `playlist-data-engine/src/index.ts`~~ - Not applicable (no separate package)
+  - Utilities are directly importable from `@/utils/arweaveUtils`
 
 ---
 
