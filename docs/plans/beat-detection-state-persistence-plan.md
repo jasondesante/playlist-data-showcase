@@ -150,8 +150,8 @@ return {
 **Goal:** Add logging to help verify the fix is working correctly.
 
 ### Task 4.1: Update onRehydrateStorage Logging
-- [ ] Locate the `onRehydrateStorage` callback (around line 3597-3607)
-- [ ] Add logging for the newly restored fields:
+- [x] Locate the `onRehydrateStorage` callback (around line 3597-3607)
+- [x] Add logging for the newly restored fields:
   ```typescript
   logger.info('BeatDetection', 'Store rehydrated from storage', {
       cachedBeatMapsCount: Object.keys(state.cachedBeatMaps).length,

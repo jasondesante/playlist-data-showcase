@@ -3638,6 +3638,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         logger.info('BeatDetection', 'Store rehydrated from storage', {
                             cachedBeatMapsCount: Object.keys(state.cachedBeatMaps).length,
                             cacheOrderLength: state.cacheOrder.length,
+                            // Phase 1 & 2: Newly restored fields
+                            cachedInterpolatedBeatMapsCount: Object.keys(state.cachedInterpolatedBeatMaps).length,
+                            hasDownbeatConfig: !!state.downbeatConfig,
+                            showMeasureBoundaries: state.showMeasureBoundaries,
+                            autoMultiTempo: state.autoMultiTempo,
+                            // Phase 3: Subdivided beat maps
+                            cachedSubdividedBeatMapsCount: Object.keys(state.cachedSubdividedBeatMaps).length,
                         });
                     }
                 };
