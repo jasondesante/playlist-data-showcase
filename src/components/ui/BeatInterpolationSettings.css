@@ -181,75 +181,6 @@
 }
 
 /* ============================================
-   BEAT STREAM MODE SELECTOR
-   ============================================ */
-
-.beat-interpolation-stream-toggles {
-  display: flex;
-  gap: 0.375rem;
-  margin-top: 0.375rem;
-}
-
-.beat-interpolation-stream-toggle {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.5rem 0.375rem;
-  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
-  border: 1px solid hsl(var(--border) / 0.5);
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: hsl(var(--muted-foreground));
-}
-
-.beat-interpolation-stream-toggle:hover:not(:disabled) {
-  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
-  border-color: hsl(var(--border));
-}
-
-.beat-interpolation-stream-toggle:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.beat-interpolation-stream-toggle:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Active state for stream mode - green tint */
-.beat-interpolation-stream-toggle--active {
-  background: linear-gradient(135deg, hsl(142 76% 36% / 0.18), hsl(142 76% 36% / 0.12));
-  border-color: hsl(142 76% 36%);
-  box-shadow: 0 0 12px hsl(142 76% 36% / 0.2);
-  color: hsl(142 76% 45%);
-}
-
-.beat-interpolation-stream-toggle--active:hover:not(:disabled) {
-  background: linear-gradient(135deg, hsl(142 76% 36% / 0.22), hsl(142 76% 36% / 0.16));
-  box-shadow: 0 0 16px hsl(142 76% 36% / 0.3);
-}
-
-/* Stream mode toggle label */
-.beat-interpolation-stream-toggle-label {
-  font-size: 0.5625rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-/* Stream mode description text */
-.beat-interpolation-stream-description {
-  font-size: 0.5rem;
-  color: hsl(var(--muted-foreground));
-  opacity: 0.8;
-  font-style: italic;
-  margin-top: 0.25rem;
-  line-height: 1.4;
-}
-
-/* ============================================
    SLIDER STYLES
    ============================================ */
 
@@ -610,18 +541,6 @@
     font-size: 0.4688rem;
   }
 
-  .beat-interpolation-stream-toggle {
-    padding: 0.4375rem 0.3125rem;
-  }
-
-  .beat-interpolation-stream-toggle-label {
-    font-size: 0.5rem;
-  }
-
-  .beat-interpolation-stream-description {
-    font-size: 0.4688rem;
-  }
-
   .beat-interpolation-advanced {
     margin-top: 0.4375rem;
   }
@@ -709,23 +628,6 @@
     font-size: 0.4375rem;
   }
 
-  .beat-interpolation-stream-toggles {
-    flex-wrap: wrap;
-  }
-
-  .beat-interpolation-stream-toggle {
-    padding: 0.375rem 0.25rem;
-    min-width: calc(50% - 0.1875rem);
-  }
-
-  .beat-interpolation-stream-toggle-label {
-    font-size: 0.5rem;
-  }
-
-  .beat-interpolation-stream-description {
-    font-size: 0.4375rem;
-  }
-
   .beat-interpolation-advanced {
     margin-top: 0.375rem;
   }
@@ -801,15 +703,6 @@
     transform: scale(0.98);
   }
 
-  .beat-interpolation-stream-toggle {
-    min-height: 44px;
-    padding: 0.625rem 0.5rem;
-  }
-
-  .beat-interpolation-stream-toggle:active {
-    transform: scale(0.98);
-  }
-
   .beat-interpolation-advanced-summary {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -849,7 +742,6 @@
   }
 
   .beat-interpolation-algorithm-toggle,
-  .beat-interpolation-stream-toggle,
   .beat-interpolation-reset-btn {
     transition: none;
   }

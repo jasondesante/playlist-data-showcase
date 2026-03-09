@@ -618,7 +618,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           {/* BPM Range Section - Dual Sliders */}
           <div className="beat-detection-settings-section">
             <div className="beat-detection-settings-header">
-              <span className="beat-detection-settings-label">BPM Range</span>
+              <div className="beat-detection-settings-label-with-tooltip">
+                <span className="beat-detection-settings-label">BPM Range</span>
+                <Tooltip content="Expected tempo range for beat detection. Narrow this range if you know the approximate tempo of your track for more accurate results." />
+              </div>
               <span className="beat-detection-settings-value">
                 {minBpm} - {maxBpm} BPM
               </span>
@@ -678,7 +681,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
           {/* Tempo Center Slider */}
           <div className="beat-detection-settings-section">
             <div className="beat-detection-settings-header">
-              <span className="beat-detection-settings-label">Tempo Center</span>
+              <div className="beat-detection-settings-label-with-tooltip">
+                <span className="beat-detection-settings-label">Tempo Center</span>
+                <Tooltip content="Initial tempo bias for detection. Set this near your expected BPM to help the algorithm start with a better guess." />
+              </div>
               <span className="beat-detection-settings-value">
                 {tempoBpm} BPM
               </span>
