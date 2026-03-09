@@ -959,6 +959,13 @@ interface BeatDetectionActions {
     setEditorMode: (mode: ChartEditorMode) => void;
 
     /**
+     * Helper to update subdivided beat map and cache together.
+     * Ensures key assignments are persisted across page refreshes.
+     * @param updatedMap - The updated SubdividedBeatMap
+     */
+    updateSubdividedBeatMapWithCache: (updatedMap: SubdividedBeatMap) => void;
+
+    /**
      * Assign a key to a specific beat in the subdivided beat map.
      * @param beatIndex - The index of the beat in the subdivided beat map
      * @param key - The key to assign, or null to clear
@@ -2804,6 +2811,21 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         set({ editorMode: mode });
                     },
 
+                    /**
+                     * Helper to update subdivided beat map and cache together.
+                     * This ensures key assignments are persisted across page refreshes.
+                     */
+                    updateSubdividedBeatMapWithCache: (updatedMap: SubdividedBeatMap) => {
+                        const audioId = updatedMap.audioId;
+                        set((state) => ({
+                            subdividedBeatMap: updatedMap,
+                            cachedSubdividedBeatMaps: {
+                                ...state.cachedSubdividedBeatMaps,
+                                [audioId]: updatedMap,
+                            },
+                        }));
+                    },
+
                     assignKeyToBeat: (beatIndex: number, key: string | null) => {
                         const state = get();
 
@@ -2833,13 +2855,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         updatedBeats[beatIndex] = beat;
 
-                        // Update the subdivided beat map
-                        set({
-                            subdividedBeatMap: {
-                                ...state.subdividedBeatMap,
-                                beats: updatedBeats,
-                            },
-                        });
+                        // Update the subdivided beat map and cache
+                        const updatedMap = {
+                            ...state.subdividedBeatMap,
+                            beats: updatedBeats,
+                        };
+                        state.actions.updateSubdividedBeatMapWithCache(updatedMap);
                     },
 
                     assignKeysToBeats: (assignments: KeyAssignment[]) => {
@@ -2881,13 +2902,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             return updatedBeat;
                         });
 
-                        // Update the subdivided beat map
-                        set({
-                            subdividedBeatMap: {
-                                ...state.subdividedBeatMap,
-                                beats: updatedBeats,
-                            },
-                        });
+                        // Update the subdivided beat map and cache
+                        const updatedMap = {
+                            ...state.subdividedBeatMap,
+                            beats: updatedBeats,
+                        };
+                        state.actions.updateSubdividedBeatMapWithCache(updatedMap);
                     },
 
                     clearAllKeys: () => {
@@ -2907,13 +2927,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             return updatedBeat;
                         });
 
-                        // Update the subdivided beat map
-                        set({
-                            subdividedBeatMap: {
-                                ...state.subdividedBeatMap,
-                                beats: updatedBeats,
-                            },
-                        });
+                        // Update the subdivided beat map and cache
+                        const updatedMap = {
+                            ...state.subdividedBeatMap,
+                            beats: updatedBeats,
+                        };
+                        state.actions.updateSubdividedBeatMapWithCache(updatedMap);
                     },
 
                     setKeyLaneViewMode: (mode: KeyLaneViewMode) => {

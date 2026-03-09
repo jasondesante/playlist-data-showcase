@@ -128,20 +128,20 @@ return {
   ```
 
 ### Task 3.2: Create Helper Function for Cache Updates
-- [ ] Create a helper function `updateSubdividedCache()` to reduce duplication
-- [ ] This helper will be used by Tasks 3.3-3.5
+- [x] Create a helper function `updateSubdividedBeatMapWithCache()` to reduce duplication
+- [x] This helper will be used by Tasks 3.3-3.5
 
 ### Task 3.3: Update assignKeyToBeat to Update Cache
-- [ ] Locate `assignKeyToBeat` function (around line 2798)
-- [ ] Use single `set()` call to update both `subdividedBeatMap` and `cachedSubdividedBeatMaps`
+- [x] Locate `assignKeyToBeat` function (around line 2798)
+- [x] Use helper function to update both `subdividedBeatMap` and `cachedSubdividedBeatMaps`
 
 ### Task 3.4: Update assignKeysToBeats to Update Cache
-- [ ] Locate `assignKeysToBeats` function (around line 2836)
-- [ ] Use the helper function or single `set()` pattern
+- [x] Locate `assignKeysToBeats` function (around line 2836)
+- [x] Use the helper function to update both state and cache
 
 ### Task 3.5: Update clearAllKeyAssignments to Update Cache
-- [ ] Locate `clearAllKeyAssignments` function
-- [ ] Use the helper function or single `set()` pattern
+- [x] Locate `clearAllKeys` function (actual name in code)
+- [x] Use the helper function to update both state and cache
 
 ---
 
