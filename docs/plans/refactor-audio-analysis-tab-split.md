@@ -45,53 +45,53 @@ This refactor improves code organization by separating the complex beat detectio
 
 ## Phase 2: Remove Beat Code from AudioAnalysisTab
 
-- [ ] **2.1 Remove Beat-Specific Imports**
-  - [ ] Remove `Drum` from lucide-react imports (line 2)
-  - [ ] Remove `import { useBeatDetection }` (line 7)
-  - [ ] Remove `BeatDetectionSettings` import (line 17)
-  - [ ] Remove `SubdivisionSettings` import (line 18)
-  - [ ] Remove `ChartEditor` import (line 19)
-  - [ ] Remove `ChartEditorToolbar` import (line 20)
-  - [ ] Remove `BeatMapSummary` import (line 21)
-  - [ ] Remove `BeatPracticeView` import (line 22)
-  - [ ] Remove `useBeatDetectionStore` and all selectors import (line 24)
+- [x] **2.1 Remove Beat-Specific Imports**
+  - [x] Remove `Drum` from lucide-react imports (line 2)
+  - [x] Remove `import { useBeatDetection }` (line 7)
+  - [x] Remove `BeatDetectionSettings` import (line 17)
+  - [x] Remove `SubdivisionSettings` import (line 18)
+  - [x] Remove `ChartEditor` import (line 19)
+  - [x] Remove `ChartEditorToolbar` import (line 20)
+  - [x] Remove `BeatMapSummary` import (line 21)
+  - [x] Remove `BeatPracticeView` import (line 22)
+  - [x] Remove `useBeatDetectionStore` and all selectors import (line 24)
 
-- [ ] **2.2 Remove Beat State Variables**
-  - [ ] Change analysisMode type from `'normal' | 'timeline' | 'beat'` to `'normal' | 'timeline'` (line 63)
-  - [ ] Remove `useBeatDetection` hook destructuring (lines 71-77)
-  - [ ] Remove all `useBeatDetectionStore` selectors (lines 80-92)
-  - [ ] Remove `interpolatedBeatMap`, `subdividedBeatMap`, `subdivisionConfig`, `chartStyle`, `chartStatistics` (lines 88-92)
+- [x] **2.2 Remove Beat State Variables**
+  - [x] Change analysisMode type from `'normal' | 'timeline' | 'beat'` to `'normal' | 'timeline'` (line 63)
+  - [x] Remove `useBeatDetection` hook destructuring (lines 71-77)
+  - [x] Remove all `useBeatDetectionStore` selectors (lines 80-92)
+  - [x] Remove `interpolatedBeatMap`, `subdividedBeatMap`, `subdivisionConfig`, `chartStyle`, `chartStatistics` (lines 88-92)
 
-- [ ] **2.3 Remove Beat Handler Functions**
-  - [ ] Remove `handleExportBeatMap` callback (lines 99-204)
-  - [ ] Remove beat caching `useEffect` (lines 211-229)
-  - [ ] Remove `getPhaseLabel` function (lines 234-257)
-  - [ ] Remove `handleBeatAnalysis` callback (lines 406-416)
-  - [ ] Remove `handleStartPracticeMode` callback (lines 418-423)
-  - [ ] Remove `handleExitPracticeMode` callback (lines 425-430)
+- [x] **2.3 Remove Beat Handler Functions**
+  - [x] Remove `handleExportBeatMap` callback (lines 99-204)
+  - [x] Remove beat caching `useEffect` (lines 211-229)
+  - [x] Remove `getPhaseLabel` function (lines 234-257)
+  - [x] Remove `handleBeatAnalysis` callback (lines 406-416)
+  - [x] Remove `handleStartPracticeMode` callback (lines 418-423)
+  - [x] Remove `handleExitPracticeMode` callback (lines 425-430)
 
-- [ ] **2.4 Simplify Status Functions**
-  - [ ] Simplify `getAnalysisStatus` to remove beat mode checks (lines 535-550)
-  - [ ] Simplify `getStatusLabel` to remove beat mode checks (lines 552-567)
+- [x] **2.4 Simplify Status Functions**
+  - [x] Simplify `getAnalysisStatus` to remove beat mode checks (lines 535-550)
+  - [x] Simplify `getStatusLabel` to remove beat mode checks (lines 552-567)
 
-- [ ] **2.5 Remove Beat Mode Button from Mode Selector**
-  - [ ] Remove the Beat mode button (lines 732-742)
-  - [ ] Keep only Normal and Timeline buttons
+- [x] **2.5 Remove Beat Mode Button from Mode Selector**
+  - [x] Remove the Beat mode button (lines 732-742)
+  - [x] Keep only Normal and Timeline buttons
 
-- [ ] **2.6 Remove Beat Render Sections**
-  - [ ] Remove BeatDetectionSettings conditional render (lines 823-826)
-  - [ ] Remove short track warning (lines 828-836)
-  - [ ] Remove beat action section from Action Section (lines 841-886)
-  - [ ] Remove Beat Subdivision Card (lines 916-932)
-  - [ ] Remove Chart Editor Card (lines 934-952)
-  - [ ] Remove Chart Editor Placeholder (lines 954-977)
-  - [ ] Remove Beat Detection Results Card (lines 979-1014)
-  - [ ] Remove Beat Practice View (lines 1016-1019)
+- [x] **2.6 Remove Beat Render Sections**
+  - [x] Remove BeatDetectionSettings conditional render (lines 823-826)
+  - [x] Remove short track warning (lines 828-836)
+  - [x] Remove beat action section from Action Section (lines 841-886)
+  - [x] Remove Beat Subdivision Card (lines 916-932)
+  - [x] Remove Chart Editor Card (lines 934-952)
+  - [x] Remove Chart Editor Placeholder (lines 954-977)
+  - [x] Remove Beat Detection Results Card (lines 979-1014)
+  - [x] Remove Beat Practice View (lines 1016-1019)
 
-- [ ] **2.7 Clean Up Conditionals**
-  - [ ] Remove `audio-analysis-primary-layout--beat` class from layout (line 601)
-  - [ ] Remove `analysisMode !== 'beat'` check from EQ section (line 632) - EQ always visible now
-  - [ ] Remove beat mode check from Audio Analysis Results (line 1022)
+- [x] **2.7 Clean Up Conditionals**
+  - [x] Remove `audio-analysis-primary-layout--beat` class from layout (line 601)
+  - [x] Remove `analysisMode !== 'beat'` check from EQ section (line 632) - EQ always visible now
+  - [x] Remove beat mode check from Audio Analysis Results (line 1022)
 
 - [ ] **2.8 Clean Up AudioAnalysisTab.css**
   - [ ] Remove `.audio-analysis-beat-results-card` styles (~line 186-203)
