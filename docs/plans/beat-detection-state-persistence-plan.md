@@ -92,15 +92,15 @@ return {
 **Goal:** Persist the `autoMultiTempo` setting so users don't have to re-enable it on every refresh.
 
 ### Task 2.1: Add autoMultiTempo to PersistedBeatDetectionState Interface
-- [ ] Locate `PersistedBeatDetectionState` interface (around line 1154)
-- [ ] Add `autoMultiTempo: boolean;` field
+- [x] Locate `PersistedBeatDetectionState` interface (around line 1154)
+- [x] Add `autoMultiTempo: boolean;` field
 
 ### Task 2.2: Add autoMultiTempo to partialize Function
-- [ ] Locate the `partialize` function (around line 3411)
-- [ ] Add `autoMultiTempo: state.autoMultiTempo,` to the returned object
+- [x] Locate the `partialize` function (around line 3411)
+- [x] Add `autoMultiTempo: state.autoMultiTempo,` to the returned object
 
 ### Task 2.3: Add autoMultiTempo to merge Function
-- [ ] In the `merge` function return, add:
+- [x] In the `merge` function return, add:
   ```typescript
   autoMultiTempo: persisted?.autoMultiTempo ?? currentState.autoMultiTempo,
   ```

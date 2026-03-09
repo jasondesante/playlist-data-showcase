@@ -1164,6 +1164,7 @@ interface PersistedBeatDetectionState {
 
     // Difficulty and gameplay settings
     difficultySettings: DifficultySettings;
+    autoMultiTempo: boolean;
 
     // Interpolation state
     interpolationOptions: BeatInterpolationOptions;
@@ -3416,6 +3417,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 melBandsConfig: state.melBandsConfig,
                 gaussianSmoothConfig: state.gaussianSmoothConfig,
                 difficultySettings: state.difficultySettings,
+                autoMultiTempo: state.autoMultiTempo,
                 // Interpolation state
                 interpolationOptions: state.interpolationOptions,
                 // selectedAlgorithm removed - engine uses only adaptive-phase-locked
@@ -3582,6 +3584,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     melBandsConfig,
                     gaussianSmoothConfig,
                     difficultySettings,
+                    autoMultiTempo: persisted?.autoMultiTempo ?? currentState.autoMultiTempo,
                     // Interpolation state (Phase 1: Task 1.1)
                     interpolationOptions: persisted?.interpolationOptions ?? currentState.interpolationOptions,
                     beatStreamMode: persisted?.beatStreamMode ?? currentState.beatStreamMode,
