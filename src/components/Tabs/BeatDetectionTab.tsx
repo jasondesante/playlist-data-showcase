@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Waves, Music, Sparkles, Zap, Activity, Clock, Drum, Download, ChevronDown } from 'lucide-react';
-import './AudioAnalysisTab.css';
+import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
