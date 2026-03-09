@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { BeatMapSummarySkeleton } from '../ui/Skeleton';
 import { useTabContext } from '../../App';
+import { ArweaveImage } from '../shared/ArweaveImage';
 import { RadarChart } from '../ui/RadarChart';
 import { TimelineScrubber } from '../ui/TimelineScrubber';
 import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
@@ -603,7 +604,12 @@ export function AudioAnalysisTab() {
             <div className="audio-analysis-song-display">
               <div className="audio-analysis-song-artwork">
                 {selectedTrack.image_url ? (
-                  <img src={selectedTrack.image_url} alt={selectedTrack.title} />
+                  <ArweaveImage
+                    src={selectedTrack.image_url}
+                    alt={selectedTrack.title}
+                    className="audio-analysis-artwork-image"
+                    fallback={<Music className="audio-analysis-ready-fallback" />}
+                  />
                 ) : (
                   <Music className="audio-analysis-ready-fallback" />
                 )}

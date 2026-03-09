@@ -152,7 +152,7 @@ A concise overview of all main exports from the library, organized by category.
 | `GrooveAnalyzer` | "Groove meter" for rhythm game consistency tracking | [Beat Detection](#beat-detection) |
 | `OnsetStrengthEnvelope` | Perceptual onset strength envelope calculation (Mel spectrogram) | [Beat Detection](#beat-detection) |
 | `BeatTracker` | Dynamic Programming beat tracking (Ellis algorithm) | [Beat Detection](#beat-detection) |
-| `TempoDetector` | Global tempo estimation with perceptual weighting | [ [Beat Detection](#beat-detection) |
+| `TempoDetector` | Global tempo estimation with perceptual weighting | [Beat Detection](#beat-detection) |
 | `reapplyDownbeatConfig` | Recalculate measure labels from manual configuration | [Beat Detection](#beat-detection) |
 | `BeatInterpolator` | Fill gaps in beat maps with interpolated beats | [Beat Detection](#beat-detection) |
 | `BeatSubdivider` | Subdivide beat maps into rhythmic patterns (half, eighth, sixteenth, triplets, dotted) | [Beat Detection](#beat-detection) |
@@ -227,7 +227,7 @@ Type definitions for all core data structures.
 
 ### Playlist Types
 
-**Location:** [src/core/types/Playlist.ts](src/core/types/Playlist.ts)
+*Location:* *[src/core/types/Playlist.ts](src/core/types/Playlist.ts)*
 
 | Type | Description | Key Properties |
 |------|-------------|----------------|
@@ -237,7 +237,7 @@ Type definitions for all core data structures.
 
 ### AudioProfile
 
-**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
+*Location:* *[src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)*
 
 Result of the `AudioAnalyzer`. Used to generate characters.
 
@@ -287,7 +287,7 @@ Data point for a specific segment of audio.
 
 ### ColorPalette
 
-**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
+*Location:* *[src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)*
 
 Defines a color scheme derived from image analysis using k-means clustering.
 
@@ -305,7 +305,7 @@ Defines a color scheme derived from image analysis using k-means clustering.
 
 ### FrequencyBands
 
-**Location:** [src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)
+*Location:* *[src/core/types/AudioProfile.ts](src/core/types/AudioProfile.ts)*
 
 Audio frequency band separation for analysis. Rebalanced v2 ranges prevent treble dominance.
 
@@ -315,17 +315,9 @@ Audio frequency band separation for analysis. Rebalanced v2 ranges prevent trebl
 | Mid | 400Hz - 4kHz | 52% (3,600 Hz) |
 | Treble | 4kHz - 14kHz | 37% (10,000 Hz) |
 
-```typescript
-export interface FrequencyBands {
-    bass: number[];   // Bass frequencies (20Hz - 400Hz)
-    mid: number[];    // Mid frequencies (400Hz - 4kHz)
-    treble: number[]; // Treble frequencies (4kHz - 14kHz)
-}
-```
-
 ### Character Types
 
-**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+*Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
 #### Race
 
@@ -429,7 +421,7 @@ Character progression rules:
 
 #### Attack
 
-**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+*Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
 *Also known as: Weapon attack, combat action*
 
@@ -449,7 +441,7 @@ Combat attack representation.
 
 #### Spell
 
-**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+*Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
 Spell representation for casting.
 
@@ -472,7 +464,7 @@ Spell representation for casting.
 
 #### AbilityScores
 
-**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+*Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
 The six ability scores with optional aliases.
 
@@ -490,7 +482,7 @@ The six ability scores with optional aliases.
 
 ### CharacterSheet
 
-**Location:** [src/core/types/Character.ts](src/core/types/Character.ts)
+*Location:* *[src/core/types/Character.ts](src/core/types/Character.ts)*
 
 The complete D&D 5e character object. This is the core data structure returned by `CharacterGenerator.generate()`.
 
@@ -530,9 +522,9 @@ Three related types for equipment and inventory management.
 
 | Type | Location | Description |
 |------|----------|-------------|
-| **InventoryItem** | [src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts) | Basic inventory: name, quantity, equipped flag |
-| **EnhancedInventoryItem** | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) | Adds: modifications, templateId, instanceId (for enchantments, per-instance tracking) |
-| **CharacterEquipment** | [src/core/types/Equipment.ts](src/core/types/Equipment.ts) | Container: weapons[], armor[], items[], totalWeight, equippedWeight |
+| **InventoryItem** | *[src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts)* | Basic inventory: name, quantity, equipped flag |
+| **EnhancedInventoryItem** | *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)* | Adds: modifications, templateId, instanceId (for enchantments, per-instance tracking) |
+| **CharacterEquipment** | *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)* | Container: weapons[], armor[], items[], totalWeight, equippedWeight |
 
 **Key differences:**
 - `InventoryItem` - Legacy/compatibility type
@@ -541,7 +533,7 @@ Three related types for equipment and inventory management.
 
 ### CharacterAppearance
 
-**Location:** [src/core/generation/AppearanceGenerator.ts](src/core/generation/AppearanceGenerator.ts)
+*Location:* *[src/core/generation/AppearanceGenerator.ts](src/core/generation/AppearanceGenerator.ts)*
 
 Visual appearance details for a character.
 
@@ -557,18 +549,12 @@ Visual appearance details for a character.
 | secondary_color | string? | Dynamic (from audio/visual) |
 | accent_color | string? | Dynamic (from audio/visual) |
 | aura_color | string? | Dynamic (from audio/visual, magical classes only) |
-    // Dynamic features (from audio/visual)
-    primary_color?: string;
-    secondary_color?: string;
-    accent_color?: string;
-    aura_color?: string;
-
 
 ### EnvironmentalContext
 
-*Also known as: Environmental sensors, IRL sensors, real-world context*
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Also known as: Environmental sensors, IRL sensors, real-world context*
 
 Aggregated environmental sensor data that provides XP modifiers based on real-world conditions.
 
@@ -586,7 +572,7 @@ Aggregated environmental sensor data that provides XP modifiers based on real-wo
 
 ### GeolocationData
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 GPS position and movement data.
 
@@ -602,7 +588,7 @@ GPS position and movement data.
 
 ### MotionData
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 Device motion and acceleration data from accelerometer/gyroscope.
 
@@ -616,7 +602,7 @@ Device motion and acceleration data from accelerometer/gyroscope.
 
 ### WeatherData
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 Current weather conditions from OpenWeatherMap API.
 
@@ -634,7 +620,7 @@ Current weather conditions from OpenWeatherMap API.
 
 ### LightData
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 Ambient light sensor data.
 
@@ -647,7 +633,7 @@ Ambient light sensor data.
 
 *Also known as: Weather forecast*
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 Weather forecast data for future time periods.
 
@@ -667,7 +653,7 @@ Weather forecast data for future time periods.
 
 *Also known as: Sensor status, sensor health, sensor diagnostics*
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 | Type | Description |
 |------|-------------|
@@ -676,7 +662,7 @@ Weather forecast data for future time periods.
 
 ### Sensor Status & Monitoring
 
-**Location:** [src/core/types/Environmental.ts](src/core/types/Environmental.ts)
+*Location:* *[src/core/types/Environmental.ts](src/core/types/Environmental.ts)*
 
 | Interface | Description |
 |-----------|-------------|
@@ -692,7 +678,7 @@ Weather forecast data for future time periods.
 
 *Also known as: Extreme weather, weather events*
 
-**Location:** [src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)
+*Location:* *[src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)*
 
 Severe weather event that provides XP bonus.
 
@@ -710,7 +696,7 @@ Severe weather event that provides XP bonus.
 
 *Also known as: Game detection, gaming activity, Steam integration*
 
-**Location:** [src/core/types/Progression.ts](src/core/types/Progression.ts)
+*Location:* *[src/core/types/Progression.ts](src/core/types/Progression.ts)*
 
 Steam gaming activity data. **Note:** Discord RPC CANNOT read game activity due to platform limitations. Discord RPC is only used for SETTING music presence ("Listening to" status).
 
@@ -730,7 +716,7 @@ Steam gaming activity data. **Note:** Discord RPC CANNOT read game activity due 
 
 ### Combat Types
 
-**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
+*Location:* *[src/core/types/Combat.ts](src/core/types/Combat.ts)*
 
 Core D&D 5e-inspired turn-based combat type definitions.
 
@@ -806,7 +792,7 @@ Configuration for custom combat loot rewards.
 
 *Also known as: Loot config, rewards*
 
-**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
+*Location:* *[src/core/types/Combat.ts](src/core/types/Combat.ts)*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -815,7 +801,7 @@ Configuration for custom combat loot rewards.
 
 #### Additional Combat Types
 
-**Location:** [src/core/types/Combat.ts](src/core/types/Combat.ts)
+*Location:* *[src/core/types/Combat.ts](src/core/types/Combat.ts)*
 
 | Type | Description |
 |------|-------------|
@@ -829,7 +815,9 @@ Configuration for custom combat loot rewards.
 
 #### Combat Helper Types
 
-**InitiativeResult** — [src/core/combat/InitiativeRoller.ts](src/core/combat/InitiativeRoller.ts)
+**InitiativeResult**
+
+*Location:* *[src/core/combat/InitiativeRoller.ts](src/core/combat/InitiativeRoller.ts)*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -838,7 +826,9 @@ Configuration for custom combat loot rewards.
 | `dexModifier` | number | DEX modifier |
 | `initiativeTotal` | number | Total initiative |
 
-**AttackResult** — [src/core/combat/AttackResolver.ts](src/core/combat/AttackResolver.ts)
+**AttackResult**
+
+*Location:* *[src/core/combat/AttackResolver.ts](src/core/combat/AttackResolver.ts)*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -850,7 +840,9 @@ Configuration for custom combat loot rewards.
 | `hpAfterDamage?` | number | Target HP after damage |
 | `description` | string | Result description |
 
-**SpellSlots** — [src/core/generation/SpellManager.ts](src/core/generation/SpellManager.ts)
+**SpellSlots**
+
+*Location:* *[src/core/generation/SpellManager.ts](src/core/generation/SpellManager.ts)*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -880,7 +872,7 @@ Magical: `necrotic` | `radiant` | `psychic` | `force`
 
 #### Hashing & Seeds
 
-*Location: [src/utils/hash.ts](src/utils/hash.ts)*
+*Location:* *[src/utils/hash.ts](src/utils/hash.ts)*
 
 Functions for deterministic seed generation and hashing from blockchain data.
 
@@ -893,7 +885,7 @@ Functions for deterministic seed generation and hashing from blockchain data.
 
 #### SeededRNG
 
-*Location: [src/utils/random.ts](src/utils/random.ts)*
+*Location:* *[src/utils/random.ts](src/utils/random.ts)*
 
 Deterministic random number generator for reproducible results. The same seed always produces the same sequence of random values.
 
@@ -911,18 +903,9 @@ Deterministic random number generator for reproducible results. The same seed al
 
 *Also known as: Zod schemas, runtime validators, type validation*
 
-*Location:* `src/utils/validators.ts`
+*Location:* *[src/utils/validators.ts](src/utils/validators.ts)*
 
-Zod schemas for runtime type validation. Use `safeParse()` for validation:
-
-```typescript
-import { PlaylistTrackSchema } from '@playlist-data-engine/utils';
-
-const result = PlaylistTrackSchema.safeParse(data);
-if (!result.success) {
-  console.error(result.error);
-}
-```
+Zod schemas for runtime type validation. Use `safeParse()` for validation.
 
 | Schema | Validates |
 |--------|-----------|
@@ -934,7 +917,7 @@ if (!result.success) {
 
 #### Logging
 
-*Location: [src/utils/logger.ts](src/utils/logger.ts)*
+*Location:* *[src/utils/logger.ts](src/utils/logger.ts)*
 
 Centralized logging utility with configurable log levels and diagnostic modes.
 
@@ -972,7 +955,7 @@ Centralized logging utility with configurable log levels and diagnostic modes.
 
 **Types**
 
-*Location: [src/utils/logger.ts](src/utils/logger.ts)*
+*Location:* *[src/utils/logger.ts](src/utils/logger.ts)*
 
 | Type | Description |
 |------|-------------|
@@ -981,7 +964,7 @@ Centralized logging utility with configurable log levels and diagnostic modes.
 
 #### ImageValidator
 
-*Location: [src/core/utils/ImageValidator.ts](src/core/utils/ImageValidator.ts)*
+*Location:* *[src/core/utils/ImageValidator.ts](src/core/utils/ImageValidator.ts)*
 
 *Also known as: Image URL validator, icon validator, image field validation*
 
@@ -1002,19 +985,9 @@ Validates icon and image URL fields for all entity types. Ensures URLs follow al
 |------|-------------|
 | `ImageValidationResult` | Validation result with `valid: boolean` and `errors: string[]` |
 
-**Usage Example:**
-```typescript
-import { validateImageFields } from '@playlist-data-engine/core';
-
-const errors = validateImageFields({ icon: '/assets/icon.png', image: 'https://example.com/image.png' });
-if (errors.length > 0) {
-    console.error('Invalid image URLs:', errors);
-}
-```
-
 #### Sensor Dashboard
 
-*Location: [src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
+*Location:* *[src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
 
 Diagnostic tool for visual console output during development and debugging. Displays sensor status, health indicators, cache statistics, performance metrics, and recent failures.
 
@@ -1028,7 +1001,7 @@ Diagnostic tool for visual console output during development and debugging. Disp
 
 **Types**
 
-*Location: [src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
+*Location:* *[src/utils/sensorDashboard.ts](src/utils/sensorDashboard.ts)*
 
 | Type | Description |
 |------|-------------|
@@ -1037,39 +1010,46 @@ Diagnostic tool for visual console output during development and debugging. Disp
 ---
 
 ### Game Data Reference
+
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)*
+
 *Also known as: Game constants, RPG data, D&D 5e data*
 
 D&D 5e-inspired game constants for races, classes, XP, spells, and equipment.
 
 #### Available Races (`ALL_RACES`)
+
 *Also known as: Character races, playable races*
 
 Human, Elf, Dwarf, Halfling, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling
 
 #### Available Classes (`ALL_CLASSES`)
+
 *Also known as: Character classes, job classes, professions*
 
 Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard
 
 #### Data Structures
+
 *Also known as: Game databases, constant data*
 
 | Constant | Description | Source |
 |----------|-------------|--------|
-| `RACE_DATA` | Ability bonuses, speed, traits for each race | `src/utils/constants.ts` |
-| `CLASS_DATA` | Hit dice, saving throws, skill options for each class | `src/utils/constants.ts` |
-| `XP_THRESHOLDS` | Level (1-20) to XP required mapping | `src/utils/constants.ts` |
-| `SPELL_DATABASE` | D&D 5e spells with details | `src/utils/constants.ts` |
-| `DEFAULT_EQUIPMENT` | Weapons, armor, items stats (201 items) | `src/utils/equipmentConstants.ts` |
-| `MAGIC_ITEMS` | Example magic items (34 items) | `src/utils/equipmentConstants.ts` |
-| `ITEM_CREATION_TEMPLATES` | Templates for enchanting equipment (9 templates) | `src/utils/equipmentConstants.ts` |
-| `ENCHANTMENT_LIBRARY` | All enchantments and curses organized by category | `src/utils/equipmentConstants.ts` |
-| `CLASS_STARTING_EQUIPMENT` | Starting equipment by class (12 classes) | `src/utils/equipmentConstants.ts` |
+| `RACE_DATA` | Ability bonuses, speed, traits for each race | *[src/utils/constants.ts](src/utils/constants.ts)* |
+| `CLASS_DATA` | Hit dice, saving throws, skill options for each class | *[src/utils/constants.ts](src/utils/constants.ts)* |
+| `XP_THRESHOLDS` | Level (1-20) to XP required mapping | *[src/utils/constants.ts](src/utils/constants.ts)* |
+| `SPELL_DATABASE` | D&D 5e spells with details | *[src/utils/constants.ts](src/utils/constants.ts)* |
+| `DEFAULT_EQUIPMENT` | Weapons, armor, items stats (201 items) | *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)* |
+| `MAGIC_ITEMS` | Example magic items (34 items) | *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)* |
+| `ITEM_CREATION_TEMPLATES` | Templates for enchanting equipment (9 templates) | *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)* |
+| `ENCHANTMENT_LIBRARY` | All enchantments and curses organized by category | *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)* |
+| `CLASS_STARTING_EQUIPMENT` | Starting equipment by class (12 classes) | *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)* |
 
 #### Helper Functions
-*Also known as: Data lookup functions, game data getters*
 
-**Location:** `src/utils/constants.ts`
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)*
+
+*Also known as: Data lookup functions, game data getters*
 
 Retrieves data from default constants and custom extensions registered via ExtensionManager.
 
@@ -1084,9 +1064,10 @@ Retrieves data from default constants and custom extensions registered via Exten
 #### Type Definitions
 
 **RaceDataEntry**
-*Also known as: Race definition, racial stats*
 
-**Location:** `src/utils/constants.ts` (31-43)
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)* (31-43)
+
+*Also known as: Race definition, racial stats*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -1098,9 +1079,10 @@ Retrieves data from default constants and custom extensions registered via Exten
 | `image` | `string` (optional) | Image URL for larger display |
 
 **ClassDataEntry**
-*Also known as: Class definition, job stats*
 
-**Location:** `src/utils/constants.ts` (243-342)
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)* (243-342)
+
+*Also known as: Class definition, job stats*
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -1120,6 +1102,7 @@ Retrieves data from default constants and custom extensions registered via Exten
 **Template Inheritance:** Custom classes with `baseClass` inherit properties from base D&D 5e classes. Custom properties override base properties. `available_skills` replaces (not merges) the base list.
 
 #### Prerequisites
+
 *Also known as: Requirements, conditions*
 
 Skills, spells, and features can have prerequisites: base skills/spells/features, ability scores, minimum level, class/race requirements, or custom conditions.
@@ -1127,6 +1110,7 @@ Skills, spells, and features can have prerequisites: base skills/spells/features
 **See [docs/PREREQUISITES.md](docs/PREREQUISITES.md)** for complete guide and examples.
 
 #### Type Helper Functions
+
 *Also known as: Type guards, type converters*
 
 | Function | Parameters | Returns | Description |
@@ -1140,7 +1124,7 @@ Skills, spells, and features can have prerequisites: base skills/spells/features
 
 ### PlaylistParser
 
-**Location:** `src/core/parser/PlaylistParser.ts`
+*Location:* *[src/core/parser/PlaylistParser.ts](src/core/parser/PlaylistParser.ts)*
 
 Converts raw JSON data (Arweave) into standardized `ServerlessPlaylist` objects.
 
@@ -1153,9 +1137,9 @@ new PlaylistParser(options?: PlaylistParserOptions)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `async parse(data: RawArweavePlaylist): Promise<ServerlessPlaylist>` | Parses raw playlist data into ServerlessPlaylist with metadata and track array |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `async parse(data: RawArweavePlaylist)` | `Promise<ServerlessPlaylist>` | Parses raw playlist data into ServerlessPlaylist with metadata and track array |
 
 **Options:**
 
@@ -1167,24 +1151,24 @@ new PlaylistParser(options?: PlaylistParserOptions)
 
 #### Helper: `MetadataExtractor`
 
-**Location:** `src/core/parser/MetadataExtractor.ts`
+*Location:* *[src/core/parser/MetadataExtractor.ts](src/core/parser/MetadataExtractor.ts)*
 
 *Also known as: Metadata parser, field extractor*
 
 Extracts metadata fields from playlist track data. All methods are static.
 
-| Method | Description |
-|--------|-------------|
-| `static extractAudioUrl(data): string \| null` | Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url |
-| `static extractImageUrl(data): string \| null` | Extracts image URL with priority: image_small > image > image_large > image_thumb |
-| `static extractTitle(data): string \| null` | Extracts name/title with priority: name > title |
-| `static extractArtist(data): string \| null` | Extracts artist with priority: artist > created_by > minter |
-| `static parseMetadata(metadata): Record<string, unknown> \| null` | Parses metadata string to JSON object with error handling |
-| `static convertAttributes(attributes): Record<string, string \| number> \| null` | Converts OpenSea-style attributes array to key-value object |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static extractAudioUrl(data)` | `string \| null` | Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url |
+| `static extractImageUrl(data)` | `string \| null` | Extracts image URL with priority: image_small > image > image_large > image_thumb |
+| `static extractTitle(data)` | `string \| null` | Extracts name/title with priority: name > title |
+| `static extractArtist(data)` | `string \| null` | Extracts artist with priority: artist > created_by > minter |
+| `static parseMetadata(metadata)` | `Record<string, unknown> \| null` | Parses metadata string to JSON object with error handling |
+| `static convertAttributes(attributes)` | `Record<string, string \| number> \| null` | Converts OpenSea-style attributes array to key-value object |
 
 ### Playlist Utilities
 
-**Location:** `src/utils/playlistUtils.ts`
+*Location:* *[src/utils/playlistUtils.ts](src/utils/playlistUtils.ts)*
 
 Simple functions that return arrays of basic data from playlists. Works with both parsed (`ServerlessPlaylist`) and raw (`RawArweavePlaylist`) formats.
 
@@ -1217,53 +1201,23 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 
 #### Types
 
-```typescript
-type PlaylistInput = ServerlessPlaylist | RawArweavePlaylist;
+*Location:* *[src/utils/playlistUtils.ts](src/utils/playlistUtils.ts)*
 
-interface SimpleTrack {
-    title: string;
-    artist: string;
-    audio_url: string;
-    image_url: string;
-}
+| Type | Description |
+|------|-------------|
+| `PlaylistInput` | Union of `ServerlessPlaylist` or `RawArweavePlaylist` |
+| `SimpleTrack` | Simplified track: `{ title, artist, audio_url, image_url }` |
+| `VRMTrack` | Track with VRM: `{ title, artist, audio_url, image_url, vrm }` |
 
-interface VRMTrack {
-    title: string;
-    artist: string;
-    audio_url: string;
-    image_url: string;
-    vrm: string;
-}
-```
-
-#### Usage Example
-
-```typescript
-import { PlaylistParser, getAudioUrls, getArtists, getTracks, getVRMTracks } from 'playlist-data-engine';
-
-const parser = new PlaylistParser();
-const playlist = await parser.parse(rawPlaylistData);
-
-// Simple array extraction
-const urls = getAudioUrls(playlist);      // ['https://...', 'https://...']
-const artists = getArtists(playlist);     // ['Artist A', 'Artist B']
-
-// Object extraction
-const tracks = getTracks(playlist);
-// [{ title: 'Song', artist: 'Artist', audio_url: '...', image_url: '...' }, ...]
-
-// VRM extraction (for tracks with 3D avatar models)
-const vrmTracks = getVRMTracks(playlist);
-// [{ title: 'Song', artist: 'Artist', audio_url: '...', image_url: '...', vrm: 'https://...' }, ...]
-```
+*For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](USAGE_IN_OTHER_PROJECTS.md#playlist-utilities).*
 
 ---
 
 ### AudioAnalyzer
 
-*Also known as: Audio fingerprinting, frequency analysis, sonic analyzer*
+*Location:* *[src/core/analysis/AudioAnalyzer.ts](src/core/analysis/AudioAnalyzer.ts)*
 
-**Location:** [src/core/analysis/AudioAnalyzer.ts](src/core/analysis/AudioAnalyzer.ts)
+*Also known as: Audio fingerprinting, frequency analysis, sonic analyzer*
 
 Extracts sonic fingerprints from audio files using Web Audio API. Analyzes frequency bands (bass, mid, treble dominance) for character generation.
 
@@ -1290,7 +1244,7 @@ Extracts sonic fingerprints from audio files using Web Audio API. Analyzes frequ
 
 *Also known as: Color palette extractor, dominant colors, k-means color analyzer*
 
-**Location:** [src/core/analysis/ColorExtractor.ts](src/core/analysis/ColorExtractor.ts)
+*Location:* *[src/core/analysis/ColorExtractor.ts](src/core/analysis/ColorExtractor.ts)*
 
 Extracts dominant colors from image URLs using K-Means clustering (k=4) with Median Cut fallback.
 
@@ -1302,7 +1256,7 @@ Extracts dominant colors from image URLs using K-Means clustering (k=4) with Med
 
 *Also known as: Frequency band separator, FFT band analyzer*
 
-**Location:** [src/core/analysis/SpectrumScanner.ts](src/core/analysis/SpectrumScanner.ts)
+*Location:* *[src/core/analysis/SpectrumScanner.ts](src/core/analysis/SpectrumScanner.ts)*
 
 Separates raw frequency data into bands using rebalanced v2 ranges (prevents treble dominance).
 
@@ -1314,9 +1268,10 @@ Separates raw frequency data into bands using rebalanced v2 ranges (prevents tre
 ---
 
 ### CharacterGenerator
-*Also known as: Character builder, hero generator, PC creator, D&D character generator*
 
-**Location:** `src/core/generation/CharacterGenerator.ts`
+*Location:* *[src/core/generation/CharacterGenerator.ts](src/core/generation/CharacterGenerator.ts)*
+
+*Also known as: Character builder, hero generator, PC creator, D&D character generator*
 
 Creates deterministic D&D 5e character sheets from a seed and audio profile.
 
@@ -1324,9 +1279,9 @@ Creates deterministic D&D 5e character sheets from a seed and audio profile.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static generate(seed: string, audioProfile: AudioProfile, track: PlaylistTrack, options?: CharacterGeneratorOptions): CharacterSheet` | Generates a complete character sheet deterministically |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static generate(seed, audioProfile, track, options?)` | `CharacterSheet` | Generates a complete character sheet deterministically |
 
 **Options:**
 
@@ -1355,40 +1310,43 @@ Creates deterministic D&D 5e character sheets from a seed and audio profile.
 
 | Type | Source | Description |
 |------|--------|-------------|
-| `CharacterSheet` | `src/core/types/Character.ts` | Complete character data structure |
-| `CharacterGeneratorOptions` | `src/core/generation/CharacterGenerator.ts` | Generation options interface |
-| `CharacterGeneratorExtensions` | `src/core/generation/CharacterGenerator.ts` | Custom content extensions |
+| `CharacterSheet` | *[src/core/types/Character.ts](src/core/types/Character.ts)* | Complete character data structure |
+| `CharacterGeneratorOptions` | *[src/core/generation/CharacterGenerator.ts](src/core/generation/CharacterGenerator.ts)* | Generation options interface |
+| `CharacterGeneratorExtensions` | *[src/core/generation/CharacterGenerator.ts](src/core/generation/CharacterGenerator.ts)* | Custom content extensions |
 
 #### Helper: `RaceSelector`
-*Also known as: Race picker, ancestry selector*
 
-**Location:** `src/core/generation/RaceSelector.ts`
+*Location:* *[src/core/generation/RaceSelector.ts](src/core/generation/RaceSelector.ts)*
+
+*Also known as: Race picker, ancestry selector*
 
 Deterministically selects a race based on the seed.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static select(rng: SeededRNG): Race` | Selects from: Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static select(rng: SeededRNG)` | `Race` | Selects from: Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, Tiefling |
 
 #### Helper: `ClassSuggester`
-*Also known as: Class recommender, job suggester*
 
-**Location:** `src/core/generation/ClassSuggester.ts`
+*Location:* *[src/core/generation/ClassSuggester.ts](src/core/generation/ClassSuggester.ts)*
+
+*Also known as: Class recommender, job suggester*
 
 Suggests a class based on audio frequency dominance.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static suggest(audioProfile: AudioProfile, rng: SeededRNG): Class` | **High Bass:** Barbarian, Fighter, Paladin. **High Treble:** Rogue, Ranger, Monk. **High Mid:** Wizard, Cleric, Druid. **High Amplitude:** Bard, Sorcerer, Warlock |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static suggest(audioProfile, rng)` | `Class` | **High Bass:** Barbarian, Fighter, Paladin. **High Treble:** Rogue, Ranger, Monk. **High Mid:** Wizard, Cleric, Druid. **High Amplitude:** Bard, Sorcerer, Warlock |
 
 #### Helper: `AbilityScoreCalculator`
-*Also known as: Stat calculator, ability mapper*
 
-**Location:** `src/core/generation/AbilityScoreCalculator.ts`
+*Location:* *[src/core/generation/AbilityScoreCalculator.ts](src/core/generation/AbilityScoreCalculator.ts)*
+
+*Also known as: Stat calculator, ability mapper*
 
 Maps audio profile to ability scores (STR, DEX, CON, INT, WIS, CHA) using a randomized, 50/50 system.
 
@@ -1400,82 +1358,87 @@ Maps audio profile to ability scores (STR, DEX, CON, INT, WIS, CHA) using a rand
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static calculateBaseScores(audioProfile: AudioProfile, rng: SeededRNG): AbilityScores` | Randomly assigns bass/mid/treble to ability pairs; calculates 50% random + 50% audio (8-15 range) |
-| `static applyRacialBonuses(baseScores: AbilityScores, race: Race): AbilityScores` | Adds +2 bonuses based on race (capped at 20) |
-| `static calculateModifiers(scores: AbilityScores): AbilityScores` | Calculates D&D 5e modifiers (e.g., 15 → +2) |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static calculateBaseScores(audioProfile, rng)` | `AbilityScores` | Randomly assigns bass/mid/treble to ability pairs; calculates 50% random + 50% audio (8-15 range) |
+| `static applyRacialBonuses(baseScores, race)` | `AbilityScores` | Adds +2 bonuses based on race (capped at 20) |
+| `static calculateModifiers(scores)` | `AbilityScores` | Calculates D&D 5e modifiers (e.g., 15 → +2) |
 
 #### Helper: `SkillAssigner`
-*Also known as: Proficiency assigner, skill selector*
 
-**Location:** `src/core/generation/SkillAssigner.ts`
+*Location:* *[src/core/generation/SkillAssigner.ts](src/core/generation/SkillAssigner.ts)*
+
+*Also known as: Proficiency assigner, skill selector*
 
 Assigns skill proficiencies based on class.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static assignSkills(characterClass: Class, rng: SeededRNG, character?: CharacterSheet): Record<string, ProficiencyLevel>` | Selects skills from class's available list using weighted selection (if registered via `skillLists` in ExtensionManager) or equal weights. Handles "Expertise" for Bards and Rogues. Supports custom skills via SkillQuery. Optional `character` enables prerequisite validation |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static assignSkills(characterClass, rng, character?)` | `Record<string, ProficiencyLevel>` | Selects skills from class's available list using weighted selection (if registered via `skillLists` in ExtensionManager) or equal weights. Handles "Expertise" for Bards and Rogues. Supports custom skills via SkillQuery. Optional `character` enables prerequisite validation |
 
 #### Helper: `SpellManager`
-*Also known as: Spell manager, magic system, spell slot manager*
 
-**Location:** `src/core/generation/SpellManager.ts`
+*Location:* *[src/core/generation/SpellManager.ts](src/core/generation/SpellManager.ts)*
+
+*Also known as: Spell manager, magic system, spell slot manager*
 
 Manages spells for spellcasting classes.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static isSpellcaster(characterClass: Class): boolean` | Returns true if the class can cast spells |
-| `static getSpellSlots(characterClass: Class, characterLevel: number): Record<number, { total: number; used: number }>` | Gets spell slot counts for a class at a given level |
-| `static getCantrips(characterClass: Class): string[]` | Returns all available cantrips for a spellcasting class |
-| `static getKnownSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): string[]` | Returns all spells known by a spellcaster at a given level. If `character` provided, filters by prerequisites |
-| `static initializeSpells(characterClass: Class, characterLevel: number, character?: CharacterSheet): SpellSlots` | Returns complete spell configuration with slots, known spells, and cantrips |
-| `static filterCharacterSpells(character: CharacterSheet): CharacterSheet` | Filters known spells and cantrips by prerequisites, returns updated character sheet |
-| `static getSpellCountAtLevel(spellLevel: number, spellSlots: Record<number, { total: number; used: number }>): number` | Returns number of spell slots at a given level |
-| `static useSpellSlot(spellSlots: Record<number, { total: number; used: number }>, spellLevel: number): Record<number, { total: number; used: number }>` | Consumes one spell slot at the specified level |
-| `static restoreSpellSlots(spellSlots: Record<number, { total: number; used: number }>, spellLevel?: number): Record<number, { total: number; used: number }>` | Restores spell slots at a specific level or all levels |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static isSpellcaster(characterClass)` | `boolean` | Returns true if the class can cast spells |
+| `static getSpellSlots(characterClass, characterLevel)` | `Record<number, { total, used }>` | Gets spell slot counts for a class at a given level |
+| `static getCantrips(characterClass)` | `string[]` | Returns all available cantrips for a spellcasting class |
+| `static getKnownSpells(characterClass, characterLevel, character?)` | `string[]` | Returns all spells known by a spellcaster at a given level. If `character` provided, filters by prerequisites |
+| `static initializeSpells(characterClass, characterLevel, character?)` | `SpellSlots` | Returns complete spell configuration with slots, known spells, and cantrips |
+| `static filterCharacterSpells(character)` | `CharacterSheet` | Filters known spells and cantrips by prerequisites, returns updated character sheet |
+| `static getSpellCountAtLevel(spellLevel, spellSlots)` | `number` | Returns number of spell slots at a given level |
+| `static useSpellSlot(spellSlots, spellLevel)` | `Record<number, { total, used }>` | Consumes one spell slot at the specified level |
+| `static restoreSpellSlots(spellSlots, spellLevel?)` | `Record<number, { total, used }>` | Restores spell slots at a specific level or all levels |
 
 #### Helper: `EquipmentGenerator`
-*Also known as: Inventory manager, gear generator*
 
-**Location:** `src/core/generation/EquipmentGenerator.ts`
+*Location:* *[src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts)*
+
+*Also known as: Inventory manager, gear generator*
 
 Manages inventory and starting gear. For equipment properties, enchanting, and custom equipment, see [EQUIPMENT_SYSTEM.md](EQUIPMENT_SYSTEM.md).
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static getStartingEquipment(characterClass: Class): { weapons: string[]; armor: string[]; items: string[] }` | Returns starting equipment list for a class |
-| `static initializeEquipment(characterClass: Class): CharacterEquipment` | Creates complete equipment state with starting gear equipped |
-| `static addItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment` | Adds an item to inventory and recalculates weight |
-| `static removeItem(equipment: CharacterEquipment, itemName: string, quantity: number): CharacterEquipment` | Removes an item from inventory and recalculates weight |
-| `static equipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment` | Equips an item from inventory |
-| `static unequipItem(equipment: CharacterEquipment, itemName: string): CharacterEquipment` | Unequips an item from inventory |
-| `static getInventoryList(equipment: CharacterEquipment): InventoryItem[]` | Returns flattened list of all inventory items |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static getStartingEquipment(characterClass)` | `{ weapons, armor, items }` | Returns starting equipment list for a class |
+| `static initializeEquipment(characterClass)` | `CharacterEquipment` | Creates complete equipment state with starting gear equipped |
+| `static addItem(equipment, itemName, quantity)` | `CharacterEquipment` | Adds an item to inventory and recalculates weight |
+| `static removeItem(equipment, itemName, quantity)` | `CharacterEquipment` | Removes an item from inventory and recalculates weight |
+| `static equipItem(equipment, itemName)` | `CharacterEquipment` | Equips an item from inventory |
+| `static unequipItem(equipment, itemName)` | `CharacterEquipment` | Unequips an item from inventory |
+| `static getInventoryList(equipment)` | `InventoryItem[]` | Returns flattened list of all inventory items |
 
 #### Helper: `AppearanceGenerator`
-*Also known as: Visual generator, appearance builder*
 
-**Location:** `src/core/generation/AppearanceGenerator.ts`
+*Location:* *[src/core/generation/AppearanceGenerator.ts](src/core/generation/AppearanceGenerator.ts)*
+
+*Also known as: Visual generator, appearance builder*
 
 Generates visual traits.
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `static generate(seed: string, characterClass: Class, audioProfile: AudioProfile): CharacterAppearance` | **Deterministic:** Body type, skin tone, hair style/color, eye color. **Dynamic:** Primary color (from album art), Aura color (magical classes) |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static generate(seed, characterClass, audioProfile)` | `CharacterAppearance` | **Deterministic:** Body type, skin tone, hair style/color, eye color. **Dynamic:** Primary color (from album art), Aura color (magical classes) |
 
 #### Helper: `NamingEngine`
-*Also known as: Name generator, character namer*
 
-**Location:** `src/core/generation/NamingEngine.ts`
+*Location:* *[src/core/generation/NamingEngine.ts](src/core/generation/NamingEngine.ts)*
+
+*Also known as: Name generator, character namer*
 
 **Note:** Internal API - automatically called by `CharacterGenerator.generate()`.
 
@@ -1483,10 +1446,10 @@ Generates RPG-style character names from track metadata using 7 naming formats w
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `generateName(seed: string, track: PlaylistTrack, audioProfile: AudioProfile, characterClass: Class, deterministic?: boolean): string` | Generates name using weighted formats: Class Title (20%), Adjective Construct (20%), Clan Construct (10%), Descriptive Epithet (20%), Compound Adjective (15%), Artist-Inspired (10%), Mononym Subtitle (5%) |
-| `cleanTitle(title: string): string` | Removes "(Official Video)", "[Remix]", "ft.", track numbers, file extensions |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `generateName(seed, track, audioProfile, characterClass, deterministic?)` | `string` | Generates name using weighted formats: Class Title (20%), Adjective Construct (20%), Clan Construct (10%), Descriptive Epithet (20%), Compound Adjective (15%), Artist-Inspired (10%), Mononym Subtitle (5%) |
+| `cleanTitle(title)` | `string` | Removes "(Official Video)", "[Remix]", "ft.", track numbers, file extensions |
 
 ---
 
@@ -1498,7 +1461,7 @@ Beat detection system based on the Ellis Dynamic Programming algorithm. Provides
 
 ### Beat Types
 
-**Location:** `src/core/types/BeatMap.ts`
+*Location:* *[src/core/types/BeatMap.ts](src/core/types/BeatMap.ts)*
 
 | Type | Description | Key Properties |
 |------|-------------|----------------|
@@ -1550,7 +1513,7 @@ Beat detection system based on the Ellis Dynamic Programming algorithm. Provides
 
 ### BeatMapGenerator
 
-**Location:** `src/core/analysis/beat/BeatMapGenerator.ts`
+*Location:* *[src/core/analysis/beat/BeatMapGenerator.ts](src/core/analysis/beat/BeatMapGenerator.ts)*
 
 Generates beat maps from audio using the Ellis DP algorithm. Analyzes entire track to detect beats and apply measure labels from optional `downbeatConfig`.
 
@@ -1584,20 +1547,20 @@ constructor(options?: BeatMapGeneratorOptions)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `generateBeatMap(audioUrl: string, audioId: string, downbeatConfig?: DownbeatConfig, progressCallback?: ProgressCallback): Promise<BeatMap>` | Generate beat map from audio URL |
-| `generateBeatMapFromBuffer(audioBuffer: AudioBuffer, audioId: string, progressCallback?: ProgressCallback): Promise<BeatMap>` | Generate beat map from AudioBuffer |
-| `getProgress(): BeatMapGenerationProgress` | Get current generation progress |
-| `cancel(): void` | Cancel ongoing generation |
-| `static toJSON(beatMap: BeatMap): string` | Export beat map as JSON string |
-| `static fromJSON(json: string): BeatMap` | Load beat map from JSON string |
-| `static saveToFile(beatMap: BeatMap, path: string): Promise<void>` | Save beat map to disk (Node.js only) |
-| `static loadFromFile(path: string): Promise<BeatMap>` | Load beat map from disk (Node.js only) |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `generateBeatMap(audioUrl, audioId, downbeatConfig?, progressCallback?)` | `Promise<BeatMap>` | Generate beat map from audio URL |
+| `generateBeatMapFromBuffer(audioBuffer, audioId, progressCallback?)` | `Promise<BeatMap>` | Generate beat map from AudioBuffer |
+| `getProgress()` | `BeatMapGenerationProgress` | Get current generation progress |
+| `cancel()` | `void` | Cancel ongoing generation |
+| `static toJSON(beatMap)` | `string` | Export beat map as JSON string |
+| `static fromJSON(json)` | `BeatMap` | Load beat map from JSON string |
+| `static saveToFile(beatMap, path)` | `Promise<void>` | Save beat map to disk (Node.js only) |
+| `static loadFromFile(path)` | `Promise<BeatMap>` | Load beat map from disk (Node.js only) |
 
 ### BeatStream
 
-**Location:** `src/core/analysis/beat/BeatStream.ts`
+*Location:* *[src/core/analysis/beat/BeatStream.ts](src/core/analysis/beat/BeatStream.ts)*
 
 Real-time beat event streaming synchronized with audio playback. Emits upcoming, exact, and passed beat events.
 
@@ -1627,20 +1590,20 @@ constructor(beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap, audioCon
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `subscribe(callback: BeatStreamCallback): () => void` | Subscribe to beat events, returns unsubscribe function |
-| `start(): void` | Start streaming beat events |
-| `stop(): void` | Stop streaming beat events |
-| `seek(time: number): void` | Seek to a specific time in seconds |
-| `getUpcomingBeats(count: number): Beat[]` | Get next N beats for pre-rendering animations |
-| `getBeatAtTime(time: number): Beat \| null` | Get beat at specific time |
-| `getSyncState(): AudioSyncState` | Get current synchronization state for debugging |
-| `getCurrentBpm(): number` | Get current BPM calculated from recent beat intervals |
-| `checkButtonPress(timestamp: number, pressedKey?: string): ButtonPressResult` | Check button press accuracy against nearest beat using configured thresholds. Optional `pressedKey` for key-matching beats. |
-| `getLastBeatAccuracy(): ButtonPressResult \| null` | Get accuracy of last button press |
-| `getAccuracyThresholds(): AccuracyThresholds` | Get current accuracy thresholds being used |
-| `setDifficulty(options: { preset?: DifficultyPreset, customThresholds?: Partial<AccuracyThresholds> }): void` | Change difficulty settings mid-stream for adaptive gameplay |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `subscribe(callback)` | `() => void` | Subscribe to beat events, returns unsubscribe function |
+| `start()` | `void` | Start streaming beat events |
+| `stop()` | `void` | Stop streaming beat events |
+| `seek(time)` | `void` | Seek to a specific time in seconds |
+| `getUpcomingBeats(count)` | `Beat[]` | Get next N beats for pre-rendering animations |
+| `getBeatAtTime(time)` | `Beat \| null` | Get beat at specific time |
+| `getSyncState()` | `AudioSyncState` | Get current synchronization state for debugging |
+| `getCurrentBpm()` | `number` | Get current BPM calculated from recent beat intervals |
+| `checkButtonPress(timestamp, pressedKey?)` | `ButtonPressResult` | Check button press accuracy against nearest beat using configured thresholds. Optional `pressedKey` for key-matching beats. |
+| `getLastBeatAccuracy()` | `ButtonPressResult \| null` | Get accuracy of last button press |
+| `getAccuracyThresholds()` | `AccuracyThresholds` | Get current accuracy thresholds being used |
+| `setDifficulty(options)` | `void` | Change difficulty settings mid-stream for adaptive gameplay |
 
 **Accuracy Levels:** Perfect, Great, Good, Ok, Miss, WrongKey (thresholds vary by difficulty preset; WrongKey is for correct timing but wrong key press)
 
@@ -1654,7 +1617,7 @@ constructor(beatMap: BeatMap | InterpolatedBeatMap | SubdividedBeatMap, audioCon
 
 ### Beat Key Helper Functions
 
-**Location:** `src/core/analysis/beat/beatKeyHelpers.ts`
+*Location:* *[src/core/analysis/beat/beatKeyHelpers.ts](src/core/analysis/beat/beatKeyHelpers.ts)*
 
 Utility functions for assigning and managing required keys on beat maps. Used for rhythm game chart creation where specific keys must be pressed for specific beats.
 
@@ -1667,15 +1630,15 @@ Utility functions for assigning and managing required keys on beat maps. Used fo
 
 **Functions:**
 
-| Function | Description |
-|----------|-------------|
-| `assignKeyToBeat<T>(beatMap: T, beatIndex: number, key: string \| null): T` | Assign a required key to a single beat (immutable). Pass `null` to remove. |
-| `assignKeysToBeats<T>(beatMap: T, assignments: KeyAssignment[]): T` | Bulk assign keys to multiple beats in one operation |
-| `extractKeyMap(beatMap): Map<number, string>` | Extract map of beatIndex → requiredKey for beats with keys |
-| `clearAllKeys<T>(beatMap: T): T` | Remove all required key assignments from a beat map |
-| `hasRequiredKeys(beatMap): boolean` | Check if any beats have required keys assigned |
-| `getKeyCount(beatMap): number` | Count beats with required keys |
-| `getUsedKeys(beatMap): string[]` | Get unique keys used (sorted alphabetically) |
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `assignKeyToBeat<T>(beatMap, beatIndex, key)` | `T` | Assign a required key to a single beat (immutable). Pass `null` to remove. |
+| `assignKeysToBeats<T>(beatMap, assignments)` | `T` | Bulk assign keys to multiple beats in one operation |
+| `extractKeyMap(beatMap)` | `Map<number, string>` | Extract map of beatIndex → requiredKey for beats with keys |
+| `clearAllKeys<T>(beatMap)` | `T` | Remove all required key assignments from a beat map |
+| `hasRequiredKeys(beatMap)` | `boolean` | Check if any beats have required keys assigned |
+| `getKeyCount(beatMap)` | `number` | Count beats with required keys |
+| `getUsedKeys(beatMap)` | `string[]` | Get unique keys used (sorted alphabetically) |
 
 **Key Matching Behavior:**
 
@@ -1686,83 +1649,9 @@ The engine performs simple string comparison for key matching. The frontend is r
 - Game controller face buttons → pass `"a"`, `"b"`, `"x"`, `"y"`
 - Touch screen zones → pass any custom string
 
-### Chart Creation Example
-
-Create a rhythm game chart with required keys:
-
-```typescript
-import {
-    BeatMapGenerator,
-    BeatInterpolator,
-    BeatSubdivider,
-    unifyBeatMap,
-    SubdivisionConfig,
-    BeatStream,
-    assignKeysToBeats,
-    extractKeyMap,
-    getUsedKeys,
-} from 'playlist-data-engine';
-
-// Step 1: Generate beat map from audio
-const generator = new BeatMapGenerator();
-const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
-
-// Step 2: Interpolate to fill gaps
-const interpolator = new BeatInterpolator();
-const interpolatedMap = interpolator.interpolate(beatMap);
-
-// Step 3: Unify for subdivision
-const unifiedMap = unifyBeatMap(interpolatedMap);
-
-// Step 4: Subdivide for rhythm patterns
-const subdivisionConfig: SubdivisionConfig = {
-    beatSubdivisions: new Map([
-        [0, 'eighth'],   // All beats get eighth notes
-    ]),
-    defaultSubdivision: 'eighth',
-};
-const subdivider = new BeatSubdivider();
-const subdividedMap = subdivider.subdivide(unifiedMap, subdivisionConfig);
-
-// Step 5: Assign required keys to create a chart
-const chartMap = assignKeysToBeats(subdividedMap, [
-    { beatIndex: 0, key: 'left' },
-    { beatIndex: 1, key: 'down' },
-    { beatIndex: 2, key: 'up' },
-    { beatIndex: 3, key: 'right' },
-    // ... more assignments
-]);
-
-// Step 6: Check what keys are used
-const usedKeys = getUsedKeys(chartMap);
-// ['down', 'left', 'right', 'up']
-
-// Step 7: Use in gameplay
-const beatStream = new BeatStream(chartMap, audioContext);
-
-// Step 8: On player input - frontend maps physical input to string
-function onPlayerInput(physicalKey: string) {
-    // Map physical input to logical key
-    const keyMap = { 'ArrowUp': 'up', 'ArrowDown': 'down', 'ArrowLeft': 'left', 'ArrowRight': 'right' };
-    const pressedKey = keyMap[physicalKey];
-
-    const result = beatStream.checkButtonPress(audioContext.currentTime, pressedKey);
-
-    // result.accuracy: 'perfect' | 'great' | 'good' | 'ok' | 'miss' | 'wrongKey'
-    // result.keyMatch: true | false
-    // result.requiredKey: the key the beat required (if any)
-    // result.pressedKey: the key that was passed in
-}
-
-// Easy mode: ignore key requirements (timing-only evaluation)
-const easyStream = new BeatStream(chartMap, audioContext, {
-    ignoreKeyRequirements: true,
-});
-```
-
 ### GrooveAnalyzer
 
-**Location:** `src/core/analysis/beat/GrooveAnalyzer.ts`
+*Location:* *[src/core/analysis/beat/GrooveAnalyzer.ts](src/core/analysis/beat/GrooveAnalyzer.ts)*
 
 A "groove meter" system that rewards **consistency in timing feel** rather than proximity to perfect center. Inspired by Devil May Cry's style meter - it's not about being mechanically perfect, it's about establishing and maintaining a consistent "pocket."
 
@@ -1792,13 +1681,13 @@ constructor(options?: Partial<GrooveAnalyzerOptions>)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `recordHit(offset: number, bpm: number, currentTime: number, accuracy: BeatAccuracy): GrooveResult` | Record a button press hit and get groove analysis. Offset is timing offset in seconds (negative = early/push, positive = late/pull). BPM is current tempo for BPM-aware window calculation. currentTime is audio time for groove duration tracking. accuracy from `buttonResult.accuracy` - when `'miss'` or `'wrongKey'`, hotness decreases instead of increases. |
-| `recordMiss(): GrooveResult` | Record a missed beat (user didn't press). Reduces hotness by configured miss penalty, resets streak, but keeps established pocket. |
-| `getState(): GrooveState` | Get current groove analyzer state snapshot |
-| `reset(): void` | Reset the analyzer to initial state |
-| `setDifficulty(options: { preset: DifficultyPreset, customPenalties?: Partial<GroovePenaltyConfig> }): void` | Set difficulty level for groove penalties. Updates `hotnessLossOnMiss` and `hotnessLossOnBreak` based on preset or custom values. |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `recordHit(offset, bpm, currentTime, accuracy)` | `GrooveResult` | Record a button press hit and get groove analysis. Offset is timing offset in seconds (negative = early/push, positive = late/pull). BPM is current tempo for BPM-aware window calculation. currentTime is audio time for groove duration tracking. accuracy from `buttonResult.accuracy` - when `'miss'` or `'wrongKey'`, hotness decreases instead of increases. |
+| `recordMiss()` | `GrooveResult` | Record a missed beat (user didn't press). Reduces hotness by configured miss penalty, resets streak, but keeps established pocket. |
+| `getState()` | `GrooveState` | Get current groove analyzer state snapshot |
+| `reset()` | `void` | Reset the analyzer to initial state |
+| `setDifficulty(options)` | `void` | Set difficulty level for groove penalties. Updates `hotnessLossOnMiss` and `hotnessLossOnBreak` based on preset or custom values. |
 
 **Difficulty Presets:**
 
@@ -1810,19 +1699,6 @@ Groove penalties can be adjusted based on difficulty level. Higher difficulties 
 | `medium` | 25 | 25 | Balanced difficulty |
 | `hard` | 45 | 45 | Strict for veterans |
 | `custom` | (varies) | (varies) | Use `customPenalties` parameter |
-
-**Usage:**
-
-```typescript
-// Set to hard difficulty
-grooveAnalyzer.setDifficulty({ preset: 'hard' });
-
-// Set to custom difficulty
-grooveAnalyzer.setDifficulty({
-    preset: 'custom',
-    customPenalties: { hotnessLossOnMiss: 30, hotnessLossOnBreak: 25 }
-});
-```
 
 **Related Exports:**
 
@@ -1841,41 +1717,7 @@ The analyzer tracks recent hit offsets in a rolling window (default: 4 hits) and
 - **pull**: Playing behind the beat (positive offset, dragging)
 - **neutral**: Playing on the beat (within ±10ms dead zone)
 
-**Consistency Calculation (Quadratic Falloff):**
-
-```typescript
-// 1.0 = perfect (at pocket center), 0.0 = outside window
-const normalizedDistance = distanceFromPocket / pocketWindow;
-if (normalizedDistance >= 1) return 0;
-return 1 - (normalizedDistance * normalizedDistance);  // Quadratic falloff
-```
-
-- At pocket center: 1.0 (perfect)
-- At 50% to edge: 0.75 (1 - 0.5²)
-- At 70% to edge: 0.51 (1 - 0.7²)
-- At 90% to edge: 0.19 (1 - 0.9²)
-- At/beyond edge: 0.0 (outside window)
-
-**BPM-Aware Window Calculation:**
-
-The pocket window scales with tempo using 1/32 note as the base unit:
-
-```typescript
-beatDuration = 60 / BPM           // in seconds
-thirtySecondNote = beatDuration / 8
-baseWindow = thirtySecondNote / 2 // half of 1/32 note each direction
-
-// Progressive tightening at higher hotness
-pocketWindow = baseWindow - (baseWindow - minWindow) * (hotness / 100)
-```
-
-Example at 120 BPM:
-- beatDuration = 500ms
-- 1/32 note = 62.5ms
-- baseWindow = 31.25ms
-- At 0% hotness: 31.25ms window
-- At 50% hotness: 20.6ms window
-- At 100% hotness: 15ms window
+**For detailed formulas (BPM-aware window calculation, consistency quadratic falloff) and examples:** See [docs/AUDIO_ANALYSIS.md#groove-meter](docs/AUDIO_ANALYSIS.md#groove-meter)
 
 **Design Notes:**
 
@@ -1886,7 +1728,7 @@ Example at 120 BPM:
 
 ### OnsetStrengthEnvelope
 
-**Location:** `src/core/analysis/beat/OnsetStrengthEnvelope.ts`
+*Location:* *[src/core/analysis/beat/OnsetStrengthEnvelope.ts](src/core/analysis/beat/OnsetStrengthEnvelope.ts)*
 
 Calculates perceptual onset strength envelope using Mel spectrogram as described in Ellis Section 3.1.
 
@@ -1912,9 +1754,9 @@ constructor(config?: OSEConfig)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `calculate(audioBuffer: AudioBuffer): OSEResult` | Calculate onset strength envelope from audio buffer |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `calculate(audioBuffer)` | `OSEResult` | Calculate onset strength envelope from audio buffer |
 
 **OSEResult:**
 
@@ -1927,7 +1769,7 @@ constructor(config?: OSEConfig)
 
 ### BeatTracker
 
-**Location:** `src/core/analysis/beat/BeatTracker.ts`
+*Location:* *[src/core/analysis/beat/BeatTracker.ts](src/core/analysis/beat/BeatTracker.ts)*
 
 Dynamic Programming beat tracker implementing the Ellis algorithm. Finds globally optimal beat sequence.
 
@@ -1947,9 +1789,9 @@ constructor(config?: BeatTrackerConfig)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `trackBeats(onsetEnvelope: Float32Array, tempoEstimate: TempoEstimate, config?: { hopSize: number, sampleRate: number }): BeatTrackingResult` | Track beats using DP algorithm |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `trackBeats(onsetEnvelope, tempoEstimate, config?)` | `BeatTrackingResult` | Track beats using DP algorithm |
 
 **BeatTrackingResult:**
 
@@ -1961,7 +1803,7 @@ constructor(config?: BeatTrackerConfig)
 
 ### TempoDetector
 
-**Location:** `src/core/analysis/beat/TempoDetector.ts`
+*Location:* *[src/core/analysis/beat/TempoDetector.ts](src/core/analysis/beat/TempoDetector.ts)*
 
 Estimates global tempo using autocorrelation with perceptual weighting (Ellis Section 3.2).
 
@@ -1982,13 +1824,13 @@ constructor(config?: TempoDetectorConfig)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `estimateTempo(onsetEnvelope: Float32Array, hopSize: number): TempoEstimate` | Estimate tempo from onset envelope |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `estimateTempo(onsetEnvelope, hopSize)` | `TempoEstimate` | Estimate tempo from onset envelope |
 
 ### reapplyDownbeatConfig
 
-**Location:** `src/core/types/BeatMap.ts`
+*Location:* *[src/core/types/BeatMap.ts](src/core/types/BeatMap.ts)*
 
 Standalone function that recalculates measure labels based on a new `DownbeatConfig`. This is the primary way to set downbeat configuration - the typical workflow is to generate the beat map first with default config, examine it to identify the correct downbeat position, then call this function to apply the correct configuration.
 
@@ -2011,32 +1853,11 @@ function reapplyDownbeatConfig(beatMap: BeatMap, newConfig: DownbeatConfig): Bea
 
 **Throws:** Error if configuration is invalid or `downbeatBeatIndex` exceeds total beats
 
-**Usage:**
-
-```typescript
-import { BeatMapGenerator, reapplyDownbeatConfig } from 'playlist-data-engine';
-
-const generator = new BeatMapGenerator();
-
-// Step 1: Generate with default config (beat 0 = downbeat, 4/4 time)
-const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
-
-// Step 2: Examine beat map, identify that beat 9 is actually the "one"
-
-// Step 3: Apply correct configuration
-const correctedMap = reapplyDownbeatConfig(beatMap, {
-  segments: [{
-    startBeat: 0,
-    downbeatBeatIndex: 9,  // Beat 9 is the "one"
-    timeSignature: { beatsPerMeasure: 4 },
-  }],
-});
-// Beats 1, 5, 9, 13, 17... are now downbeats
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#downbeat-configuration](docs/AUDIO_ANALYSIS.md#downbeat-configuration)
 
 ### BeatInterpolator
 
-**Location:** `src/core/analysis/beat/BeatInterpolator.ts`
+*Location:* *[src/core/analysis/beat/BeatInterpolator.ts](src/core/analysis/beat/BeatInterpolator.ts)*
 
 Post-processing pass that fills gaps in beat maps with interpolated beats. Uses the **Pace + Anchors model** with **dense section priority** to determine the quarter note interval, then generates a complete beat grid.
 
@@ -2073,52 +1894,16 @@ constructor(options?: BeatInterpolationOptions)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `interpolate(beatMap: BeatMap): InterpolatedBeatMap` | Interpolate beats in a beat map |
-| `getConfig(): Required<BeatInterpolationOptions>` | Get current configuration |
-| `static toJSON(interpolatedBeatMap: InterpolatedBeatMap): string` | Export interpolated beat map as JSON string |
-| `static fromJSON(jsonString: string): InterpolatedBeatMap` | Load interpolated beat map from JSON string |
-| `static saveToFile(interpolatedBeatMap: InterpolatedBeatMap, filePath: string): Promise<void>` | Save to disk (Node.js only) |
-| `static loadFromFile(filePath: string): Promise<InterpolatedBeatMap>` | Load from disk (Node.js only) |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `interpolate(beatMap)` | `InterpolatedBeatMap` | Interpolate beats in a beat map |
+| `getConfig()` | `Required<BeatInterpolationOptions>` | Get current configuration |
+| `static toJSON(interpolatedBeatMap)` | `string` | Export interpolated beat map as JSON string |
+| `static fromJSON(jsonString)` | `InterpolatedBeatMap` | Load interpolated beat map from JSON string |
+| `static saveToFile(interpolatedBeatMap, filePath)` | `Promise<void>` | Save to disk (Node.js only) |
+| `static loadFromFile(filePath)` | `Promise<InterpolatedBeatMap>` | Load from disk (Node.js only) |
 
-**Usage:**
-
-```typescript
-import { BeatInterpolator, BeatMapGenerator } from 'playlist-data-engine';
-
-// Generate beat map
-const generator = new BeatMapGenerator();
-const beatMap = await generator.generateBeatMap(audioUrl, 'track-1');
-
-// Create interpolator with default options
-const interpolator = new BeatInterpolator();
-
-// Or with custom options
-const customInterpolator = new BeatInterpolator({
-  minAnchorConfidence: 0.5,
-  gridSnapTolerance: 0.03,
-  tempoAdaptationRate: 0.2,
-});
-
-// Interpolate beats
-const interpolatedMap = interpolator.interpolate(beatMap);
-
-// Access original detected beats
-console.log('Detected beats:', interpolatedMap.detectedBeats.length);
-
-// Access merged beats (interpolated + detected)
-console.log('Merged beats:', interpolatedMap.mergedBeats.length);
-
-// Check interpolation metadata
-console.log('Quarter note BPM:', interpolatedMap.quarterNoteBpm);
-console.log('Interpolation ratio:', interpolatedMap.interpolationMetadata.interpolationRatio);
-
-// Use with BeatStream
-const beatStream = new BeatStream(interpolatedMap, audioContext, {
-  useInterpolatedBeats: true,  // Use mergedBeats instead of beats
-});
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#beat-interpolation](docs/AUDIO_ANALYSIS.md#beat-interpolation)
 
 **Confidence Model:**
 
@@ -2138,7 +1923,7 @@ Interpolated beat confidence is calculated from three components:
 
 ### BeatSubdivider
 
-**Location:** `src/core/analysis/beat/BeatSubdivider.ts`
+*Location:* *[src/core/analysis/beat/BeatSubdivider.ts](src/core/analysis/beat/BeatSubdivider.ts)*
 
 Transforms a UnifiedBeatMap into a SubdividedBeatMap by applying rhythmic subdivision patterns. Supports half notes, eighth notes, sixteenth notes, triplets, and dotted patterns. Each beat can have its own subdivision type for fine-grained control.
 
@@ -2165,9 +1950,9 @@ constructor(options?: BeatSubdividerOptions)
 
 **Methods:**
 
-| Method | Description |
-|--------|-------------|
-| `subdivide(unifiedMap: UnifiedBeatMap, config?: SubdivisionConfig): SubdividedBeatMap` | Subdivide a unified beat map according to per-beat configuration |
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `subdivide(unifiedMap, config?)` | `SubdividedBeatMap` | Subdivide a unified beat map according to per-beat configuration |
 
 **Subdivision Types:**
 
@@ -2187,52 +1972,7 @@ constructor(options?: BeatSubdividerOptions)
 
 **2-Beat Structure Types:** `triplet4` and `dotted4` are 2-beat structures that only process beats at even `beatInMeasure` positions (0, 2, 4, 6...). This allows proper triplet and dotted patterns across beat pairs.
 
-**Usage:**
-
-```typescript
-import {
-    BeatMapGenerator,
-    BeatInterpolator,
-    BeatSubdivider,
-    unifyBeatMap,
-    type SubdivisionConfig
-} from 'playlist-data-engine';
-
-const generator = new BeatMapGenerator();
-const interpolator = new BeatInterpolator();
-const subdivider = new BeatSubdivider();
-
-// Step 1: Generate beat map
-const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
-
-// Step 2: Interpolate to fill gaps
-const interpolatedMap = interpolator.interpolate(beatMap);
-
-// Step 3: Unify into quarter-note grid
-const unifiedMap = unifyBeatMap(interpolatedMap);
-
-// Step 4: Create per-beat subdivision configuration
-const subdivisionConfig: SubdivisionConfig = {
-    beatSubdivisions: new Map([
-        // Assign subdivisions to specific beats
-        [0, 'quarter'],   // Beat 0: quarter note
-        [32, 'eighth'],   // Beat 32: switch to eighth notes
-        [96, 'half'],     // Beat 96: switch to half notes
-        [128, 'triplet8'], // Beat 128: switch to triplets
-    ]),
-    defaultSubdivision: 'quarter',  // Default for unassigned beats
-};
-
-const subdividedMap = subdivider.subdivide(unifiedMap, subdivisionConfig);
-
-// Result: A beat map with per-beat subdivision control
-console.log('Original beats:', unifiedMap.beats.length);
-console.log('Subdivided beats:', subdividedMap.beats.length);
-console.log('Density multiplier:', subdividedMap.subdivisionMetadata.averageDensityMultiplier);
-
-// Detected beats are still marked for accent patterns
-const detectedBeats = subdividedMap.beats.filter(b => b.isDetected);
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#beat-subdivision](docs/AUDIO_ANALYSIS.md#beat-subdivision)
 
 **Per-Beat Configuration:**
 
@@ -2258,7 +1998,7 @@ The `beatSubdivisions` map allows assigning different subdivisions to specific b
 
 ### unifyBeatMap
 
-**Location:** `src/core/analysis/beat/utils/unifyBeatMap.ts`
+*Location:* *[src/core/analysis/beat/utils/unifyBeatMap.ts](src/core/analysis/beat/utils/unifyBeatMap.ts)*
 
 Standalone function that converts an InterpolatedBeatMap into a UnifiedBeatMap. This flattens detected + interpolated beats into a single unified list, preparing the beat map for subdivision.
 
@@ -2276,30 +2016,11 @@ function unifyBeatMap(interpolatedBeatMap: InterpolatedBeatMap): UnifiedBeatMap
 
 **Returns:** `UnifiedBeatMap` ready for subdivision
 
-**Usage:**
-
-```typescript
-import { BeatInterpolator, unifyBeatMap } from 'playlist-data-engine';
-
-const interpolator = new BeatInterpolator();
-const interpolatedMap = interpolator.interpolate(beatMap);
-
-// Convert to unified format
-const unifiedMap = unifyBeatMap(interpolatedMap);
-
-// All beats are now in a single array
-console.log('Total beats:', unifiedMap.beats.length);
-
-// Detected beat indices for accent patterns
-console.log('Detected beats:', unifiedMap.detectedBeatIndices.length);
-
-// Tempo information preserved
-console.log('BPM:', unifiedMap.quarterNoteBpm);
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#beat-subdivision](docs/AUDIO_ANALYSIS.md#beat-subdivision)
 
 ### subdivideBeatMap
 
-**Location:** `src/core/analysis/beat/utils/subdivideBeatMap.ts`
+*Location:* *[src/core/analysis/beat/utils/subdivideBeatMap.ts](src/core/analysis/beat/utils/subdivideBeatMap.ts)*
 
 Convenience function that combines unification and subdivision into a single step. Takes an InterpolatedBeatMap and SubdivisionConfig, returns a SubdividedBeatMap.
 
@@ -2323,34 +2044,11 @@ function subdivideBeatMap(
 
 **Returns:** `SubdividedBeatMap` with subdivision applied
 
-**Usage:**
-
-```typescript
-import { BeatInterpolator, subdivideBeatMap, type SubdivisionConfig } from 'playlist-data-engine';
-
-const interpolator = new BeatInterpolator();
-const interpolatedMap = interpolator.interpolate(beatMap);
-
-// One-step subdivision with per-beat config
-const config: SubdivisionConfig = {
-    beatSubdivisions: new Map([
-        [0, 'quarter'],   // Beat 0: quarter notes
-        [32, 'eighth'],   // Beat 32+: eighth notes
-    ]),
-    defaultSubdivision: 'eighth',
-};
-const subdividedMap = subdivideBeatMap(interpolatedMap, config);
-
-// Or with subdivider options
-const subdividedMap = subdivideBeatMap(interpolatedMap, config, {
-    tolerance: 0.03,
-    defaultIntensity: 0.6,
-});
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#beat-subdivision](docs/AUDIO_ANALYSIS.md#beat-subdivision)
 
 ### SubdivisionPlaybackController
 
-**Location:** `src/core/playback/SubdivisionPlaybackController.ts`
+*Location:* *[src/core/playback/SubdivisionPlaybackController.ts](src/core/playback/SubdivisionPlaybackController.ts)*
 
 Real-time subdivision controller for practice mode. Enables instant switching between subdivision types during playback, allowing users to practice with different rhythmic densities (e.g., start with quarter notes, then switch to eighth notes).
 
@@ -2423,71 +2121,7 @@ constructor(
 | `'next-downbeat'` | Wait for the next downbeat before switching |
 | `'next-measure'` | Wait for the next measure before switching |
 
-**Usage - Practice Mode:**
-
-```typescript
-import {
-    BeatMapGenerator,
-    BeatInterpolator,
-    unifyBeatMap,
-    SubdivisionPlaybackController
-} from 'playlist-data-engine';
-
-// Generate and unify (done once)
-const generator = new BeatMapGenerator();
-const interpolator = new BeatInterpolator();
-
-const beatMap = await generator.generateBeatMap('song.mp3', 'track-1');
-const interpolatedMap = interpolator.interpolate(beatMap);
-const unifiedMap = unifyBeatMap(interpolatedMap);
-
-// Create real-time controller for practice mode
-const controller = new SubdivisionPlaybackController(
-    unifiedMap,
-    audioContext,
-    {
-        initialSubdivision: 'quarter',
-        transitionMode: 'next-downbeat',
-        onSubdivisionChange: (oldType, newType) => {
-            console.log(`Switched from ${oldType} to ${newType}`);
-        },
-    }
-);
-
-// Subscribe to beat events
-controller.subscribe((event) => {
-    switch (event.type) {
-        case 'upcoming':
-            // Pre-render beat visual (event.timeUntilBeat seconds until beat)
-            break;
-        case 'exact':
-            // Beat is happening now - play sound
-            playBeatSound(event.beat);
-            break;
-        case 'passed':
-            // Beat was missed
-            break;
-    }
-});
-
-// Start playback
-controller.play();
-
-// User clicks "Eighth Notes" button in practice mode
-document.getElementById('eighth-btn').onclick = () => {
-    controller.setSubdivision('eighth');  // Switches in real-time!
-};
-
-// User clicks "Half Notes" button
-document.getElementById('half-btn').onclick = () => {
-    controller.setSubdivision('half');  // Slows down the beat grid
-};
-
-// User clicks "Quarter Notes" button
-document.getElementById('quarter-btn').onclick = () => {
-    controller.setSubdivision('quarter');  // Back to normal
-};
-```
+**For usage examples:** See [docs/AUDIO_ANALYSIS.md#real-time-subdivision-playground-practice-mode](docs/AUDIO_ANALYSIS.md#real-time-subdivision-playground-practice-mode)
 
 **Event Types:**
 
@@ -2509,7 +2143,7 @@ The `SubdivisionBeatEvent` includes:
 
 ### Beat Detection Utilities
 
-**Location:** `src/core/analysis/beat/utils/audioUtils.ts`
+*Location:* *[src/core/analysis/beat/utils/audioUtils.ts](src/core/analysis/beat/utils/audioUtils.ts)*
 
 | Function | Description |
 |----------|-------------|
@@ -2525,13 +2159,13 @@ The `SubdivisionBeatEvent` includes:
 
 ### Beat Detection Constants
 
-**Location:** `src/core/types/BeatMap.ts`
+*Location:* *[src/core/types/BeatMap.ts](src/core/types/BeatMap.ts)*
 
 | Constant | Value | Description |
 |----------|-------|-------------|
 | `DEFAULT_BEATMAP_GENERATOR_OPTIONS` | See above | Default BeatMapGenerator options |
 | `DEFAULT_BEATSTREAM_OPTIONS` | See above | Default BeatStream options |
-| `BEAT_ACCURACY_THRESHOLDS` | Same as `HARD_ACCURACY_THRESHOLDS` | Default accuracy thresholds (Hard difficulty preset) - equivalent to `HARD_ACCURACY_THRESHOLDS` |
+| `BEAT_ACCURACY_THRESHOLDS` | Same as `HARD_ACCURACY_THRESHOLDS` | Accuracy thresholds in seconds (**deprecated**, use `HARD_ACCURACY_THRESHOLDS` or `getAccuracyThresholdsForPreset()`) |
 | `EASY_ACCURACY_THRESHOLDS` | `{ perfect: 0.035, great: 0.070, good: 0.110, ok: 0.150 }` | Easy difficulty thresholds (±35ms, ±70ms, ±110ms, ±150ms) |
 | `MEDIUM_ACCURACY_THRESHOLDS` | `{ perfect: 0.010, great: 0.025, good: 0.050, ok: 0.100 }` | Medium difficulty thresholds (±10ms, ±25ms, ±50ms, ±100ms) |
 | `HARD_ACCURACY_THRESHOLDS` | `{ perfect: 0.008, great: 0.020, good: 0.040, ok: 0.075 }` | Hard difficulty thresholds (±8ms, ±20ms, ±40ms, ±75ms) |
@@ -2592,7 +2226,7 @@ Gaussian smoothing determines how much the onset envelope is smoothed. More smoo
 
 #### OSE Parameter Mode Constants
 
-**Location:** `src/core/types/BeatMap.ts`
+*Location:* *[src/core/types/BeatMap.ts](src/core/types/BeatMap.ts)*
 
 | Constant | Value | Description |
 |----------|-------|-------------|
@@ -2602,7 +2236,7 @@ Gaussian smoothing determines how much the onset envelope is smoothed. More smoo
 
 #### OSE Parameter Mode Helper Functions
 
-**Location:** `src/core/types/BeatMap.ts`
+*Location:* *[src/core/types/BeatMap.ts](src/core/types/BeatMap.ts)*
 
 | Function | Returns | Description |
 |----------|---------|-------------|
@@ -2610,40 +2244,13 @@ Gaussian smoothing determines how much the onset envelope is smoothed. More smoo
 | `getMelBands(config?: MelBandsConfig)` | `number` | Convert mel bands mode to actual count |
 | `getGaussianSmoothMs(config?: GaussianSmoothConfig)` | `number` | Convert gaussian smooth mode to actual milliseconds value |
 
-**Usage Examples:**
-
-```typescript
-import { BeatMapGenerator, getHopSizeMs, HOP_SIZE_PRESETS } from 'playlist-data-engine';
-
-// Using mode-based configuration
-const generator = new BeatMapGenerator({
-  hopSizeMode: { mode: 'standard' },      // 4ms (Ellis 2007 paper spec)
-  melBandsMode: { mode: 'detailed' },     // 64 bands
-  gaussianSmoothMode: { mode: 'standard' } // 20ms
-});
-
-// Using custom hop size
-const customGenerator = new BeatMapGenerator({
-  hopSizeMode: { mode: 'custom', customValue: 5 } // 5ms
-});
-
-// Using helper functions directly
-const hopSize = getHopSizeMs({ mode: 'hq' }); // 2ms
-const presetValue = HOP_SIZE_PRESETS.standard; // 4
-
-// Backward compatible - direct value still works
-const legacyGenerator = new BeatMapGenerator({
-  hopSizeMs: 10 // Direct numeric value (legacy behavior)
-});
-```
-
-**Precedence:** When both mode and direct value are provided, mode takes precedence. This allows easy migration from legacy code.
+**For detailed examples (mode-based configuration, helper functions, precedence rules):** See [docs/AUDIO_ANALYSIS.md#ose-parameter-modes](docs/AUDIO_ANALYSIS.md#ose-parameter-modes)
 
 ## Progression System
 
 ### SessionTracker
 
-**Location:** `src/core/progression/SessionTracker.ts`
+*Location:* *[src/core/progression/SessionTracker.ts](src/core/progression/SessionTracker.ts)*
 
 Manages active listening sessions and records history.
 
@@ -2701,58 +2308,42 @@ new SessionTracker(xpCalculator?: XPCalculator)
 
 ### ISessionTracker
 
-**Location:** `src/core/types/ISessionTracker.ts`
+*Location:* *[src/core/types/ISessionTracker.ts](src/core/types/ISessionTracker.ts)*
 
 Interface for session tracking operations required by the prestige system. Allows consumers using different state management approaches (Zustand, Redux, etc.) to provide adapters for `CharacterUpdater.resetCharacterForPrestige()`.
 
-```typescript
-export interface ISessionTracker {
-    getTrackListenCount(trackUuid: string): number;
-    getTrackXPTotal(trackUuid: string): number;
-    clearTrackSessions(trackUuid: string): number;
-}
-```
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `getTrackListenCount(trackUuid)` | `number` | Get the number of listening sessions for a specific track |
+| `getTrackXPTotal(trackUuid)` | `number` | Get the total XP earned for a specific track |
+| `clearTrackSessions(trackUuid)` | `number` | Clear all listening sessions for a track; returns count removed |
 
-**Usage with Zustand adapter:**
-```typescript
-import { type ISessionTracker, CharacterUpdater } from 'playlist-data-engine';
-import { useSessionStore } from './stores/sessionStore';
-
-const zustandAdapter: ISessionTracker = {
-    getTrackListenCount: (id) => useSessionStore.getState().getTrackListenCount(id),
-    getTrackXPTotal: (id) => useSessionStore.getState().getTrackXPTotal(id),
-    clearTrackSessions: (id) => useSessionStore.getState().clearTrackSessions(id),
-};
-
-const result = updater.resetCharacterForPrestige(character, zustandAdapter, trackUuid, audioProfile, track);
-```
+**For usage examples (Zustand adapter, mock for testing):** See [docs/XP_AND_STATS.md#isessiontracker-adapter](docs/XP_AND_STATS.md#isessiontracker-adapter)
 
 ### ListeningSession
 
-**Location:** `src/core/types/Progression.ts` (60-71)
+*Location:* *[src/core/types/Progression.ts](src/core/types/Progression.ts)* (60-71)
 
 Record of a single listening session.
 
-```typescript
-export interface ListeningSession {
-    track_uuid: string;
-    start_time: number;           // Unix timestamp
-    end_time: number;             // Unix timestamp
-    duration_seconds: number;
-    base_xp_earned: number;
-    bonus_xp: number;
-    environmental_context?: EnvironmentalContext;
-    gaming_context?: GamingContext;
-    activity_type?: string;
-    total_xp_earned: number;
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| `track_uuid` | string | UUID of the track being listened to |
+| `start_time` | number | Unix timestamp when session started |
+| `end_time` | number | Unix timestamp when session ended |
+| `duration_seconds` | number | Total session duration in seconds |
+| `base_xp_earned` | number | Base XP earned before modifiers |
+| `bonus_xp` | number | Bonus XP from environmental/gaming modifiers |
+| `environmental_context?` | EnvironmentalContext | Environmental context during session |
+| `gaming_context?` | GamingContext | Gaming context during session |
+| `activity_type?` | string | Type of activity (e.g., "listening") |
+| `total_xp_earned` | number | Total XP earned (base + bonus) |
 
 ---
 
 ### XPCalculator
 
-**Location:** `src/core/progression/XPCalculator.ts`
+*Location:* *[src/core/progression/XPCalculator.ts](src/core/progression/XPCalculator.ts)*
 
 Calculates XP based on duration, activity, environment, and gaming context.
 
@@ -2765,35 +2356,34 @@ new XPCalculator(options?: Partial<ExperienceSystem>)
 
 ### ExperienceSystem
 
-**Location:** `src/core/types/Progression.ts` (76-98)
+*Location:* *[src/core/types/Progression.ts](src/core/types/Progression.ts)*
 
 Configuration for XP calculation.
 
-```typescript
-export interface ExperienceSystem {
-    // XP thresholds for each level (D&D 5e standard)
-    level_thresholds: number[];
+#### Properties
 
-    // Base XP rates
-    xp_per_second: number;        // Base rate (e.g., 1 XP per second of listening)
-    xp_per_track_completion: number;  // Bonus for finishing a song
+| Property | Type | Description |
+|----------|------|-------------|
+| `level_thresholds` | `number[]` | XP thresholds for each level (D&D 5e standard) |
+| `xp_per_second` | `number` | Base rate (e.g., 1 XP per second of listening) |
+| `xp_per_track_completion` | `number` | Bonus for finishing a song |
+| `activity_bonuses` | `object` | Activity multipliers for XP |
+| `activity_bonuses.stationary` | `number` | Multiplier for stationary activity |
+| `activity_bonuses.walking` | `number` | Multiplier for walking |
+| `activity_bonuses.running` | `number` | Multiplier for running |
+| `activity_bonuses.driving` | `number` | Multiplier for driving |
+| `activity_bonuses.night_time` | `number` | Multiplier for night time |
+| `activity_bonuses.extreme_weather` | `number` | Multiplier for extreme weather |
+| `activity_bonuses.high_altitude` | `number` | Multiplier for high altitude (≥2000m) |
+| `activity_bonuses.rhythm_game_base` | `number` | Base multiplier when rhythm game active (default: 1.25) |
+| `activity_bonuses.rhythm_game_combo` | `number` | Max additional from combo (default: 0.5) |
+| `activity_bonuses.rhythm_game_groove` | `number` | Max additional from groove hotness (default: 0.5) |
+| `track_mastery_threshold` | `number` | Listens required to master a track |
+| `mastery_bonus_xp` | `number` | Bonus XP for mastering a track |
 
-    // Activity multipliers
-    activity_bonuses: {
-        stationary: number;
-        walking: number;
-        running: number;
-        driving: number;
-        night_time: number;
-        extreme_weather: number;
-        high_altitude: number;
-    };
+---
 
-    // Mastery system
-    track_mastery_threshold: number;  // Listens required to master a track
-    mastery_bonus_xp: number;         // Bonus for mastering
-}
-```
+### XPCalculator Methods
 
 **Methods:**
 
@@ -2818,7 +2408,7 @@ export interface ExperienceSystem {
 
 ### CharacterUpdater
 
-**Location:** `src/core/progression/CharacterUpdater.ts`
+*Location:* *[src/core/progression/CharacterUpdater.ts](src/core/progression/CharacterUpdater.ts)*
 
 *Also known as: Character progression, XP handler, level-up manager, character advancement*
 
@@ -2849,14 +2439,7 @@ Orchestrates applying session results to a character, handling leveling up and m
 | `standard` (capped at 20) | `dnD5e` (manual) | 2-step level-up: XP adds HP/proficiency/features, stats require manual selection via `applyPendingStatIncrease()` |
 | `uncapped` | `dnD5e_smart` (auto) | 1-step level-up: Everything applied automatically, intelligently boosts primary/lowest stats |
 
-**Override with custom StatManager:**
-```typescript
-import { StatManager, CharacterUpdater } from 'playlist-data-engine';
-
-// Force automatic mode for standard characters
-const statManager = new StatManager({ strategy: 'dnD5e_smart' });
-const updater = new CharacterUpdater(statManager);
-```
+**For custom StatManager configuration and strategy options:** See [docs/XP_AND_STATS.md#stat-increase-strategies](docs/XP_AND_STATS.md#stat-increase-strategies)
 
 #### Types
 
@@ -2870,7 +2453,7 @@ const updater = new CharacterUpdater(statManager);
 
 ### SessionTracker
 
-**Location:** `src/core/progression/SessionTracker.ts`
+*Location:* *[src/core/progression/SessionTracker.ts](src/core/progression/SessionTracker.ts)*
 
 *Also known as: Session manager, listening tracker, session history*
 
@@ -2914,7 +2497,7 @@ Manages active listening sessions and records history.
 
 ### XPCalculator
 
-**Location:** `src/core/progression/XPCalculator.ts`
+*Location:* *[src/core/progression/XPCalculator.ts](src/core/progression/XPCalculator.ts)*
 
 *Also known as: XP calculator, experience calculator, leveling calculator*
 
@@ -2949,7 +2532,7 @@ Calculates XP based on duration, activity, environment, and gaming context.
 
 ### LevelUpProcessor
 
-**Location:** `src/core/progression/LevelUpProcessor.ts`
+*Location:* *[src/core/progression/LevelUpProcessor.ts](src/core/progression/LevelUpProcessor.ts)*
 
 *Also known as: Level-up handler, character advancement*
 
@@ -2981,7 +2564,7 @@ Handles the mechanics of leveling up a character.
 
 ### PrestigeSystem
 
-**Location:** *[src/core/progression/PrestigeSystem.ts](src/core/progression/PrestigeSystem.ts)*
+*Location:* *[src/core/progression/PrestigeSystem.ts](src/core/progression/PrestigeSystem.ts)*
 
 *Also known as: Track mastery, prestige system, mastery progression*
 
@@ -3062,7 +2645,7 @@ Handles the prestige mechanic where players reset their character after masterin
 
 ### RhythmXPCalculator
 
-**Location:** `src/core/progression/RhythmXPCalculator.ts`
+*Location:* *[src/core/progression/RhythmXPCalculator.ts](src/core/progression/RhythmXPCalculator.ts)*
 
 *Also known as: Rhythm game XP, beat game XP, music game XP calculator*
 
@@ -3125,31 +2708,6 @@ The calculator supports two modes:
 | `GrooveStats` | [src/core/types/RhythmXP.ts](src/core/types/RhythmXP.ts) | Full groove statistics from GrooveAnalyzer |
 | `RhythmSessionTotals` | [src/core/types/RhythmXP.ts](src/core/types/RhythmXP.ts) | Cumulative session statistics (totalScore, totalXP, maxCombo, accuracyDistribution, accuracyPercentage, duration) |
 
-#### Default Configuration
-
-```typescript
-const DEFAULT_RHYTHM_XP_CONFIG = {
-    baseXP: { perfect: 10, great: 7, good: 5, ok: 2, miss: 0, wrongKey: 0 },
-    xpRatio: 0.1,  // 10 score points = 1 character XP
-    combo: {
-        enabled: true,
-        cap: 5.0,
-        endBonus: { enabled: true }
-    },
-    groove: {
-        perHitMultiplier: false,
-        perHitScale: 1.0,
-        endBonus: {
-            enabled: true,
-            maxStreakWeight: 5,
-            avgHotnessWeight: 5,
-            durationWeight: 5
-        }
-    },
-    maxMultiplier: 5.0
-};
-```
-
 #### Constants
 
 | Constant | Value | Description |
@@ -3162,41 +2720,7 @@ const DEFAULT_RHYTHM_XP_CONFIG = {
 |----------|---------|-------------|
 | `mergeRhythmXPConfig(userConfig?)` | `RhythmXPConfig` | Merge user config with defaults |
 
-#### Example: Stateless Usage
-
-```typescript
-import { RhythmXPCalculator } from 'playlist-data-engine';
-
-const calculator = new RhythmXPCalculator({ xpRatio: 0.1 });
-
-// Calculate XP for a button press
-const result = calculator.calculateButtonPressXP('perfect', {
-    comboLength: 50,
-    grooveHotness: 80
-});
-
-console.log(`Score: ${result.finalScore}, XP: ${result.finalXP}`);
-// Score: 20, XP: 2 (at 50 combo = 2x multiplier)
-```
-
-#### Example: Stateful Session Tracking
-
-```typescript
-import { RhythmXPCalculator } from 'playlist-data-engine';
-
-const calculator = new RhythmXPCalculator();
-calculator.startSession();
-
-// On each hit (frontend tracks combo/groove)
-const result = calculator.recordHit('perfect', { comboLength, grooveHotness });
-
-// Get running totals for UI
-const totals = calculator.getSessionTotals();
-console.log(`Session XP: ${totals.totalXP}, Accuracy: ${totals.accuracyPercentage}%`);
-
-// End session
-const finalTotals = calculator.endSession();
-```
+**For configuration details, session tracking, and stateless usage examples:** See [docs/XP_AND_STATS.md#rhythm-game-xp](docs/XP_AND_STATS.md#rhythm-game-xp)
 
 ---
 
@@ -3204,7 +2728,7 @@ const finalTotals = calculator.endSession();
 
 *Also known as: Stat boosts, ability score increases, stat progression, attribute increases*
 
-**Location:** `src/core/progression/stat/StatManager.ts`
+*Location:* *[src/core/progression/stat/StatManager.ts](src/core/progression/stat/StatManager.ts)*
 
 Manages D&D 5e-style stat increases for character progression with flexible strategies for level-ups, items, and custom formulas.
 
@@ -3252,7 +2776,7 @@ For complete stat increase examples (manual selection, auto-selection, custom fo
 
 **Type:** `StatIncreaseStrategyType`
 
-**Location:** [src/core/types/Progression.ts](src/core/types/Progression.ts)
+*Location:* *[src/core/types/Progression.ts](src/core/types/Progression.ts)*
 
 | Strategy Value | Description |
 |----------------|-------------|
@@ -3281,29 +2805,9 @@ The engine supports two game modes for character progression:
 - Maximum level: unlimited
 - Custom XP scaling formulas available
 
-**Usage:**
-
-```typescript
-// Standard mode (default)
-const character = CharacterGenerator.generate(
-    seed,
-    audioProfile,
-    track,
-    { gameMode: 'standard' }
-);
-
-// Uncapped mode with default D&D 5e pattern continuation
-const epicCharacter = CharacterGenerator.generate(
-    seed,
-    audioProfile,
-    track,
-    { gameMode: 'uncapped' }
-);
-```
-
 The `gameMode` is stored on the character and automatically used during level-ups.
 
-For uncapped progression configuration examples, see [XP_AND_STATS.md](docs/XP_AND_STATS.md#uncapped-mode-custom-formulas).
+**For usage examples and progression configuration:** See [docs/XP_AND_STATS.md#game-mode-selection](docs/XP_AND_STATS.md#game-mode-selection)
 
 ---
 
@@ -3319,7 +2823,7 @@ The engine provides centralized configuration options for sensors and progressio
 
 *Also known as: Sensor settings, environment configuration, runtime configuration*
 
-**Location:** `src/core/config/sensorConfig.ts`
+*Location:* *[src/core/config/sensorConfig.ts](src/core/config/sensorConfig.ts)*
 
 Centralized configuration for sensors, XP modifiers, and retry logic.
 
@@ -3363,7 +2867,7 @@ Centralized configuration for sensors, XP modifiers, and retry logic.
 
 *Also known as: XP settings, level-up configuration, progression rules*
 
-**Location:** `src/core/config/progressionConfig.ts`
+*Location:* *[src/core/config/progressionConfig.ts](src/core/config/progressionConfig.ts)*
 
 Configuration for XP thresholds, stat increases, and level-up behavior.
 
@@ -3391,7 +2895,7 @@ Configuration for XP thresholds, stat increases, and level-up behavior.
 ## Environmental Sensors
 *Also known as: IRL sensors, real-world sensors, environmental context, GPS/weather integration*
 
-**Location:** `src/core/sensors/EnvironmentalSensors.ts`
+*Location:* *[src/core/sensors/EnvironmentalSensors.ts](src/core/sensors/EnvironmentalSensors.ts)*
 
 **For usage examples, see [docs/IRL_SENSORS.md](docs/IRL_SENSORS.md)**
 
@@ -3429,7 +2933,7 @@ Integrates real-world data (GPS, Weather, Motion, Light) to influence XP generat
 
 #### Helper: `GeolocationProvider`
 
-**Location:** [src/core/sensors/GeolocationProvider.ts](src/core/sensors/GeolocationProvider.ts)
+*Location:* *[src/core/sensors/GeolocationProvider.ts](src/core/sensors/GeolocationProvider.ts)*
 
 Handles GPS data and biome detection with caching support.
 
@@ -3456,7 +2960,7 @@ new GeolocationProvider(config: GeolocationSensorConfig)
 
 #### Helper: `MotionDetector`
 
-**Location:** [src/core/sensors/MotionDetector.ts](src/core/sensors/MotionDetector.ts)
+*Location:* *[src/core/sensors/MotionDetector.ts](src/core/sensors/MotionDetector.ts)*
 
 Handles accelerometer and gyroscope data for activity detection.
 
@@ -3471,7 +2975,7 @@ Handles accelerometer and gyroscope data for activity detection.
 
 #### Helper: `WeatherAPIClient`
 
-**Location:** [src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)
+*Location:* *[src/core/sensors/WeatherAPIClient.ts](src/core/sensors/WeatherAPIClient.ts)*
 
 Fetches weather data and forecasts from OpenWeatherMap API.
 
@@ -3510,27 +3014,24 @@ new WeatherAPIClient(config: WeatherSensorConfig)
 
 ##### Solar Information (`getSolarInfo`)
 
-The `getSolarInfo()` method provides astronomical calculations for sunrise, sunset, and day stage. **This method works without an API key** using pure astronomical math (NOAA algorithm).
+*[src/core/api/WeatherAPIClient.ts](src/core/api/WeatherAPIClient.ts)*
+
+Astronomical calculations for sunrise, sunset, and day stage. **Works without an API key** using pure astronomical math (NOAA algorithm).
 
 **Returns: `SolarInfo`**
-```typescript
-interface SolarInfo {
-    currentTime: Date;      // Current time
-    stage: DayStage;        // 'night' | 'dawn' | 'day' | 'dusk'
-    sunrise: Date;          // Sunrise time (UTC)
-    sunset: Date;           // Sunset time (UTC)
-    solarNoon: Date;        // Solar noon time (UTC)
-    civilDawn?: Date;       // Civil dawn (sun 6° below horizon)
-    civilDusk?: Date;       // Civil dusk (sun 6° below horizon)
-    sunAltitude: number;    // Sun altitude in degrees (negative = below horizon)
-    sunAzimuth: number;     // Sun azimuth in degrees (0-360, North=0)
-    dayLengthHours: number; // Day length in hours
-    fromApi: boolean;       // Always false for calculated data
-    timestamp: number;      // When this data was generated
-}
-```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `stage` | `DayStage` | Current day stage |
+| `sunrise` | `Date` | Sunrise time (UTC) |
+| `sunset` | `Date` | Sunset time (UTC) |
+| `solarNoon` | `Date` | Solar noon time (UTC) |
+| `sunAltitude` | `number` | Sun altitude in degrees |
+| `sunAzimuth` | `number` | Sun azimuth (0-360, North=0) |
+| `dayLengthHours` | `number` | Day length in hours |
 
 **Day Stages:**
+
 | Stage | Description |
 |-------|-------------|
 | `night` | Before civil dawn or after civil dusk |
@@ -3538,22 +3039,11 @@ interface SolarInfo {
 | `day` | Between sunrise and sunset |
 | `dusk` | Between sunset and civil dusk (~30 min) |
 
-**Usage Example:**
-```typescript
-const weatherClient = new WeatherAPIClient(''); // No API key needed!
-const solarInfo = weatherClient.getSolarInfo(40.7128, -74.0060); // NYC
-
-console.log(solarInfo.stage);        // 'day', 'night', 'dawn', or 'dusk'
-console.log(solarInfo.sunrise);      // Date object
-console.log(solarInfo.sunset);       // Date object
-console.log(solarInfo.dayLengthHours); // e.g., 14.5
-```
-
-**Note:** For polar regions (midnight sun / polar night), sunrise/sunset may be `Invalid Date`. The stage is determined using sun altitude in these cases.
+*For usage examples, see [IRL_SENSORS.md](docs/IRL_SENSORS.md#solar-information-no-api-key-required).*
 
 #### Helper: `LightSensor`
 
-**Location:** [src/core/sensors/LightSensor.ts](src/core/sensors/LightSensor.ts)
+*Location:* *[src/core/sensors/LightSensor.ts](src/core/sensors/LightSensor.ts)*
 
 Uses the experimental AmbientLightSensor API for illuminance detection.
 
@@ -3572,7 +3062,7 @@ Uses the experimental AmbientLightSensor API for illuminance detection.
 ## Gaming Integration
 *Also known as: Gaming sensors, platform detection, game activity monitoring, Steam integration, Discord Rich Presence*
 
-**Location:** `src/core/sensors/GamingPlatformSensors.ts`
+*Location:* *[src/core/sensors/GamingPlatformSensors.ts](src/core/sensors/GamingPlatformSensors.ts)*
 
 Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord RPC cannot read game activity (platform limitation) - only displays music status.
 
@@ -3592,7 +3082,7 @@ Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord R
 | `printDashboard(config?)` | Prints formatted gaming sensor dashboard to console |
 
 ### SteamAPIClient
-**Location:** `src/core/sensors/SteamAPIClient.ts`
+*Location:* *[src/core/sensors/SteamAPIClient.ts](src/core/sensors/SteamAPIClient.ts)*
 
 | Method | Description |
 |--------|-------------|
@@ -3604,7 +3094,7 @@ Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord R
 | `resetPerformanceMetrics()` | Resets all performance tracking counters |
 
 ### DiscordRPCClient
-**Location:** `src/core/sensors/DiscordRPCClient.ts`
+*Location:* *[src/core/sensors/DiscordRPCClient.ts](src/core/sensors/DiscordRPCClient.ts)*
 
 **⚠️ Important:** Discord RPC CANNOT read game activity. Use Steam API for game detection. Discord RPC is ONLY for displaying music status ("Listening to") on user's Discord profile.
 
@@ -3652,7 +3142,7 @@ Monitors Steam and Discord activity to award gaming bonuses. **Note:** Discord R
 
 ### CombatEngine
 
-**Location:** `src/core/combat/CombatEngine.ts`
+*Location:* *[src/core/combat/CombatEngine.ts](src/core/combat/CombatEngine.ts)*
 
 D&D 5e turn-based combat engine with initiative, attacks, spell casting, and damage mechanics.
 
@@ -3689,7 +3179,7 @@ D&D 5e turn-based combat engine with initiative, attacks, spell casting, and dam
 
 *Also known as: Turn order manager, initiative tracker*
 
-**Location:** `src/core/combat/InitiativeRoller.ts`
+*Location:* *[src/core/combat/InitiativeRoller.ts](src/core/combat/InitiativeRoller.ts)*
 
 > **Note:** Instance class - create with `new InitiativeRoller()`
 
@@ -3709,7 +3199,7 @@ Manages D&D 5e initiative system (rolling, sorting, turn progression).
 
 *Also known as: Dice system, RNG, random number generator, d20 roller*
 
-**Location:** `src/core/combat/DiceRoller.ts`
+*Location:* *[src/core/combat/DiceRoller.ts](src/core/combat/DiceRoller.ts)*
 
 > **Note:** Static class - call methods directly without instantiation: `DiceRoller.rollD20()`
 
@@ -3769,7 +3259,7 @@ Utility class for D&D-style dice rolling mechanics.
 
 *Also known as: Attack handler, melee/ranged attacks, to-hit calculator*
 
-**Location:** `src/core/combat/AttackResolver.ts`
+*Location:* *[src/core/combat/AttackResolver.ts](src/core/combat/AttackResolver.ts)*
 
 > **Note:** Instance class - create with `new AttackResolver()`
 
@@ -3787,7 +3277,7 @@ Handles melee and ranged attack resolution (d20 + attack bonus vs target AC).
 
 *Also known as: Spell system, magic casting, spell slot manager*
 
-**Location:** `src/core/combat/SpellCaster.ts`
+*Location:* *[src/core/combat/SpellCaster.ts](src/core/combat/SpellCaster.ts)*
 
 > **Note:** Instance class - create with `new SpellCaster()`
 
@@ -3813,7 +3303,7 @@ Handles spell casting mechanics (spell slots, saving throws, spell damage).
 
 ### EnemyGenerator
 
-**Location:** `src/core/generation/EnemyGenerator.ts`
+*Location:* *[src/core/generation/EnemyGenerator.ts](src/core/generation/EnemyGenerator.ts)*
 
 Deterministic enemy generator that creates balanced encounters based on party strength or target CR. All generation is seeded for reproducibility.
 
@@ -3828,7 +3318,7 @@ Deterministic enemy generator that creates balanced encounters based on party st
 
 ### CR/Level Conversion
 
-**Location:** `src/core/generation/CRLevelConverter.ts`
+*Location:* *[src/core/generation/CRLevelConverter.ts](src/core/generation/CRLevelConverter.ts)*
 
 Bidirectional conversion between Challenge Rating (CR) and character level for enemy generation and encounter balancing.
 
@@ -3842,50 +3332,7 @@ Bidirectional conversion between Challenge Rating (CR) and character level for e
 | `formatCR(cr: number): string` | Format CR with fractional notation (e.g., "1/4", "1/2") |
 | `createCRTuning(options?: Partial<CRTuningConfig>): CRTuningConfig` | Create custom CR tuning configuration |
 
-**Single Enemy Generation:**
-
-```typescript
-// Generate a specific elite orc
-const orc = EnemyGenerator.generate({
-  seed: 'my-encounter',
-  templateId: 'orc',
-  rarity: 'elite'
-});
-
-// Generate a random humanoid brute
-const enemy = EnemyGenerator.generate({
-  seed: 'random-1',
-  category: 'humanoid',
-  archetype: 'brute',
-  rarity: 'common'
-});
-
-// With audio influence
-const enemy = EnemyGenerator.generate({
-  seed: 'audio-1',
-  audioProfile: profile,
-  track: trackData,
-  difficultyMultiplier: 1.2
-});
-```
-
-**Encounter Generation:**
-
-```typescript
-// Party-based balanced encounter
-const enemies = EnemyGenerator.generateEncounter(party, {
-  seed: 'dungeon-1',
-  difficulty: 'medium',
-  count: 5  // Will auto-promote 1 to uncommon as leader
-});
-
-// CR-based encounter (no party needed)
-const enemies = EnemyGenerator.generateEncounterByCR({
-  seed: 'cr5-encounter',
-  targetCR: 5,
-  count: 3
-});
-```
+**For usage examples (single enemy generation, encounter generation, audio influence):** See [docs/ENEMY_GENERATION.md](docs/ENEMY_GENERATION.md#enemy-generation)
 
 **Generation Options (EnemyGenerationOptions):**
 
@@ -3941,7 +3388,7 @@ const enemies = EnemyGenerator.generateEncounterByCR({
 
 ### PartyAnalyzer
 
-**Location:** `src/core/combat/PartyAnalyzer.ts`
+*Location:* *[src/core/combat/PartyAnalyzer.ts](src/core/combat/PartyAnalyzer.ts)*
 
 Analyzes party strength for encounter generation using D&D 5e encounter building rules.
 
@@ -3960,33 +3407,26 @@ Analyzes party strength for encounter generation using D&D 5e encounter building
 
 **PartyAnalysis Interface:**
 
-```typescript
-interface PartyAnalysis {
-  averageLevel: number;      // Average party level
-  partySize: number;         // Number of party members
-  averageAC: number;         // Average armor class
-  averageHP: number;         // Average hit points
-  averageDamage: number;      // Estimated damage output
-  totalStrength: number;      // Abstract strength score
-  easyXP: number;           // XP budget for easy difficulty
-  mediumXP: number;         // XP budget for medium difficulty
-  hardXP: number;           // XP budget for hard difficulty
-  deadlyXP: number;         // XP budget for deadly difficulty
-}
-```
+| Property | Type | Description |
+|----------|------|-------------|
+| `averageLevel` | `number` | Average party level |
+| `partySize` | `number` | Number of party members |
+| `averageAC` | `number` | Average armor class |
+| `averageHP` | `number` | Average hit points |
+| `averageDamage` | `number` | Estimated damage output |
+| `totalStrength` | `number` | Abstract strength score |
+| `easyXP` | `number` | XP budget for easy difficulty |
+| `mediumXP` | `number` | XP budget for medium difficulty |
+| `hardXP` | `number` | XP budget for hard difficulty |
+| `deadlyXP` | `number` | XP budget for deadly difficulty |
 
 ### Encounter Balance Constants
 
-**Location:** `src/constants/EncounterBalance.ts`
+*Location:* *[src/constants/EncounterBalance.ts](src/constants/EncounterBalance.ts)*
 
 D&D 5e official encounter building tables for balanced encounters.
 
-**XP Budget Per Level:**
-
-```typescript
-XP_BUDGET_PER_LEVEL[level][difficulty]
-// Example: XP_BUDGET_PER_LEVEL[5]['medium'] = 500
-```
+**XP Budget Per Level:** `XP_BUDGET_PER_LEVEL[level][difficulty]`
 
 | Level | Easy | Medium | Hard | Deadly |
 |-------|-------|--------|-------|--------|
@@ -3996,12 +3436,7 @@ XP_BUDGET_PER_LEVEL[level][difficulty]
 | 15 | 1600 | 3200 | 4800 | 6400 |
 | 20 | 5000 | 10000 | 15000 | 20000 |
 
-**CR to XP Conversion:**
-
-```typescript
-CR_TO_XP[cr]  // Returns XP value for given CR
-// Example: CR_TO_XP[5] = 1800
-```
+**CR to XP Conversion:** `CR_TO_XP[cr]`
 
 | CR | XP | CR | XP | CR | XP |
 |----|-----|----|-----|----|
@@ -4025,7 +3460,7 @@ CR_TO_XP[cr]  // Returns XP value for given CR
 ### EnemyEquipmentGenerator
 *Also known as: Enemy equipment manager, gear generator*
 
-**Location:** `src/core/generation/EnemyEquipmentGenerator.ts`
+*Location:* *[src/core/generation/EnemyEquipmentGenerator.ts](src/core/generation/EnemyEquipmentGenerator.ts)*
 
 Generates equipment for enemy characters based on archetype and rarity. Equipment selection is deterministic and uses seeded RNG for reproducibility.
 
@@ -4061,7 +3496,7 @@ Generates equipment for enemy characters based on archetype and rarity. Equipmen
 ### SpellcastingGenerator
 *Also known as: Enemy spell system, caster generator*
 
-**Location:** `src/core/generation/SpellcastingGenerator.ts`
+*Location:* *[src/core/generation/SpellcastingGenerator.ts](src/core/generation/SpellcastingGenerator.ts)*
 
 Generates innate spellcasting abilities for enemy casters. Unlike player spellcasting, enemies use a simplified system with predefined spell lists.
 
@@ -4105,7 +3540,7 @@ Generates innate spellcasting abilities for enemy casters. Unlike player spellca
 ### LegendaryGenerator
 *Also known as: Boss action system, legendary action generator*
 
-**Location:** `src/core/generation/LegendaryGenerator.ts`
+*Location:* *[src/core/generation/LegendaryGenerator.ts](src/core/generation/LegendaryGenerator.ts)*
 
 Generates legendary actions and resistances for boss-tier enemies. Bosses receive 3 legendary actions per round and 3 legendary resistances per day.
 
@@ -4190,7 +3625,7 @@ Audio profile affects enemy stat distribution during generation. This is a subtl
 
 ### Enemy Type Definitions
 
-**Location:** `src/core/types/Enemy.ts`
+*Location:* *[src/core/types/Enemy.ts](src/core/types/Enemy.ts)*
 
 **EnemyCategory:**
 
@@ -4270,7 +3705,7 @@ The following template files contain enemy definitions organized by category:
 
 ## Equipment System
 
-**Location:** `src/core/equipment/`, `src/core/types/Equipment.ts`, `src/core/generation/EquipmentGenerator.ts`
+*Location:* *[src/core/equipment/](src/core/equipment/)*, `src/core/types/Equipment.ts`, `src/core/generation/EquipmentGenerator.ts`
 
 **For comprehensive documentation, see [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md)**
 
@@ -4278,7 +3713,7 @@ The following template files contain enemy definitions organized by category:
 
 *Also known as: Item mods, enchantments, affixes, bonuses*
 
-**Location:** `src/core/types/Equipment.ts`
+*Location:* *[src/core/types/Equipment.ts](src/core/types/Equipment.ts)*
 
 #### EquipmentPropertyType
 
@@ -4329,7 +3764,7 @@ Conditional property triggers:
 ### EquipmentEffectApplier
 *Also known as: Equipment effects manager, item bonus applier, equip/unequip handler*
 
-**Location:** [src/core/equipment/EquipmentEffectApplier.ts](src/core/equipment/EquipmentEffectApplier.ts)
+*Location:* *[src/core/equipment/EquipmentEffectApplier.ts](src/core/equipment/EquipmentEffectApplier.ts)*
 
 Static class for applying and removing equipment effects when equipping/unequipping items. All equipment effects stack by default.
 
@@ -4343,7 +3778,7 @@ Static class for applying and removing equipment effects when equipping/unequipp
 ### EquipmentValidator
 *Also known as: Equipment validation, equipment data checker, property validator*
 
-**Location:** [src/core/equipment/EquipmentValidator.ts](src/core/equipment/EquipmentValidator.ts)
+*Location:* *[src/core/equipment/EquipmentValidator.ts](src/core/equipment/EquipmentValidator.ts)*
 
 Validates equipment data structures including complete equipment objects, individual properties, feature/skill references, damage info, spawn weights, and modifications.
 
@@ -4378,7 +3813,7 @@ Validates equipment data structures including complete equipment objects, indivi
 ### EquipmentModifier
 *Also known as: Equipment enchantment system, item modification API, equipment curse/upgrade handler*
 
-**Location:** `src/core/equipment/EquipmentModifier.ts`
+*Location:* *[src/core/equipment/EquipmentModifier.ts](src/core/equipment/EquipmentModifier.ts)*
 
 Static class for equipment modification including enchanting (positive effects), cursing (negative effects), upgrading (improving properties), and template application.
 
@@ -4419,7 +3854,7 @@ For usage examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md#equipm
 
 *Also known as: Loot spawner, equipment batch generator, treasure hoard system*
 
-**Location:** [src/core/equipment/EquipmentSpawnHelper.ts](src/core/equipment/EquipmentSpawnHelper.ts)
+*Location:* *[src/core/equipment/EquipmentSpawnHelper.ts](src/core/equipment/EquipmentSpawnHelper.ts)*
 
 Batch spawning utilities for equipment. Spawns from lists, by rarity, by tags, randomly, from templates, and treasure hoards.
 
@@ -4440,7 +3875,7 @@ For usage examples, see [EQUIPMENT_SYSTEM.md](../docs/EQUIPMENT_SYSTEM.md#batch-
 
 *Also known as: Loot box opener, pack unboxer, drop generator*
 
-**Location:** [src/core/equipment/BoxOpener.ts](src/core/equipment/BoxOpener.ts)
+*Location:* *[src/core/equipment/BoxOpener.ts](src/core/equipment/BoxOpener.ts)*
 
 Static utility class for opening `type: 'box'` equipment items and generating their contents. Supports guaranteed containers (like adventure packs), probability-based loot boxes, gold drops, quantity parameters for bulk items, and nested boxes (which are added unopened). All results are deterministic when given the same `SeededRNG` seed.
 
@@ -4476,61 +3911,7 @@ Static utility class for opening `type: 'box'` equipment items and generating th
 | `BoxOpenRequirement` | `itemName`, `quantity?` | A single requirement to open a box. `itemName` is the item to consume, `quantity` defaults to 1. Gold requirements use `"Gold Coin"` as itemName. |
 | `BoxOpenError` | `code`, `message`, `requirement?` | Error returned when box cannot be opened. `code` is `'MISSING_ITEM'`, `'INSUFFICIENT_QUANTITY'`, or `'NO_BOX_CONTENTS'`. |
 
-#### Usage Examples
-
-```typescript
-import { BoxOpener, EquipmentSpawnHelper, SeededRNG } from 'playlist-data-engine';
-
-const rng = new SeededRNG('my-seed');
-
-// --- Open a box directly ---
-const explorersPack = /* Equipment with type: 'box' */;
-const result = BoxOpener.openBox(explorersPack, rng);
-console.log(result.items);      // Generated Equipment[] (e.g., 26 items for Explorer's Pack)
-console.log(result.gold);       // Gold total (0 for packs, non-zero for treasure chests)
-console.log(result.consumeBox); // true (pack is consumed on open)
-
-// --- Check if an item is a box ---
-if (BoxOpener.isBox(someItem)) {
-    const preview = BoxOpener.previewContents(someItem);
-    console.log(preview.possibleItems);            // ['Backpack', 'Bedroll', ...]
-    console.log(preview.possibleGold);             // { min: 0, max: 0 }
-    console.log(preview.totalDrops);               // 8
-}
-
-// --- Open a box already in a character's inventory ---
-// (removes box from inventory, adds contents)
-EquipmentSpawnHelper.openBoxForCharacter(character, "Explorer's Pack", rng);
-
-// --- Locked boxes with requirements ---
-const inventory = character.equipment.items; // EnhancedInventoryItem[]
-
-// Check if a locked box can be opened
-const lockedChest = EquipmentSpawnHelper.getEquipmentDataStatic('Locked Chest');
-if (BoxOpener.canOpen(lockedChest, inventory)) {
-    // Open the locked box (consumes required item from inventory)
-    const result = BoxOpener.openBox(lockedChest, rng, inventory);
-    if (result.success) {
-        console.log('Box opened! Consumed:', result.consumedItems);
-        console.log('Got:', result.items.map(i => i.name));
-    }
-} else {
-    // Show user what's needed
-    console.log(BoxOpener.getRequirementsDescription(lockedChest));
-    // Output: "Requires: 1 Iron Key"
-}
-
-// Preview requirements without opening
-const preview = BoxOpener.previewContents(lockedChest);
-console.log(preview.openRequirements); // [{ itemName: 'Iron Key' }]
-
-// Check requirements programmatically
-const error = BoxOpener.checkRequirements(lockedChest, inventory);
-if (error) {
-    console.log(`Cannot open: ${error.message}`);
-    console.log(`Missing: ${error.requirement?.itemName}`);
-}
-```
+**For usage examples (openBox, isBox, previewContents, locked boxes with requirements):** See [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md#boxopener-class)
 
 #### Box Behavior Rules
 
@@ -4547,7 +3928,7 @@ For comprehensive examples and all box definitions, see [EQUIPMENT_SYSTEM.md](do
 ### EquipmentGenerator
 *Also known as: Equipment manager, inventory system, gear handler, starting equipment provider*
 
-**Location:** `src/core/generation/EquipmentGenerator.ts`
+*Location:* *[src/core/generation/EquipmentGenerator.ts](src/core/generation/EquipmentGenerator.ts)*
 
 Manages equipment assignment, inventory, and equipped items for characters. Supports extensibility through ExtensionManager for custom equipment. All equipment lookups check both default and custom equipment databases.
 
@@ -4589,7 +3970,7 @@ For equipment properties, enchanting, and custom equipment examples, see [EQUIPM
 
 ## Enchantment Library
 
-**Location:** `src/utils/enchantmentLibrary.ts`
+*Location:* *[src/utils/enchantmentLibrary.ts](src/utils/enchantmentLibrary.ts)*
 
 The Enchantment Library provides a comprehensive collection of predefined enchantments and curses that can be applied to equipment at runtime using `EquipmentModifier`. All enchantments are `EquipmentModification` objects designed to be applied via `EquipmentModifier.enchant()` for positive effects or `EquipmentModifier.curse()` for negative curses.
 
@@ -4675,73 +4056,34 @@ Special multi-effect enchantments:
 
 Functions that create stat-boosting enchantments with configurable bonus levels (1-4):
 
-```typescript
-function createStrengthEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-function createDexterityEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-function createConstitutionEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-function createIntelligenceEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-function createWisdomEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-function createCharismaEnchantment(bonus: 1 | 2 | 3 | 4): EquipmentModification
-```
+| Function | Parameter | Returns | Description |
+|----------|-----------|---------|-------------|
+| `createStrengthEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to STR |
+| `createDexterityEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to DEX |
+| `createConstitutionEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to CON |
+| `createIntelligenceEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to INT |
+| `createWisdomEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to WIS |
+| `createCharismaEnchantment` | `bonus: 1 \| 2 \| 3 \| 4` | `EquipmentModification` | Enchantment adding +bonus to CHA |
 
-Each function returns an `EquipmentModification` that adds the specified bonus to the corresponding ability score when applied via `EquipmentModifier.enchant()`.
+**For usage examples:** See [docs/EQUIPMENT_SYSTEM.md#creating-stat-boosting-enchantments](docs/EQUIPMENT_SYSTEM.md#creating-stat-boosting-enchantments)
 
 ### Query Functions
 
-```typescript
-function getEnchantment(id: string): EquipmentModification | undefined
-// Get a specific enchantment by its ID
+| Function | Parameter | Returns | Description |
+|----------|-----------|---------|-------------|
+| `getEnchantment` | `id: string` | `EquipmentModification \| undefined` | Get a specific enchantment by its ID |
+| `getCurse` | `id: string` | `EquipmentModification \| undefined` | Get a specific curse by its ID |
+| `getAllEnchantments` | - | `EquipmentModification[]` | Get all enchantments (weapons, armor, resistances, combo) |
+| `getAllCurses` | - | `EquipmentModification[]` | Get all curses |
+| `getEnchantmentsByType` | `type: 'weapon' \| 'armor' \| 'resistance' \| 'combo'` | `EquipmentModification[]` | Get enchantments filtered by type |
 
-function getCurse(id: string): EquipmentModification | undefined
-// Get a specific curse by its ID
-
-function getAllEnchantments(): EquipmentModification[]
-// Get all enchantments (weapons, armor, resistances, combo)
-
-function getAllCurses(): EquipmentModification[]
-// Get all curses
-
-function getEnchantmentsByType(type: 'weapon' | 'armor' | 'resistance' | 'combo'): EquipmentModification[]
-// Get enchantments filtered by type
-```
-
-### Usage Example
-
-```typescript
-import { EquipmentModifier, WEAPON_ENCHANTMENTS, CURSES, createStrengthEnchantment } from 'playlist-data-engine';
-
-// Apply a predefined enchantment
-const flamingEnch = WEAPON_ENCHANTMENTS.flaming;
-character.equipment = EquipmentModifier.enchant(
-    character.equipment,
-    'Longsword',
-    flamingEnch,
-    character
-);
-
-// Apply a curse
-const cursed = EquipmentModifier.curse(
-    character.equipment,
-    'Ring',
-    CURSES.attunement,
-    character
-);
-
-// Create and apply custom stat boost
-const strengthBoost = createStrengthEnchantment(2); // +2 Strength
-character.equipment = EquipmentModifier.enchant(
-    character.equipment,
-    'Belt of Giant Strength',
-    strengthBoost,
-    character
-);
-```
+**For usage examples (applying enchantments, curses, stat boosts):** See [docs/EQUIPMENT_SYSTEM.md#applying-enchantments](docs/EQUIPMENT_SYSTEM.md#applying-enchantments)
 
 ---
 
 ## Magic Items and Equipment Templates
 
-**Location:** `src/utils/equipmentConstants.ts`
+*Location:* *[src/utils/equipmentConstants.ts](src/utils/equipmentConstants.ts)*
 
 The equipment library provides a comprehensive collection of 34 pre-built magic items and 9 item creation templates that demonstrate all capabilities of the Advanced Equipment System. These examples serve as both reference implementations and test fixtures for the equipment system.
 
@@ -4843,104 +4185,22 @@ Templates that can be applied to base equipment to create magic variants:
 
 ### Query Functions
 
-```typescript
-function getMagicItem(name: string): EnhancedEquipment | undefined
-// Get a specific magic item by name
+| Function | Parameter | Returns | Description |
+|----------|-----------|---------|-------------|
+| `getMagicItem` | `name: string` | `EnhancedEquipment \| undefined` | Get a specific magic item by name |
+| `getMagicItemsByType` | `type: 'weapon' \| 'armor' \| 'item'` | `EnhancedEquipment[]` | Get all magic items of a specific type |
+| `getMagicItemsByRarity` | `rarity: 'common' \| 'uncommon' \| 'rare' \| 'very_rare' \| 'legendary'` | `EnhancedEquipment[]` | Get all magic items of a specific rarity |
+| `getCursedItems` | — | `EnhancedEquipment[]` | Get all cursed items (items with 'cursed' tag) |
+| `getItemsWithProperty` | `propertyType: string` | `EnhancedEquipment[]` | Get all items with a specific property type |
+| `applyTemplate` | `baseEquipment: EnhancedEquipment, templateId: string` | `EnhancedEquipment \| null` | Apply a template to base equipment, returns enhanced item or null if template not found |
 
-function getMagicItemsByType(type: 'weapon' | 'armor' | 'item'): EnhancedEquipment[]
-// Get all magic items of a specific type
-
-function getMagicItemsByRarity(rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary'): EnhancedEquipment[]
-// Get all magic items of a specific rarity
-
-function getCursedItems(): EnhancedEquipment[]
-// Get all cursed items (items with 'cursed' tag)
-
-function getItemsWithProperty(propertyType: string): EnhancedEquipment[]
-// Get all items with a specific property type
-
-function applyTemplate(baseEquipment: EnhancedEquipment, templateId: string): EnhancedEquipment | null
-// Apply a template to base equipment, returns enhanced item or null if template not found
-```
-
-### Usage Example
-
-```typescript
-import {
-    MAGIC_ITEMS,
-    ITEM_CREATION_TEMPLATES,
-    getMagicItem,
-    getMagicItemsByType,
-    getCursedItems,
-    applyTemplate,
-    EnhancedEquipment
-} from 'playlist-data-engine';
-
-// Get a specific item by name
-const flameTongue = getMagicItem('Flame Tongue');
-if (flameTongue) {
-    console.log(flameTongue.properties); // Array of equipment properties
-}
-
-// Get all weapons
-const weapons = getMagicItemsByType('weapon');
-console.log(weapons.length); // 4 weapons
-
-// Get cursed items
-const curses = getCursedItems();
-console.log(curses.map(item => item.name)); // ['-1 Cursed Sword', 'Belt of Strength Drain', ...]
-
-// Apply a template to base equipment
-const baseLongsword: EnhancedEquipment = {
-    name: 'Longsword',
-    type: 'weapon',
-    rarity: 'common',
-    weight: 3,
-    damage: { dice: '1d8', damageType: 'slashing', versatile: '1d10' },
-    weaponProperties: ['finesse', 'versatile'],
-    source: 'base',
-    tags: ['martial', 'melee']
-};
-
-const flamingLongsword = applyTemplate(baseLongsword, 'flaming_weapon_template');
-if (flamingLongsword) {
-    console.log(flamingLongsword.name); // "Longsword (flaming weapon template)"
-    console.log(flamingLongsword.properties); // Combined properties from base + template
-}
-
-// Access all items directly
-MAGIC_ITEMS.forEach(item => {
-    console.log(`${item.name} (${item.rarity}) - ${item.type}`);
-});
-```
-
-### Registration with ExtensionManager
-
-Magic item examples can be registered as custom equipment for use in procedural generation:
-
-```typescript
-import { ExtensionManager } from 'playlist-data-engine';
-import { MAGIC_ITEMS } from 'playlist-data-engine';
-
-const manager = ExtensionManager.getInstance();
-
-// Register all magic items as custom equipment
-manager.register('equipment', MAGIC_ITEMS, {
-    mode: 'append',
-    weights: MAGIC_ITEMS.reduce((acc, item) => {
-        acc[item.name] = item.spawnWeight ?? 0;
-        return acc;
-    }, {} as Record<string, number>)
-});
-
-// Now items will appear in random generation (respecting spawnWeight)
-```
+**For usage examples (querying items, applying templates, registration with ExtensionManager):** See [docs/EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md#magic-items-and-templates)
 
 ---
 
 ## Extensibility System
 
-**Location:** `src/core/extensions/`
+*Location:* *[src/core/extensions/](src/core/extensions/)*
 
 **For comprehensive extensibility documentation, see [EXTENSIBILITY_GUIDE.md](docs/EXTENSIBILITY_GUIDE.md)**
 
@@ -4967,7 +4227,7 @@ The extensibility system allows runtime customization of ALL procedural generati
 
 *Also known as: Content registry, customization manager, spawn rate controller, mod registration system*
 
-**Location:** `src/core/extensions/ExtensionManager.ts`
+*Location:* *[src/core/extensions/ExtensionManager.ts](src/core/extensions/ExtensionManager.ts)*
 
 Singleton registry for managing runtime customization of procedural generation lists with spawn rate control.
 
@@ -5041,40 +4301,13 @@ The following categories support `icon` and `image` fields for batch operations:
 | `races.data` | RaceDataEntry | `name` (race name) |
 | `classes.data` | ClassDataEntry | `name` (class name) |
 
-**Batch Image Methods Usage:**
-```typescript
-const manager = ExtensionManager.getInstance();
-
-// Add icons to specific spells
-manager.batchAddIcons('spells', {
-    'Fireball': '/assets/spells/fireball.png',
-    'Magic Missile': '/assets/spells/magic-missile.png'
-});
-
-// Add same icon to all cantrips
-manager.batchUpdateImages('spells',
-    spell => spell.level === 0,
-    { icon: '/assets/spells/cantrip-icon.png' }
-);
-
-// Add icons by spell school
-manager.batchByCategory('spells', 'school', {
-    'Evocation': '/assets/icons/fire.png',
-    'Necromancy': '/assets/icons/skull.png'
-});
-
-// Add icons by equipment rarity
-manager.batchByCategory('equipment', 'rarity', {
-    'legendary': '/assets/icons/star-gold.png',
-    'very_rare': '/assets/icons/star-purple.png'
-});
-```
+**For batch image usage examples (batchAddIcons, batchUpdateImages, batchByCategory):** See [docs/EXTENSIBILITY_GUIDE.md#batch-image-operations](docs/EXTENSIBILITY_GUIDE.md#batch-image-operations)
 
 ### FeatureQuery
 
 *Also known as: Feature registry, class feature system, racial trait system*
 
-**Location:** `src/core/features/FeatureQuery.ts`
+*Location:* *[src/core/features/FeatureQuery.ts](src/core/features/FeatureQuery.ts)*
 
 Query and validation layer for class features and racial traits stored in ExtensionManager.
 
@@ -5129,7 +4362,7 @@ Query and validation layer for class features and racial traits stored in Extens
 
 *Also known as: Feature validation system, class feature validator, racial trait validator*
 
-**Location:** `src/core/features/FeatureValidator.ts`
+*Location:* *[src/core/features/FeatureValidator.ts](src/core/features/FeatureValidator.ts)*
 
 Utility class for validating class features and racial traits against strict schemas. All methods are static.
 
@@ -5160,43 +4393,19 @@ Utility class for validating class features and racial traits against strict sch
 
 ### WeightedSelector
 
-**Location:** `src/core/extensions/WeightedSelector.ts`
+*Location:* *[src/core/extensions/WeightedSelector.ts](src/core/extensions/WeightedSelector.ts)*
 
 Utility class for weighted random selection supporting different spawn modes for probability calculation.
 
-```typescript
-class WeightedSelector {
-    // Single Selection (throws on empty arrays)
-    static select<T>(items: T[], weights: Record<string, number>, rng: SeededRNG, mode?: SelectionMode): T
+#### Types
 
-    // Multiple Selection
-    static selectMultiple<T>(items: T[], weights: Record<string, number>, rng: SeededRNG, count: number, mode?: SelectionMode): T[]
+| Type | Description |
+|------|-------------|
+| `SelectionMode` | Spawn mode: `'relative'` \| `'absolute'` \| `'default'` \| `'replace'` |
+| `SeededRNG` | RNG interface with `next()` method and `seed` property |
+| `WeightedSelectionOptions` | Options: `mode`, `allowDuplicates`, `fallbackToEqualWeights` |
 
-    // Probability Calculation
-    static getProbabilities<T>(items: T[], weights: Record<string, number>, mode?: SelectionMode): Record<string, number>
-
-    // Weight Normalization (includes items parameter)
-    static normalizeWeights<T>(items: T[], weights: Record<string, number>, mode: SelectionMode): Record<string, number>
-
-    // Item Identification
-    static getItemKey<T>(item: T): string
-}
-
-type SelectionMode = 'relative' | 'absolute' | 'default' | 'replace';
-
-interface SeededRNG {
-    next(): number;
-    seed: number;
-}
-
-interface WeightedSelectionOptions {
-    mode?: SelectionMode;
-    allowDuplicates?: boolean;
-    fallbackToEqualWeights?: boolean;
-}
-```
-
-**Method Reference:**
+#### Method Reference
 
 | Method | Parameters | Returns | Description |
 |--------|-----------|---------|-------------|
@@ -5218,7 +4427,7 @@ interface WeightedSelectionOptions {
 
 ### SkillQuery
 
-**Location:** `src/core/skills/SkillQuery.ts`
+*Location:* *[src/core/skills/SkillQuery.ts](src/core/skills/SkillQuery.ts)*
 
 *Also known as: Skill registry, custom skill system, proficiency manager*
 
@@ -5260,7 +4469,7 @@ Query and validation layer for character skills stored in ExtensionManager.
 
 ### SkillValidator
 
-**Location:** `src/core/skills/SkillValidator.ts`
+*Location:* *[src/core/skills/SkillValidator.ts](src/core/skills/SkillValidator.ts)*
 
 *Also known as: Skill validation system, proficiency validator*
 
@@ -5297,7 +4506,7 @@ Skills can have prerequisites that must be met before a character can gain profi
 
 ### SpellQuery
 
-**Location:** `src/core/spells/SpellQuery.ts`
+*Location:* *[src/core/spells/SpellQuery.ts](src/core/spells/SpellQuery.ts)*
 
 *Also known as: Spell registry, magic system, spellcaster manager*
 
@@ -5339,7 +4548,7 @@ Query and validation layer for spells stored in ExtensionManager.
 
 ### SpellValidator
 
-**Location:** `src/core/spells/SpellValidator.ts`
+*Location:* *[src/core/spells/SpellValidator.ts](src/core/spells/SpellValidator.ts)*
 
 *Also known as: Spell validation system, magic validator*
 
@@ -5381,7 +4590,7 @@ The engine supports custom races through the ExtensionManager. Custom races can 
 
 #### API Interfaces
 
-**Location:** [src/utils/constants.ts](src/utils/constants.ts)
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)*
 
 **RaceDataEntry** - Complete interface definition: [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md#racedataentry-interface)
 
@@ -5403,21 +4612,13 @@ The engine supports custom races through the ExtensionManager. Custom races can 
 
 Characters can have a subrace property (e.g., 'High Elf', 'Hill Dwarf'). Subraces allow for more granular racial trait assignment and prerequisite validation.
 
-#### API Interfaces
+#### Types
 
-```typescript
-interface CharacterSheet {
-    subrace?: string;
-}
-
-interface FeaturePrerequisite {
-    subrace?: string;
-}
-
-interface RacialTrait {
-    subrace?: string;
-}
-```
+| Type | Location | Description |
+|------|----------|-------------|
+| `CharacterSheet` | [src/core/types/Character.ts](src/core/types/Character.ts) | Has optional `subrace?: string` property |
+| `FeaturePrerequisite` | [src/core/types/Character.ts](src/core/types/Character.ts) | Can include `subrace?: string` requirement |
+| `RacialTrait` | [src/core/features/FeatureQuery.ts](src/core/features/FeatureQuery.ts) | Optional `subrace?: string` for subrace-specific traits |
 
 **FeatureQuery Methods:**
 - `getRacialTraitsForSubrace(race, subrace)` - Get traits for specific subrace
@@ -5433,7 +4634,7 @@ The engine supports template-based custom classes through the ExtensionManager. 
 
 #### API Interfaces
 
-**Location:** [src/utils/constants.ts](src/utils/constants.ts)
+*Location:* *[src/utils/constants.ts](src/utils/constants.ts)*
 
 **ClassDataEntry** - Complete interface definition with JSDoc comments: [docs/CUSTOM_CONTENT.md](docs/CUSTOM_CONTENT.md#classdataentry-interface)
 
@@ -5459,7 +4660,7 @@ The engine supports template-based custom classes through the ExtensionManager. 
 ---
 ## Style Guide
 
-Documentation Style Guide for DATA_ENGINE_REFERENCE.md: This API reference prioritizes efficiency over exhaustiveness by organizing content into navigable sections (Quick Export Reference → Data Types → Core Modules → Specialized Systems). Key conventions: (1) Location links using italicized [src/path/file.ts](src/path/file.ts) format for all major definitions; (2) "Also known as" aliases in italics for discoverability under alternate search terms; (3) Structured tables for properties, methods, and options rather than copying raw TypeScript interfaces; (4) Cross-references to related docs (SPEC.md, USAGE_IN_OTHER_PROJECTS.md, specialized guides) rather than duplicating content; (5) Method reference tables with "Returns" and "Description" columns for APIs; (6) Type descriptions focus on purpose and key properties rather than full interface definitions—readers can click the location link for complete source. The goal is a scannable reference that directs readers to source files for complete implementations while providing sufficient context for most queries.
+Documentation Style Guide for DATA_ENGINE_REFERENCE.md: This API reference prioritizes efficiency over exhaustiveness by organizing content into navigable sections (Quick Export Reference → Data Types → Core Modules → Specialized Systems). Key conventions: (1) Location links using italicized [src/path/file.ts](src/path/file.ts) format for all major definitions; (2) "Also known as" aliases in italics for discoverability under alternate search terms; (3) Structured tables for properties, methods, and options rather than copying raw TypeScript interfaces; (4) Cross-references to related docs (SPEC.md, USAGE_IN_OTHER_PROJECTS.md, specialized guides) rather than duplicating content; (5) Method reference tables with "Returns" and "Description" columns for APIs; (6) Type descriptions focus on purpose and key properties rather than full interface definitions—readers can click the location link for complete source; (7) No code examples or implementation code blocks—usage examples belong in USAGE_IN_OTHER_PROJECTS.md, algorithm details belong in specialized guides like AUDIO_ANALYSIS.md. The goal is a scannable reference that directs readers to source files for complete implementations while providing sufficient context for most queries.
 
 ---
 
