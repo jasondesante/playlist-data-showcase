@@ -93,13 +93,13 @@ This refactor improves code organization by separating the complex beat detectio
   - [x] Remove `analysisMode !== 'beat'` check from EQ section (line 632) - EQ always visible now
   - [x] Remove beat mode check from Audio Analysis Results (line 1022)
 
-- [ ] **2.8 Clean Up AudioAnalysisTab.css**
-  - [ ] Remove `.audio-analysis-beat-results-card` styles (~line 186-203)
-  - [ ] Remove `.audio-analysis-primary-layout--beat` styles (~line 205-210)
-  - [ ] Remove short-track warning styles (beat-specific, ~line 572+)
-  - [ ] Remove chart editor placeholder styles (~line 1943+)
-  - [ ] Remove beat subdivision card styles
-  - [ ] Remove any other beat-only CSS sections
+- [x] **2.8 Clean Up AudioAnalysisTab.css**
+  - [x] Remove `.audio-analysis-beat-results-card` styles (~line 186-203)
+  - [x] Remove `.audio-analysis-primary-layout--beat` styles (~line 205-210)
+  - [x] Remove short-track warning styles (beat-specific, ~line 572+)
+  - [x] Remove chart editor placeholder styles (~line 1943+)
+  - [x] Remove beat subdivision card styles
+  - [x] Remove any other beat-only CSS sections
 
 ---
 
