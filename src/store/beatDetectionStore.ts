@@ -3582,6 +3582,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     melBandsConfig,
                     gaussianSmoothConfig,
                     difficultySettings,
+                    // Interpolation state (Phase 1: Task 1.1)
+                    interpolationOptions: persisted?.interpolationOptions ?? currentState.interpolationOptions,
+                    beatStreamMode: persisted?.beatStreamMode ?? currentState.beatStreamMode,
+                    cachedInterpolatedBeatMaps: persisted?.cachedInterpolatedBeatMaps ?? currentState.cachedInterpolatedBeatMaps,
+                    // Downbeat configuration state (Phase 1: Task 1.1)
+                    downbeatConfig: persisted?.downbeatConfig ?? currentState.downbeatConfig,
+                    showMeasureBoundaries: persisted?.showMeasureBoundaries ?? currentState.showMeasureBoundaries,
                     // Subdivision state (Phase 3: Task 3.1)
                     subdivisionConfig,
                     currentSubdivision: persisted?.currentSubdivision ?? currentState.currentSubdivision,

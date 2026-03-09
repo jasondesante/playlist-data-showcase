@@ -48,8 +48,8 @@ Additionally, when users assign keys in the Chart Editor:
 **Note:** `beatStreamMode` is still needed - it's used by practice mode (buttons were removed from interpolation settings but remain in practice mode).
 
 ### Task 1.1: Add Missing Fields to Merge Function Return Object
-- [ ] Locate the `merge` function return statement (around line 3576-3595)
-- [ ] Add the following fields to the return object:
+- [x] Locate the `merge` function return statement (around line 3576-3595)
+- [x] Add the following fields to the return object:
 
 ```typescript
 return {
