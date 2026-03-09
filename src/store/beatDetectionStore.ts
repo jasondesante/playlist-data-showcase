@@ -2457,7 +2457,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             const subdivider = new BeatSubdivider();
                             const subdividedMap = subdivider.subdivide(unifiedBeatMap, subdivisionConfig);
 
-                            set({ subdividedBeatMap: subdividedMap });
+                            // Update both current state and cache
+                            const audioId = subdividedMap.audioId;
+                            set((state) => ({
+                                subdividedBeatMap: subdividedMap,
+                                cachedSubdividedBeatMaps: {
+                                    ...state.cachedSubdividedBeatMaps,
+                                    [audioId]: subdividedMap,
+                                },
+                            }));
 
                             logger.info('BeatDetection', 'SubdividedBeatMap generated successfully', {
                                 beatCount: subdividedMap.beats.length,

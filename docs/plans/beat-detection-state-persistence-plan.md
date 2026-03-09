@@ -114,8 +114,8 @@ return {
 **Design Decision:** Use single `set()` calls that update both `subdividedBeatMap` and `cachedSubdividedBeatMaps` together to avoid extra re-renders.
 
 ### Task 3.1: Update generateSubdividedBeatMap to Cache Result
-- [ ] Locate `generateSubdividedBeatMap` function (around line 2432)
-- [ ] Combine state and cache update into a single `set()` call:
+- [x] Locate `generateSubdividedBeatMap` function (around line 2432)
+- [x] Combine state and cache update into a single `set()` call:
   ```typescript
   const audioId = subdividedMap.audioId;
   set((state) => ({
