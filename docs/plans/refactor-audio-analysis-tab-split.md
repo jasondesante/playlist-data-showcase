@@ -188,11 +188,12 @@ This refactor improves code organization by separating the complex beat detectio
   - [x] Verify Practice Mode works
   - [x] Verify Export Beat Map works
 
-- [ ] **4.4 Shared State Test**
-  - [ ] Generate beat map in BeatDetectionTab
-  - [ ] Switch to another tab
-  - [ ] Return to BeatDetectionTab
-  - [ ] Verify beat map is still there (persisted in store)
+- [x] **4.4 Shared State Test**
+  - [x] Generate beat map in BeatDetectionTab
+  - [x] Switch to another tab
+  - [x] Return to BeatDetectionTab
+  - [x] Verify beat map is still there (persisted in store)
+  - [x] **Fix applied**: Updated `loadCachedBeatMap` in beatDetectionStore.ts to also restore `interpolatedBeatMap`, `unifiedBeatMap`, and `subdividedBeatMap` from their respective caches when switching tabs
 
 ---
 

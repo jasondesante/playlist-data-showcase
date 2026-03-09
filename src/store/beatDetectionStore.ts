@@ -1802,10 +1802,30 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     loadCachedBeatMap: (audioId) => {
-                        const cached = get().cachedBeatMaps[audioId];
+                        const state = get();
+                        const cached = state.cachedBeatMaps[audioId];
                         if (cached) {
                             logger.info('BeatDetection', 'Loading cached beat map', { audioId });
-                            set({ beatMap: cached, error: null });
+
+                            // Also restore related cached beat maps (interpolated, unified, subdivided)
+                            const cachedInterpolated = state.cachedInterpolatedBeatMaps[audioId];
+                            const cachedUnified = state.cachedUnifiedBeatMaps[audioId];
+                            const cachedSubdivided = state.cachedSubdividedBeatMaps[audioId];
+
+                            logger.info('BeatDetection', 'Restoring cached beat maps', {
+                                audioId,
+                                hasInterpolated: !!cachedInterpolated,
+                                hasUnified: !!cachedUnified,
+                                hasSubdivided: !!cachedSubdivided,
+                            });
+
+                            set({
+                                beatMap: cached,
+                                error: null,
+                                interpolatedBeatMap: cachedInterpolated || null,
+                                unifiedBeatMap: cachedUnified || null,
+                                subdividedBeatMap: cachedSubdivided || null,
+                            });
                             return cached;
                         }
                         return null;
