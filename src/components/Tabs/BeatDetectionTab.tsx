@@ -25,19 +25,18 @@ import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, us
 import { logger } from '../../utils/logger';
 
 /**
- * AudioAnalysisTab Component
+ * BeatDetectionTab Component
  *
- * Demonstrates the AudioAnalyzer engine module by:
- * 1. Requiring a selected track from the Playlist tab
- * 2. Analyzing the audio using Web Audio API
- * 3. Displaying frequency band analysis (bass, mid, treble)
- * 4. Showing average amplitude metrics
- * 5. Displaying color palette (if available from artwork)
- * 6. Displaying analysis metadata (duration, sample positions)
- * 7. Storing audioProfile in playlistStore for Character Gen tab to use
- * 8. Interactive multiplier controls for real-time frequency adjustment
+ * Provides beat detection and rhythm analysis functionality:
+ * 1. Requires a selected track from the Playlist tab
+ * 2. Generates beat maps using the BeatDetection engine
+ * 3. Displays beat map summary (BPM, phase information, beat count)
+ * 4. Provides subdivision settings for beat refinement
+ * 5. Includes chart editor for beat visualization and editing
+ * 6. Practice mode for playing along with detected beats
+ * 7. Export beat maps for use in other applications
  */
-export function AudioAnalysisTab() {
+export function BeatDetectionTab() {
     const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
     const { playbackState, currentTime, duration, seek } = useAudioPlayerStore();
     const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing, timelineData } = useAudioAnalyzer();
@@ -573,11 +572,11 @@ export function AudioAnalysisTab() {
                 <div className="audio-analysis-header-left">
                     <div className="audio-analysis-header-title-row">
                         <div className="audio-analysis-header-icon-wrapper">
-                            <Waves className="audio-analysis-header-icon" />
+                            <Drum className="audio-analysis-header-icon" />
                         </div>
                         <div className="audio-analysis-header-titles">
-                            <h2 className="audio-analysis-header-title">Audio Analysis</h2>
-                            <div className="audio-analysis-header-subtitle">Analyze audio frequencies and extract color palettes</div>
+                            <h2 className="audio-analysis-header-title">Beat Detection</h2>
+                            <div className="audio-analysis-header-subtitle">Analyze rhythm and generate beat maps</div>
                         </div>
                     </div>
                 </div>
@@ -1392,4 +1391,4 @@ export function AudioAnalysisTab() {
     );
 }
 
-export default AudioAnalysisTab;
+export default BeatDetectionTab;
