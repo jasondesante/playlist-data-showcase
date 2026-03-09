@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, useMemo } from 'react';
-import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database } from 'lucide-react';
+import { Music, User, Activity, Zap, Gamepad2, Swords, Settings, Users, Backpack, Database, Drum } from 'lucide-react';
 import { AppHeader } from './components/Layout/AppHeader';
 import { MainLayout } from './components/Layout/MainLayout';
 import { ToastContainer } from './components/ui/Toast';
@@ -7,6 +7,7 @@ import { LevelUpDetailModal } from './components/LevelUpDetailModal';
 import type { TabItem } from './components/Layout/Sidebar';
 import { PlaylistLoaderTab } from './components/Tabs/PlaylistLoaderTab';
 import { AudioAnalysisTab } from './components/Tabs/AudioAnalysisTab';
+import { BeatDetectionTab } from './components/Tabs/BeatDetectionTab';
 import { CharacterGenTab } from './components/Tabs/CharacterGenTab';
 import { PartyTab } from './components/Tabs/PartyTab';
 import { SessionTrackingTab } from './components/Tabs/SessionTrackingTab';
@@ -24,7 +25,7 @@ import { useCharacterStore } from './store/characterStore';
 import { useDataViewerStore } from './store/dataViewerStore';
 import { useCustomEquipmentInitializer } from './hooks/useItemCreator';
 
-type Tab = 'playlist' | 'audio' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
+type Tab = 'playlist' | 'audio' | 'beat' | 'character' | 'party' | 'items' | 'dataviewer' | 'session' | 'xp' | 'leveling' | 'sensors' | 'gaming' | 'combat' | 'settings';
 
 // Create context for active tab
 const TabContext = createContext<{ activeTab: Tab } | null>(null);
@@ -66,6 +67,7 @@ function App() {
   const tabs: TabItem[] = [
     { id: 'playlist', label: 'Playlist', icon: Music },
     { id: 'audio', label: 'Audio Analysis', icon: Music },
+    { id: 'beat', label: 'Beat Detection', icon: Drum },
     { id: 'character', label: 'Character Gen', icon: User },
     { id: 'party', label: 'Party', icon: Users },
     { id: 'items', label: 'Items', icon: Backpack },
@@ -97,6 +99,7 @@ function App() {
     switch (activeTab) {
       case 'playlist': return <PlaylistLoaderTab />;
       case 'audio': return <AudioAnalysisTab />;
+      case 'beat': return <BeatDetectionTab />;
       case 'character': return <CharacterGenTab />;
       case 'party': return <PartyTab />;
       case 'items': return <ItemsTab />;
