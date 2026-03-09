@@ -1487,6 +1487,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     lastGeneratedInterpolationConfig: currentInterpolationConfig,
                                     unifiedBeatMap: unifiedMap,
                                     subdividedBeatMap: null, // Clear subdivision when unified changes
+                                    // Cache the unified beat map for persistence
+                                    cachedUnifiedBeatMaps: {
+                                        ...get().cachedUnifiedBeatMaps,
+                                        [unifiedMap.audioId]: unifiedMap,
+                                    },
                                 });
                                 logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from cached interpolation', {
                                     beatCount: unifiedMap.beats.length,
@@ -1524,6 +1529,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                             cachedInterpolatedBeatMaps: {
                                                 ...freshState.cachedInterpolatedBeatMaps,
                                                 [audioId]: interpolatedBeatMap,
+                                            },
+                                            // Also cache the unified beat map for persistence
+                                            cachedUnifiedBeatMaps: {
+                                                ...freshState.cachedUnifiedBeatMaps,
+                                                [unifiedMap.audioId]: unifiedMap,
                                             },
                                         }),
                                     });
@@ -1625,6 +1635,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             let interpolatedBeatMap: InterpolatedBeatMap | null = null;
                             let unifiedBeatMap: UnifiedBeatMap | null = null;
                             let cachedInterpolatedBeatMaps = currentState.cachedInterpolatedBeatMaps;
+                            let cachedUnifiedBeatMaps = currentState.cachedUnifiedBeatMaps;
 
                             try {
                                 // Merge interpolation options with enableMultiTempo based on autoMultiTempo state
@@ -1649,6 +1660,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                                 // Task 2.4: Auto-generate UnifiedBeatMap after interpolation
                                 unifiedBeatMap = unifyBeatMap(interpolatedBeatMap);
+
+                                // Cache the unified beat map for persistence
+                                cachedUnifiedBeatMaps = {
+                                    ...cachedUnifiedBeatMaps,
+                                    [unifiedBeatMap.audioId]: unifiedBeatMap,
+                                };
+
                                 logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from interpolation', {
                                     beatCount: unifiedBeatMap.beats.length,
                                 });
@@ -1669,6 +1687,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 interpolatedBeatMap,
                                 lastGeneratedInterpolationConfig: interpolationConfigSnapshot,
                                 cachedInterpolatedBeatMaps,
+                                cachedUnifiedBeatMaps,
                                 unifiedBeatMap,
                                 subdividedBeatMap: null, // Clear subdivision when unified changes
                                 // Task 6.1: Reset downbeat config when generating a new beat map
@@ -1825,6 +1844,20 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 hasInterpolated: !!cachedInterpolated,
                                 hasUnified: !!cachedUnified,
                                 hasSubdivided: !!cachedSubdivided,
+                            });
+
+                            // Check if the subdivided beat map has required keys
+                            let keyCount = 0;
+                            if (cachedSubdivided) {
+                                keyCount = cachedSubdivided.beats.filter(b => b.requiredKey !== undefined).length;
+                            }
+
+                            logger.info('BeatDetection', 'Restoring cached beat maps - key assignment details', {
+                                audioId,
+                                hasInterpolated: !!cachedInterpolated,
+                                hasUnified: !!cachedUnified,
+                                hasSubdivided: !!cachedSubdivided,
+                                subdividedKeyCount: keyCount,
                             });
 
                             set({
@@ -2092,10 +2125,16 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                             // Task 2.4: Auto-generate UnifiedBeatMap after interpolation
                             const unifiedMap = unifyBeatMap(interpolatedBeatMap);
+                            const currentState = get();
                             set({
                                 interpolatedBeatMap,
                                 unifiedBeatMap: unifiedMap,
                                 subdividedBeatMap: null, // Clear subdivision when unified changes
+                                // Cache the unified beat map for persistence
+                                cachedUnifiedBeatMaps: {
+                                    ...currentState.cachedUnifiedBeatMaps,
+                                    [unifiedMap.audioId]: unifiedMap,
+                                },
                             });
                             logger.info('BeatDetection', 'UnifiedBeatMap auto-generated from interpolation', {
                                 beatCount: unifiedMap.beats.length,
@@ -2131,10 +2170,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                      * Apply a new downbeat configuration to the current beat map.
                      * This recalculates beatInMeasure, isDownbeat, and measureNumber for all beats.
                      * Also updates the interpolated beat map if one exists.
+                     * Preserves subdivision and key assignments by regenerating the subdivided beat map.
                      */
                     applyDownbeatConfig: (config: DownbeatConfig) => {
                         const state = get();
-                        const { beatMap, interpolatedBeatMap } = state;
+                        const { beatMap, interpolatedBeatMap, subdividedBeatMap, subdivisionConfig } = state;
 
                         if (!beatMap) {
                             logger.warn('BeatDetection', 'No beat map loaded, cannot apply downbeat config');
@@ -2146,6 +2186,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             firstSegmentBeatsPerMeasure: config.segments[0]?.timeSignature.beatsPerMeasure,
                             firstSegmentDownbeatIndex: config.segments[0]?.downbeatBeatIndex,
                         });
+
+                        // Preserve key assignments from existing subdivided beat map
+                        const savedKeyAssignments = new Map<number, string>();
+                        if (subdividedBeatMap) {
+                            subdividedBeatMap.beats.forEach((beat, index) => {
+                                if (beat.requiredKey !== undefined) {
+                                    savedKeyAssignments.set(index, beat.requiredKey);
+                                }
+                            });
+                            logger.info('BeatDetection', 'Preserving key assignments before downbeat change', {
+                                keyCount: savedKeyAssignments.size,
+                            });
+                        }
 
                         try {
                             // Apply config to the original beat map
@@ -2168,12 +2221,54 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 logger.info('BeatDetection', 'UnifiedBeatMap regenerated after downbeat config change');
                             }
 
+                            // Regenerate subdivided beat map if we had one before
+                            let updatedSubdividedBeatMap: SubdividedBeatMap | null = null;
+                            if (updatedUnifiedBeatMap && subdividedBeatMap) {
+                                const subdivider = new BeatSubdivider();
+                                updatedSubdividedBeatMap = subdivider.subdivide(updatedUnifiedBeatMap, subdivisionConfig);
+                                logger.info('BeatDetection', 'SubdividedBeatMap regenerated with preserved subdivision config', {
+                                    beatCount: updatedSubdividedBeatMap.beats.length,
+                                });
+
+                                // Restore key assignments
+                                if (savedKeyAssignments.size > 0) {
+                                    let restoredCount = 0;
+                                    updatedSubdividedBeatMap.beats.forEach((beat, index) => {
+                                        const savedKey = savedKeyAssignments.get(index);
+                                        if (savedKey !== undefined) {
+                                            beat.requiredKey = savedKey;
+                                            restoredCount++;
+                                        }
+                                    });
+                                    logger.info('BeatDetection', 'Restored key assignments after downbeat change', {
+                                        restoredCount,
+                                    });
+                                }
+                            }
+
+                            // Update cache for the regenerated maps
+                            const audioId = beatMap.audioId;
+                            const cacheUpdates: Partial<BeatDetectionState> = {};
+                            if (updatedUnifiedBeatMap) {
+                                cacheUpdates.cachedUnifiedBeatMaps = {
+                                    ...state.cachedUnifiedBeatMaps,
+                                    [audioId]: updatedUnifiedBeatMap,
+                                };
+                            }
+                            if (updatedSubdividedBeatMap) {
+                                cacheUpdates.cachedSubdividedBeatMaps = {
+                                    ...state.cachedSubdividedBeatMaps,
+                                    [audioId]: updatedSubdividedBeatMap,
+                                };
+                            }
+
                             set({
                                 beatMap: updatedBeatMap,
                                 interpolatedBeatMap: updatedInterpolatedBeatMap,
                                 unifiedBeatMap: updatedUnifiedBeatMap,
-                                subdividedBeatMap: null, // Clear subdivision when unified changes
+                                subdividedBeatMap: updatedSubdividedBeatMap,
                                 downbeatConfig: config,
+                                ...cacheUpdates,
                             });
 
                             logger.info('BeatDetection', 'Downbeat config applied successfully');
@@ -2187,10 +2282,11 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     /**
                      * Reset downbeat configuration to default (beat 0 = downbeat, 4/4 time).
                      * This sets downbeatConfig to null, indicating default behavior.
+                     * Preserves subdivision and key assignments by regenerating the subdivided beat map.
                      */
                     resetDownbeatConfig: () => {
                         const state = get();
-                        const { beatMap, interpolatedBeatMap } = state;
+                        const { beatMap, interpolatedBeatMap, subdividedBeatMap, subdivisionConfig } = state;
 
                         if (!beatMap) {
                             logger.warn('BeatDetection', 'No beat map loaded, cannot reset downbeat config');
@@ -2198,6 +2294,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         }
 
                         logger.info('BeatDetection', 'Resetting downbeat config to default');
+
+                        // Preserve key assignments from existing subdivided beat map
+                        const savedKeyAssignments = new Map<number, string>();
+                        if (subdividedBeatMap) {
+                            subdividedBeatMap.beats.forEach((beat, index) => {
+                                if (beat.requiredKey !== undefined) {
+                                    savedKeyAssignments.set(index, beat.requiredKey);
+                                }
+                            });
+                            logger.info('BeatDetection', 'Preserving key assignments before downbeat reset', {
+                                keyCount: savedKeyAssignments.size,
+                            });
+                        }
 
                         try {
                             // Apply default config to the original beat map
@@ -2218,12 +2327,54 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 updatedUnifiedBeatMap = unifyBeatMap(updatedInterpolatedBeatMap);
                             }
 
+                            // Regenerate subdivided beat map if we had one before
+                            let updatedSubdividedBeatMap: SubdividedBeatMap | null = null;
+                            if (updatedUnifiedBeatMap && subdividedBeatMap) {
+                                const subdivider = new BeatSubdivider();
+                                updatedSubdividedBeatMap = subdivider.subdivide(updatedUnifiedBeatMap, subdivisionConfig);
+                                logger.info('BeatDetection', 'SubdividedBeatMap regenerated with preserved subdivision config', {
+                                    beatCount: updatedSubdividedBeatMap.beats.length,
+                                });
+
+                                // Restore key assignments
+                                if (savedKeyAssignments.size > 0) {
+                                    let restoredCount = 0;
+                                    updatedSubdividedBeatMap.beats.forEach((beat, index) => {
+                                        const savedKey = savedKeyAssignments.get(index);
+                                        if (savedKey !== undefined) {
+                                            beat.requiredKey = savedKey;
+                                            restoredCount++;
+                                        }
+                                    });
+                                    logger.info('BeatDetection', 'Restored key assignments after downbeat reset', {
+                                        restoredCount,
+                                    });
+                                }
+                            }
+
+                            // Update cache for the regenerated maps
+                            const audioId = beatMap.audioId;
+                            const cacheUpdates: Partial<BeatDetectionState> = {};
+                            if (updatedUnifiedBeatMap) {
+                                cacheUpdates.cachedUnifiedBeatMaps = {
+                                    ...state.cachedUnifiedBeatMaps,
+                                    [audioId]: updatedUnifiedBeatMap,
+                                };
+                            }
+                            if (updatedSubdividedBeatMap) {
+                                cacheUpdates.cachedSubdividedBeatMaps = {
+                                    ...state.cachedSubdividedBeatMaps,
+                                    [audioId]: updatedSubdividedBeatMap,
+                                };
+                            }
+
                             set({
                                 beatMap: updatedBeatMap,
                                 interpolatedBeatMap: updatedInterpolatedBeatMap,
                                 unifiedBeatMap: updatedUnifiedBeatMap,
-                                subdividedBeatMap: null, // Clear subdivision when unified changes
+                                subdividedBeatMap: updatedSubdividedBeatMap,
                                 downbeatConfig: null, // null = using default
+                                ...cacheUpdates,
                             });
 
                             logger.info('BeatDetection', 'Downbeat config reset to default');
@@ -2415,9 +2566,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             const unifiedMap = unifyBeatMap(interpolatedBeatMap);
 
                             // Clear the subdivided beat map since the unified map changed
+                            // Also cache the unified beat map for persistence
                             set({
                                 unifiedBeatMap: unifiedMap,
                                 subdividedBeatMap: null, // Clear subdivision when unified changes
+                                cachedUnifiedBeatMaps: {
+                                    ...state.cachedUnifiedBeatMaps,
+                                    [unifiedMap.audioId]: unifiedMap,
+                                },
                             });
 
                             logger.info('BeatDetection', 'UnifiedBeatMap generated successfully', {
@@ -3081,14 +3237,20 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             return updatedBeat;
                         });
 
-                        // Update the state
-                        set({
-                            subdividedBeatMap: {
-                                ...state.subdividedBeatMap,
-                                beats: updatedBeats,
-                            },
+                        // Update the state AND cache (fix for import persistence)
+                        const audioId = state.subdividedBeatMap.audioId;
+                        const updatedSubdividedMap = {
+                            ...state.subdividedBeatMap,
+                            beats: updatedBeats,
+                        };
+                        set((state) => ({
+                            subdividedBeatMap: updatedSubdividedMap,
                             chartStyle: data.chartStyle,
-                        });
+                            cachedSubdividedBeatMaps: {
+                                ...state.cachedSubdividedBeatMaps,
+                                [audioId]: updatedSubdividedMap,
+                            },
+                        }));
 
                         const successResult: LevelImportValidationResult = {
                             valid: true,
@@ -3640,6 +3802,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             cacheOrderLength: state.cacheOrder.length,
                             // Phase 1 & 2: Newly restored fields
                             cachedInterpolatedBeatMapsCount: Object.keys(state.cachedInterpolatedBeatMaps).length,
+                            cachedUnifiedBeatMapsCount: Object.keys(state.cachedUnifiedBeatMaps).length,
                             hasDownbeatConfig: !!state.downbeatConfig,
                             showMeasureBoundaries: state.showMeasureBoundaries,
                             autoMultiTempo: state.autoMultiTempo,

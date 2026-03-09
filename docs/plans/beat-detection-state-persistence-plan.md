@@ -145,6 +145,56 @@ return {
 
 ---
 
+## Phase 3.5: Fix UnifiedBeatMap Caching (Additional Fix - 2026-03-09)
+
+**Goal:** Ensure the unified beat map is properly cached so the subdivision timeline UI loads on page refresh.
+
+**Root Cause:** The `unifiedBeatMap` was being set to state but was never being cached to `cachedUnifiedBeatMaps`. This caused the subdivision timeline UI to not appear after refresh because `SubdivisionSettings` requires `unifiedBeatMap` to be set.
+
+### Task 3.5.1: Update Caching in generateBeatMap (Beat Map Generation Complete)
+- [x] Add `cachedUnifiedBeatMaps` variable to track cache updates
+- [x] When `unifiedBeatMap` is created, add it to the cache
+- [x] Include `cachedUnifiedBeatMaps` in the final `set()` call
+
+### Task 3.5.2: Update Caching in Cached Interpolation Path
+- [x] When using cached interpolated beat map, also cache the unified beat map
+- [x] When generating interpolation after cache load, also cache the unified beat map (with conditional logic for downbeat config)
+
+### Task 3.5.3: Update Caching in generateInterpolatedBeatMap
+- [x] Add cache update for unified beat map when generated via this function
+
+### Task 3.5.4: Update Caching in generateUnifiedBeatMap
+- [x] Add cache update for unified beat map in this dedicated function
+
+### Task 3.5.5: Update onRehydrateStorage Logging
+- [x] Add `cachedUnifiedBeatMapsCount` to the rehydration log for debugging
+
+---
+
+## Phase 3.6: Preserve Subdivision and Keys on Downbeat Change (Additional Fix - 2026-03-09)
+
+**Goal:** When downbeat configuration changes, preserve the subdivided beat map and key assignments instead of clearing them.
+
+**Root Cause:** The `applyDownbeatConfig` and `resetDownbeatConfig` functions were clearing `subdividedBeatMap: null`, which forced users to re-generate subdivisions and re-assign keys after every downbeat change.
+
+**Why This Was Wrong:** Changing the downbeat position only affects which beat is labeled as "beat 1" of a measure. The subdivision patterns and key assignments are independent of downbeat labels.
+
+### Task 3.6.1: Update applyDownbeatConfig to Preserve Subdivision and Keys
+- [x] Save key assignments from current subdivided beat map before regeneration
+- [x] After regenerating unified beat map, regenerate subdivided beat map with existing subdivision config
+- [x] Restore key assignments to the new subdivided beat map
+- [x] Update caches for both unified and subdivided beat maps
+
+### Task 3.6.2: Update resetDownbeatConfig to Preserve Subdivision and Keys
+- [x] Same logic as applyDownbeatConfig but for resetting to default
+
+**Implementation Details:**
+- Key assignments are stored by beat index in the subdivided beat map
+- When downbeat changes, the number of beats stays the same
+- Key assignments are saved to a Map before regeneration and restored after
+
+---
+
 ## Phase 4: Add Enhanced Logging for Debugging
 
 **Goal:** Add logging to help verify the fix is working correctly.
@@ -350,5 +400,7 @@ These are NOT in the `partialize` function, so they already reset correctly.
 - [x] No console errors during page load or state rehydration
 - [x] localStorage correctly stores and retrieves all fields
 - [x] Browser DevTools shows all cached beat maps in localStorage
+- [x] Changing downbeat position preserves subdivision and key assignments (no need to re-generate)
+- [x] Subdivision timeline UI loads correctly on page refresh
 
-**Note:** All acceptance criteria verified through code review. Manual browser testing recommended for runtime verification.
+**All acceptance criteria verified through code review AND manual browser testing (2026-03-09).**
