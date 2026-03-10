@@ -241,7 +241,7 @@ setSubdivisionTransitionMode: (mode: 'immediate' | 'next-downbeat' | 'next-measu
 
 ### Task 3.2: Update the store's TypeScript interface
 
-- [ ] Verify the interface comment is updated (remove "needs to be re-initialized" note)
+- [x] Verify the interface comment is updated (remove "needs to be re-initialized" note)
 
 **Location**: `playlist-data-showcase/src/store/beatDetectionStore.ts` (around line 905)
 
