@@ -147,20 +147,20 @@ setTransitionMode(mode: SubdivisionTransitionMode): void {
 
 ### Task 1.3: Add unit tests for `setTransitionMode` and fixed mode logic
 
-- [ ] Add test: should change transition mode successfully
-- [ ] Add test: should throw on invalid transition mode
-- [ ] Add test: should apply pending subdivision immediately when switching to 'immediate' mode
-- [ ] Add test: should preserve pending subdivision when switching between 'next-downbeat' and 'next-measure'
-- [ ] Add test: `'next-downbeat'` should apply at next beat where `isDownbeat === true`
-- [ ] Add test: `'next-measure'` should apply when entering a NEW measure (not just any downbeat)
-- [ ] Add test: `'next-measure'` should NOT apply at current measure's downbeat if change was requested before it
+- [x] Add test: should change transition mode successfully
+- [x] Add test: should throw on invalid transition mode
+- [x] Add test: should apply pending subdivision immediately when switching to 'immediate' mode
+- [x] Add test: should preserve pending subdivision when switching between 'next-downbeat' and 'next-measure'
+- [x] Add test: `'next-downbeat'` should apply at next beat where `isDownbeat === true`
+- [x] Add test: `'next-measure'` should apply when entering a NEW measure (not just any downbeat)
+- [x] Add test: `'next-measure'` should NOT apply at current measure's downbeat if change was requested before it
 
 **Location**: `playlist-data-engine/tests/unit/playback/subdivisionPlaybackController.test.ts`
 
 ### Task 1.4: Export new functionality from index.ts
 
-- [ ] Verify `SubdivisionTransitionMode` type is already exported (it should be)
-- [ ] No new exports needed since the method is on an existing class
+- [x] Verify `SubdivisionTransitionMode` type is already exported (it should be)
+- [x] No new exports needed since the method is on an existing class
 
 **Location**: `playlist-data-engine/src/index.ts`
 
