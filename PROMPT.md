@@ -1,4 +1,4 @@
-study docs/plans/TRANSITION_MODE_FIX_PLAN.md and pick the most important thing to do. 
+study docs/plans/BATCH_IMAGE_TOOL_BUG_RESEARCH.md and pick the most important thing to do. 
 
 Pick the highest priority list of tasks and then pick the first unchecked task in the list.
 
@@ -6,7 +6,7 @@ Do that one task only. Don't assume the feature is built. If the feature is miss
 
 Each task is named something like task 1.1 or task 1.2. Those are two separate tasks, not parts of one task.
 
-I might add new stuff to the docs/plans/TRANSITION_MODE_FIX_PLAN.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
+I might add new stuff to the docs/plans/BATCH_IMAGE_TOOL_BUG_RESEARCH.md file based on me monitoring your progress. If you see that, add/edit tasks based on those requests, add new tasks to the list, uncheck tasks that I state need to be done again, and cross out what I wrote to signify you acknowledged my notes.
 
 Take your time doing the tasks, be thorough and do your research. You have all the time in the world.
 
@@ -22,7 +22,7 @@ IMPORTANT:
 - SAY DONE WHEN YOURE DONE! YOU KEEP FORGETTING TO DO THIS BUT ITS THE MOST IMPORTANT THING!!
 - ALWAYS run a build/lint to make sure you didn't add any new bugs. 
 - ALWAYS verify that there aren't any random errors in the build.
-- update docs/plans/TRANSITION_MODE_FIX_PLAN.md when the task is completed
+- update docs/plans/BATCH_IMAGE_TOOL_BUG_RESEARCH.md when the task is completed
 - commit and push to deploy the changes (if there are any changes) (commit locally for now)
 - once you have deployed the changes, say "done". 
 - Always remember to say "done" when you're done.

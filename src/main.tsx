@@ -58,6 +58,11 @@ manager.register('equipment', validMagicItems, { validate: true })
 import { restoreCustomEquipmentFromExtensionManager } from './hooks/useItemCreator'
 restoreCustomEquipmentFromExtensionManager()
 
+// Restore batch image updates from localStorage
+// This ensures images applied via the batch image tool persist across page reloads
+import { restoreBatchImageUpdates } from './utils/batchImagePersistence'
+restoreBatchImageUpdates()
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
