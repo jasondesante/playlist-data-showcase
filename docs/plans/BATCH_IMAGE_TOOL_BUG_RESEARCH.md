@@ -1,0 +1,245 @@
+# Batch Image Tool Bug Research
+
+## Overview
+
+Investigation into why images assigned via the DataViewerTab's batch image tool aren't showing in the UI for spells and other content.
+
+**Date Researched:** 2026-03-10
+**Status:** Root cause identified, fix needed
+
+---
+
+## Problem Statement
+
+User used the DataViewerTab's batch image tool to assign images to spells, but images aren't appearing in the UI. The system appears to be checking arweave gateways correctly, suggesting network requests are happening but something else is wrong.
+
+---
+
+## Research Findings
+
+### How the Batch Image Tool Works
+
+**Location:** `src/components/Tabs/DataViewer/SpawnModeControls.tsx` (lines 611-689)
+
+The batch image tool supports two modes:
+
+#### 1. Predicate Mode
+Applies the same icon/image URL to ALL items in a category.
+```typescript
+updatedCount = manager.batchUpdateImages(
+  batchCategory as any,
+  () => true, // Match all items
+  updates
+);
+```
+
+#### 2. Property Mode
+Applies different URLs based on a property value (e.g., spell school).
+```typescript
+updatedCount = manager.batchByCategory(batchCategory as any, batchProperty, valueMap);
+```
+
+### Data Flow
+
+```
+User Action: Apply batch images
+           │
+           ▼
+SpawnModeControls.handleBatchApply()
+           │
+           ▼
+ExtensionManager.batchUpdateImages() or batchByCategory()
+           │
+           ├─► Gets all items via this.get(category)
+           │   └─► Returns defaults + existing custom items
+           │
+           ├─► Updates matching items with icon/image URLs
+           │   └─► Creates updatedItems array with ALL items
+           │
+           ├─► Stores with mode: 'replace'
+           │   this.extensions.set(category, {
+           │     items: updatedItems,
+           │     options: { mode: 'replace' }
+           │   })
+           │
+           ├─► Calls invalidateRegistryCache(category)
+           │   └─► SpellQuery cache is cleared
+           │
+           ▼
+UI should refresh... BUT DOESN'T
+```
+
+### How Spells Display Images
+
+**Location:** `src/components/Tabs/DataViewerTab.tsx` (lines 898-965)
+
+Spells display images correctly when data is available:
+```typescript
+const hasImage = spell.image || spell.icon;
+
+// Thumbnail
+{hasImage && (
+  <ArweaveImage
+    src={spell.image || spell.icon || ''}
+    alt={spell.name}
+    ...
+  />
+)}
+
+// Full-size when expanded
+{spell.image && (
+  <ArweaveImage
+    src={spell.image}
+    ...
+  />
+)}
+```
+
+The UI code is correct - it reads `spell.image` and `spell.icon` properties.
+
+---
+
+## Root Causes Identified
+
+### Bug #1: Missing UI Refresh Notification
+
+**Location:** `src/components/Tabs/DataViewer/SpawnModeControls.tsx`
+
+After a successful batch operation, the tool does NOT call `notifyDataChanged()`:
+
+```typescript
+// Lines 678-680 - What currently happens
+setSuccessMessage(`Successfully updated images for ${updatedCount} items.`);
+showToast(`Updated images for ${updatedCount} items in ${batchCategory}`, 'success');
+logger.info('DataViewer', `Batch image update: ${updatedCount} items in ${batchCategory}`);
+// Missing: notifyDataChanged() call!
+```
+
+**Why this matters:**
+- `useDataViewer` hook uses `useMemo` with `lastDataChange` as a dependency
+- When `lastDataChange` changes, memoized data re-computes
+- Without calling `notifyDataChanged()`, `lastDataChange` stays the same
+- UI doesn't refresh to show updated images
+
+### Bug #2: No Data Persistence
+
+**Location:** `playlist-data-engine/src/core/extensions/ExtensionManager.ts`
+
+ExtensionManager stores data **in-memory only**. From the code comment (line 8):
+> "Runtime only: Custom data provided each session"
+
+**Why this matters:**
+- Batch image updates are stored in `this.extensions` Map
+- On page reload, ExtensionManager is re-initialized
+- Default data is loaded from JSON files
+- All batch image updates are **lost**
+
+This is by design - the system expects custom content to be re-registered each session or persisted via export/import.
+
+### Minor Issue: Mode Semantics
+
+**Location:** `playlist-data-engine/src/core/extensions/ExtensionManager.ts` (lines 1230, 1335)
+
+Batch methods store data with `mode: 'replace'`:
+
+```typescript
+this.extensions.set(category, {
+  items: updatedItems,
+  options: { mode: 'replace' },  // Could be 'relative'
+  registeredAt: Date.now()
+});
+```
+
+This works correctly because `updatedItems` contains ALL items (updated + unchanged), but semantically it might be clearer to use `'relative'` mode to indicate merging with defaults.
+
+---
+
+## Key Files Involved
+
+| File | Purpose | Issue |
+|------|---------|-------|
+| `src/components/Tabs/DataViewer/SpawnModeControls.tsx` | Batch image tool UI | Missing `notifyDataChanged()` call |
+| `src/hooks/useDataViewer.ts` | Data fetching hook | Uses `lastDataChange` as dependency |
+| `src/store/dataViewerStore.ts` | State management | Has `notifyDataChanged()` action |
+| `src/components/Tabs/DataViewerTab.tsx` | Spell display UI | Working correctly |
+| `src/components/shared/ArweaveImage.tsx` | Image rendering | Working correctly |
+| `playlist-data-engine/.../ExtensionManager.ts` | Data storage | No persistence (by design) |
+
+---
+
+## Implementation Plan
+
+### Phase 1: Fix Immediate UI Refresh
+
+- [x] **Task 1.1: Add notifyDataChanged call to SpawnModeControls** ✓ 2026-03-10
+  - Import `useDataViewerStore` in SpawnModeControls.tsx
+  - Get `notifyDataChanged` from store
+  - Call `notifyDataChanged()` after successful batch operation
+  - Location: After line 680 in `handleBatchApply`
+
+```typescript
+// Add after successful batch operation
+const notifyDataChanged = useDataViewerStore.getState().notifyDataChanged;
+notifyDataChanged();
+```
+
+- [ ] **Task 1.2: Verify fix works**
+  - Test batch image tool in predicate mode
+  - Test batch image tool in property mode
+  - Confirm UI refreshes immediately after apply
+
+### Phase 2: Add Persistence (Optional Enhancement)
+
+- [ ] **Task 2.1: Design persistence strategy**
+  - Option A: Auto-save batch image data to localStorage
+  - Option B: Require users to export/import custom content
+  - Option C: Add persistence middleware to ExtensionManager
+
+- [ ] **Task 2.2: Implement chosen strategy**
+  - Depends on Task 2.1 decision
+
+### Phase 3: Documentation
+
+- [ ] **Task 3.1: Update user documentation**
+  - Document that batch image changes are session-only
+  - Explain export/import workflow for persistence
+
+---
+
+## Quick Fix Code
+
+The minimal fix for Bug #1:
+
+```typescript
+// In SpawnModeControls.tsx, add at top of file:
+import { useDataViewerStore } from '@/store/dataViewerStore';
+
+// In handleBatchApply, after successful operation (around line 680):
+const notifyDataChanged = useDataViewerStore.getState().notifyDataChanged;
+notifyDataChanged();
+```
+
+---
+
+## Testing Checklist
+
+- [ ] Batch image tool applies images to all items in predicate mode
+- [ ] Batch image tool applies images by property in property mode
+- [ ] UI refreshes immediately after batch apply (no manual refresh needed)
+- [ ] Images appear in spell cards (thumbnail and expanded view)
+- [ ] Arweave URLs resolve correctly through gateway fallback
+- [ ] Export includes custom image data
+- [ ] Import restores custom image data
+
+---
+
+## Dependencies
+
+- None for Phase 1 fix
+- Phase 2 may require architectural decisions about persistence strategy
+
+## Questions/Unknowns
+
+- Should batch image data persist across sessions automatically?
+- What's the expected user workflow - one-time batch apply or persistent configuration?
+- Should we add an "Auto-save batch changes" toggle?

@@ -37,6 +37,7 @@ import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { showToast } from '@/components/ui/Toast';
 import { isValidUrlPrefix } from '@/components/shared/ImageFieldInput';
+import { useDataViewerStore } from '@/store/dataViewerStore';
 import './SpawnModeControls.css';
 
 /**
@@ -678,6 +679,9 @@ export function SpawnModeControls({
       setSuccessMessage(`Successfully updated images for ${updatedCount} items.`);
       showToast(`Updated images for ${updatedCount} items in ${batchCategory}`, 'success');
       logger.info('DataViewer', `Batch image update: ${updatedCount} items in ${batchCategory}`);
+
+      // Trigger UI refresh to show updated images
+      useDataViewerStore.getState().notifyDataChanged();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to apply batch images.';
       setBatchError(errorMessage);
