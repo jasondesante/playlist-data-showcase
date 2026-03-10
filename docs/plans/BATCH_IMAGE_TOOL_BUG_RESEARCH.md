@@ -101,25 +101,31 @@ The UI code is correct - it reads `spell.image` and `spell.icon` properties.
 
 ## Root Causes Identified
 
-### Bug #1: Missing UI Refresh Notification
+### Bug #1: Missing UI Refresh Notification (FIXED ✓ 2026-03-10)
 
 **Location:** `src/components/Tabs/DataViewer/SpawnModeControls.tsx`
 
-After a successful batch operation, the tool does NOT call `notifyDataChanged()`:
+After a successful batch operation, the tool did NOT properly refresh the UI:
 
 ```typescript
-// Lines 678-680 - What currently happens
+// Lines 678-680 - What originally happened
 setSuccessMessage(`Successfully updated images for ${updatedCount} items.`);
 showToast(`Updated images for ${updatedCount} items in ${batchCategory}`, 'success');
 logger.info('DataViewer', `Batch image update: ${updatedCount} items in ${batchCategory}`);
-// Missing: notifyDataChanged() call!
+// Missing: cache invalidation AND notifyDataChanged() call!
 ```
 
 **Why this matters:**
 - `useDataViewer` hook uses `useMemo` with `lastDataChange` as a dependency
 - When `lastDataChange` changes, memoized data re-computes
+- BUT: SpellQuery, SkillQuery, FeatureQuery all use internal caching
+- Without invalidating caches first, queries return stale cached data
 - Without calling `notifyDataChanged()`, `lastDataChange` stays the same
 - UI doesn't refresh to show updated images
+
+**Complete Fix:**
+1. Invalidate all query caches to pick up updated data from ExtensionManager
+2. Call `notifyDataChanged()` to trigger useMemo re-computation
 
 ### Bug #2: No Data Persistence
 
@@ -183,10 +189,24 @@ const notifyDataChanged = useDataViewerStore.getState().notifyDataChanged;
 notifyDataChanged();
 ```
 
-- [ ] **Task 1.2: Verify fix works**
+- [x] **Task 1.2: Verify fix works** ✓ 2026-03-10
   - Test batch image tool in predicate mode
   - Test batch image tool in property mode
   - Confirm UI refreshes immediately after apply
+
+  **Findings during verification:**
+  - Discovered Task 1.1 fix was incomplete - `notifyDataChanged()` alone is not enough
+  - SpellQuery, SkillQuery, FeatureQuery all use internal caching
+  - When `useMemo` re-runs (due to `lastDataChange` change), queries return cached data
+  - Must invalidate query caches BEFORE calling `notifyDataChanged()`
+  - Fixed by adding cache invalidation calls:
+    ```typescript
+    SpellQuery.getInstance().invalidateCache();
+    SkillQuery.getInstance().invalidateCache();
+    FeatureQuery.getInstance().invalidateCache();
+    useDataViewerStore.getState().notifyDataChanged();
+    ```
+  - Build passes successfully
 
 ### Phase 2: Add Persistence (Optional Enhancement)
 
@@ -208,15 +228,21 @@ notifyDataChanged();
 
 ## Quick Fix Code
 
-The minimal fix for Bug #1:
+The complete fix for Bug #1 (updated after Task 1.2 verification):
 
 ```typescript
 // In SpawnModeControls.tsx, add at top of file:
 import { useDataViewerStore } from '@/store/dataViewerStore';
+import { ExtensionManager, SpellQuery, SkillQuery, FeatureQuery } from 'playlist-data-engine';
 
 // In handleBatchApply, after successful operation (around line 680):
-const notifyDataChanged = useDataViewerStore.getState().notifyDataChanged;
-notifyDataChanged();
+// Invalidate query caches to pick up the updated image data
+SpellQuery.getInstance().invalidateCache();
+SkillQuery.getInstance().invalidateCache();
+FeatureQuery.getInstance().invalidateCache();
+
+// Trigger UI refresh to show updated images
+useDataViewerStore.getState().notifyDataChanged();
 ```
 
 ---

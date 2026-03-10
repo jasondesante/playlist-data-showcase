@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
-import { ExtensionManager } from 'playlist-data-engine';
+import { ExtensionManager, SpellQuery, SkillQuery, FeatureQuery } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { showToast } from '@/components/ui/Toast';
 import { isValidUrlPrefix } from '@/components/shared/ImageFieldInput';
@@ -679,6 +679,11 @@ export function SpawnModeControls({
       setSuccessMessage(`Successfully updated images for ${updatedCount} items.`);
       showToast(`Updated images for ${updatedCount} items in ${batchCategory}`, 'success');
       logger.info('DataViewer', `Batch image update: ${updatedCount} items in ${batchCategory}`);
+
+      // Invalidate query caches to pick up the updated image data
+      SpellQuery.getInstance().invalidateCache();
+      SkillQuery.getInstance().invalidateCache();
+      FeatureQuery.getInstance().invalidateCache();
 
       // Trigger UI refresh to show updated images
       useDataViewerStore.getState().notifyDataChanged();
