@@ -371,6 +371,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for difficulty settings panel
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
 
+  // State for subdivision playground visibility
+  const [showSubdivisionPlayground, setShowSubdivisionPlayground] = useState(false);
+
   // State for exit prompt modal (Phase 2: Task 2.6 - End Session on Practice Exit)
   const [showExitPrompt, setShowExitPrompt] = useState(false);
 
@@ -949,6 +952,18 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           </span>
         </div>
         <div className="beat-practice-header-right">
+          {subdivisionPlaybackAvailable && (
+            <Button
+              variant={showSubdivisionPlayground ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setShowSubdivisionPlayground(!showSubdivisionPlayground)}
+              leftIcon={Layers}
+              aria-label="Toggle subdivision playground"
+              title="Subdivision Playground"
+            >
+              Playground
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -1166,30 +1181,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         />
       )}
 
-      {/* Playback Controls */}
-      <div className="beat-practice-controls">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleSeek(0)}
-          leftIcon={SkipBack}
-          aria-label="Restart"
-        >
-          Restart
-        </Button>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handlePlayPause}
-          leftIcon={isPlaying ? Pause : Play}
-          className="beat-practice-play-button"
-        >
-          {isPlaying ? 'Pause' : 'Play'}
-        </Button>
-      </div>
-
       {/* Subdivision Buttons (Phase 6: Task 6.4) - Real-time subdivision switching */}
-      {subdivisionPlaybackAvailable && (
+      {subdivisionPlaybackAvailable && showSubdivisionPlayground && (
         <div className="beat-practice-subdivision-container">
           <div className="beat-practice-subdivision-header">
             <Layers className="beat-practice-subdivision-icon" />
@@ -1250,6 +1243,28 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           </div>
         </div>
       )}
+
+      {/* Playback Controls */}
+      <div className="beat-practice-controls">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleSeek(0)}
+          leftIcon={SkipBack}
+          aria-label="Restart"
+        >
+          Restart
+        </Button>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handlePlayPause}
+          leftIcon={isPlaying ? Pause : Play}
+          className="beat-practice-play-button"
+        >
+          {isPlaying ? 'Pause' : 'Play'}
+        </Button>
+      </div>
 
       {/* View Mode Toggle (Phase 10: Task 10.3) - Switch between TapArea and KeyLane views */}
       {subdividedBeatMap && (
