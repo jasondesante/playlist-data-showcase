@@ -5,7 +5,8 @@
 Investigation into why images assigned via the DataViewerTab's batch image tool aren't showing in the UI for spells and other content.
 
 **Date Researched:** 2026-03-10
-**Status:** Root cause identified, fix needed
+**Status:** ✅ FIXED - Patch-based image overrides implemented 2026-03-10
+**Status:** Fixed - Patch-based image override system implemented
 
 ---
 
@@ -141,6 +142,54 @@ ExtensionManager stores data **in-memory only**. From the code comment (line 8):
 - All batch image updates are **lost**
 
 This is by design - the system expects custom content to be re-registered each session or persisted via export/import.
+
+### Bug #3: Duplicate Entries from Batch Updates (FIXED ✓ 2026-03-10)
+
+**Location:** `playlist-data-engine/src/core/extensions/ExtensionManager.ts`
+
+The `batchUpdateImages()` and `batchByCategory()` methods stored **complete copies** of all items in the `extensions` Map with `mode: 'replace'`:
+
+```typescript
+// OLD CODE - caused duplicates
+this.extensions.set(category, {
+    items: updatedItems,  // ALL 300 spells with images
+    options: { mode: 'replace' },
+    registeredAt: Date.now()
+});
+```
+
+**Why this caused duplicates:**
+1. `batchUpdateImages()` stored all 300 spells (with images) in `extensions`
+2. `get()` with `mode: 'relative'` returned `defaults` (300) + `extensions` (300) = 600 items
+3. Users saw default spells without images AND duplicate spells with images
+
+**The Fix - Patch-Based Image Overrides:**
+
+Implemented a new `imageOverrides` system that stores **patches** instead of complete items:
+
+```typescript
+// NEW CODE - patch-based
+private imageOverrides: Map<ImageSupportedCategory, Map<string, ImageOverride>>;
+
+interface ImageOverride {
+    identifier: string;  // Item id or name
+    icon?: string;
+    image?: string;
+    appliedAt: number;
+}
+```
+
+**How it works now:**
+1. `batchUpdateImages()` stores patches (identifier → {icon, image}) in `imageOverrides`
+2. `get()` retrieves items and **applies patches on top**
+3. Result: Still exactly 300 spells, but with images patched onto defaults
+
+**New API methods:**
+- `getImageOverrides()`: Get all image overrides
+- `getImageOverridesForCategory(category)`: Get overrides for a category
+- `restoreImageOverrides(category, overrides)`: Restore saved overrides
+- `clearImageOverrides(category)`: Clear overrides for a category
+- `clearAllImageOverrides()`: Clear all overrides
 
 ### Minor Issue: Mode Semantics
 

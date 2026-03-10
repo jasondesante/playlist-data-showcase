@@ -678,15 +678,7 @@ export function SpawnModeControls({
 
       // Save batch image updates to localStorage for persistence across page reloads
       try {
-        const updatedItems = manager.get(batchCategory as any);
-        const itemsWithImages = updatedItems
-          .filter((item: any) => item.icon || item.image)
-          .map((item: any) => ({
-            name: item.name || item.id,
-            icon: item.icon,
-            image: item.image
-          }));
-        saveBatchImageUpdates(batchCategory as BatchImageCategory, itemsWithImages);
+        saveBatchImageUpdates(batchCategory as BatchImageCategory);
       } catch (saveError) {
         logger.warn('DataViewer', 'Failed to save batch image updates to localStorage', { error: String(saveError) });
       }

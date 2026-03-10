@@ -5,18 +5,19 @@
  * the DataViewerTab's batch image tool. This ensures images persist across
  * page reloads without requiring manual export/import.
  *
- * Design Decision: Option A from Task 2.1 - Auto-save to localStorage with auto-restore
+ * Uses the ExtensionManager's imageOverrides system which stores patches
+ * (icon/image changes) separately from item data, avoiding duplicates.
  *
  * @see docs/plans/BATCH_IMAGE_TOOL_BUG_RESEARCH.md for implementation details
  */
 
-import { ExtensionManager, SpellQuery, SkillQuery, FeatureQuery } from 'playlist-data-engine';
+import { ExtensionManager, type ImageOverride, SpellQuery, SkillQuery, FeatureQuery } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
 /**
  * localStorage key for batch image updates
  */
-export const BATCH_IMAGE_STORAGE_KEY = 'batch_image_updates';
+export const BATCH_IMAGE_STORAGE_KEY = 'batch_image_overrides';
 
 /**
  * Supported categories for batch image operations
@@ -25,33 +26,21 @@ export const BATCH_IMAGE_STORAGE_KEY = 'batch_image_updates';
 export type BatchImageCategory = 'spells' | 'skills' | 'classFeatures' | 'racialTraits' | 'equipment' | 'races.data' | 'classes.data';
 
 /**
- * Single item update with icon/image fields
- */
-export interface BatchImageItemUpdate {
-    /** Item identifier (name for most categories, id for spells) */
-    name: string;
-    /** Icon URL (small image for lists/compact views) */
-    icon?: string;
-    /** Image URL (full-size image for detail views) */
-    image?: string;
-}
-
-/**
- * Updates for a single category
+ * Updates for a single category (using ImageOverride from ExtensionManager)
  */
 export interface BatchImageCategoryUpdates {
-    updates: BatchImageItemUpdate[];
+    overrides: ImageOverride[];
 }
 
 /**
- * Full storage structure for batch image updates
+ * Full storage structure for batch image overrides
  */
 export interface BatchImageStorage {
     /** Schema version for future migrations */
     version: string;
     /** Last update timestamp */
     updatedAt: number;
-    /** Updates per category */
+    /** Overrides per category */
     categories: Record<string, BatchImageCategoryUpdates>;
 }
 
@@ -96,51 +85,29 @@ function saveStorage(storage: BatchImageStorage): void {
  * Save batch image updates for a category
  *
  * This should be called after a successful batch image operation.
- * It stores the items that have icon/image updates for later restoration.
+ * It pulls the current image overrides from ExtensionManager and saves them.
  *
  * @param category - The category that was updated
- * @param items - Array of items with their icon/image values (only items with images should be included)
  */
-export function saveBatchImageUpdates(
-    category: BatchImageCategory,
-    items: BatchImageItemUpdate[]
-): void {
-    if (!items || items.length === 0) {
-        logger.debug('BatchImagePersistence', 'No items to save, skipping');
+export function saveBatchImageUpdates(category: BatchImageCategory): void {
+    const manager = ExtensionManager.getInstance();
+    const overrides = manager.getImageOverridesForCategory(category as any);
+
+    if (!overrides || overrides.length === 0) {
+        logger.debug('BatchImagePersistence', 'No overrides to save, skipping');
         return;
     }
 
     const storage = getStorage();
 
-    // Merge with existing updates for this category
-    const existingUpdates = storage.categories[category]?.updates || [];
-    const updateMap = new Map<string, BatchImageItemUpdate>();
-
-    // Add existing updates to map
-    for (const update of existingUpdates) {
-        updateMap.set(update.name, update);
-    }
-
-    // Add/merge new updates
-    for (const update of items) {
-        const existing = updateMap.get(update.name);
-        if (existing) {
-            // Merge: new values override existing
-            if (update.icon !== undefined) existing.icon = update.icon;
-            if (update.image !== undefined) existing.image = update.image;
-        } else {
-            updateMap.set(update.name, { ...update });
-        }
-    }
-
-    // Store merged updates
+    // Store overrides for this category
     storage.categories[category] = {
-        updates: Array.from(updateMap.values())
+        overrides: overrides
     };
 
     saveStorage(storage);
 
-    logger.info('BatchImagePersistence', `Saved ${items.length} image updates for ${category}`);
+    logger.info('BatchImagePersistence', `Saved ${overrides.length} image overrides for ${category}`);
 }
 
 /**
@@ -184,78 +151,46 @@ export function clearBatchImageUpdates(): void {
  * Restore batch image updates to ExtensionManager
  *
  * This should be called on app startup after ExtensionManager is initialized.
- * It re-applies all saved image updates to make them available in the current session.
+ * It restores saved image overrides using the ExtensionManager's restoreImageOverrides API.
  *
  * @returns Number of categories restored
  */
 export function restoreBatchImageUpdates(): number {
     const storage = loadBatchImageUpdates();
     if (!storage || Object.keys(storage.categories).length === 0) {
-        logger.debug('BatchImagePersistence', 'No saved updates to restore');
+        logger.debug('BatchImagePersistence', 'No saved overrides to restore');
         return 0;
     }
 
     const manager = ExtensionManager.getInstance();
     let restoredCategories = 0;
-    let totalItems = 0;
+    let totalOverrides = 0;
 
     for (const [category, data] of Object.entries(storage.categories)) {
-        if (!data.updates || data.updates.length === 0) {
+        // Handle both old format (updates) and new format (overrides)
+        const overrides = data.overrides || (data as any).updates;
+        
+        if (!overrides || overrides.length === 0) {
             continue;
         }
 
         try {
-            // Get current items from ExtensionManager
-            const currentItems = manager.get(category as any);
-            if (!currentItems || currentItems.length === 0) {
-                logger.debug('BatchImagePersistence', `No items in category ${category}, skipping restore`);
-                continue;
-            }
+            // Convert old format if needed
+            const imageOverrides: ImageOverride[] = overrides.map((o: any) => ({
+                identifier: o.identifier || o.name,
+                icon: o.icon,
+                image: o.image,
+                appliedAt: o.appliedAt || Date.now()
+            }));
 
-            // Build a map of item names to their saved image updates
-            const updateMap = new Map<string, BatchImageItemUpdate>();
-            for (const update of data.updates) {
-                updateMap.set(update.name, update);
-            }
+            // Restore using the new API
+            manager.restoreImageOverrides(category as BatchImageCategory, imageOverrides);
 
-            // Apply updates to matching items
-            const updatedItems: any[] = [];
-            let updatedCount = 0;
-
-            for (const item of currentItems) {
-                const itemKey = item.name || item.id;
-                const savedUpdate = updateMap.get(itemKey);
-
-                if (savedUpdate) {
-                    // Apply saved icon/image to this item
-                    const updatedItem = { ...item };
-                    if (savedUpdate.icon !== undefined) {
-                        updatedItem.icon = savedUpdate.icon;
-                    }
-                    if (savedUpdate.image !== undefined) {
-                        updatedItem.image = savedUpdate.image;
-                    }
-                    updatedItems.push(updatedItem);
-                    updatedCount++;
-                } else {
-                    // Keep item as-is
-                    updatedItems.push(item);
-                }
-            }
-
-            if (updatedCount > 0) {
-                // Store updated items back in ExtensionManager using public API
-                manager.register(category as any, updatedItems, {
-                    mode: 'replace',
-                    validate: false // Skip validation for restored items
-                });
-
-                restoredCategories++;
-                totalItems += updatedCount;
-                logger.info('BatchImagePersistence', `Restored ${updatedCount} image updates for ${category}`);
-            }
+            restoredCategories++;
+            totalOverrides += imageOverrides.length;
+            logger.info('BatchImagePersistence', `Restored ${imageOverrides.length} image overrides for ${category}`);
         } catch (error) {
-            logger.warn('BatchImagePersistence', `Failed to restore updates for ${category}`, { error: String(error) });
+            logger.warn('BatchImagePersistence', `Failed to restore overrides for ${category}`, { error: String(error) });
         }
     }
 
@@ -269,15 +204,15 @@ export function restoreBatchImageUpdates(): number {
         logger.debug('BatchImagePersistence', 'Some query caches not available for invalidation');
     }
 
-    if (totalItems > 0) {
-        logger.info('BatchImagePersistence', `Restored ${totalItems} image updates across ${restoredCategories} categories`);
+    if (totalOverrides > 0) {
+        logger.info('BatchImagePersistence', `Restored ${totalOverrides} image overrides across ${restoredCategories} categories`);
     }
 
     return restoredCategories;
 }
 
 /**
- * Get count of saved updates per category
+ * Get count of saved overrides per category
  *
  * Useful for debugging or displaying restore status.
  */
@@ -289,7 +224,9 @@ export function getBatchImageUpdateCounts(): Record<string, number> {
 
     const counts: Record<string, number> = {};
     for (const [category, data] of Object.entries(storage.categories)) {
-        counts[category] = data.updates?.length || 0;
+        // Handle both old format (updates) and new format (overrides)
+        const overrides = data.overrides || (data as any).updates;
+        counts[category] = overrides?.length || 0;
     }
     return counts;
 }

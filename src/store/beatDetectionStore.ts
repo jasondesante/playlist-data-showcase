@@ -405,6 +405,13 @@ interface BeatDetectionState {
     currentSubdivision: SubdivisionType;
 
     /**
+     * Pending subdivision change that will be applied at the next transition point.
+     * Set when transitionMode is 'next-downbeat' or 'next-measure'.
+     * Null when there's no pending change or transition mode is 'immediate'.
+     */
+    pendingSubdivision: SubdivisionType | null;
+
+    /**
      * Transition mode for subdivision changes in real-time mode.
      * Controls how subdivision changes are applied during playback.
      * - 'immediate': Switch instantly (default, more playful)
@@ -1185,6 +1192,7 @@ interface PersistedBeatDetectionState {
     // Subdivision state (serialized format - Maps become arrays)
     subdivisionConfig: PersistedSubdivisionConfig;
     currentSubdivision: SubdivisionType;
+    pendingSubdivision: SubdivisionType | null;
     subdivisionTransitionMode: 'immediate' | 'next-downbeat' | 'next-measure';
     cachedUnifiedBeatMaps: Record<string, UnifiedBeatMap>;
     cachedSubdividedBeatMaps: Record<string, SubdividedBeatMap>;
@@ -1289,6 +1297,7 @@ const createInitialState = (): BeatDetectionState => ({
     subdividedBeatMap: null,
     subdivisionConfig: { ...DEFAULT_SUBDIVISION_CONFIG },
     currentSubdivision: 'quarter',
+    pendingSubdivision: null,
     subdivisionTransitionMode: 'immediate',
     cachedUnifiedBeatMaps: {},
     cachedSubdividedBeatMaps: {},
@@ -2793,6 +2802,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                     /**
                      * Set the current subdivision type for real-time mode.
+                     * When transition mode is deferred ('next-downbeat' or 'next-measure'),
+                     * the subdivision is stored as pending and only applied when the transition
+                     * point is reached. This allows the UI to show a preview of the upcoming
+                     * change while keeping the current measure's rhythm intact.
                      */
                     setCurrentSubdivision: (subdivision: SubdivisionType) => {
                         const state = get();
@@ -2800,11 +2813,19 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         logger.info('BeatDetection', 'Setting current subdivision', {
                             subdivision,
                             previousSubdivision: state.currentSubdivision,
+                            transitionMode: state.subdivisionTransitionMode,
                         });
 
-                        set({ currentSubdivision: subdivision });
+                        // If transition mode is immediate, update currentSubdivision right away
+                        // Otherwise, store as pending subdivision for deferred application
+                        if (state.subdivisionTransitionMode === 'immediate') {
+                            set({ currentSubdivision: subdivision, pendingSubdivision: null });
+                        } else {
+                            // Store as pending - the controller will notify when transition happens
+                            set({ pendingSubdivision: subdivision });
+                        }
 
-                        // Also update the playback controller if it exists
+                        // Always update the playback controller - it handles the deferred logic internally
                         const controller = getActiveSubdivisionPlaybackController();
                         if (controller) {
                             controller.setSubdivision(subdivision);
@@ -2867,6 +2888,18 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             initialSubdivision: state.currentSubdivision,
                             transitionMode: state.subdivisionTransitionMode,
                             ...options,
+                            // Add callback to notify store when subdivision actually changes
+                            onSubdivisionChange: (_oldType: SubdivisionType, newType: SubdivisionType) => {
+                                const currentState = get();
+                                // Only update if there's a pending subdivision
+                                // This ensures the store's currentSubdivision stays in sync with the controller
+                                if (currentState.pendingSubdivision === newType) {
+                                    logger.info('BeatDetection', 'Subdivision transition completed', {
+                                        newSubdivision: newType,
+                                    });
+                                    set({ currentSubdivision: newType, pendingSubdivision: null });
+                                }
+                            },
                         };
 
                         try {
@@ -3660,6 +3693,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     defaultSubdivision: state.subdivisionConfig.defaultSubdivision,
                 },
                 currentSubdivision: state.currentSubdivision,
+                pendingSubdivision: state.pendingSubdivision,
                 subdivisionTransitionMode: state.subdivisionTransitionMode,
                 cachedUnifiedBeatMaps: state.cachedUnifiedBeatMaps,
                 cachedSubdividedBeatMaps: state.cachedSubdividedBeatMaps,
@@ -3821,6 +3855,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     // Subdivision state (Phase 3: Task 3.1)
                     subdivisionConfig,
                     currentSubdivision: persisted?.currentSubdivision ?? currentState.currentSubdivision,
+                    pendingSubdivision: persisted?.pendingSubdivision ?? currentState.pendingSubdivision,
                     subdivisionTransitionMode: persisted?.subdivisionTransitionMode ?? currentState.subdivisionTransitionMode,
                     cachedUnifiedBeatMaps: persisted?.cachedUnifiedBeatMaps ?? currentState.cachedUnifiedBeatMaps,
                     cachedSubdividedBeatMaps: persisted?.cachedSubdividedBeatMaps ?? currentState.cachedSubdividedBeatMaps,
@@ -4706,6 +4741,15 @@ export const useBeatSubdivisionsInRange = (
  */
 export const useCurrentSubdivision = () =>
     useBeatDetectionStore((state) => state.currentSubdivision);
+
+/**
+ * Selector to get the pending subdivision change.
+ * Set when transitionMode is 'next-downbeat' or 'next-measure'.
+ * Null when there's no pending change.
+ * Used to show a preview of the upcoming subdivision change in the UI.
+ */
+export const usePendingSubdivision = () =>
+    useBeatDetectionStore((state) => state.pendingSubdivision);
 
 /**
  * Selector to get the subdivision transition mode.

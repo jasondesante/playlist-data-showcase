@@ -17,7 +17,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { List } from 'react-window';
 import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap, Gamepad2 } from 'lucide-react';
-import { BeatSubdivider } from 'playlist-data-engine';
+import { BeatSubdivider, type SubdivisionType } from 'playlist-data-engine';
 import './BeatPracticeView.css';
 import {
     useBeatDetectionStore,
@@ -35,6 +35,7 @@ import {
     useInterpolationStatistics,
     useTapStatistics,
     useSubdivisionTransitionMode,
+    usePendingSubdivision,
     useUnifiedBeatMap,
     useKeyLaneViewMode,
     useChartStyle,
@@ -435,6 +436,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const transitionMode = useSubdivisionTransitionMode();
   const setTransitionMode = useBeatDetectionStore((state) => state.actions.setSubdivisionTransitionMode);
 
+  // Pending subdivision for deferred transitions
+  const pendingSubdivision = usePendingSubdivision();
+
   // Keyboard input hook for rhythm game key input (Phase 5: Task 5.1)
   // Tracks pressed keys for key-matching gameplay (DDR arrows + Guitar Hero numbers)
   // Note: We use a ref to store handleTap to avoid stale closure issues in the callback
@@ -454,6 +458,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   /**
    * Generate real-time subdivided beat map when subdivision changes.
    * This feeds the BeatTimeline for visualization in real-time mode.
+   *
+   * When there's a pending subdivision (deferred transition), generates a "preview"
+   * beat map that shows:
+   * - Current subdivision for beats in the current measure
+   * - Pending subdivision for beats from the next measure onwards
    */
   useEffect(() => {
     // Don't generate if:
@@ -465,15 +474,64 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       return;
     }
 
-    // Generate SubdividedBeatMap for the current real-time subdivision
-    // This uses a single-segment config covering the whole track
     const subdivider = new BeatSubdivider();
-    const config = {
-      beatSubdivisions: new Map(), // Empty map = all beats use default
-      defaultSubdivision: currentSubdivision,
-    };
 
     try {
+      // Check if we have a pending subdivision for a deferred transition
+      if (pendingSubdivision && pendingSubdivision !== currentSubdivision) {
+        // Find the beat index where the next measure starts
+        // We need to find the first beat in the next measure from the current time
+        const currentBeatIndex = unifiedBeatMap.beats.findIndex(
+          (beat) => beat.timestamp > currentTime
+        );
+
+        // Find the start of the next measure by looking for the next downbeat
+        let nextMeasureStartIndex = -1;
+        for (let i = Math.max(0, currentBeatIndex); i < unifiedBeatMap.beats.length; i++) {
+          const beat = unifiedBeatMap.beats[i];
+          if (beat.beatInMeasure === 0 && i > 0) {
+            nextMeasureStartIndex = i;
+            break;
+          }
+        }
+
+        if (nextMeasureStartIndex > 0) {
+          // Generate a mixed beat map with per-beat subdivisions
+          const beatSubdivisions = new Map<number, SubdivisionType>();
+
+          // Mark beats before next measure with current subdivision
+          for (let i = 0; i < nextMeasureStartIndex; i++) {
+            beatSubdivisions.set(i, currentSubdivision);
+          }
+
+          // Mark beats from next measure onwards with pending subdivision
+          for (let i = nextMeasureStartIndex; i < unifiedBeatMap.beats.length; i++) {
+            beatSubdivisions.set(i, pendingSubdivision);
+          }
+
+          const config = {
+            beatSubdivisions,
+            defaultSubdivision: currentSubdivision,
+          };
+
+          const subdivided = subdivider.subdivide(unifiedBeatMap, config);
+          setRealtimeSubdividedBeatMap(subdivided);
+          logger.debug('BeatDetection', 'Generated preview subdivided beat map with pending transition', {
+            currentSubdivision,
+            pendingSubdivision,
+            nextMeasureStartIndex,
+            beatCount: subdivided.beats.length,
+          });
+          return;
+        }
+      }
+
+      // No pending subdivision or couldn't find measure boundary - use single subdivision
+      const config = {
+        beatSubdivisions: new Map(), // Empty map = all beats use default
+        defaultSubdivision: currentSubdivision,
+      };
+
       const subdivided = subdivider.subdivide(unifiedBeatMap, config);
       setRealtimeSubdividedBeatMap(subdivided);
       logger.debug('BeatDetection', 'Generated real-time subdivided beat map', {
@@ -485,7 +543,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       logger.error('BeatDetection', 'Failed to generate real-time subdivided beat map', { error });
       setRealtimeSubdividedBeatMap(null);
     }
-  }, [unifiedBeatMap, subdivisionPlaybackAvailable, currentSubdivision]);
+  }, [unifiedBeatMap, subdivisionPlaybackAvailable, currentSubdivision, pendingSubdivision, currentTime]);
 
   /**
    * Handle tap action (spacebar, click, or key press)
