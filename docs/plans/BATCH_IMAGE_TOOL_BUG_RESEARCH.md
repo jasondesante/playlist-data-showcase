@@ -210,13 +210,50 @@ notifyDataChanged();
 
 ### Phase 2: Add Persistence (Optional Enhancement)
 
-- [ ] **Task 2.1: Design persistence strategy**
-  - Option A: Auto-save batch image data to localStorage
-  - Option B: Require users to export/import custom content
-  - Option C: Add persistence middleware to ExtensionManager
+- [x] **Task 2.1: Design persistence strategy** ✓ 2026-03-10
 
-- [ ] **Task 2.2: Implement chosen strategy**
-  - Depends on Task 2.1 decision
+  **Decision: Option A - Auto-save to localStorage with auto-restore**
+
+  **Rationale:**
+  1. **Consistency with existing patterns:** The codebase already uses localStorage for custom equipment persistence in `useItemCreator.ts` with `CUSTOM_EQUIPMENT_CACHE` and `CUSTOM_EQUIPMENT_STORAGE_KEY`. This approach follows the same pattern.
+
+  2. **User experience:** Users expect batch image changes to persist across sessions without manual export/import. The current "by design" behavior of losing data on reload creates friction.
+
+  3. **No infrastructure changes needed:** localStorage is already available and used. No changes to ExtensionManager or the data engine are required.
+
+  4. **Export/import still works:** The existing export functionality (`handleExport` in SpawnModeControls) already captures batch image updates because `manager.getCustom()` returns items from `extensions` which includes batch-applied image data. Users can still manually export/import for backup or sharing.
+
+  **Implementation Details:**
+
+  1. **New utility module:** `src/utils/batchImagePersistence.ts`
+     - `BATCH_IMAGE_STORAGE_KEY` - localStorage key
+     - `saveBatchImageUpdates(category, updates)` - saves updates to localStorage
+     - `loadBatchImageUpdates()` - loads updates from localStorage
+     - `clearBatchImageUpdates()` - clears localStorage
+     - `restoreBatchImageUpdates()` - restores to ExtensionManager on startup
+
+  2. **Integration points:**
+     - `SpawnModeControls.handleBatchApply()` - call `saveBatchImageUpdates()` after success
+     - `main.tsx` - call `restoreBatchImageUpdates()` after `ensureAllDefaultsInitialized()`
+
+  3. **Data structure:**
+     ```typescript
+     {
+       version: '1.0',
+       updatedAt: number,
+       categories: {
+         [category]: {
+           updates: [{ name, icon?, image? }]
+         }
+       }
+     }
+     ```
+
+- [ ] **Task 2.2: Implement localStorage persistence**
+  - Create `src/utils/batchImagePersistence.ts` with save/load/restore functions
+  - Integrate save into `SpawnModeControls.handleBatchApply()`
+  - Integrate restore into `main.tsx` after ExtensionManager initialization
+  - Test: Apply batch images, reload page, images should persist
 
 ### Phase 3: Documentation
 
