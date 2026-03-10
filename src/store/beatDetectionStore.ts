@@ -82,6 +82,8 @@ import {
     // Groove Penalty types
     GroovePenaltyConfig,
     getGroovePenaltiesForPreset,
+    // Accuracy Threshold constants
+    HARD_ACCURACY_THRESHOLDS,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -2042,10 +2044,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                     getAccuracyThresholds: () => {
                         const { difficultySettings } = get();
-                        return getAccuracyThresholdsForPreset(
-                            difficultySettings.preset,
-                            difficultySettings.customThresholds
-                        );
+                        if (difficultySettings.preset === 'custom') {
+                            // Merge custom thresholds with hard preset as base
+                            return {
+                                ...HARD_ACCURACY_THRESHOLDS,
+                                ...difficultySettings.customThresholds,
+                            };
+                        }
+                        return getAccuracyThresholdsForPreset(difficultySettings.preset);
                     },
 
                     // ============================================================
@@ -4160,10 +4166,14 @@ export const useIgnoreKeyRequirements = () =>
 export const useAccuracyThresholds = () =>
     useBeatDetectionStore(useShallow((state) => {
         const { difficultySettings } = state;
-        return getAccuracyThresholdsForPreset(
-            difficultySettings.preset,
-            difficultySettings.customThresholds
-        );
+        if (difficultySettings.preset === 'custom') {
+            // Merge custom thresholds with hard preset as base
+            return {
+                ...HARD_ACCURACY_THRESHOLDS,
+                ...difficultySettings.customThresholds,
+            };
+        }
+        return getAccuracyThresholdsForPreset(difficultySettings.preset);
     }));
 
 // ============================================================

@@ -364,113 +364,21 @@ export interface AccuracyThresholds {
 /**
  * Difficulty preset identifiers for beat tap evaluation.
  *
- * - 'easy': Forgiving timing for casual players (±75ms perfect)
- * - 'medium': Balanced difficulty (±45ms perfect)
- * - 'hard': Strict timing for rhythm game veterans (±10ms perfect)
+ * - 'easy': Forgiving timing for casual players (±20ms perfect)
+ * - 'medium': Balanced difficulty (±10ms perfect)
+ * - 'hard': Strict timing for rhythm game veterans (±8ms perfect)
  * - 'custom': User-defined custom thresholds
  */
 export type DifficultyPreset = 'easy' | 'medium' | 'hard' | 'custom';
 
-/**
- * Easy difficulty thresholds - forgiving timing for casual players.
- * Perfect window: ±35ms
- */
-export const EASY_ACCURACY_THRESHOLDS: AccuracyThresholds = {
-    perfect: 0.035,  // ±35ms
-    great: 0.070,    // ±70ms
-    good: 0.110,     // ±110ms
-    ok: 0.150,       // ±150ms
-};
-
-/**
- * Medium difficulty thresholds - balanced timing.
- * Perfect window: ±10ms
- */
-export const MEDIUM_ACCURACY_THRESHOLDS: AccuracyThresholds = {
-    perfect: 0.010,  // ±10ms
-    great: 0.025,    // ±25ms
-    good: 0.050,     // ±50ms
-    ok: 0.100,       // ±100ms
-};
-
-/**
- * Hard difficulty thresholds - strict timing for veterans.
- * Perfect window: ±8ms
- */
-export const HARD_ACCURACY_THRESHOLDS: AccuracyThresholds = {
-    perfect: 0.008,  // ±8ms
-    great: 0.020,    // ±20ms
-    good: 0.040,     // ±40ms
-    ok: 0.075,       // ±75ms
-};
-
-/**
- * Map of preset names to their threshold values.
- */
-export const DIFFICULTY_PRESETS: Record<Exclude<DifficultyPreset, 'custom'>, AccuracyThresholds> = {
-    easy: EASY_ACCURACY_THRESHOLDS,
-    medium: MEDIUM_ACCURACY_THRESHOLDS,
-    hard: HARD_ACCURACY_THRESHOLDS,
-};
-
-/**
- * Get accuracy thresholds for a given difficulty preset.
- *
- * @param preset - The difficulty preset ('easy', 'medium', 'hard', or 'custom')
- * @param customThresholds - Custom thresholds to use when preset is 'custom'
- * @returns The accuracy thresholds for the given preset
- */
-export function getAccuracyThresholdsForPreset(
-    preset: DifficultyPreset,
-    customThresholds?: Partial<AccuracyThresholds>
-): AccuracyThresholds {
-    if (preset === 'custom') {
-        // Merge custom thresholds with hard preset as base
-        return {
-            ...HARD_ACCURACY_THRESHOLDS,
-            ...customThresholds,
-        };
-    }
-    return DIFFICULTY_PRESETS[preset];
-}
-
-/**
- * Validate accuracy thresholds.
- *
- * @param thresholds - Partial thresholds to validate
- * @returns Object with valid flag and array of error messages
- */
-export function validateThresholds(thresholds: Partial<AccuracyThresholds>): {
-    valid: boolean;
-    errors: string[];
-} {
-    const errors: string[] = [];
-    const keys: (keyof AccuracyThresholds)[] = ['perfect', 'great', 'good', 'ok'];
-
-    // Check that all provided values are positive
-    for (const key of keys) {
-        if (thresholds[key] !== undefined && thresholds[key]! < 0) {
-            errors.push(`${key} must be positive, got ${thresholds[key]}`);
-        }
-    }
-
-    // Check ascending order for provided values
-    const providedKeys = keys.filter(k => thresholds[k] !== undefined);
-    for (let i = 0; i < providedKeys.length - 1; i++) {
-        const current = providedKeys[i];
-        const next = providedKeys[i + 1];
-        if (thresholds[current]! >= thresholds[next]!) {
-            errors.push(
-                `${next} (${thresholds[next]}) must be greater than ${current} (${thresholds[current]})`
-            );
-        }
-    }
-
-    return {
-        valid: errors.length === 0,
-        errors,
-    };
-}
+// Re-export accuracy threshold constants from the engine to ensure parity
+export {
+    EASY_ACCURACY_THRESHOLDS,
+    MEDIUM_ACCURACY_THRESHOLDS,
+    HARD_ACCURACY_THRESHOLDS,
+    getAccuracyThresholdsForPreset,
+    validateThresholds
+} from 'playlist-data-engine';
 
 // ============================================================
 // OSE (Onset Strength Envelope) Parameter Types

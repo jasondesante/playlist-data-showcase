@@ -12,6 +12,11 @@
  */
 import './DifficultySelector.css';
 import type { DifficultyPreset } from '@/types';
+import {
+    EASY_ACCURACY_THRESHOLDS,
+    MEDIUM_ACCURACY_THRESHOLDS,
+    HARD_ACCURACY_THRESHOLDS
+} from '@/types';
 
 export interface DifficultySelectorProps {
   /** Currently selected difficulty preset */
@@ -25,6 +30,13 @@ export interface DifficultySelectorProps {
 }
 
 /**
+ * Convert seconds to milliseconds for display
+ */
+function toMs(seconds: number): number {
+  return Math.round(seconds * 1000);
+}
+
+/**
  * Difficulty preset configuration
  */
 interface PresetConfig {
@@ -34,23 +46,27 @@ interface PresetConfig {
   colorClass: string;
 }
 
+/**
+ * Preset configurations with dynamically generated descriptions based on actual threshold values.
+ * This ensures the UI always displays accurate timing information from the engine constants.
+ */
 const PRESETS: PresetConfig[] = [
   {
     id: 'easy',
     label: 'Easy',
-    description: 'Forgiving timing (±75ms perfect)',
+    description: `Forgiving timing (±${toMs(EASY_ACCURACY_THRESHOLDS.perfect)}ms perfect)`,
     colorClass: 'difficulty-selector__btn--easy',
   },
   {
     id: 'medium',
     label: 'Medium',
-    description: 'Balanced timing (±45ms perfect)',
+    description: `Balanced timing (±${toMs(MEDIUM_ACCURACY_THRESHOLDS.perfect)}ms perfect)`,
     colorClass: 'difficulty-selector__btn--medium',
   },
   {
     id: 'hard',
     label: 'Hard',
-    description: 'Strict timing (±10ms perfect)',
+    description: `Strict timing (±${toMs(HARD_ACCURACY_THRESHOLDS.perfect)}ms perfect)`,
     colorClass: 'difficulty-selector__btn--hard',
   },
   {
