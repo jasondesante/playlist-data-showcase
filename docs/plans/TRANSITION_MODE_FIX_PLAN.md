@@ -91,11 +91,11 @@ This gives musicians a meaningful choice:
 
 ### Task 1.2: Add `setTransitionMode` method to SubdivisionPlaybackController
 
-- [ ] Add new public method `setTransitionMode(mode: SubdivisionTransitionMode): void`
-  - [ ] Validate the mode is a valid `SubdivisionTransitionMode` value
-  - [ ] Update `this.options.transitionMode` with the new mode
-  - [ ] If there's a pending subdivision change and mode is changed to `'immediate'`, apply immediately
-  - [ ] Add debug logging for the mode change
+- [x] Add new public method `setTransitionMode(mode: SubdivisionTransitionMode): void`
+  - [x] Validate the mode is a valid `SubdivisionTransitionMode` value
+  - [x] Update `this.options.transitionMode` with the new mode
+  - [x] If there's a pending subdivision change and mode is changed to `'immediate'`, apply immediately
+  - [x] Add debug logging for the mode change
 
 **Location**: `playlist-data-engine/src/core/playback/SubdivisionPlaybackController.ts`
 
