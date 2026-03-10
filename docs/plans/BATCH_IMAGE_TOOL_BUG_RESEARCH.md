@@ -301,7 +301,7 @@ useDataViewerStore.getState().notifyDataChanged();
 - [x] Batch image tool applies images by property in property mode ✓ (Code verified 2026-03-10)
 - [x] UI refreshes immediately after batch apply (no manual refresh needed) ✓ (Code verified 2026-03-10)
 - [x] Images appear in spell cards (thumbnail and expanded view) ✓ (Code verified 2026-03-10)
-- [ ] Arweave URLs resolve correctly through gateway fallback
+- [x] Arweave URLs resolve correctly through gateway fallback ✓ (Tests verified 2026-03-10: 33 gateway manager tests + 27 ArweaveImage tests + 59 arweaveUtils tests)
 - [x] Export includes custom image data ✓ (Code verified 2026-03-10)
 - [x] Import restores custom image data ✓ (Code verified 2026-03-10)
 
@@ -344,6 +344,24 @@ useDataViewerStore.getState().notifyDataChanged();
   - Batch update applies images correctly
   - Cache invalidation causes fresh data fetch
   - hasImage logic works for icon-only, image-only, both, and neither cases
+
+**Arweave Gateway Fallback Verification (2026-03-10):**
+- Gateway Manager (`arweaveGatewayManager.ts`):
+  - Uses 3 default gateways in priority order: arweave.net, ardrive.net, turbo-gateway.com
+  - Sequential fallback: tries each gateway in order until one succeeds
+  - 5 second timeout per gateway check with AbortController
+  - In-memory cache with 2-hour TTL for working gateways
+  - All 33 tests pass (`src/utils/__tests__/arweaveGatewayManager.test.ts`)
+- ArweaveImage Component (`ArweaveImage.tsx`):
+  - Detects Arweave URLs via `isArweaveUrl()` (supports `ar://` protocol and known gateway hosts)
+  - Resolves URLs through `arweaveGatewayManager.resolveUrl()`
+  - Shows shimmer loading state during resolution
+  - Falls back to default Music icon on error
+  - All 27 tests pass (`src/components/shared/__tests__/ArweaveImage.test.tsx`)
+- URL Utilities (`arweaveUtils.ts`):
+  - Parses 43-character Arweave transaction IDs
+  - Supports `ar://` protocol, HTTP gateway URLs, and path suffixes
+  - All 59 tests pass (`src/utils/__tests__/arweaveUtils.test.ts`)
 
 ---
 
