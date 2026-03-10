@@ -298,8 +298,8 @@ The current UI labels are confusing because they describe the same thing:
 
 ### Task 4.2: Run all tests
 
-- [ ] Run engine tests: `cd playlist-data-engine && npm test`
-- [ ] Run frontend tests: `cd playlist-data-showcase && npm test`
+- [x] Run engine tests: `cd playlist-data-engine && npm test` - **4396 tests passed**
+- [x] Run frontend tests: `cd playlist-data-showcase && npm test` - **Subdivision tests (22/22) passed**. Note: There are pre-existing test failures in other test files unrelated to this fix (mock issues with `initRhythmXP` and other unrelated functionality).
 
 ---
 
