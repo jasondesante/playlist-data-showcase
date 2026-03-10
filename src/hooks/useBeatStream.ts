@@ -242,6 +242,10 @@ export const useBeatStream = (
 
     // Get audio player state for sync
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    
+    // Ref to track currentTime for use in callbacks without triggering re-renders
+    const currentTimeRef = useRef(currentTime);
+    currentTimeRef.current = currentTime;
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
 
     // Get key requirements setting from store (easy mode toggle)
@@ -531,7 +535,8 @@ export const useBeatStream = (
         }
 
         // Re-sync to current audio position in case of drift during pause
-        beatStreamRef.current.seek(currentTime);
+        // Use ref to avoid dependency on currentTime which changes constantly
+        beatStreamRef.current.seek(currentTimeRef.current);
 
         // Update upcoming beats for current position
         const beats = beatStreamRef.current.getUpcomingBeats(UPCOMING_BEATS_COUNT);
@@ -545,8 +550,8 @@ export const useBeatStream = (
         startAnimationLoop();
         setIsPaused(false);
 
-        logger.debug('BeatDetection', 'Stream resumed', { currentTime });
-    }, [currentTime, isActive, startAnimationLoop]);
+        logger.debug('BeatDetection', 'Stream resumed', { currentTime: currentTimeRef.current });
+    }, [isActive, startAnimationLoop]);
 
     /**
      * Seek to a specific time in the audio.
@@ -818,10 +823,12 @@ export const useBeatStream = (
                 startStream();
                 // CRITICAL: Sync BeatStream to current audio position immediately
                 // The BeatStream starts at time 0, but audio may be at any position
-                if (beatStreamRef.current && currentTime > 0) {
-                    beatStreamRef.current.seek(currentTime);
+                // Use ref to avoid dependency on currentTime which changes every frame
+                const audioPosition = currentTimeRef.current;
+                if (beatStreamRef.current && audioPosition > 0) {
+                    beatStreamRef.current.seek(audioPosition);
                     logger.debug('BeatDetection', 'Synced BeatStream to audio position', {
-                        audioPosition: currentTime,
+                        audioPosition,
                     });
                 }
             }
@@ -832,7 +839,8 @@ export const useBeatStream = (
             // Pause when playback pauses (but don't stop completely)
             pauseStream();
         }
-    }, [practiceModeActive, playbackState, beatMap, isActive, isPaused, initializeStream, startStream, stopStream, pauseStream, resumeStream, currentTime]);
+    // Removed currentTime from dependencies - using currentTimeRef instead to prevent effect re-running every frame
+    }, [practiceModeActive, playbackState, beatMap, isActive, isPaused, initializeStream, startStream, stopStream, pauseStream, resumeStream]);
 
     /**
      * Cleanup on unmount.

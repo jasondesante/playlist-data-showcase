@@ -58,6 +58,7 @@ vi.mock(import('playlist-data-engine'), async (importOriginal) => {
         recordHit = mockRecordHit;
         recordMiss = mockRecordMiss;
         reset = mockReset;
+        setDifficulty = vi.fn(); // Added for initGrooveAnalyzer and resetGrooveAnalyzer
     }
 
     return {
@@ -540,13 +541,19 @@ describe('beatDetectionStore - Groove Functionality', () => {
             expect(newState.bestGrooveStreak).toBe(20);
         });
 
-        it('should handle reset when grooveAnalyzer is null', async () => {
+        it('should handle reset when grooveAnalyzer is null by creating a new one', async () => {
             const store = useBeatDetectionStore.getState();
             // Don't initialize the analyzer
             expect(store.grooveAnalyzer).toBeNull();
 
-            // Should not throw
-            expect(() => store.actions.resetGrooveAnalyzer()).not.toThrow();
+            // BUGFIX: resetGrooveAnalyzer now creates a new analyzer if null
+            // This ensures the analyzer is always available after a seek
+            store.actions.resetGrooveAnalyzer();
+
+            // Should have created a new analyzer
+            const newState = useBeatDetectionStore.getState();
+            expect(newState.grooveAnalyzer).not.toBeNull();
+            expect(newState.grooveState).not.toBeNull();
         });
 
         it('should allow re-initialization after reset', async () => {

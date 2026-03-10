@@ -3371,13 +3371,37 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                     resetGrooveAnalyzer: () => {
                         const state = get();
-                        if (state.grooveAnalyzer) {
-                            state.grooveAnalyzer.reset();
+                        
+                        // BUGFIX: If grooveAnalyzer doesn't exist, create a new one
+                        // This can happen if there was a race condition during initialization
+                        if (!state.grooveAnalyzer) {
+                            const analyzer = new GrooveAnalyzer();
+                            const { difficultySettings } = state;
+                            if (difficultySettings.preset !== 'custom') {
+                                analyzer.setDifficulty({ preset: difficultySettings.preset });
+                            } else {
+                                const customPenalties = getGroovePenaltiesForPreset(
+                                    difficultySettings.preset,
+                                    difficultySettings.customGroovePenalties
+                                );
+                                analyzer.setDifficulty({
+                                    preset: 'custom',
+                                    customPenalties
+                                });
+                            }
                             set({
-                                grooveState: state.grooveAnalyzer.getState(),
+                                grooveAnalyzer: analyzer,
+                                grooveState: analyzer.getState(),
                             });
-                            logger.info('BeatDetection', 'GrooveAnalyzer reset');
+                            logger.info('BeatDetection', 'GrooveAnalyzer created during reset');
+                            return;
                         }
+                        
+                        state.grooveAnalyzer.reset();
+                        set({
+                            grooveState: state.grooveAnalyzer.getState(),
+                        });
+                        logger.info('BeatDetection', 'GrooveAnalyzer reset');
                     },
 
                     updateGrooveState: (newState: GrooveState) => {
@@ -3574,8 +3598,15 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     },
 
                     resetRhythmXP: () => {
+                        // BUGFIX: Instead of setting calculator to null (which breaks score tracking after seek),
+                        // create a new calculator and start a fresh session. This ensures the calculator
+                        // is always ready to record hits after a seek.
+                        const config = useRhythmXPConfigStore.getState().config;
+                        const calculator = new RhythmXPCalculator(config);
+                        calculator.startSession();
+
                         set({
-                            rhythmXPCalculator: null,
+                            rhythmXPCalculator: calculator,
                             rhythmSessionTotals: null,
                             lastRhythmXPResult: null,
                             currentCombo: 0,
@@ -3584,7 +3615,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             pendingComboEndBonus: null,
                             pendingGrooveEndBonus: null,
                         });
-                        logger.debug('BeatDetection', 'Rhythm XP state reset');
+                        logger.debug('BeatDetection', 'Rhythm XP state reset and re-initialized');
                     },
                 },
             };

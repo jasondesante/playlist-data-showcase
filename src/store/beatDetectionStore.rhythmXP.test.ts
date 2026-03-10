@@ -373,7 +373,9 @@ describe('beatDetectionStore - Rhythm XP Functionality', () => {
             actions.resetRhythmXP();
 
             const state = useBeatDetectionStore.getState();
-            expect(state.rhythmXPCalculator).toBeNull();
+            // BUGFIX: resetRhythmXP now re-initializes the calculator instead of setting to null
+            // This ensures the calculator is always ready to record hits after a seek
+            expect(state.rhythmXPCalculator).not.toBeNull(); // Changed: was toBeNull()
             expect(state.rhythmSessionTotals).toBeNull();
             expect(state.lastRhythmXPResult).toBeNull();
             expect(state.currentCombo).toBe(0);

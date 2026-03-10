@@ -483,7 +483,7 @@ export function KeyLaneView({
                 animationFrameRef.current = null;
             }
         };
-    }, [isPaused, beatMap?.duration, currentTime]);
+    }, [isPaused, beatMap?.duration]); // Removed currentTime - animation loop uses lastAudioTimeRef which is updated separately
 
     // Track hit/miss state for beats (persists across renders)
     const beatHitStateRef = useRef<BeatHitState>(new Map());
