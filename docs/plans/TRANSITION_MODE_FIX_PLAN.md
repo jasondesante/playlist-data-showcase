@@ -211,8 +211,8 @@ controller.setTransitionMode('immediate');
 
 ### Task 3.1: Update `setSubdivisionTransitionMode` in beatDetectionStore
 
-- [ ] Modify `setSubdivisionTransitionMode` to propagate changes to active controller
-- [ ] Follow the same pattern used in `setCurrentSubdivision` (lines 2800-2814)
+- [x] Modify `setSubdivisionTransitionMode` to propagate changes to active controller
+- [x] Follow the same pattern used in `setCurrentSubdivision` (lines 2800-2814)
 
 **Location**: `playlist-data-showcase/src/store/beatDetectionStore.ts` (around line 2819)
 

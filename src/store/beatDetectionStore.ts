@@ -2814,8 +2814,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                     /**
                      * Set the transition mode for subdivision changes.
-                     * Note: The transition mode is applied when the controller is initialized.
-                     * To change mid-playback, the controller needs to be re-initialized.
+                     * Updates both store state and active playback controller.
                      */
                     setSubdivisionTransitionMode: (mode: 'immediate' | 'next-downbeat' | 'next-measure') => {
                         logger.info('BeatDetection', 'Setting subdivision transition mode', {
@@ -2824,6 +2823,13 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         });
 
                         set({ subdivisionTransitionMode: mode });
+
+                        // Also update the playback controller if it exists
+                        const controller = getActiveSubdivisionPlaybackController();
+                        if (controller) {
+                            controller.setTransitionMode(mode);
+                            logger.info('BeatDetection', 'Updated playback controller transition mode');
+                        }
                     },
 
                     /**
