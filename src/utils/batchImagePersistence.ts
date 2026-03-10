@@ -20,8 +20,9 @@ export const BATCH_IMAGE_STORAGE_KEY = 'batch_image_updates';
 
 /**
  * Supported categories for batch image operations
+ * Must match ImageSupportedCategory from ExtensionManager
  */
-export type BatchImageCategory = 'spells' | 'skills' | 'features' | 'equipment' | 'classes' | 'races';
+export type BatchImageCategory = 'spells' | 'skills' | 'classFeatures' | 'racialTraits' | 'equipment' | 'races.data' | 'classes.data';
 
 /**
  * Single item update with icon/image fields
@@ -243,15 +244,11 @@ export function restoreBatchImageUpdates(): number {
             }
 
             if (updatedCount > 0) {
-                // Store updated items back in ExtensionManager
-                manager.extensions.set(category as any, {
-                    items: updatedItems,
-                    options: { mode: 'replace' },
-                    registeredAt: Date.now()
+                // Store updated items back in ExtensionManager using public API
+                manager.register(category as any, updatedItems, {
+                    mode: 'replace',
+                    validate: false // Skip validation for restored items
                 });
-
-                // Invalidate cache for this category
-                manager.invalidateRegistryCache(category as any);
 
                 restoredCategories++;
                 totalItems += updatedCount;

@@ -35,7 +35,8 @@ type LogCategory =
     | 'ClassConfigForm'
     | 'BeatDetection'
     | 'SubdivisionPlayback'
-    | 'ArweaveGateway';
+    | 'ArweaveGateway'
+    | 'BatchImagePersistence';
 
 
 

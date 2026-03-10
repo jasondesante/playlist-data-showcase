@@ -297,13 +297,42 @@ useDataViewerStore.getState().notifyDataChanged();
 
 ## Testing Checklist
 
-- [ ] Batch image tool applies images to all items in predicate mode
-- [ ] Batch image tool applies images by property in property mode
-- [ ] UI refreshes immediately after batch apply (no manual refresh needed)
+- [x] Batch image tool applies images to all items in predicate mode ✓ (Code verified 2026-03-10)
+- [x] Batch image tool applies images by property in property mode ✓ (Code verified 2026-03-10)
+- [x] UI refreshes immediately after batch apply (no manual refresh needed) ✓ (Code verified 2026-03-10)
 - [ ] Images appear in spell cards (thumbnail and expanded view)
 - [ ] Arweave URLs resolve correctly through gateway fallback
-- [ ] Export includes custom image data
-- [ ] Import restores custom image data
+- [x] Export includes custom image data ✓ (Code verified 2026-03-10)
+- [x] Import restores custom image data ✓ (Code verified 2026-03-10)
+
+### Code Review Verification Notes (2026-03-10)
+
+**Build Fixes Applied:**
+- Fixed `BatchImageCategory` type conflict between SpawnModeControls.tsx and batchImagePersistence.ts
+- Added `BatchImagePersistence` to LogCategory in logger.ts
+- Fixed `restoreBatchImageUpdates` to use public `register()` API instead of private properties
+- Aligned `BatchImageCategory` with `ImageSupportedCategory` from ExtensionManager
+
+**Predicate Mode Verification:**
+- `SpawnModeControls.handleBatchApply()` calls `manager.batchUpdateImages()` with `() => true` predicate
+- `ExtensionManager.batchUpdateImages()` correctly applies updates to all matching items
+- Returns count of updated items for feedback
+
+**Property Mode Verification:**
+- `handleBatchApply()` builds `valueMap` from `batchPropertyValueMap`
+- Calls `manager.batchByCategory()` with property and value mapping
+- `ExtensionManager.batchByCategory()` correctly applies different images based on property values
+
+**UI Refresh Verification:**
+- After batch operation, cache invalidation occurs:
+  - `SpellQuery.getInstance().invalidateCache()`
+  - `SkillQuery.getInstance().invalidateCache()`
+  - `FeatureQuery.getInstance().invalidateCache()`
+- `useDataViewerStore.getState().notifyDataChanged()` triggers useMemo re-computation
+
+**Export/Import Verification:**
+- Export uses `manager.getCustom()` which returns items from extensions (includes image data)
+- Import uses `manager.register()` which stores items including icon/image fields
 
 ---
 

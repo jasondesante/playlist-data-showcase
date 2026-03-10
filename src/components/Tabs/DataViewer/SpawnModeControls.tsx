@@ -68,11 +68,6 @@ const MODE_CONFIG: Record<SpawnMode, { label: string; description: string; color
 };
 
 /**
- * Categories that support batch image operations
- */
-type BatchImageCategory = 'spells' | 'equipment' | 'races.data' | 'classes.data' | 'classFeatures' | 'racialTraits' | 'skills';
-
-/**
  * Batch operation mode
  */
 type BatchOperationMode = 'predicate' | 'property';
