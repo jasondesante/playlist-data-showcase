@@ -1219,7 +1219,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
                 className={`beat-practice-transition-toggle ${transitionMode === 'next-downbeat' ? 'beat-practice-transition-toggle--active' : ''}`}
                 onClick={() => setTransitionMode('next-downbeat')}
                 aria-pressed={transitionMode === 'next-downbeat'}
-                title="Wait for beat 1 of next measure"
+                title="Apply at next beat 1"
               >
                 <span className="beat-practice-transition-toggle-text">Downbeat</span>
               </button>
@@ -1228,17 +1228,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
                 className={`beat-practice-transition-toggle ${transitionMode === 'next-measure' ? 'beat-practice-transition-toggle--active' : ''}`}
                 onClick={() => setTransitionMode('next-measure')}
                 aria-pressed={transitionMode === 'next-measure'}
-                title="Wait for start of next measure"
+                title="Apply when entering new measure"
               >
-                <span className="beat-practice-transition-toggle-text">Measure</span>
+                <span className="beat-practice-transition-toggle-text">Next Measure</span>
               </button>
             </div>
             <span className="beat-practice-transition-mode-description">
               {transitionMode === 'immediate'
                 ? 'Subdivision changes apply instantly'
                 : transitionMode === 'next-downbeat'
-                  ? 'Changes apply on next downbeat (beat 1)'
-                  : 'Changes apply at start of next measure'}
+                  ? 'Changes apply on next beat 1'
+                  : 'Changes apply when entering new measure'}
             </span>
           </div>
         </div>

@@ -803,6 +803,148 @@
 }
 
 /* ========================================
+   IMAGE /THUMBNAIL STYLES
+   ======================================== */
+
+/* Item card - Thumbnail in header */
+.dataviewer-item-thumbnail {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-right: 0.5rem;
+}
+
+.dataviewer-item-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Small thumbnail for group items (skills, features, traits) */
+.dataviewer-item-thumbnail-small {
+  width: 28px;
+  height: 28px;
+}
+
+/* Thumbnail fallback - shows icon when image fails to load */
+.dataviewer-item-thumbnail-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-dim);
+  color: var(--color-text-tertiary);
+}
+
+.dataviewer-item-thumbnail-fallback-small {
+  width: 28px;
+  height: 28px;
+}
+
+.dataviewer-item-thumbnail-fallback svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dataviewer-item-thumbnail-fallback-small svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ========================================
+   CARD THUMBNAIL STYLES
+   ======================================== */
+
+/* Card thumbnail in header (races/classes) */
+.dataviewer-card-thumbnail {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-right: 0.25rem;
+}
+
+.dataviewer-card-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Card thumbnail fallback */
+.dataviewer-card-thumbnail-fallback {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-dim);
+  color: var(--color-text-tertiary);
+}
+
+.dataviewer-card-thumbnail-fallback svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========================================
+   FULL IMAGE IN EXPANDED DETAILS
+   ======================================== */
+
+/* Full-size image in item details */
+.dataviewer-item-image {
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.dataviewer-item-image img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+/* Full-size image in card details (races/classes) */
+.dataviewer-card-image {
+  margin-bottom: 0.5rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.dataviewer-card-image img {
+  max-width: 180px;
+  max-height: 180px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+/* Image fallback - shows icon when image fails to load */
+.dataviewer-item-image-fallback,
+.dataviewer-card-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-dim);
+  color: var(--color-text-tertiary);
+}
+
+.dataviewer-item-image-fallback svg,
+.dataviewer-card-image-fallback svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* ========================================
    SUBRACE SECTIONS (Task 4.3/4.4)
    ======================================== */
 
@@ -1100,150 +1242,5 @@
   .dataviewer-subrace-traits-list,
   .dataviewer-subrace-requirements-list {
     gap: 0.25rem;
-  }
-
-  .dataviewer-subrace-bonus {
-    font-size: 0.75rem;
-  }
-
-  .dataviewer-card-bonuses {
-    gap: 0.25rem;
-  }
-
-  .dataviewer-card-bonus {
-    font-size: 0.75rem;
-  }
-
-  .dataviewer-item-badges {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .dataviewer-badge {
-    font-size: 0.5625rem;
-    padding: 0.2rem 0.35rem;
-  }
-}
-
-/* ========================================
-   APPEARANCE CATEGORY STYLES
-   ======================================== */
-
-.dataviewer-appearance-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.dataviewer-tag-appearance {
-  background: hsl(var(--cute-purple) / 0.12);
-  color: hsl(var(--cute-purple));
-  border: 1px solid hsl(var(--cute-purple) / 0.25);
-}
-
-.dataviewer-appearance-color {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.5rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-}
-
-.dataviewer-appearance-color:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-}
-
-.dataviewer-color-swatch {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.dataviewer-color-value {
-  font-size: 0.75rem;
-  font-family: var(--font-mono, monospace);
-  color: var(--color-text-secondary);
-}
-
-/* ========================================
-   EQUIPMENT CREATOR SECTION (Phase 3.3)
-   ======================================== */
-
-.dataviewer-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 0 0.25rem;
-}
-
-.dataviewer-creator-card {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  animation: dataviewerCreatorFadeIn 0.2s ease-out;
-}
-
-@keyframes dataviewerCreatorFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dataviewer-creator-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.dataviewer-creator-title svg {
-  color: var(--color-primary);
-}
-
-/* ========================================
-   APPEARANCE CREATOR SECTION (Phase 4.1)
-   ======================================== */
-
-.dataviewer-appearance-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.dataviewer-appearance-creator {
-  margin-bottom: 1rem;
-  animation: dataviewerAppearanceCreatorFadeIn 0.2s ease-out;
-}
-
-@keyframes dataviewerAppearanceCreatorFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

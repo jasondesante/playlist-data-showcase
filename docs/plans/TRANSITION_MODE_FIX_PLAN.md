@@ -259,8 +259,8 @@ The current UI labels are confusing because they describe the same thing:
 | `'next-downbeat'` | "Downbeat" - "Wait for beat 1 of next measure" | "Downbeat" - "Apply at next beat 1" |
 | `'next-measure'` | "Measure" - "Wait for start of next measure" | "Next Measure" - "Apply when entering new measure" |
 
-- [ ] Update button labels and descriptions in `BeatPracticeView.tsx`
-- [ ] Update aria-labels and title attributes for accessibility
+- [x] Update button labels and descriptions in `BeatPracticeView.tsx`
+- [x] Update aria-labels and title attributes for accessibility
 
 **Location**: `playlist-data-showcase/src/components/ui/BeatPracticeView.tsx` (around line 1210)
 
