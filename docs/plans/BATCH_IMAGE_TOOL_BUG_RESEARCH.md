@@ -300,7 +300,7 @@ useDataViewerStore.getState().notifyDataChanged();
 - [x] Batch image tool applies images to all items in predicate mode ✓ (Code verified 2026-03-10)
 - [x] Batch image tool applies images by property in property mode ✓ (Code verified 2026-03-10)
 - [x] UI refreshes immediately after batch apply (no manual refresh needed) ✓ (Code verified 2026-03-10)
-- [ ] Images appear in spell cards (thumbnail and expanded view)
+- [x] Images appear in spell cards (thumbnail and expanded view) ✓ (Code verified 2026-03-10)
 - [ ] Arweave URLs resolve correctly through gateway fallback
 - [x] Export includes custom image data ✓ (Code verified 2026-03-10)
 - [x] Import restores custom image data ✓ (Code verified 2026-03-10)
@@ -333,6 +333,17 @@ useDataViewerStore.getState().notifyDataChanged();
 **Export/Import Verification:**
 - Export uses `manager.getCustom()` which returns items from extensions (includes image data)
 - Import uses `manager.register()` which stores items including icon/image fields
+
+**Images in Spell Cards Verification (2026-03-10):**
+- Verified data flow: `batchUpdateImages()` → `SpellQuery.getSpells()` → `useDataViewer.spells` → `renderSpellCard()`
+- `renderSpellCard()` checks `hasImage = spell.image || spell.icon`
+- Renders `<ArweaveImage>` with `src={spell.image || spell.icon || ''}` when `hasImage` is truthy
+- Full-size image only shown when `spell.image` exists (not just icon)
+- Test suite created: `src/components/Tabs/DataViewer/__tests__/BatchImageTool.image.test.tsx`
+- All 13 tests pass, verifying:
+  - Batch update applies images correctly
+  - Cache invalidation causes fresh data fetch
+  - hasImage logic works for icon-only, image-only, both, and neither cases
 
 ---
 
