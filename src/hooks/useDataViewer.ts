@@ -95,6 +95,10 @@ export interface ClassDataEntry {
     skill_count: number;
     /** User-facing description of this class */
     description?: string;
+    /** Optional icon URL for small UI display */
+    icon?: string;
+    /** Optional image URL for larger display */
+    image?: string;
 }
 
 /**
@@ -133,6 +137,10 @@ export interface RaceDataEntry {
     subraceData?: Record<string, SubraceDataEntry>;
     /** User-facing description of this race */
     description?: string;
+    /** Optional icon URL for small UI display */
+    icon?: string;
+    /** Optional image URL for larger display */
+    image?: string;
 }
 
 /**

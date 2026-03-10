@@ -1243,4 +1243,150 @@
   .dataviewer-subrace-requirements-list {
     gap: 0.25rem;
   }
+
+
+  .dataviewer-subrace-bonus {
+    font-size: 0.75rem;
+  }
+
+  .dataviewer-card-bonuses {
+    gap: 0.25rem;
+  }
+
+  .dataviewer-card-bonus {
+    font-size: 0.75rem;
+  }
+
+  .dataviewer-item-badges {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .dataviewer-badge {
+    font-size: 0.5625rem;
+    padding: 0.2rem 0.35rem;
+  }
+}
+
+/* ========================================
+   APPEARANCE CATEGORY STYLES
+   ======================================== */
+
+.dataviewer-appearance-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dataviewer-tag-appearance {
+  background: hsl(var(--cute-purple) / 0.12);
+  color: hsl(var(--cute-purple));
+  border: 1px solid hsl(var(--cute-purple) / 0.25);
+}
+
+.dataviewer-appearance-color {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.dataviewer-appearance-color:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dataviewer-color-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.dataviewer-color-value {
+  font-size: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text-secondary);
+}
+
+/* ========================================
+   EQUIPMENT CREATOR SECTION (Phase 3.3)
+   ======================================== */
+
+.dataviewer-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0 0.25rem;
+}
+
+.dataviewer-creator-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  animation: dataviewerCreatorFadeIn 0.2s ease-out;
+}
+
+@keyframes dataviewerCreatorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dataviewer-creator-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.dataviewer-creator-title svg {
+  color: var(--color-primary);
+}
+
+/* ========================================
+   APPEARANCE CREATOR SECTION (Phase 4.1)
+   ======================================== */
+
+.dataviewer-appearance-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dataviewer-appearance-creator {
+  margin-bottom: 1rem;
+  animation: dataviewerAppearanceCreatorFadeIn 0.2s ease-out;
+}
+
+@keyframes dataviewerAppearanceCreatorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

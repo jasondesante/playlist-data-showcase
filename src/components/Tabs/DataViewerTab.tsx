@@ -78,6 +78,7 @@ import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
 import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
+import { ArweaveImage } from '../shared/ArweaveImage';
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
@@ -900,6 +901,7 @@ export function DataViewerTab() {
     const isExpanded = expandedItems.has(spellKey);
     const schoolColor = SCHOOL_COLORS[spell.school] || 'var(--color-text-secondary)';
     const schoolBg = SCHOOL_BG_COLORS[spell.school] || 'var(--color-surface-dim)';
+    const hasImage = spell.image || spell.icon;
 
     return (
       <div
@@ -911,6 +913,23 @@ export function DataViewerTab() {
           className="dataviewer-item-header"
           onClick={() => toggleExpanded(spellKey)}
         >
+          {/* Spell image/icon thumbnail */}
+          {hasImage && (
+            <div className="dataviewer-item-thumbnail">
+              <ArweaveImage
+                src={spell.image || spell.icon || ''}
+                alt={spell.name}
+                width={40}
+                height={40}
+                showShimmer={true}
+                fallback={
+                  <div className="dataviewer-item-thumbnail-fallback">
+                    <Scroll size={20} />
+                  </div>
+                }
+              />
+            </div>
+          )}
           <div className="dataviewer-item-header-content">
             <span className="dataviewer-item-name" style={{ color: schoolColor }}>
               {spell.name}
@@ -929,6 +948,23 @@ export function DataViewerTab() {
 
         {isExpanded && (
           <div className="dataviewer-item-details">
+            {/* Full-size spell image when expanded */}
+            {spell.image && (
+              <div className="dataviewer-item-image">
+                <ArweaveImage
+                  src={spell.image}
+                  alt={spell.name}
+                  width={200}
+                  height={200}
+                  showShimmer={true}
+                  fallback={
+                    <div className="dataviewer-item-image-fallback">
+                      <Scroll size={48} />
+                    </div>
+                  }
+                />
+              </div>
+            )}
             <div className="dataviewer-item-stats">
               <div className="dataviewer-item-stat">
                 <span className="dataviewer-item-stat-label">Casting Time:</span>
@@ -1005,14 +1041,33 @@ export function DataViewerTab() {
                   const isExpanded = expandedItems.has(skill.id);
                   const hasDescription = skill.description && skill.description.length > 0;
                   const isCustom = checkIsCustomItem('skills', skill.name);
+                  const hasImage = skill.image || skill.icon;
+                  const isExpandable = hasDescription || isCustom || hasImage;
 
                   return (
                     <div
                       key={skill.id}
-                      className={`dataviewer-group-item ${hasDescription || isCustom ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => (hasDescription || isCustom) && toggleExpanded(skill.id)}
+                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => isExpandable && toggleExpanded(skill.id)}
                     >
                       <div className="dataviewer-group-item-header">
+                        {/* Skill image/icon thumbnail */}
+                        {hasImage && (
+                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
+                            <ArweaveImage
+                              src={skill.image || skill.icon || ''}
+                              alt={skill.name}
+                              width={28}
+                              height={28}
+                              showShimmer={true}
+                              fallback={
+                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
+                                  <Target size={14} />
+                                </div>
+                              }
+                            />
+                          </div>
+                        )}
                         <span className="dataviewer-group-item-name">{skill.name}</span>
                         <div className="dataviewer-item-badges">
                           {skill.categories && skill.categories.length > 0 && (
@@ -1022,13 +1077,30 @@ export function DataViewerTab() {
                               ))}
                             </div>
                           )}
-                          {(hasDescription || isCustom) && (
+                          {isExpandable && (
                             isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
                           )}
                         </div>
                       </div>
-                      {isExpanded && (hasDescription || isCustom) && (
+                      {isExpanded && isExpandable && (
                         <div className="dataviewer-group-item-details">
+                          {/* Full-size skill image when expanded */}
+                          {skill.image && (
+                            <div className="dataviewer-item-image">
+                              <ArweaveImage
+                                src={skill.image}
+                                alt={skill.name}
+                                width={150}
+                                height={150}
+                                showShimmer={true}
+                                fallback={
+                                  <div className="dataviewer-item-image-fallback">
+                                    <Target size={36} />
+                                  </div>
+                                }
+                              />
+                            </div>
+                          )}
                           {hasDescription && (
                             <div className="dataviewer-item-description">
                               {skill.description}
@@ -1095,18 +1167,37 @@ export function DataViewerTab() {
                   const isExpanded = expandedItems.has(feature.id);
                   const hasEffects = feature.effects && feature.effects.length > 0;
                   const hasDescription = feature.description && feature.description.length > 0;
+                  const hasImage = feature.image || feature.icon;
+                  const isExpandable = hasEffects || hasDescription || hasImage;
 
                   return (
                     <div
                       key={feature.id}
-                      className={`dataviewer-group-item ${hasEffects || hasDescription ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => (hasEffects || hasDescription) && toggleExpanded(feature.id)}
+                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
+                      onClick={() => isExpandable && toggleExpanded(feature.id)}
                     >
                       <div className="dataviewer-group-item-header">
+                        {/* Feature image/icon thumbnail */}
+                        {hasImage && (
+                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
+                            <ArweaveImage
+                              src={feature.image || feature.icon || ''}
+                              alt={feature.name}
+                              width={28}
+                              height={28}
+                              showShimmer={true}
+                              fallback={
+                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
+                                  <Sword size={14} />
+                                </div>
+                              }
+                            />
+                          </div>
+                        )}
                         <span className="dataviewer-group-item-name">{feature.name}</span>
                         <div className="dataviewer-item-badges">
                           <span className="dataviewer-badge dataviewer-badge-small">Level {feature.level}</span>
-                          {(hasEffects || hasDescription) && (
+                          {isExpandable && (
                             isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
                           )}
                         </div>
@@ -1116,6 +1207,23 @@ export function DataViewerTab() {
                       )}
                       {isExpanded && (
                         <div className="dataviewer-group-item-details">
+                          {/* Full-size feature image when expanded */}
+                          {feature.image && (
+                            <div className="dataviewer-item-image">
+                              <ArweaveImage
+                                src={feature.image}
+                                alt={feature.name}
+                                width={150}
+                                height={150}
+                                showShimmer={true}
+                                fallback={
+                                  <div className="dataviewer-item-image-fallback">
+                                    <Sword size={36} />
+                                  </div>
+                                }
+                              />
+                            </div>
+                          )}
                           {feature.description && (
                             <div className="dataviewer-item-description">
                               {feature.description}
@@ -1266,7 +1374,8 @@ export function DataViewerTab() {
                   const hasEffects = trait.effects && trait.effects.length > 0;
                   const hasDescription = trait.description && trait.description.length > 0;
                   const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
-                  const isExpandable = hasEffects || hasDescription || hasPrerequisites;
+                  const hasImage = trait.image || trait.icon;
+                  const isExpandable = hasEffects || hasDescription || hasPrerequisites || hasImage;
 
                   return (
                     <div
@@ -1275,6 +1384,23 @@ export function DataViewerTab() {
                       onClick={() => isExpandable && toggleExpanded(trait.id)}
                     >
                       <div className="dataviewer-group-item-header">
+                        {/* Trait image/icon thumbnail */}
+                        {hasImage && (
+                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
+                            <ArweaveImage
+                              src={trait.image || trait.icon || ''}
+                              alt={trait.name}
+                              width={28}
+                              height={28}
+                              showShimmer={true}
+                              fallback={
+                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
+                                  <Users size={14} />
+                                </div>
+                              }
+                            />
+                          </div>
+                        )}
                         <span className="dataviewer-group-item-name">{trait.name}</span>
                         <div className="dataviewer-item-badges">
                           {trait.subrace && (
@@ -1289,6 +1415,23 @@ export function DataViewerTab() {
                       </div>
                       {isExpanded && (
                         <div className="dataviewer-group-item-details">
+                          {/* Full-size trait image when expanded */}
+                          {trait.image && (
+                            <div className="dataviewer-item-image">
+                              <ArweaveImage
+                                src={trait.image}
+                                alt={trait.name}
+                                width={150}
+                                height={150}
+                                showShimmer={true}
+                                fallback={
+                                  <div className="dataviewer-item-image-fallback">
+                                    <Users size={36} />
+                                  </div>
+                                }
+                              />
+                            </div>
+                          )}
                           {trait.description && (
                             <div className="dataviewer-item-description">
                               {trait.description}
@@ -1448,6 +1591,7 @@ export function DataViewerTab() {
       {(getFilteredData as RaceDataEntry[]).map((race, index) => {
         const raceName = race.name || `Race-${index}`;
         const isExpanded = expandedItems.has(raceName);
+        const hasImage = race.image || race.icon;
 
         return (
           <div key={raceName} className="dataviewer-card">
@@ -1456,7 +1600,25 @@ export function DataViewerTab() {
               onClick={() => toggleExpanded(raceName)}
             >
               <div className="dataviewer-card-header-content">
-                <Shield size={18} className="dataviewer-card-icon" />
+                {/* Race image/icon thumbnail */}
+                {hasImage ? (
+                  <div className="dataviewer-card-thumbnail">
+                    <ArweaveImage
+                      src={race.image || race.icon || ''}
+                      alt={raceName}
+                      width={32}
+                      height={32}
+                      showShimmer={true}
+                      fallback={
+                        <div className="dataviewer-card-thumbnail-fallback">
+                          <Shield size={16} />
+                        </div>
+                      }
+                    />
+                  </div>
+                ) : (
+                  <Shield size={18} className="dataviewer-card-icon" />
+                )}
                 <span className="dataviewer-card-title">{raceName}</span>
               </div>
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -1481,6 +1643,23 @@ export function DataViewerTab() {
 
             {isExpanded && (
               <div className="dataviewer-card-details">
+                {/* Full-size race image when expanded */}
+                {race.image && (
+                  <div className="dataviewer-card-image">
+                    <ArweaveImage
+                      src={race.image}
+                      alt={raceName}
+                      width={180}
+                      height={180}
+                      showShimmer={true}
+                      fallback={
+                        <div className="dataviewer-card-image-fallback">
+                          <Shield size={48} />
+                        </div>
+                      }
+                    />
+                  </div>
+                )}
                 {/* Race description */}
                 {race.description && (
                   <div className="dataviewer-card-section">
@@ -1569,6 +1748,7 @@ export function DataViewerTab() {
         {(getFilteredData as ClassDataEntry[]).map((cls, index) => {
           const className = cls.name || `Class-${index}`;
           const isExpanded = expandedItems.has(className);
+          const hasImage = cls.image || cls.icon;
 
           return (
             <div key={className} className="dataviewer-card">
@@ -1577,7 +1757,25 @@ export function DataViewerTab() {
                 onClick={() => toggleExpanded(className)}
               >
                 <div className="dataviewer-card-header-content">
-                  <Zap size={18} className="dataviewer-card-icon" />
+                  {/* Class image/icon thumbnail */}
+                  {hasImage ? (
+                    <div className="dataviewer-card-thumbnail">
+                      <ArweaveImage
+                        src={cls.image || cls.icon || ''}
+                        alt={className}
+                        width={32}
+                        height={32}
+                        showShimmer={true}
+                        fallback={
+                          <div className="dataviewer-card-thumbnail-fallback">
+                            <Zap size={16} />
+                          </div>
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <Zap size={18} className="dataviewer-card-icon" />
+                  )}
                   <span className="dataviewer-card-title">{className}</span>
                 </div>
                 {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -1598,6 +1796,23 @@ export function DataViewerTab() {
 
               {isExpanded && (
                 <div className="dataviewer-card-details">
+                  {/* Full-size class image when expanded */}
+                  {cls.image && (
+                    <div className="dataviewer-card-image">
+                      <ArweaveImage
+                        src={cls.image}
+                        alt={className}
+                        width={180}
+                        height={180}
+                        showShimmer={true}
+                        fallback={
+                          <div className="dataviewer-card-image-fallback">
+                            <Zap size={48} />
+                          </div>
+                        }
+                      />
+                    </div>
+                  )}
                   {/* Class description */}
                   {cls.description && (
                     <div className="dataviewer-card-section">
@@ -1876,6 +2091,7 @@ export function DataViewerTab() {
         const rarityBg = RARITY_BG_COLORS[item.rarity || 'common'] || RARITY_BG_COLORS.common;
         const spawnWeightBadge = formatSpawnWeight(item.spawnWeight);
         const isCustom = checkIsCustomItem('equipment', item.name);
+        const hasImage = item.image || item.icon;
 
         return (
           <div
@@ -1887,6 +2103,23 @@ export function DataViewerTab() {
               className="dataviewer-item-header"
               onClick={() => toggleExpanded(item.name)}
             >
+              {/* Equipment image/icon thumbnail */}
+              {hasImage && (
+                <div className="dataviewer-item-thumbnail">
+                  <ArweaveImage
+                    src={item.image || item.icon || ''}
+                    alt={item.name}
+                    width={40}
+                    height={40}
+                    showShimmer={true}
+                    fallback={
+                      <div className="dataviewer-item-thumbnail-fallback">
+                        <Package size={20} />
+                      </div>
+                    }
+                  />
+                </div>
+              )}
               <div className="dataviewer-item-header-content">
                 <span className="dataviewer-item-name" style={{ color: rarityColor }}>
                   {item.name}
@@ -1914,6 +2147,23 @@ export function DataViewerTab() {
 
             {isExpanded && (
               <div className="dataviewer-item-details">
+                {/* Full-size equipment image when expanded */}
+                {item.image && (
+                  <div className="dataviewer-item-image">
+                    <ArweaveImage
+                      src={item.image}
+                      alt={item.name}
+                      width={200}
+                      height={200}
+                      showShimmer={true}
+                      fallback={
+                        <div className="dataviewer-item-image-fallback">
+                          <Package size={48} />
+                        </div>
+                      }
+                    />
+                  </div>
+                )}
                 <div className="dataviewer-item-stats">
                   {item.rarity && (
                     <div className="dataviewer-item-stat">
