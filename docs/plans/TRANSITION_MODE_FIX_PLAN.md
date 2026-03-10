@@ -183,8 +183,8 @@ Add new row to methods table:
 
 ### Task 2.2: Update BEAT_DETECTION.md
 
-- [ ] Add `setTransitionMode` to the SubdivisionPlaybackController methods table
-- [ ] Add usage example showing runtime transition mode changes
+- [x] Add `setTransitionMode` to the SubdivisionPlaybackController methods table
+- [x] Add usage example showing runtime transition mode changes
 
 **Location**: `playlist-data-engine/docs/BEAT_DETECTION.md` (around line 2480)
 
