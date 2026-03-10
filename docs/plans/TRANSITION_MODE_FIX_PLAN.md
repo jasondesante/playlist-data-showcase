@@ -72,11 +72,11 @@ This gives musicians a meaningful choice:
 
 ### Task 1.1: Fix the transition mode logic bug
 
-- [ ] Modify `PlaybackState` interface to track pending measure number
-  - [ ] Add `pendingMeasureNumber: number | null` field
-- [ ] Update `setSubdivision()` to capture current measure number when deferring
-  - [ ] Store `state.currentBeat?.measureNumber` in `pendingMeasureNumber`
-- [ ] Fix `checkPendingSubdivisionChange()` logic:
+- [x] Modify `PlaybackState` interface to track pending measure number
+  - [x] Add `pendingMeasureNumber: number | null` field
+- [x] Update `setSubdivision()` to capture current measure number when deferring
+  - [x] Store `state.currentBeat?.measureNumber` in `pendingMeasureNumber`
+- [x] Fix `checkPendingSubdivisionChange()` logic:
   ```typescript
   const shouldChange = this.options.transitionMode === 'next-downbeat'
       ? currentBeat.isDownbeat
