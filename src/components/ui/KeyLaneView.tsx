@@ -82,25 +82,6 @@ function roundTimestamp(timestamp: number): number {
     return Math.round(timestamp * 1000) / 1000;
 }
 
-/**
- * Convert a Beat from the beat map to a LaneBeat for the lane.
- */
-function beatToLaneBeat(
-    beat: Beat,
-    requiredKey: SupportedKey,
-    hitState?: BeatHitState
-): LaneBeat {
-    const roundedTime = roundTimestamp(beat.timestamp);
-    const state = hitState?.get(roundedTime);
-    return {
-        id: `beat-${beat.timestamp.toFixed(3)}-${requiredKey}`,
-        timestamp: beat.timestamp,
-        requiredKey,
-        hit: state?.hit ?? false,
-        missed: state?.missed ?? false,
-        accuracy: state?.accuracy,
-    };
-}
 
 /**
  * Binary search to find the index of the first beat at or after the given time.
@@ -123,9 +104,38 @@ function findFirstBeatAtOrAfter(beats: Beat[], targetTime: number): number {
 }
 
 /**
+ * Beat without a required key - can be hit with any key.
+ * Rendered as a single wide overlay spanning all lanes for performance.
+ */
+export interface AnyBeat {
+    /** Unique identifier */
+    id: string;
+    /** Timestamp when this beat should be hit (in seconds) */
+    timestamp: number;
+    /** Whether this beat has been hit */
+    hit?: boolean;
+    /** Whether this beat was missed */
+    missed?: boolean;
+    /** Accuracy of the hit (if hit) */
+    accuracy?: ExtendedBeatAccuracy;
+}
+
+/**
+ * Result of distributing beats to lanes.
+ * Contains lane-specific beats and separate "any" beats for overlay rendering.
+ */
+interface DistributeBeatsResult {
+    /** Beats organized by lane key */
+    beatsByLane: Map<SupportedKey, LaneBeat[]>;
+    /** Beats without required key (rendered as overlay) */
+    anyBeats: AnyBeat[];
+}
+
+/**
  * Distribute beats from the beat map to their respective lanes.
  * - Beats with requiredKey go to their specific lane
- * - Beats without requiredKey go to ALL lanes (hittable with any key)
+ * - Beats without requiredKey are returned separately as "any" beats
+ *   (rendered as a single overlay spanning all lanes for performance)
  *
  * Optimized to use binary search for finding visible beats instead of
  * filtering the entire array on every frame.
@@ -136,8 +146,9 @@ function distributeBeatsToLanes(
     currentTime: number,
     visibilityWindow: number,
     hitState: BeatHitState
-): Map<SupportedKey, LaneBeat[]> {
+): DistributeBeatsResult {
     const laneMap = new Map<SupportedKey, LaneBeat[]>();
+    const anyBeats: AnyBeat[] = [];
     const lanes = getLanesForStyle(chartStyle);
 
     // Initialize empty arrays for each lane
@@ -146,7 +157,7 @@ function distributeBeatsToLanes(
     }
 
     if (!beatMap || !beatMap.beats || beatMap.beats.length === 0) {
-        return laneMap;
+        return { beatsByLane: laneMap, anyBeats };
     }
 
     // Calculate visibility bounds
@@ -178,17 +189,18 @@ function distributeBeatsToLanes(
                 });
             }
         } else {
-            // Beat has no required key - add to ALL lanes (hittable with any key)
-            for (const laneKey of lanes) {
-                const laneBeats = laneMap.get(laneKey);
-                if (laneBeats) {
-                    laneBeats.push(beatToLaneBeat(beat, laneKey, hitState));
-                }
-            }
+            // Beat has no required key - add to "any" beats for overlay rendering
+            // This is more performant than duplicating across all lanes
+            const hitStateForBeat = getBeatHitState(beat.timestamp, hitState);
+            anyBeats.push({
+                id: `any-beat-${beat.timestamp.toFixed(3)}`,
+                timestamp: beat.timestamp,
+                ...hitStateForBeat,
+            });
         }
     }
 
-    return laneMap;
+    return { beatsByLane: laneMap, anyBeats };
 }
 
 /**
@@ -294,7 +306,9 @@ export function KeyLaneView({
     // ========================================
 
     const lanesContainerRef = useRef<HTMLDivElement>(null);
+    const laneEndRef = useRef<HTMLDivElement>(null);
     const [isDraggingToSeek, setIsDraggingToSeek] = useState(false);
+    const [lanesWidth, setLanesWidth] = useState(0);
 
     // Refs to track drag state (refs don't trigger re-renders)
     const dragStartYRef = useRef<number>(0);
@@ -411,6 +425,23 @@ export function KeyLaneView({
     }, []);
 
     /**
+     * Measure where the lanes actually end using a zero-width sentinel div.
+     * The sentinel is placed as a flex child immediately after the last lane.
+     * Its offsetLeft = exact total width of all rendered lane columns.
+     * Re-measures when the container resizes (handles responsive breakpoints).
+     */
+    useEffect(() => {
+        const sentinel = laneEndRef.current;
+        const container = lanesContainerRef.current;
+        if (!sentinel || !container) return;
+        const update = () => setLanesWidth(sentinel.offsetLeft);
+        update();
+        const obs = new ResizeObserver(update);
+        obs.observe(container);
+        return () => obs.disconnect();
+    }, [chartStyle]);
+
+    /**
      * Add/remove global mouse event listeners when dragging
      */
     useEffect(() => {
@@ -431,11 +462,11 @@ export function KeyLaneView({
             timestamp: performance.now(),
         };
     }, [currentTime]);
-    
+
     useEffect(() => {
         isPlayingRef.current = !isPaused;
     }, [isPaused]);
-    
+
     /**
      * Animation loop for smooth scrolling.
      * Uses requestAnimationFrame for 60fps updates.
@@ -447,7 +478,7 @@ export function KeyLaneView({
             setSmoothTime(currentTime);
             return;
         }
-        
+
         /**
          * Animation loop function
          */
@@ -456,26 +487,26 @@ export function KeyLaneView({
             const now = performance.now();
             const elapsedMs = now - lastTimestamp;
             const elapsedSeconds = elapsedMs / 1000;
-            
+
             // Calculate interpolated time
             const interpolatedTime = lastAudioTime + elapsedSeconds;
-            
+
             // Clamp to beat map duration if available
             const maxDuration = beatMap?.duration ?? Infinity;
             const clampedTime = Math.min(interpolatedTime, maxDuration);
-            
+
             // Update smooth time state
             setSmoothTime(clampedTime);
-            
+
             // Continue animation if still playing
             if (isPlayingRef.current && clampedTime < maxDuration) {
                 animationFrameRef.current = requestAnimationFrame(animate);
             }
         };
-        
+
         // Start the animation loop
         animationFrameRef.current = requestAnimationFrame(animate);
-        
+
         // Cleanup on unmount or when playback stops
         return () => {
             if (animationFrameRef.current) {
@@ -579,7 +610,7 @@ export function KeyLaneView({
 
     // Distribute beats to lanes based on requiredKey
     // Include beatStateVersion to force re-computation when beats are cleared on rewind
-    const beatsByLane = useMemo(
+    const { beatsByLane, anyBeats } = useMemo(
         () => distributeBeatsToLanes(beatMap, chartStyle, smoothTime, visibilityWindow, beatHitStateRef.current),
         [beatMap, chartStyle, smoothTime, visibilityWindow, beatStateVersion]
     );
@@ -588,12 +619,13 @@ export function KeyLaneView({
     // Optimized: derive from beatsByLane instead of iterating through all beats
     const hasBeats = useMemo(() => {
         if (!beatMap || !beatMap.beats) return false;
-        // Check if any lane has beats
+        // Check if any lane has beats OR if there are any "any" beats
         for (const [, laneBeats] of beatsByLane) {
             if (laneBeats.length > 0) return true;
         }
+        if (anyBeats.length > 0) return true;
         return false;
-    }, [beatMap, beatsByLane]);
+    }, [beatMap, beatsByLane, anyBeats]);
 
     // Check if there are any beats with required keys (chart has notes)
     const hasChartNotes = useMemo(() => {
@@ -644,7 +676,7 @@ export function KeyLaneView({
                 </div>
             )}
 
-            {/* Lanes container with feedback panel */}
+            {/* Lanes container — contains lanes, any-overlay, AND feedback panel */}
             <div
                 ref={lanesContainerRef}
                 className={cn(
@@ -664,9 +696,9 @@ export function KeyLaneView({
                 aria-valuenow={smoothTime}
                 tabIndex={onSeek ? 0 : undefined}
             >
+                {/* Individual lane components */}
                 {lanes.map((laneKey) => {
                     const laneBeats = beatsByLane.get(laneKey) || [];
-                    // Only show feedback on the lane that was pressed
                     const showFeedback = lastPressedKey === laneKey;
 
                     return (
@@ -685,7 +717,55 @@ export function KeyLaneView({
                     );
                 })}
 
-                {/* Tap feedback panel - shows combo/stats and accuracy feedback */}
+                {/* Sentinel: zero-width flex child placed right after the last lane.
+                    offsetLeft of this element = exact total width of all lane columns. */}
+                <div ref={laneEndRef} style={{ flex: 'none', width: 0, alignSelf: 'stretch', pointerEvents: 'none' }} />
+
+                {/* "Any" notes overlay — width set to exact lanes area via sentinel measurement */}
+                {anyBeats.length > 0 && (
+                    <div
+                        className="key-lane-view-any-notes-overlay"
+                        style={{
+                            '--lane-count': lanes.length,
+                            width: lanesWidth > 0 ? `${lanesWidth}px` : undefined,
+                        } as React.CSSProperties}
+                    >
+                        {anyBeats
+                            .filter((beat) => {
+                                const minTime = smoothTime - 1.5;
+                                const maxTime = smoothTime + visibilityWindow;
+                                return beat.timestamp >= minTime && beat.timestamp <= maxTime;
+                            })
+                            .map((beat) => {
+                                const timeUntilBeat = beat.timestamp - smoothTime;
+                                const invertDirection = chartStyle === 'ddr';
+                                const hitZonePercent = 85;
+                                let position = hitZonePercent - (timeUntilBeat / visibilityWindow) * hitZonePercent;
+                                position = invertDirection ? 100 - position : position;
+                                const clampedPosition = Math.max(0, Math.min(100, position));
+
+                                return (
+                                    <div
+                                        key={beat.id}
+                                        className={cn(
+                                            'key-lane-view-any-note',
+                                            beat.hit && 'key-lane-view-any-note--hit',
+                                            beat.missed && 'key-lane-view-any-note--missed',
+                                            beat.accuracy === 'perfect' && 'key-lane-view-any-note--perfect',
+                                            beat.accuracy === 'great' && 'key-lane-view-any-note--great',
+                                            beat.accuracy === 'good' && 'key-lane-view-any-note--good',
+                                            beat.accuracy === 'ok' && 'key-lane-view-any-note--ok'
+                                        )}
+                                        style={{ top: `${clampedPosition}%` }}
+                                    >
+                                        <span className="key-lane-view-any-note-label">ANY</span>
+                                    </div>
+                                );
+                            })}
+                    </div>
+                )}
+
+                {/* Tap feedback panel */}
                 <div className="key-lane-view-feedback">
                     {/* Combo feedback display (Phase 3.5: Task 3.5.3) - always visible */}
                     <ComboFeedbackDisplay
@@ -712,8 +792,8 @@ export function KeyLaneView({
                             <span className="key-lane-view-feedback-hint">Hit the notes!</span>
                         </div>
                     )}
-                </div>
-            </div>
+                </div> {/* closes key-lane-view-feedback */}
+            </div> {/* closes key-lane-view-lanes */}
 
             {/* Chart info overlay */}
             {hasChartNotes && (

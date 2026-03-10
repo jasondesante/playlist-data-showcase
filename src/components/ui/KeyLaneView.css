@@ -81,6 +81,7 @@
    ============================================ */
 
 .key-lane-view-lanes {
+    position: relative; /* Needed for absolutely-positioned overlay */
     display: flex;
     flex: 1 1 auto;
     min-height: 0; /* Allow flexbox to shrink */
@@ -323,6 +324,115 @@
     50% {
         opacity: 0.7;
     }
+}
+
+/* ============================================
+   "ANY" NOTES OVERLAY
+   Performance optimization: single element spanning all lanes
+   instead of duplicating notes in each lane
+   ============================================ */
+
+.key-lane-view-any-notes-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    /* Width is set via inline style from JS (feedbackRef measurement) */
+    pointer-events: none;
+    z-index: 3;
+}
+
+.key-lane-view-any-note {
+    position: absolute;
+    /* Span all lanes with padding from edges for visual consistency with other notes */
+    left: 4px;
+    right: 4px;
+    width: calc(100% - 8px);
+    height: 44px; /* Match regular note block height */
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        135deg,
+        hsl(280, 70%, 55%) 0%,
+        hsl(200, 80%, 55%) 50%,
+        hsl(140, 70%, 45%) 100%
+    );
+    border-radius: 6px;
+    box-shadow:
+        0 2px 8px hsl(0, 0%, 0% / 0.3),
+        inset 0 1px 0 hsl(0, 0%, 100% / 0.3);
+    transition: opacity 0.15s ease-out;
+}
+
+.key-lane-view-any-note-label {
+    font-size: 0.5rem;
+    font-weight: 800;
+    color: hsl(0, 0%, 100%);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 2px hsl(0, 0%, 0% / 0.5);
+}
+
+/* Hit state - note explodes/fades */
+.key-lane-view-any-note--hit {
+    animation: key-lane-view-any-note-hit 0.3s ease-out forwards;
+}
+
+@keyframes key-lane-view-any-note-hit {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Missed state */
+.key-lane-view-any-note--missed {
+    opacity: 0.3;
+    background: hsl(0, 0%, 40%);
+}
+
+/* Accuracy color variants */
+.key-lane-view-any-note--perfect {
+    background: linear-gradient(
+        135deg,
+        hsl(142, 76%, 46%) 0%,
+        hsl(160, 80%, 45%) 100%
+    );
+    box-shadow:
+        0 0 20px hsl(142, 76%, 46% / 0.6),
+        0 2px 8px hsl(0, 0%, 0% / 0.3),
+        inset 0 1px 0 hsl(0, 0%, 100% / 0.3);
+}
+
+.key-lane-view-any-note--great {
+    background: linear-gradient(
+        135deg,
+        hsl(45, 93%, 47%) 0%,
+        hsl(50, 90%, 50%) 100%
+    );
+    box-shadow:
+        0 0 15px hsl(45, 93%, 47% / 0.5),
+        0 2px 8px hsl(0, 0%, 0% / 0.3),
+        inset 0 1px 0 hsl(0, 0%, 100% / 0.3);
+}
+
+.key-lane-view-any-note--good {
+    background: linear-gradient(
+        135deg,
+        hsl(25, 95%, 53%) 0%,
+        hsl(30, 90%, 50%) 100%
+    );
+}
+
+.key-lane-view-any-note--ok {
+    background: hsl(0, 0%, 60%);
 }
 
 /* ============================================
