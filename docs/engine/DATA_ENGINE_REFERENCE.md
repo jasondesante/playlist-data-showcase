@@ -2720,6 +2720,7 @@ The calculator supports two modes:
 | Function | Returns | Description |
 |----------|---------|-------------|
 | `mergeRhythmXPConfig(userConfig?)` | `RhythmXPConfig` | Merge user config with defaults |
+| `shouldAccuracyBreakCombo(accuracy, okBreaksCombo?)` | `boolean` | Check if accuracy should break combo streak. Returns `true` for 'miss' and 'wrongKey', always. For 'ok', returns thetrue` by default (configurable). Perfect/great/good never break combo. |
 
 **For configuration details, session tracking, and stateless usage examples:** See [docs/XP_AND_STATS.md#rhythm-game-xp](docs/XP_AND_STATS.md#rhythm-game-xp)
 

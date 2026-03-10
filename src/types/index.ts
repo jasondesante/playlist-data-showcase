@@ -113,7 +113,8 @@ export {
 export {
     RhythmXPCalculator,
     DEFAULT_RHYTHM_XP_CONFIG,
-    mergeRhythmXPConfig
+    mergeRhythmXPConfig,
+    shouldAccuracyBreakCombo
 } from 'playlist-data-engine';
 
 import type { ListeningSession } from 'playlist-data-engine';

@@ -84,6 +84,8 @@ import {
     getGroovePenaltiesForPreset,
     // Accuracy Threshold constants
     HARD_ACCURACY_THRESHOLDS,
+    // Combo breaking helper
+    shouldAccuracyBreakCombo,
 } from '@/types';
 import {
     BeatMapGenerator,
@@ -3523,7 +3525,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         const previousComboLength = state.currentCombo;
 
                         // Check if this accuracy breaks the combo
-                        const isComboBreaker = accuracy === 'miss' || accuracy === 'wrongKey';
+                        // Uses the okBreaksCombo config to determine if 'ok' accuracy breaks combo
+                        const okBreaksCombo = useRhythmXPConfigStore.getState().config.combo.okBreaksCombo;
+                        const isComboBreaker = shouldAccuracyBreakCombo(accuracy, okBreaksCombo);
 
                         // Process combo end bonus BEFORE resetting combo
                         if (isComboBreaker && previousComboLength > 0) {

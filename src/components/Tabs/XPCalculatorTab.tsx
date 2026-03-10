@@ -707,6 +707,16 @@ function RhythmXPConfigSection() {
             isModified={rhythmConfig.combo.enabled !== DEFAULT_RHYTHM_XP_CONFIG.combo.enabled}
           />
 
+          {/* OK Breaks Combo Toggle - controls whether 'ok' accuracy resets combo */}
+          <ConfigToggle
+            label="OK Breaks Combo"
+            description="When enabled, 'OK' accuracy resets combo to 0. Disable for easier gameplay where 'OK' keeps the combo going."
+            checked={rhythmConfig.combo.okBreaksCombo}
+            defaultChecked={DEFAULT_RHYTHM_XP_CONFIG.combo.okBreaksCombo}
+            onChange={(okBreaksCombo) => updateComboConfig({ okBreaksCombo })}
+            isModified={rhythmConfig.combo.okBreaksCombo !== DEFAULT_RHYTHM_XP_CONFIG.combo.okBreaksCombo}
+          />
+
           {/* Combo Cap Slider - only visible when combo is enabled */}
           {rhythmConfig.combo.enabled && (
             <ConfigSlider
