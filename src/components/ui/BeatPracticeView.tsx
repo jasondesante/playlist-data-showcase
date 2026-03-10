@@ -1512,11 +1512,11 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
             <div className="exit-prompt-summary">
               <div className="exit-prompt-stat">
-                <span className="exit-prompt-stat-value">{rhythmSessionTotals?.totalScore ?? 0}</span>
+                <span className="exit-prompt-stat-value">{Math.round(rhythmSessionTotals?.totalScore ?? 0)}</span>
                 <span className="exit-prompt-stat-label">Score</span>
               </div>
               <div className="exit-prompt-stat exit-prompt-stat--xp">
-                <span className="exit-prompt-stat-value">{(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)}</span>
+                <span className="exit-prompt-stat-value">{Math.round(rhythmSessionTotals?.totalXP ?? 0)}</span>
                 <span className="exit-prompt-stat-label">XP</span>
               </div>
               <div className="exit-prompt-stat">
@@ -1535,7 +1535,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
                 className="exit-prompt-btn exit-prompt-btn--primary"
                 onClick={handleClaimXPAndExit}
               >
-                Claim {(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)} XP
+                Claim {Math.round(rhythmSessionTotals?.totalXP ?? 0)} XP
               </button>
               <button
                 type="button"
