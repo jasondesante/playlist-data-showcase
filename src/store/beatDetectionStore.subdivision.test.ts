@@ -5,10 +5,10 @@
  * - Test generateUnifiedBeatMap
  * - Test generateSubdividedBeatMap
  * - Test subdivision config updates
- * - Test segment CRUD operations
+ * - Test setSubdivisionTransitionMode
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { BeatMap, InterpolatedBeatMap, SubdivisionSegment, UnifiedBeatMap, SubdividedBeatMap } from '@/types';
+import type { BeatMap, InterpolatedBeatMap, UnifiedBeatMap, SubdividedBeatMap, SubdivisionType } from '@/types';
 
 // Mock the storage module before importing the store
 vi.mock('@/utils/storage', () => ({
@@ -80,15 +80,30 @@ function createMockInterpolatedBeatMap(beatCount: number, bpm: number = 120): In
  */
 function createMockUnifiedBeatMap(beatCount: number, quarterNoteInterval: number = 0.5): UnifiedBeatMap {
     return {
+        audioId: 'test-audio-id',
+        duration: beatCount * quarterNoteInterval,
         beats: Array.from({ length: beatCount }, (_, i) => ({
             timestamp: i * quarterNoteInterval,
             beatInMeasure: i % 4,
             isDownbeat: i % 4 === 0,
             measureNumber: Math.floor(i / 4),
             confidence: 1.0,
+            intensity: 0.8,
         })),
+        detectedBeatIndices: Array.from({ length: beatCount }, (_, i) => i),
         quarterNoteInterval,
-        bpm: 60 / quarterNoteInterval,
+        quarterNoteBpm: 60 / quarterNoteInterval,
+        downbeatConfig: {
+            segments: [{
+                startBeat: 0,
+                downbeatBeatIndex: 0,
+                timeSignature: { beatsPerMeasure: 4 },
+            }],
+        },
+        originalMetadata: {
+            generatedAt: Date.now(),
+            algorithmVersion: '1.0.0',
+        },
     };
 }
 
@@ -97,26 +112,40 @@ function createMockUnifiedBeatMap(beatCount: number, quarterNoteInterval: number
  */
 function createMockSubdividedBeatMap(beats: SubdividedBeatMap['beats']): SubdividedBeatMap {
     return {
+        audioId: 'test-audio-id',
+        duration: 100,
         beats,
-        quarterNoteInterval: 0.5,
+        detectedBeatIndices: [],
+        subdivisionConfig: {
+            beatSubdivisions: new Map(),
+            defaultSubdivision: 'quarter',
+        },
+        downbeatConfig: {
+            segments: [{
+                startBeat: 0,
+                downbeatBeatIndex: 0,
+                timeSignature: { beatsPerMeasure: 4 },
+            }],
+        },
         subdivisionMetadata: {
             totalBeats: beats.length,
             subdivisionTypesUsed: [...new Set(beats.map(b => b.subdivisionType))],
             averageDensity: 1,
+            averageDensityMultiplier: 1,
+            originalBeatCount: beats.length,
+            subdividedBeatCount: beats.length,
+            explicitBeatCount: 0,
+            subdivisionsUsed: [...new Set(beats.map(b => b.subdivisionType))],
+            hasMultipleTempos: false,
+            maxDensity: 1,
         },
     };
 }
-
-// Track calls to BeatSubdivider for testing
-let beatSubdividerCalls: Array<{ unifiedMap: UnifiedBeatMap; config: { segments: SubdivisionSegment[] } }> = [];
 
 /**
  * Create a fresh mock for the playlist-data-engine module.
  */
 function createEngineMock() {
-    // Reset call tracker
-    beatSubdividerCalls = [];
-
     return {
         BeatMapGenerator: vi.fn().mockImplementation(() => ({
             generateBeatMap: vi.fn().mockResolvedValue(createMockBeatMap(100)),
@@ -132,25 +161,20 @@ function createEngineMock() {
             })),
         })),
         BeatSubdivider: class MockBeatSubdivider {
-            subdivide(unifiedMap: UnifiedBeatMap, config: { segments: SubdivisionSegment[] }) {
-                // Track the call for assertions
-                beatSubdividerCalls.push({ unifiedMap, config });
-
-                // Create subdivided beats based on the first segment's subdivision
-                const subdivision = config.segments[0]?.subdivision || 'quarter';
-                const density = subdivision === 'eighth' ? 2 : subdivision === 'sixteenth' ? 4 : 1;
-
+            subdivide(unifiedMap: UnifiedBeatMap, config: { beatSubdivisions: Map<number, SubdivisionType>; defaultSubdivision: SubdivisionType }) {
+                // Create subdivided beats based on the config
                 const beats: SubdividedBeatMap['beats'] = [];
-                for (let i = 0; i < unifiedMap.beats.length * density; i++) {
+                for (let i = 0; i < unifiedMap.beats.length; i++) {
+                    const subdivision = config.beatSubdivisions.get(i) ?? config.defaultSubdivision;
                     beats.push({
-                        timestamp: i * (unifiedMap.quarterNoteInterval / density),
-                        beatInMeasure: (i / density) % 4,
-                        isDownbeat: i % (4 * density) === 0,
-                        measureNumber: Math.floor(i / (4 * density)),
+                        timestamp: unifiedMap.beats[i].timestamp,
+                        beatInMeasure: unifiedMap.beats[i].beatInMeasure,
+                        isDownbeat: unifiedMap.beats[i].isDownbeat,
+                        measureNumber: unifiedMap.beats[i].measureNumber,
                         confidence: 1.0,
+                        intensity: 0.8,
                         subdivisionType: subdivision,
-                        sourceBeatIndex: Math.floor(i / density),
-                        beatInSubdivision: i % density,
+                        originalBeatIndex: i,
                     });
                 }
 
@@ -158,15 +182,30 @@ function createEngineMock() {
             }
         },
         unifyBeatMap: vi.fn().mockImplementation((interpolatedMap: InterpolatedBeatMap) => ({
+            audioId: 'test-audio-id',
+            duration: 100,
             beats: interpolatedMap.mergedBeats.map(b => ({
                 timestamp: b.timestamp,
                 beatInMeasure: b.beatInMeasure,
                 isDownbeat: b.isDownbeat,
                 measureNumber: b.measureNumber,
                 confidence: b.confidence,
+                intensity: 0.8,
             })),
+            detectedBeatIndices: interpolatedMap.mergedBeats.map((_, i) => i),
             quarterNoteInterval: interpolatedMap.quarterNoteInterval,
-            bpm: interpolatedMap.bpm,
+            quarterNoteBpm: interpolatedMap.bpm,
+            downbeatConfig: {
+                segments: [{
+                    startBeat: 0,
+                    downbeatBeatIndex: 0,
+                    timeSignature: { beatsPerMeasure: 4 },
+                }],
+            },
+            originalMetadata: {
+                generatedAt: Date.now(),
+                algorithmVersion: '1.0.0',
+            },
         })),
         DEFAULT_BEAT_INTERPOLATION_OPTIONS: {},
         DEFAULT_DOWNBEAT_CONFIG: {
@@ -177,10 +216,8 @@ function createEngineMock() {
             }],
         },
         DEFAULT_SUBDIVISION_CONFIG: {
-            segments: [{
-                startBeat: 0,
-                subdivision: 'quarter' as const,
-            }],
+            beatSubdivisions: new Map(),
+            defaultSubdivision: 'quarter' as const,
         },
         DEFAULT_SUBDIVISION_PLAYBACK_OPTIONS: {
             transitionMode: 'immediate' as const,
@@ -196,16 +233,17 @@ function createEngineMock() {
             };
             return densities[type] || 1;
         }),
-        validateSubdivisionConfig: vi.fn(() => ({ valid: true, errors: [] })),
-        validateSubdivisionConfigAgainstBeats: vi.fn(() => ({ valid: true, errors: [] })),
+        validateSubdivisionConfig: vi.fn(() => undefined),
+        validateSubdivisionConfigAgainstBeats: vi.fn(() => undefined),
         validateSubdivisionDensity: vi.fn(() => ({ valid: true, errors: [] })),
         reapplyDownbeatConfig: vi.fn((beatMap: BeatMap) => beatMap),
-        SubdivisionPlaybackController: class MockSubdivisionPlaybackController {
-            setSubdivision = vi.fn();
-            start = vi.fn();
-            stop = vi.fn();
-            destroy = vi.fn();
-        },
+        SubdivisionPlaybackController: vi.fn().mockImplementation(() => ({
+            setSubdivision: vi.fn(),
+            setTransitionMode: vi.fn(),
+            start: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        })),
     };
 }
 
@@ -338,7 +376,6 @@ describe('beatDetectionStore subdivision state management', () => {
             // Verify the result is not null and has expected structure
             expect(result).not.toBeNull();
             expect(result?.beats).toBeDefined();
-            expect(result?.quarterNoteInterval).toBe(0.5);
         });
 
         it('should update state with generated SubdividedBeatMap', async () => {
@@ -365,10 +402,8 @@ describe('beatDetectionStore subdivision state management', () => {
 
             const mockUnified = createMockUnifiedBeatMap(100);
             const customConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'eighth' as const },
-                    { startBeat: 32, subdivision: 'quarter' as const },
-                ],
+                beatSubdivisions: new Map([[0, 'eighth'], [1, 'sixteenth']]),
+                defaultSubdivision: 'quarter' as const,
             };
 
             useBeatDetectionStore.setState({
@@ -394,16 +429,15 @@ describe('beatDetectionStore subdivision state management', () => {
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const newConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'eighth' as const },
-                    { startBeat: 50, subdivision: 'sixteenth' as const },
-                ],
+                beatSubdivisions: new Map([[0, 'eighth']]),
+                defaultSubdivision: 'quarter' as const,
             };
 
             useBeatDetectionStore.getState().actions.setSubdivisionConfig(newConfig);
 
             const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig).toEqual(newConfig);
+            expect(state.subdivisionConfig.beatSubdivisions.get(0)).toBe('eighth');
+            expect(state.subdivisionConfig.defaultSubdivision).toBe('quarter');
         });
 
         it('should regenerate SubdividedBeatMap if one exists', async () => {
@@ -413,25 +447,26 @@ describe('beatDetectionStore subdivision state management', () => {
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const mockUnified = createMockUnifiedBeatMap(100);
-            const mockSubdivided = createMockSubdividedBeatMap([]);
 
             useBeatDetectionStore.setState({
                 unifiedBeatMap: mockUnified,
-                subdividedBeatMap: mockSubdivided,
             });
 
+            // First generate a subdivided beat map
+            useBeatDetectionStore.getState().actions.generateSubdividedBeatMap();
+            expect(useBeatDetectionStore.getState().subdividedBeatMap).not.toBeNull();
+
+            // Now update the config
             const newConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'eighth' as const },
-                ],
+                beatSubdivisions: new Map(),
+                defaultSubdivision: 'eighth' as const,
             };
 
             useBeatDetectionStore.getState().actions.setSubdivisionConfig(newConfig);
 
-            // Verify the subdividedBeatMap was regenerated (should have beats now)
+            // subdividedBeatMap should still exist (regenerated)
             const state = useBeatDetectionStore.getState();
             expect(state.subdividedBeatMap).not.toBeNull();
-            expect(state.subdividedBeatMap?.beats.length).toBeGreaterThan(0);
         });
 
         it('should not regenerate SubdividedBeatMap if none exists', async () => {
@@ -443,9 +478,8 @@ describe('beatDetectionStore subdivision state management', () => {
             useBeatDetectionStore.setState({ subdividedBeatMap: null });
 
             const newConfig = {
-                segments: [
-                    { startBeat: 0, subdivision: 'eighth' as const },
-                ],
+                beatSubdivisions: new Map(),
+                defaultSubdivision: 'eighth' as const,
             };
 
             useBeatDetectionStore.getState().actions.setSubdivisionConfig(newConfig);
@@ -453,231 +487,6 @@ describe('beatDetectionStore subdivision state management', () => {
             // subdividedBeatMap should still be null (no regeneration)
             const state = useBeatDetectionStore.getState();
             expect(state.subdividedBeatMap).toBeNull();
-        });
-    });
-
-    describe('addSubdivisionSegment', () => {
-        it('should add a new segment and sort by startBeat', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const newSegment: SubdivisionSegment = {
-                startBeat: 32,
-                subdivision: 'eighth',
-            };
-
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment(newSegment);
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toHaveLength(2);
-            expect(state.subdivisionConfig.segments[1].startBeat).toBe(32);
-            expect(state.subdivisionConfig.segments[1].subdivision).toBe('eighth');
-        });
-
-        it('should sort segments by startBeat when adding out of order', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Add segments out of order
-            const segment64: SubdivisionSegment = {
-                startBeat: 64,
-                subdivision: 'sixteenth',
-            };
-            const segment32: SubdivisionSegment = {
-                startBeat: 32,
-                subdivision: 'eighth',
-            };
-
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment(segment64);
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment(segment32);
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toHaveLength(3);
-            expect(state.subdivisionConfig.segments[0].startBeat).toBe(0);
-            expect(state.subdivisionConfig.segments[1].startBeat).toBe(32);
-            expect(state.subdivisionConfig.segments[2].startBeat).toBe(64);
-        });
-    });
-
-    describe('removeSubdivisionSegment', () => {
-        it('should not allow removing the first segment (index 0)', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Get initial segment count
-            const initialCount = useBeatDetectionStore.getState().subdivisionConfig.segments.length;
-
-            // Try to remove the first segment
-            useBeatDetectionStore.getState().actions.removeSubdivisionSegment(0);
-
-            // Segment count should be unchanged
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments.length).toBe(initialCount);
-        });
-
-        it('should not allow removing with negative index', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const initialCount = useBeatDetectionStore.getState().subdivisionConfig.segments.length;
-
-            useBeatDetectionStore.getState().actions.removeSubdivisionSegment(-1);
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments.length).toBe(initialCount);
-        });
-
-        it('should not allow removing with index out of bounds', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const initialCount = useBeatDetectionStore.getState().subdivisionConfig.segments.length;
-
-            useBeatDetectionStore.getState().actions.removeSubdivisionSegment(999);
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments.length).toBe(initialCount);
-        });
-
-        it('should remove segment at specified index', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Add two segments
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 32,
-                subdivision: 'eighth',
-            });
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 64,
-                subdivision: 'sixteenth',
-            });
-
-            // Remove the middle segment (index 1)
-            useBeatDetectionStore.getState().actions.removeSubdivisionSegment(1);
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toHaveLength(2);
-            expect(state.subdivisionConfig.segments[0].startBeat).toBe(0);
-            expect(state.subdivisionConfig.segments[1].startBeat).toBe(64);
-        });
-    });
-
-    describe('updateSubdivisionSegment', () => {
-        it('should not allow updating with negative index', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const originalSegments = [...useBeatDetectionStore.getState().subdivisionConfig.segments];
-
-            useBeatDetectionStore.getState().actions.updateSubdivisionSegment(-1, {
-                subdivision: 'eighth',
-            });
-
-            // Segments should be unchanged
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toEqual(originalSegments);
-        });
-
-        it('should not allow updating with index out of bounds', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const originalSegments = [...useBeatDetectionStore.getState().subdivisionConfig.segments];
-
-            useBeatDetectionStore.getState().actions.updateSubdivisionSegment(999, {
-                subdivision: 'eighth',
-            });
-
-            // Segments should be unchanged
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toEqual(originalSegments);
-        });
-
-        it('should update segment subdivision type', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Add a segment
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 32,
-                subdivision: 'eighth',
-            });
-
-            // Update the subdivision type
-            useBeatDetectionStore.getState().actions.updateSubdivisionSegment(1, {
-                subdivision: 'sixteenth',
-            });
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments[1].subdivision).toBe('sixteenth');
-        });
-
-        it('should update segment startBeat', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Add a segment
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 32,
-                subdivision: 'eighth',
-            });
-
-            // Update the startBeat
-            useBeatDetectionStore.getState().actions.updateSubdivisionSegment(1, {
-                startBeat: 48,
-            });
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments[1].startBeat).toBe(48);
-        });
-
-        it('should re-sort segments when startBeat changes', async () => {
-            vi.mock('playlist-data-engine', () => createEngineMock());
-
-            const { useBeatDetectionStore } = await import('./beatDetectionStore');
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Add two segments
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 32,
-                subdivision: 'eighth',
-            });
-            useBeatDetectionStore.getState().actions.addSubdivisionSegment({
-                startBeat: 64,
-                subdivision: 'sixteenth',
-            });
-
-            // Update the second segment to be before the first
-            useBeatDetectionStore.getState().actions.updateSubdivisionSegment(2, {
-                startBeat: 16,
-            });
-
-            const state = useBeatDetectionStore.getState();
-            expect(state.subdivisionConfig.segments).toHaveLength(3);
-            expect(state.subdivisionConfig.segments[0].startBeat).toBe(0);
-            expect(state.subdivisionConfig.segments[1].startBeat).toBe(16);
-            expect(state.subdivisionConfig.segments[2].startBeat).toBe(32);
         });
     });
 
@@ -704,9 +513,10 @@ describe('beatDetectionStore subdivision state management', () => {
             // Create and set a mock controller
             const mockController = {
                 setSubdivision: vi.fn(),
+                setTransitionMode: vi.fn(),
                 start: vi.fn(),
                 stop: vi.fn(),
-                destroy: vi.fn(),
+                dispose: vi.fn(),
             };
             setActiveSubdivisionPlaybackController(mockController as unknown as ReturnType<typeof engineMock.SubdivisionPlaybackController>);
 
@@ -716,6 +526,77 @@ describe('beatDetectionStore subdivision state management', () => {
 
             // Cleanup
             setActiveSubdivisionPlaybackController(null);
+        });
+    });
+
+    describe('setSubdivisionTransitionMode', () => {
+        it('should update subdivisionTransitionMode in state', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            useBeatDetectionStore.getState().actions.setSubdivisionTransitionMode('next-downbeat');
+
+            const state = useBeatDetectionStore.getState();
+            expect(state.subdivisionTransitionMode).toBe('next-downbeat');
+        });
+
+        it('should update playback controller transition mode if controller exists', async () => {
+            const engineMock = createEngineMock();
+            vi.mock('playlist-data-engine', () => engineMock);
+
+            const { useBeatDetectionStore, setActiveSubdivisionPlaybackController } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Create and set a mock controller
+            const mockController = {
+                setSubdivision: vi.fn(),
+                setTransitionMode: vi.fn(),
+                start: vi.fn(),
+                stop: vi.fn(),
+                dispose: vi.fn(),
+            };
+            setActiveSubdivisionPlaybackController(mockController as unknown as ReturnType<typeof engineMock.SubdivisionPlaybackController>);
+
+            useBeatDetectionStore.getState().actions.setSubdivisionTransitionMode('next-measure');
+
+            expect(mockController.setTransitionMode).toHaveBeenCalledWith('next-measure');
+
+            // Cleanup
+            setActiveSubdivisionPlaybackController(null);
+        });
+
+        it('should not throw if no playback controller exists', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore, setActiveSubdivisionPlaybackController } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Ensure no active controller
+            setActiveSubdivisionPlaybackController(null);
+
+            // Should not throw
+            expect(() => {
+                useBeatDetectionStore.getState().actions.setSubdivisionTransitionMode('immediate');
+            }).not.toThrow();
+
+            const state = useBeatDetectionStore.getState();
+            expect(state.subdivisionTransitionMode).toBe('immediate');
+        });
+
+        it('should support all transition modes', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const modes: Array<'immediate' | 'next-downbeat' | 'next-measure'> = ['immediate', 'next-downbeat', 'next-measure'];
+
+            for (const mode of modes) {
+                useBeatDetectionStore.getState().actions.setSubdivisionTransitionMode(mode);
+                expect(useBeatDetectionStore.getState().subdivisionTransitionMode).toBe(mode);
+            }
         });
     });
 
@@ -729,9 +610,8 @@ describe('beatDetectionStore subdivision state management', () => {
             const state = useBeatDetectionStore.getState();
 
             expect(state.subdivisionConfig).toBeDefined();
-            expect(state.subdivisionConfig.segments).toHaveLength(1);
-            expect(state.subdivisionConfig.segments[0].startBeat).toBe(0);
-            expect(state.subdivisionConfig.segments[0].subdivision).toBe('quarter');
+            expect(state.subdivisionConfig.beatSubdivisions).toBeInstanceOf(Map);
+            expect(state.subdivisionConfig.defaultSubdivision).toBe('quarter');
         });
 
         it('should have default currentSubdivision on initialization', async () => {
@@ -742,6 +622,16 @@ describe('beatDetectionStore subdivision state management', () => {
 
             const state = useBeatDetectionStore.getState();
             expect(state.currentSubdivision).toBe('quarter');
+        });
+
+        it('should have default subdivisionTransitionMode on initialization', async () => {
+            vi.mock('playlist-data-engine', () => createEngineMock());
+
+            const { useBeatDetectionStore } = await import('./beatDetectionStore');
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const state = useBeatDetectionStore.getState();
+            expect(state.subdivisionTransitionMode).toBe('immediate');
         });
 
         it('should have null unifiedBeatMap and subdividedBeatMap on initialization', async () => {

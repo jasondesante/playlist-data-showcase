@@ -266,8 +266,19 @@ The current UI labels are confusing because they describe the same thing:
 
 ### Task 3.3: Add/update frontend tests
 
-- [ ] Verify existing tests still pass
-- [ ] Add test for `setSubdivisionTransitionMode` propagating to controller
+- [x] Verify existing tests still pass
+- [x] Add test for `setSubdivisionTransitionMode` propagating to controller
+
+- [x] Add test for `setSubdivisionTransitionMode` updating state correctly
+- [x] Add test for `setSubdivisionTransitionMode` updating playback controller
+- [x] Add test for `setSubdivisionTransitionMode` not throwing when no controller exists
+- [x] Add test for all transition modes
+
+- [x] Add test for default subdivisionTransitionMode on initialization
+
+- [x] Run build to verify no new bugs
+
+- [x] Run tests to verify implementation
 
 **Location**: `playlist-data-showcase/src/store/beatDetectionStore.subdivision.test.ts`
 
