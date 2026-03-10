@@ -265,6 +265,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Rhythm XP actions (Phase 2: Task 2.2 - Record XP on Each Hit)
   const recordRhythmHit = useBeatDetectionStore((state) => state.actions.recordRhythmHit);
   const processGrooveEndBonus = useBeatDetectionStore((state) => state.actions.processGrooveEndBonus);
+  const breakCombo = useBeatDetectionStore((state) => state.actions.breakCombo);
 
   // Rhythm XP actions (Phase 2: Task 2.5 - Reset XP on Seek/Track Change)
   const resetRhythmXP = useBeatDetectionStore((state) => state.actions.resetRhythmXP);
@@ -595,25 +596,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       // Record in store
       recordTap(result);
 
-      // Record groove hit (Phase 5: Task 5.2 - Wire Up Groove Recording)
-      // Pass offset, BPM, currentTime (audio time from beat map), and accuracy
-      // Required: accuracy 'miss' or 'wrongKey' will decrease hotness
-      const grooveResult = recordGrooveHit(result.offset, currentBpm, result.matchedBeat.timestamp, result.accuracy);
-
-      // Record XP (Phase 2: Task 2.2 - Record XP on Each Hit)
-      // This also handles combo tracking internally
-      // Phase 6: Task 6.1 - Capture XP result for debug panel
-      const xpResult = recordRhythmHit(result.accuracy, grooveResult.hotness);
-
-      // Check for groove end bonus (Phase 2: Task 2.4 - Handle Groove End Bonus)
-      // If present, groove just ended (hotness=0 or direction changed)
-      if (grooveResult.endedGrooveStats) {
-        processGrooveEndBonus(grooveResult.endedGrooveStats);
-      }
-
-      // Phase 5: Task 5.3 - Post-Hit Lookback for Missed Beats
-      // After recording the hit, look back at beats between previous hit and current hit
-      // to find any beats that were missed
+      // Phase 5: Task 5.3 - Pre-Hit Lookback for Missed Beats (MOVED BEFORE recordRhythmHit)
+      // Look back at beats between previous hit and current hit BEFORE recording XP
+      // This ensures combo is correctly reset if beats were missed
       const currentBeatTimestamp = result.matchedBeat.timestamp;
       const previousBeatTimestamp = lastMatchedBeatTimestampRef.current;
 
@@ -631,7 +616,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           beat.timestamp < currentBeatTimestamp
         );
 
-        // Record a miss for each missed beat
+        // Record a miss for each missed beat (for groove analyzer)
+        // AND break the combo before recording the new hit
         if (missedBeats.length > 0) {
           logger.debug('BeatDetection', 'Missed beats detected via lookback', {
             count: missedBeats.length,
@@ -639,12 +625,33 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             currentBeatTimestamp,
           });
 
+          // Record groove misses for hotness tracking
           missedBeats.forEach(() => recordGrooveMiss());
+
+          // Break the combo BEFORE recording the new hit
+          // This ensures the combo is reset and end bonus is calculated
+          breakCombo(missedBeats.length);
         }
       }
 
       // Update last matched beat timestamp for next comparison
       lastMatchedBeatTimestampRef.current = currentBeatTimestamp;
+
+      // Record groove hit (Phase 5: Task 5.2 - Wire Up Groove Recording)
+      // Pass offset, BPM, currentTime (audio time from beat map), and accuracy
+      // Required: accuracy 'miss' or 'wrongKey' will decrease hotness
+      const grooveResult = recordGrooveHit(result.offset, currentBpm, result.matchedBeat.timestamp, result.accuracy);
+
+      // Record XP (Phase 2: Task 2.2 - Record XP on Each Hit)
+      // This also handles combo tracking internally
+      // Phase 6: Task 6.1 - Capture XP result for debug panel
+      const xpResult = recordRhythmHit(result.accuracy, grooveResult.hotness);
+
+      // Check for groove end bonus (Phase 2: Task 2.4 - Handle Groove End Bonus)
+      // If present, groove just ended (hotness=0 or direction changed)
+      if (grooveResult.endedGrooveStats) {
+        processGrooveEndBonus(grooveResult.endedGrooveStats);
+      }
 
       // Show visual feedback using the hook
       showTapFeedback(result);
@@ -670,7 +677,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         return newHistory.slice(0, MAX_DEBUG_HISTORY);
       });
     }
-  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap, recordRhythmHit, processGrooveEndBonus]);
+  }, [checkTap, checkSubdivisionTap, recordTap, streamIsActive, showTapFeedback, subdivisionPlaybackAvailable, currentSubdivision, subdivisionIsActive, recordGrooveHit, recordGrooveMiss, currentBpm, activeBeatMap, recordRhythmHit, processGrooveEndBonus, breakCombo]);
 
   // Keep handleTapRef updated with the latest handleTap function
   // This allows the keyboard hook callback to call the latest handleTap

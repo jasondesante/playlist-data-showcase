@@ -1096,6 +1096,14 @@ interface BeatDetectionActions {
     ) => RhythmXPResult | null;
 
     /**
+     * Break the current combo due to missed beats detected via lookback.
+     * Processes combo end bonus and resets combo to 0.
+     * Called when missed beats are detected between the last hit and current hit.
+     * @param missedCount - Number of beats that were missed (for logging)
+     */
+    breakCombo: (missedCount: number) => void;
+
+    /**
      * Process combo end bonus.
      * Called when combo breaks (miss or wrongKey).
      * Uses previousComboLength to calculate bonus.
@@ -1190,10 +1198,9 @@ interface PersistedBeatDetectionState {
     showMeasureBoundaries: boolean;
 
     // Subdivision state (serialized format - Maps become arrays)
+    // Note: currentSubdivision, pendingSubdivision, and subdivisionTransitionMode are NOT persisted
+    // so the subdivision playground resets to defaults on page refresh
     subdivisionConfig: PersistedSubdivisionConfig;
-    currentSubdivision: SubdivisionType;
-    pendingSubdivision: SubdivisionType | null;
-    subdivisionTransitionMode: 'immediate' | 'next-downbeat' | 'next-measure';
     cachedUnifiedBeatMaps: Record<string, UnifiedBeatMap>;
     cachedSubdividedBeatMaps: Record<string, SubdividedBeatMap>;
 
@@ -3562,6 +3569,41 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         return xpResult;
                     },
 
+                    breakCombo: (missedCount: number): void => {
+                        const state = get();
+                        const calculator = state.rhythmXPCalculator;
+
+                        // Only process if there's an active combo to break
+                        if (state.currentCombo <= 0) {
+                            return;
+                        }
+
+                        // Process combo end bonus before resetting
+                        if (calculator && state.currentCombo > 0) {
+                            const comboBonus = calculator.calculateComboEndBonus(state.currentCombo);
+                            set({
+                                pendingComboEndBonus: comboBonus,
+                                currentCombo: 0,
+                                previousComboLength: state.currentCombo,
+                            });
+                            logger.debug('BeatDetection', 'Combo broken due to missed beats', {
+                                missedCount,
+                                previousCombo: state.currentCombo,
+                                bonusXP: comboBonus.bonusXP
+                            });
+                        } else {
+                            // No calculator, just reset combo
+                            set({
+                                currentCombo: 0,
+                                previousComboLength: state.currentCombo,
+                            });
+                            logger.debug('BeatDetection', 'Combo broken due to missed beats (no calculator)', {
+                                missedCount,
+                                previousCombo: state.currentCombo,
+                            });
+                        }
+                    },
+
                     processComboEndBonus: (): ComboEndBonusResult | null => {
                         const state = get();
                         const calculator = state.rhythmXPCalculator;
@@ -3688,13 +3730,12 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                 showMeasureBoundaries: state.showMeasureBoundaries,
                 // Subdivision state (Phase 2: Task 2.1)
                 // Convert Map to array for JSON serialization (Maps serialize to {} otherwise)
+                // Note: currentSubdivision, pendingSubdivision, and subdivisionTransitionMode are NOT persisted
+                // so the subdivision playground resets to defaults on page refresh
                 subdivisionConfig: {
                     beatSubdivisions: Array.from(state.subdivisionConfig.beatSubdivisions.entries()),
                     defaultSubdivision: state.subdivisionConfig.defaultSubdivision,
                 },
-                currentSubdivision: state.currentSubdivision,
-                pendingSubdivision: state.pendingSubdivision,
-                subdivisionTransitionMode: state.subdivisionTransitionMode,
                 cachedUnifiedBeatMaps: state.cachedUnifiedBeatMaps,
                 cachedSubdividedBeatMaps: state.cachedSubdividedBeatMaps,
                 // Chart Editor state (Phase 2: Task 2.1 - Required Keys)
@@ -3853,10 +3894,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                     downbeatConfig: persisted?.downbeatConfig ?? currentState.downbeatConfig,
                     showMeasureBoundaries: persisted?.showMeasureBoundaries ?? currentState.showMeasureBoundaries,
                     // Subdivision state (Phase 3: Task 3.1)
+                    // Note: currentSubdivision, pendingSubdivision, and subdivisionTransitionMode use defaults
+                    // so the subdivision playground resets on page refresh
                     subdivisionConfig,
-                    currentSubdivision: persisted?.currentSubdivision ?? currentState.currentSubdivision,
-                    pendingSubdivision: persisted?.pendingSubdivision ?? currentState.pendingSubdivision,
-                    subdivisionTransitionMode: persisted?.subdivisionTransitionMode ?? currentState.subdivisionTransitionMode,
                     cachedUnifiedBeatMaps: persisted?.cachedUnifiedBeatMaps ?? currentState.cachedUnifiedBeatMaps,
                     cachedSubdividedBeatMaps: persisted?.cachedSubdividedBeatMaps ?? currentState.cachedSubdividedBeatMaps,
                     // Chart Editor state (Phase 2: Task 2.1 - Required Keys)
