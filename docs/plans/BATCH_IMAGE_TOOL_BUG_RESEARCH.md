@@ -266,9 +266,11 @@ notifyDataChanged();
 
 ### Phase 3: Documentation
 
-- [ ] **Task 3.1: Update user documentation**
-  - Document that batch image changes are session-only
-  - Explain export/import workflow for persistence
+- [x] **Task 3.1: Update user documentation** ✓ 2026-03-10
+  - Created `docs/USER_GUIDE.md` with comprehensive documentation for the Data Viewer tab
+  - Documented that batch image changes **persist automatically** via localStorage (not session-only)
+  - Explained export/import workflow for backup and sharing purposes
+  - Included troubleshooting section and supported categories table
 
 ---
 
@@ -312,6 +314,6 @@ useDataViewerStore.getState().notifyDataChanged();
 
 ## Questions/Unknowns
 
-- Should batch image data persist across sessions automatically?
-- What's the expected user workflow - one-time batch apply or persistent configuration?
-- Should we add an "Auto-save batch changes" toggle?
+- ~~Should batch image data persist across sessions automatically?~~ **Answered:** Yes, implemented in Task 2.2 via localStorage
+- ~~What's the expected user workflow - one-time batch apply or persistent configuration?~~ **Answered:** Persistent configuration with automatic localStorage save
+- ~~Should we add an "Auto-save batch changes" toggle?~~ **Answered:** No toggle needed - auto-save is now the default behavior
