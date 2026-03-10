@@ -170,8 +170,8 @@ setTransitionMode(mode: SubdivisionTransitionMode): void {
 
 ### Task 2.1: Update DATA_ENGINE_REFERENCE.md
 
-- [ ] Add `setTransitionMode` to the SubdivisionPlaybackController methods table
-- [ ] Update the method description to include the new method
+- [x] Add `setTransitionMode` to the SubdivisionPlaybackController methods table
+- [x] Update the method description to include the new method
 
 **Location**: `playlist-data-engine/DATA_ENGINE_REFERENCE.md` (around line 2109)
 
