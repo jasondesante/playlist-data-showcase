@@ -136,12 +136,12 @@ Horizontal step navigation at the top:
   - [x] Pass current step, completion, and availability props
   - [x] Hide StepNav when practiceModeActive is true
 
-- [ ] **Task 3.2: Create step content rendering logic**
-  - [ ] Add `renderStepContent()` that switches on currentStep
-  - [ ] Only render content for the active step
-  - [ ] Track navigation direction (previousStep vs currentStep) for slide animation
-  - [ ] Apply slide-left class when navigating forward, slide-right when navigating backward
-  - [ ] Combine slide with fade animation
+- [x] **Task 3.2: Create step content rendering logic**
+  - [x] Add `renderStepContent()` that switches on currentStep
+  - [x] Only render content for the active step
+  - [x] Track navigation direction (previousStep vs currentStep) for slide animation
+  - [x] Apply slide-left class when navigating forward, slide-right when navigating backward
+  - [x] Combine slide with fade animation
 
 - [ ] **Task 3.3: Refactor Step 1 (Analyze) content**
   - [ ] Move Primary Card content to Step 1

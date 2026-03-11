@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useMemo } from 'react';
-import { Music, Sparkles, Drum, Download, ChevronDown } from 'lucide-react';
+import React, { useEffect, useCallback, useMemo } from 'react';
+import { Music, Sparkles, Drum, Download } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -15,7 +15,7 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
 import { StepNav, type Step } from '../ui/StepNav';
 import { logger } from '../../utils/logger';
 
@@ -64,6 +64,7 @@ export function BeatDetectionTab() {
     const currentStep = useCurrentStep();
     const stepCompletion = useStepCompletion();
     const availableSteps = useStepAvailability();
+    const navigationDirection = useStepNavigationDirection();
 
     // Step configuration for StepNav
     const steps: Step[] = [
@@ -86,6 +87,18 @@ export function BeatDetectionTab() {
     const handleStepClick = useCallback((step: number) => {
         setCurrentStep(step as 1 | 2 | 3 | 4);
     }, [setCurrentStep]);
+
+    // Compute animation class based on navigation direction
+    const animationClass = useMemo(() => {
+        switch (navigationDirection) {
+            case 'forward':
+                return 'step-content-enter-forward';
+            case 'backward':
+                return 'step-content-enter-backward';
+            default:
+                return 'step-content-fade-in';
+        }
+    }, [navigationDirection]);
 
     /**
      * Export interpolated beat map as JSON for debugging/analysis
@@ -299,6 +312,250 @@ export function BeatDetectionTab() {
         return 'No Track';
     };
 
+    /**
+     * Render content for the active step only.
+     * Each step's content is wrapped with animation classes for smooth transitions.
+     */
+    const renderStepContent = useCallback(() => {
+        // Don't render step content if no track is selected or during practice mode
+        if (!selectedTrack || practiceModeActive) {
+            return null;
+        }
+
+        // Common wrapper with animation class
+        const wrapContent = (content: React.ReactNode) => (
+            <div className={`step-content ${animationClass}`}>
+                {content}
+            </div>
+        );
+
+        switch (currentStep) {
+            case 1:
+                // Step 1: Analyze - Primary Card with song info, settings, analyze button
+                return wrapContent(
+                    <Card variant="elevated" padding="lg" className="audio-analysis-primary-card">
+                        <div className="audio-analysis-primary-layout">
+                            {/* Song Display Section */}
+                            <div className="audio-analysis-song-display">
+                                <div className="audio-analysis-song-artwork">
+                                    {selectedTrack.image_url ? (
+                                        <ArweaveImage
+                                            src={selectedTrack.image_url}
+                                            alt={selectedTrack.title}
+                                            className="audio-analysis-artwork-image"
+                                            fallback={<Music className="audio-analysis-ready-fallback" />}
+                                        />
+                                    ) : (
+                                        <Music className="audio-analysis-ready-fallback" />
+                                    )}
+                                    {isBeatGenerating && (
+                                        <div className="audio-analysis-artwork-overlay">
+                                            <Sparkles className="audio-analysis-sparkle-icon" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="audio-analysis-song-meta">
+                                    <div className="audio-analysis-song-title-large">{selectedTrack.title}</div>
+                                    <div className="audio-analysis-song-artist-large">{selectedTrack.artist}</div>
+                                    <div className="audio-analysis-song-status-badge">
+                                        <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Beat Detection Settings */}
+                            <div className="audio-analysis-mode-card">
+                                <BeatDetectionSettings disabled={isBeatGenerating} />
+                                {!beatMap && !isBeatGenerating && duration > 0 && duration < 5 && (
+                                    <div className="audio-analysis-short-track-warning">
+                                        <span className="audio-analysis-short-track-warning-icon">⚠️</span>
+                                        <span className="audio-analysis-short-track-warning-text">
+                                            This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Section */}
+                            <div className="audio-analysis-action-integration">
+                                <Button
+                                    onClick={handleBeatAnalysis}
+                                    disabled={isBeatGenerating}
+                                    isLoading={isBeatGenerating}
+                                    variant="primary"
+                                    size="lg"
+                                    className="audio-analysis-primary-action-button"
+                                >
+                                    {isBeatGenerating && beatProgress
+                                        ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
+                                        : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
+                                </Button>
+                                {beatError && (
+                                    <div className="audio-analysis-error-message">
+                                        {beatError}
+                                    </div>
+                                )}
+                                {storageError && (
+                                    <div className="audio-analysis-storage-warning">
+                                        <span className="audio-analysis-storage-warning-text">{storageError}</span>
+                                        <div className="audio-analysis-storage-warning-actions">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    clearOldestCachedBeatMaps(3);
+                                                    clearStorageError();
+                                                }}
+                                            >
+                                                Clear Old Caches
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={clearStorageError}
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </Card>
+                );
+
+            case 2:
+                // Step 2: Subdivide - Subdivision settings card
+                if (!beatMap || isBeatGenerating) {
+                    return wrapContent(
+                        <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card">
+                            <div className="audio-analysis-step-placeholder">
+                                <div className="audio-analysis-step-placeholder-icon">🔄</div>
+                                <h4 className="audio-analysis-step-placeholder-title">Beat Map Required</h4>
+                                <p className="audio-analysis-step-placeholder-text">
+                                    Complete Step 1 (Analyze) to access subdivision settings.
+                                </p>
+                            </div>
+                        </Card>
+                    );
+                }
+                return wrapContent(
+                    <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card">
+                        <div className="audio-analysis-subdivision-section">
+                            <h3 className="audio-analysis-step-title">Beat Subdivision</h3>
+                            <SubdivisionSettings disabled={isBeatGenerating} />
+                        </div>
+                    </Card>
+                );
+
+            case 3:
+                // Step 3: Chart Editor - Key assignment for rhythm game
+                if (!subdividedBeatMap) {
+                    return wrapContent(
+                        <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
+                            <div className="audio-analysis-step-placeholder">
+                                <div className="audio-analysis-step-placeholder-icon">🎹</div>
+                                <h4 className="audio-analysis-step-placeholder-title">Subdivided Beat Map Required</h4>
+                                <p className="audio-analysis-step-placeholder-text">
+                                    The Chart Editor requires a <strong>subdivided beat map</strong> to assign keys to beats.
+                                    Generate a subdivided beat map in Step 2 (Subdivide) to enable chart editing.
+                                </p>
+                                <p className="audio-analysis-step-placeholder-hint">
+                                    💡 Tip: Subdivided beat maps work with specific rhythm patterns (8th notes, 16th notes, etc.)
+                                    which are required for creating rhythm game charts.
+                                </p>
+                            </div>
+                        </Card>
+                    );
+                }
+                return wrapContent(
+                    <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
+                        <div className="audio-analysis-chart-editor-section">
+                            <h3 className="audio-analysis-step-title">Chart Editor</h3>
+                            <ChartEditorToolbar
+                                disabled={isBeatGenerating}
+                                audioTitle={selectedTrack?.title}
+                            />
+                            <ChartEditor disabled={isBeatGenerating} />
+                        </div>
+                    </Card>
+                );
+
+            case 4:
+                // Step 4: Ready/Practice - Beat map summary, practice mode, export
+                if (!beatMap) {
+                    return wrapContent(
+                        <Card variant="elevated" padding="lg" className="beat-detection-results-card">
+                            <div className="audio-analysis-step-placeholder">
+                                <div className="audio-analysis-step-placeholder-icon">🎯</div>
+                                <h4 className="audio-analysis-step-placeholder-title">Not Ready</h4>
+                                <p className="audio-analysis-step-placeholder-text">
+                                    Complete Step 1 (Analyze) to access practice mode and export options.
+                                </p>
+                            </div>
+                        </Card>
+                    );
+                }
+                return wrapContent(
+                    <Card variant="elevated" padding="lg" className="beat-detection-results-card">
+                        {isBeatGenerating ? (
+                            <BeatMapSummarySkeleton />
+                        ) : (
+                            <>
+                                <BeatMapSummary
+                                    beatMap={beatMap}
+                                    onStartPractice={handleStartPracticeMode}
+                                />
+                                {interpolatedBeatMap && (
+                                    <div className="audio-analysis-export-section">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleExportBeatMap}
+                                            leftIcon={Download}
+                                            className="audio-analysis-export-btn"
+                                        >
+                                            Export Beat Map
+                                        </Button>
+                                        <span className="audio-analysis-export-hint">
+                                            {subdividedBeatMap
+                                                ? 'Download beat map with subdivision data as JSON'
+                                                : 'Download interpolated beat map data as JSON'}
+                                        </span>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </Card>
+                );
+
+            default:
+                return null;
+        }
+    }, [
+        selectedTrack,
+        practiceModeActive,
+        currentStep,
+        animationClass,
+        beatMap,
+        isBeatGenerating,
+        subdividedBeatMap,
+        interpolatedBeatMap,
+        beatProgress,
+        beatError,
+        storageError,
+        duration,
+        selectedTrack?.title,
+        handleBeatAnalysis,
+        handleStartPracticeMode,
+        handleExportBeatMap,
+        clearOldestCachedBeatMaps,
+        clearStorageError,
+        getAnalysisStatus,
+        getStatusLabel,
+        getPhaseLabel,
+    ]);
+
     return (
         <div className="audio-analysis-container">
             {/* Header with Icon Badge, Title, Selected Song, and Status */}
@@ -340,201 +597,11 @@ export function BeatDetectionTab() {
                 </div>
             )}
 
-            {/* Primary Control Card - Cohesive Song Info + EQ + Analysis Action */}
-            {selectedTrack && (
-                <Card variant="elevated" padding="lg" className="audio-analysis-primary-card">
-                    <div className="audio-analysis-primary-layout">
-
-                        {/* 1. Song Display Section */}
-                        <div className="audio-analysis-song-display">
-                            <div className="audio-analysis-song-artwork">
-                                {selectedTrack.image_url ? (
-                                    <ArweaveImage
-                                        src={selectedTrack.image_url}
-                                        alt={selectedTrack.title}
-                                        className="audio-analysis-artwork-image"
-                                        fallback={<Music className="audio-analysis-ready-fallback" />}
-                                    />
-                                ) : (
-                                    <Music className="audio-analysis-ready-fallback" />
-                                )}
-                                {isBeatGenerating && (
-                                    <div className="audio-analysis-artwork-overlay">
-                                        <Sparkles className="audio-analysis-sparkle-icon" />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="audio-analysis-song-meta">
-                                <div className="audio-analysis-song-title-large">{selectedTrack.title}</div>
-                                <div className="audio-analysis-song-artist-large">{selectedTrack.artist}</div>
-                                <div className="audio-analysis-song-status-badge">
-                                    <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 2. Beat Detection Settings */}
-                        <div className="audio-analysis-mode-card">
-                            <BeatDetectionSettings disabled={isBeatGenerating} />
-
-                            {/* Short track warning for beat detection */}
-                            {!beatMap && !isBeatGenerating && duration > 0 && duration < 5 && (
-                                <div className="audio-analysis-short-track-warning">
-                                    <span className="audio-analysis-short-track-warning-icon">⚠️</span>
-                                    <span className="audio-analysis-short-track-warning-text">
-                                        This track is short ({duration.toFixed(1)}s). Beat detection works best with tracks longer than 5 seconds.
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 3. Action Section */}
-                        <div className="audio-analysis-action-integration">
-                            <Button
-                                onClick={handleBeatAnalysis}
-                                disabled={isBeatGenerating}
-                                isLoading={isBeatGenerating}
-                                variant="primary"
-                                size="lg"
-                                className="audio-analysis-primary-action-button"
-                            >
-                                {isBeatGenerating && beatProgress
-                                    ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
-                                    : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
-                            </Button>
-                            {beatError && (
-                                <div className="audio-analysis-error-message">
-                                    {beatError}
-                                </div>
-                            )}
-                            {/* Storage quota warning */}
-                            {storageError && (
-                                <div className="audio-analysis-storage-warning">
-                                    <span className="audio-analysis-storage-warning-text">{storageError}</span>
-                                    <div className="audio-analysis-storage-warning-actions">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => {
-                                                clearOldestCachedBeatMaps(3);
-                                                clearStorageError();
-                                            }}
-                                        >
-                                            Clear Old Caches
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={clearStorageError}
-                                        >
-                                            Dismiss
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </Card>
-            )}
-
-            {/* Beat Subdivision Card - Full-width section for subdivision editing */}
-            {selectedTrack && beatMap && !isBeatGenerating && !practiceModeActive && (
-                <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card fade-in">
-                    <details className="audio-analysis-subdivision-section" open>
-                        <summary className="audio-analysis-subdivision-summary">
-                            <span className="audio-analysis-subdivision-summary-text">Beat Subdivision</span>
-                            {subdividedBeatMap && (
-                                <span className="audio-analysis-subdivision-badge">Generated</span>
-                            )}
-                            <ChevronDown className="audio-analysis-subdivision-summary-icon" size={12} />
-                        </summary>
-                        <div className="audio-analysis-subdivision-content">
-                            <SubdivisionSettings disabled={isBeatGenerating} />
-                        </div>
-                    </details>
-                </Card>
-            )}
-
-            {/* Chart Editor Card - Full-width section for rhythm game key assignment */}
-            {selectedTrack && subdividedBeatMap && !isBeatGenerating && !practiceModeActive && (
-                <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card fade-in">
-                    <details className="audio-analysis-chart-editor-section" open>
-                        <summary className="audio-analysis-chart-editor-summary">
-                            <span className="audio-analysis-chart-editor-summary-text">Chart Editor</span>
-                            <span className="audio-analysis-chart-editor-badge">Required Keys</span>
-                            <ChevronDown className="audio-analysis-chart-editor-summary-icon" size={12} />
-                        </summary>
-                        <div className="audio-analysis-chart-editor-content">
-                            <ChartEditorToolbar
-                                disabled={isBeatGenerating}
-                                audioTitle={selectedTrack?.title}
-                            />
-                            <ChartEditor disabled={isBeatGenerating} />
-                        </div>
-                    </details>
-                </Card>
-            )}
-
-            {/* Chart Editor Placeholder - Shown when no subdivided beat map exists yet */}
-            {selectedTrack && !subdividedBeatMap && interpolatedBeatMap && !isBeatGenerating && !practiceModeActive && (
-                <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card audio-analysis-chart-editor-placeholder fade-in">
-                    <details className="audio-analysis-chart-editor-section">
-                        <summary className="audio-analysis-chart-editor-summary">
-                            <span className="audio-analysis-chart-editor-summary-text">Chart Editor</span>
-                            <span className="audio-analysis-chart-editor-badge audio-analysis-chart-editor-badge--disabled">Required Keys</span>
-                            <ChevronDown className="audio-analysis-chart-editor-summary-icon" size={12} />
-                        </summary>
-                        <div className="audio-analysis-chart-editor-placeholder-content">
-                            <div className="audio-analysis-chart-editor-placeholder-icon">🎹</div>
-                            <h4 className="audio-analysis-chart-editor-placeholder-title">Subdivided Beat Map Required</h4>
-                            <p className="audio-analysis-chart-editor-placeholder-text">
-                                The Chart Editor requires a <strong>subdivided beat map</strong> to assign keys to beats.
-                                Generate a subdivided beat map in the Subdivision Settings above to enable chart editing.
-                            </p>
-                            <p className="audio-analysis-chart-editor-placeholder-hint">
-                                💡 Tip: Subdivided beat maps work with specific rhythm patterns (8th notes, 16th notes, etc.)
-                                which are required for creating rhythm game charts.
-                            </p>
-                        </div>
-                    </details>
-                </Card>
-            )}
-
-            {/* Beat Detection Results - Full-width section below primary card */}
+            {/* Step Content Container - Renders only the active step's content */}
             {selectedTrack && !practiceModeActive && (
-                <Card variant="elevated" padding="lg" className="beat-detection-results-card fade-in">
-                    {/* Beat Map Summary Skeleton - shown during generation */}
-                    {isBeatGenerating && (
-                        <BeatMapSummarySkeleton />
-                    )}
-                    {/* Beat Map Summary - shown after successful analysis */}
-                    {beatMap && !isBeatGenerating && (
-                        <BeatMapSummary
-                            beatMap={beatMap}
-                            onStartPractice={handleStartPracticeMode}
-                        />
-                    )}
-
-                    {/* Export Button - shown after successful analysis */}
-                    {beatMap && !isBeatGenerating && interpolatedBeatMap && (
-                        <div className="audio-analysis-export-section">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleExportBeatMap}
-                                leftIcon={Download}
-                                className="audio-analysis-export-btn"
-                            >
-                                Export Beat Map
-                            </Button>
-                            <span className="audio-analysis-export-hint">
-                                {subdividedBeatMap
-                                    ? 'Download beat map with subdivision data as JSON'
-                                    : 'Download interpolated beat map data as JSON'}
-                            </span>
-                        </div>
-                    )}
-                </Card>
+                <div className="step-content-container">
+                    {renderStepContent()}
+                </div>
             )}
 
             {/* Beat Practice View - Full-width immersive experience */}
