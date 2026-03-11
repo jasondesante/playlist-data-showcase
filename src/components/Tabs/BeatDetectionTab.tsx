@@ -220,6 +220,7 @@ export function BeatDetectionTab() {
      * Load cached beat map when the selected track changes.
      * This ensures that previously analyzed tracks show their cached beat map
      * immediately when selected, without requiring the user to click "Analyze Beats" again.
+     * Always resets to Step 1 on track change to provide a fresh starting point.
      */
     useEffect(() => {
         // Only run when in beat mode or when track changes
@@ -234,12 +235,16 @@ export function BeatDetectionTab() {
 
         if (cached) {
             logger.info('BeatDetection', 'Loaded cached beat map for track', { audioId });
+            // Reset to Step 1 even when loading cached beat map
+            // This ensures users start from the beginning when switching tracks
+            setCurrentStep(1);
         } else {
             // Clear the current beat map if no cached version exists for this track
             // This prevents showing stale beat map data from a previous track
+            // Note: clearBeatMap() also resets currentStep to 1
             clearBeatMap();
         }
-    }, [selectedTrack?.id, selectedTrack?.audio_url, loadCachedBeatMap, clearBeatMap]);
+    }, [selectedTrack?.id, selectedTrack?.audio_url, loadCachedBeatMap, clearBeatMap, setCurrentStep]);
 
     /**
      * Auto-advance to Step 2 after analysis completes.

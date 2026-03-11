@@ -190,9 +190,9 @@ Horizontal step navigation at the top:
     - Else if `subdividedBeatMap` exists → return to Step 2 (Subdivide)
     - Else → return to Step 4 (Practice/Export)
 
-- [ ] **Task 4.3: Handle track change**
-  - [ ] When selectedTrack changes: reset currentStep to 1
-  - [ ] Clear beatMap state (existing behavior)
+- [x] **Task 4.3: Handle track change**
+  - [x] When selectedTrack changes: reset currentStep to 1
+  - [x] Clear beatMap state (existing behavior)
 
 - [ ] **Task 4.4: Handle re-analyze**
   - [ ] User can click Step 1 tab to re-analyze
