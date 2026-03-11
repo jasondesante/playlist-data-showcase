@@ -5,6 +5,7 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { useGenreAnalyzer } from '../../hooks/useGenreAnalyzer';
+import { GenreResultsCard } from '../AudioAnalysis/GenreResultsCard';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
@@ -35,8 +36,10 @@ export function AudioAnalysisTab() {
   const {
     analyzeGenre,
     isAnalyzing: isGenreAnalyzing,
+    isModelLoading: isGenreModelLoading,
     progress: genreProgress,
     setOptions: setGenreOptions,
+    error: genreError,
   } = useGenreAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
@@ -671,6 +674,20 @@ export function AudioAnalysisTab() {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Genre Analysis Results - shown when in genre mode with results or during analysis */}
+      {selectedTrack && analysisMode === 'genre' && (genreProfile || isGenreAnalyzing || isGenreModelLoading) && (
+        <div className="audio-analysis-results fade-in">
+          <GenreResultsCard
+            genreProfile={genreProfile}
+            isAnalyzing={isGenreAnalyzing}
+            isModelLoading={isGenreModelLoading}
+            progress={genreProgress}
+            error={genreError}
+            threshold={genreThreshold}
+          />
+        </div>
       )}
 
       {/* Audio Analysis Results */}

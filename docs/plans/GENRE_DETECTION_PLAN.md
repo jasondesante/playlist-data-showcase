@@ -113,10 +113,10 @@ The following decisions were made during planning:
   - Show loading state
 
 ### Task 3.3: Add Genre Results Display
-- [ ] Add `GenreResultsCard` to results grid
-- [ ] Position alongside existing results cards
-- [ ] Only show when `analysisMode === 'genre'` and `genreProfile` exists
-- [ ] Handle empty state when no analysis has been run
+- [x] Add `GenreResultsCard` to results grid
+- [x] Position alongside existing results cards
+- [x] Only show when `analysisMode === 'genre'` and `genreProfile` exists
+- [x] Handle empty state when no analysis has been run
 
 ### Task 3.4: Update Primary Control Card
 - [x] Show genre-specific options when 'Genre' mode selected:
