@@ -119,12 +119,12 @@ Horizontal step navigation at the top:
   - [x] Fade in/out combined with slide
   - [x] Track navigation direction in state for correct animation
 
-- [ ] **Task 2.4: Add accessibility**
-  - [ ] Role="tablist" on container, role="tab" on each step
-  - [ ] aria-selected on active step
-  - [ ] aria-disabled on unavailable steps
-  - [ ] aria-label for Step 4: "Ready" or "Not Ready - complete Step 1 first"
-  - [ ] Keyboard: Arrow keys to navigate, Enter/Space to select
+- [x] **Task 2.4: Add accessibility**
+  - [x] Role="tablist" on container, role="tab" on each step
+  - [x] aria-selected on active step
+  - [x] aria-disabled on unavailable steps
+  - [x] aria-label for Step 4: "Ready" or "Not Ready - complete Step 1 first"
+  - [x] Keyboard: Arrow keys to navigate, Enter/Space to select
 
 ---
 
