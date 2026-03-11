@@ -906,15 +906,15 @@ function RhythmXPConfigSection() {
                 value={rhythmConfig.groove.endBonus.maxStreakWeight}
                 defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.maxStreakWeight}
                 min={0}
-                max={4}
-                step={0.25}
+                max={1}
+                step={0.05}
                 onChange={(maxStreakWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, maxStreakWeight } })}
-                formatValue={(v) => v.toFixed(1)}
+                formatValue={(v) => v.toFixed(2)}
                 isModified={rhythmConfig.groove.endBonus.maxStreakWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.maxStreakWeight}
                 marks={[
                   { value: 0, label: '0' },
-                  { value: 2, label: '2' },
-                  { value: 4, label: '4' },
+                  { value: 0.5, label: '0.5' },
+                  { value: 1, label: '1' },
                 ]}
               />
 
@@ -924,15 +924,15 @@ function RhythmXPConfigSection() {
                 value={rhythmConfig.groove.endBonus.avgHotnessWeight}
                 defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.avgHotnessWeight}
                 min={0}
-                max={4}
-                step={0.25}
+                max={1}
+                step={0.05}
                 onChange={(avgHotnessWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, avgHotnessWeight } })}
-                formatValue={(v) => v.toFixed(1)}
+                formatValue={(v) => v.toFixed(2)}
                 isModified={rhythmConfig.groove.endBonus.avgHotnessWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.avgHotnessWeight}
                 marks={[
                   { value: 0, label: '0' },
-                  { value: 2, label: '2' },
-                  { value: 4, label: '4' },
+                  { value: 0.5, label: '0.5' },
+                  { value: 1, label: '1' },
                 ]}
               />
 
@@ -942,15 +942,15 @@ function RhythmXPConfigSection() {
                 value={rhythmConfig.groove.endBonus.durationWeight}
                 defaultValue={DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.durationWeight}
                 min={0}
-                max={2}
-                step={0.25}
+                max={0.5}
+                step={0.025}
                 onChange={(durationWeight) => updateGrooveConfig({ endBonus: { ...rhythmConfig.groove.endBonus, durationWeight } })}
-                formatValue={(v) => v.toFixed(1)}
+                formatValue={(v) => v.toFixed(2)}
                 isModified={rhythmConfig.groove.endBonus.durationWeight !== DEFAULT_RHYTHM_XP_CONFIG.groove.endBonus.durationWeight}
                 marks={[
                   { value: 0, label: '0' },
-                  { value: 1, label: '1' },
-                  { value: 2, label: '2' },
+                  { value: 0.25, label: '0.25' },
+                  { value: 0.5, label: '0.5' },
                 ]}
               />
             </>
