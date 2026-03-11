@@ -397,6 +397,113 @@
 }
 
 /* ============================================
+   ANALYSIS PROGRESS INDICATOR
+   ============================================ */
+
+.genre-results-analysis-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.genre-results-analysis-progress-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.genre-results-analysis-progress-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(
+        135deg,
+        hsl(var(--primary) / 0.1) 0%,
+        hsl(var(--primary) / 0.05) 100%
+    );
+    border: 2px solid hsl(var(--primary) / 0.2);
+    border-radius: 50%;
+    animation: analysis-pulse 1.5s ease-in-out infinite;
+}
+
+.genre-results-analysis-progress-icon-inner {
+    color: hsl(var(--primary));
+    animation: analysis-spin 2s linear infinite;
+}
+
+@keyframes analysis-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+}
+
+@keyframes analysis-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.genre-results-analysis-progress-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.genre-results-analysis-progress-title {
+    font-size: 0.938rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.genre-results-analysis-progress-desc {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.genre-results-analysis-progress-percent {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+    font-feature-settings: "tnum" 1;
+    min-width: 3.5rem;
+    text-align: right;
+}
+
+.genre-results-analysis-progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: hsl(var(--muted) / 0.3);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.genre-results-analysis-progress-bar {
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--primary)) 0%,
+        hsl(var(--primary) / 0.8) 100%
+    );
+    border-radius: 9999px;
+    transition: width 0.3s ease-out;
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
@@ -442,6 +549,18 @@
     }
 
     .genre-results-model-loading-progress-bar {
+        transition: none;
+    }
+
+    .genre-results-analysis-progress-icon {
+        animation: none;
+    }
+
+    .genre-results-analysis-progress-icon-inner {
+        animation: none;
+    }
+
+    .genre-results-analysis-progress-bar {
         transition: none;
     }
 }

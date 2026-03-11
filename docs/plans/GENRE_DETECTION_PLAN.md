@@ -131,10 +131,10 @@ The following decisions were made during planning:
 ## Phase 4: Polish and UX
 
 ### Task 4.1: Loading States and Progress
-- [ ] Add progress indicator during genre analysis
-- [ ] **Show "Loading ML model..." message** on first-time load (can take 5-10 seconds)
-- [ ] Disable controls during analysis
-- [ ] Add cancel button option (if feasible)
+- [x] Add progress indicator during genre analysis
+- [x] **Show "Loading ML model..." message** on first-time load (can take 5-10 seconds)
+- [x] Disable controls during analysis
+- [x] Add cancel button option (if feasible) - *Not feasible: GenreAnalyzer from playlist-data-engine doesn't support cancellation*
 
 ### Task 4.2: Error Handling
 - [ ] Handle network errors (audio fetch failed)

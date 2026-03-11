@@ -1721,3 +1721,28 @@
   color: hsl(var(--muted-foreground) / 0.6);
   font-family: ui-monospace, monospace;
 }
+
+/* Disabled state for genre options during analysis */
+.audio-analysis-genre-options-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.audio-analysis-genre-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.audio-analysis-genre-slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+  background: linear-gradient(to bottom, hsl(var(--surface-1)), hsl(var(--surface-2)));
+  border-color: hsl(var(--border));
+  box-shadow: none;
+}
+
+.audio-analysis-genre-slider:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+  background: linear-gradient(to bottom, hsl(var(--surface-1)), hsl(var(--surface-2)));
+  border-color: hsl(var(--border));
+  box-shadow: none;
+}

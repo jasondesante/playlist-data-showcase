@@ -61,35 +61,6 @@ const formatDuration = (seconds: number): string => {
 };
 
 /**
- * Loading Skeleton Component
- * Displays animated placeholder bars while analysis is in progress
- */
-function LoadingSkeleton() {
-    return (
-        <div className="genre-results-skeleton" aria-label="Loading genre analysis">
-            <div className="genre-results-skeleton-header">
-                <div className="genre-results-skeleton-title" />
-                <div className="genre-results-skeleton-badge" />
-            </div>
-            <div className="genre-results-skeleton-bars">
-                {[...Array(5)].map((_, i) => (
-                    <div key={i} className="genre-results-skeleton-bar">
-                        <div className="genre-results-skeleton-label" />
-                        <div className="genre-results-skeleton-track">
-                            <div
-                                className="genre-results-skeleton-fill"
-                                style={{ width: `${Math.random() * 60 + 20}%` }}
-                            />
-                        </div>
-                        <div className="genre-results-skeleton-value" />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-/**
  * Error State Component
  * Displays an error message with a retry button
  */
@@ -137,6 +108,37 @@ function ModelLoadingIndicator({ progress }: { progress: number }) {
                         style={{ width: `${progress}%` }}
                     />
                 </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Analysis Progress Indicator
+ * Shows during genre analysis with progress percentage
+ */
+function AnalysisProgressIndicator({ progress }: { progress: number }) {
+    return (
+        <div className="genre-results-analysis-progress">
+            <div className="genre-results-analysis-progress-header">
+                <div className="genre-results-analysis-progress-icon">
+                    <Music className="genre-results-analysis-progress-icon-inner" size={24} />
+                </div>
+                <div className="genre-results-analysis-progress-text">
+                    <h4 className="genre-results-analysis-progress-title">Analyzing Genre...</h4>
+                    <p className="genre-results-analysis-progress-desc">
+                        Processing audio with ML classification
+                    </p>
+                </div>
+                <div className="genre-results-analysis-progress-percent">
+                    {Math.round(progress)}%
+                </div>
+            </div>
+            <div className="genre-results-analysis-progress-bar-container">
+                <div
+                    className="genre-results-analysis-progress-bar"
+                    style={{ width: `${progress}%` }}
+                />
             </div>
         </div>
     );
@@ -274,7 +276,7 @@ export function GenreResultsCard({
                 {isModelLoading ? (
                     <ModelLoadingIndicator progress={progress} />
                 ) : (
-                    <LoadingSkeleton />
+                    <AnalysisProgressIndicator progress={progress} />
                 )}
             </Card>
         );

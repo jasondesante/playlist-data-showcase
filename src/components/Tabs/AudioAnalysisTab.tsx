@@ -598,7 +598,7 @@ export function AudioAnalysisTab() {
 
               {/* Genre Options Sub-component - shown when Genre mode is selected */}
               {analysisMode === 'genre' && (
-                <div className="audio-analysis-genre-options">
+                <div className={`audio-analysis-genre-options ${isGenreAnalyzing || isGenreModelLoading ? 'audio-analysis-genre-options-disabled' : ''}`}>
                   {/* Top N slider */}
                   <div className="audio-analysis-genre-slider-container">
                     <div className="audio-analysis-genre-slider-header">
@@ -615,6 +615,7 @@ export function AudioAnalysisTab() {
                       className="audio-analysis-genre-slider"
                       style={{ '--slider-value': `${((genreTopN - 1) / 19) * 100}%` } as React.CSSProperties}
                       aria-label="Number of top genres to return"
+                      disabled={isGenreAnalyzing || isGenreModelLoading}
                     />
                     <div className="audio-analysis-genre-slider-marks">
                       <span className="audio-analysis-genre-slider-mark">1</span>
@@ -638,6 +639,7 @@ export function AudioAnalysisTab() {
                       className="audio-analysis-genre-slider"
                       style={{ '--slider-value': `${((genreThreshold - 0.01) / 0.49) * 100}%` } as React.CSSProperties}
                       aria-label="Minimum confidence threshold"
+                      disabled={isGenreAnalyzing || isGenreModelLoading}
                     />
                     <div className="audio-analysis-genre-slider-marks">
                       <span className="audio-analysis-genre-slider-mark">1%</span>
