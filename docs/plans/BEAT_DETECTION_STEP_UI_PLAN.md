@@ -85,8 +85,8 @@ Horizontal step navigation at the top:
 
 ## Phase 2: Step Navigation Component
 
-- [ ] **Task 2.1: Create StepNav component (`src/components/ui/StepNav.tsx`)**
-  - [ ] Props interface:
+- [x] **Task 2.1: Create StepNav component (`src/components/ui/StepNav.tsx`)**
+  - [x] Props interface:
     ```typescript
     interface StepNavProps {
       steps: Array<{ id: number; label: string; dynamicLabel?: string }>;
@@ -96,13 +96,13 @@ Horizontal step navigation at the top:
       onStepClick: (step: number) => void;
     }
     ```
-  - [ ] Step labels: "Analyze", "Subdivide", "Chart", "Ready"/"Not Ready"
-  - [ ] Horizontal layout with descriptive labels (no step numbers displayed)
-  - [ ] Checkmark (✓) displayed before label for completed steps
-  - [ ] Step 4 shows "Ready" when available, "Not Ready" when disabled
-  - [ ] Active step highlighted with primary color border/background
-  - [ ] Disabled steps grayed out, reduced opacity, non-clickable
-  - [ ] Cursor changes: pointer for available, not-allowed for disabled
+  - [x] Step labels: "Analyze", "Subdivide", "Chart", "Ready"/"Not Ready"
+  - [x] Horizontal layout with descriptive labels (no step numbers displayed)
+  - [x] Checkmark (✓) displayed before label for completed steps
+  - [x] Step 4 shows "Ready" when available, "Not Ready" when disabled
+  - [x] Active step highlighted with primary color border/background
+  - [x] Disabled steps grayed out, reduced opacity, non-clickable
+  - [x] Cursor changes: pointer for available, not-allowed for disabled
 
 - [ ] **Task 2.2: Add StepNav styles (`src/components/ui/StepNav.css`)**
   - [ ] Horizontal flex container with equal-width step tabs
