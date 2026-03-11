@@ -558,6 +558,26 @@ interface BeatDetectionState {
      * Cleared after being shown in UI.
      */
     pendingGrooveEndBonus: GrooveEndBonusResult | null;
+
+    // ============================================================
+    // Step Navigation State (Phase 1: Task 1.1)
+    // ============================================================
+
+    /**
+     * Current step in the beat detection wizard UI.
+     * - 1: Analyze (song info + settings + analyze button)
+     * - 2: Subdivide (subdivision settings)
+     * - 3: Chart (chart editor)
+     * - 4: Ready (practice/export)
+     */
+    currentStep: 1 | 2 | 3 | 4;
+
+    /**
+     * Previous step number for determining slide animation direction.
+     * Null when no navigation has occurred yet.
+     * Used to determine if we're navigating forward (slide left) or backward (slide right).
+     */
+    previousStep: number | null;
 }
 
 interface BeatDetectionActions {
@@ -1154,6 +1174,17 @@ interface BeatDetectionActions {
      * Called on track change, practice mode restart, or after claiming XP.
      */
     resetRhythmXP: () => void;
+
+    // ============================================================
+    // Step Navigation Actions (Phase 1: Task 1.1)
+    // ============================================================
+
+    /**
+     * Set the current step in the beat detection wizard UI.
+     * Updates both currentStep and previousStep for animation direction tracking.
+     * @param step - The step number to navigate to (1-4)
+     */
+    setCurrentStep: (step: 1 | 2 | 3 | 4) => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1332,6 +1363,9 @@ const createInitialState = (): BeatDetectionState => ({
     previousComboLength: 0,
     pendingComboEndBonus: null,
     pendingGrooveEndBonus: null,
+    // Step Navigation state (Phase 1: Task 1.1)
+    currentStep: 1, // Start on the Analyze step
+    previousStep: null, // No navigation has occurred yet
 });
 
 /**
@@ -1806,6 +1840,9 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             interpolatedBeatMap: null,
                             showInterpolationVisualization: false,
                             lastGeneratedInterpolationConfig: null,
+                            // Reset step navigation to initial state
+                            currentStep: 1,
+                            previousStep: null,
                         });
                     },
 
@@ -3709,6 +3746,24 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             pendingGrooveEndBonus: null,
                         });
                         logger.debug('BeatDetection', 'Rhythm XP state reset and re-initialized');
+                    },
+
+                    // ============================================================
+                    // Step Navigation Actions (Phase 1: Task 1.1)
+                    // ============================================================
+
+                    setCurrentStep: (step) => {
+                        const state = get();
+                        const currentStep = state.currentStep;
+
+                        // Only update if actually changing steps
+                        if (currentStep !== step) {
+                            logger.debug('BeatDetection', 'Navigating to step', { from: currentStep, to: step });
+                            set({
+                                previousStep: currentStep,
+                                currentStep: step,
+                            });
+                        }
                     },
                 },
             };

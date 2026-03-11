@@ -64,10 +64,10 @@ Horizontal step navigation at the top:
 
 ## Phase 1: State Management Setup
 
-- [ ] **Task 1.1: Add step state to beatDetectionStore**
-  - [ ] Add `currentStep: 1 | 2 | 3 | 4` to store state
-  - [ ] Add `setCurrentStep(step)` action
-  - [ ] Reset currentStep to 1 when beatMap is cleared (track change)
+- [x] **Task 1.1: Add step state to beatDetectionStore**
+  - [x] Add `currentStep: 1 | 2 | 3 | 4` to store state
+  - [x] Add `setCurrentStep(step)` action
+  - [x] Reset currentStep to 1 when beatMap is cleared (track change)
 
 - [ ] **Task 1.2: Create step availability and completion hooks**
   - [ ] `useCurrentStep()` - returns current step number
