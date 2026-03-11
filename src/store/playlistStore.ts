@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ServerlessPlaylist, PlaylistTrack, AudioProfile } from '@/types';
+import { ServerlessPlaylist, PlaylistTrack, AudioProfile, GenreProfile } from '@/types';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
@@ -11,6 +11,8 @@ interface PlaylistState {
     selectedTrack: PlaylistTrack | null;
     /** Audio analysis result for selected track (shared with Character Gen tab) */
     audioProfile: AudioProfile | null;
+    /** Genre analysis result for selected track (ML-based classification) */
+    genreProfile: GenreProfile | null;
     /** Loading state for playlist operations */
     isLoading: boolean;
     /** Error message from playlist operations */
@@ -26,6 +28,8 @@ interface PlaylistState {
     selectTrack: (track: PlaylistTrack) => void;
     /** Set audio profile for current track after analysis */
     setAudioProfile: (profile: AudioProfile | null) => void;
+    /** Set genre profile for current track after ML analysis */
+    setGenreProfile: (profile: GenreProfile | null) => void;
     /** Set loading state for playlist operations */
     setLoading: (loading: boolean) => void;
     /** Set error message from playlist operations */
@@ -72,6 +76,7 @@ export const usePlaylistStore = create<PlaylistState>()(
             currentPlaylist: null,
             selectedTrack: null,
             audioProfile: null,
+            genreProfile: null,
             isLoading: false,
             error: null,
             rawResponseData: null,
@@ -95,7 +100,9 @@ export const usePlaylistStore = create<PlaylistState>()(
                     rawResponseData: rawData ?? null,
                     parsedTimestamp: new Date().toISOString(),
                     // Clear audio profile when loading new playlist
-                    audioProfile: null
+                    audioProfile: null,
+                    // Clear genre profile when loading new playlist
+                    genreProfile: null
                 });
 
                 // Notify all registered callbacks that playlist has been loaded
@@ -113,7 +120,7 @@ export const usePlaylistStore = create<PlaylistState>()(
              */
             selectTrack: (track) => {
                 logger.debug('Store', 'Selected track', track.title);
-                set({ selectedTrack: track, audioProfile: null }); // Clear audio profile when changing tracks
+                set({ selectedTrack: track, audioProfile: null, genreProfile: null }); // Clear profiles when changing tracks
             },
 
             /**
@@ -132,6 +139,23 @@ export const usePlaylistStore = create<PlaylistState>()(
                     treble: profile?.treble_dominance
                 });
                 set({ audioProfile: profile });
+            },
+
+            /**
+             * Set the genre profile result after ML analysis
+             * @param profile - GenreProfile from GenreAnalyzer or null to clear
+             * @example
+             * ```ts
+             * const profile = await genreAnalyzer.analyzeGenre(audioUrl);
+             * setGenreProfile(profile);
+             * ```
+             */
+            setGenreProfile: (profile) => {
+                logger.debug('Store', 'Setting genre profile', {
+                    primary: profile?.primary_genre,
+                    genreCount: profile?.genres?.length
+                });
+                set({ genreProfile: profile });
             },
 
             /**
@@ -163,6 +187,7 @@ export const usePlaylistStore = create<PlaylistState>()(
                     currentPlaylist: null,
                     selectedTrack: null,
                     audioProfile: null,
+                    genreProfile: null,
                     error: null,
                     rawResponseData: null,
                     parsedTimestamp: null
@@ -177,6 +202,7 @@ export const usePlaylistStore = create<PlaylistState>()(
             partialize: (state) => ({
                 currentPlaylist: state.currentPlaylist,
                 audioProfile: state.audioProfile,
+                genreProfile: state.genreProfile,
                 isLoading: state.isLoading,
                 error: state.error,
                 rawResponseData: state.rawResponseData,

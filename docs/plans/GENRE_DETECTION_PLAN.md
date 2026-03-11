@@ -23,11 +23,11 @@ The following decisions were made during planning:
 ## Phase 1: Foundation - Types and Store
 
 ### Task 1.1: Add Genre Types to Store
-- [ ] Import `GenreProfile` and `GenreTag` types from `playlist-data-engine` in `playlistStore.ts`
-- [ ] Add `genreProfile: GenreProfile | null` to `PlaylistState` interface
-- [ ] Add `setGenreProfile(profile: GenreProfile | null)` action
-- [ ] Clear `genreProfile` in `selectTrack()` action (alongside `audioProfile`)
-- [ ] Clear `genreProfile` in `setPlaylist()` action
+- [x] Import `GenreProfile` and `GenreTag` types from `playlist-data-engine` in `playlistStore.ts`
+- [x] Add `genreProfile: GenreProfile | null` to `PlaylistState` interface
+- [x] Add `setGenreProfile(profile: GenreProfile | null)` action
+- [x] Clear `genreProfile` in `selectTrack()` action (alongside `audioProfile`)
+- [x] Clear `genreProfile` in `setPlaylist()` action
 
 ### Task 1.2: Create useGenreAnalyzer Hook
 - [ ] Create new file `src/hooks/useGenreAnalyzer.ts`

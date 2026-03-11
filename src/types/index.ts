@@ -16,6 +16,8 @@ export type {
     SamplingStrategy,
     ColorPalette,
     FrequencyBands,
+    GenreProfile,
+    GenreTag,
 
     // Beat Detection
     Beat,
