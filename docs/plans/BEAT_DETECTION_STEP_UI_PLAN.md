@@ -230,12 +230,12 @@ Horizontal step navigation at the top:
   - [x] Completion indicators (checkmarks) update correctly (verified via `BeatDetectionTab.tsx` lines 82-88, `StepNav.tsx` lines 160-164)
   - [x] Step 4 shows "Not Ready" → "Ready" after Step 1 complete (verified via `StepNav.tsx` lines 74-78, 115-120)
 
-- [ ] **Task 6.2: Test edge cases**
-  - [ ] Track change mid-workflow resets to Step 1
-  - [ ] Re-analyze from any step
-  - [ ] Practice mode entry/exit returns to intelligent step
-  - [ ] Storage errors and cache clearing don't break navigation
-  - [ ] Slide animation direction correct (forward = left, backward = right)
+- [x] **Task 6.2: Test edge cases** ✅
+  - [x] Track change mid-workflow resets to Step 1 (verified via `BeatDetectionTab.tsx` lines 225-247)
+  - [x] Re-analyze from any step (verified via `BeatDetectionTab.tsx` lines 254-263 - auto-advance after analysis)
+  - [x] Practice mode entry/exit returns to intelligent step (verified via `BeatDetectionTab.tsx` lines 322-334)
+  - [x] Storage errors and cache clearing don't break navigation (`storageError` is separate state, doesn't affect step navigation)
+  - [x] Slide animation direction correct (forward = left, backward = right) (verified via `BeatDetectionTab.css` and `useStepNavigationDirection` hook)
 
 - [ ] **Task 6.3: Test post-completion prompts**
   - [ ] Prompts appear after completing each step
