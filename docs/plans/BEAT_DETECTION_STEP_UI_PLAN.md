@@ -214,10 +214,10 @@ Horizontal step navigation at the top:
   - [x] Remove or comment out unused collapsible section styles
   - [x] Keep existing card styles (still used within steps)
 
-- [ ] **Task 5.2: Responsive adjustments**
-  - [ ] StepNav scrollable horizontally on mobile
-  - [ ] Step content padding adjustments for small screens
-  - [ ] Post-completion prompts stack vertically on mobile
+- [x] **Task 5.2: Responsive adjustments**
+  - [x] StepNav scrollable horizontally on mobile
+  - [x] Step content padding adjustments for small screens
+  - [x] Post-completion prompts stack vertically on mobile
 
 ---
 
