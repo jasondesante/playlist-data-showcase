@@ -76,15 +76,15 @@ The following decisions were made during planning:
 - [x] Responsive layout (scrollable if many genres)
 
 ### Task 2.2: Create GenreResultsCard Component
-- [ ] Create `src/components/AudioAnalysis/GenreResultsCard.tsx`
-- [ ] Display when `genreProfile` exists
-- [ ] Include:
+- [x] Create `src/components/AudioAnalysis/GenreResultsCard.tsx`
+- [x] Display when `genreProfile` exists
+- [x] Include:
   - Primary genre highlight (large, prominent)
   - GenreBarChart for all detected genres
   - Analysis metadata (duration, timestamp)
   - Confidence threshold indicator
-- [ ] Loading skeleton state while analyzing
-- [ ] Error state with retry option
+- [x] Loading skeleton state while analyzing
+- [x] Error state with retry option
 
 ---
 
