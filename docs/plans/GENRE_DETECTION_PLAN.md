@@ -103,11 +103,11 @@ The following decisions were made during planning:
   - Genre: "ML classification"
 
 ### Task 3.2: Integrate useGenreAnalyzer Hook
-- [ ] Import and use `useGenreAnalyzer` hook in `AudioAnalysisTab.tsx`
-- [ ] Add genre-specific options UI:
-  - [ ] `topN` input (number, 1-20, default 10)
-  - [ ] `threshold` input (range slider, 0.01-0.50, default 0.05)
-- [ ] Update "Analyze" button logic:
+- [x] Import and use `useGenreAnalyzer` hook in `AudioAnalysisTab.tsx`
+- [x] Add genre-specific options UI:
+  - [x] `topN` input (number, 1-20, default 10)
+  - [x] `threshold` input (range slider, 0.01-0.50, default 0.05)
+- [x] Update "Analyze" button logic:
   - Call `analyzeGenre()` when mode is 'genre'
   - Disable button during analysis
   - Show loading state
@@ -119,12 +119,12 @@ The following decisions were made during planning:
 - [ ] Handle empty state when no analysis has been run
 
 ### Task 3.4: Update Primary Control Card
-- [ ] Show genre-specific options when 'Genre' mode selected:
+- [x] Show genre-specific options when 'Genre' mode selected:
   - Top N genres selector
   - Confidence threshold slider
 - [ ] **Hide EQ controls entirely when Genre mode is selected** (not applicable to ML classification)
-- [ ] Update analysis button text: "Analyze Genre" vs "Analyze Audio"
-- [ ] **Hide playback requirement warning** in Genre mode (ML doesn't require real-time playback)
+- [x] Update analysis button text: "Analyze Genre" vs "Analyze Audio"
+- [x] **Hide playback requirement warning** in Genre mode (ML doesn't require real-time playback)
 
 ---
 

@@ -4,6 +4,7 @@ import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
+import { useGenreAnalyzer } from '../../hooks/useGenreAnalyzer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
@@ -28,9 +29,15 @@ import { ColorExtractor } from 'playlist-data-engine';
  * 8. Interactive multiplier controls for real-time frequency adjustment
  */
 export function AudioAnalysisTab() {
-  const { selectedTrack, audioProfile, setAudioProfile } = usePlaylistStore();
+  const { selectedTrack, audioProfile, setAudioProfile, genreProfile } = usePlaylistStore();
   const { playbackState, currentTime, duration, seek } = useAudioPlayerStore();
   const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing, timelineData } = useAudioAnalyzer();
+  const {
+    analyzeGenre,
+    isAnalyzing: isGenreAnalyzing,
+    progress: genreProgress,
+    setOptions: setGenreOptions,
+  } = useGenreAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
@@ -56,6 +63,10 @@ export function AudioAnalysisTab() {
   // Timeline slider values
   const [timelineCount, setTimelineCount] = useState(20); // 5-100 data points
   const [timelineInterval, setTimelineInterval] = useState(2); // 1-10 seconds
+
+  // Genre mode options - topN and threshold
+  const [genreTopN, setGenreTopN] = useState(10); // 1-20 genres to return
+  const [genreThreshold, setGenreThreshold] = useState(0.05); // 0.01-0.50 minimum confidence
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -128,7 +139,16 @@ export function AudioAnalysisTab() {
   const handleAnalyze = async () => {
     if (!selectedTrack?.audio_url) return;
 
-    if (analysisMode === 'timeline') {
+    if (analysisMode === 'genre') {
+      // Genre analysis mode - ML-based classification
+      // Update genre analyzer options before analysis
+      setGenreOptions({
+        topN: genreTopN,
+        threshold: genreThreshold,
+      });
+      // Analyze genre - results are stored in playlistStore via the hook
+      await analyzeGenre(selectedTrack.audio_url);
+    } else if (analysisMode === 'timeline') {
       // Timeline analysis mode - analyze full song with timeline data points
       const strategy = timelineMode === 'count'
         ? { type: 'count' as const, count: timelineCount }
@@ -570,25 +590,80 @@ export function AudioAnalysisTab() {
                   )}
                 </div>
               )}
+
+              {/* Genre Options Sub-component - shown when Genre mode is selected */}
+              {analysisMode === 'genre' && (
+                <div className="audio-analysis-genre-options">
+                  {/* Top N slider */}
+                  <div className="audio-analysis-genre-slider-container">
+                    <div className="audio-analysis-genre-slider-header">
+                      <span className="audio-analysis-genre-slider-label">Top Genres</span>
+                      <span className="audio-analysis-genre-slider-value">{genreTopN}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      step="1"
+                      value={genreTopN}
+                      onChange={(e) => setGenreTopN(parseInt(e.target.value, 10))}
+                      className="audio-analysis-genre-slider"
+                      style={{ '--slider-value': `${((genreTopN - 1) / 19) * 100}%` } as React.CSSProperties}
+                      aria-label="Number of top genres to return"
+                    />
+                    <div className="audio-analysis-genre-slider-marks">
+                      <span className="audio-analysis-genre-slider-mark">1</span>
+                      <span className="audio-analysis-genre-slider-mark">20</span>
+                    </div>
+                  </div>
+
+                  {/* Threshold slider */}
+                  <div className="audio-analysis-genre-slider-container">
+                    <div className="audio-analysis-genre-slider-header">
+                      <span className="audio-analysis-genre-slider-label">Min Confidence</span>
+                      <span className="audio-analysis-genre-slider-value">{(genreThreshold * 100).toFixed(0)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="0.50"
+                      step="0.01"
+                      value={genreThreshold}
+                      onChange={(e) => setGenreThreshold(parseFloat(e.target.value))}
+                      className="audio-analysis-genre-slider"
+                      style={{ '--slider-value': `${((genreThreshold - 0.01) / 0.49) * 100}%` } as React.CSSProperties}
+                      aria-label="Minimum confidence threshold"
+                    />
+                    <div className="audio-analysis-genre-slider-marks">
+                      <span className="audio-analysis-genre-slider-mark">1%</span>
+                      <span className="audio-analysis-genre-slider-mark">50%</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 4. Action Section */}
             <div className="audio-analysis-action-integration">
               <Button
-                onClick={audioProfile ? handleApplyMultipliers : handleAnalyze}
-                disabled={isAnalyzing || isTimelineAnalyzing || playbackState !== 'playing'}
-                isLoading={isAnalyzing || isTimelineAnalyzing}
+                onClick={analysisMode === 'genre' ? handleAnalyze : (audioProfile ? handleApplyMultipliers : handleAnalyze)}
+                disabled={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing || (analysisMode !== 'genre' && playbackState !== 'playing')}
+                isLoading={isAnalyzing || isTimelineAnalyzing || isGenreAnalyzing}
                 variant="primary"
                 size="lg"
                 className="audio-analysis-primary-action-button"
-                title={playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
+                title={analysisMode !== 'genre' && playbackState !== 'playing' ? 'Start playing audio first to analyze' : ''}
               >
-                {isAnalyzing || isTimelineAnalyzing
-                  ? `${progress}%`
-                  : audioProfile ? 'Re-Analyze' : 'Analyze Audio'}
+                {isGenreAnalyzing
+                  ? `${genreProgress}%`
+                  : isAnalyzing || isTimelineAnalyzing
+                    ? `${progress}%`
+                    : analysisMode === 'genre'
+                      ? (genreProfile ? 'Re-Analyze Genre' : 'Analyze Genre')
+                      : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
               </Button>
 
-              {playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
+              {analysisMode !== 'genre' && playbackState !== 'playing' && !isAnalyzing && !isTimelineAnalyzing && (
                 <div className="audio-analysis-playback-warning">
                   Play audio to enable
                 </div>
