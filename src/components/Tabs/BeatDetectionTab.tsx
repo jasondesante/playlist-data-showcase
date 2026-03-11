@@ -461,7 +461,7 @@ export function BeatDetectionTab() {
                 return wrapContent(
                     <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card">
                         <div className="audio-analysis-subdivision-section">
-                            <h3 className="audio-analysis-step-title">Beat Subdivision</h3>
+                            <h3 className="audio-analysis-step-title">Subdivisions</h3>
                             <SubdivisionSettings disabled={isBeatGenerating} />
                         </div>
                     </Card>

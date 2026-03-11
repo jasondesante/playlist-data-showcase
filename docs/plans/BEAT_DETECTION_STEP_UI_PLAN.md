@@ -149,11 +149,11 @@ Horizontal step navigation at the top:
   - [x] On analysis complete: call `setCurrentStep(2)` to auto-advance
   - [x] When user returns to Step 1 from another step: show full content (for re-analyze)
 
-- [ ] **Task 3.4: Refactor Step 2 (Subdivisions) content**
-  - [ ] Move SubdivisionSettings to Step 2
-  - [ ] Remove `<details>` wrapper - content always visible when on this step
-  - [ ] Card wrapper with "Subdivisions" header
-  - [ ] No "Skip" button - users click Step 4 tab to skip
+- [x] **Task 3.4: Refactor Step 2 (Subdivisions) content**
+  - [x] Move SubdivisionSettings to Step 2
+  - [x] Remove `<details>` wrapper - content always visible when on this step
+  - [x] Card wrapper with "Subdivisions" header
+  - [x] No "Skip" button - users click Step 4 tab to skip
 
 - [ ] **Task 3.5: Refactor Step 3 (Chart Editor) content**
   - [ ] Move ChartEditor + ChartEditorToolbar to Step 3
