@@ -404,7 +404,8 @@ export function AudioAnalysisTab() {
               </div>
             </div>
 
-            {/* 2. Integrated EQ Section */}
+            {/* 2. Integrated EQ Section - Hidden in Genre mode (not applicable to ML classification) */}
+            {analysisMode !== 'genre' && (
             <div className="audio-analysis-eq-integration">
                 <div className="audio-analysis-eq-header-row">
                   <div className="audio-analysis-eq-title-main">EQ</div>
@@ -473,6 +474,7 @@ export function AudioAnalysisTab() {
                   </div>
                 </div>
             </div>
+            )}
 
             {/* 3. Analysis Mode Selector */}
             <div className="audio-analysis-mode-card">

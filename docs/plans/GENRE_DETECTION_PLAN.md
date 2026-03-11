@@ -122,7 +122,7 @@ The following decisions were made during planning:
 - [x] Show genre-specific options when 'Genre' mode selected:
   - Top N genres selector
   - Confidence threshold slider
-- [ ] **Hide EQ controls entirely when Genre mode is selected** (not applicable to ML classification)
+- [x] **Hide EQ controls entirely when Genre mode is selected** (not applicable to ML classification)
 - [x] Update analysis button text: "Analyze Genre" vs "Analyze Audio"
 - [x] **Hide playback requirement warning** in Genre mode (ML doesn't require real-time playback)
 
