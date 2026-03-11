@@ -179,9 +179,9 @@ Horizontal step navigation at the top:
 
 ## Phase 4: Navigation Behavior
 
-- [ ] **Task 4.1: Implement auto-advance on analysis complete**
-  - [ ] After successful beatMap generation, set currentStep to 2
-  - [ ] Step 4 remains clickable as an alternative path
+- [x] **Task 4.1: Implement auto-advance on analysis complete**
+  - [x] After successful beatMap generation, set currentStep to 2
+  - [x] Step 4 remains clickable as an alternative path
 
 - [ ] **Task 4.2: Handle practice mode transitions**
   - [ ] When entering practice mode: hide StepNav (full-screen practice)
