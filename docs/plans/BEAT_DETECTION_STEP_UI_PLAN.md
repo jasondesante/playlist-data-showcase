@@ -155,11 +155,11 @@ Horizontal step navigation at the top:
   - [x] Card wrapper with "Subdivisions" header
   - [x] No "Skip" button - users click Step 4 tab to skip
 
-- [ ] **Task 3.5: Refactor Step 3 (Chart Editor) content**
-  - [ ] Move ChartEditor + ChartEditorToolbar to Step 3
-  - [ ] Remove `<details>` wrapper
-  - [ ] Card wrapper with "Chart Editor" header
-  - [ ] Remove placeholder logic (step will be disabled if not available)
+- [x] **Task 3.5: Refactor Step 3 (Chart Editor) content**
+  - [x] Move ChartEditor + ChartEditorToolbar to Step 3
+  - [x] Remove `<details>` wrapper
+  - [x] Card wrapper with "Chart Editor" header
+  - [x] Remove placeholder logic (step will be disabled if not available)
 
 - [ ] **Task 3.6: Refactor Step 4 (Practice) content**
   - [ ] Move BeatMapSummary to Step 4

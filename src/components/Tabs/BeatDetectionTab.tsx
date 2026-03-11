@@ -469,24 +469,8 @@ export function BeatDetectionTab() {
 
             case 3:
                 // Step 3: Chart Editor - Key assignment for rhythm game
-                if (!subdividedBeatMap) {
-                    return wrapContent(
-                        <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
-                            <div className="audio-analysis-step-placeholder">
-                                <div className="audio-analysis-step-placeholder-icon">🎹</div>
-                                <h4 className="audio-analysis-step-placeholder-title">Subdivided Beat Map Required</h4>
-                                <p className="audio-analysis-step-placeholder-text">
-                                    The Chart Editor requires a <strong>subdivided beat map</strong> to assign keys to beats.
-                                    Generate a subdivided beat map in Step 2 (Subdivide) to enable chart editing.
-                                </p>
-                                <p className="audio-analysis-step-placeholder-hint">
-                                    💡 Tip: Subdivided beat maps work with specific rhythm patterns (8th notes, 16th notes, etc.)
-                                    which are required for creating rhythm game charts.
-                                </p>
-                            </div>
-                        </Card>
-                    );
-                }
+                // Note: Step 3 is disabled in StepNav when subdividedBeatMap is null,
+                // so this content is only rendered when the step is available.
                 return wrapContent(
                     <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
                         <div className="audio-analysis-chart-editor-section">
