@@ -110,7 +110,7 @@ export function GenreBarChart({
                         <div className="genre-bar-track">
                             <div
                                 className={`genre-bar-fill ${isPrimary ? 'genre-bar-fill-primary' : ''}`}
-                                style={{ width: `${percent}%` }}
+                                style={{ '--fill-width': `${percent}%` } as React.CSSProperties}
                             >
                                 {/* Animated shimmer effect for primary */}
                                 {isPrimary && <div className="genre-bar-shimmer" />}

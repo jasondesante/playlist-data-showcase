@@ -13,6 +13,88 @@
     padding: 0.25rem;
 }
 
+/* ============================================
+   ENTRANCE ANIMATIONS
+   Staggered animation for bars appearing
+   ============================================ */
+
+/* Initial state - bars start invisible and off-position */
+.genre-bar-row {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: genreBarEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered delays for each bar (up to 20 items) */
+.genre-bar-row:nth-child(1) { animation-delay: 0ms; }
+.genre-bar-row:nth-child(2) { animation-delay: 40ms; }
+.genre-bar-row:nth-child(3) { animation-delay: 80ms; }
+.genre-bar-row:nth-child(4) { animation-delay: 120ms; }
+.genre-bar-row:nth-child(5) { animation-delay: 160ms; }
+.genre-bar-row:nth-child(6) { animation-delay: 200ms; }
+.genre-bar-row:nth-child(7) { animation-delay: 240ms; }
+.genre-bar-row:nth-child(8) { animation-delay: 280ms; }
+.genre-bar-row:nth-child(9) { animation-delay: 320ms; }
+.genre-bar-row:nth-child(10) { animation-delay: 360ms; }
+.genre-bar-row:nth-child(11) { animation-delay: 400ms; }
+.genre-bar-row:nth-child(12) { animation-delay: 440ms; }
+.genre-bar-row:nth-child(13) { animation-delay: 480ms; }
+.genre-bar-row:nth-child(14) { animation-delay: 520ms; }
+.genre-bar-row:nth-child(15) { animation-delay: 560ms; }
+.genre-bar-row:nth-child(16) { animation-delay: 600ms; }
+.genre-bar-row:nth-child(17) { animation-delay: 640ms; }
+.genre-bar-row:nth-child(18) { animation-delay: 680ms; }
+.genre-bar-row:nth-child(19) { animation-delay: 720ms; }
+.genre-bar-row:nth-child(20) { animation-delay: 760ms; }
+
+@keyframes genreBarEnter {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Bar fill animation - uses CSS custom property for target width */
+.genre-bar-fill {
+    --fill-width: 0%;
+    animation: genreBarFillGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered fill animation delays */
+.genre-bar-row:nth-child(1) .genre-bar-fill { animation-delay: 100ms; }
+.genre-bar-row:nth-child(2) .genre-bar-fill { animation-delay: 140ms; }
+.genre-bar-row:nth-child(3) .genre-bar-fill { animation-delay: 180ms; }
+.genre-bar-row:nth-child(4) .genre-bar-fill { animation-delay: 220ms; }
+.genre-bar-row:nth-child(5) .genre-bar-fill { animation-delay: 260ms; }
+.genre-bar-row:nth-child(6) .genre-bar-fill { animation-delay: 300ms; }
+.genre-bar-row:nth-child(7) .genre-bar-fill { animation-delay: 340ms; }
+.genre-bar-row:nth-child(8) .genre-bar-fill { animation-delay: 380ms; }
+.genre-bar-row:nth-child(9) .genre-bar-fill { animation-delay: 420ms; }
+.genre-bar-row:nth-child(10) .genre-bar-fill { animation-delay: 460ms; }
+.genre-bar-row:nth-child(11) .genre-bar-fill { animation-delay: 500ms; }
+.genre-bar-row:nth-child(12) .genre-bar-fill { animation-delay: 540ms; }
+.genre-bar-row:nth-child(13) .genre-bar-fill { animation-delay: 580ms; }
+.genre-bar-row:nth-child(14) .genre-bar-fill { animation-delay: 620ms; }
+.genre-bar-row:nth-child(15) .genre-bar-fill { animation-delay: 660ms; }
+.genre-bar-row:nth-child(16) .genre-bar-fill { animation-delay: 700ms; }
+.genre-bar-row:nth-child(17) .genre-bar-fill { animation-delay: 740ms; }
+.genre-bar-row:nth-child(18) .genre-bar-fill { animation-delay: 780ms; }
+.genre-bar-row:nth-child(19) .genre-bar-fill { animation-delay: 820ms; }
+.genre-bar-row:nth-child(20) .genre-bar-fill { animation-delay: 860ms; }
+
+@keyframes genreBarFillGrow {
+    0% {
+        width: 0;
+    }
+    100% {
+        width: var(--fill-width);
+    }
+}
+
 /* Empty state */
 .genre-bar-chart-empty {
     display: flex;
@@ -40,12 +122,65 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.375rem 0;
-    transition: background-color var(--duration-fast) var(--ease-out);
+    border-radius: calc(var(--radius) / 2);
+    transition: background-color var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .genre-bar-row:hover {
-    background-color: hsl(var(--muted) / 0.1);
-    border-radius: calc(var(--radius) / 2);
+    background-color: hsl(var(--muted) / 0.15);
+}
+
+/* Hover tooltip showing exact percentage */
+.genre-bar-row:hover .genre-bar-value {
+    color: hsl(var(--foreground));
+    transform: scale(1.05);
+}
+
+.genre-bar-row:hover .genre-bar-label {
+    color: hsl(var(--foreground));
+}
+
+/* Hover effect on bar track */
+.genre-bar-row:hover .genre-bar-track {
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2),
+                0 0 0 1px hsl(var(--primary) / 0.2);
+}
+
+/* Hover effect on bar fill */
+.genre-bar-row:hover .genre-bar-fill {
+    filter: brightness(1.1);
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+}
+
+/* ============================================
+   PRIMARY GENRE ROW HIGHLIGHT
+   ============================================ */
+
+/* Primary genre row gets special styling */
+.genre-bar-row.genre-bar-primary {
+    background: linear-gradient(
+        90deg,
+        hsl(51 100% 50% / 0.08) 0%,
+        hsl(51 100% 50% / 0.02) 100%
+    );
+    border: 1px solid hsl(51 100% 50% / 0.25);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.5rem;
+    margin: 0.125rem 0;
+    box-shadow: 0 0 12px hsl(51 100% 50% / 0.15),
+                inset 0 1px 0 hsl(0 0% 100% / 0.05);
+}
+
+/* Primary genre row hover effect */
+.genre-bar-row.genre-bar-primary:hover {
+    background: linear-gradient(
+        90deg,
+        hsl(51 100% 50% / 0.12) 0%,
+        hsl(51 100% 50% / 0.04) 100%
+    );
+    box-shadow: 0 0 16px hsl(51 100% 50% / 0.25),
+                inset 0 1px 0 hsl(0 0% 100% / 0.08);
 }
 
 /* ============================================
@@ -62,6 +197,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color var(--duration-fast) var(--ease-out);
 }
 
 .genre-bar-primary-indicator {
@@ -172,10 +308,17 @@
     font-feature-settings: "tnum" 1;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-out),
+                transform var(--duration-fast) var(--ease-out);
 }
 
 .genre-bar-primary .genre-bar-value {
     color: hsl(51 100% 50% / 0.9);
+}
+
+/* Tooltip-like effect on hover */
+.genre-bar-row:hover .genre-bar-value::after {
+    content: '';
 }
 
 /* ============================================
@@ -188,6 +331,20 @@
     padding-top: 0.5rem;
     margin-top: 0.25rem;
     border-top: 1px solid hsl(var(--border) / 0.5);
+    opacity: 0;
+    animation: genreLegendEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 800ms; /* Appear after all bars have started */
+}
+
+@keyframes genreLegendEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .genre-bar-legend-item {
@@ -238,6 +395,20 @@
    ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
+    /* Disable entrance animations */
+    .genre-bar-row {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Disable bar fill animation, show immediately */
+    .genre-bar-fill {
+        animation: none;
+        width: var(--fill-width) !important;
+    }
+
+    /* Disable transitions */
     .genre-bar-fill {
         transition: none;
     }
@@ -250,6 +421,18 @@
     .genre-bar-shimmer {
         animation: none;
         display: none;
+    }
+
+    /* Disable legend entrance animation */
+    .genre-bar-legend {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Disable hover transforms */
+    .genre-bar-row:hover .genre-bar-value {
+        transform: none;
     }
 }
 
