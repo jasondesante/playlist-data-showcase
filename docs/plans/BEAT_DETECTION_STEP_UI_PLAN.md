@@ -237,10 +237,10 @@ Horizontal step navigation at the top:
   - [x] Storage errors and cache clearing don't break navigation (`storageError` is separate state, doesn't affect step navigation)
   - [x] Slide animation direction correct (forward = left, backward = right) (verified via `BeatDetectionTab.css` and `useStepNavigationDirection` hook)
 
-- [ ] **Task 6.3: Test post-completion prompts**
-  - [ ] Prompts appear after completing each step
-  - [ ] Clicking prompt link navigates to correct step
-  - [ ] Prompts update correctly when returning to previous steps
+- [x] **Task 6.3: Test post-completion prompts** ✅
+  - [x] Prompts appear after completing each step (verified via `BeatDetectionTab.tsx:464-481, 508-525, 545-556` - visibility controlled by `stepCompletion.stepN && !isBeatGenerating`)
+  - [x] Clicking prompt link navigates to correct step (verified via `setCurrentStep(n)` calls in action onClick handlers)
+  - [x] Prompts update correctly when returning to previous steps (verified - `stepCompletion` computed from store state, persists on navigation)
 
 - [ ] **Task 6.4: Accessibility verification**
   - [ ] Tab navigation reaches all available steps
