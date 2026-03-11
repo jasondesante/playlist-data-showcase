@@ -91,13 +91,13 @@ The following decisions were made during planning:
 ## Phase 3: Integration with AudioAnalysisTab
 
 ### Task 3.1: Update Mode Selector
-- [ ] Modify analysis mode radio group in `AudioAnalysisTab.tsx`
-- [ ] Change from boolean (`isTimelineMode`) to enum:
+- [x] Modify analysis mode radio group in `AudioAnalysisTab.tsx`
+- [x] Change from boolean (`isTimelineMode`) to enum:
   ```typescript
   type AnalysisMode = 'normal' | 'timeline' | 'genre';
   ```
-- [ ] Add 'Genre' option to radio buttons (mutually exclusive with Normal/Timeline)
-- [ ] Update mode description text for each option:
+- [x] Add 'Genre' option to radio buttons (mutually exclusive with Normal/Timeline)
+- [x] Update mode description text for each option:
   - Normal: "3 samples"
   - Timeline: "Full analysis"
   - Genre: "ML classification"

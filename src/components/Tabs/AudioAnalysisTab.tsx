@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Waves, Music, Sparkles, Zap, Activity, Clock } from 'lucide-react';
+import { Waves, Music, Sparkles, Zap, Activity, Clock, Disc } from 'lucide-react';
 import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -49,8 +49,8 @@ export function AudioAnalysisTab() {
   const [bassSliderPos, setBassSliderPos] = useState(50);     // 1.0
   const [midSliderPos, setMidSliderPos] = useState(50);       // 1.0
 
-  // Analysis mode state for Phase 3: Normal vs Timeline analysis
-  const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline'>('normal');
+  // Analysis mode state for Phase 3: Normal vs Timeline vs Genre analysis
+  const [analysisMode, setAnalysisMode] = useState<'normal' | 'timeline' | 'genre'>('normal');
   // Timeline mode options - count vs interval toggle
   const [timelineMode, setTimelineMode] = useState<'count' | 'interval'>('count');
   // Timeline slider values
@@ -479,6 +479,17 @@ export function AudioAnalysisTab() {
                   <Clock className="audio-analysis-mode-icon" size={16} />
                   <span className="audio-analysis-mode-label">Timeline</span>
                   <span className="audio-analysis-mode-desc">Full analysis</span>
+                </button>
+                <button
+                  type="button"
+                  className={`audio-analysis-mode-btn ${analysisMode === 'genre' ? 'audio-analysis-mode-btn-active' : ''}`}
+                  onClick={() => setAnalysisMode('genre')}
+                  aria-checked={analysisMode === 'genre'}
+                  role="radio"
+                >
+                  <Disc className="audio-analysis-mode-icon" size={16} />
+                  <span className="audio-analysis-mode-label">Genre</span>
+                  <span className="audio-analysis-mode-desc">ML classification</span>
                 </button>
               </div>
 
