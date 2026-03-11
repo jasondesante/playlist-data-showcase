@@ -6,9 +6,11 @@
  * hitting perfectly on beat.
  *
  * Features:
- * - Horizontal bar that fills based on hotness (0-100%)
+ * - Tiered bar that fills within current tier, then "expands" to next tier (DMC style)
+ * - Tier label display (D, C, B, A, S, SS, Platinum)
  * - Direction icon + label display (Pushing, Laid Back, On Point)
  * - Streak counter display
+ * - Tier-up animation when advancing to next tier
  * - Compact variant for inline display next to timeline
  * - Accessible with screen reader announcements for state changes
  * - Groove end bonus display with sparkle animation
@@ -21,12 +23,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../utils/cn';
-import type { GrooveDirection, GrooveEndBonusResult } from '@/types';
+import type { GrooveDirection, GrooveEndBonusResult, GrooveTier } from '@/types';
+import { GROOVE_TIERS } from 'playlist-data-engine';
 import './GrooveMeter.css';
 
 export interface GrooveMeterProps {
-  /** Current hotness value (0-100) */
+  /** Current hotness value (0+, can exceed 100 for higher tiers) */
   hotness: number;
+  /** Current groove tier (D, C, B, A, S, SS, Platinum) */
+  tier: GrooveTier;
   /** Current groove direction */
   direction: GrooveDirection;
   /** Current streak length */
@@ -61,23 +66,62 @@ function getDirectionInfo(direction: GrooveDirection): {
 }
 
 /**
- * Get the hotness level for color gradient purposes
+ * Get the display info for a groove tier
  */
-function getHotnessLevel(hotness: number): string {
-  if (hotness >= 90) return 'groove-meter__fill--blazing';
-  if (hotness >= 76) return 'groove-meter__fill--on-fire';
-  if (hotness >= 51) return 'groove-meter__fill--hot';
-  if (hotness >= 26) return 'groove-meter__fill--warm';
-  return 'groove-meter__fill--cool';
+function getTierDisplayInfo(tier: GrooveTier): { label: string; rank: number } {
+  switch (tier) {
+    case 'Platinum':
+      return { label: 'PLATINUM', rank: 7 };
+    case 'SS':
+      return { label: 'SS', rank: 6 };
+    case 'S':
+      return { label: 'S', rank: 5 };
+    case 'A':
+      return { label: 'A', rank: 4 };
+    case 'B':
+      return { label: 'B', rank: 3 };
+    case 'C':
+      return { label: 'C', rank: 2 };
+    case 'D':
+    default:
+      return { label: 'D', rank: 1 };
+  }
+}
+
+/**
+ * Calculate the fill percentage within the current tier (0-100%)
+ * This creates the DMC-style "fill and expand" effect
+ */
+function calculateTierFill(hotness: number, tier: GrooveTier): number {
+  // Find the current tier config
+  const tierConfig = GROOVE_TIERS.find((t) => t.tier === tier);
+  if (!tierConfig) return 0;
+
+  const { minHotness, maxHotness } = tierConfig;
+  const tierRange = maxHotness === Infinity ? 50 : maxHotness - minHotness;
+
+  // Calculate progress within this tier (0-100%)
+  const progress = Math.max(0, hotness - minHotness);
+  const fillPercent = Math.min(100, (progress / tierRange) * 100);
+
+  return fillPercent;
+}
+
+/**
+ * Get the CSS class for tier-specific styling
+ */
+function getTierClass(tier: GrooveTier): string {
+  return `groove-meter__fill--tier-${tier.toLowerCase()}`;
 }
 
 /**
  * GrooveMeter Component
  *
- * Renders a horizontal groove meter bar with direction indicator and streak counter.
+ * Renders a tiered horizontal groove meter bar with direction indicator, tier display, and streak counter.
  */
 export function GrooveMeter({
   hotness,
+  tier,
   direction,
   streak,
   variant = 'full',
@@ -86,12 +130,19 @@ export function GrooveMeter({
   className,
 }: GrooveMeterProps) {
   const directionInfo = getDirectionInfo(direction);
-  const hotnessLevel = getHotnessLevel(hotness);
+  const tierInfo = getTierDisplayInfo(tier);
+  const tierFillPercent = calculateTierFill(hotness, tier);
+  const tierClass = getTierClass(tier);
 
   // Track direction changes for animation
   const prevDirectionRef = useRef<GrooveDirection>(direction);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const animationKeyRef = useRef(0);
+  const [isDirectionAnimating, setIsDirectionAnimating] = useState(false);
+  const directionAnimationKeyRef = useRef(0);
+
+  // Track tier changes for DMC-style tier-up animation
+  const prevTierRef = useRef<GrooveTier>(tier);
+  const [isTierUpAnimating, setIsTierUpAnimating] = useState(false);
+  const tierAnimationKeyRef = useRef(0);
 
   // Track hotness milestones for screen reader announcements
   const prevHotnessRef = useRef(hotness);
@@ -117,16 +168,39 @@ export function GrooveMeter({
     }
   }, [pendingBonus, onBonusDisplayed]);
 
+  // Detect tier changes and trigger tier-up animation (DMC style)
+  useEffect(() => {
+    const prevRank = getTierDisplayInfo(prevTierRef.current).rank;
+    const currentRank = tierInfo.rank;
+
+    // Only animate when tier increases (tier-up)
+    if (currentRank > prevRank) {
+      setIsTierUpAnimating(true);
+      tierAnimationKeyRef.current += 1;
+
+      // Remove animation class after animation completes
+      const timer = setTimeout(() => {
+        setIsTierUpAnimating(false);
+      }, 600); // Match CSS animation duration
+
+      prevTierRef.current = tier;
+      return () => clearTimeout(timer);
+    }
+
+    // Update ref even if no animation (for tier drops)
+    prevTierRef.current = tier;
+  }, [tier, tierInfo.rank]);
+
   // Detect direction changes and trigger animation
   useEffect(() => {
     if (prevDirectionRef.current !== direction) {
       // Direction changed - trigger animation
-      setIsAnimating(true);
-      animationKeyRef.current += 1;
+      setIsDirectionAnimating(true);
+      directionAnimationKeyRef.current += 1;
 
       // Remove animation class after animation completes
       const timer = setTimeout(() => {
-        setIsAnimating(false);
+        setIsDirectionAnimating(false);
       }, 400); // Match CSS animation duration
 
       prevDirectionRef.current = direction;
@@ -169,17 +243,18 @@ export function GrooveMeter({
     prevHotnessRef.current = hotness;
   }, [hotness]);
 
-  // Clamp hotness to valid range
-  const clampedHotness = Math.max(0, Math.min(100, hotness));
+  // Clamp tier fill to valid range
+  const clampedFill = Math.max(0, Math.min(100, tierFillPercent));
 
   const containerClasses = cn(
     'groove-meter',
     `groove-meter--${variant}`,
+    isTierUpAnimating && 'groove-meter--tier-up',
     className
   );
 
   // Build accessible label with all info
-  const accessibleLabel = `Groove meter: ${clampedHotness}% hotness, ${directionInfo.label.toLowerCase()} timing, ${streak} streak`;
+  const accessibleLabel = `Groove meter: Tier ${tierInfo.label}, ${clampedFill}% within tier, ${directionInfo.label.toLowerCase()} timing, ${streak} streak`;
 
   return (
     <>
@@ -196,18 +271,40 @@ export function GrooveMeter({
       <div
         className={containerClasses}
         role="progressbar"
-        aria-valuenow={clampedHotness}
+        aria-valuenow={clampedFill}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={accessibleLabel}
       >
+        {/* Tier label display */}
+        <div className="groove-meter__tier-row">
+          <div
+            className={cn(
+              'groove-meter__tier-label',
+              `groove-meter__tier-label--${tier.toLowerCase()}`,
+              isTierUpAnimating && 'groove-meter__tier-label--animating'
+            )}
+            key={`tier-${tierAnimationKeyRef.current}`}
+            aria-label={`Current tier: ${tierInfo.label}`}
+          >
+            <span className="groove-meter__tier-label-text">{tierInfo.label}</span>
+          </div>
+        </div>
+
         {/* Main bar section */}
         <div className="groove-meter__bar-container">
           <div
-            className={cn('groove-meter__fill', hotnessLevel)}
-            style={{ width: `${clampedHotness}%` }}
+            className={cn('groove-meter__fill', tierClass)}
+            style={{ width: `${clampedFill}%` }}
             aria-hidden="true"
           />
+          {/* Tier-up flash effect */}
+          {isTierUpAnimating && (
+            <div
+              className="groove-meter__tier-flash"
+              key={`flash-${tierAnimationKeyRef.current}`}
+            />
+          )}
         </div>
 
         {/* Info row: direction + streak */}
@@ -216,15 +313,15 @@ export function GrooveMeter({
             className={cn(
               'groove-meter__direction',
               directionInfo.className,
-              isAnimating && 'groove-meter__direction--animating'
+              isDirectionAnimating && 'groove-meter__direction--animating'
             )}
-            key={`direction-${animationKeyRef.current}`}
+            key={`direction-${directionAnimationKeyRef.current}`}
             aria-label={`Timing direction: ${directionInfo.label}`}
           >
             <span
               className={cn(
                 'groove-meter__direction-icon',
-                isAnimating && 'groove-meter__direction-icon--animating'
+                isDirectionAnimating && 'groove-meter__direction-icon--animating'
               )}
               aria-hidden="true"
             >
@@ -233,7 +330,7 @@ export function GrooveMeter({
             <span
               className={cn(
                 'groove-meter__direction-label',
-                isAnimating && 'groove-meter__direction-label--animating'
+                isDirectionAnimating && 'groove-meter__direction-label--animating'
               )}
             >
               {directionInfo.label}

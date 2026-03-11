@@ -38,6 +38,8 @@ export type {
     GrooveState,
     GrooveAnalyzerOptions,
     GroovePenaltyConfig,
+    GrooveTier,
+    GrooveTierConfig,
 
     // Required Keys (Chart Mode)
     KeyAssignableBeatMap,

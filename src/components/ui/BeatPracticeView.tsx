@@ -1201,6 +1201,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           <div className="beat-practice-groove-container">
             <GrooveMeter
               hotness={grooveState.hotness}
+              tier={grooveState.tier}
               direction={grooveState.pocketDirection}
               streak={grooveState.streakLength}
               variant="compact"
@@ -1417,6 +1418,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
             <div className="beat-practice-groove-container beat-practice-groove-container--keylane">
               <GrooveMeter
                 hotness={grooveState.hotness}
+                tier={grooveState.tier}
                 direction={grooveState.pocketDirection}
                 streak={grooveState.streakLength}
                 variant="full"
