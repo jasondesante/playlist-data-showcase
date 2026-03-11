@@ -232,7 +232,7 @@ Type definitions for all core data structures.
 | Type | Description | Key Properties |
 |------|-------------|----------------|
 | `ServerlessPlaylist` | Main container object returned by `PlaylistParser` | `name`, `tracks`, `image`, `creator`, `genre?`, `tags?` |
-| `PlaylistTrack` | Flattened track object containing audio_url | `audio_url` (critical), `title`, `artist`, `image_url`, chain data |
+| `PlaylistTrack` | Flattened track object containing audio_url | `audio_url` (critical), `title`, `artist`, `image_url`, `image_thumb_url?`, chain data |
 | `RawArweavePlaylist` | Raw input schema received from Arweave before parsing | `tracks[].metadata` (stringified JSON), blockchain shell data |
 
 ### AudioProfile
@@ -1161,6 +1161,7 @@ Extracts metadata fields from playlist track data. All methods are static.
 |--------|---------|-------------|
 | `static extractAudioUrl(data)` | `string \| null` | Extracts audio URL with priority: mp3_url > lossy_audio > audio_url > lossless_audio > animation_url |
 | `static extractImageUrl(data)` | `string \| null` | Extracts image URL with priority: image_small > image > image_large > image_thumb |
+| `static extractImageThumbUrl(data)` | `string \| null` | Extracts thumbnail URL with priority: image_thumb_url > image_thumb |
 | `static extractTitle(data)` | `string \| null` | Extracts name/title with priority: name > title |
 | `static extractArtist(data)` | `string \| null` | Extracts artist with priority: artist > created_by > minter |
 | `static parseMetadata(metadata)` | `Record<string, unknown> \| null` | Parses metadata string to JSON object with error handling |
@@ -1189,7 +1190,7 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `getTracks(playlist)` | `SimpleTrack[]` | Simplified objects: `{ title, artist, audio_url, image_url }` |
+| `getTracks(playlist)` | `SimpleTrack[]` | Simplified objects: `{ title, artist, audio_url, image_url, image_thumb_url? }` |
 | `getFullTracks(playlist)` | `object[]` | All available track data as plain objects |
 
 #### VRM Extraction Functions
@@ -1197,7 +1198,7 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 | Function | Returns | Description |
 |----------|---------|-------------|
 | `getVRMs(playlist)` | `string[]` | VRM URLs from tracks that have the optional `vrm` field |
-| `getVRMTracks(playlist)` | `VRMTrack[]` | Track objects with VRM data: `{ title, artist, audio_url, image_url, vrm }` |
+| `getVRMTracks(playlist)` | `VRMTrack[]` | Track objects with VRM data: `{ title, artist, audio_url, image_url, image_thumb_url?, vrm }` |
 
 #### Types
 
@@ -1206,8 +1207,8 @@ Simple functions that return arrays of basic data from playlists. Works with bot
 | Type | Description |
 |------|-------------|
 | `PlaylistInput` | Union of `ServerlessPlaylist` or `RawArweavePlaylist` |
-| `SimpleTrack` | Simplified track: `{ title, artist, audio_url, image_url }` |
-| `VRMTrack` | Track with VRM: `{ title, artist, audio_url, image_url, vrm }` |
+| `SimpleTrack` | Simplified track: `{ title, artist, audio_url, image_url, image_thumb_url? }` |
+| `VRMTrack` | Track with VRM: `{ title, artist, audio_url, image_url, image_thumb_url?, vrm }` |
 
 *For usage examples, see [USAGE_IN_OTHER_PROJECTS.md](USAGE_IN_OTHER_PROJECTS.md#playlist-utilities).*
 
@@ -1506,8 +1507,9 @@ Beat detection system based on the Ellis Dynamic Programming algorithm. Provides
 | `SubdivisionCallback` | Callback type for beat events | `(event: SubdivisionBeatEvent) => void` |
 | `SubdivisionTransitionMode` | Transition mode for subdivision changes | `'immediate'` \| `'next-downbeat'` \| `'next-measure'` |
 | `GrooveDirection` | Direction of established pocket relative to beat | `'push'` \| `'pull'` \| `'neutral'` |
-| `GrooveResult` | Result returned after each hit recorded | `pocketDirection`, `establishedOffset`, `consistency`, `hotness`, `streakLength`, `inPocket`, `pocketWindow` |
-| `GrooveState` | Snapshot of current groove analyzer state | `pocketDirection`, `establishedOffset`, `hotness`, `streakLength`, `hitCount`, `pocketWindow` |
+| `GrooveTier` | Groove intensity tier based on hotness | `'D'` \| `'C'` \| `'B'` \| `'A'` \| `'S'` \| `'SS'` \| `'Platinum'` |
+| `GrooveResult` | Result returned after each hit recorded | `pocketDirection`, `establishedOffset`, `consistency`, `hotness`, `tier`, `streakLength`, `inPocket`, `pocketWindow` |
+| `GrooveState` | Snapshot of current groove analyzer state | `pocketDirection`, `establishedOffset`, `hotness`, `tier`, `streakLength`, `hitCount`, `pocketWindow` |
 | `GrooveAnalyzerOptions` | Configuration for GrooveAnalyzer | `minHitsForPocket`, `basePocketWindowFraction`, `minPocketWindowSeconds`, `hotnessGainPerHit`, `hotnessLossOnBreak`, `hotnessLossOnMiss`, `averagingWindowSize`, `neutralDeadZone` |
 | `GroovePenaltyConfig` | Groove penalty configuration for difficulty presets | `hotnessLossOnMiss`, `hotnessLossOnBreak` |
 
@@ -1716,6 +1718,31 @@ The analyzer tracks recent hit offsets in a rolling window (default: 4 hits) and
 - **push**: Playing ahead of the beat (negative offset, rushing)
 - **pull**: Playing behind the beat (positive offset, dragging)
 - **neutral**: Playing on the beat (within ±10ms dead zone)
+
+**Tier System:**
+
+Hotness is uncapped and determines your groove tier. Higher tiers have tighter pocket windows:
+
+| Tier | Hotness Range | Window (120 BPM) |
+|------|---------------|------------------|
+| D | 0-33 | 31ms |
+| C | 33-66 | 25ms |
+| B | 66-100 | 20ms |
+| A | 100-150 | 15ms |
+| S | 150-200 | 10ms |
+| SS | 200-350 | 7ms |
+| Platinum | 350+ | 5ms |
+
+The `tier` field is included in both `GrooveResult` and `GrooveState` for easy UI display.
+
+**Related Tier Exports:**
+
+| Export | Description |
+|--------|-------------|
+| `GROOVE_TIERS` | Array of tier configurations |
+| `getGrooveTier(hotness)` | Get tier for a hotness value |
+| `getGrooveWindowMs(hotness)` | Get pocket window in milliseconds |
+| `getMinHotnessForTier(tier)` | Get minimum hotness for a tier |
 
 **For detailed formulas (BPM-aware window calculation, consistency quadratic falloff) and examples:** See [docs/AUDIO_ANALYSIS.md#groove-meter](docs/AUDIO_ANALYSIS.md#groove-meter)
 
