@@ -692,6 +692,11 @@ export function AudioAnalysisTab() {
             error={genreError}
             onRetry={retryGenreAnalysis}
             threshold={genreThreshold}
+            trackInfo={{
+              title: selectedTrack.title,
+              artist: selectedTrack.artist,
+              url: selectedTrack.audio_url,
+            }}
           />
         </div>
       )}

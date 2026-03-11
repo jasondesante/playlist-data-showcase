@@ -143,16 +143,16 @@ The following decisions were made during planning:
 - [x] Add retry button in error state
 
 ### Task 4.3: Styling and Animations
-- [ ] Add entrance animations for genre bars
-- [ ] Hover states on bars (show exact percentage)
-- [ ] Primary genre highlight effect (glow/border)
-- [ ] Consistent spacing with existing cards
-- [ ] Dark/light theme support via CSS variables
+- [x] Add entrance animations for genre bars
+- [x] Hover states on bars (show exact percentage)
+- [x] Primary genre highlight effect (glow/border)
+- [x] Consistent spacing with existing cards
+- [x] Dark/light theme support via CSS variables
 
 ### Task 4.4: Export Functionality
-- [ ] Add "Export Genre Profile" button
-- [ ] Export as JSON file
-- [ ] Include metadata (track info, timestamp, model used)
+- [x] Add "Export Genre Profile" button
+- [x] Export as JSON file
+- [x] Include metadata (track info, timestamp, model used)
 
 ---
 

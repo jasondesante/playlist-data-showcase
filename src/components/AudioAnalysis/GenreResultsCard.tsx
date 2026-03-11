@@ -1,11 +1,61 @@
-import { useMemo } from 'react';
-import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp, Wifi, Cpu, FileAudio } from 'lucide-react';
+import { useMemo, useCallback } from 'react';
+import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp, Wifi, Cpu, FileAudio, Download } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { GenreBarChart } from '../ui/GenreBarChart';
 import type { GenreProfile, GenreTag } from '@/types';
 import type { GenreError, GenreErrorType } from '@/hooks/useGenreAnalyzer';
 import './GenreResultsCard.css';
+
+/**
+ * Track information for export metadata
+ */
+export interface GenreTrackInfo {
+    /** Track title */
+    title?: string;
+    /** Track artist */
+    artist?: string;
+    /** Audio URL */
+    url?: string;
+}
+
+/**
+ * Export data structure for genre profile
+ */
+export interface GenreProfileExport {
+    /** Schema version for future migrations */
+    version: 1;
+    /** Export timestamp (ISO string) */
+    exportedAt: string;
+    /** Track information */
+    track: {
+        title?: string;
+        artist?: string;
+        url?: string;
+    };
+    /** Analysis results */
+    analysis: {
+        /** Primary detected genre */
+        primaryGenre: string;
+        /** All detected genres with confidence scores */
+        genres: Array<{
+            name: string;
+            confidence: number;
+        }>;
+        /** Analysis metadata */
+        metadata?: {
+            durationAnalyzed?: number;
+            analyzedAt?: string;
+        };
+    };
+    /** Model information */
+    model: {
+        /** ML model name */
+        name: string;
+        /** Model source URL */
+        source: string;
+    };
+}
 
 /**
  * Props for the GenreResultsCard component
@@ -25,6 +75,8 @@ export interface GenreResultsCardProps {
     onRetry?: () => void;
     /** The confidence threshold used for filtering genres */
     threshold?: number;
+    /** Track information for export metadata */
+    trackInfo?: GenreTrackInfo;
     /** Optional additional CSS class name */
     className?: string;
 }
@@ -50,6 +102,65 @@ const formatTimestamp = (isoString: string): string => {
         hour: '2-digit',
         minute: '2-digit',
     });
+};
+
+/**
+ * Default model information for export
+ */
+const DEFAULT_MODEL_INFO = {
+    name: 'MTG Jamendo Genre Classifier',
+    source: 'https://cdn.jsdelivr.net/gh/MTG/essentia.js/examples/models/mtg_jamendo_genre/model.json',
+};
+
+/**
+ * Export genre profile as JSON file
+ */
+const exportGenreProfile = (
+    genreProfile: GenreProfile,
+    trackInfo?: GenreTrackInfo
+): void => {
+    const exportData: GenreProfileExport = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        track: {
+            title: trackInfo?.title,
+            artist: trackInfo?.artist,
+            url: trackInfo?.url,
+        },
+        analysis: {
+            primaryGenre: genreProfile.primary_genre,
+            genres: genreProfile.genres.map(g => ({
+                name: g.name,
+                confidence: g.confidence,
+            })),
+            metadata: {
+                durationAnalyzed: genreProfile.analysis_metadata?.duration_analyzed,
+                analyzedAt: genreProfile.analysis_metadata?.analyzed_at,
+            },
+        },
+        model: DEFAULT_MODEL_INFO,
+    };
+
+    // Create JSON blob and download
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Generate filename from track info or primary genre
+    const baseName = trackInfo?.title
+        ? trackInfo.title.replace(/[^a-z0-9]/gi, '_').slice(0, 50)
+        : `genre_${genreProfile.primary_genre}`;
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `${baseName}_genre_profile_${timestamp}.json`;
+
+    // Create temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 };
 
 /**
@@ -286,6 +397,7 @@ export function GenreResultsCard({
     error = null,
     onRetry,
     threshold,
+    trackInfo,
     className = '',
 }: GenreResultsCardProps) {
     // Extract metadata from genre profile
@@ -306,6 +418,13 @@ export function GenreResultsCard({
         const primary = metadata.genres.find((g: GenreTag) => g.name === metadata.primaryGenre);
         return primary?.confidence ?? 0;
     }, [metadata]);
+
+    // Handle export button click
+    const handleExport = useCallback(() => {
+        if (genreProfile) {
+            exportGenreProfile(genreProfile, trackInfo);
+        }
+    }, [genreProfile, trackInfo]);
 
     // Show loading state
     if (isAnalyzing || isModelLoading) {
@@ -378,6 +497,19 @@ export function GenreResultsCard({
                 genreCount={metadata.genres.length}
                 threshold={threshold}
             />
+
+            {/* Export Button */}
+            <div className="genre-results-actions">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExport}
+                    leftIcon={Download}
+                    className="genre-results-export-btn"
+                >
+                    Export Genre Profile
+                </Button>
+            </div>
         </Card>
     );
 }
