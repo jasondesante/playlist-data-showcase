@@ -43,6 +43,8 @@ export interface StepNavProps {
     availableSteps: Set<number>;
     /** Callback when a step is clicked */
     onStepClick: (step: number) => void;
+    /** ID of the tab panel that this nav controls (for aria-controls) */
+    panelId?: string;
     /** Optional class name for the container */
     className?: string;
 }
@@ -59,6 +61,7 @@ export function StepNav({
     completedSteps,
     availableSteps,
     onStepClick,
+    panelId,
     className,
 }: StepNavProps) {
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -140,12 +143,14 @@ export function StepNav({
                 return (
                     <button
                         key={step.id}
+                        id={`step-nav-tab-${step.id}`}
                         ref={(el) => { tabRefs.current[index] = el; }}
                         type="button"
                         role="tab"
                         tabIndex={isActive ? 0 : -1}
                         aria-selected={isActive}
                         aria-disabled={!isAvailable}
+                        aria-controls={panelId}
                         aria-label={getAriaLabel(step, isAvailable, isCompleted)}
                         disabled={!isAvailable}
                         className={cn(

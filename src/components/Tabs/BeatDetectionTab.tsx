@@ -656,14 +656,26 @@ export function BeatDetectionTab() {
 
             {/* Step Navigation - Hidden during practice mode */}
             {selectedTrack && !practiceModeActive && (
-                <StepNav
-                    steps={steps}
-                    currentStep={currentStep}
-                    completedSteps={completedSteps}
-                    availableSteps={availableSteps}
-                    onStepClick={handleStepClick}
-                    className="beat-detection-step-nav"
-                />
+                <>
+                    <StepNav
+                        steps={steps}
+                        currentStep={currentStep}
+                        completedSteps={completedSteps}
+                        availableSteps={availableSteps}
+                        onStepClick={handleStepClick}
+                        panelId="beat-detection-step-panel"
+                        className="beat-detection-step-nav"
+                    />
+                    {/* Screen reader announcement for step changes */}
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        className="sr-only"
+                    >
+                        {steps.find(s => s.id === currentStep)?.label} step selected
+                    </div>
+                </>
             )}
 
             {/* Empty State - No Track Selected */}
@@ -677,7 +689,12 @@ export function BeatDetectionTab() {
 
             {/* Step Content Container - Renders only the active step's content */}
             {selectedTrack && !practiceModeActive && (
-                <div className="step-content-container">
+                <div
+                    id="beat-detection-step-panel"
+                    className="step-content-container"
+                    role="tabpanel"
+                    aria-labelledby={`step-nav-tab-${currentStep}`}
+                >
                     {renderStepContent()}
                 </div>
             )}

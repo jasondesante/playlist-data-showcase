@@ -242,11 +242,16 @@ Horizontal step navigation at the top:
   - [x] Clicking prompt link navigates to correct step (verified via `setCurrentStep(n)` calls in action onClick handlers)
   - [x] Prompts update correctly when returning to previous steps (verified - `stepCompletion` computed from store state, persists on navigation)
 
-- [ ] **Task 6.4: Accessibility verification**
-  - [ ] Tab navigation reaches all available steps
-  - [ ] Arrow keys work for step navigation
-  - [ ] Screen reader announces step changes and "Ready"/"Not Ready" status
-  - [ ] Focus visible on step tabs
+- [x] **Task 6.4: Accessibility verification** ✅
+  - [x] Tab navigation reaches all available steps (verified via `tabIndex={isActive ? 0 : -1}` pattern in `StepNav.tsx:150`)
+  - [x] Arrow keys work for step navigation (verified via `handleKeyDown` in `StepNav.tsx:66-113`)
+  - [x] Screen reader announces step changes and "Ready"/"Not Ready" status
+    - Added `aria-controls={panelId}` linking tabs to panel (`StepNav.tsx:153`)
+    - Added `id="step-nav-tab-${step.id}"` to each tab (`StepNav.tsx:146`)
+    - Added `role="tabpanel"` and `aria-labelledby` to content container (`BeatDetectionTab.tsx:694-696`)
+    - Added aria-live region for step change announcements (`BeatDetectionTab.tsx:670-678`)
+    - Added `.sr-only` class for visually hidden content (`BeatDetectionTab.css:2330-2343`)
+  - [x] Focus visible on step tabs (verified via `:focus-visible` styles in `StepNav.css:106-110`)
 
 ---
 
