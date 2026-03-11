@@ -203,16 +203,16 @@ Horizontal step navigation at the top:
 
 ## Phase 5: CSS Cleanup
 
-- [ ] **Task 5.1: Update BeatDetectionTab.css**
-  - [ ] Add step content container styles
-  - [ ] Add step transition animations (slide + fade):
+- [x] **Task 5.1: Update BeatDetectionTab.css**
+  - [x] Add step content container styles
+  - [x] Add step transition animations (slide + fade):
     ```css
     .step-content-enter-forward { transform: translateX(100%); opacity: 0; }
     .step-content-enter-backward { transform: translateX(-100%); opacity: 0; }
     .step-content-active { transform: translateX(0); opacity: 1; }
     ```
-  - [ ] Remove or comment out unused collapsible section styles
-  - [ ] Keep existing card styles (still used within steps)
+  - [x] Remove or comment out unused collapsible section styles
+  - [x] Keep existing card styles (still used within steps)
 
 - [ ] **Task 5.2: Responsive adjustments**
   - [ ] StepNav scrollable horizontally on mobile
