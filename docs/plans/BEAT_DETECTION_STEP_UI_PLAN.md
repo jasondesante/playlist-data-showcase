@@ -183,9 +183,9 @@ Horizontal step navigation at the top:
   - [x] After successful beatMap generation, set currentStep to 2
   - [x] Step 4 remains clickable as an alternative path
 
-- [ ] **Task 4.2: Handle practice mode transitions**
-  - [ ] When entering practice mode: hide StepNav (full-screen practice)
-  - [ ] When exiting practice mode: show StepNav, intelligently return to appropriate step:
+- [x] **Task 4.2: Handle practice mode transitions**
+  - [x] When entering practice mode: hide StepNav (full-screen practice)
+  - [x] When exiting practice mode: show StepNav, intelligently return to appropriate step:
     - If `chartStatistics.keyCount > 0` → return to Step 3 (Chart)
     - Else if `subdividedBeatMap` exists → return to Step 2 (Subdivide)
     - Else → return to Step 4 (Practice/Export)

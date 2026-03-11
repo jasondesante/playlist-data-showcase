@@ -310,10 +310,23 @@ export function BeatDetectionTab() {
 
     /**
      * Handle exiting practice mode.
+     * Intelligently returns to the appropriate step based on current state:
+     * - If keys are assigned (chartStatistics.keyCount > 0) → Step 3 (Chart)
+     * - Else if subdivisions exist (subdividedBeatMap) → Step 2 (Subdivide)
+     * - Else → Step 4 (Practice/Export)
      */
     const handleExitPracticeMode = useCallback(() => {
         stopPracticeMode();
-    }, [stopPracticeMode]);
+
+        // Intelligently return to appropriate step
+        if (chartStatistics.keyCount > 0) {
+            setCurrentStep(3); // Step 3 (Chart)
+        } else if (subdividedBeatMap) {
+            setCurrentStep(2); // Step 2 (Subdivide)
+        } else {
+            setCurrentStep(4); // Step 4 (Practice/Export)
+        }
+    }, [stopPracticeMode, setCurrentStep, chartStatistics, subdividedBeatMap]);
 
     // Determine status indicator based on current state
     const getAnalysisStatus = (): 'healthy' | 'degraded' | 'error' => {
