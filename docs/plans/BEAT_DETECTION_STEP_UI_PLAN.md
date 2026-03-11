@@ -104,13 +104,13 @@ Horizontal step navigation at the top:
   - [x] Disabled steps grayed out, reduced opacity, non-clickable
   - [x] Cursor changes: pointer for available, not-allowed for disabled
 
-- [ ] **Task 2.2: Add StepNav styles (`src/components/ui/StepNav.css`)**
-  - [ ] Horizontal flex container with equal-width step tabs
-  - [ ] Checkmark styles for completed steps (✓ before label)
-  - [ ] Active step highlight (border-bottom or background)
-  - [ ] Disabled step styles (opacity, cursor, "Not Ready" styling)
-  - [ ] Hover states for available steps
-  - [ ] Responsive: scrollable on narrow screens
+- [x] **Task 2.2: Add StepNav styles (`src/components/ui/StepNav.css`)**
+  - [x] Horizontal flex container with equal-width step tabs
+  - [x] Checkmark styles for completed steps (✓ before label)
+  - [x] Active step highlight (border-bottom or background)
+  - [x] Disabled step styles (opacity, cursor, "Not Ready" styling)
+  - [x] Hover states for available steps
+  - [x] Responsive: scrollable on narrow screens
 
 - [ ] **Task 2.3: Add step content transition styles**
   - [ ] Create `.step-content-enter` and `.step-content-exit` classes
