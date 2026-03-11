@@ -5012,3 +5012,98 @@ export const useHasRequiredKeys = () =>
 
         return beatMap.beats.some((beat) => beat.requiredKey !== undefined);
     });
+
+// ============================================================
+// TASK 1.2: Step Navigation Hooks
+// ============================================================
+
+/**
+ * Hook to get the current step number in the beat detection wizard UI.
+ * @returns The current step number (1-4)
+ */
+export const useCurrentStep = (): 1 | 2 | 3 | 4 =>
+    useBeatDetectionStore((state) => state.currentStep);
+
+/**
+ * Step completion status for the beat detection wizard.
+ */
+export interface StepCompletionStatus {
+    /** Step 1 (Analyze) is complete when beatMap exists */
+    step1: boolean;
+    /** Step 2 (Subdivide) is complete when subdividedBeatMap exists */
+    step2: boolean;
+    /** Step 3 (Chart) is complete when chartStatistics.keyCount > 0 */
+    step3: boolean;
+}
+
+/**
+ * Hook to get the completion status of each step in the beat detection wizard.
+ * Uses a two-step approach to prevent infinite loops:
+ * 1. First, select raw data with useShallow for stable references
+ * 2. Then, memoize the computed result based on those stable values
+ * @returns Object with step completion booleans
+ */
+export const useStepCompletion = (): StepCompletionStatus => {
+    // Step 1: Select raw data with useShallow for stable references
+    const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
+    const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
+
+    // Step 2: Memoize the computed result based on stable raw data
+    return useMemo(() => {
+        // Count keys in subdivided beat map for step 3 completion
+        let keyCount = 0;
+        if (subdividedBeatMap) {
+            for (const beat of subdividedBeatMap.beats) {
+                if (beat.requiredKey !== undefined) {
+                    keyCount++;
+                }
+            }
+        }
+
+        return {
+            step1: beatMap !== null,
+            step2: subdividedBeatMap !== null,
+            step3: keyCount > 0,
+        };
+    }, [beatMap, subdividedBeatMap]);
+};
+
+/**
+ * Hook to get which steps are clickable/available in the beat detection wizard.
+ *
+ * Step availability rules:
+ * - step1: always available (assumes track is selected)
+ * - step2: available when step1 is complete (beatMap exists)
+ * - step3: available when step2 is complete (subdividedBeatMap exists)
+ * - step4: available when step1 is complete (beatMap exists)
+ *
+ * Uses a two-step approach to prevent infinite loops.
+ * @returns Set of available step numbers
+ */
+export const useStepAvailability = (): Set<number> => {
+    // Step 1: Select raw data with useShallow for stable references
+    const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
+    const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
+
+    // Step 2: Memoize the computed Set based on stable raw data
+    return useMemo(() => {
+        const available = new Set<number>();
+
+        // Step 1 is always available
+        available.add(1);
+
+        // Step 2 is available when step1 is complete (beatMap exists)
+        if (beatMap !== null) {
+            available.add(2);
+            // Step 4 is available when step1 is complete (beatMap exists)
+            available.add(4);
+        }
+
+        // Step 3 is available when step2 is complete (subdividedBeatMap exists)
+        if (subdividedBeatMap !== null) {
+            available.add(3);
+        }
+
+        return available;
+    }, [beatMap, subdividedBeatMap]);
+};

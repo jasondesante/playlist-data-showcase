@@ -69,13 +69,13 @@ Horizontal step navigation at the top:
   - [x] Add `setCurrentStep(step)` action
   - [x] Reset currentStep to 1 when beatMap is cleared (track change)
 
-- [ ] **Task 1.2: Create step availability and completion hooks**
-  - [ ] `useCurrentStep()` - returns current step number
-  - [ ] `useStepCompletion()` - returns `{ step1: boolean, step2: boolean, step3: boolean }`
+- [x] **Task 1.2: Create step availability and completion hooks**
+  - [x] `useCurrentStep()` - returns current step number
+  - [x] `useStepCompletion()` - returns `{ step1: boolean, step2: boolean, step3: boolean }`
     - step1 complete when `beatMap` exists
     - step2 complete when `subdividedBeatMap` exists
     - step3 complete when `chartStatistics.keyCount > 0`
-  - [ ] `useStepAvailability()` - returns which steps are clickable
+  - [x] `useStepAvailability()` - returns which steps are clickable
     - step1: always available when track selected
     - step2: available when step1 complete
     - step3: available when step2 complete (subdividedBeatMap exists)
