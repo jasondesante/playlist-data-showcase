@@ -194,10 +194,10 @@ Horizontal step navigation at the top:
   - [x] When selectedTrack changes: reset currentStep to 1
   - [x] Clear beatMap state (existing behavior)
 
-- [ ] **Task 4.4: Handle re-analyze**
-  - [ ] User can click Step 1 tab to re-analyze
-  - [ ] After re-analyze completes: auto-advance to Step 2 again
-  - [ ] Subdivisions and chart may need regeneration (existing behavior handles this)
+- [x] **Task 4.4: Handle re-analyze**
+  - [x] User can click Step 1 tab to re-analyze
+  - [x] After re-analyze completes: auto-advance to Step 2 again
+  - [x] Subdivisions and chart may need regeneration (existing behavior handles this)
 
 ---
 
