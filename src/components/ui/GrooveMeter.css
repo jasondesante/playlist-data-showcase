@@ -68,10 +68,20 @@
 
 /* Tier-specific colors and effects */
 
-/* D Tier - Gray, basic */
+/* D Tier - Cyan/Turquoise, cool starting point */
 .groove-meter__tier-label--d {
-  color: #6b7280;
-  text-shadow: 0 0 5px rgba(107, 114, 128, 0.3);
+  color: #06b6d4;
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+  animation: groove-tier-d-pulse 2s ease-in-out infinite;
+}
+
+@keyframes groove-tier-d-pulse {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(6, 182, 212, 0.7);
+  }
 }
 
 /* C Tier - Blue, building */
@@ -199,9 +209,9 @@
    Each tier has its own gradient and effects
    ============================================ */
 
-/* D Tier Fill - Gray, basic */
+/* D Tier Fill - Cyan/Turquoise, cool and fresh start */
 .groove-meter__fill--tier-d {
-  background: linear-gradient(90deg, #4b5563, #6b7280);
+  background: linear-gradient(90deg, #22d3ee, #06b6d4);
 }
 
 /* C Tier Fill - Blue, building */

@@ -40,7 +40,7 @@ describe('GrooveMeter', () => {
       expect(progressbar).toHaveAttribute('aria-valuenow', '75');
       expect(progressbar).toHaveAttribute('aria-valuemin', '0');
       expect(progressbar).toHaveAttribute('aria-valuemax', '100');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 75% hotness, on point timing, 10 streak');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: Tier B, 27.272727272727273% within tier, on point timing, 10 streak');
     });
 
     it('fills bar to 0% when hotness is 0', () => {
@@ -458,7 +458,7 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 42% hotness, on point timing, 4 streak');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: Tier C, 27.272727272727273% within tier, on point timing, 4 streak');
     });
 
     it('has descriptive aria-label for push direction', () => {
@@ -467,7 +467,7 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 50% hotness, pushing timing, 5 streak');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: Tier C, 51.515151515151516% within tier, pushing timing, 5 streak');
     });
 
     it('has descriptive aria-label for pull direction', () => {
@@ -476,7 +476,7 @@ describe('GrooveMeter', () => {
       );
 
       const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: 50% hotness, laid back timing, 5 streak');
+      expect(progressbar).toHaveAttribute('aria-label', 'Groove meter: Tier C, 51.515151515151516% within tier, laid back timing, 5 streak');
     });
 
     it('has aria-label on direction container', () => {
