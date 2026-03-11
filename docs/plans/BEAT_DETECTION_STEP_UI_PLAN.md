@@ -168,12 +168,12 @@ Horizontal step navigation at the top:
   - [x] This step is always available after Step 1 completes
   - [x] When step is disabled (beatMap null): show "Complete Step 1 first" message
 
-- [ ] **Task 3.7: Add post-completion prompts**
-  - [ ] Create `StepCompletionPrompt` component or inline UI
-  - [ ] After Step 1 complete: "Ready to subdivide? → Go to Subdivide" + "Or skip to practice/export →"
-  - [ ] After Step 2 complete: "Configure your chart → Go to Chart" + "Or skip to practice →"
-  - [ ] After Step 3 complete: "Keys assigned! → Practice or Export"
-  - [ ] Prompts appear at bottom of step content, subtle styling (muted text, arrow icon)
+- [x] **Task 3.7: Add post-completion prompts**
+  - [x] Create `StepCompletionPrompt` component or inline UI
+  - [x] After Step 1 complete: "Ready to subdivide? → Go to Subdivide" + "Or skip to practice/export →"
+  - [x] After Step 2 complete: "Configure your chart → Go to Chart" + "Or skip to practice →"
+  - [x] After Step 3 complete: "Keys assigned! → Practice or Export"
+  - [x] Prompts appear at bottom of step content, subtle styling (muted text, arrow icon)
 
 ---
 

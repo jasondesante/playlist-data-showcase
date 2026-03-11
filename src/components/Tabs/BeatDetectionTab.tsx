@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { Music, Sparkles, Drum, Download } from 'lucide-react';
+import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -15,6 +15,7 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
+import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
 import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
 import { StepNav, type Step } from '../ui/StepNav';
 import { logger } from '../../utils/logger';
@@ -440,6 +441,26 @@ export function BeatDetectionTab() {
                                 )}
                             </div>
                         </div>
+
+                        {/* Post-completion prompt for Step 1 */}
+                        <StepCompletionPrompt
+                            message="Analysis complete!"
+                            visible={stepCompletion.step1 && !isBeatGenerating}
+                            actions={[
+                                {
+                                    label: 'Go to Subdivide',
+                                    onClick: () => setCurrentStep(2),
+                                    variant: 'primary',
+                                    icon: ArrowRight,
+                                },
+                                {
+                                    label: 'Skip to practice/export',
+                                    onClick: () => setCurrentStep(4),
+                                    variant: 'secondary',
+                                    icon: SkipForward,
+                                },
+                            ]}
+                        />
                     </Card>
                 );
 
@@ -464,6 +485,26 @@ export function BeatDetectionTab() {
                             <h3 className="audio-analysis-step-title">Subdivisions</h3>
                             <SubdivisionSettings disabled={isBeatGenerating} />
                         </div>
+
+                        {/* Post-completion prompt for Step 2 */}
+                        <StepCompletionPrompt
+                            message="Subdivisions configured!"
+                            visible={stepCompletion.step2 && !isBeatGenerating}
+                            actions={[
+                                {
+                                    label: 'Go to Chart',
+                                    onClick: () => setCurrentStep(3),
+                                    variant: 'primary',
+                                    icon: ArrowRight,
+                                },
+                                {
+                                    label: 'Skip to practice',
+                                    onClick: () => setCurrentStep(4),
+                                    variant: 'secondary',
+                                    icon: SkipForward,
+                                },
+                            ]}
+                        />
                     </Card>
                 );
 
@@ -481,6 +522,20 @@ export function BeatDetectionTab() {
                             />
                             <ChartEditor disabled={isBeatGenerating} />
                         </div>
+
+                        {/* Post-completion prompt for Step 3 */}
+                        <StepCompletionPrompt
+                            message={`Keys assigned! ${chartStatistics.keyCount} keys configured.`}
+                            visible={stepCompletion.step3 && !isBeatGenerating}
+                            actions={[
+                                {
+                                    label: 'Practice or Export',
+                                    onClick: () => setCurrentStep(4),
+                                    variant: 'primary',
+                                    icon: ArrowRight,
+                                },
+                            ]}
+                        />
                     </Card>
                 );
 
@@ -557,6 +612,8 @@ export function BeatDetectionTab() {
         getAnalysisStatus,
         getStatusLabel,
         getPhaseLabel,
+        stepCompletion,
+        chartStatistics,
     ]);
 
     return (
