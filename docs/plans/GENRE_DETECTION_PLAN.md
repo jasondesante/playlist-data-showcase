@@ -56,8 +56,8 @@ The following decisions were made during planning:
 ## Phase 2: UI Components
 
 ### Task 2.1: Create GenreBarChart Component
-- [ ] Create `src/components/ui/GenreBarChart.tsx`
-- [ ] Props interface:
+- [x] Create `src/components/ui/GenreBarChart.tsx`
+- [x] Props interface:
   ```typescript
   {
     genres: GenreTag[],
@@ -65,15 +65,15 @@ The following decisions were made during planning:
     maxBars?: number  // default 10
   }
   ```
-- [ ] Horizontal bar chart implementation:
+- [x] Horizontal bar chart implementation:
   - Sort genres by confidence (descending)
   - Limit to `maxBars` entries
   - Each bar shows: genre name, confidence %, visual bar
   - Highlight primary genre with distinct styling
   - Animate bars on load (CSS transitions)
   - **Show all returned genres** (no "Other" bucket for low confidence)
-- [ ] Use CSS custom properties for theming
-- [ ] Responsive layout (scrollable if many genres)
+- [x] Use CSS custom properties for theming
+- [x] Responsive layout (scrollable if many genres)
 
 ### Task 2.2: Create GenreResultsCard Component
 - [ ] Create `src/components/AudioAnalysis/GenreResultsCard.tsx`
