@@ -112,12 +112,12 @@ Horizontal step navigation at the top:
   - [x] Hover states for available steps
   - [x] Responsive: scrollable on narrow screens
 
-- [ ] **Task 2.3: Add step content transition styles**
-  - [ ] Create `.step-content-enter` and `.step-content-exit` classes
-  - [ ] Slide left animation when navigating forward (to higher step)
-  - [ ] Slide right animation when navigating backward (to lower step)
-  - [ ] Fade in/out combined with slide
-  - [ ] Track navigation direction in state for correct animation
+- [x] **Task 2.3: Add step content transition styles**
+  - [x] Create `.step-content-enter` and `.step-content-exit` classes
+  - [x] Slide left animation when navigating forward (to higher step)
+  - [x] Slide right animation when navigating backward (to lower step)
+  - [x] Fade in/out combined with slide
+  - [x] Track navigation direction in state for correct animation
 
 - [ ] **Task 2.4: Add accessibility**
   - [ ] Role="tablist" on container, role="tab" on each step

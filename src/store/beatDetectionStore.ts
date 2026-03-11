@@ -5107,3 +5107,29 @@ export const useStepAvailability = (): Set<number> => {
         return available;
     }, [beatMap, subdividedBeatMap]);
 };
+
+/**
+ * Navigation direction for step content animations.
+ * - 'forward': Navigating to a higher step number (slide left animation)
+ * - 'backward': Navigating to a lower step number (slide right animation)
+ * - 'none': Initial state, no navigation has occurred yet
+ */
+export type StepNavigationDirection = 'forward' | 'backward' | 'none';
+
+/**
+ * Hook to get the navigation direction for step content animations.
+ * Compares previousStep with currentStep to determine direction.
+ *
+ * @returns Navigation direction for animations
+ */
+export const useStepNavigationDirection = (): StepNavigationDirection => {
+    const currentStep = useBeatDetectionStore((state) => state.currentStep);
+    const previousStep = useBeatDetectionStore((state) => state.previousStep);
+
+    return useMemo(() => {
+        if (previousStep === null) {
+            return 'none';
+        }
+        return currentStep > previousStep ? 'forward' : 'backward';
+    }, [currentStep, previousStep]);
+};

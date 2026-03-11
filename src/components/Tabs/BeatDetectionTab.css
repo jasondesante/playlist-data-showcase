@@ -2020,3 +2020,159 @@
     padding: 0.375rem 0.5rem;
   }
 }
+
+/* ============================================
+   STEP CONTENT TRANSITIONS
+   Beat Detection Step-Based UI Refactor - Phase 2, Task 2.3
+   ============================================ */
+
+/**
+ * Step content container - provides overflow context for slide animations.
+ * Wrap step content in this container to enable transitions.
+ */
+.step-content-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/**
+ * Individual step content wrapper.
+ * Each step's content should be wrapped in this element.
+ */
+.step-content {
+  width: 100%;
+  transform: var(--gpu-accel);
+}
+
+/* ============================================
+   SLIDE ANIMATIONS - Forward (to higher step)
+   Content slides in from right, out to left
+   ============================================ */
+
+/**
+ * Entering from the right when navigating forward.
+ * Initial state: off-screen to the right, invisible.
+ */
+.step-content-enter-forward {
+  animation: step-slide-in-from-right 0.3s var(--ease-out-cubic) forwards;
+}
+
+/**
+ * Exiting to the left when navigating forward.
+ * Target state: off-screen to the left, invisible.
+ */
+.step-content-exit-forward {
+  animation: step-slide-out-to-left 0.3s var(--ease-in-cubic) forwards;
+}
+
+/* Slide in from right (forward navigation) */
+@keyframes step-slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide out to left (forward navigation) */
+@keyframes step-slide-out-to-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+/* ============================================
+   SLIDE ANIMATIONS - Backward (to lower step)
+   Content slides in from left, out to right
+   ============================================ */
+
+/**
+ * Entering from the left when navigating backward.
+ * Initial state: off-screen to the left, invisible.
+ */
+.step-content-enter-backward {
+  animation: step-slide-in-from-left 0.3s var(--ease-out-cubic) forwards;
+}
+
+/**
+ * Exiting to the right when navigating backward.
+ * Target state: off-screen to the right, invisible.
+ */
+.step-content-exit-backward {
+  animation: step-slide-out-to-right 0.3s var(--ease-in-cubic) forwards;
+}
+
+/* Slide in from left (backward navigation) */
+@keyframes step-slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide out to right (backward navigation) */
+@keyframes step-slide-out-to-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================
+   SIMPLE FADE TRANSITION (Alternative)
+   Use for subtle transitions or when slide feels too much
+   ============================================ */
+
+.step-content-fade-in {
+  animation: step-fade-in 0.2s var(--ease-out-cubic) forwards;
+}
+
+.step-content-fade-out {
+  animation: step-fade-out 0.2s var(--ease-in-cubic) forwards;
+}
+
+@keyframes step-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes step-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION PREFERENCE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .step-content-enter-forward,
+  .step-content-exit-forward,
+  .step-content-enter-backward,
+  .step-content-exit-backward {
+    animation: step-fade-in 0.15s var(--ease-out-cubic) forwards;
+  }
+}
