@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Music, Sparkles, Drum, Download } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -65,6 +65,9 @@ export function BeatDetectionTab() {
     const stepCompletion = useStepCompletion();
     const availableSteps = useStepAvailability();
     const navigationDirection = useStepNavigationDirection();
+
+    // Track if we were generating to detect analysis completion
+    const wasGeneratingRef = useRef(isBeatGenerating);
 
     // Step configuration for StepNav
     const steps: Step[] = [
@@ -236,6 +239,22 @@ export function BeatDetectionTab() {
             clearBeatMap();
         }
     }, [selectedTrack?.id, selectedTrack?.audio_url, loadCachedBeatMap, clearBeatMap]);
+
+    /**
+     * Auto-advance to Step 2 after analysis completes.
+     * Only triggers when transitioning from generating (true) to not generating (false)
+     * AND a beatMap exists (indicating successful analysis).
+     * Does not trigger when loading from cache or returning to Step 1.
+     */
+    useEffect(() => {
+        // Check if we just finished generating
+        if (wasGeneratingRef.current && !isBeatGenerating && beatMap) {
+            // Auto-advance to Step 2 (Subdivide) after successful analysis
+            setCurrentStep(2);
+        }
+        // Update the ref for the next render
+        wasGeneratingRef.current = isBeatGenerating;
+    }, [isBeatGenerating, beatMap, setCurrentStep]);
 
     /**
      * Map beat generation phases to human-readable labels

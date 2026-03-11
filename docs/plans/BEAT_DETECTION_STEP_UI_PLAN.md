@@ -143,11 +143,11 @@ Horizontal step navigation at the top:
   - [x] Apply slide-left class when navigating forward, slide-right when navigating backward
   - [x] Combine slide with fade animation
 
-- [ ] **Task 3.3: Refactor Step 1 (Analyze) content**
-  - [ ] Move Primary Card content to Step 1
-  - [ ] Keep: song display, BeatDetectionSettings, Analyze button
-  - [ ] On analysis complete: call `setCurrentStep(2)` to auto-advance
-  - [ ] When user returns to Step 1 from another step: show full content (for re-analyze)
+- [x] **Task 3.3: Refactor Step 1 (Analyze) content**
+  - [x] Move Primary Card content to Step 1
+  - [x] Keep: song display, BeatDetectionSettings, Analyze button
+  - [x] On analysis complete: call `setCurrentStep(2)` to auto-advance
+  - [x] When user returns to Step 1 from another step: show full content (for re-analyze)
 
 - [ ] **Task 3.4: Refactor Step 2 (Subdivisions) content**
   - [ ] Move SubdivisionSettings to Step 2
