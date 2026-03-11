@@ -9,6 +9,7 @@ type LogCategory =
     | 'System'
     | 'PlaylistParser'
     | 'AudioAnalyzer'
+    | 'GenreAnalyzer'
     | 'CharacterGenerator'
     | 'SessionTracker'
     | 'XPCalculator'

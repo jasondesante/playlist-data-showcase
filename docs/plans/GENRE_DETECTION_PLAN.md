@@ -30,23 +30,26 @@ The following decisions were made during planning:
 - [x] Clear `genreProfile` in `setPlaylist()` action
 
 ### Task 1.2: Create useGenreAnalyzer Hook
-- [ ] Create new file `src/hooks/useGenreAnalyzer.ts`
-- [ ] Import `GenreAnalyzer` and types from `playlist-data-engine`
-- [ ] Implement hook with:
+- [x] Create new file `src/hooks/useGenreAnalyzer.ts`
+- [x] Import `GenreAnalyzer` and types from `playlist-data-engine`
+- [x] Implement hook with:
   ```typescript
   {
     analyzeGenre: (audioUrl: string) => Promise<GenreProfile | null>,
     isAnalyzing: boolean,
+    isModelLoading: boolean,
     progress: number,
     genreProfile: GenreProfile | null,
     options: GenreAnalyzerOptions,
-    setOptions: (options: GenreAnalyzerOptions) => void
+    setOptions: (options: GenreAnalyzerOptions) => void,
+    clearProfile: () => void,
+    error: string | null
   }
   ```
-- [ ] Store results in `playlistStore` via `setGenreProfile()`
-- [ ] Handle loading states and errors
-- [ ] Lazy initialize `GenreAnalyzer` instance (only when `analyzeGenre()` is called)
-- [ ] Cache analyzer instance after first creation for subsequent calls
+- [x] Store results in `playlistStore` via `setGenreProfile()`
+- [x] Handle loading states and errors
+- [x] Lazy initialize `GenreAnalyzer` instance (only when `analyzeGenre()` is called)
+- [x] Cache analyzer instance after first creation for subsequent calls
 
 ---
 
