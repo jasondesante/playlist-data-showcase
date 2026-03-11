@@ -137,10 +137,10 @@ The following decisions were made during planning:
 - [x] Add cancel button option (if feasible) - *Not feasible: GenreAnalyzer from playlist-data-engine doesn't support cancellation*
 
 ### Task 4.2: Error Handling
-- [ ] Handle network errors (audio fetch failed)
-- [ ] Handle model load errors
-- [ ] Show user-friendly error messages
-- [ ] Add retry button in error state
+- [x] Handle network errors (audio fetch failed)
+- [x] Handle model load errors
+- [x] Show user-friendly error messages
+- [x] Add retry button in error state
 
 ### Task 4.3: Styling and Animations
 - [ ] Add entrance animations for genre bars

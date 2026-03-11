@@ -297,6 +297,42 @@
     margin: 0;
 }
 
+.genre-results-error-details {
+    margin-top: 0.75rem;
+    width: 100%;
+    text-align: left;
+}
+
+.genre-results-error-details summary {
+    font-size: 0.688rem;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    padding: 0.25rem 0;
+    user-select: none;
+}
+
+.genre-results-error-details summary:hover {
+    color: hsl(var(--foreground));
+}
+
+.genre-results-error-details[open] summary {
+    margin-bottom: 0.5rem;
+}
+
+.genre-results-error-technical {
+    display: block;
+    font-size: 0.688rem;
+    font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+    padding: 0.5rem;
+    border-radius: calc(var(--radius) / 2);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
 .genre-results-error-retry {
     margin-top: 0.5rem;
 }

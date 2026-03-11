@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp } from 'lucide-react';
+import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp, Wifi, Cpu, FileAudio } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { GenreBarChart } from '../ui/GenreBarChart';
 import type { GenreProfile, GenreTag } from '@/types';
+import type { GenreError, GenreErrorType } from '@/hooks/useGenreAnalyzer';
 import './GenreResultsCard.css';
 
 /**
@@ -18,8 +19,8 @@ export interface GenreResultsCardProps {
     isModelLoading?: boolean;
     /** Analysis progress percentage (0-100) */
     progress?: number;
-    /** Error message if analysis failed */
-    error?: string | null;
+    /** Error information if analysis failed */
+    error?: GenreError | null;
     /** Callback to retry analysis when an error occurs */
     onRetry?: () => void;
     /** The confidence threshold used for filtering genres */
@@ -61,16 +62,57 @@ const formatDuration = (seconds: number): string => {
 };
 
 /**
+ * Get icon for error type
+ */
+const getErrorIcon = (type: GenreErrorType) => {
+    switch (type) {
+        case 'network':
+            return Wifi;
+        case 'model_load':
+            return Cpu;
+        case 'audio_decode':
+            return FileAudio;
+        default:
+            return AlertCircle;
+    }
+};
+
+/**
+ * Get title for error type
+ */
+const getErrorTitle = (type: GenreErrorType): string => {
+    switch (type) {
+        case 'network':
+            return 'Network Error';
+        case 'model_load':
+            return 'Model Loading Failed';
+        case 'audio_decode':
+            return 'Audio Processing Error';
+        default:
+            return 'Analysis Failed';
+    }
+};
+
+/**
  * Error State Component
  * Displays an error message with a retry button
  */
-function ErrorState({ error, onRetry }: { error: string; onRetry?: () => void }) {
+function ErrorState({ error, onRetry }: { error: GenreError; onRetry?: () => void }) {
+    const Icon = getErrorIcon(error.type);
+    const title = getErrorTitle(error.type);
+
     return (
         <div className="genre-results-error" role="alert">
-            <AlertCircle className="genre-results-error-icon" size={24} />
+            <Icon className="genre-results-error-icon" size={24} />
             <div className="genre-results-error-content">
-                <h4 className="genre-results-error-title">Analysis Failed</h4>
-                <p className="genre-results-error-message">{error}</p>
+                <h4 className="genre-results-error-title">{title}</h4>
+                <p className="genre-results-error-message">{error.message}</p>
+                {error.technicalMessage && (
+                    <details className="genre-results-error-details">
+                        <summary>Technical Details</summary>
+                        <code className="genre-results-error-technical">{error.technicalMessage}</code>
+                    </details>
+                )}
             </div>
             {onRetry && (
                 <Button

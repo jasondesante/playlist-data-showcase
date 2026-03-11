@@ -5,6 +5,92 @@ import { handleError } from '@/utils/errorHandling';
 import { usePlaylistStore } from '@/store/playlistStore';
 
 /**
+ * Error categories for genre analysis
+ */
+export type GenreErrorType = 'network' | 'model_load' | 'audio_decode' | 'unknown';
+
+/**
+ * Structured error information for genre analysis
+ */
+export interface GenreError {
+    type: GenreErrorType;
+    message: string;
+    technicalMessage?: string;
+}
+
+/**
+ * Classify an error into a category and provide user-friendly message
+ */
+const classifyError = (error: unknown, context: 'model' | 'audio'): GenreError => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const lowerMessage = errorMessage.toLowerCase();
+
+    // Network-related errors
+    if (
+        lowerMessage.includes('fetch') ||
+        lowerMessage.includes('network') ||
+        lowerMessage.includes('failed to fetch') ||
+        lowerMessage.includes('networkerror') ||
+        lowerMessage.includes('cors') ||
+        lowerMessage.includes('404') ||
+        lowerMessage.includes('enotfound') ||
+        lowerMessage.includes('timeout')
+    ) {
+        if (context === 'model') {
+            return {
+                type: 'model_load',
+                message: 'Failed to load the ML model. Please check your internet connection and try again.',
+                technicalMessage: errorMessage,
+            };
+        }
+        return {
+            type: 'network',
+            message: 'Failed to fetch the audio file. Please check the URL and your internet connection.',
+            technicalMessage: errorMessage,
+        };
+    }
+
+    // Model loading errors
+    if (
+        lowerMessage.includes('model') ||
+        lowerMessage.includes('tensorflow') ||
+        lowerMessage.includes('tfjs') ||
+        lowerMessage.includes('essentia') ||
+        lowerMessage.includes('initialize')
+    ) {
+        return {
+            type: 'model_load',
+            message: 'Failed to initialize the genre analysis model. Please try again.',
+            technicalMessage: errorMessage,
+        };
+    }
+
+    // Audio decoding errors
+    if (
+        lowerMessage.includes('decode') ||
+        lowerMessage.includes('audio') ||
+        lowerMessage.includes('format') ||
+        lowerMessage.includes('invalid') ||
+        lowerMessage.includes('unsupported')
+    ) {
+        return {
+            type: 'audio_decode',
+            message: 'Failed to process the audio file. The format may not be supported.',
+            technicalMessage: errorMessage,
+        };
+    }
+
+    // Unknown error
+    return {
+        type: 'unknown',
+        message: context === 'model'
+            ? 'Failed to initialize the genre analyzer. Please try again.'
+            : 'Genre analysis failed. Please try again.',
+        technicalMessage: errorMessage,
+    };
+};
+
+/**
  * Default options for the GenreAnalyzer.
  * Uses MTG Jamendo CDN for the ML model.
  */
@@ -44,13 +130,16 @@ export const useGenreAnalyzer = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [genreProfile, setGenreProfile] = useState<GenreProfile | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<GenreError | null>(null);
 
     // Genre analyzer options for controlling analysis behavior
     const [options, setOptionsState] = useState<GenreAnalyzerOptions>(DEFAULT_GENRE_OPTIONS);
 
     // Get the store's setGenreProfile action
     const setStoreGenreProfile = usePlaylistStore((state) => state.setGenreProfile);
+
+    // Store the last analyzed URL for retry functionality
+    const lastAnalyzedUrlRef = useRef<string | null>(null);
 
     /**
      * Get or create the GenreAnalyzer instance.
@@ -65,6 +154,7 @@ export const useGenreAnalyzer = () => {
         // Create new analyzer with current options
         try {
             setIsModelLoading(true);
+            setError(null);
             logger.info('GenreAnalyzer', 'Creating new GenreAnalyzer instance (lazy init)');
 
             const analyzer = new GenreAnalyzer(options);
@@ -74,7 +164,8 @@ export const useGenreAnalyzer = () => {
             return analyzer;
         } catch (err) {
             handleError(err, 'GenreAnalyzer');
-            setError('Failed to initialize genre analyzer');
+            const classifiedError = classifyError(err, 'model');
+            setError(classifiedError);
             return null;
         } finally {
             setIsModelLoading(false);
@@ -88,8 +179,9 @@ export const useGenreAnalyzer = () => {
      * @returns GenreProfile with detected genres, or null if analysis failed
      */
     const analyzeGenre = useCallback(async (audioUrl: string): Promise<GenreProfile | null> => {
-        // Clear previous error
+        // Clear previous error and store URL for potential retry
         setError(null);
+        lastAnalyzedUrlRef.current = audioUrl;
 
         const startTime = performance.now();
         logger.info('GenreAnalyzer', 'Starting genre analysis', { url: audioUrl });
@@ -102,7 +194,7 @@ export const useGenreAnalyzer = () => {
             const analyzer = await getAnalyzer();
 
             if (!analyzer) {
-                setError('Failed to initialize genre analyzer');
+                // Error was already set in getAnalyzer
                 return null;
             }
 
@@ -136,8 +228,8 @@ export const useGenreAnalyzer = () => {
             return profile;
         } catch (err) {
             handleError(err, 'GenreAnalyzer');
-            const errorMessage = err instanceof Error ? err.message : 'Genre analysis failed';
-            setError(errorMessage);
+            const classifiedError = classifyError(err, 'audio');
+            setError(classifiedError);
             return null;
         } finally {
             setIsAnalyzing(false);
@@ -167,7 +259,19 @@ export const useGenreAnalyzer = () => {
         setGenreProfile(null);
         setError(null);
         setProgress(0);
+        lastAnalyzedUrlRef.current = null;
     }, []);
+
+    /**
+     * Retry the last analysis (if there was an error).
+     * Useful for network errors where retrying might succeed.
+     */
+    const retry = useCallback(async (): Promise<GenreProfile | null> => {
+        if (lastAnalyzedUrlRef.current) {
+            return analyzeGenre(lastAnalyzedUrlRef.current);
+        }
+        return null;
+    }, [analyzeGenre]);
 
     return {
         /** Analyze the genre of an audio track */
@@ -186,7 +290,9 @@ export const useGenreAnalyzer = () => {
         setOptions,
         /** Clear the current genre profile and error state */
         clearProfile,
-        /** Current error message, if any */
+        /** Retry the last analysis (useful for network errors) */
+        retry,
+        /** Current error information, if any */
         error,
     };
 };

@@ -40,6 +40,7 @@ export function AudioAnalysisTab() {
     progress: genreProgress,
     setOptions: setGenreOptions,
     error: genreError,
+    retry: retryGenreAnalysis,
   } = useGenreAnalyzer();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
@@ -680,8 +681,8 @@ export function AudioAnalysisTab() {
         </Card>
       )}
 
-      {/* Genre Analysis Results - shown when in genre mode with results or during analysis */}
-      {selectedTrack && analysisMode === 'genre' && (genreProfile || isGenreAnalyzing || isGenreModelLoading) && (
+      {/* Genre Analysis Results - shown when in genre mode with results, during analysis, or on error */}
+      {selectedTrack && analysisMode === 'genre' && (genreProfile || isGenreAnalyzing || isGenreModelLoading || genreError) && (
         <div className="audio-analysis-results fade-in">
           <GenreResultsCard
             genreProfile={genreProfile}
@@ -689,6 +690,7 @@ export function AudioAnalysisTab() {
             isModelLoading={isGenreModelLoading}
             progress={genreProgress}
             error={genreError}
+            onRetry={retryGenreAnalysis}
             threshold={genreThreshold}
           />
         </div>
