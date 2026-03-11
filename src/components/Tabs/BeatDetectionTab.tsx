@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { Music, Sparkles, Drum, Download, ChevronDown } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
@@ -15,7 +15,8 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability } from '../../store/beatDetectionStore';
+import { StepNav, type Step } from '../ui/StepNav';
 import { logger } from '../../utils/logger';
 
 /**
@@ -50,6 +51,7 @@ export function BeatDetectionTab() {
     const clearOldestCachedBeatMaps = useBeatDetectionStore((state) => state.actions.clearOldestCachedBeatMaps);
     const loadCachedBeatMap = useBeatDetectionStore((state) => state.actions.loadCachedBeatMap);
     const clearBeatMap = useBeatDetectionStore((state) => state.actions.clearBeatMap);
+    const setCurrentStep = useBeatDetectionStore((state) => state.actions.setCurrentStep);
     const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
     const storageError = useBeatDetectionStore((state) => state.storageError);
     const interpolatedBeatMap = useInterpolatedBeatMap();
@@ -57,6 +59,33 @@ export function BeatDetectionTab() {
     const subdivisionConfig = useSubdivisionConfig();
     const chartStyle = useChartStyle();
     const chartStatistics = useChartStatistics();
+
+    // Step navigation state
+    const currentStep = useCurrentStep();
+    const stepCompletion = useStepCompletion();
+    const availableSteps = useStepAvailability();
+
+    // Step configuration for StepNav
+    const steps: Step[] = [
+        { id: 1, label: 'Analyze' },
+        { id: 2, label: 'Subdivide' },
+        { id: 3, label: 'Chart' },
+        { id: 4, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
+    ];
+
+    // Compute completed steps set
+    const completedSteps = useMemo(() => {
+        const completed = new Set<number>();
+        if (stepCompletion.step1) completed.add(1);
+        if (stepCompletion.step2) completed.add(2);
+        if (stepCompletion.step3) completed.add(3);
+        return completed;
+    }, [stepCompletion]);
+
+    // Handle step click
+    const handleStepClick = useCallback((step: number) => {
+        setCurrentStep(step as 1 | 2 | 3 | 4);
+    }, [setCurrentStep]);
 
     /**
      * Export interpolated beat map as JSON for debugging/analysis
@@ -289,6 +318,18 @@ export function BeatDetectionTab() {
                     <StatusIndicator status={getAnalysisStatus()} label={getStatusLabel()} />
                 </div>
             </div>
+
+            {/* Step Navigation - Hidden during practice mode */}
+            {selectedTrack && !practiceModeActive && (
+                <StepNav
+                    steps={steps}
+                    currentStep={currentStep}
+                    completedSteps={completedSteps}
+                    availableSteps={availableSteps}
+                    onStepClick={handleStepClick}
+                    className="beat-detection-step-nav"
+                />
+            )}
 
             {/* Empty State - No Track Selected */}
             {!selectedTrack && (

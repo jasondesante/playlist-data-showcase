@@ -130,11 +130,11 @@ Horizontal step navigation at the top:
 
 ## Phase 3: Refactor BeatDetectionTab Layout
 
-- [ ] **Task 3.1: Add StepNav to BeatDetectionTab**
-  - [ ] Import StepNav component
-  - [ ] Place below header, above content area
-  - [ ] Pass current step, completion, and availability props
-  - [ ] Hide StepNav when practiceModeActive is true
+- [x] **Task 3.1: Add StepNav to BeatDetectionTab**
+  - [x] Import StepNav component
+  - [x] Place below header, above content area
+  - [x] Pass current step, completion, and availability props
+  - [x] Hide StepNav when practiceModeActive is true
 
 - [ ] **Task 3.2: Create step content rendering logic**
   - [ ] Add `renderStepContent()` that switches on currentStep
