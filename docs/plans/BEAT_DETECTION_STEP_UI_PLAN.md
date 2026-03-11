@@ -161,12 +161,12 @@ Horizontal step navigation at the top:
   - [x] Card wrapper with "Chart Editor" header
   - [x] Remove placeholder logic (step will be disabled if not available)
 
-- [ ] **Task 3.6: Refactor Step 4 (Practice) content**
-  - [ ] Move BeatMapSummary to Step 4
-  - [ ] Keep "Start Practice Mode" button
-  - [ ] Keep Export button section
-  - [ ] This step is always available after Step 1 completes
-  - [ ] When step is disabled (beatMap null): show "Complete Step 1 first" message
+- [x] **Task 3.6: Refactor Step 4 (Practice) content**
+  - [x] Move BeatMapSummary to Step 4
+  - [x] Keep "Start Practice Mode" button
+  - [x] Keep Export button section
+  - [x] This step is always available after Step 1 completes
+  - [x] When step is disabled (beatMap null): show "Complete Step 1 first" message
 
 - [ ] **Task 3.7: Add post-completion prompts**
   - [ ] Create `StepCompletionPrompt` component or inline UI
