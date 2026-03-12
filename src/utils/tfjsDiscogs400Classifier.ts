@@ -478,8 +478,8 @@ export class TFJSDiscogs400Classifier {
     const inputTensor = tf.tensor2d([Array.from(embedding)], [1, 1280]);
 
     try {
-      // Run inference
-      const output = await this.model.predict(inputTensor) as tf.Tensor;
+      // Run inference - clean model has named input 'embedding'
+      const output = await this.model.predict({ 'embedding': inputTensor }) as tf.Tensor;
 
       // Get probabilities (sigmoid output)
       const probabilities = await output.data();

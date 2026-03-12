@@ -53,7 +53,8 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // The browser-compatible frozen model was converted from SavedModel to remove PartitionedCall ops
         genre: {
             embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-            classifier: '/models/mtg_jamendo_genre/tfjs/model.json'
+            // classifier: '/models/mtg_jamendo_genre/tfjs/model.json'
+            classifier: '/models/genre_discogs400/tfjs/model.json'
         },
         // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
         mood: {
