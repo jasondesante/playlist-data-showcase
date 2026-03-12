@@ -36,6 +36,8 @@ export interface UseMusicClassifierOptions extends Partial<MusicClassifierOption
         genre?: string | TwoStepModelConfig;
         mood?: string | TwoStepModelConfig;
         danceability?: string | TwoStepModelConfig;
+        voice?: string | TwoStepModelConfig;
+        acoustic?: string | TwoStepModelConfig;
     };
 }
 
@@ -57,12 +59,16 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
             classifier: '/models/genre_discogs400/tfjs/model.json'
         },
         // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
+        // genre: '/models/mtt_musicnn/model.json',
         mood: {
             embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',  // Shared embedding!
             classifier: '/models/mtg_jamendo_moodtheme/tfjs/model.json'
         },
         // mood: '/models/mood_happy-musicnn-msd-2/model.json',
-        danceability: '/models/danceability-musicnn-msd-2/model.json'
+        // danceability: '/models/danceability-musicnn-msd-2/model.json',
+        danceability: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
+        // voice: '/models/voice_instrumental-vggish-1.json',
+        // acoustic: '/models/acoustic-brnn-1.json'
     }
 };
 

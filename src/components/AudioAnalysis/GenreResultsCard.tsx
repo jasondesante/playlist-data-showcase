@@ -370,16 +370,30 @@ function MoodTagsSection({ moods, moodTags }: { moods: ClassificationTag[]; mood
                     </span>
                 ))}
             </div>
-            {moods.length > 0 && (
+            {/* Show all moods with confidence scores */}
+            {moods.length > 1 && (
                 <div className="genre-results-mood-confidence">
-                    {moods.slice(0, 3).map((mood, index) => (
-                        <span key={index} className="genre-results-mood-confidence-item">
-                            {formatGenreName(mood.name)}
-                            <span className="genre-results-mood-confidence-value">
-                                {Math.round(mood.confidence * 100)}%
-                            </span>
-                        </span>
-                    ))}
+                    <h5 className="genre-results-section-subtitle">
+                        Confidence Scores ({moods.length} detected)
+                    </h5>
+                    <div className="genre-results-mood-list">
+                        {moods.map((mood, index) => (
+                            <div key={index} className="genre-results-mood-item">
+                                <span className="genre-results-mood-name">
+                                    {formatGenreName(mood.name)}
+                                </span>
+                                <span className="genre-results-mood-confidence-bar">
+                                    <div
+                                        className="genre-results-mood-confidence-fill"
+                                        style={{ width: `${mood.confidence * 100}%` }}
+                                    />
+                                </span>
+                                <span className="genre-results-mood-confidence-value">
+                                    {Math.round(mood.confidence * 100)}%
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -612,7 +626,7 @@ export function GenreResultsCard({
                 <GenreBarChart
                     genres={metadata.genres}
                     primaryGenre={metadata.primaryGenre}
-                    maxBars={10}
+                    maxBars={metadata.genres.length}
                 />
             </div>
 
