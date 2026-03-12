@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# ML Models (too large for GitHub)
+public/models/
+
 # claude api key
 .claude/settings.json
 
