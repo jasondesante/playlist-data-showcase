@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from 'react';
-import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp, Wifi, Cpu, FileAudio, Download } from 'lucide-react';
+import { Music, AlertCircle, RefreshCw, Clock, Tag, TrendingUp, Wifi, Cpu, FileAudio, Download, Heart, Zap, Smile, Activity } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { GenreBarChart } from '../ui/GenreBarChart';
-import type { GenreProfile, GenreTag } from '@/types';
-import type { GenreError, GenreErrorType } from '@/hooks/useGenreAnalyzer';
+import type { MusicClassificationProfile, ClassificationTag, VibeMetrics } from '@/types';
+import type { ClassificationError, ClassificationErrorType } from '@/hooks/useMusicClassifier';
 import './GenreResultsCard.css';
 
 /**
@@ -20,11 +20,11 @@ export interface GenreTrackInfo {
 }
 
 /**
- * Export data structure for genre profile
+ * Export data structure for music classification profile
  */
-export interface GenreProfileExport {
+export interface MusicClassificationExport {
     /** Schema version for future migrations */
-    version: 1;
+    version: 2;
     /** Export timestamp (ISO string) */
     exportedAt: string;
     /** Track information */
@@ -42,10 +42,24 @@ export interface GenreProfileExport {
             name: string;
             confidence: number;
         }>;
+        /** Detected moods/themes with confidence scores */
+        moods: Array<{
+            name: string;
+            confidence: number;
+        }>;
+        /** Mood tags (keyword strings) */
+        moodTags: string[];
+        /** Vibe metrics */
+        vibeMetrics?: {
+            danceability?: number;
+            energy?: number;
+            valence?: number;
+        };
         /** Analysis metadata */
         metadata?: {
             durationAnalyzed?: number;
             analyzedAt?: string;
+            modelsUsed?: string[];
         };
     };
     /** Model information */
@@ -61,8 +75,8 @@ export interface GenreProfileExport {
  * Props for the GenreResultsCard component
  */
 export interface GenreResultsCardProps {
-    /** The genre profile data to display */
-    genreProfile: GenreProfile | null;
+    /** The full music classification profile (genres, moods, vibe metrics) */
+    profile?: MusicClassificationProfile | null;
     /** Whether analysis is currently in progress */
     isAnalyzing?: boolean;
     /** Whether the ML model is being loaded (first-time initialization) */
@@ -70,7 +84,7 @@ export interface GenreResultsCardProps {
     /** Analysis progress percentage (0-100) */
     progress?: number;
     /** Error information if analysis failed */
-    error?: GenreError | null;
+    error?: ClassificationError | null;
     /** Callback to retry analysis when an error occurs */
     onRetry?: () => void;
     /** The confidence threshold used for filtering genres */
@@ -108,19 +122,19 @@ const formatTimestamp = (isoString: string): string => {
  * Default model information for export
  */
 const DEFAULT_MODEL_INFO = {
-    name: 'MTG Jamendo Genre Classifier',
-    source: 'https://cdn.jsdelivr.net/gh/MTG/essentia.js/examples/models/mtg_jamendo_genre/model.json',
+    name: 'Discogs-EffNet + MTG Jamendo',
+    source: '/models/discogs-effnet-bs64-1.json',
 };
 
 /**
- * Export genre profile as JSON file
+ * Export music classification profile as JSON file
  */
-const exportGenreProfile = (
-    genreProfile: GenreProfile,
+const exportMusicClassification = (
+    profile: MusicClassificationProfile,
     trackInfo?: GenreTrackInfo
 ): void => {
-    const exportData: GenreProfileExport = {
-        version: 1,
+    const exportData: MusicClassificationExport = {
+        version: 2,
         exportedAt: new Date().toISOString(),
         track: {
             title: trackInfo?.title,
@@ -128,14 +142,25 @@ const exportGenreProfile = (
             url: trackInfo?.url,
         },
         analysis: {
-            primaryGenre: genreProfile.primary_genre,
-            genres: genreProfile.genres.map(g => ({
+            primaryGenre: profile.primary_genre,
+            genres: profile.genres.map(g => ({
                 name: g.name,
                 confidence: g.confidence,
             })),
+            moods: profile.moods.map(m => ({
+                name: m.name,
+                confidence: m.confidence,
+            })),
+            moodTags: profile.mood_tags,
+            vibeMetrics: profile.vibe_metrics ? {
+                danceability: profile.vibe_metrics.danceability,
+                energy: profile.vibe_metrics.energy,
+                valence: profile.vibe_metrics.valence,
+            } : undefined,
             metadata: {
-                durationAnalyzed: genreProfile.analysis_metadata?.duration_analyzed,
-                analyzedAt: genreProfile.analysis_metadata?.analyzed_at,
+                durationAnalyzed: profile.analysis_metadata?.duration_analyzed,
+                analyzedAt: profile.analysis_metadata?.analyzed_at,
+                modelsUsed: profile.analysis_metadata?.models_used,
             },
         },
         model: DEFAULT_MODEL_INFO,
@@ -149,9 +174,9 @@ const exportGenreProfile = (
     // Generate filename from track info or primary genre
     const baseName = trackInfo?.title
         ? trackInfo.title.replace(/[^a-z0-9]/gi, '_').slice(0, 50)
-        : `genre_${genreProfile.primary_genre}`;
+        : `music_${profile.primary_genre}`;
     const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `${baseName}_genre_profile_${timestamp}.json`;
+    const filename = `${baseName}_classification_${timestamp}.json`;
 
     // Create temporary link and trigger download
     const link = document.createElement('a');
@@ -173,9 +198,17 @@ const formatDuration = (seconds: number): string => {
 };
 
 /**
+ * Format a decimal value as a percentage
+ */
+const formatPercent = (value: number | undefined): string => {
+    if (value === undefined) return '--';
+    return `${Math.round(value * 100)}%`;
+};
+
+/**
  * Get icon for error type
  */
-const getErrorIcon = (type: GenreErrorType) => {
+const getErrorIcon = (type: ClassificationErrorType) => {
     switch (type) {
         case 'network':
             return Wifi;
@@ -191,7 +224,7 @@ const getErrorIcon = (type: GenreErrorType) => {
 /**
  * Get title for error type
  */
-const getErrorTitle = (type: GenreErrorType): string => {
+const getErrorTitle = (type: ClassificationErrorType): string => {
     switch (type) {
         case 'network':
             return 'Network Error';
@@ -208,7 +241,7 @@ const getErrorTitle = (type: GenreErrorType): string => {
  * Error State Component
  * Displays an error message with a retry button
  */
-function ErrorState({ error, onRetry }: { error: GenreError; onRetry?: () => void }) {
+function ErrorState({ error, onRetry }: { error: ClassificationError; onRetry?: () => void }) {
     const Icon = getErrorIcon(error.type);
     const title = getErrorTitle(error.type);
 
@@ -251,7 +284,7 @@ function ModelLoadingIndicator({ progress }: { progress: number }) {
                 <Music className="genre-results-model-loading-icon-inner" size={32} />
             </div>
             <div className="genre-results-model-loading-content">
-                <h4 className="genre-results-model-loading-title">Loading ML Model...</h4>
+                <h4 className="genre-results-model-loading-title">Loading ML Models...</h4>
                 <p className="genre-results-model-loading-desc">
                     First-time setup may take 5-10 seconds
                 </p>
@@ -268,7 +301,7 @@ function ModelLoadingIndicator({ progress }: { progress: number }) {
 
 /**
  * Analysis Progress Indicator
- * Shows during genre analysis with progress percentage
+ * Shows during music classification with progress percentage
  */
 function AnalysisProgressIndicator({ progress }: { progress: number }) {
     return (
@@ -278,9 +311,9 @@ function AnalysisProgressIndicator({ progress }: { progress: number }) {
                     <Music className="genre-results-analysis-progress-icon-inner" size={24} />
                 </div>
                 <div className="genre-results-analysis-progress-text">
-                    <h4 className="genre-results-analysis-progress-title">Analyzing Genre...</h4>
+                    <h4 className="genre-results-analysis-progress-title">Analyzing Music...</h4>
                     <p className="genre-results-analysis-progress-desc">
-                        Processing audio with ML classification
+                        Classifying genres, moods, and vibe metrics
                     </p>
                 </div>
                 <div className="genre-results-analysis-progress-percent">
@@ -318,6 +351,84 @@ function PrimaryGenreHighlight({ genre, confidence }: { genre: string; confidenc
 }
 
 /**
+ * Mood Tags Component
+ * Displays mood/theme tags as colored chips
+ */
+function MoodTagsSection({ moods, moodTags }: { moods: ClassificationTag[]; moodTags: string[] }) {
+    if (moods.length === 0 && moodTags.length === 0) return null;
+
+    return (
+        <div className="genre-results-moods">
+            <h4 className="genre-results-section-title">
+                <Heart size={16} className="genre-results-section-icon" />
+                Moods & Themes
+            </h4>
+            <div className="genre-results-mood-tags">
+                {moodTags.slice(0, 8).map((tag, index) => (
+                    <span key={index} className="genre-results-mood-tag">
+                        {formatGenreName(tag)}
+                    </span>
+                ))}
+            </div>
+            {moods.length > 0 && (
+                <div className="genre-results-mood-confidence">
+                    {moods.slice(0, 3).map((mood, index) => (
+                        <span key={index} className="genre-results-mood-confidence-item">
+                            {formatGenreName(mood.name)}
+                            <span className="genre-results-mood-confidence-value">
+                                {Math.round(mood.confidence * 100)}%
+                            </span>
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
+ * Vibe Metrics Component
+ * Displays danceability, energy, and other vibe metrics as progress bars
+ */
+function VibeMetricsSection({ vibeMetrics }: { vibeMetrics?: VibeMetrics }) {
+    if (!vibeMetrics) return null;
+
+    const metrics = [
+        { key: 'danceability', label: 'Danceability', value: vibeMetrics.danceability, icon: Activity, color: '#10b981' },
+        { key: 'energy', label: 'Energy', value: vibeMetrics.energy, icon: Zap, color: '#f59e0b' },
+        { key: 'valence', label: 'Positivity', value: vibeMetrics.valence, icon: Smile, color: '#ec4899' },
+    ].filter(m => m.value !== undefined);
+
+    if (metrics.length === 0) return null;
+
+    return (
+        <div className="genre-results-vibe">
+            <h4 className="genre-results-section-title">
+                <Activity size={16} className="genre-results-section-icon" />
+                Vibe Metrics
+            </h4>
+            <div className="genre-results-vibe-metrics">
+                {metrics.map(({ key, label, value, icon: Icon, color }) => (
+                    <div key={key} className="genre-results-vibe-item">
+                        <div className="genre-results-vibe-header">
+                            <Icon size={14} style={{ color }} />
+                            <span className="genre-results-vibe-label">{label}</span>
+                            <span className="genre-results-vibe-value">{formatPercent(value)}</span>
+                        </div>
+                        <div className="genre-results-vibe-bar">
+                            <div
+                                className="genre-results-vibe-bar-fill"
+                                style={{ width: `${(value ?? 0) * 100}%`, backgroundColor: color }}
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/**
  * Metadata Row Component
  * Displays analysis metadata in a compact row
  */
@@ -325,11 +436,13 @@ function MetadataRow({
     duration,
     timestamp,
     genreCount,
+    moodCount,
     threshold
 }: {
     duration?: number;
     timestamp?: string;
     genreCount: number;
+    moodCount?: number;
     threshold?: number;
 }) {
     return (
@@ -352,6 +465,13 @@ function MetadataRow({
                 <span className="genre-results-metadata-label">Genres</span>
                 <span className="genre-results-metadata-value">{genreCount}</span>
             </div>
+            {moodCount !== undefined && moodCount > 0 && (
+                <div className="genre-results-metadata-item">
+                    <Heart size={14} className="genre-results-metadata-icon" />
+                    <span className="genre-results-metadata-label">Moods</span>
+                    <span className="genre-results-metadata-value">{moodCount}</span>
+                </div>
+            )}
             {threshold !== undefined && (
                 <div className="genre-results-metadata-item">
                     <span className="genre-results-metadata-label">Threshold</span>
@@ -365,22 +485,25 @@ function MetadataRow({
 /**
  * GenreResultsCard Component
  *
- * Displays the results of ML-based genre analysis for an audio track.
- * Shows the primary genre prominently, followed by a bar chart of all detected genres,
- * analysis metadata, and the confidence threshold used.
+ * Displays the results of ML-based music classification for an audio track.
+ * Shows the primary genre, moods, vibe metrics (danceability, energy, etc.),
+ * and a bar chart of all detected genres.
  *
  * Features:
  * - Primary genre highlight with confidence score
+ * - Mood/theme tags and confidence scores
+ * - Vibe metrics visualization (danceability, energy, positivity, acoustic)
  * - GenreBarChart visualization for all detected genres
- * - Analysis metadata (duration, timestamp, genre count)
+ * - Analysis metadata (duration, timestamp, counts)
  * - Loading skeleton state while analyzing
  * - Error state with retry option
  * - Model loading indicator for first-time ML initialization
+ * - Export to JSON functionality
  *
  * @example
  * ```tsx
  * <GenreResultsCard
- *   genreProfile={genreProfile}
+ *   profile={musicClassification}
  *   isAnalyzing={isAnalyzing}
  *   progress={progress}
  *   error={error}
@@ -390,7 +513,7 @@ function MetadataRow({
  * ```
  */
 export function GenreResultsCard({
-    genreProfile,
+    profile,
     isAnalyzing = false,
     isModelLoading = false,
     progress = 0,
@@ -400,31 +523,34 @@ export function GenreResultsCard({
     trackInfo,
     className = '',
 }: GenreResultsCardProps) {
-    // Extract metadata from genre profile
+    // Extract metadata from classification profile
     const metadata = useMemo(() => {
-        if (!genreProfile) return null;
+        if (!profile) return null;
 
         return {
-            primaryGenre: genreProfile.primary_genre,
-            genres: genreProfile.genres,
-            duration: genreProfile.analysis_metadata?.duration_analyzed,
-            timestamp: genreProfile.analysis_metadata?.analyzed_at,
+            primaryGenre: profile.primary_genre,
+            genres: profile.genres,
+            moods: profile.moods,
+            moodTags: profile.mood_tags,
+            vibeMetrics: profile.vibe_metrics,
+            duration: profile.analysis_metadata?.duration_analyzed,
+            timestamp: profile.analysis_metadata?.analyzed_at,
         };
-    }, [genreProfile]);
+    }, [profile]);
 
     // Get primary genre confidence
     const primaryGenreConfidence = useMemo(() => {
         if (!metadata?.primaryGenre || !metadata?.genres) return 0;
-        const primary = metadata.genres.find((g: GenreTag) => g.name === metadata.primaryGenre);
+        const primary = metadata.genres.find((g: ClassificationTag) => g.name === metadata.primaryGenre);
         return primary?.confidence ?? 0;
     }, [metadata]);
 
     // Handle export button click
     const handleExport = useCallback(() => {
-        if (genreProfile) {
-            exportGenreProfile(genreProfile, trackInfo);
+        if (profile) {
+            exportMusicClassification(profile, trackInfo);
         }
-    }, [genreProfile, trackInfo]);
+    }, [profile, trackInfo]);
 
     // Show loading state
     if (isAnalyzing || isModelLoading) {
@@ -457,7 +583,7 @@ export function GenreResultsCard({
     }
 
     // No data state
-    if (!genreProfile || !metadata) {
+    if (!profile || !metadata) {
         return null;
     }
 
@@ -469,8 +595,8 @@ export function GenreResultsCard({
         >
             {/* Header */}
             <div className="genre-results-header">
-                <h3 className="genre-results-title">Genre Analysis</h3>
-                <span className="genre-results-badge">ML Classification</span>
+                <h3 className="genre-results-title">Music Classification</h3>
+                <span className="genre-results-badge">ML Analysis</span>
             </div>
 
             {/* Primary Genre Highlight */}
@@ -490,11 +616,18 @@ export function GenreResultsCard({
                 />
             </div>
 
+            {/* Mood Tags */}
+            <MoodTagsSection moods={metadata.moods} moodTags={metadata.moodTags} />
+
+            {/* Vibe Metrics */}
+            <VibeMetricsSection vibeMetrics={metadata.vibeMetrics} />
+
             {/* Metadata */}
             <MetadataRow
                 duration={metadata.duration}
                 timestamp={metadata.timestamp}
                 genreCount={metadata.genres.length}
+                moodCount={metadata.moods.length}
                 threshold={threshold}
             />
 
@@ -507,7 +640,7 @@ export function GenreResultsCard({
                     leftIcon={Download}
                     className="genre-results-export-btn"
                 >
-                    Export Genre Profile
+                    Export Classification
                 </Button>
             </div>
         </Card>

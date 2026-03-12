@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discogs-EffNet TFJS Browser Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee; }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        pre { background: #16213e; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Discogs-EffNet Browser TFJS Test</h1>
+    <button onclick="runTest()">Run Test</button>
+    <pre id="log"></pre>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script>
+        const logEl = document.getElementById('log');
+        function log(msg, type = 'info') {
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = msg + '\n';
+            logEl.appendChild(span);
+            console.log(msg);
+        }
+
+        async function runTest() {
+            logEl.innerHTML = '';
+            log('Starting Discogs-EffNet browser test...', 'info');
+            log(`TensorFlow.js version: ${tf.version.tfjs}`, 'info');
+
+            try {
+                // Test 1: Load the model
+                log('\n=== Test 1: Loading Model ===', 'info');
+                const modelPath = '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json';
+                log(`Loading from: ${modelPath}`, 'info');
+
+                const startTime = performance.now();
+                const model = await tf.loadGraphModel(modelPath);
+                const loadTime = (performance.now() - startTime).toFixed(0);
+                log(`✅ Model loaded in ${loadTime}ms`, 'success');
+
+                // Test 2: Check model inputs
+                log('\n=== Test 2: Model Inputs ===', 'info');
+                const inputs = model.inputs;
+                log(`Number of inputs: ${inputs.length}`, 'info');
+                inputs.forEach((inp, i) => {
+                    log(`  Input ${i}: ${inp.name}, shape: ${inp.shape}`, 'info');
+                });
+
+                // Test 3: Create dummy input and run inference
+                log('\n=== Test 3: Running Inference ===', 'info');
+                // Input shape: [64, 128, 96] - batch of 64 mel-spectrograms
+                const batchSize = 64;
+                const melBands = 128;
+                const timeFrames = 96;
+
+                log(`Creating dummy input: [${batchSize}, ${melBands}, ${timeFrames}]`, 'info');
+                const dummyInput = tf.randomNormal([batchSize, melBands, timeFrames]);
+
+                log('Running model.execute()...', 'info');
+                const inferStart = performance.now();
+
+                // Try execute with input name
+                const outputs = model.execute({
+                    'melspectrogram': dummyInput
+                });
+
+                const inferTime = (performance.now() - inferStart).toFixed(0);
+                log(`✅ Inference completed in ${inferTime}ms`, 'success');
+
+                // Test 4: Check outputs
+                log('\n=== Test 4: Output Analysis ===', 'info');
+
+                if (Array.isArray(outputs)) {
+                    log(`Model returned ${outputs.length} outputs:`, 'info');
+                    outputs.forEach((out, i) => {
+                        log(`  Output ${i}: shape ${out.shape}, dtype ${out.dtype}`, 'info');
+                        out.dispose();
+                    });
+                } else {
+                    log(`Single output: shape ${outputs.shape}, dtype ${outputs.dtype}`, 'info');
+                    outputs.dispose();
+                }
+
+                // Test 5: Get output names from model signature
+                log('\n=== Test 5: Output Names ===', 'info');
+                if (model.executor && model.executor._signature) {
+                    const sig = model.executor._signature;
+                    log(`Signature: ${JSON.stringify(sig, null, 2)}`, 'info');
+                }
+
+                // Try to get both outputs explicitly
+                log('\n=== Test 6: Getting Named Outputs ===', 'info');
+                const dummyInput2 = tf.randomNormal([batchSize, melBands, timeFrames]);
+
+                try {
+                    // Try getting both outputs
+                    const result = await model.executeAsync({
+                        'melspectrogram': dummyInput2
+                    });
+                    log(`Async execute result type: ${typeof result}`, 'info');
+
+                    if (Array.isArray(result)) {
+                        result.forEach((tensor, i) => {
+                            log(`  Output ${i}: shape ${tensor.shape}`, 'info');
+                            tensor.dispose();
+                        });
+                    } else {
+                        log(`  Shape: ${result.shape}`, 'info');
+                        result.dispose();
+                    }
+                } catch (e) {
+                    log(`Note: ${e.message}`, 'info');
+                }
+
+                dummyInput.dispose();
+                dummyInput2.dispose();
+
+                log('\n=== ALL TESTS PASSED ===', 'success');
+                log('The Discogs-EffNet model works in the browser!', 'success');
+
+                // Memory info
+                log(`\nTF Memory: ${JSON.stringify(tf.memory())}`, 'info');
+
+            } catch (error) {
+                log(`\n❌ ERROR: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

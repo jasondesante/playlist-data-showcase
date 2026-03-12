@@ -16,8 +16,12 @@ export type {
     SamplingStrategy,
     ColorPalette,
     FrequencyBands,
-    GenreProfile,
-    GenreTag,
+
+    // Music Classification (MusicClassifier)
+    MusicClassificationProfile,
+    ClassificationTag,
+    VibeMetrics,
+    MusicClassifierOptions,
 
     // Beat Detection
     Beat,

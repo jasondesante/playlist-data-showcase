@@ -10,6 +10,7 @@ type LogCategory =
     | 'PlaylistParser'
     | 'AudioAnalyzer'
     | 'GenreAnalyzer'
+    | 'MusicClassifier'
     | 'CharacterGenerator'
     | 'SessionTracker'
     | 'XPCalculator'

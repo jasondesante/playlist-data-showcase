@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { GenreTag } from '@/types';
+import type { ClassificationTag } from '@/types';
 import './GenreBarChart.css';
 
 /**
@@ -7,7 +7,7 @@ import './GenreBarChart.css';
  */
 export interface GenreBarChartProps {
     /** Array of genre tags with confidence scores */
-    genres: GenreTag[];
+    genres: ClassificationTag[];
     /** The primary genre to highlight (optional) */
     primaryGenre?: string;
     /** Maximum number of bars to display (default: 10) */

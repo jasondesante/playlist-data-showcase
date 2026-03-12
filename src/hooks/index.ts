@@ -25,4 +25,4 @@ export * from './useContentCreator';
 export * from './useBeatDetection';
 export * from './useSubdivisionPlayback';
 export * from './useKeyboardInput';
-export * from './useGenreAnalyzer';
+export * from './useMusicClassifier';

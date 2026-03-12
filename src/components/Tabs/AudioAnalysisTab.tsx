@@ -4,7 +4,7 @@ import './AudioAnalysisTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
-import { useGenreAnalyzer } from '../../hooks/useGenreAnalyzer';
+import { useMusicClassifier } from '../../hooks/useMusicClassifier';
 import { GenreResultsCard } from '../AudioAnalysis/GenreResultsCard';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -30,18 +30,18 @@ import { ColorExtractor } from 'playlist-data-engine';
  * 8. Interactive multiplier controls for real-time frequency adjustment
  */
 export function AudioAnalysisTab() {
-  const { selectedTrack, audioProfile, setAudioProfile, genreProfile } = usePlaylistStore();
+  const { selectedTrack, audioProfile, setAudioProfile, musicClassification } = usePlaylistStore();
   const { playbackState, currentTime, duration, seek } = useAudioPlayerStore();
   const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing, timelineData } = useAudioAnalyzer();
   const {
-    analyzeGenre,
-    isAnalyzing: isGenreAnalyzing,
+    analyze,
+    setOptions,
     isModelLoading: isGenreModelLoading,
+    isAnalyzing: isGenreAnalyzing,
     progress: genreProgress,
-    setOptions: setGenreOptions,
     error: genreError,
     retry: retryGenreAnalysis,
-  } = useGenreAnalyzer();
+  } = useMusicClassifier();
   const [animateBars, setAnimateBars] = useState(false);
   const tabContext = useTabContext();
   const previousTabRef = useRef<string | undefined>(undefined);
@@ -145,13 +145,13 @@ export function AudioAnalysisTab() {
 
     if (analysisMode === 'genre') {
       // Genre analysis mode - ML-based classification
-      // Update genre analyzer options before analysis
-      setGenreOptions({
+      // Update classifier options before analysis
+      setOptions({
         topN: genreTopN,
         threshold: genreThreshold,
       });
-      // Analyze genre - results are stored in playlistStore via the hook
-      await analyzeGenre(selectedTrack.audio_url);
+      // Analyze music - results are stored in playlistStore via the hook
+      await analyze(selectedTrack.audio_url);
     } else if (analysisMode === 'timeline') {
       // Timeline analysis mode - analyze full song with timeline data points
       const strategy = timelineMode === 'count'
@@ -667,7 +667,7 @@ export function AudioAnalysisTab() {
                   : isAnalyzing || isTimelineAnalyzing
                     ? `${progress}%`
                     : analysisMode === 'genre'
-                      ? (genreProfile ? 'Re-Analyze Genre' : 'Analyze Genre')
+                      ? (musicClassification ? 'Re-Analyze Genre' : 'Analyze Genre')
                       : (audioProfile ? 'Re-Analyze' : 'Analyze Audio')}
               </Button>
 
@@ -682,10 +682,10 @@ export function AudioAnalysisTab() {
       )}
 
       {/* Genre Analysis Results - shown when in genre mode with results, during analysis, or on error */}
-      {selectedTrack && analysisMode === 'genre' && (genreProfile || isGenreAnalyzing || isGenreModelLoading || genreError) && (
+      {selectedTrack && analysisMode === 'genre' && (musicClassification || isGenreAnalyzing || isGenreModelLoading || genreError) && (
         <div className="audio-analysis-results fade-in">
           <GenreResultsCard
-            genreProfile={genreProfile}
+            profile={musicClassification}
             isAnalyzing={isGenreAnalyzing}
             isModelLoading={isGenreModelLoading}
             progress={genreProgress}
