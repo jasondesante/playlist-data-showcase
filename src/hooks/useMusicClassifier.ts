@@ -29,16 +29,17 @@ export interface ClassificationError {
 
 /**
  * Extended options for the MusicClassifier hook
+ * Omits 'models' from MusicClassifierOptions to allow our extended type
  */
-export interface UseMusicClassifierOptions extends Partial<MusicClassifierOptions> {
-    /** Model paths - can be single-step (string/object) or two-step (object) */
+export interface UseMusicClassifierOptions extends Omit<Partial<MusicClassifierOptions>, 'models'> {
+    /** Model paths - can be single-step (string/object) or two-step (object), or undefined to use engine defaults */
     models?: {
         genre?: string | SingleStepModelConfig | TwoStepModelConfig;
         mood?: string | SingleStepModelConfig | TwoStepModelConfig;
         danceability?: string | SingleStepModelConfig | TwoStepModelConfig;
         voice?: string | SingleStepModelConfig | TwoStepModelConfig;
         acoustic?: string | SingleStepModelConfig | TwoStepModelConfig;
-    };
+    } | undefined;
 }
 
 /**
@@ -123,7 +124,8 @@ export const MODEL_PRESETS = {
             description: '10 genres (single-step)',
             config: {
                 modelUrl: 'https://arweave.net/7MQD4W5yJeUUK2tRg8TEdomew-ZY7s0K91nk35FxleM/model.json',
-                modelType: 'musicnn' as const
+                modelType: 'musicnn' as const,
+                genreType: 'tzanetakis' as const
             }
         },
         // MTT Musicnn - 50 tags, single-step musicnn
@@ -132,7 +134,8 @@ export const MODEL_PRESETS = {
             description: '50 tags (single-step)',
             config: {
                 modelUrl: 'https://arweave.net/KCZQ1geu4ymxp8axAql95FDY98VjnOzSymdkCiM9BXo/model.json',
-                modelType: 'musicnn' as const
+                modelType: 'musicnn' as const,
+                genreType: 'mtt_musicnn' as const
             }
         }
     },
@@ -337,9 +340,10 @@ export const useMusicClassifier = () => {
      * Analyze the music of an audio track.
      *
      * @param audioUrl - URL of the audio file to analyze
+     * @param overrideOptions - Optional options to use for this analysis only (bypasses state)
      * @returns MusicClassificationProfile with genres, moods, and vibe metrics, or null if analysis failed
      */
-    const analyze = useCallback(async (audioUrl: string): Promise<MusicClassificationProfile | null> => {
+    const analyze = useCallback(async (audioUrl: string, overrideOptions?: UseMusicClassifierOptions): Promise<MusicClassificationProfile | null> => {
         // Clear previous error and store URL for potential retry
         setError(null);
         lastAnalyzedUrlRef.current = audioUrl;
@@ -350,9 +354,31 @@ export const useMusicClassifier = () => {
         setProgress(0);
 
         try {
-            // Get or create classifier (lazy initialization)
+            // Determine which options to use
+            const optionsToUse = overrideOptions ?? options;
+
+            // Create classifier with the options (always fresh for override, or cached if same)
             setProgress(5); // Starting
-            const classifier = await getClassifier();
+            let classifier: MusicClassifier | null = null;
+
+            if (overrideOptions) {
+                // Override options provided - create fresh classifier with override options
+                logger.info('MusicClassifier', 'Creating classifier with override options');
+                try {
+                    setIsModelLoading(true);
+                    classifier = new MusicClassifier(optionsToUse as MusicClassifierOptions);
+                } catch (err) {
+                    handleError(err, 'MusicClassifier');
+                    const classifiedError = classifyError(err, 'model');
+                    setError(classifiedError);
+                    return null;
+                } finally {
+                    setIsModelLoading(false);
+                }
+            } else {
+                // No override - use existing cached classifier
+                classifier = await getClassifier();
+            }
 
             if (!classifier) {
                 // Error was already set in getClassifier
@@ -397,7 +423,7 @@ export const useMusicClassifier = () => {
         } finally {
             setIsAnalyzing(false);
         }
-    }, [getClassifier, setStoreMusicClassification]);
+    }, [options, getClassifier, setStoreMusicClassification]);
 
     /**
      * Update classifier options.
