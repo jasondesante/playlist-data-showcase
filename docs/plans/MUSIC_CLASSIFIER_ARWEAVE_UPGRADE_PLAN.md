@@ -1,6 +1,21 @@
 # MusicClassifier Arweave Default URLs Upgrade Plan
 
-## Overview
+> **⚠️ SUPERSEDED**: This plan has been split into two separate plans for safer implementation:
+>
+> - **Backend**: [ENGINE_ARWEAVE_UPGRADE_PLAN.md](./ENGINE_ARWEAVE_UPGRADE_PLAN.md)
+> - **Frontend**: [SHOWCASE_ARWEAVE_UPGRADE_PLAN.md](./SHOWCASE_ARWEAVE_UPGRADE_PLAN.md)
+>
+> The split plans include:
+> - Baby-step validation at each phase
+> - Non-breaking changes with backward compatibility
+> - Clear handoff points between backend and frontend
+> - Rollback instructions for each phase
+>
+> **This document is kept for reference only.**
+
+---
+
+## Original Overview
 
 Upgrade the MusicClassifier to use Arweave-hosted default model URLs with explicit type parameters. This enables the classifier to work out-of-the-box with publicly hosted models while maintaining support for custom model paths.
 
