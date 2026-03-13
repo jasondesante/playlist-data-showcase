@@ -72,9 +72,12 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         },
         // mood: '/models/mood_happy-musicnn-msd-2/model.json',
 
-        // Danceability: Keep existing format (unchanged)
+        // Danceability: Convert to object format (Task 2.3)
         // danceability: '/models/danceability-musicnn-msd-2/model.json',
-        danceability: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
+        danceability: {
+            modelUrl: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
+            modelType: 'musicnn'
+        },
         // voice: '/models/voice_instrumental-vggish-1.json',
         // acoustic: '/models/acoustic-brnn-1.json'
     }
