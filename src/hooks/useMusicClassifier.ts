@@ -64,10 +64,11 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
         // genre: '/models/mtt_musicnn/model.json',
 
-        // Mood: Keep existing format (unchanged)
+        // Mood: Convert to object format with explicit type (Task 2.2)
         mood: {
             embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',  // Shared embedding!
-            classifier: '/models/mtg_jamendo_moodtheme/model.json'
+            classifier: '/models/mtg_jamendo_moodtheme/model.json',
+            embeddingType: 'effnet'
         },
         // mood: '/models/mood_happy-musicnn-msd-2/model.json',
 
