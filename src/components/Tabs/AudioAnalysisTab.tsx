@@ -72,10 +72,35 @@ export function AudioAnalysisTab() {
   const [genreTopN, setGenreTopN] = useState(10); // 1-20 genres to return
   const [genreThreshold, setGenreThreshold] = useState(0.05); // 0.01-0.50 minimum confidence
 
-  // Model selection state - null means use defaults
+  // Model selection state - keys from MODEL_PRESETS (defaults set when selector opens)
   const [selectedGenreModel, setSelectedGenreModel] = useState<string | null>(null);
   const [selectedMoodModel, setSelectedMoodModel] = useState<string | null>(null);
   const [showModelSelector, setShowModelSelector] = useState(false);
+
+  // When opening model selector, initialize with defaults
+  const handleToggleModelSelector = (show: boolean) => {
+    if (show) {
+      // Set defaults when opening
+      setSelectedGenreModel('discogs400');
+      setSelectedMoodModel('jamendo');
+    }
+    setShowModelSelector(show);
+  };
+
+  // Model selection handlers - always require one selection (no deselection allowed)
+  const handleSelectGenreModel = (key: string) => {
+    // Only change if selecting a different model (prevent deselection)
+    if (selectedGenreModel !== key) {
+      setSelectedGenreModel(key);
+    }
+  };
+
+  const handleSelectMoodModel = (key: string) => {
+    // Only change if selecting a different model (prevent deselection)
+    if (selectedMoodModel !== key) {
+      setSelectedMoodModel(key);
+    }
+  };
 
   /**
    * Map slider position (0-100) to boost value (0.1-10.0)
@@ -700,7 +725,7 @@ export function AudioAnalysisTab() {
                       <button
                         type="button"
                         className={`audio-analysis-model-toggle ${showModelSelector ? 'audio-analysis-model-toggle-active' : ''}`}
-                        onClick={() => setShowModelSelector(!showModelSelector)}
+                        onClick={() => handleToggleModelSelector(!showModelSelector)}
                         disabled={isGenreAnalyzing || isGenreModelLoading}
                       >
                         {showModelSelector ? 'Use Defaults' : 'Change Models'}
@@ -740,7 +765,7 @@ export function AudioAnalysisTab() {
                                 key={key}
                                 type="button"
                                 className={`audio-analysis-model-btn ${selectedGenreModel === key ? 'audio-analysis-model-btn-active' : ''}`}
-                                onClick={() => setSelectedGenreModel(selectedGenreModel === key ? null : key)}
+                                onClick={() => handleSelectGenreModel(key)}
                                 disabled={isGenreAnalyzing || isGenreModelLoading}
                                 role="radio"
                                 aria-checked={selectedGenreModel === key}
@@ -761,7 +786,7 @@ export function AudioAnalysisTab() {
                                 key={key}
                                 type="button"
                                 className={`audio-analysis-model-btn ${selectedMoodModel === key ? 'audio-analysis-model-btn-active' : ''}`}
-                                onClick={() => setSelectedMoodModel(selectedMoodModel === key ? null : key)}
+                                onClick={() => handleSelectMoodModel(key)}
                                 disabled={isGenreAnalyzing || isGenreModelLoading}
                                 role="radio"
                                 aria-checked={selectedMoodModel === key}
