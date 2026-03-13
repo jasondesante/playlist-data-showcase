@@ -341,23 +341,6 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
 - [ ] **CRITICAL**: Test mood analysis (manual testing required)
 - [ ] Verify moods are returned correctly
 
----
-
-### 3.3 Switch Danceability to Arweave (if using local)
-
-**File:** `src/hooks/useMusicClassifier.ts`
-
-```typescript
-danceability: {
-    modelUrl: 'https://arweave.net/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
-    modelType: 'musicnn'
-},
-```
-
-**Validation:**
-- [ ] App runs: `npm run dev`
-- [ ] **CRITICAL**: Test danceability analysis
-- [ ] Verify danceability score is returned
 
 ---
 
@@ -365,7 +348,7 @@ danceability: {
 
 **Goal**: Uncomment and update the MODEL_PRESETS constant for easy model switching.
 
-### 4.1 Uncomment and Update MODEL_PRESETS
+### 4.1 Uncomment and Update MODEL_PRESETS ✅
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
@@ -401,9 +384,9 @@ export const MODEL_PRESETS = {
 ```
 
 **Validation:**
-- [ ] TypeScript compiles
-- [ ] App runs
-- [ ] Presets are importable from the hook
+- [x] TypeScript compiles
+- [x] App builds successfully
+- [x] Presets are importable from the hook
 
 ---
 

@@ -89,93 +89,87 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
 
 
 
-// export const MODEL_PRESETS = {
-//     genre: {
-//         // Discogs 400 - 400 genres, two-step architecture
-//         discogs400: {
-//             label: 'Discogs 400',
-//             description: '400 genres (two-step)',
-//             config: {
-//                 embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-//                 // embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-//                 embeddingType: 'effnet' as const,
-//                 classifier: '/models/genre_discogs400/model.json',
-//                 // classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
-//                 classifierType: 'discogs400' as const
-//             }
-//         },
-//         // MTG Jamendo - 80+ genres, two-step architecture
-//         jamendo: {
-//             label: 'Jamendo',
-//             description: '80+ genres (two-step)',
-//             config: {
-//                 embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-//                 // embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-//                 embeddingType: 'effnet' as const,
-//                 classifier: '/models/mtg_jamendo_genre/model.json',
-//                 // classifier: 'https://arweave.net/MuhF5mek1BJPZLoPNY1TBTPUUBEXbVmMfAGgBp-_MyA/model.json',
-//                 classifierType: 'jamendo' as const
-//             }
-//         },
-//         // Tzanetakis - 10 genres, single-step musicnn
-//         tzanetakis: {
-//             label: 'Tzanetakis',
-//             description: '10 genres (single-step)',
-//             config: {
-//                 modelUrl: '/models/genre_tzanetakis-musicnn-msd/model.json',
-//                 // modelUrl: 'https://arweave.net/7MQD4W5yJeUUK2tRg8TEdomew-ZY7s0K91nk35FxleM/model.json',
-//                 modelType: 'musicnn' as const
-//             }
-//         },
-//         // MTT Musicnn - 50 tags, single-step musicnn
-//         musicnn: {
-//             label: 'Musicnn',
-//             description: '50 tags (single-step)',
-//             config: {
-//                 modelUrl: '/models/mtt_musicnn/model.json',
-//                 // modelUrl: 'https://arweave.net/KCZQ1geu4ymxp8axAql95FDY98VjnOzSymdkCiM9BXo/model.json',
-//                 modelType: 'musicnn' as const
-//             }
-//         }
-//     },
-//     mood: {
-//         // MTG Jamendo Mood - two-step architecture
-//         jamendo: {
-//             label: 'Jamendo',
-//             description: 'Mood themes (two-step)',
-//             config: {
-//                 embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',  // Shared embedding!
-//                 // embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-//                 embeddingType: 'effnet' as const,
-//                 classifier: '/models/mtg_jamendo_moodtheme/model.json',
-//                 // classifier: 'https://arweave.net/BUXf3AoFuIsrNDkV2hW6BhiwSVTuFllWOUQv5mu6qQ8/model.json',
-//                 classifierType: 'jamendo' as const
-//             }
-//         },
-//         // Happy Musicnn - single-step
-//         happyMusicnn: {
-//             label: 'Happy',
-//             description: 'Happy/sad (single-step)',
-//             config: {
-//                 modelUrl: '/models/mood_happy-musicnn-msd-2/model.json',
-//                 // modelUrl: 'https://arweave.net/kUIS-Xxr4k3MZ4K2gHdvMgZxK7aBYce_FPGIkGA_hjM/model.json',
-//                 modelType: 'musicnn' as const
-//             }
-//         }
-//     },
-//     danceability: {
-//         // Danceability - single-step musicnn (fixed, no alternative)
-//         default: {
-//             label: 'Danceability',
-//             description: 'Fixed model',
-//             config: {
-//                 modelUrl: '/models/danceability-musicnn-msd-2/model.json',
-//                 // modelUrl: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
-//                 modelType: 'musicnn' as const
-//             }
-//         }
-//     }
-// } as const;
+/**
+ * Pre-configured model presets for easy model switching.
+ * All presets use Arweave-hosted models for reliability.
+ */
+export const MODEL_PRESETS = {
+    genre: {
+        // Discogs 400 - 400 genres, two-step architecture
+        discogs400: {
+            label: 'Discogs 400',
+            description: '400 genres (two-step)',
+            config: {
+                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+                embeddingType: 'effnet' as const,
+                classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
+                classifierType: 'discogs400' as const
+            }
+        },
+        // MTG Jamendo - 80+ genres, two-step architecture
+        jamendo: {
+            label: 'Jamendo',
+            description: '80+ genres (two-step)',
+            config: {
+                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+                embeddingType: 'effnet' as const,
+                classifier: 'https://arweave.net/MuhF5mek1BJPZLoPNY1TBTPUUBEXbVmMfAGgBp-_MyA/model.json',
+                classifierType: 'jamendo' as const
+            }
+        },
+        // Tzanetakis - 10 genres, single-step musicnn
+        tzanetakis: {
+            label: 'Tzanetakis',
+            description: '10 genres (single-step)',
+            config: {
+                modelUrl: 'https://arweave.net/7MQD4W5yJeUUK2tRg8TEdomew-ZY7s0K91nk35FxleM/model.json',
+                modelType: 'musicnn' as const
+            }
+        },
+        // MTT Musicnn - 50 tags, single-step musicnn
+        musicnn: {
+            label: 'Musicnn',
+            description: '50 tags (single-step)',
+            config: {
+                modelUrl: 'https://arweave.net/KCZQ1geu4ymxp8axAql95FDY98VjnOzSymdkCiM9BXo/model.json',
+                modelType: 'musicnn' as const
+            }
+        }
+    },
+    mood: {
+        // MTG Jamendo Mood - two-step architecture
+        jamendo: {
+            label: 'Jamendo',
+            description: 'Mood themes (two-step)',
+            config: {
+                embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+                embeddingType: 'effnet' as const,
+                classifier: 'https://arweave.net/BUXf3AoFuIsrNDkV2hW6BhiwSVTuFllWOUQv5mu6qQ8/model.json',
+                classifierType: 'jamendo' as const
+            }
+        },
+        // Happy Musicnn - single-step
+        happyMusicnn: {
+            label: 'Happy',
+            description: 'Happy/sad (single-step)',
+            config: {
+                modelUrl: 'https://arweave.net/kUIS-Xxr4k3MZ4K2gHdvMgZxK7aBYce_FPGIkGA_hjM/model.json',
+                modelType: 'musicnn' as const
+            }
+        }
+    },
+    danceability: {
+        // Danceability - single-step musicnn
+        default: {
+            label: 'Danceability',
+            description: 'Fixed model',
+            config: {
+                modelUrl: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
+                modelType: 'musicnn' as const
+            }
+        }
+    }
+} as const;
 
 /**
  * Classify an error into a category and provide user-friendly message
