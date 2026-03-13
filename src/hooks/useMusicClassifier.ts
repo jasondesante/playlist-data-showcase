@@ -53,18 +53,25 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // Two-step architecture: embedding + classifier
         // Note: In Vite, files in public/ are served at root URL, not at /public/
         // The browser-compatible frozen model was converted from SavedModel to remove PartitionedCall ops
+
+        // Genre: Convert to object format with explicit types (Task 2.1)
         genre: {
             embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-            // classifier: '/models/mtg_jamendo_genre/model.json'
-            classifier: '/models/genre_discogs400/model.json'
+            classifier: '/models/genre_discogs400/model.json',
+            embeddingType: 'effnet',
+            classifierType: 'discogs400'
         },
         // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
         // genre: '/models/mtt_musicnn/model.json',
+
+        // Mood: Keep existing format (unchanged)
         mood: {
             embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',  // Shared embedding!
             classifier: '/models/mtg_jamendo_moodtheme/model.json'
         },
         // mood: '/models/mood_happy-musicnn-msd-2/model.json',
+
+        // Danceability: Keep existing format (unchanged)
         // danceability: '/models/danceability-musicnn-msd-2/model.json',
         danceability: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
         // voice: '/models/voice_instrumental-vggish-1.json',
