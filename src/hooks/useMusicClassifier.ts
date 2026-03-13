@@ -43,54 +43,6 @@ export interface UseMusicClassifierOptions extends Omit<Partial<MusicClassifierO
 }
 
 /**
- * Default options for the MusicClassifier.
- * Uses two-step architecture with Discogs-EffNet embeddings.
- */
-const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
-    topN: 10,
-    threshold: 0.05,
-    // cacheEmbeddings: true,
-    models: {
-        // Two-step architecture: embedding + classifier
-        // Note: In Vite, files in public/ are served at root URL, not at /public/
-        // The browser-compatible frozen model was converted from SavedModel to remove PartitionedCall ops
-
-        // Genre: Switch to Arweave URLs (Task 3.1)
-        genre: {
-            embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-            // embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-            classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
-            // classifier: '/models/genre_discogs400/model.json',
-            embeddingType: 'effnet',
-            classifierType: 'discogs400'
-        },
-        // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
-        // genre: '/models/mtt_musicnn/model.json',
-
-        // Mood: Switch to Arweave URLs (Task 3.2)
-        mood: {
-            embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
-            // embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-            classifier: 'https://arweave.net/BUXf3AoFuIsrNDkV2hW6BhiwSVTuFllWOUQv5mu6qQ8/model.json',
-            // classifier: '/models/mtg_jamendo_moodtheme/model.json',
-            embeddingType: 'effnet'
-        },
-        // mood: '/models/mood_happy-musicnn-msd-2/model.json',
-
-        // Danceability: Convert to object format (Task 2.3)
-        // danceability: '/models/danceability-musicnn-msd-2/model.json',
-        danceability: {
-            modelUrl: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
-            modelType: 'musicnn'
-        },
-        // voice: '/models/voice_instrumental-vggish-1.json',
-        // acoustic: '/models/acoustic-brnn-1.json'
-    }
-};
-
-
-
-/**
  * Pre-configured model presets for easy model switching.
  * All presets use Arweave-hosted models for reliability.
  */
@@ -173,6 +125,20 @@ export const MODEL_PRESETS = {
         }
     }
 } as const;
+
+/**
+ * Default options for the MusicClassifier.
+ * Derived from MODEL_PRESETS to avoid duplication.
+ */
+const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
+    topN: 10,
+    threshold: 0.05,
+    models: {
+        genre: MODEL_PRESETS.genre.discogs400.config,
+        mood: MODEL_PRESETS.mood.jamendo.config,
+        danceability: MODEL_PRESETS.danceability.default.config,
+    }
+};
 
 /**
  * Classify an error into a category and provide user-friendly message

@@ -152,13 +152,8 @@ export function AudioAnalysisTab() {
       // Genre analysis mode - ML-based classification
       // Build options object - pass directly to analyze() to avoid async state issues
 
-      const classifierOptions: UseMusicClassifierOptions = {
-        topN: genreTopN,
-        threshold: genreThreshold,
-      };
-
       if (selectedGenreModel || selectedMoodModel) {
-        // User selected custom models - pass them
+        // User selected custom models - pass them explicitly
         const models: {
           genre?: typeof MODEL_PRESETS.genre.discogs400.config;
           mood?: typeof MODEL_PRESETS.mood.jamendo.config;
@@ -176,17 +171,32 @@ export function AudioAnalysisTab() {
         // Danceability always uses default
         models.danceability = MODEL_PRESETS.danceability.default.config;
 
-        classifierOptions.models = models;
+        const classifierOptions: UseMusicClassifierOptions = {
+          topN: genreTopN,
+          threshold: genreThreshold,
+          models,
+        };
+
+        // Also update state for UI consistency
+        setOptions(classifierOptions);
+
+        // Analyze music - pass options directly to bypass async state issue
+        await analyze(selectedTrack.audio_url, classifierOptions);
       } else {
-        // No custom models selected - pass undefined to let engine use its internal defaults
-        classifierOptions.models = undefined;
+        // No custom models selected - DON'T include models property at all
+        // This lets the engine constructor use its internal defaults
+        const classifierOptions: UseMusicClassifierOptions = {
+          topN: genreTopN,
+          threshold: genreThreshold,
+          // models is NOT included - engine will use its defaults
+        };
+
+        // Also update state for UI consistency
+        setOptions(classifierOptions);
+
+        // Analyze music - pass options directly to bypass async state issue
+        await analyze(selectedTrack.audio_url, classifierOptions);
       }
-
-      // Also update state for UI consistency
-      setOptions(classifierOptions);
-
-      // Analyze music - pass options directly to bypass async state issue
-      await analyze(selectedTrack.audio_url, classifierOptions);
     } else if (analysisMode === 'timeline') {
       // Timeline analysis mode - analyze full song with timeline data points
       const strategy = timelineMode === 'count'
