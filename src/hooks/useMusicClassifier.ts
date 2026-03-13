@@ -57,7 +57,9 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // Genre: Switch to Arweave URLs (Task 3.1)
         genre: {
             embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+            // embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
             classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
+            // classifier: '/models/genre_discogs400/model.json',
             embeddingType: 'effnet',
             classifierType: 'discogs400'
         },
