@@ -338,7 +338,7 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
 
 ```typescript
 danceability: {
-    modelUrl: 'https://arweave.net/kUIS-Xxr4k3MZ4K2gHdvMgZxK7aBYce_FPGIkGA_hjM/model.json',
+    modelUrl: 'https://arweave.net/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
     modelType: 'musicnn'
 },
 ```
