@@ -256,7 +256,7 @@ At this point, all models use the new object format but with LOCAL URLs.
 
 **Goal**: Replace local model URLs with Arweave URLs one at a time.
 
-### 3.1 Switch Genre to Arweave
+### 3.1 Switch Genre to Arweave ✅
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
@@ -287,11 +287,13 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
 };
 ```
 
-**Note**: Replace with actual Arweave URLs from backend's `DEFAULT_ARWEAVE_MODELS`.
+**Note**: Uses actual Arweave URLs from backend's `DEFAULT_ARWEAVE_MODELS`.
 
 **Validation:**
-- [ ] App runs: `npm run dev`
-- [ ] **CRITICAL**: Test genre analysis
+- [x] Build succeeds: `npm run build`
+- [x] TypeScript compiles (part of build)
+- [ ] App runs: `npm run dev` (manual testing required)
+- [ ] **CRITICAL**: Test genre analysis (manual testing required)
 - [ ] First load will be slower (model download from Arweave)
 - [ ] Verify genres are returned correctly
 - [ ] Check network tab for Arweave requests

@@ -54,10 +54,10 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // Note: In Vite, files in public/ are served at root URL, not at /public/
         // The browser-compatible frozen model was converted from SavedModel to remove PartitionedCall ops
 
-        // Genre: Convert to object format with explicit types (Task 2.1)
+        // Genre: Switch to Arweave URLs (Task 3.1)
         genre: {
-            embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
-            classifier: '/models/genre_discogs400/model.json',
+            embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+            classifier: 'https://arweave.net/ZY-GSfMe7crJUITAtHITcoLCNfNWVP1HMwywivZ_LAQ/model.json',
             embeddingType: 'effnet',
             classifierType: 'discogs400'
         },
