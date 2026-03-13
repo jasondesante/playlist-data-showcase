@@ -66,10 +66,12 @@ const DEFAULT_CLASSIFIER_OPTIONS: UseMusicClassifierOptions = {
         // genre: '/models/genre_tzanetakis-musicnn-msd/model.json',
         // genre: '/models/mtt_musicnn/model.json',
 
-        // Mood: Convert to object format with explicit type (Task 2.2)
+        // Mood: Switch to Arweave URLs (Task 3.2)
         mood: {
-            embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',  // Shared embedding!
-            classifier: '/models/mtg_jamendo_moodtheme/model.json',
+            embedding: 'https://arweave.net/tVO0RIu2Ly_Di5cZccw_wB3x6Vs_2KSqxhl8bdhhimE/model.json',
+            // embedding: '/models/discogs-effnet-bs64-1-tfjs-browser-frozen/model.json',
+            classifier: 'https://arweave.net/BUXf3AoFuIsrNDkV2hW6BhiwSVTuFllWOUQv5mu6qQ8/model.json',
+            // classifier: '/models/mtg_jamendo_moodtheme/model.json',
             embeddingType: 'effnet'
         },
         // mood: '/models/mood_happy-musicnn-msd-2/model.json',
