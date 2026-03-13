@@ -1,9 +1,17 @@
 import { useState, useCallback, useRef } from 'react';
-import { MusicClassifier } from 'playlist-data-engine';
+import {
+    MusicClassifier,
+    type TwoStepModelConfig,
+    type SingleStepModelConfig,
+    DEFAULT_ARWEAVE_MODELS
+} from 'playlist-data-engine';
 import type { MusicClassifierOptions, MusicClassificationProfile } from '@/types';
 import { logger } from '@/utils/logger';
 import { handleError } from '@/utils/errorHandling';
 import { usePlaylistStore } from '@/store/playlistStore';
+
+// Re-export for use in Phase 3 (Arweave URLs)
+export { DEFAULT_ARWEAVE_MODELS };
 
 /**
  * Error categories for music classification
@@ -20,24 +28,16 @@ export interface ClassificationError {
 }
 
 /**
- * Model configuration for two-step architecture
- */
-export interface TwoStepModelConfig {
-    embedding: string;
-    classifier: string;
-}
-
-/**
  * Extended options for the MusicClassifier hook
  */
 export interface UseMusicClassifierOptions extends Partial<MusicClassifierOptions> {
-    /** Model paths - can be single-step (string) or two-step (object) */
+    /** Model paths - can be single-step (string/object) or two-step (object) */
     models?: {
-        genre?: string | TwoStepModelConfig;
-        mood?: string | TwoStepModelConfig;
-        danceability?: string | TwoStepModelConfig;
-        voice?: string | TwoStepModelConfig;
-        acoustic?: string | TwoStepModelConfig;
+        genre?: string | SingleStepModelConfig | TwoStepModelConfig;
+        mood?: string | SingleStepModelConfig | TwoStepModelConfig;
+        danceability?: string | SingleStepModelConfig | TwoStepModelConfig;
+        voice?: string | SingleStepModelConfig | TwoStepModelConfig;
+        acoustic?: string | SingleStepModelConfig | TwoStepModelConfig;
     };
 }
 

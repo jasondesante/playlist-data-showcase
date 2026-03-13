@@ -6,9 +6,9 @@ Update the frontend to use Arweave-hosted default model URLs. **This plan assume
 
 ### Prerequisites
 
-- [ ] Backend plan completed: `ENGINE_ARWEAVE_UPGRADE_PLAN.md`
-- [ ] Backend published to npm (or available via git)
-- [ ] Backend exports: `SingleStepModelConfig`, `isSingleStepModel`, `DEFAULT_ARWEAVE_MODELS`
+- [x] Backend plan completed: `ENGINE_ARWEAVE_UPGRADE_PLAN.md`
+- [x] Backend published to npm (or available via git)
+- [x] Backend exports: `SingleStepModelConfig`, `isSingleStepModel`, `DEFAULT_ARWEAVE_MODELS`
 
 ### Dependencies
 
@@ -29,7 +29,7 @@ npm install playlist-data-engine@latest
 - [DATA_ENGINE_REFERENCE.md](../engine/DATA_ENGINE_REFERENCE.md) - Full engine API documentation
 - [MusicClassifier.ts](../../playlist-data-engine/src/core/analysis/MusicClassifier.ts) - Source types (lines 36-86)
 
-### 1.1 Update Imports
+### 1.1 Update Imports ✅
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
@@ -55,7 +55,7 @@ import {
 
 ---
 
-### 1.2 Remove Local TwoStepModelConfig Interface
+### 1.2 Remove Local TwoStepModelConfig Interface ✅
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
@@ -73,7 +73,7 @@ The imported type from the engine is a superset (includes optional `embeddingTyp
 
 ---
 
-### 1.3 Update UseMusicClassifierOptions Interface
+### 1.3 Update UseMusicClassifierOptions Interface ✅
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
@@ -96,8 +96,8 @@ export interface UseMusicClassifierOptions extends Partial<MusicClassifierOption
 ```
 
 **Validation:**
-- [ ] TypeScript compiles: `npm run typecheck` or `tsc --noEmit`
-- [ ] App still runs: `npm run dev`
+- [x] TypeScript compiles: `npm run typecheck` or `tsc --noEmit`
+- [x] App still runs: `npm run dev`
 - [ ] Test: Analyze a track - should still work with local models
 
 **Why import instead of duplicate?**
