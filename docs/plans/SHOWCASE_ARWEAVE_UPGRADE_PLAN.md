@@ -21,63 +21,55 @@ npm install playlist-data-engine@latest
 
 ---
 
-## Phase 1: Update Types (After Backend Ready)
+## Phase 1: Import Types from Engine (After Backend Ready)
 
-**Goal**: Add frontend types to match the backend. Do NOT change behavior yet.
+**Goal**: Import types from the engine instead of duplicating them locally. Do NOT change behavior yet.
 
-### 1.1 Add SingleStepModelConfig Interface
+**Reference Documentation:**
+- [DATA_ENGINE_REFERENCE.md](../engine/DATA_ENGINE_REFERENCE.md) - Full engine API documentation
+- [MusicClassifier.ts](../../playlist-data-engine/src/core/analysis/MusicClassifier.ts) - Source types (lines 36-86)
+
+### 1.1 Update Imports
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
-Add AFTER the existing `TwoStepModelConfig` interface (around line 28):
+Update the import statement to include the new types from the engine:
 
 ```typescript
-/**
- * Configuration for single-step model architecture.
- */
-export interface SingleStepModelConfig {
-    /** URL to the model file */
-    modelUrl: string;
-    /** Explicit model architecture type */
-    modelType: 'effnet' | 'vggish' | 'musicnn' | 'tempocnn';
-    /** Optional custom labels */
-    labels?: string[];
-}
+// Before:
+import { MusicClassifier } from 'playlist-data-engine';
+
+// After:
+import {
+    MusicClassifier,
+    type TwoStepModelConfig,
+    type SingleStepModelConfig,
+    DEFAULT_ARWEAVE_MODELS
+} from 'playlist-data-engine';
 ```
 
-**Validation:**
-- [ ] TypeScript compiles: `npm run typecheck` or `tsc --noEmit`
-- [ ] App still runs: `npm run dev`
+**Note:** The engine (v1.1.0+) exports:
+- `TwoStepModelConfig` - with optional `embeddingType` and `classifierType` fields
+- `SingleStepModelConfig` - for single-step models with explicit `modelType`
+- `DEFAULT_ARWEAVE_MODELS` - pre-configured Arweave URLs with explicit types
 
 ---
 
-### 1.2 Update TwoStepModelConfig Interface
+### 1.2 Remove Local TwoStepModelConfig Interface
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
-Update the existing interface to add optional type fields:
+DELETE the local `TwoStepModelConfig` interface (lines 24-28):
 
 ```typescript
-/**
- * Model configuration for two-step architecture.
- */
+// DELETE THIS:
 export interface TwoStepModelConfig {
-    /** URL to the embedding model */
     embedding: string;
-    /** URL to the classifier model */
     classifier: string;
-    /** Optional custom labels */
-    labels?: string[];
-    /** Explicit embedding architecture type */
-    embeddingType?: 'effnet' | 'vggish' | 'musicnn' | 'tempocnn';
-    /** Explicit classifier type for genre models */
-    classifierType?: 'jamendo' | 'discogs400' | 'tzanetakis' | 'mtt_musicnn';
 }
 ```
 
-**Validation:**
-- [ ] TypeScript compiles: `npm run typecheck`
-- [ ] App still runs: `npm run dev`
+The imported type from the engine is a superset (includes optional `embeddingType`, `classifierType`, `labels`).
 
 ---
 
@@ -85,7 +77,7 @@ export interface TwoStepModelConfig {
 
 **File:** `src/hooks/useMusicClassifier.ts`
 
-Update the models type to support all three formats:
+Update the models type to use the imported types:
 
 ```typescript
 /**
@@ -104,9 +96,15 @@ export interface UseMusicClassifierOptions extends Partial<MusicClassifierOption
 ```
 
 **Validation:**
-- [ ] TypeScript compiles: `npm run typecheck`
+- [ ] TypeScript compiles: `npm run typecheck` or `tsc --noEmit`
 - [ ] App still runs: `npm run dev`
 - [ ] Test: Analyze a track - should still work with local models
+
+**Why import instead of duplicate?**
+- Single source of truth - types stay in sync with engine
+- Better IDE autocomplete and documentation
+- Less maintenance burden
+- Engine already exports all needed types
 
 ---
 
