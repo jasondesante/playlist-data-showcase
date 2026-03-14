@@ -51,39 +51,39 @@ Update the engine's utility file to match the showcase's enhanced version.
 
 Port the showcase's gateway manager to the engine with engine-compatible logging.
 
-- [ ] **2.1 Create src/utils/arweaveGatewayManager.ts**
-  - [ ] Copy core class structure from showcase
-  - [ ] Replace showcase logger import with engine's logger
-  - [ ] Import utilities from `./arweaveUtils.js`
+- [x] **2.1 Create src/utils/arweaveGatewayManager.ts**
+  - [x] Copy core class structure from showcase
+  - [x] Replace showcase logger import with engine's logger
+  - [x] Import utilities from `./arweaveUtils.js`
 
-- [ ] **2.2 Port GatewayCache interface**
-  - [ ] Include txId, workingGateway, timestamp, ttl
+- [x] **2.2 Port GatewayCache interface**
+  - [x] Include txId, workingGateway, timestamp, ttl
 
-- [ ] **2.3 Port GatewayCheckResult interface**
-  - [ ] Include workingUrl, gateway, cached boolean
+- [x] **2.3 Port GatewayCheckResult interface**
+  - [x] Include workingUrl, gateway, cached boolean
 
-- [ ] **2.4 Port ArweaveGatewayManagerConfig interface**
-  - [ ] Include optional gateways, timeout, cacheTTL
+- [x] **2.4 Port ArweaveGatewayManagerConfig interface**
+  - [x] Include optional gateways, timeout, cacheTTL
 
-- [ ] **2.5 Port ArweaveGatewayManager class**
-  - [ ] `resolveUrl(url: string): Promise<string>` - Main resolution method
-  - [ ] `checkGateway(txId, gateway, pathSuffix): Promise<boolean>` - HEAD request check
-  - [ ] `getCachedGateway(txId): GatewayConfig | null` - Cache lookup
-  - [ ] `setCache(txId, gateway): void` - Cache storage
-  - [ ] `clearCache(): void` - Cache clearing
-  - [ ] `isCacheValid(cache): boolean` - TTL validation
+- [x] **2.5 Port ArweaveGatewayManager class**
+  - [x] `resolveUrl(url: string): Promise<string>` - Main resolution method
+  - [x] `checkGateway(txId, gateway, pathSuffix): Promise<boolean>` - HEAD request check
+  - [x] `getCachedGateway(txId): GatewayConfig | null` - Cache lookup
+  - [x] `setCache(txId, gateway): void` - Cache storage
+  - [x] `clearCache(): void` - Cache clearing
+  - [x] `isCacheValid(cache): boolean` - TTL validation
 
-- [ ] **2.6 Export singleton instance**
-  - [ ] `export const arweaveGatewayManager = new ArweaveGatewayManager()`
+- [x] **2.6 Export singleton instance**
+  - [x] `export const arweaveGatewayManager = new ArweaveGatewayManager()`
 
-- [ ] **2.7 Port unit tests**
-  - [ ] Create `tests/unit/arweaveGatewayManager.test.ts`
-  - [ ] Port all 33 test cases from showcase
-  - [ ] Test gateway priority ordering
-  - [ ] Test cache hit/miss scenarios
-  - [ ] Test timeout behavior
-  - [ ] Test fallback to alternate gateways
-  - [ ] Test pathSuffix handling
+- [x] **2.7 Port unit tests**
+  - [x] Create `tests/unit/arweaveGatewayManager.test.ts` (40 tests, all passing)
+  - [x] Port all test cases from showcase (expanded from 33 to 40)
+  - [x] Test gateway priority ordering
+  - [x] Test cache hit/miss scenarios
+  - [x] Test timeout behavior
+  - [x] Test fallback to alternate gateways
+  - [x] Test pathSuffix handling
 
 ---
 
