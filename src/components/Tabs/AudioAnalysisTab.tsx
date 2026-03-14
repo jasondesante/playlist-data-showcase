@@ -882,11 +882,21 @@ export function AudioAnalysisTab() {
               className="audio-analysis-vibe-card"
             />
           </div>
+
+          {/* Raw Classification JSON Dump */}
+          {musicClassification && (
+            <RawJsonDump
+              data={musicClassification}
+              title="Raw Classification Profile JSON"
+              defaultOpen={false}
+              status="healthy"
+            />
+          )}
         </div>
       )}
 
-      {/* Audio Analysis Results */}
-      {selectedTrack && audioProfile && (
+      {/* Audio Analysis Results - Only show when NOT in genre mode */}
+      {selectedTrack && audioProfile && analysisMode !== 'genre' && (
         <div className="audio-analysis-results fade-in">
           {/* Frequency Band Bar Chart Visualization */}
           <Card variant="elevated" padding="md" className="audio-analysis-card">
@@ -1247,7 +1257,9 @@ export function AudioAnalysisTab() {
 
           {/* Raw JSON Dump Section */}
           <RawJsonDump
-            data={audioProfile}
+            data={analysisMode === 'timeline' && timelineData.length > 0
+              ? { ...audioProfile, timeline_events: timelineData }
+              : audioProfile}
             title="Raw Audio Profile JSON"
             defaultOpen={false}
             timestamp={audioProfile.analysis_metadata.analyzed_at}

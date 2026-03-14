@@ -627,131 +627,44 @@ export function DataViewerTab() {
 
   /**
    * Handle creation of new spell via SpellCreatorForm
+   *
+   * Note: The SpellCreatorForm handles content creation internally via useContentCreator.
+   * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSpell = useCallback((spell: SpellFormData) => {
-    const spellItem: Record<string, unknown> = {
-      name: spell.name,
-      level: spell.level,
-      school: spell.school,
-      casting_time: spell.casting_time,
-      range: spell.range,
-      components: spell.components,
-      duration: spell.duration,
-      description: spell.description
-    };
-
-    // Add class availability if specified
-    if (spell.classes.length > 0) {
-      spellItem.classes = spell.classes;
-    }
-
-    const result = createContent('spells', spellItem, { mode: 'relative' });
-
-    if (result.success) {
-      logger.info('DataViewer', `Created spell: ${spell.name}`);
-      showToast(`Created spell "${spell.name}"`, 'success');
-      setShowSpellCreator(false);
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to create spell: ${result.error}`);
-      showToast(`Failed to create spell: ${result.error}`, 'error');
-    }
-  }, [createContent, refreshData]);
+    logger.info('DataViewer', `Created spell: ${spell.name}`);
+    showToast(`Created spell "${spell.name}"`, 'success');
+    setShowSpellCreator(false);
+    refreshData();
+  }, [refreshData]);
 
   /**
    * Handle creation of new class feature via ClassFeatureCreatorForm
    * (Phase 5.4: Class Features Creation in DataViewerTab)
+   *
+   * Note: The ClassFeatureCreatorForm handles content creation internally via useContentCreator.
+   * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateClassFeature = useCallback((feature: ClassFeatureFormData) => {
-    const featureItem: Record<string, unknown> = {
-      id: feature.id,
-      name: feature.name,
-      class: feature.class,
-      level: feature.level,
-      type: feature.type,
-      description: feature.description
-    };
-
-    // Add effects if specified
-    if (feature.effects.length > 0) {
-      featureItem.effects = feature.effects.filter(e => e.type && e.target);
-    }
-
-    // Add prerequisites if specified
-    if (feature.prerequisites.level !== undefined || feature.prerequisites.abilities) {
-      const prereqs: Record<string, unknown> = {};
-      if (feature.prerequisites.level !== undefined) {
-        prereqs.level = feature.prerequisites.level;
-      }
-      if (feature.prerequisites.abilities && Object.keys(feature.prerequisites.abilities).length > 0) {
-        prereqs.abilities = feature.prerequisites.abilities;
-      }
-      featureItem.prerequisites = prereqs;
-    }
-
-    const result = createContent('classFeatures', featureItem, { mode: 'relative' });
-
-    if (result.success) {
-      logger.info('DataViewer', `Created class feature: ${feature.name}`);
-      showToast(`Created class feature "${feature.name}"`, 'success');
-      setShowClassFeatureCreator(false);
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to create class feature: ${result.error}`);
-      showToast(`Failed to create class feature: ${result.error}`, 'error');
-    }
-  }, [createContent, refreshData]);
+    logger.info('DataViewer', `Created class feature: ${feature.name}`);
+    showToast(`Created class feature "${feature.name}"`, 'success');
+    setShowClassFeatureCreator(false);
+    refreshData();
+  }, [refreshData]);
 
   /**
    * Handle creation of new racial trait via RacialTraitCreatorForm
    * (Phase 5.4: Racial Traits Creation in DataViewerTab)
+   *
+   * Note: The RacialTraitCreatorForm handles content creation internally via useContentCreator.
+   * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateRacialTrait = useCallback((trait: RacialTraitFormData) => {
-    const traitItem: Record<string, unknown> = {
-      id: trait.id,
-      name: trait.name,
-      race: trait.race,
-      description: trait.description,
-      source: 'custom'
-    };
-
-    // Add subrace if specified
-    if (trait.subrace.trim()) {
-      traitItem.subrace = trait.subrace.trim();
-    }
-
-    // Add effects if specified
-    if (trait.effects.length > 0) {
-      traitItem.effects = trait.effects.filter(e => e.type && e.target);
-    }
-
-    // Add prerequisites if specified
-    if (trait.prerequisites.level !== undefined || trait.prerequisites.subrace || trait.prerequisites.abilities) {
-      const prereqs: Record<string, unknown> = {};
-      if (trait.prerequisites.level !== undefined) {
-        prereqs.level = trait.prerequisites.level;
-      }
-      if (trait.prerequisites.subrace) {
-        prereqs.subrace = trait.prerequisites.subrace;
-      }
-      if (trait.prerequisites.abilities && Object.keys(trait.prerequisites.abilities).length > 0) {
-        prereqs.abilities = trait.prerequisites.abilities;
-      }
-      traitItem.prerequisites = prereqs;
-    }
-
-    const result = createContent('racialTraits', traitItem, { mode: 'relative' });
-
-    if (result.success) {
-      logger.info('DataViewer', `Created racial trait: ${trait.name}`);
-      showToast(`Created racial trait "${trait.name}"`, 'success');
-      setShowRacialTraitCreator(false);
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to create racial trait: ${result.error}`);
-      showToast(`Failed to create racial trait: ${result.error}`, 'error');
-    }
-  }, [createContent, refreshData]);
+    logger.info('DataViewer', `Created racial trait: ${trait.name}`);
+    showToast(`Created racial trait "${trait.name}"`, 'success');
+    setShowRacialTraitCreator(false);
+    refreshData();
+  }, [refreshData]);
 
   /**
    * Handle creation of new race via RaceCreatorForm

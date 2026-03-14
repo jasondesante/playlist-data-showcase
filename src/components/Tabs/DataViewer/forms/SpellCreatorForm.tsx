@@ -146,7 +146,7 @@ function getDefaultFormData(): SpellFormData {
     level: 0,
     school: 'Evocation',
     casting_time: '1 action',
-    range: '',
+    range: '30 feet',
     components: ['V', 'S'],
     duration: 'Instantaneous',
     description: '',

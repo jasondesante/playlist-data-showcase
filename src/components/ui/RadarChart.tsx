@@ -138,7 +138,7 @@ export function RadarChart({
     (ctx: CanvasRenderingContext2D, dataPoint: RadarDataPoint | null, width: number, height: number) => {
       const centerX = width / 2;
       const centerY = height / 2;
-      const maxRadius = Math.min(width, height) / 2 - 30; // Padding for labels
+      const maxRadius = Math.min(width, height) / 2 - 45; // Padding for labels (increased for left-side labels like "Energy")
 
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
@@ -293,7 +293,7 @@ export function RadarChart({
     ctx.textBaseline = 'middle';
 
     for (let i = 0; i < NUM_AXES; i++) {
-      const { x, y } = getPointPosition(centerX, centerY, radius + 18, i, 1);
+      const { x, y } = getPointPosition(centerX, centerY, radius + 20, i, 1);
       const axis = AXES[i];
 
       // Draw label background - use hardcoded color since Canvas API doesn't support CSS variables

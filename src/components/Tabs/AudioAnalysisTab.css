@@ -1493,6 +1493,7 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  padding-left: 1rem; /* Ensure labels like "Energy" aren't cut off on left side */
 }
 
 /* Live metrics below radar chart */
