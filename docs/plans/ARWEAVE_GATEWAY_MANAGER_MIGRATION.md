@@ -166,9 +166,9 @@ Remove duplicated code and import from engine.
   - [x] Change import from `@/utils/arweaveGatewayManager` to `playlist-data-engine`
   - [x] Change import from `@/utils/arweaveUtils` to `playlist-data-engine`
 
-- [ ] **5.3 Update ArweaveImage.tsx**
-  - [ ] Change import from `../../utils/arweaveGatewayManager` to `playlist-data-engine`
-  - [ ] Change import from `../../utils/arweaveUtils` to `playlist-data-engine`
+- [x] **5.3 Update ArweaveImage.tsx**
+  - [x] Change import from `../../utils/arweaveGatewayManager` to `playlist-data-engine`
+  - [x] Change import from `../../utils/arweaveUtils` to `playlist-data-engine`
 
 - [ ] **5.4 Update test mocks**
   - [ ] Update `ArweaveImage.test.tsx` mock path to `playlist-data-engine`
