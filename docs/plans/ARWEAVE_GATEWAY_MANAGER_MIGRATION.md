@@ -39,11 +39,11 @@ Update the engine's utility file to match the showcase's enhanced version.
 - [x] **1.5 Add KNOWN_GATEWAY_HOSTS constant**
   - [x] Export as `const` array for external use
 
-- [ ] **1.6 Add unit tests**
-  - [ ] Create `tests/unit/arweaveUtils.test.ts`
-  - [ ] Test pathSuffix extraction for various URL formats
-  - [ ] Test constructGatewayUrl with pathSuffix
-  - [ ] Test getAllGatewayUrls ordering
+- [x] **1.6 Add unit tests**
+  - [x] Create `src/utils/__tests__/arweaveUtils.test.ts` (59 tests, all passing)
+  - [x] Test pathSuffix extraction for various URL formats
+  - [x] Test constructGatewayUrl with pathSuffix
+  - [x] Test getAllGatewayUrls ordering
 
 ---
 
