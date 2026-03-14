@@ -234,9 +234,13 @@ Future improvements that could be added.
     - Tests: 6 test cases covering parallel prefetch, caching, error handling
     - Fixed test bug: invalid txId lengths (39/35 chars instead of 43)
 
-- [ ] **7.3 Add gateway health monitoring**
+## Phase 7: Optional Enhancements
+
+- [x] **7.3 Add gateway health monitoring**
   - [ ] Track gateway response times
   - [ ] Dynamically adjust priorities based on performance
+  - [x] Document gateway independence (any gateway can serve any txId)
+  - [x] The `runHealthCheck` method should be used for preloading model URLs on app startup
 
 ---
 
