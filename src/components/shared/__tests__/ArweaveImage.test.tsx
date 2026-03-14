@@ -32,16 +32,12 @@ const RESOLVED_URL = 'https://ardrive.net/' + VALID_TX_ID;
 // Mock Setup
 // ============================================================
 
-// Mock arweaveUtils
-vi.mock('../../../utils/arweaveUtils', () => ({
+// Mock playlist-data-engine arweaveUtils
+vi.mock('playlist-data-engine', () => ({
   isArweaveUrl: vi.fn((url: string) => {
     if (!url || typeof url !== 'string') return false;
     return url.includes('arweave.net') || url.startsWith('ar://');
   }),
-}));
-
-// Mock arweaveGatewayManager
-vi.mock('../../../utils/arweaveGatewayManager', () => ({
   arweaveGatewayManager: {
     resolveUrl: vi.fn(async (url: string) => {
       // Simulate resolution - return a different URL for Arweave URLs
@@ -53,19 +49,8 @@ vi.mock('../../../utils/arweaveGatewayManager', () => ({
   },
 }));
 
-// Mock logger to avoid console noise
-vi.mock('../../../utils/logger', () => ({
-  logger: {
-    debug: vi.fn(),
-    warn: vi.fn(),
-    info: vi.fn(),
-    error: vi.fn(),
-  },
-}));
-
 // Import the mocked functions for type access
-import { isArweaveUrl } from '../../../utils/arweaveUtils';
-import { arweaveGatewayManager } from '../../../utils/arweaveGatewayManager';
+import { isArweaveUrl, arweaveGatewayManager } from 'playlist-data-engine';
 
 const mockIsArweaveUrl = vi.mocked(isArweaveUrl);
 const mockResolveUrl = vi.mocked(arweaveGatewayManager.resolveUrl);

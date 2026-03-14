@@ -170,9 +170,9 @@ Remove duplicated code and import from engine.
   - [x] Change import from `../../utils/arweaveGatewayManager` to `playlist-data-engine`
   - [x] Change import from `../../utils/arweaveUtils` to `playlist-data-engine`
 
-- [ ] **5.4 Update test mocks**
-  - [ ] Update `ArweaveImage.test.tsx` mock path to `playlist-data-engine`
-  - [ ] Update `arweaveGatewayManager.test.ts` to import from engine (or delete if tests moved to engine)
+- [x] **5.4 Update test mocks**
+  - [x] Update `ArweaveImage.test.tsx` mock path to `playlist-data-engine`
+  - [x] Delete `arweaveGatewayManager.test.ts` (tests already moved to engine)
 
 - [ ] **5.5 Remove duplicate files from showcase**
   - [ ] Delete `src/utils/arweaveGatewayManager.ts`
