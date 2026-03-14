@@ -120,7 +120,7 @@ export const MODEL_PRESETS = {
             label: 'Danceability',
             description: 'Fixed model',
             config: {
-                modelUrl: 'https://turbo-gateway.com/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
+                modelUrl: 'https://arweave.net/nX9KX1OVhEaT1dStNcsRiZKCQTWuHjAMl4MWprIFyZU/model.json',
                 modelType: 'musicnn' as const
             }
         }

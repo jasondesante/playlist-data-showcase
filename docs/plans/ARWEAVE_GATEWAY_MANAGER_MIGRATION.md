@@ -190,9 +190,9 @@ Remove duplicated code and import from engine.
 
 Ensure default models use reliable gateways.
 
-- [ ] **6.1 Review MODEL_PRESETS in useMusicClassifier.ts**
-  - [ ] Replace `turbo-gateway.com` URLs with `arweave.net` equivalents
-  - [ ] The same txId can be accessed via any gateway
+- [x] **6.1 Review MODEL_PRESETS in useMusicClassifier.ts**
+  - [x] Replace `turbo-gateway.com` URLs with `arweave.net` equivalents
+  - [x] The same txId can be accessed via any gateway
 
 - [ ] **6.2 Review DEFAULT_ARWEAVE_MODELS in MusicClassifier.ts**
   - [ ] Update danceability model URL from turbo-gateway to arweave.net
