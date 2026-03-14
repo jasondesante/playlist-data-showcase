@@ -91,13 +91,13 @@ Port the showcase's gateway manager to the engine with engine-compatible logging
 
 Make the gateway manager available to consumers.
 
-- [ ] **3.1 Update src/index.ts exports**
-  - [ ] Add `ArweaveGatewayManager` class export
-  - [ ] Add `arweaveGatewayManager` singleton export
-  - [ ] Add `ArweaveGatewayManagerConfig` type export
-  - [ ] Add `GatewayCache` type export
-  - [ ] Add `GatewayCheckResult` type export
-  - [ ] Add `getAllGatewayUrls` function export
+- [x] **3.1 Update src/index.ts exports**
+  - [x] Add `ArweaveGatewayManager` class export
+  - [x] Add `arweaveGatewayManager` singleton export
+  - [x] Add `ArweaveGatewayManagerConfig` type export
+  - [x] Add `GatewayCache` type export
+  - [x] Add `GatewayCheckResult` type export
+  - [x] Add `getAllGatewayUrls` function export (already exported)
 
 - [x] **3.2 Update existing arweaveUtils exports**
   - [x] Ensure `pathSuffix` is in ArweaveUrlInfo type
