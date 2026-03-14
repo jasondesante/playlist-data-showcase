@@ -3,8 +3,7 @@ import {
     MusicClassifier,
     type TwoStepModelConfig,
     type SingleStepModelConfig,
-    DEFAULT_ARWEAVE_MODELS,
-    arweaveGatewayManager
+    DEFAULT_ARWEAVE_MODELS
 } from 'playlist-data-engine';
 import type { MusicClassifierOptions, MusicClassificationProfile } from '@/types';
 import { logger } from '@/utils/logger';
@@ -52,15 +51,14 @@ export interface UseMusicClassifierOptions extends Omit<Partial<MusicClassifierO
  * The URLs below use `arweave.net` as the gateway, but **any Arweave gateway can serve
  * any transaction ID (txId)**. The content is identified by the txId, not the gateway.
  *
- * If a gateway fails (e.g., timeout, 4xx/5xx errors), the `arweaveGatewayManager.resolveUrl()`
- * mechanism automatically tries alternate gateways in priority order:
+ * If a gateway fails (e.g., timeout, 4xx/5xx errors), the engine automatically tries
+ * alternate gateways in priority order:
  * 1. arweave.net (primary)
  * 2. ar.io
  * 3. ardrive.net
  * 4. turbo-gateway.com (fallback)
  *
- * This hook automatically passes the resolveUrl callback to MusicClassifier, enabling
- * automatic gateway fallback for model loading.
+ * Gateway resolution is automatic - no manual configuration needed.
  */
 export const MODEL_PRESETS = {
     genre: {
@@ -304,8 +302,7 @@ export const useMusicClassifier = () => {
             logger.info('MusicClassifier', 'Creating new MusicClassifier instance (lazy init)');
 
             const classifier = new MusicClassifier({
-                ...options,
-                resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)
+                ...options
             } as MusicClassifierOptions);
             classifierRef.current = classifier;
 
@@ -352,8 +349,7 @@ export const useMusicClassifier = () => {
                 try {
                     setIsModelLoading(true);
                     classifier = new MusicClassifier({
-                        ...optionsToUse,
-                        resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)
+                        ...optionsToUse
                     } as MusicClassifierOptions);
                 } catch (err) {
                     handleError(err, 'MusicClassifier');
