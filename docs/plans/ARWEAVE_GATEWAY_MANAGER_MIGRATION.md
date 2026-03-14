@@ -119,9 +119,9 @@ Enable the engine to resolve model URLs before loading.
   - [x] Add optional `resolveUrl?: (url: string) => Promise<string>` callback
   - [x] Document that this is used for Arweave URL resolution
 
-- [ ] **4.2 Update loadModelWithRetry method**
-  - [ ] Call `resolveUrl` on modelUrl before loading (if provided)
-  - [ ] Log when URL is resolved to different gateway
+- [x] **4.2 Update loadModelWithRetry method**
+  - [x] Call `resolveUrl` on modelUrl before loading (if provided)
+  - [x] Log when URL is resolved to different gateway
 
 - [ ] **4.3 Update loadModels method**
   - [ ] Resolve embedding and classifier URLs if resolveUrl is provided
