@@ -303,6 +303,8 @@ export interface SpawnModeControlsProps {
   onResetAll?: () => void;
   /** Additional CSS class name */
   className?: string;
+  /** Override custom item count (if manager.getInfo() is inaccurate) */
+  customCount?: number;
 }
 
 /**
@@ -316,7 +318,8 @@ export function SpawnModeControls({
   onModeChange,
   onResetCategory,
   onResetAll,
-  className = ''
+  className = '',
+  customCount: customCountOverride
 }: SpawnModeControlsProps) {
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -877,6 +880,9 @@ export function SpawnModeControls({
     return groupedWeightItems.reduce((sum, group) => sum + group.items.length, 0);
   }, [groupedWeightItems]);
 
+  // Use override custom count if provided, otherwise use categoryInfo
+  const displayCustomCount = customCountOverride ?? categoryInfo.customCount;
+
   return (
     <div className={`spawn-mode-controls ${className}`}>
       {/* Mode Selector Section */}
@@ -887,8 +893,8 @@ export function SpawnModeControls({
             <span>Spawn Mode</span>
           </div>
           {hasCustom && (
-            <span className="spawn-mode-custom-badge" aria-label={`${categoryInfo.customCount} custom items`}>
-              {categoryInfo.customCount} custom
+            <span className="spawn-mode-custom-badge" aria-label={`${displayCustomCount} custom items`}>
+              {displayCustomCount} custom
             </span>
           )}
         </div>

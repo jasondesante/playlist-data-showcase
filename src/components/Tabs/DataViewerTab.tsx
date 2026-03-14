@@ -389,7 +389,7 @@ export function DataViewerTab() {
   const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased, lastEquipmentCount } = useDataViewerStore();
 
   // Content creator hook for edit/delete/duplicate operations
-  const { deleteContent, duplicateContent, createContent } = useContentCreator();
+  const { deleteContent, duplicateContent, createContent, updateContent } = useContentCreator();
 
   // State
   const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
@@ -403,6 +403,10 @@ export function DataViewerTab() {
   const [showClassCreator, setShowClassCreator] = useState(false);
   const [showClassConfig, setShowClassConfig] = useState(false);
   const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
+
+  // Edit state - track item being edited
+  const [editingSpell, setEditingSpell] = useState<RegisteredSpell | null>(null);
+  const [editingSkill, setEditingSkill] = useState<CustomSkill | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
@@ -532,18 +536,73 @@ export function DataViewerTab() {
   /**
    * Handle edit of a custom item
    *
-   * NOTE: Edit infrastructure exists but is not yet wired up:
-   * - Creator forms support initialData prop for pre-filling
-   * - useContentCreator.updateContent() exists for saving changes
-   * - This handler needs to: (1) load item data, (2) open creator modal with initialData
-   *
-   * For now, this just logs the action. See handleDeleteItem and handleDuplicateItem
-   * for working examples of custom content operations.
+   * Opens the appropriate creator modal with the item data pre-filled for editing.
    */
   const handleEditItem = useCallback((category: DataCategory, itemName: string) => {
     logger.info('DataViewer', `Edit requested for ${category}/${itemName}`);
-    // TODO: Wire up edit functionality - load item, open creator modal with initialData
-  }, []);
+
+    // Find the item data and open the appropriate editor
+    switch (category) {
+      case 'spells': {
+        const spell = spells.find(s => s.name === itemName);
+        if (spell) {
+          setEditingSpell(spell);
+          setShowSpellCreator(true);
+        }
+        break;
+      }
+      case 'skills': {
+        const skill = skills.find(s => s.name === itemName || s.id === itemName);
+        if (skill) {
+          setEditingSkill(skill);
+          setShowSkillCreator(true);
+        }
+        break;
+      }
+      case 'classFeatures': {
+        const feature = classFeatures.find(f => f.name === itemName || f.id === itemName);
+        if (feature) {
+          // TODO: Implement class feature editing
+          showToast(`Editing class feature "${itemName}" is not yet implemented`, 'warning');
+        }
+        break;
+      }
+      case 'racialTraits': {
+        const trait = racialTraits.find(t => t.name === itemName || t.id === itemName);
+        if (trait) {
+          // TODO: Implement racial trait editing
+          showToast(`Editing racial trait "${itemName}" is not yet implemented`, 'warning');
+        }
+        break;
+      }
+      case 'equipment': {
+        const item = equipment.find(e => e.name === itemName);
+        if (item) {
+          // TODO: Equipment editing needs EquipmentCreatorForm to accept initialData
+          showToast(`Editing equipment "${itemName}" is not yet implemented`, 'warning');
+        }
+        break;
+      }
+      case 'races': {
+        const race = races.find(r => r.name === itemName);
+        if (race) {
+          // TODO: Race editing needs RaceCreatorForm to accept initialData
+          showToast(`Editing race "${itemName}" is not yet implemented`, 'warning');
+        }
+        break;
+      }
+      case 'classes': {
+        const cls = classes.find(c => c.name === itemName);
+        if (cls) {
+          // TODO: Class editing needs ClassCreatorForm to accept initialData
+          showToast(`Editing class "${itemName}" is not yet implemented`, 'warning');
+        }
+        break;
+      }
+      default:
+        logger.warn('DataViewer', `Edit not supported for category: ${category}`);
+    }
+  }, [spells, skills, classFeatures, racialTraits, equipment, races, classes]);
 
   /**
    * Handle delete of a custom item
@@ -619,11 +678,27 @@ export function DataViewerTab() {
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSkill = useCallback((skill: SkillFormData) => {
-    logger.info('DataViewer', `Created skill: ${skill.name}`);
-    showToast(`Created skill "${skill.name}"`, 'success');
+    if (editingSkill) {
+      // Update existing skill
+      const result = updateContent('skills', editingSkill.id || editingSkill.name, {
+        ...skill,
+        source: 'custom'
+      });
+      if (result.success) {
+        logger.info('DataViewer', `Updated skill: ${skill.name}`);
+        showToast(`Updated skill "${skill.name}"`, 'success');
+      } else {
+        logger.error('DataViewer', `Failed to update skill: ${result.error}`);
+        showToast(`Failed to update skill: ${result.error}`, 'error');
+      }
+    } else {
+      logger.info('DataViewer', `Created skill: ${skill.name}`);
+      showToast(`Created skill "${skill.name}"`, 'success');
+    }
     setShowSkillCreator(false);
+    setEditingSkill(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingSkill, updateContent]);
 
   /**
    * Handle creation of new spell via SpellCreatorForm
@@ -632,11 +707,27 @@ export function DataViewerTab() {
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSpell = useCallback((spell: SpellFormData) => {
-    logger.info('DataViewer', `Created spell: ${spell.name}`);
-    showToast(`Created spell "${spell.name}"`, 'success');
+    if (editingSpell) {
+      // Update existing spell
+      const result = updateContent('spells', editingSpell.name, {
+        ...spell,
+        source: 'custom'
+      });
+      if (result.success) {
+        logger.info('DataViewer', `Updated spell: ${spell.name}`);
+        showToast(`Updated spell "${spell.name}"`, 'success');
+      } else {
+        logger.error('DataViewer', `Failed to update spell: ${result.error}`);
+        showToast(`Failed to update spell: ${result.error}`, 'error');
+      }
+    } else {
+      logger.info('DataViewer', `Created spell: ${spell.name}`);
+      showToast(`Created spell "${spell.name}"`, 'success');
+    }
     setShowSpellCreator(false);
+    setEditingSpell(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingSpell, updateContent]);
 
   /**
    * Handle creation of new class feature via ClassFeatureCreatorForm
@@ -815,6 +906,7 @@ export function DataViewerTab() {
     const schoolColor = SCHOOL_COLORS[spell.school] || 'var(--color-text-secondary)';
     const schoolBg = SCHOOL_BG_COLORS[spell.school] || 'var(--color-surface-dim)';
     const hasImage = spell.image || spell.icon;
+    const isCustom = checkIsCustomItem('spells', spell.name);
 
     return (
       <div
@@ -907,6 +999,19 @@ export function DataViewerTab() {
                 {spell.classes.map(cls => (
                   <span key={cls} className="dataviewer-tag">{cls}</span>
                 ))}
+              </div>
+            )}
+            {isCustom && (
+              <div className="dataviewer-item-actions">
+                <CustomContentBadge
+                  category="spells"
+                  itemName={spell.name}
+                  onEdit={() => handleEditItem('spells', spell.name)}
+                  onDelete={() => handleDeleteItem('spells', spell.name)}
+                  onDuplicate={() => handleDuplicateItem('spells', spell.name)}
+                  showActions={true}
+                  size="sm"
+                />
               </div>
             )}
           </div>
@@ -1082,6 +1187,7 @@ export function DataViewerTab() {
                   const hasDescription = feature.description && feature.description.length > 0;
                   const hasImage = feature.image || feature.icon;
                   const isExpandable = hasEffects || hasDescription || hasImage;
+                  const isCustom = checkIsCustomItem('classFeatures', feature.name);
 
                   return (
                     <div
@@ -1150,6 +1256,19 @@ export function DataViewerTab() {
                               showStacking
                             />
                           </div>
+                          {isCustom && (
+                            <div className="dataviewer-item-actions">
+                              <CustomContentBadge
+                                category="classFeatures"
+                                itemName={feature.name}
+                                  onEdit={() => handleEditItem('classFeatures', feature.name)}
+                                  onDelete={() => handleDeleteItem('classFeatures', feature.name)}
+                                  onDuplicate={() => handleDuplicateItem('classFeatures', feature.name)}
+                                showActions={true}
+                                size="sm"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1289,6 +1408,7 @@ export function DataViewerTab() {
                   const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
                   const hasImage = trait.image || trait.icon;
                   const isExpandable = hasEffects || hasDescription || hasPrerequisites || hasImage;
+                  const isCustom = checkIsCustomItem('racialTraits', trait.name);
 
                   return (
                     <div
@@ -1359,6 +1479,19 @@ export function DataViewerTab() {
                               showStacking
                             />
                           </div>
+                          {isCustom && (
+                            <div className="dataviewer-item-actions">
+                              <CustomContentBadge
+                                category="racialTraits"
+                                itemName={trait.name}
+                                  onEdit={() => handleEditItem('racialTraits', trait.name)}
+                                  onDelete={() => handleDeleteItem('racialTraits', trait.name)}
+                                  onDuplicate={() => handleDuplicateItem('racialTraits', trait.name)}
+                                showActions={true}
+                                size="sm"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1505,6 +1638,7 @@ export function DataViewerTab() {
         const raceName = race.name || `Race-${index}`;
         const isExpanded = expandedItems.has(raceName);
         const hasImage = race.image || race.icon;
+        const isCustom = checkIsCustomItem('races', raceName);
 
         return (
           <div key={raceName} className="dataviewer-card">
@@ -1623,6 +1757,19 @@ export function DataViewerTab() {
                     </div>
                   </div>
                 )}
+                {isCustom && (
+                  <div className="dataviewer-item-actions">
+                    <CustomContentBadge
+                      category="races"
+                      itemName={raceName}
+                      onEdit={() => handleEditItem('races', raceName)}
+                      onDelete={() => handleDeleteItem('races', raceName)}
+                      onDuplicate={() => handleDuplicateItem('races', raceName)}
+                      showActions={true}
+                      size="sm"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1662,6 +1809,7 @@ export function DataViewerTab() {
           const className = cls.name || `Class-${index}`;
           const isExpanded = expandedItems.has(className);
           const hasImage = cls.image || cls.icon;
+          const isCustom = checkIsCustomItem('classes', className);
 
           return (
             <div key={className} className="dataviewer-card">
@@ -1766,6 +1914,19 @@ export function DataViewerTab() {
                       Choose {cls.skill_count} from {cls.available_skills.length} skills
                     </span>
                   </div>
+                  {isCustom && (
+                    <div className="dataviewer-item-actions">
+                      <CustomContentBadge
+                        category="classes"
+                        itemName={className}
+                        onEdit={() => handleEditItem('classes', className)}
+                        onDelete={() => handleDeleteItem('classes', className)}
+                        onDuplicate={() => handleDuplicateItem('classes', className)}
+                        showActions={true}
+                        size="sm"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2303,6 +2464,31 @@ export function DataViewerTab() {
     // Get spawn mode for current category for SpawnModeControls
     const currentSpawnMode = getSpawnModeForCategory(activeCategory);
 
+    // Calculate actual custom count for current category
+    // This is needed because manager.getInfo() doesn't track spells/skills/features correctly
+    const customCountForCategory = useMemo(() => {
+      switch (activeCategory) {
+        case 'spells':
+          return spells.filter(s => s.source === 'custom').length;
+        case 'skills':
+          return skills.filter(s => s.source === 'custom').length;
+        case 'classFeatures':
+          return classFeatures.filter(f => f.source === 'custom').length;
+        case 'racialTraits':
+          return racialTraits.filter(t => t.source === 'custom').length;
+        case 'equipment':
+          // Equipment uses ExtensionManager tracking
+          return undefined;
+        case 'races':
+        case 'classes':
+        case 'appearance':
+          // These use ExtensionManager tracking
+          return undefined;
+        default:
+          return undefined;
+      }
+    }, [activeCategory, spells, skills, classFeatures, racialTraits]);
+
     // Render spawn mode controls for the current category
     const renderSpawnModeControls = () => (
       <div className="dataviewer-spawn-controls">
@@ -2311,6 +2497,7 @@ export function DataViewerTab() {
           categoryLabel={CATEGORY_CONFIG[activeCategory]?.label}
           showWeightEditor={true}
           showImportExport={true}
+          customCount={customCountForCategory}
           onModeChange={(category, mode) => {
             logger.info('DataViewer', `Spawn mode changed for ${category}: ${mode}`);
             refreshData();
@@ -2535,32 +2722,65 @@ export function DataViewerTab() {
       {/* Content Creator Modals (Phase 5.4 - Modal Pattern) */}
       <ContentCreatorModal
         isOpen={showSpellCreator}
-        onClose={() => setShowSpellCreator(false)}
-        title="Create Custom Spell"
-        subtitle="Add a new spell to the game"
+        onClose={() => {
+          setShowSpellCreator(false);
+          setEditingSpell(null);
+        }}
+        title={editingSpell ? `Edit Spell: ${editingSpell.name}` : "Create Custom Spell"}
+        subtitle={editingSpell ? "Modify the spell properties" : "Add a new spell to the game"}
         icon={Sparkles}
         showFooter={false}
       >
         <SpellCreatorForm
           onCreate={handleCreateSpell}
-          onCancel={() => setShowSpellCreator(false)}
-          submitButtonText="Create Spell"
+          onCancel={() => {
+            setShowSpellCreator(false);
+            setEditingSpell(null);
+          }}
+          submitButtonText={editingSpell ? "Save Changes" : "Create Spell"}
+          initialData={editingSpell ? {
+            name: editingSpell.name,
+            level: editingSpell.level,
+            school: editingSpell.school,
+            casting_time: editingSpell.casting_time,
+            range: editingSpell.range,
+            components: (editingSpell.components || []).map(c => c as 'S' | 'V' | 'M'),
+            duration: editingSpell.duration,
+            description: editingSpell.description || '',
+            classes: editingSpell.classes || [],
+            icon: editingSpell.icon,
+            image: editingSpell.image
+          } : undefined}
         />
       </ContentCreatorModal>
 
       {/* Skill Creator Modal (Phase 4.1) */}
       <ContentCreatorModal
         isOpen={showSkillCreator}
-        onClose={() => setShowSkillCreator(false)}
-        title="Create Custom Skill"
-        subtitle="Add a new skill for character proficiency"
+        onClose={() => {
+          setShowSkillCreator(false);
+          setEditingSkill(null);
+        }}
+        title={editingSkill ? `Edit Skill: ${editingSkill.name}` : "Create Custom Skill"}
+        subtitle={editingSkill ? "Modify the skill properties" : "Add a new skill for character proficiency"}
         icon={Swords}
         showFooter={false}
       >
         <SkillCreatorForm
           onCreate={handleCreateSkill}
-          onCancel={() => setShowSkillCreator(false)}
-          submitButtonText="Create Skill"
+          onCancel={() => {
+            setShowSkillCreator(false);
+            setEditingSkill(null);
+          }}
+          submitButtonText={editingSkill ? "Save Changes" : "Create Skill"}
+          initialData={editingSkill ? {
+            name: editingSkill.name,
+            ability: editingSkill.ability,
+            description: editingSkill.description || '',
+            categories: editingSkill.categories || [],
+            icon: editingSkill.icon,
+            image: editingSkill.image
+          } : undefined}
         />
       </ContentCreatorModal>
 

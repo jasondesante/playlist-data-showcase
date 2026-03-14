@@ -15,7 +15,15 @@ import {
 const CUSTOM_CONTENT_STORAGE_KEY = 'playlist-data-showcase:custom-content';
 
 /**
- * Load custom content from localStorage
+ * Module-level custom content cache for persistence.
+ * This ensures all hook instances share the same persisted state.
+ */
+let customContentCache: Partial<Record<ContentType, ContentItem[]>> = {};
+let isCacheLoaded = false;
+let isContentRestored = false;
+
+/**
+ * Load custom content from localStorage (module-level)
  */
 function loadCustomContentFromStorage(): Partial<Record<ContentType, ContentItem[]>> {
     try {
@@ -33,15 +41,58 @@ function loadCustomContentFromStorage(): Partial<Record<ContentType, ContentItem
 }
 
 /**
- * Save custom content to localStorage
+ * Save custom content to localStorage (module-level)
  */
-function saveCustomContentToStorage(content: Partial<Record<ContentType, ContentItem[]>>): void {
+function saveCustomContentToStorage(): void {
     try {
-        localStorage.setItem(CUSTOM_CONTENT_STORAGE_KEY, JSON.stringify(content));
+        localStorage.setItem(CUSTOM_CONTENT_STORAGE_KEY, JSON.stringify(customContentCache));
     } catch (error) {
         logger.warn('ContentCreator', 'Failed to save custom content to localStorage', error);
     }
 }
+
+/**
+ * Add an item to the custom content cache and persist
+ */
+function addToCustomContentCache(category: ContentType, item: ContentItem): void {
+    if (!customContentCache[category]) {
+        customContentCache[category] = [];
+    }
+    customContentCache[category]!.push(item);
+    saveCustomContentToStorage();
+}
+
+/**
+ * Add multiple items to the custom content cache and persist
+ */
+function addMultipleToCustomContentCache(category: ContentType, items: ContentItem[]): void {
+    if (!customContentCache[category]) {
+        customContentCache[category] = [];
+    }
+    customContentCache[category]!.push(...items);
+    saveCustomContentToStorage();
+}
+
+/**
+ * Update the custom content cache for a category and persist
+ */
+function updateCustomContentCache(category: ContentType, items: ContentItem[]): void {
+    customContentCache[category] = items;
+    saveCustomContentToStorage();
+}
+
+/**
+ * Initialize the cache from localStorage (called once at module load)
+ */
+function initializeCache(): void {
+    if (!isCacheLoaded) {
+        customContentCache = loadCustomContentFromStorage();
+        isCacheLoaded = true;
+    }
+}
+
+// Initialize cache when module loads
+initializeCache();
 
 /**
  * Content types that can be created through the ExtensionManager.
@@ -338,39 +389,39 @@ export const useContentCreator = (): UseContentCreatorReturn => {
     const [lastCreatedItem, setLastCreatedItem] = useState<ContentItem | null>(null);
     const [lastCreatedCategory, setLastCreatedCategory] = useState<ContentType | null>(null);
 
-    // Track custom content for localStorage persistence
-    const [customContent, setCustomContent] = useState<Partial<Record<ContentType, ContentItem[]>>>(() => loadCustomContentFromStorage());
-
     // Get store for notifications
     const { notifyDataChanged } = useDataViewerStore();
 
     // Get ExtensionManager instance
     const manager = useMemo(() => ExtensionManager.getInstance(), []);
 
-    // Load persisted custom content into ExtensionManager on mount
+    // Restore persisted custom content into ExtensionManager on first mount only
     useEffect(() => {
-        const storedContent = loadCustomContentFromStorage();
-        const categories = Object.keys(storedContent) as ContentType[];
+        if (isContentRestored) return;
+
+        const categories = Object.keys(customContentCache) as ContentType[];
+        let hasRestoredContent = false;
 
         categories.forEach(category => {
-            const items = storedContent[category];
+            const items = customContentCache[category];
             if (items && items.length > 0) {
                 try {
                     manager.register(category as any, items, { validate: false });
                     logger.info('ContentCreator', `Restored ${items.length} persisted ${category} items from localStorage`);
+                    hasRestoredContent = true;
                 } catch (error) {
                     logger.warn('ContentCreator', `Failed to restore ${category} items from localStorage`, error);
                 }
             }
         });
-    }, [manager]);
 
-    // Persist custom content to localStorage whenever it changes
-    useEffect(() => {
-        if (Object.keys(customContent).length > 0) {
-            saveCustomContentToStorage(customContent);
+        isContentRestored = true;
+
+        // Notify useDataViewer to refresh its data if we restored any content
+        if (hasRestoredContent) {
+            notifyDataChanged();
         }
-    }, [customContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Validate content before registration.
@@ -444,11 +495,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             setLastCreatedItem(itemToRegister);
             setLastCreatedCategory(category);
 
-            // Update custom content for localStorage persistence
-            setCustomContent(prev => ({
-                ...prev,
-                [category]: [...(prev[category] || []), itemToRegister]
-            }));
+            // Update custom content cache for localStorage persistence
+            addToCustomContentCache(category, itemToRegister);
 
             // Log success
             const itemName = (itemToRegister.name || itemToRegister.id || 'unknown') as string;
@@ -480,7 +528,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [manager, notifyDataChanged, setCustomContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Create and register multiple items at once.
@@ -544,11 +592,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             // Register with ExtensionManager
             manager.register(category as any, itemsToRegister, registerOptions);
 
-            // Update custom content for localStorage persistence
-            setCustomContent(prev => ({
-                ...prev,
-                [category]: [...(prev[category] || []), ...itemsToRegister]
-            }));
+            // Update custom content cache for localStorage persistence
+            addMultipleToCustomContentCache(category, itemsToRegister);
 
             // Log success
             logger.info('ContentCreator', `Created ${itemsToRegister.length} items in ${category}`);
@@ -575,7 +620,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [manager, notifyDataChanged, setCustomContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Update an existing custom item.
@@ -640,11 +685,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             manager.reset(category as any);
             manager.register(category as any, newItems, { validate: false });
 
-            // Update custom content for localStorage persistence
-            setCustomContent(prev => ({
-                ...prev,
-                [category]: newItems
-            }));
+            // Update custom content cache for localStorage persistence
+            updateCustomContentCache(category, newItems);
 
             logger.info('ContentCreator', `Updated ${category} item: ${itemName}`);
             notifyDataChanged();
@@ -668,7 +710,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [manager, notifyDataChanged, setCustomContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Delete a custom item from a category.
@@ -706,11 +748,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 manager.register(category as any, remainingItems, { validate: false });
             }
 
-            // Update custom content for localStorage persistence
-            setCustomContent(prev => ({
-                ...prev,
-                [category]: remainingItems
-            }));
+            // Update custom content cache for localStorage persistence
+            updateCustomContentCache(category, remainingItems);
 
             logger.info('ContentCreator', `Deleted ${category} item: ${itemName}`);
             notifyDataChanged();
@@ -733,7 +772,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [manager, notifyDataChanged, setCustomContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Duplicate an existing item.
@@ -790,11 +829,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             // Register the duplicate
             manager.register(category as any, [duplicatedItem], { validate: false });
 
-            // Update custom content for localStorage persistence
-            setCustomContent(prev => ({
-                ...prev,
-                [category]: [...(prev[category] || []), duplicatedItem]
-            }));
+            // Update custom content cache for localStorage persistence
+            addToCustomContentCache(category, duplicatedItem);
 
             logger.info('ContentCreator', `Duplicated ${category} item: ${itemName} -> ${newName}`);
             notifyDataChanged();
@@ -818,7 +854,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         } finally {
             setIsLoading(false);
         }
-    }, [manager, notifyDataChanged, setCustomContent]);
+    }, [manager, notifyDataChanged]);
 
     /**
      * Check if an item with the given name exists in the category.

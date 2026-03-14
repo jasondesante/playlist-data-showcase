@@ -152,8 +152,12 @@ export function ContentCreatorModal({
       }, 100);
     } else {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore focus
-      previousActiveElement.current?.focus();
+      // Restore focus only if the previous element is still visible and focusable
+      // Use preventScroll to avoid scrolling the page when focus is restored
+      // This is critical after data changes (e.g., creating new content) which trigger re-renders
+      if (previousActiveElement.current?.isConnected && previousActiveElement.current?.offsetParent !== null) {
+        previousActiveElement.current.focus({ preventScroll: true });
+      }
     }
 
     return () => {
