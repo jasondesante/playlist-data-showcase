@@ -198,9 +198,11 @@ Ensure default models use reliable gateways.
   - [x] Update danceability model URL from turbo-gateway to arweave.net
   - [x] All other models already use arweave.net
 
-- [ ] **6.3 Document gateway independence**
-  - [ ] Add comment explaining that any gateway can serve any txId
-  - [ ] The resolveUrl mechanism will handle fallback automatically
+- [x] **6.3 Document gateway independence**
+  - [x] Add comment explaining that any gateway can serve any txId
+  - [x] The resolveUrl mechanism will handle fallback automatically
+  - [x] Added documentation to DEFAULT_ARWEAVE_MODELS in engine's MusicClassifier.ts
+  - [x] Added documentation to MODEL_PRESETS in showcase's useMusicClassifier.ts
 
 ---
 

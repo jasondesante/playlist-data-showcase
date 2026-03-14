@@ -46,6 +46,21 @@ export interface UseMusicClassifierOptions extends Omit<Partial<MusicClassifierO
 /**
  * Pre-configured model presets for easy model switching.
  * All presets use Arweave-hosted models for reliability.
+ *
+ * ## Gateway Independence
+ *
+ * The URLs below use `arweave.net` as the gateway, but **any Arweave gateway can serve
+ * any transaction ID (txId)**. The content is identified by the txId, not the gateway.
+ *
+ * If a gateway fails (e.g., timeout, 4xx/5xx errors), the `arweaveGatewayManager.resolveUrl()`
+ * mechanism automatically tries alternate gateways in priority order:
+ * 1. arweave.net (primary)
+ * 2. ar.io
+ * 3. ardrive.net
+ * 4. turbo-gateway.com (fallback)
+ *
+ * This hook automatically passes the resolveUrl callback to MusicClassifier, enabling
+ * automatic gateway fallback for model loading.
  */
 export const MODEL_PRESETS = {
     genre: {
