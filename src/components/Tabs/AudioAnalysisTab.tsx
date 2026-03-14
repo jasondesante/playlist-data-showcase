@@ -5,7 +5,9 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { useMusicClassifier, MODEL_PRESETS, UseMusicClassifierOptions } from '../../hooks/useMusicClassifier';
-import { GenreResultsCard } from '../AudioAnalysis/GenreResultsCard';
+import { GenreClassificationCard } from '../AudioAnalysis/GenreClassificationCard';
+import { MoodClassificationCard } from '../AudioAnalysis/MoodClassificationCard';
+import { VibeMetricsCard } from '../AudioAnalysis/VibeMetricsCard';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
@@ -846,20 +848,40 @@ export function AudioAnalysisTab() {
       {/* Genre Analysis Results - shown when in genre mode with results, during analysis, or on error */}
       {selectedTrack && analysisMode === 'genre' && (musicClassification || isGenreAnalyzing || isGenreModelLoading || genreError) && (
         <div className="audio-analysis-results fade-in">
-          <GenreResultsCard
-            profile={musicClassification}
-            isAnalyzing={isGenreAnalyzing}
-            isModelLoading={isGenreModelLoading}
-            progress={genreProgress}
-            error={genreError}
-            onRetry={retryGenreAnalysis}
-            threshold={genreThreshold}
-            trackInfo={{
-              title: selectedTrack.title,
-              artist: selectedTrack.artist,
-              url: selectedTrack.audio_url,
-            }}
-          />
+          {/* Left Column: Genre Classification */}
+          <div className="audio-analysis-genre-column">
+            <GenreClassificationCard
+              profile={musicClassification}
+              isAnalyzing={isGenreAnalyzing}
+              isModelLoading={isGenreModelLoading}
+              progress={genreProgress}
+              error={genreError}
+              onRetry={retryGenreAnalysis}
+              className="audio-analysis-genre-card"
+            />
+          </div>
+          
+          {/* Right Column: Mood Classification */}
+          <div className="audio-analysis-mood-column">
+            <MoodClassificationCard
+              profile={musicClassification}
+              className="audio-analysis-mood-card"
+            />
+          </div>
+          
+          {/* Full Width Bottom: Vibe Metrics + Metadata + Export */}
+          <div className="audio-analysis-vibe-column full-width">
+            <VibeMetricsCard
+              profile={musicClassification}
+              trackInfo={{
+                title: selectedTrack.title,
+                artist: selectedTrack.artist,
+                url: selectedTrack.audio_url,
+              }}
+              threshold={genreThreshold}
+              className="audio-analysis-vibe-card"
+            />
+          </div>
         </div>
       )}
 

@@ -1,0 +1,316 @@
+/* ============================================
+   GENRE CLASSIFICATION CARD COMPONENT
+   Display card for ML-based genre analysis
+   ============================================ */
+
+.genre-classification-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.genre-classification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.genre-classification-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.genre-classification-title-icon {
+    color: hsl(var(--primary));
+}
+
+.genre-classification-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.genre-classification-badge {
+    font-size: 0.688rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted) / 0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: calc(var(--radius) / 2);
+}
+
+/* ============================================
+   PRIMARY GENRE HIGHLIGHT
+   ============================================ */
+
+.genre-classification-primary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem;
+    background: linear-gradient(
+        135deg,
+        hsl(51 100% 50% / 0.08) 0%,
+        hsl(45 100% 60% / 0.04) 100%
+    );
+    border: 1px solid hsl(51 100% 50% / 0.2);
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.genre-classification-primary-badge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(51 100% 50% / 0.8);
+    margin-bottom: 0.375rem;
+}
+
+.genre-classification-primary-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: hsl(51 100% 50%);
+    text-shadow: 0 0 20px hsl(51 100% 50% / 0.3);
+    margin-bottom: 0.5rem;
+}
+
+.genre-classification-primary-confidence {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.genre-classification-primary-confidence-icon {
+    color: hsl(51 100% 50% / 0.7);
+}
+
+.genre-classification-primary-confidence-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+    font-feature-settings: "tnum" 1;
+}
+
+.genre-classification-primary-confidence-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   CHART CONTAINER
+   ============================================ */
+
+.genre-classification-chart-container {
+    margin-top: 0.5rem;
+}
+
+.genre-classification-chart-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.genre-classification-chart-icon {
+    color: hsl(var(--muted-foreground));
+}
+
+.genre-classification-chart-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.genre-card-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.genre-card-loading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--cute-purple) / 0.1));
+    border-radius: 50%;
+    animation: genre-card-pulse 2s infinite ease-in-out;
+}
+
+.genre-card-loading-icon-inner {
+    color: hsl(var(--primary));
+}
+
+@keyframes genre-card-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+.genre-card-loading-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.genre-card-loading-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.genre-card-loading-desc {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.genre-card-loading-progress {
+    width: 100%;
+    max-width: 200px;
+    height: 4px;
+    background-color: hsl(var(--border));
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.genre-card-loading-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* ============================================
+   ANALYSIS PROGRESS
+   ============================================ */
+
+.genre-card-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.genre-card-progress-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.genre-card-progress-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--cute-purple) / 0.1));
+    border-radius: 0.75rem;
+    flex-shrink: 0;
+}
+
+.genre-card-progress-icon-inner {
+    color: hsl(var(--primary));
+    animation: genre-card-pulse 2s infinite ease-in-out;
+}
+
+.genre-card-progress-text {
+    flex: 1;
+}
+
+.genre-card-progress-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.25rem 0;
+}
+
+.genre-card-progress-desc {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.genre-card-progress-percent {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: ui-monospace, monospace;
+}
+
+.genre-card-progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.genre-card-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+
+.genre-card-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.genre-card-error-icon {
+    color: hsl(var(--destructive));
+}
+
+.genre-card-error-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.genre-card-error-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+.genre-card-error-message {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+}
+
+.genre-card-error-retry {
+    margin-top: 0.5rem;
+}

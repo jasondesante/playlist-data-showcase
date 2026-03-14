@@ -1,0 +1,133 @@
+/* ============================================
+   MOOD CLASSIFICATION CARD COMPONENT
+   Display card for mood/theme analysis
+   ============================================ */
+
+.mood-classification-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.mood-classification-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.mood-classification-header-icon {
+    color: hsl(var(--primary));
+}
+
+.mood-classification-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0;
+}
+
+/* ============================================
+   MOOD TAGS
+   ============================================ */
+
+.mood-classification-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.mood-classification-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--cute-purple) / 0.1));
+    border: 1px solid hsl(var(--primary) / 0.2);
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+}
+
+.mood-classification-tag:hover {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.15));
+    border-color: hsl(var(--primary) / 0.3);
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   CONFIDENCE SCORES
+   ============================================ */
+
+.mood-classification-confidence {
+    margin-top: 0.5rem;
+}
+
+.mood-classification-confidence-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.mood-classification-confidence-icon {
+    color: hsl(var(--muted-foreground));
+}
+
+.mood-classification-confidence-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+}
+
+.mood-classification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mood-classification-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mood-classification-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mood-classification-bar {
+    width: 80px;
+    height: 6px;
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mood-classification-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.mood-classification-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    font-family: ui-monospace, monospace;
+    min-width: 2.5rem;
+    text-align: right;
+}

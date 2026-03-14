@@ -575,6 +575,32 @@
   grid-column: 1 / -1;
 }
 
+/* Full width utility for any element */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* ============================================
+   GENRE RESULTS COLUMN LAYOUT
+   ============================================ */
+
+/* Column containers for genre results */
+.audio-analysis-genre-column,
+.audio-analysis-mood-column {
+  min-width: 0; /* Prevent overflow */
+}
+
+.audio-analysis-vibe-column {
+  min-width: 0;
+}
+
+/* Card styling within columns */
+.audio-analysis-genre-card,
+.audio-analysis-mood-card,
+.audio-analysis-vibe-card {
+  height: 100%;
+}
+
 /* Frequency visualization card - make it prominent */
 .audio-analysis-card:first-child {
   grid-column: 1 / -1;
