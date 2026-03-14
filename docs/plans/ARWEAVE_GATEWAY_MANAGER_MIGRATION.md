@@ -115,9 +115,9 @@ Make the gateway manager available to consumers.
 
 Enable the engine to resolve model URLs before loading.
 
-- [ ] **4.1 Add resolveUrl option to MusicClassifierOptions**
-  - [ ] Add optional `resolveUrl?: (url: string) => Promise<string>` callback
-  - [ ] Document that this is used for Arweave URL resolution
+- [x] **4.1 Add resolveUrl option to MusicClassifierOptions**
+  - [x] Add optional `resolveUrl?: (url: string) => Promise<string>` callback
+  - [x] Document that this is used for Arweave URL resolution
 
 - [ ] **4.2 Update loadModelWithRetry method**
   - [ ] Call `resolveUrl` on modelUrl before loading (if provided)
