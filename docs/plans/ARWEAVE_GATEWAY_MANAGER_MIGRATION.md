@@ -210,9 +210,19 @@ Ensure default models use reliable gateways.
 
 Future improvements that could be added.
 
-- [ ] **7.1 Add gateway resolution for images in engine**
-  - [ ] ColorExtractor could resolve image URLs before loading
-  - [ ] PlaylistParser could resolve track images
+- [x] **7.1 Add gateway resolution for images in engine**
+  - [x] ColorExtractor could resolve image URLs before loading
+    - Added `ColorExtractorOptions` interface with optional `resolveUrl` callback
+    - ColorExtractor now resolves image URLs before loading using arweaveGatewayManager by default
+    - Added 4 new tests for resolveUrl functionality in colorExtractor.test.ts
+  - [x] PlaylistParser could resolve track images
+    - Added `resolveUrl` and `resolveImageUrls` options to `PlaylistParserOptions`
+    - When `resolveImageUrls: true`, playlist and track image URLs are resolved during parsing
+    - Audio URLs are NOT resolved (only images) to maintain backward compatibility
+    - Added 6 new tests for resolveUrl functionality in parser.test.ts
+  - [x] Export new types from engine's index.ts
+    - `ColorExtractorOptions` type exported
+    - `PlaylistParserOptions` type exported
 
 - [ ] **7.2 Add prefetch/warmup capability**
   - [ ] Method to pre-check and cache gateways for known txIds
