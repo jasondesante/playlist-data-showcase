@@ -3,7 +3,8 @@ import {
     MusicClassifier,
     type TwoStepModelConfig,
     type SingleStepModelConfig,
-    DEFAULT_ARWEAVE_MODELS
+    DEFAULT_ARWEAVE_MODELS,
+    arweaveGatewayManager
 } from 'playlist-data-engine';
 import type { MusicClassifierOptions, MusicClassificationProfile } from '@/types';
 import { logger } from '@/utils/logger';
@@ -287,7 +288,10 @@ export const useMusicClassifier = () => {
             setError(null);
             logger.info('MusicClassifier', 'Creating new MusicClassifier instance (lazy init)');
 
-            const classifier = new MusicClassifier(options as MusicClassifierOptions);
+            const classifier = new MusicClassifier({
+                ...options,
+                resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)
+            } as MusicClassifierOptions);
             classifierRef.current = classifier;
 
             logger.info('MusicClassifier', 'MusicClassifier instance created and cached');
@@ -332,7 +336,10 @@ export const useMusicClassifier = () => {
                 logger.info('MusicClassifier', 'Creating classifier with override options');
                 try {
                     setIsModelLoading(true);
-                    classifier = new MusicClassifier(optionsToUse as MusicClassifierOptions);
+                    classifier = new MusicClassifier({
+                        ...optionsToUse,
+                        resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)
+                    } as MusicClassifierOptions);
                 } catch (err) {
                     handleError(err, 'MusicClassifier');
                     const classifiedError = classifyError(err, 'model');
