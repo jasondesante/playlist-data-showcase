@@ -18,26 +18,26 @@ Move the complete gateway management system to the engine where it belongs, sinc
 
 Update the engine's utility file to match the showcase's enhanced version.
 
-- [ ] **1.1 Update ArweaveUrlInfo interface**
-  - [ ] Add `pathSuffix?: string` property to support URLs like `{txId}/model.json`
-  - [ ] Update JSDoc examples to show path suffix usage
+- [x] **1.1 Update ArweaveUrlInfo interface**
+  - [x] Add `pathSuffix: string` property to support URLs like `{txId}/model.json`
+  - [x] Update JSDoc examples to show path suffix usage
 
-- [ ] **1.2 Update parseArweaveUrl function**
-  - [ ] Add logic to extract path suffix after txId (e.g., `/model.json`)
-  - [ ] Handle query strings and fragments correctly
-  - [ ] Return `pathSuffix` in the result object
+- [x] **1.2 Update parseArweaveUrl function**
+  - [x] Add logic to extract path suffix after txId (e.g., `/model.json`)
+  - [x] Handle query strings and fragments correctly
+  - [x] Return `pathSuffix` in the result object
 
-- [ ] **1.3 Update constructGatewayUrl function**
-  - [ ] Add optional `pathSuffix` parameter
-  - [ ] Append pathSuffix to constructed URL
+- [x] **1.3 Update constructGatewayUrl function**
+  - [x] Add optional `pathSuffix` parameter
+  - [x] Append pathSuffix to constructed URL
 
-- [ ] **1.4 Add getAllGatewayUrls function**
-  - [ ] Create function that returns all gateway URLs for a txId in priority order
-  - [ ] Accept optional gateways array (default to DEFAULT_GATEWAYS)
-  - [ ] Accept optional pathSuffix parameter
+- [x] **1.4 Add getAllGatewayUrls function**
+  - [x] Create function that returns all gateway URLs for a txId in priority order
+  - [x] Accept optional gateways array (default to DEFAULT_GATEWAYS)
+  - [x] Accept optional pathSuffix parameter
 
-- [ ] **1.5 Add KNOWN_GATEWAY_HOSTS constant**
-  - [ ] Export as `const` array for external use
+- [x] **1.5 Add KNOWN_GATEWAY_HOSTS constant**
+  - [x] Export as `const` array for external use
 
 - [ ] **1.6 Add unit tests**
   - [ ] Create `tests/unit/arweaveUtils.test.ts`
@@ -99,15 +99,15 @@ Make the gateway manager available to consumers.
   - [ ] Add `GatewayCheckResult` type export
   - [ ] Add `getAllGatewayUrls` function export
 
-- [ ] **3.2 Update existing arweaveUtils exports**
-  - [ ] Ensure `pathSuffix` is in ArweaveUrlInfo type
-  - [ ] Export updated `constructGatewayUrl` signature
-  - [ ] Export `KNOWN_GATEWAY_HOSTS`
+- [x] **3.2 Update existing arweaveUtils exports**
+  - [x] Ensure `pathSuffix` is in ArweaveUrlInfo type
+  - [x] Export updated `constructGatewayUrl` signature
+  - [x] Export `KNOWN_GATEWAY_HOSTS`
 
-- [ ] **3.3 Verify build succeeds**
-  - [ ] Run `npm run build` in engine
-  - [ ] Check for TypeScript errors
-  - [ ] Verify exports are accessible
+- [x] **3.3 Verify build succeeds**
+  - [x] Run `npm run build` in engine
+  - [x] Check for TypeScript errors
+  - [x] Verify exports are accessible
 
 ---
 
