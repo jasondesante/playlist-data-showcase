@@ -237,8 +237,26 @@ Future improvements that could be added.
 ## Phase 7: Optional Enhancements
 
 - [x] **7.3 Add gateway health monitoring**
-  - [ ] Track gateway response times
-  - [ ] Dynamically adjust priorities based on performance
+  - [x] Track gateway response times
+    - Added `GatewayHealthStats` interface for tracking health metrics per gateway
+    - Added `recordGatewayResponse` private method to record response times
+    - Added `getGatewayHealth` method to retrieve health stats for a specific gateway
+    - Added `getAllGatewayHealth` method to retrieve health stats for all gateways
+    - Updated `checkGateway` method to record response times for health tracking
+  - [x] Dynamically adjust priorities based on performance
+    - Added `adjustGatewayPriorities` method to reorder gateways based on health data
+    - Uses stable sort to preserve original order when metrics are similar
+    - Reassigns priorities based on new order
+    - Logs priority adjustments
+  - [x] Added `runHealthCheck` method
+    - Tests each gateway by making a HEAD request
+    - Records response time and health data
+    - Returns `HealthCheckResult` with stats for each gateway
+    - Can optionally adjust priorities after the check
+  - [x] Added `resetGatewayPriorities` method to restore original priority order
+    - Resets each gateway's priority to their original value
+    - Re-sorts the array by original priority
+  - [x] Added `clearHealthData` method to clear all health tracking data
   - [x] Document gateway independence (any gateway can serve any txId)
   - [x] The `runHealthCheck` method should be used for preloading model URLs on app startup
 
