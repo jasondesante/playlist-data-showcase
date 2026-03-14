@@ -157,10 +157,10 @@ Enable the engine to resolve model URLs before loading.
 
 Remove duplicated code and import from engine.
 
-- [ ] **5.1 Update useMusicClassifier.ts**
-  - [ ] Import `arweaveGatewayManager` from `playlist-data-engine`
-  - [ ] Pass `resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)` to MusicClassifier options
-  - [ ] This enables automatic gateway resolution for model URLs
+- [x] **5.1 Update useMusicClassifier.ts**
+  - [x] Import `arweaveGatewayManager` from `playlist-data-engine`
+  - [x] Pass `resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)` to MusicClassifier options
+  - [x] This enables automatic gateway resolution for model URLs
 
 - [ ] **5.2 Update audioPlayerStore.ts**
   - [ ] Change import from `@/utils/arweaveGatewayManager` to `playlist-data-engine`
