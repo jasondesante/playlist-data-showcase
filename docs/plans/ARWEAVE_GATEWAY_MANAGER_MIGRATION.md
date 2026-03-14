@@ -162,9 +162,9 @@ Remove duplicated code and import from engine.
   - [x] Pass `resolveUrl: arweaveGatewayManager.resolveUrl.bind(arweaveGatewayManager)` to MusicClassifier options
   - [x] This enables automatic gateway resolution for model URLs
 
-- [ ] **5.2 Update audioPlayerStore.ts**
-  - [ ] Change import from `@/utils/arweaveGatewayManager` to `playlist-data-engine`
-  - [ ] Change import from `@/utils/arweaveUtils` to `playlist-data-engine`
+- [x] **5.2 Update audioPlayerStore.ts**
+  - [x] Change import from `@/utils/arweaveGatewayManager` to `playlist-data-engine`
+  - [x] Change import from `@/utils/arweaveUtils` to `playlist-data-engine`
 
 - [ ] **5.3 Update ArweaveImage.tsx**
   - [ ] Change import from `../../utils/arweaveGatewayManager` to `playlist-data-engine`

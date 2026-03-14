@@ -9,8 +9,7 @@
  */
 
 import { create } from 'zustand';
-import { isArweaveUrl } from '@/utils/arweaveUtils';
-import { arweaveGatewayManager } from '@/utils/arweaveGatewayManager';
+import { isArweaveUrl, arweaveGatewayManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 
 export type PlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error';
