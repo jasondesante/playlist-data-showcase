@@ -82,6 +82,7 @@ See [EQUIPMENT_SYSTEM.md](docs/EQUIPMENT_SYSTEM.md) for:
 - [Validation Schemas](#validation-schemas) — Runtime type validation with Zod
 - [Development Workflow](#development-workflow) — Watch mode and hot reload
 - [Environment Variables](#environment-variables) — API keys and sensor configuration
+- [Arweave Gateway Resolution](#arweave-gateway-resolution) — Gateway fallback for Arweave URLs
 - [Troubleshooting](#troubleshooting) — Common issues
 
 ---
@@ -527,6 +528,25 @@ When developing with `file://` or `npm link`: changes in `src/` are available im
 
 All variables are optional. For complete configuration with examples and programmatic options, see **[`.env.example`](.env.example)**.
 
+---
+
+## Arweave Gateway Resolution
+
+The engine automatically resolves Arweave URLs with gateway fallback for reliability. This is used internally by `MusicClassifier`, `ColorExtractor`, and `PlaylistParser`.
+
+For direct use in your application:
+
+```typescript
+import { ArweaveGatewayManager } from 'playlist-data-engine';
+
+const gatewayManager = new ArweaveGatewayManager();
+
+// Resolves Arweave URLs with automatic fallback to working gateways
+const workingUrl = await gatewayManager.resolveUrl('https://arweave.net/txId/model.json');
+
+// Non-Arweave URLs are returned unchanged
+const regularUrl = await gatewayManager.resolveUrl('https://example.com/file.json');
+```
 ---
 
 ## Troubleshooting
