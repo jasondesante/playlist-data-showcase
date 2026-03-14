@@ -194,9 +194,9 @@ Ensure default models use reliable gateways.
   - [x] Replace `turbo-gateway.com` URLs with `arweave.net` equivalents
   - [x] The same txId can be accessed via any gateway
 
-- [ ] **6.2 Review DEFAULT_ARWEAVE_MODELS in MusicClassifier.ts**
-  - [ ] Update danceability model URL from turbo-gateway to arweave.net
-  - [ ] All other models already use arweave.net
+- [x] **6.2 Review DEFAULT_ARWEAVE_MODELS in MusicClassifier.ts**
+  - [x] Update danceability model URL from turbo-gateway to arweave.net
+  - [x] All other models already use arweave.net
 
 - [ ] **6.3 Document gateway independence**
   - [ ] Add comment explaining that any gateway can serve any txId
