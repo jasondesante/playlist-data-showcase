@@ -224,9 +224,15 @@ Future improvements that could be added.
     - `ColorExtractorOptions` type exported
     - `PlaylistParserOptions` type exported
 
-- [ ] **7.2 Add prefetch/warmup capability**
-  - [ ] Method to pre-check and cache gateways for known txIds
-  - [ ] Useful for preloading model URLs on app startup
+- [x] **7.2 Add prefetch/warmup capability**
+  - [x] Method to pre-check and cache gateways for known txIds
+    - Added `prefetchUrls(urls, options)` method for parallel URL resolution
+    - Supports configurable concurrency (default: 5)
+    - Returns detailed results with success/failure counts
+  - [x] Useful for preloading model URLs on app startup
+    - Types exported: `PrefetchOptions`, `PrefetchResult`, `PrefetchResultEntry`
+    - Tests: 6 test cases covering parallel prefetch, caching, error handling
+    - Fixed test bug: invalid txId lengths (39/35 chars instead of 43)
 
 - [ ] **7.3 Add gateway health monitoring**
   - [ ] Track gateway response times
