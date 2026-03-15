@@ -47,8 +47,6 @@ import {
   Shield,
   Sparkles,
   Package,
-  ChevronDown,
-  ChevronUp,
   Zap,
   RefreshCw,
   Award,
@@ -65,7 +63,6 @@ import { showToast } from '../ui/Toast';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
-import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
@@ -73,16 +70,14 @@ import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/f
 import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
 import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
 import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
-import { Plus, X, Swords, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Swords } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 import { CATEGORY_CONFIG } from './DataViewer/constants';
 import {
   formatLevel,
-  formatRarity,
-  isColorOption,
-  getAppearanceIcon
+  formatRarity
 } from './DataViewer/utils';
 import { SpellsPanel } from './DataViewer/components/SpellsPanel';
 import { SkillsPanel } from './DataViewer/components/SkillsPanel';
@@ -91,6 +86,7 @@ import { RacialTraitsPanel } from './DataViewer/components/RacialTraitsPanel';
 import { RacesPanel } from './DataViewer/components/RacesPanel';
 import { ClassesPanel } from './DataViewer/components/ClassesPanel';
 import { EquipmentPanel } from './DataViewer/components/EquipmentPanel';
+import { AppearancePanel } from './DataViewer/components/AppearancePanel';
 
 export function DataViewerTab() {
   const {
@@ -677,235 +673,6 @@ export function DataViewerTab() {
     );
   };
 
-  /**
-   * Render appearance data categories
-   *
-   * Displays appearance options for character generation:
-   * - Body types (slender, athletic, muscular, stocky)
-   * - Skin tones (hex color swatches)
-   * - Hair colors (hex color swatches)
-   * - Hair styles (short, long, braided, etc.)
-   * - Eye colors (hex color swatches)
-   * - Facial features (scars, tattoos, piercings, etc.)
-   *
-   * Phase 4.1: Added inline AppearanceOptionCreator per category
-   */
-  const renderAppearance = () => {
-    // Get spawn mode for appearance to filter options
-    const appearanceSpawnMode = getSpawnModeForCategory('appearance');
-    const isAbsoluteMode = appearanceSpawnMode === 'absolute' || appearanceSpawnMode === 'replace';
-
-    return (
-    <div className="dataviewer-grid">
-      {(getFilteredData as AppearanceCategoryData[]).map(category => {
-        const isExpanded = expandedItems.has(category.key);
-        const CategoryIcon = getAppearanceIcon(category.icon);
-        const isCreatingOption = appearanceCreatorCategory === category.key;
-
-        // Filter options based on spawn mode - only show custom items in absolute/replace mode
-        const filteredOptions = isAbsoluteMode
-          ? category.options.filter(option => isCustomItem('appearance', option))
-          : category.options;
-
-        return (
-          <div key={category.key} className="dataviewer-card">
-            <div
-              className="dataviewer-card-header"
-              onClick={() => toggleExpanded(category.key)}
-            >
-              <div className="dataviewer-card-header-content">
-                <CategoryIcon size={18} className="dataviewer-card-icon" />
-                <span className="dataviewer-card-title">{category.name}</span>
-              </div>
-              <div className="dataviewer-item-badges">
-                <span className="dataviewer-badge dataviewer-badge-secondary">
-                  {filteredOptions.length} options
-                </span>
-                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </div>
-            </div>
-
-            <div className="dataviewer-card-meta">
-              <span className="dataviewer-card-stat">
-                {category.description}
-              </span>
-            </div>
-
-            {isExpanded && (
-              <div className="dataviewer-card-details">
-                {/* Add Option Button */}
-                <div className="dataviewer-appearance-actions">
-                  <Button
-                    variant={isCreatingOption ? 'outline' : 'ghost'}
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setAppearanceCreatorCategory(isCreatingOption ? null : category.key);
-                      // Clear any editing state when toggling create mode
-                      setEditingAppearanceCategory(null);
-                      setEditingAppearanceValue(null);
-                    }}
-                    leftIcon={isCreatingOption ? X : Plus}
-                  >
-                    {isCreatingOption ? 'Cancel' : 'Add Option'}
-                  </Button>
-                </div>
-
-                {/* Inline Creator Form */}
-                {isCreatingOption && (
-                  <div className="dataviewer-appearance-creator">
-                    <AppearanceOptionCreator
-                      initialCategory={category.key as ContentType}
-                      onCreate={handleCreateAppearanceOption}
-                      onCancel={() => setAppearanceCreatorCategory(null)}
-                      submitButtonText="Add to Category"
-                      showPreview={true}
-                    />
-                  </div>
-                )}
-
-                {/* Inline Editor Form for editing existing options */}
-                {editingAppearanceCategory === category.key && editingAppearanceValue && (
-                  <div className="dataviewer-appearance-creator dataviewer-appearance-editor">
-                    <AppearanceOptionCreator
-                      initialCategory={category.key as ContentType}
-                      initialValue={editingAppearanceValue}
-                      originalValue={editingAppearanceValue}
-                      isEditMode={true}
-                      onUpdate={handleUpdateAppearanceOption}
-                      onCancel={() => {
-                        setEditingAppearanceCategory(null);
-                        setEditingAppearanceValue(null);
-                      }}
-                      showPreview={true}
-                    />
-                  </div>
-                )}
-
-                {/* Options List - filtered by spawn mode */}
-                <div className="dataviewer-appearance-options">
-                  {filteredOptions.map((option, idx) => {
-                    const isCustom = isCustomItem('appearance', option);
-                    const isEditing = editingAppearanceCategory === category.key && editingAppearanceValue === option;
-
-                    // Check if this is a color value
-                    if (isColorOption(option)) {
-                      return (
-                        <div 
-                          key={idx} 
-                          className={`dataviewer-appearance-color ${isCustom ? 'dataviewer-appearance-option-custom' : ''} ${isEditing ? 'dataviewer-appearance-color-editing' : ''} ${selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option ? 'dataviewer-appearance-selected' : ''}`}
-                          onClick={() => {
-                            if (isCustom) {
-                              // Toggle selection - if already selected, deselect; otherwise select
-                              if (selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option) {
-                                setSelectedAppearanceOption(null);
-                              } else {
-                                setSelectedAppearanceOption({ category: category.key, option });
-                              }
-                            }
-                          }}
-                        >
-                          <div
-                            className="dataviewer-color-swatch"
-                            style={{ backgroundColor: option }}
-                            title={option}
-                          />
-                          <span className="dataviewer-color-value">{option}</span>
-                          {isCustom && !isEditing && selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option && (
-                            <div className="dataviewer-appearance-option-actions">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingAppearanceCategory(category.key);
-                                  setEditingAppearanceValue(option);
-                                  // Close create form if open
-                                  setAppearanceCreatorCategory(null);
-                                  setSelectedAppearanceOption(null);
-                                }}
-                                leftIcon={Edit2}
-                                title="Edit option"
-                              />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteItem('appearance', option);
-                                  setSelectedAppearanceOption(null);
-                                }}
-                                leftIcon={Trash2}
-                                title="Delete option"
-                                className="dataviewer-delete-btn"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    // Regular option (text)
-                    return (
-                      <div 
-                        key={idx} 
-                        className={`dataviewer-appearance-option ${isCustom ? 'dataviewer-appearance-option-custom' : ''} ${isEditing ? 'dataviewer-appearance-option-editing' : ''} ${selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option ? 'dataviewer-appearance-selected' : ''}`}
-                        onClick={() => {
-                          if (isCustom) {
-                            // Toggle selection - if already selected, deselect; otherwise select
-                            if (selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option) {
-                              setSelectedAppearanceOption(null);
-                            } else {
-                              setSelectedAppearanceOption({ category: category.key, option });
-                            }
-                          }
-                        }}
-                      >
-                        <span className="dataviewer-tag dataviewer-tag-appearance">
-                          {option}
-                        </span>
-                        {isCustom && !isEditing && selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option && (
-                          <div className="dataviewer-appearance-option-actions">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingAppearanceCategory(category.key);
-                                setEditingAppearanceValue(option);
-                                // Close create form if open
-                                setAppearanceCreatorCategory(null);
-                                setSelectedAppearanceOption(null);
-                              }}
-                              leftIcon={Edit2}
-                              title="Edit option"
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteItem('appearance', option);
-                                setSelectedAppearanceOption(null);
-                              }}
-                              leftIcon={Trash2}
-                              title="Delete option"
-                              className="dataviewer-delete-btn"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-  };
-
   // Render content based on active category
   const renderContent = () => {
     if (isLoading) {
@@ -1121,7 +888,24 @@ export function DataViewerTab() {
       case 'appearance':
         return (
           <>
-            {renderAppearance()}
+            <AppearancePanel
+              appearanceCategories={getFilteredData as AppearanceCategoryData[]}
+              expandedItems={expandedItems}
+              toggleExpanded={toggleExpanded}
+              onDelete={handleDeleteItem}
+              checkIsCustomItem={checkIsCustomItem}
+              getSpawnModeForCategory={getSpawnModeForCategory}
+              appearanceCreatorCategory={appearanceCreatorCategory}
+              setAppearanceCreatorCategory={setAppearanceCreatorCategory}
+              editingAppearanceCategory={editingAppearanceCategory}
+              setEditingAppearanceCategory={setEditingAppearanceCategory}
+              editingAppearanceValue={editingAppearanceValue}
+              setEditingAppearanceValue={setEditingAppearanceValue}
+              selectedAppearanceOption={selectedAppearanceOption}
+              setSelectedAppearanceOption={setSelectedAppearanceOption}
+              onCreateAppearanceOption={handleCreateAppearanceOption}
+              onUpdateAppearanceOption={handleUpdateAppearanceOption}
+            />
             {renderSpawnModeControls()}
           </>
         );

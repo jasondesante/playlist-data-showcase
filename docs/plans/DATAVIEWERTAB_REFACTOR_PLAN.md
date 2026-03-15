@@ -235,9 +235,9 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~250 lines
 
 ### Task 2.8: Create AppearancePanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/AppearancePanel.tsx`
-- [ ] Move `renderAppearance()` function
-- [ ] Accept props for appearance data and handlers
+- [x] Create `src/components/Tabs/DataViewer/components/AppearancePanel.tsx`
+- [x] Move `renderAppearance()` function
+- [x] Accept props for appearance data and handlers
 
 **Estimated lines moved**: ~220 lines
 
