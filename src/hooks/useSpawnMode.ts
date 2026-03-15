@@ -23,6 +23,7 @@ export type SpawnMode = 'relative' | 'absolute' | 'default' | 'replace';
 export type SpawnCategory =
     | 'equipment'
     | 'equipment.templates'
+    | 'appearance'  // Aggregate category for all appearance sub-categories
     | 'appearance.bodyTypes'
     | 'appearance.skinTones'
     | 'appearance.hairColors'
@@ -54,6 +55,28 @@ export type SpawnCategory =
  * Key is the item name/identifier, value is the spawn weight.
  */
 export type SpawnWeights = Record<string, number>;
+
+/**
+ * Appearance sub-categories that make up the aggregate 'appearance' category.
+ * When checking or resetting 'appearance', we operate on all these sub-categories.
+ */
+const APPEARANCE_SUBCATEGORIES: SpawnCategory[] = [
+    'appearance.bodyTypes',
+    'appearance.skinTones',
+    'appearance.hairColors',
+    'appearance.hairStyles',
+    'appearance.eyeColors',
+    'appearance.facialFeatures'
+];
+
+/**
+ * Check if a category is the aggregate 'appearance' category.
+ * Note: 'appearance' itself is not a valid ExtensionManager category,
+ * but it's used in the UI to represent all appearance sub-categories.
+ */
+function isAggregateAppearanceCategory(category: SpawnCategory): boolean {
+    return category === 'appearance' as SpawnCategory;
+}
 
 /**
  * Category info returned by getCategoryInfo
@@ -225,6 +248,14 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
      */
     const getMode = useCallback((category: SpawnCategory): SpawnMode | undefined => {
         try {
+            // Handle 'appearance' as aggregate - return mode of first sub-category
+            // (all sub-categories should have the same mode after setMode)
+            if (isAggregateAppearanceCategory(category)) {
+                const firstSubCat = APPEARANCE_SUBCATEGORIES[0];
+                const managerMode = manager.getMode(firstSubCat as any) as SpawnMode | undefined;
+                if (managerMode) return managerMode;
+                return getStoreSpawnMode(firstSubCat) as SpawnMode | undefined;
+            }
             const managerMode = manager.getMode(category as any) as SpawnMode | undefined;
             if (managerMode) return managerMode;
             // Fallback to store for persisted value
@@ -242,11 +273,21 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
      */
     const setMode = useCallback((category: SpawnCategory, mode: SpawnMode): void => {
         try {
-            // Update ExtensionManager
-            manager.setMode(category as any, mode);
-            // Update store for persistence
-            setStoreSpawnMode(category, mode as StoreSpawnMode);
-            logger.info('SpawnMode', `Set mode for ${category} to ${mode}`);
+            // Handle 'appearance' as aggregate of all appearance sub-categories
+            if (isAggregateAppearanceCategory(category)) {
+                // Set mode for all appearance sub-categories
+                for (const subCat of APPEARANCE_SUBCATEGORIES) {
+                    manager.setMode(subCat as any, mode);
+                    setStoreSpawnMode(subCat, mode as StoreSpawnMode);
+                }
+                logger.info('SpawnMode', `Set mode for all appearance sub-categories to ${mode}`);
+            } else {
+                // Update ExtensionManager
+                manager.setMode(category as any, mode);
+                // Update store for persistence
+                setStoreSpawnMode(category, mode as StoreSpawnMode);
+                logger.info('SpawnMode', `Set mode for ${category} to ${mode}`);
+            }
             bumpVersion();
             notifyDataChanged();
         } catch (error) {
@@ -319,13 +360,24 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
      */
     const resetCategory = useCallback((category: SpawnCategory): void => {
         try {
-            // Reset ExtensionManager
-            manager.reset(category as any);
-            // Clear custom content cache (localStorage persistence)
-            clearCustomContentForCategory(category as any);
-            // Clear from store
-            resetStoreSpawnMode(category);
-            logger.info('SpawnMode', `Reset category ${category} to defaults`);
+            // Handle 'appearance' as aggregate of all appearance sub-categories
+            if (isAggregateAppearanceCategory(category)) {
+                // Reset all appearance sub-categories
+                for (const subCat of APPEARANCE_SUBCATEGORIES) {
+                    manager.reset(subCat as any);
+                    clearCustomContentForCategory(subCat as any);
+                    resetStoreSpawnMode(subCat);
+                }
+                logger.info('SpawnMode', `Reset all appearance sub-categories to defaults`);
+            } else {
+                // Reset ExtensionManager
+                manager.reset(category as any);
+                // Clear custom content cache (localStorage persistence)
+                clearCustomContentForCategory(category as any);
+                // Clear from store
+                resetStoreSpawnMode(category);
+                logger.info('SpawnMode', `Reset category ${category} to defaults`);
+            }
             bumpVersion();
             notifyDataChanged();
         } catch (error) {
@@ -360,6 +412,10 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
      */
     const hasCustomData = useCallback((category: SpawnCategory): boolean => {
         try {
+            // Handle 'appearance' as aggregate of all appearance sub-categories
+            if (isAggregateAppearanceCategory(category)) {
+                return APPEARANCE_SUBCATEGORIES.some(subCat => manager.hasCustomData(subCat as any));
+            }
             return manager.hasCustomData(category as any);
         } catch (error) {
             logger.warn('SpawnMode', `Failed to check custom data for ${category}`, { error: String(error) });
@@ -372,6 +428,32 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
      */
     const getCategoryInfo = useCallback((category: SpawnCategory): CategorySpawnInfo => {
         try {
+            // Handle 'appearance' as aggregate of all appearance sub-categories
+            if (isAggregateAppearanceCategory(category)) {
+                let totalCustomCount = 0;
+                let totalTotalCount = 0;
+                const allWeights: SpawnWeights = {};
+
+                for (const subCat of APPEARANCE_SUBCATEGORIES) {
+                    const subInfo = manager.getInfo(subCat as any);
+                    totalCustomCount += subInfo?.customCount ?? 0;
+                    totalTotalCount += subInfo?.totalCount ?? 0;
+                    // Merge weights from all sub-categories
+                    const subWeights = manager.getWeights(subCat as any);
+                    if (subWeights) {
+                        Object.assign(allWeights, subWeights);
+                    }
+                }
+
+                return {
+                    mode: getMode(category),
+                    hasCustomData: hasCustomData(category),
+                    weights: allWeights,
+                    customCount: totalCustomCount,
+                    totalCount: totalTotalCount
+                };
+            }
+
             const info = manager.getInfo(category as any);
             return {
                 mode: getMode(category),

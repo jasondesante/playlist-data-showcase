@@ -2355,12 +2355,22 @@ export function DataViewerTab() {
    *
    * Phase 4.1: Added inline AppearanceOptionCreator per category
    */
-  const renderAppearance = () => (
+  const renderAppearance = () => {
+    // Get spawn mode for appearance to filter options
+    const appearanceSpawnMode = getSpawnModeForCategory('appearance');
+    const isAbsoluteMode = appearanceSpawnMode === 'absolute' || appearanceSpawnMode === 'replace';
+
+    return (
     <div className="dataviewer-grid">
       {(getFilteredData as AppearanceCategoryData[]).map(category => {
         const isExpanded = expandedItems.has(category.key);
         const CategoryIcon = getAppearanceIcon(category.icon);
         const isCreatingOption = appearanceCreatorCategory === category.key;
+
+        // Filter options based on spawn mode - only show custom items in absolute/replace mode
+        const filteredOptions = isAbsoluteMode
+          ? category.options.filter(option => isCustomItem('appearance', option))
+          : category.options;
 
         return (
           <div key={category.key} className="dataviewer-card">
@@ -2374,7 +2384,7 @@ export function DataViewerTab() {
               </div>
               <div className="dataviewer-item-badges">
                 <span className="dataviewer-badge dataviewer-badge-secondary">
-                  {category.options.length} options
+                  {filteredOptions.length} options
                 </span>
                 {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </div>
@@ -2416,9 +2426,9 @@ export function DataViewerTab() {
                   </div>
                 )}
 
-                {/* Options List */}
+                {/* Options List - filtered by spawn mode */}
                 <div className="dataviewer-appearance-options">
-                  {category.options.map((option, idx) => {
+                  {filteredOptions.map((option, idx) => {
                     // Check if this is a color value
                     if (isColorOption(option)) {
                       return (
@@ -2447,6 +2457,7 @@ export function DataViewerTab() {
       })}
     </div>
   );
+  };
 
   // Render content based on active category
   const renderContent = () => {

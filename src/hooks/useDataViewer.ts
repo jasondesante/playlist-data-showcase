@@ -865,12 +865,10 @@ export const useDataViewer = (): UseDataViewerReturn => {
 
     /**
      * Map DataCategory to SpawnCategory for use with spawn mode functions
+     * Note: 'appearance' is now handled as an aggregate of all appearance sub-categories
      */
     const getSpawnCategory = useCallback((category: DataCategory): SpawnCategory => {
-        // Most categories map directly, appearance is special
-        if (category === 'appearance') {
-            return 'appearance.bodyTypes'; // Default to body types for appearance mode
-        }
+        // All categories map directly, including 'appearance' which is now a valid aggregate
         return category as SpawnCategory;
     }, []);
 
