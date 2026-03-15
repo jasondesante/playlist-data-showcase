@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
 /**
  * Spawn mode types - mirrors useSpawnMode's SpawnMode
  */
 export type SpawnMode = 'relative' | 'absolute' | 'default' | 'replace';
+
+/**
+ * Global spawn mode can be a specific mode or 'category' (use per-category settings)
+ */
+export type GlobalSpawnMode = SpawnMode | 'category';
 
 /**
  * Category stats for tracking custom content
@@ -31,6 +35,10 @@ interface DataViewerState {
     /** Last known equipment count */
     lastEquipmentCount: number;
 
+    // Global Spawn Mode State
+    /** Global spawn mode - when set, applies to all categories. 'category' means use per-category settings */
+    globalSpawnMode: GlobalSpawnMode;
+    
     // Spawn Mode State (per category)
     /** Spawn mode settings per category - persisted across sessions */
     spawnModes: Record<string, SpawnMode>;
@@ -38,6 +46,18 @@ interface DataViewerState {
     spawnWeights: Record<string, Record<string, number>>;
     /** Category stats (custom counts, totals, has custom content) */
     categoryStats: Record<string, CategoryStats>;
+
+    // Global Spawn Mode Actions
+    /**
+     * Get the global spawn mode
+     * @returns The global spawn mode, or 'category' if using per-category settings
+     */
+    getGlobalSpawnMode: () => GlobalSpawnMode;
+    /**
+     * Set the global spawn mode
+     * @param mode - The global spawn mode to set ('category' to use per-category settings)
+     */
+    setGlobalSpawnMode: (mode: GlobalSpawnMode) => void;
 
     // Spawn Mode Actions
     /**
@@ -170,9 +190,27 @@ export const useDataViewerStore = create<DataViewerState>()(
             lastDataChange: null,
             hasPendingChanges: false,
             lastEquipmentCount: 0,
+            globalSpawnMode: 'category',
             spawnModes: {},
             spawnWeights: {},
             categoryStats: {},
+
+            // ==========================================
+            // Global Spawn Mode Actions
+            // ==========================================
+
+            getGlobalSpawnMode: (): GlobalSpawnMode => {
+                const state = get();
+                return state.globalSpawnMode ?? 'category';
+            },
+
+            setGlobalSpawnMode: (mode: GlobalSpawnMode): void => {
+                logger.debug('DataViewer', `Setting global spawn mode to ${mode}`);
+                set({
+                    globalSpawnMode: mode,
+                    lastDataChange: Date.now()
+                });
+            },
 
             // ==========================================
             // Spawn Mode Actions
@@ -343,10 +381,11 @@ export const useDataViewerStore = create<DataViewerState>()(
         }),
         {
             name: 'dataviewer-storage',
-            storage: createJSONStorage(() => storage),
-            // Persist spawn modes, weights, and certain fields
+            storage: createJSONStorage(() => localStorage),
+            // Persist spawn modes, weights, global mode, and certain fields
             partialize: (state) => ({
                 lastEquipmentCount: state.lastEquipmentCount,
+                globalSpawnMode: state.globalSpawnMode,
                 spawnModes: state.spawnModes,
                 spawnWeights: state.spawnWeights
             })

@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
-import { useDataViewerStore, type SpawnMode as StoreSpawnMode } from '@/store/dataViewerStore';
+import { useDataViewerStore, type SpawnMode as StoreSpawnMode, type GlobalSpawnMode as StoreGlobalSpawnMode } from '@/store/dataViewerStore';
 import { clearCustomContentForCategory, clearAllCustomContent } from './useContentCreator';
 
 /**
@@ -68,6 +68,11 @@ const APPEARANCE_SUBCATEGORIES: SpawnCategory[] = [
     'appearance.eyeColors',
     'appearance.facialFeatures'
 ];
+
+/**
+ * Global spawn mode - can be a specific mode or 'category' to use per-category settings
+ */
+export type GlobalSpawnMode = 'category' | SpawnMode;
 
 /**
  * Check if a category is the aggregate 'appearance' category.
@@ -179,6 +184,26 @@ export interface UseSpawnModeReturn {
      */
     importSpawnConfig: (config: Record<string, { mode: SpawnMode | undefined; weights: SpawnWeights }>) => void;
 
+    // Global Spawn Mode
+    /**
+     * Get the global spawn mode
+     * @returns The global spawn mode, or 'category' if using per-category settings
+     */
+    getGlobalMode: () => GlobalSpawnMode;
+
+    /**
+     * Set the global spawn mode (applies to all categories)
+     * @param mode - The global spawn mode ('category' to use per-category settings)
+     */
+    setGlobalMode: (mode: GlobalSpawnMode) => void;
+
+    /**
+     * Get the effective spawn mode for a category (global override or category-specific)
+     * @param category - The category to get mode for
+     * @returns The effective spawn mode to use
+     */
+    getEffectiveMode: (category: SpawnCategory) => SpawnMode;
+
     /**
      * Version counter that increments on any change
      * Useful for triggering re-renders in components
@@ -227,13 +252,72 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         getSpawnWeights: getStoreSpawnWeights,
         setSpawnWeights: setStoreSpawnWeights,
         resetSpawnMode: resetStoreSpawnMode,
-        resetAllSpawnModes: resetAllStoreSpawnModes
+        resetAllSpawnModes: resetAllStoreSpawnModes,
+        getGlobalSpawnMode: getStoreGlobalSpawnMode,
+        setGlobalSpawnMode: setStoreGlobalSpawnMode
     } = useDataViewerStore();
 
     /**
      * Get the ExtensionManager singleton instance
      */
     const manager = useMemo(() => ExtensionManager.getInstance(), []);
+
+    /**
+     * Sync persisted spawn modes from store to ExtensionManager on mount
+     * This ensures the ExtensionManager has the correct modes after page refresh
+     */
+    useEffect(() => {
+        const syncPersistedModes = () => {
+            try {
+                // Get all persisted spawn modes from the store
+                const storeState = useDataViewerStore.getState();
+                const persistedModes = storeState.spawnModes;
+                const persistedWeights = storeState.spawnWeights;
+                const globalMode = storeState.globalSpawnMode;
+
+                // Sync each persisted mode to the ExtensionManager
+                for (const [category, mode] of Object.entries(persistedModes)) {
+                    try {
+                        manager.setMode(category as any, mode as SpawnMode);
+                        logger.debug('SpawnMode', `Restored mode for ${category} to ${mode}`);
+                    } catch (e) {
+                        logger.warn('SpawnMode', `Failed to restore mode for ${category}`, { error: String(e) });
+                    }
+                }
+
+                // Sync persisted weights to the ExtensionManager
+                for (const [category, weights] of Object.entries(persistedWeights)) {
+                    if (weights && Object.keys(weights).length > 0) {
+                        try {
+                            manager.setWeights(category as any, weights as Record<string, number>);
+                            logger.debug('SpawnMode', `Restored weights for ${category}`);
+                        } catch (e) {
+                            logger.warn('SpawnMode', `Failed to restore weights for ${category}`, { error: String(e) });
+                        }
+                    }
+                }
+
+                // If global mode is set to a specific mode (not 'category'), apply it
+                if (globalMode && globalMode !== 'category') {
+                    const categories = manager.getRegisteredCategories();
+                    for (const category of categories) {
+                        try {
+                            manager.setMode(category as any, globalMode as SpawnMode);
+                        } catch (e) {
+                            logger.warn('SpawnMode', `Failed to apply global mode to ${category}`, { error: String(e) });
+                        }
+                    }
+                    logger.info('SpawnMode', `Applied global mode ${globalMode} to all categories on init`);
+                }
+
+                logger.info('SpawnMode', 'Synced persisted spawn modes from store to ExtensionManager');
+            } catch (error) {
+                logger.error('SpawnMode', 'Failed to sync persisted modes', { error: String(error) });
+            }
+        };
+
+        syncPersistedModes();
+    }, [manager]);
 
     /**
      * Increment version to trigger re-renders
@@ -542,6 +626,60 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         }
     }, [manager, bumpVersion, notifyDataChanged]);
 
+    // ==========================================
+    // Global Spawn Mode Functions
+    // ==========================================
+
+    /**
+     * Get the global spawn mode
+     */
+    const getGlobalMode = useCallback((): GlobalSpawnMode => {
+        return getStoreGlobalSpawnMode() as GlobalSpawnMode;
+    }, [getStoreGlobalSpawnMode]);
+
+    /**
+     * Set the global spawn mode (applies to all categories)
+     */
+    const setGlobalMode = useCallback((mode: GlobalSpawnMode): void => {
+        try {
+            // Update store for persistence
+            setStoreGlobalSpawnMode(mode as StoreGlobalSpawnMode);
+
+            // If mode is not 'category', apply it to all registered categories
+            if (mode !== 'category') {
+                const categories = manager.getRegisteredCategories();
+                for (const category of categories) {
+                    try {
+                        manager.setMode(category as any, mode);
+                        setStoreSpawnMode(category, mode as StoreSpawnMode);
+                    } catch (catError) {
+                        logger.warn('SpawnMode', `Failed to set global mode for ${category}`, { error: String(catError) });
+                    }
+                }
+                logger.info('SpawnMode', `Applied global mode ${mode} to all ${categories.length} categories`);
+            }
+
+            bumpVersion();
+            notifyDataChanged();
+        } catch (error) {
+            logger.error('SpawnMode', 'Failed to set global spawn mode', { error: String(error) });
+            throw error;
+        }
+    }, [manager, setStoreGlobalSpawnMode, setStoreSpawnMode, bumpVersion, notifyDataChanged]);
+
+    /**
+     * Get the effective spawn mode for a category (global override or category-specific)
+     */
+    const getEffectiveMode = useCallback((category: SpawnCategory): SpawnMode => {
+        const globalMode = getStoreGlobalSpawnMode();
+        // If global mode is set to a specific mode (not 'category'), use it
+        if (globalMode && globalMode !== 'category') {
+            return globalMode as SpawnMode;
+        }
+        // Otherwise, use the category-specific mode
+        return getMode(category) || 'relative';
+    }, [getStoreGlobalSpawnMode, getMode]);
+
     return {
         getMode,
         setMode,
@@ -555,6 +693,10 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         getCategoriesWithCustomData,
         exportSpawnConfig,
         importSpawnConfig,
+        // Global spawn mode functions
+        getGlobalMode,
+        setGlobalMode,
+        getEffectiveMode,
         version
     };
 };

@@ -697,6 +697,66 @@
    RESPONSIVE DESIGN
    ======================================== */
 
+/* ========================================
+   GLOBAL SPAWN MODE SECTION
+   ======================================== */
+
+.spawn-mode-global-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.spawn-mode-global-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spawn-mode-global-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.spawn-mode-global-title svg {
+  color: var(--color-primary);
+}
+
+.spawn-mode-global-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background: hsl(var(--primary) / 0.1);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.spawn-mode-global-description {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* When global override is active, show category-specific controls as disabled */
+.spawn-mode-global-override .spawn-mode-section,
+.spawn-mode-global-override .spawn-mode-actions {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 @media (max-width: 480px) {
   .spawn-mode-buttons {
     flex-direction: column;

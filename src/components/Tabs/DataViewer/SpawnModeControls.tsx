@@ -29,10 +29,11 @@ import {
   Info,
   ImagePlus,
   RefreshCw,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { useSpawnMode, type SpawnMode, type SpawnCategory } from '@/hooks/useSpawnMode';
+import { useSpawnMode, type SpawnMode, type SpawnCategory, type GlobalSpawnMode } from '@/hooks/useSpawnMode';
 import { ExtensionManager, SpellQuery, SkillQuery, FeatureQuery } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { showToast } from '@/components/ui/Toast';
@@ -64,6 +65,18 @@ const MODE_CONFIG: Record<SpawnMode, { label: string; description: string; color
     label: 'Replace',
     description: 'Clear previous custom data before registering',
     color: 'var(--destructive)'
+  }
+};
+
+/**
+ * Global mode configuration for display (includes 'category' option)
+ */
+const GLOBAL_MODE_CONFIG: Record<string, { label: string; description: string; color: string }> = {
+  ...MODE_CONFIG,
+  category: {
+    label: 'Per-Category',
+    description: 'Use individual spawn mode settings for each category',
+    color: 'var(--color-text-secondary)'
   }
 };
 
@@ -365,12 +378,20 @@ export function SpawnModeControls({
     resetCategory,
     resetAll,
     hasCustomData,
-    getCategoryInfo
+    getCategoryInfo,
+    // Global spawn mode functions
+    getGlobalMode,
+    setGlobalMode
   } = useSpawnMode();
 
   // Get current mode (default to 'relative' if not set)
   const currentMode = getMode(category) || 'relative';
   const modeConfig = MODE_CONFIG[currentMode];
+  
+  // Get global mode
+  const globalMode = getGlobalMode();
+  const globalModeConfig = GLOBAL_MODE_CONFIG[globalMode];
+  const isGlobalOverride = globalMode !== 'category';
 
   // Get category info
   const categoryInfo = useMemo(() => getCategoryInfo(category), [getCategoryInfo, category]);
@@ -492,6 +513,17 @@ export function SpawnModeControls({
     setMode(category, newMode);
     onModeChange?.(category, newMode);
   }, [category, setMode, onModeChange]);
+
+  // Handle global mode change
+  const handleGlobalModeChange = useCallback((newMode: GlobalSpawnMode) => {
+    setGlobalMode(newMode);
+    showToast(
+      newMode === 'category' 
+        ? 'Using per-category spawn mode settings' 
+        : `Applied ${GLOBAL_MODE_CONFIG[newMode].label} mode to all categories`,
+      'success'
+    );
+  }, [setGlobalMode]);
 
   // Handle reset category
   const handleResetCategory = useCallback(() => {
@@ -1068,6 +1100,62 @@ export function SpawnModeControls({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Global Spawn Mode Section */}
+      {showImportExport && (
+        <div className="spawn-mode-global-section">
+          <div className="spawn-mode-global-header">
+            <div className="spawn-mode-global-title">
+              <Globe size={16} />
+              <span>Global Spawn Mode</span>
+            </div>
+            <span className="spawn-mode-global-badge">
+              {isGlobalOverride ? 'Override Active' : 'Per-Category'}
+            </span>
+          </div>
+          
+          <p className="spawn-mode-global-description">
+            Set a spawn mode that applies to all categories at once. This overrides individual category settings.
+          </p>
+
+          {/* Global Mode Buttons */}
+          <div className="spawn-mode-buttons" role="group" aria-label="Global spawn mode selection">
+            {(['category', 'relative', 'absolute', 'default', 'replace'] as GlobalSpawnMode[]).map((mode) => {
+              const config = GLOBAL_MODE_CONFIG[mode];
+              const isActive = globalMode === mode;
+
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`spawn-mode-btn ${isActive ? 'spawn-mode-btn-active' : ''}`}
+                  onClick={() => handleGlobalModeChange(mode)}
+                  title={config.description}
+                  aria-pressed={isActive}
+                  aria-label={`${config.label} mode: ${config.description}`}
+                >
+                  <span
+                    className="spawn-mode-btn-indicator"
+                    style={{ backgroundColor: config.color }}
+                    aria-hidden="true"
+                  />
+                  <span className="spawn-mode-btn-label">{config.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Current Global Mode Description */}
+          <div className="spawn-mode-description" role="status" aria-live="polite">
+            <span
+              className="spawn-mode-description-indicator"
+              style={{ backgroundColor: globalModeConfig.color }}
+              aria-hidden="true"
+            />
+            <span>{globalModeConfig.description}</span>
+          </div>
         </div>
       )}
 
