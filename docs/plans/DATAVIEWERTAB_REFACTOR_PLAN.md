@@ -155,8 +155,8 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~100 lines
 
 ### Task 1.2: Create Utils Directory
-- [ ] Create `src/components/Tabs/DataViewer/utils/` directory
-- [ ] Create `formatters.ts` with:
+- [x] Create `src/components/Tabs/DataViewer/utils/` directory
+- [x] Create `formatters.ts` with:
   - `formatLevel()`
   - `formatRarity()`
   - `formatAbilityBonus()`
@@ -167,7 +167,7 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
   - `formatSpellUses()`
   - `isColorOption()`
   - `getAppearanceIcon()`
-- [ ] Create `index.ts` barrel export
+- [x] Create `index.ts` barrel export
 
 **Estimated lines moved**: ~150 lines
 
