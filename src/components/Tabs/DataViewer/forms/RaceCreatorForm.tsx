@@ -141,13 +141,20 @@ export function RaceCreatorForm({
   submitButtonText,
   availableTraits
 }: RaceCreatorFormProps) {
-  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, deleteContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
-  const [formData, setFormData] = useState<RaceFormData>(() => ({
-    ...getDefaultFormData(),
-    ...initialData
-  }));
+  // Filter out undefined values from initialData to prevent them from overriding defaults
+  const [formData, setFormData] = useState<RaceFormData>(() => {
+    const defaults = getDefaultFormData();
+    if (!initialData) return defaults;
+
+    // Only spread defined values to avoid overriding defaults with undefined
+    const definedInitialData = Object.fromEntries(
+      Object.entries(initialData).filter(([_, v]) => v !== undefined)
+    );
+    return { ...defaults, ...definedInitialData };
+  });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubraces, setShowSubraces] = useState(false);
@@ -250,6 +257,15 @@ export function RaceCreatorForm({
         );
 
         if (dataResult.success) {
+          // If the race name changed, also update the 'races' category (string names)
+          const newName = formData.name.trim();
+          if (newName !== originalName) {
+            // Remove old name and add new name in 'races' category
+            const deleteResult = deleteContent('races', originalName);
+            if (deleteResult.success) {
+              createContent('races', newName, { validate: false });
+            }
+          }
           // Reset form on success
           setFormData(getDefaultFormData());
           setFormErrors([]);
@@ -259,10 +275,10 @@ export function RaceCreatorForm({
         }
       } else {
         // Create new race
-        // Register race name in 'races' category
+        // Register race name in 'races' category (as a string, not an object)
         const nameResult = createContent(
           'races',
-          { name: formData.name.trim() },
+          formData.name.trim(),  // Pass string directly for string-based categories
           { validate: true },
           {
             onError: (error) => {

@@ -192,13 +192,20 @@ export function ClassCreatorForm({
   availableSkills,
   availableClasses
 }: ClassCreatorFormProps) {
-  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, deleteContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
-  const [formData, setFormData] = useState<ClassFormData>(() => ({
-    ...getDefaultFormData(),
-    ...initialData
-  }));
+  // Filter out undefined values from initialData to prevent them from overriding defaults
+  const [formData, setFormData] = useState<ClassFormData>(() => {
+    const defaults = getDefaultFormData();
+    if (!initialData) return defaults;
+
+    // Only spread defined values to avoid overriding defaults with undefined
+    const definedInitialData = Object.fromEntries(
+      Object.entries(initialData).filter(([_, v]) => v !== undefined)
+    );
+    return { ...defaults, ...definedInitialData };
+  });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAudioPrefs, setShowAudioPrefs] = useState(false);
@@ -349,6 +356,15 @@ export function ClassCreatorForm({
         );
 
         if (dataResult.success) {
+          // If the class name changed, also update the 'classes' category (string names)
+          const newName = formData.name.trim();
+          if (newName !== originalName) {
+            // Remove old name and add new name in 'classes' category
+            const deleteResult = deleteContent('classes', originalName);
+            if (deleteResult.success) {
+              createContent('classes', newName, { validate: false });
+            }
+          }
           // Reset form on success
           setFormData(getDefaultFormData());
           setFormErrors([]);
@@ -358,10 +374,10 @@ export function ClassCreatorForm({
         }
       } else {
         // Create new class
-        // Register class name in 'classes' category
+        // Register class name in 'classes' category (as a string, not an object)
         const nameResult = createContent(
           'classes',
-          { name: formData.name.trim() },
+          formData.name.trim(),  // Pass string directly for string-based categories
           { validate: true },
           {
             onError: (error) => {

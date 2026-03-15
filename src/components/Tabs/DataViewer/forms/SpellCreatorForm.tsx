@@ -190,10 +190,17 @@ export function SpellCreatorForm({
   const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
-  const [formData, setFormData] = useState<SpellFormData>(() => ({
-    ...getDefaultFormData(),
-    ...initialData
-  }));
+  // Filter out undefined values from initialData to prevent them from overriding defaults
+  const [formData, setFormData] = useState<SpellFormData>(() => {
+    const defaults = getDefaultFormData();
+    if (!initialData) return defaults;
+
+    // Only spread defined values to avoid overriding defaults with undefined
+    const definedInitialData = Object.fromEntries(
+      Object.entries(initialData).filter(([_, v]) => v !== undefined)
+    );
+    return { ...defaults, ...definedInitialData };
+  });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

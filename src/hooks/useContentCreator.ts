@@ -828,7 +828,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             // Get existing custom items
             const existingItems = manager.getCustom(category as any) as T[];
             const existingIndex = existingItems.findIndex(
-                (item: any) => item.name === itemName || item.id === itemName
+                (item: any) => item.name === itemName || item.id === itemName || item.race === itemName
             );
 
             if (existingIndex === -1) {
@@ -866,7 +866,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
 
             // Remove old item and add updated one
             const newItems = existingItems.filter(
-                (item: any) => item.name !== itemName && item.id !== itemName
+                (item: any) => item.name !== itemName && item.id !== itemName && item.race !== itemName
             );
             newItems.push(updatedItem);
 
