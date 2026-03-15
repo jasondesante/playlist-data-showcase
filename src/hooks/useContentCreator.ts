@@ -176,6 +176,28 @@ export type ContentType =
     | 'classStartingEquipment';
 
 /**
+ * Categories that store items as strings (not objects).
+ * These categories don't have name/id properties - the item IS the string.
+ */
+const STRING_BASED_CATEGORIES: ContentType[] = [
+    'races',
+    'classes',
+    'appearance.bodyTypes',
+    'appearance.skinTones',
+    'appearance.hairColors',
+    'appearance.hairStyles',
+    'appearance.eyeColors',
+    'appearance.facialFeatures'
+];
+
+/**
+ * Check if a category stores items as strings.
+ */
+function isStringBasedCategory(category: ContentType): boolean {
+    return STRING_BASED_CATEGORIES.includes(category);
+}
+
+/**
  * Generic content item type - represents any content that can be registered.
  * Uses a permissive type to accept various structured objects (Equipment, Spell, etc.)
  * while still allowing generic type inference for return types.
@@ -197,7 +219,7 @@ export interface ContentValidationResult {
 /**
  * Result of a content creation operation.
  */
-export interface ContentCreationResult<T extends ContentItem = ContentItem> {
+export interface ContentCreationResult<T extends ContentItem | string = ContentItem> {
     /** Whether the operation was successful */
     success: boolean;
     /** Success message */
@@ -243,7 +265,7 @@ export interface ContentRegistrationOptions {
 /**
  * Callback functions for content creation events.
  */
-export interface ContentCreatorCallbacks<T extends ContentItem = ContentItem> {
+export interface ContentCreatorCallbacks<T extends ContentItem | string = ContentItem> {
     /** Called when content is successfully created and registered */
     onSuccess?: (item: T, category: ContentType) => void;
     /** Called when content creation fails */
@@ -276,12 +298,12 @@ export interface UseContentCreatorReturn {
     /**
      * Create and register content in one operation.
      * @param category - The category to register to
-     * @param item - The item to create
+     * @param item - The item to create (object for most categories, string for appearance/races/classes)
      * @param options - Registration options
      * @param callbacks - Optional callbacks for success/error
      * @returns Creation result
      */
-    createContent: <T extends ContentItem>(
+    createContent: <T extends ContentItem | string = ContentItem>(
         category: ContentType,
         item: T,
         options?: ContentRegistrationOptions,
@@ -368,7 +390,20 @@ export interface UseContentCreatorReturn {
  * Delegates to the centralized contentValidation utility.
  * Returns validation result with any errors found.
  */
-function validateContentForCategory(category: ContentType, item: ContentItem): ContentValidationResult {
+function validateContentForCategory(category: ContentType, item: ContentItem | string): ContentValidationResult {
+    // For string-based categories (appearance, races, classes), strings are valid
+    if (typeof item === 'string') {
+        // Basic validation for strings
+        if (item.trim().length === 0) {
+            return {
+                valid: false,
+                errors: ['Value cannot be empty'],
+                warnings: []
+            };
+        }
+        return { valid: true, errors: [], warnings: [] };
+    }
+
     // Use the centralized validation utility with reference and business rule validation enabled
     const result = validateContent(category as ContentCategory, item as ValidatedContentItem, {
         validateReferences: true,
@@ -384,8 +419,14 @@ function validateContentForCategory(category: ContentType, item: ContentItem): C
 
 /**
  * Mark an item as custom by adding source: 'custom'.
+ * For string items, returns the string as-is (strings don't need marking).
  */
-function markAsCustom<T extends ContentItem>(item: T): T {
+function markAsCustom(item: ContentItem | string): ContentItem | string {
+    // Strings don't need to be marked as custom - they're inherently custom
+    if (typeof item === 'string') {
+        return item;
+    }
+    // For objects, add source: 'custom'
     return {
         ...item,
         source: 'custom'
@@ -467,13 +508,23 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 // Filter to only custom items (have source: 'custom') and don't already exist
                 // This prevents restoring default/magic items that were incorrectly cached
                 const existingItems = manager.get(category as any);
+
+                // For string categories, build a Set of existing string values directly
+                // For object categories, build Sets of name and id properties
+                const isStringCategory = isStringBasedCategory(category);
+                const existingStrings = isStringCategory
+                    ? new Set(existingItems.filter((item: any) => typeof item === 'string'))
+                    : new Set<string>();
                 const existingNames = new Set(existingItems.map((item: any) => item?.name).filter(Boolean));
                 const existingIds = new Set(existingItems.map((item: any) => item?.id).filter(Boolean));
 
                 const itemsToRestore = items.filter(item => {
                     if (typeof item === 'string') {
-                        // String categories (races, classes) - check if not already existing
-                        return !existingNames.has(item);
+                        // String categories (appearance, races, classes) - check if not already existing
+                        // Use existingStrings for string categories, existingNames for object categories
+                        return isStringCategory
+                            ? !existingStrings.has(item)
+                            : !existingNames.has(item);
                     }
                     const itemObj = item as any;
                     const name = itemObj?.name;
@@ -533,7 +584,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
     /**
      * Create and register content in one operation.
      */
-    const createContent = useCallback(<T extends ContentItem>(
+    const createContent = useCallback(<T extends ContentItem | string = ContentItem>(
         category: ContentType,
         item: T,
         options: ContentRegistrationOptions = {},
@@ -555,9 +606,9 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         setLastError(null);
 
         try {
-            // Validate if requested
-            if (validate) {
-                const validation = validateContentForCategory(category, item);
+            // Validate if requested (skip for strings)
+            if (validate && typeof item !== 'string') {
+                const validation = validateContentForCategory(category, item as ContentItem);
                 if (!validation.valid) {
                     const errorMsg = `Validation failed: ${validation.errors.join(', ')}`;
                     setLastError(errorMsg);
@@ -574,8 +625,43 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 }
             }
 
-            // Mark as custom if requested
-            const itemToRegister = shouldMarkAsCustom ? markAsCustom(item) : item;
+            // For string items, validate and check for duplicates
+            if (typeof item === 'string') {
+                // Basic string validation
+                if (item.trim().length === 0) {
+                    const errorMsg = 'Value cannot be empty';
+                    setLastError(errorMsg);
+                    onValidationFailed?.([errorMsg], []);
+                    logger.warn('ContentCreator', `Empty string for ${category}`);
+                    return {
+                        success: false,
+                        error: errorMsg,
+                        category
+                    };
+                }
+
+                // Check for duplicates directly using manager.get()
+                const existingItems = manager.get(category as any);
+                if (isStringBasedCategory(category)) {
+                    // For string categories, check if string already exists
+                    if (existingItems.some((existing: any) => existing === item)) {
+                        const errorMsg = `Item "${item}" already exists in ${category}`;
+                        setLastError(errorMsg);
+                        onValidationFailed?.([errorMsg], []);
+                        logger.warn('ContentCreator', `Duplicate item for ${category}: ${item}`);
+                        return {
+                            success: false,
+                            error: errorMsg,
+                            category
+                        };
+                    }
+                }
+            }
+
+            // Mark as custom if requested (only for objects, strings are stored as-is)
+            const itemToRegister = (shouldMarkAsCustom && typeof item !== 'string')
+                ? markAsCustom(item as ContentItem)
+                : item;
 
             // Build registration options
             const registerOptions: { validate: boolean; mode?: SpawnMode; weights?: Record<string, number> } = {
@@ -589,29 +675,33 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             }
 
             // Register with ExtensionManager
-            manager.register(category as any, [itemToRegister], registerOptions);
+            manager.register(category as any, [itemToRegister] as any[], registerOptions);
 
             // Update state
-            setLastCreatedItem(itemToRegister);
+            if (typeof itemToRegister !== 'string') {
+                setLastCreatedItem(itemToRegister as ContentItem);
+            }
             setLastCreatedCategory(category);
 
             // Update custom content cache for localStorage persistence
             addToCustomContentCache(category, itemToRegister);
 
             // Log success
-            const itemName = (itemToRegister.name || itemToRegister.id || 'unknown') as string;
+            const itemName = typeof itemToRegister === 'string'
+                ? itemToRegister
+                : ((itemToRegister as ContentItem).name || (itemToRegister as ContentItem).id || 'unknown');
             logger.info('ContentCreator', `Created ${category} item: ${itemName}`);
 
             // Notify data change
             notifyDataChanged();
 
             // Call success callback
-            onSuccess?.(itemToRegister, category);
+            onSuccess?.(itemToRegister as T, category);
 
             return {
                 success: true,
                 message: `Created ${itemName} in ${category}`,
-                item: itemToRegister,
+                item: itemToRegister as T,
                 category
             };
         } catch (error) {
@@ -674,9 +764,9 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             }
 
             // Mark all items as custom if requested
-            const itemsToRegister = shouldMarkAsCustom
+            const itemsToRegister = (shouldMarkAsCustom
                 ? items.map(markAsCustom)
-                : items;
+                : items) as T[];
 
             // Build registration options
             const registerOptions: { validate: boolean; mode?: SpawnMode; weights?: Record<string, number> } = {
@@ -1013,11 +1103,22 @@ export const useContentCreator = (): UseContentCreatorReturn => {
 
     /**
      * Check if an item with the given name exists in the category.
+     * For string-based categories (appearance, races, classes), compares directly.
+     * For object categories, checks name or id properties.
      */
     const itemExists = useCallback((category: ContentType, itemName: string): boolean => {
         try {
-            const items = manager.get(category as any) as ContentItem[];
-            return items.some(
+            const items = manager.get(category as any);
+
+            // Handle string-based categories (appearance, races, classes)
+            if (isStringBasedCategory(category)) {
+                const stringItems = items as string[];
+                return stringItems.some(item => item === itemName);
+            }
+
+            // Handle object categories - check name or id
+            const objectItems = items as ContentItem[];
+            return objectItems.some(
                 (item: any) => item.name === itemName || item.id === itemName
             );
         } catch {

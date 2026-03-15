@@ -609,7 +609,8 @@ export const useDataViewer = (): UseDataViewerReturn => {
             logger.error('DataViewer', 'Failed to load appearance data', errorMessage);
             return [];
         }
-    }, []);
+        // Include lastDataChange as dependency to re-compute when custom appearance items are added
+    }, [lastDataChange]);
 
     /**
      * Calculate data counts

@@ -204,13 +204,12 @@ export function AppearanceOptionCreator({
     setIsSubmitting(true);
 
     try {
-      // For appearance options, we register the string value directly
-      const contentItem = { value: currentValue };
-
+      // For appearance options, we register the string value directly (not wrapped in an object)
+      // The ExtensionManager expects strings for appearance categories
       const result = createContent(
         selectedCategory,
-        contentItem,
-        { validate: true },
+        currentValue, // Pass string directly, not wrapped in object
+        { validate: true, markAsCustom: false }, // Don't add source: 'custom' to strings
         {
           onSuccess: () => {
             // Reset form on success
