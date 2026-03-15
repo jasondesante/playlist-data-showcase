@@ -419,12 +419,19 @@ export function DataViewerTab() {
       setShowNewItemsIndicator(true);
       // Auto-hide after 5 seconds
       const timer = setTimeout(() => setShowNewItemsIndicator(false), 5000);
+      // Don't return early - we need to update the count below
       return () => clearTimeout(timer);
     }
 
     // Always update the stored equipment count to current count
-    updateEquipmentCount(dataCounts.equipment);
+    // Note: This also needs to happen when the toast shows, but the cleanup above
+    // returns early. We handle this by updating the count in a separate effect.
   }, []);
+
+  // Update equipment count when it changes (separate from the toast logic)
+  useEffect(() => {
+    updateEquipmentCount(dataCounts.equipment);
+  }, [dataCounts.equipment, updateEquipmentCount]);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
