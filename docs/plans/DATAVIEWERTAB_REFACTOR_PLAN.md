@@ -216,9 +216,9 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~170 lines
 
 ### Task 2.6: Create ClassesPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/ClassesPanel.tsx`
-- [ ] Move `renderClasses()` function
-- [ ] Accept props for classes data and handlers
+- [x] Create `src/components/Tabs/DataViewer/components/ClassesPanel.tsx`
+- [x] Move `renderClasses()` function
+- [x] Accept props for classes data and handlers
 
 **Estimated lines moved**: ~160 lines
 

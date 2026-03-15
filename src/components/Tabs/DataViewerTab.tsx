@@ -50,7 +50,6 @@ import {
   ChevronDown,
   ChevronUp,
   Zap,
-  Target,
   RefreshCw,
   Award,
   User,
@@ -83,7 +82,6 @@ import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment
 import {
   RARITY_COLORS,
   RARITY_BG_COLORS,
-  ABILITY_COLORS,
   CATEGORY_CONFIG,
   getPropertyTypeConfig
 } from './DataViewer/constants';
@@ -102,6 +100,7 @@ import { SkillsPanel } from './DataViewer/components/SkillsPanel';
 import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
 import { RacialTraitsPanel } from './DataViewer/components/RacialTraitsPanel';
 import { RacesPanel } from './DataViewer/components/RacesPanel';
+import { ClassesPanel } from './DataViewer/components/ClassesPanel';
 
 export function DataViewerTab() {
   const {
@@ -687,163 +686,6 @@ export function DataViewerTab() {
       </div>
     );
   };
-
-  // Render classes
-  // Phase 6.2: Added Create Class button
-  // Phase 6.3: Added Configure Class button
-  const renderClasses = () => (
-    <div className="dataviewer-list">
-      {/* Class Creation Header (Phase 6.2) */}
-      <div className="dataviewer-section-header">
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setShowClassCreator(true)}
-          leftIcon={Plus}
-        >
-          Create Class
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowClassConfig(true)}
-          leftIcon={Settings}
-        >
-          Configure Class
-        </Button>
-      </div>
-
-      <div className="dataviewer-grid">
-        {(getFilteredData as ClassDataEntry[]).map((cls, index) => {
-          const className = cls.name || `Class-${index}`;
-          const isExpanded = expandedItems.has(className);
-          const hasImage = cls.image || cls.icon;
-          const isCustom = checkIsCustomItem('classes', className);
-
-          return (
-            <div key={className} className="dataviewer-card">
-              <div
-                className="dataviewer-card-header"
-                onClick={() => toggleExpanded(className)}
-              >
-                <div className="dataviewer-card-header-content">
-                  {/* Class image/icon thumbnail */}
-                  {hasImage ? (
-                    <div className="dataviewer-card-thumbnail">
-                      <ArweaveImage
-                        src={cls.image || cls.icon || ''}
-                        alt={className}
-                        width={32}
-                        height={32}
-                        showShimmer={true}
-                        fallback={
-                          <div className="dataviewer-card-thumbnail-fallback">
-                            <Zap size={16} />
-                          </div>
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <Zap size={18} className="dataviewer-card-icon" />
-                  )}
-                  <span className="dataviewer-card-title">{className}</span>
-                </div>
-                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </div>
-
-              <div className="dataviewer-card-meta">
-                <span className="dataviewer-card-stat">
-                  <Target size={14} />
-                  Hit Die: d{cls.hit_die}
-                </span>
-                {cls.is_spellcaster && (
-                  <span className="dataviewer-card-stat dataviewer-card-stat-spellcaster">
-                    <Sparkles size={14} />
-                    Spellcaster
-                  </span>
-                )}
-              </div>
-
-              {isExpanded && (
-                <div className="dataviewer-card-details">
-                  {/* Full-size class image when expanded */}
-                  {cls.image && (
-                    <div className="dataviewer-card-image">
-                      <ArweaveImage
-                        src={cls.image}
-                        alt={className}
-                        width={180}
-                        height={180}
-                        showShimmer={true}
-                        fallback={
-                          <div className="dataviewer-card-image-fallback">
-                            <Zap size={48} />
-                          </div>
-                        }
-                      />
-                    </div>
-                  )}
-                  {/* Class description */}
-                  {cls.description && (
-                    <div className="dataviewer-card-section">
-                      <div className="dataviewer-item-description">
-                        {cls.description}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="dataviewer-card-section">
-                    <span className="dataviewer-card-section-title">Primary Ability:</span>
-                    <span
-                      className="dataviewer-card-ability"
-                      style={{ color: ABILITY_COLORS[cls.primary_ability] }}
-                    >
-                      {cls.primary_ability}
-                    </span>
-                  </div>
-
-                  <div className="dataviewer-card-section">
-                    <span className="dataviewer-card-section-title">Saving Throws:</span>
-                    <div className="dataviewer-card-bonuses">
-                      {cls.saving_throws.map(save => (
-                        <span
-                          key={save}
-                          className="dataviewer-card-bonus"
-                          style={{ color: ABILITY_COLORS[save] }}
-                        >
-                          {save}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="dataviewer-card-section">
-                    <span className="dataviewer-card-section-title">Skill Choices:</span>
-                    <span className="dataviewer-card-text">
-                      Choose {cls.skill_count} from {cls.available_skills.length} skills
-                    </span>
-                  </div>
-                  {isCustom && (
-                    <div className="dataviewer-item-actions">
-                      <CustomContentBadge
-                        category="classes"
-                        itemName={className}
-                        onEdit={() => handleEditItem('classes', className)}
-                        onDelete={() => handleDeleteItem('classes', className)}
-                        onDuplicate={() => handleDuplicateItem('classes', className)}
-                        showActions={true}
-                        size="sm"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
 
   /**
    * Render granted skills section for enhanced equipment
@@ -1576,7 +1418,17 @@ export function DataViewerTab() {
       case 'classes':
         return (
           <>
-            {renderClasses()}
+            <ClassesPanel
+              classes={getFilteredData as ClassDataEntry[]}
+              expandedItems={expandedItems}
+              toggleExpanded={toggleExpanded}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              onDuplicate={handleDuplicateItem}
+              checkIsCustomItem={checkIsCustomItem}
+              onCreateClass={() => setShowClassCreator(true)}
+              onConfigureClass={() => setShowClassConfig(true)}
+            />
             {renderSpawnModeControls()}
           </>
         );
