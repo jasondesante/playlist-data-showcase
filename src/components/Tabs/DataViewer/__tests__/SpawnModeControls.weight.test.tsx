@@ -70,6 +70,9 @@ vi.mock('@/hooks/useSpawnMode', () => ({
     exportSpawnConfig: vi.fn(() => ({})),
     importSpawnConfig: vi.fn(),
     version: 1,
+    // Global spawn mode functions
+    getGlobalMode: vi.fn(() => 'category'),
+    setGlobalMode: vi.fn(),
   }),
 }));
 

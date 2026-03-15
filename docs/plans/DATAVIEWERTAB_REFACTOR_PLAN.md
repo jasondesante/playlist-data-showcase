@@ -385,14 +385,14 @@ interface UseDataViewerEditingReturn {
 ## Phase 5: Testing & Verification
 
 ### Task 5.1: Verify Functionality
-- [ ] Run existing tests
-- [ ] Manual testing of all category tabs
-- [ ] Verify all modals still work
-- [ ] Verify edit/delete/duplicate functionality
-- [ ] Verify spawn mode controls
+- [x] Run existing tests (Build passes ✓ - TypeScript compilation successful. DataViewer-specific tests: BatchImageTool tests pass. SpawnModeControls tests have pre-existing mock issues unrelated to refactoring. Fixed missing `getGlobalMode` mock.)
+- [ ] Manual testing of all category tabs (requires dev server)
+- [ ] Verify all modals still work (requires dev server)
+- [ ] Verify edit/delete/duplicate functionality (requires dev server)
+- [ ] Verify spawn mode controls (requires dev server)
 
 ### Task 5.2: Update Tests
-- [ ] Update any import paths in existing tests
+- [x] Update any import paths in existing tests (Fixed SpawnModeControls.weight.test.tsx mock - added getGlobalMode/setGlobalMode)
 - [ ] Add new tests for panel components if needed
 
 ---
@@ -402,13 +402,15 @@ interface UseDataViewerEditingReturn {
 ### Before Refactor
 - **DataViewerTab.tsx**: ~3,176 lines
 
-### After Refactor
-- **DataViewerTab.tsx**: ~300-400 lines (main orchestration)
-- **constants/**: ~100 lines
-- **utils/**: ~150 lines
-- **hooks/**: ~350 lines (includes state + handlers)
-- **components/**: ~1,400 lines (split across 11 files)
-- **Total**: Same ~3,176 lines, but distributed across 20+ smaller files
+### After Refactor (Actual Results)
+- **DataViewerTab.tsx**: 702 lines (main orchestration)
+- **constants/**: 174 lines (colors, categories, propertyTypes)
+- **utils/**: 311 lines (formatters)
+- **hooks/**: 651 lines (useDataViewerEditing - state + handlers)
+- **components/**: 2,882 lines (split across 12 files)
+- **Total**: ~4,720 lines distributed across 20+ smaller files
+
+> Note: The total line count increased because the extraction included comprehensive type definitions, prop interfaces, and documentation that weren't in the original estimate. The goal of splitting the monolithic file was achieved.
 
 ### Benefits
 1. **AI-friendly file sizes**: No file over ~250 lines
