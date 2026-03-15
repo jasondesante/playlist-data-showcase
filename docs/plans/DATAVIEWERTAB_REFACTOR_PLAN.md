@@ -200,10 +200,10 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~130 lines
 
 ### Task 2.4: Create RacialTraitsPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/RacialTraitsPanel.tsx`
-- [ ] Move `renderRacialTraits()` function
-- [ ] Move `renderPrerequisites()` helper
-- [ ] Accept props for grouped traits and handlers
+- [x] Create `src/components/Tabs/DataViewer/components/RacialTraitsPanel.tsx`
+- [x] Move `renderRacialTraits()` function
+- [x] Move `renderPrerequisites()` helper
+- [x] Accept props for grouped traits and handlers
 
 **Estimated lines moved**: ~150 lines
 

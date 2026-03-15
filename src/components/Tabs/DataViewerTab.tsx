@@ -61,7 +61,6 @@ import { useDataViewer, type DataCategory, type RaceDataEntry, type ClassDataEnt
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
-import { EffectList, type FeatureEffect } from '../ui/EffectDisplay';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import { logger } from '../../utils/logger';
 import { showToast } from '../ui/Toast';
@@ -81,7 +80,7 @@ import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
 import { Plus, X, Swords, Edit2, Trash2 } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
-import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, FeaturePrerequisite } from 'playlist-data-engine';
+import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 import {
   RARITY_COLORS,
   RARITY_BG_COLORS,
@@ -95,7 +94,6 @@ import {
   formatAbilityBonus,
   formatSpawnWeight,
   formatCondition,
-  formatPrerequisites,
   formatSpellLevelShort,
   formatSpellUses,
   isColorOption,
@@ -104,6 +102,7 @@ import {
 import { SpellsPanel } from './DataViewer/components/SpellsPanel';
 import { SkillsPanel } from './DataViewer/components/SkillsPanel';
 import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
+import { RacialTraitsPanel } from './DataViewer/components/RacialTraitsPanel';
 
 export function DataViewerTab() {
   const {
@@ -686,165 +685,6 @@ export function DataViewerTab() {
             </select>
           </div>
         )}
-      </div>
-    );
-  };
-
-  /**
-   * Render prerequisites section for racial traits
-   *
-   * Task 5.2: Racial Trait Effects Display
-   *
-   * @param prerequisites - The prerequisites to render
-   */
-  const renderPrerequisites = (prerequisites: FeaturePrerequisite | undefined) => {
-    const prereqStrings = formatPrerequisites(prerequisites);
-    if (prereqStrings.length === 0) return null;
-
-    return (
-      <div className="dataviewer-item-section">
-        <span className="dataviewer-item-section-title">Prerequisites:</span>
-        <div className="dataviewer-item-tags">
-          {prereqStrings.map((prereq, idx) => (
-            <span key={idx} className="dataviewer-tag dataviewer-tag-condition">
-              {prereq}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Render racial traits grouped by race
-  // Task 5.2: Updated to show trait effects, description, and prerequisites when expanded
-  // Phase 5.4: Added Create Trait button
-  // Phase 5.4 (updated): Now uses modal pattern
-  const renderRacialTraits = () => {
-    const grouped = groupRacialTraitsByRace(getFilteredData as RacialTrait[]);
-    const raceNames = Object.keys(grouped).sort();
-
-    return (
-      <div className="dataviewer-list">
-        {/* Racial Trait Creation Header (Phase 5.4) */}
-        <div className="dataviewer-section-header">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowRacialTraitCreator(true)}
-            leftIcon={Plus}
-          >
-            Create Trait
-          </Button>
-        </div>
-
-        <div className="dataviewer-grouped-list">
-          {raceNames.map(raceName => (
-            <div key={raceName} className="dataviewer-group">
-              <div className="dataviewer-group-header">
-                <span className="dataviewer-group-title">{raceName}</span>
-                <span className="dataviewer-group-count">({grouped[raceName].length})</span>
-              </div>
-              <div className="dataviewer-group-items">
-                {grouped[raceName].map(trait => {
-                  const isExpanded = expandedItems.has(trait.id);
-                  const hasEffects = trait.effects && trait.effects.length > 0;
-                  const hasDescription = trait.description && trait.description.length > 0;
-                  const hasPrerequisites = trait.prerequisites && formatPrerequisites(trait.prerequisites).length > 0;
-                  const hasImage = trait.image || trait.icon;
-                  const isExpandable = hasEffects || hasDescription || hasPrerequisites || hasImage;
-                  const isCustom = checkIsCustomItem('racialTraits', trait.name);
-
-                  return (
-                    <div
-                      key={trait.id}
-                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => isExpandable && toggleExpanded(trait.id)}
-                    >
-                      <div className="dataviewer-group-item-header">
-                        {/* Trait image/icon thumbnail */}
-                        {hasImage && (
-                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
-                            <ArweaveImage
-                              src={trait.image || trait.icon || ''}
-                              alt={trait.name}
-                              width={28}
-                              height={28}
-                              showShimmer={true}
-                              fallback={
-                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
-                                  <Users size={14} />
-                                </div>
-                              }
-                            />
-                          </div>
-                        )}
-                        <span className="dataviewer-group-item-name">{trait.name}</span>
-                        <div className="dataviewer-item-badges">
-                          {trait.subrace && (
-                            <span className="dataviewer-badge dataviewer-badge-small dataviewer-badge-subrace">
-                              {trait.subrace}
-                            </span>
-                          )}
-                          {isExpandable && (
-                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                          )}
-                        </div>
-                      </div>
-                      {isExpanded && (
-                        <div className="dataviewer-group-item-details">
-                          {/* Full-size trait image when expanded */}
-                          {trait.image && (
-                            <div className="dataviewer-item-image">
-                              <ArweaveImage
-                                src={trait.image}
-                                alt={trait.name}
-                                width={150}
-                                height={150}
-                                showShimmer={true}
-                                fallback={
-                                  <div className="dataviewer-item-image-fallback">
-                                    <Users size={36} />
-                                  </div>
-                                }
-                              />
-                            </div>
-                          )}
-                          {trait.description && (
-                            <div className="dataviewer-item-description">
-                              {trait.description}
-                            </div>
-                          )}
-                          {renderPrerequisites(trait.prerequisites)}
-                          {/* Task 5.3: Using reusable EffectsList component */}
-                          <div className="dataviewer-item-section">
-                            <EffectList
-                              effects={(trait.effects || []) as FeatureEffect[]}
-                              compact
-                              showStacking
-                            />
-                          </div>
-                          {isCustom && (
-                            <div className="dataviewer-item-actions">
-                              <CustomContentBadge
-                                category="racialTraits"
-                                itemName={trait.name}
-                                  onEdit={() => handleEditItem('racialTraits', trait.name)}
-                                  onDelete={() => handleDeleteItem('racialTraits', trait.name)}
-                                  onDuplicate={() => handleDuplicateItem('racialTraits', trait.name)}
-                                showActions={true}
-                                size="sm"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     );
   };
@@ -1979,10 +1819,18 @@ export function DataViewerTab() {
         );
       case 'racialTraits':
         return (
-          <>
-            {renderRacialTraits()}
-            {renderSpawnModeControls()}
-          </>
+          <RacialTraitsPanel
+            racialTraits={getFilteredData as RacialTrait[]}
+            groupRacialTraitsByRace={groupRacialTraitsByRace}
+            expandedItems={expandedItems}
+            toggleExpanded={toggleExpanded}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onDuplicate={handleDuplicateItem}
+            checkIsCustomItem={checkIsCustomItem}
+            onCreateTrait={() => setShowRacialTraitCreator(true)}
+            renderSpawnModeControls={renderSpawnModeControls}
+          />
         );
       case 'races':
         return (
