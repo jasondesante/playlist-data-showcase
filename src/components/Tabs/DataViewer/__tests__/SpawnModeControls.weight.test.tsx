@@ -187,7 +187,8 @@ describe('SpawnModeControls Weight Editor', () => {
 
       render(<SpawnModeControls category="spells" />);
 
-      expect(screen.getByText(/items/)).toBeInTheDocument();
+      // Use more specific selector - look for the count badge specifically
+      expect(screen.getByText('2 items')).toBeInTheDocument();
     });
 
     it('does not show weight editor when no weights exist', () => {
