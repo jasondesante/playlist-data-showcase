@@ -55,17 +55,14 @@ import {
   Zap,
   Target,
   RefreshCw,
-  TrendingUp,
   Award,
-  Flame,
-  Star,
   Eye,
   Palette,
   User,
   Smile,
   Settings
 } from 'lucide-react';
-import { useDataViewer, type DataCategory, type DataCounts, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, isEnhancedEquipment } from '../../hooks/useDataViewer';
+import { useDataViewer, type DataCategory, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, isEnhancedEquipment } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
@@ -90,121 +87,15 @@ import { Plus, X, Swords, Edit2, Trash2 } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
-
-/**
- * Spell school color mapping
- */
-const SCHOOL_COLORS: Record<string, string> = {
-  'Abjuration': 'hsl(210 80% 50%)',      // Blue
-  'Conjuration': 'hsl(120 60% 40%)',     // Green
-  'Divination': 'hsl(270 60% 50%)',      // Purple
-  'Enchantment': 'hsl(300 60% 50%)',     // Magenta
-  'Evocation': 'hsl(0 70% 50%)',         // Red
-  'Illusion': 'hsl(180 60% 45%)',        // Cyan
-  'Necromancy': 'hsl(150 60% 30%)',      // Dark Green
-  'Transmutation': 'hsl(30 90% 50%)',    // Orange
-};
-
-/**
- * Spell school background colors
- */
-const SCHOOL_BG_COLORS: Record<string, string> = {
-  'Abjuration': 'hsl(210 80% 50% / 0.1)',
-  'Conjuration': 'hsl(120 60% 40% / 0.1)',
-  'Divination': 'hsl(270 60% 50% / 0.1)',
-  'Enchantment': 'hsl(300 60% 50% / 0.1)',
-  'Evocation': 'hsl(0 70% 50% / 0.1)',
-  'Illusion': 'hsl(180 60% 45% / 0.1)',
-  'Necromancy': 'hsl(150 60% 30% / 0.1)',
-  'Transmutation': 'hsl(30 90% 50% / 0.1)',
-};
-
-/**
- * Rarity color mapping
- */
-const RARITY_COLORS: Record<string, string> = {
-  'common': 'var(--color-text-secondary)',
-  'uncommon': 'hsl(120 60% 40%)',
-  'rare': 'hsl(210 80% 50%)',
-  'very_rare': 'hsl(270 60% 50%)',
-  'legendary': 'hsl(30 90% 50%)'
-};
-
-/**
- * Rarity background colors
- */
-const RARITY_BG_COLORS: Record<string, string> = {
-  'common': 'hsl(0 0% 50% / 0.1)',
-  'uncommon': 'hsl(120 60% 40% / 0.1)',
-  'rare': 'hsl(210 80% 50% / 0.1)',
-  'very_rare': 'hsl(270 60% 50% / 0.1)',
-  'legendary': 'hsl(30 90% 50% / 0.15)'
-};
-
-/**
- * Ability score color mapping
- */
-const ABILITY_COLORS: Record<string, string> = {
-  'STR': 'hsl(0 70% 50%)',      // Red
-  'DEX': 'hsl(120 60% 40%)',    // Green
-  'CON': 'hsl(30 90% 50%)',     // Orange
-  'INT': 'hsl(210 80% 50%)',    // Blue
-  'WIS': 'hsl(270 60% 50%)',    // Purple
-  'CHA': 'hsl(300 60% 50%)',    // Magenta
-};
-
-/**
- * Equipment property type configuration with icons
- * Maps property types to appropriate icons for visual identification
- *
- * Task 2.3: Property Icon System
- */
-const PROPERTY_TYPE_CONFIG: Record<string, { icon: typeof TrendingUp; label: string }> = {
-  'stat_bonus': { icon: TrendingUp, label: 'Stat Bonus' },
-  'skill_proficiency': { icon: Award, label: 'Skill' },
-  'ability_unlock': { icon: Sparkles, label: 'Ability' },
-  'passive_modifier': { icon: Shield, label: 'Passive' },
-  'damage_bonus': { icon: Flame, label: 'Damage' },
-  'special_property': { icon: Star, label: 'Special' },
-  // Fallback for unknown types
-  'default': { icon: Zap, label: 'Property' }
-};
-
-/**
- * Get property type configuration, with fallback to default
- *
- * Task 2.3: Property Icon System
- *
- * Returns the icon and label for a given property type, used to visually
- * identify different equipment property types in the UI.
- *
- * @param type - The property type string (e.g., 'stat_bonus', 'skill_proficiency')
- * @returns Configuration object with icon component and label string
- *
- * @example
- * const config = getPropertyTypeConfig('stat_bonus');
- * // Returns: { icon: TrendingUp, label: 'Stat Bonus' }
- *
- * const config = getPropertyTypeConfig('unknown_type');
- * // Returns: { icon: Zap, label: 'Property' } (default fallback)
- */
-function getPropertyTypeConfig(type: string) {
-  return PROPERTY_TYPE_CONFIG[type] || PROPERTY_TYPE_CONFIG['default'];
-}
-
-/**
- * Category configuration with icons and labels
- */
-const CATEGORY_CONFIG: Record<DataCategory, { label: string; icon: typeof Database; countKey: keyof DataCounts }> = {
-  spells: { label: 'Spells', icon: Scroll, countKey: 'spells' },
-  skills: { label: 'Skills', icon: Target, countKey: 'skills' },
-  classFeatures: { label: 'Class Features', icon: Sword, countKey: 'classFeatures' },
-  racialTraits: { label: 'Racial Traits', icon: Users, countKey: 'racialTraits' },
-  races: { label: 'Races', icon: Shield, countKey: 'races' },
-  classes: { label: 'Classes', icon: Zap, countKey: 'classes' },
-  equipment: { label: 'Equipment', icon: Package, countKey: 'equipment' },
-  appearance: { label: 'Appearance', icon: Eye, countKey: 'appearance' },
-};
+import {
+  SCHOOL_COLORS,
+  SCHOOL_BG_COLORS,
+  RARITY_COLORS,
+  RARITY_BG_COLORS,
+  ABILITY_COLORS,
+  CATEGORY_CONFIG,
+  getPropertyTypeConfig
+} from './DataViewer/constants';
 
 /**
  * Format level number to ordinal string

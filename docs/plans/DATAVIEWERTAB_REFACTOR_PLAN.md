@@ -138,19 +138,19 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 ## Phase 1: Extract Constants and Utilities
 
 ### Task 1.1: Create Constants Directory
-- [ ] Create `src/components/Tabs/DataViewer/constants/` directory
-- [ ] Create `colors.ts` with:
+- [x] Create `src/components/Tabs/DataViewer/constants/` directory
+- [x] Create `colors.ts` with:
   - `SCHOOL_COLORS`
   - `SCHOOL_BG_COLORS`
   - `RARITY_COLORS`
   - `RARITY_BG_COLORS`
   - `ABILITY_COLORS`
-- [ ] Create `categories.ts` with:
+- [x] Create `categories.ts` with:
   - `CATEGORY_CONFIG`
-- [ ] Create `propertyTypes.ts` with:
+- [x] Create `propertyTypes.ts` with:
   - `PROPERTY_TYPE_CONFIG`
   - `getPropertyTypeConfig()`
-- [ ] Create `index.ts` barrel export
+- [x] Create `index.ts` barrel export
 
 **Estimated lines moved**: ~100 lines
 
