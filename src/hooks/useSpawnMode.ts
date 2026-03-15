@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ExtensionManager } from 'playlist-data-engine';
 import { logger } from '@/utils/logger';
 import { useDataViewerStore, type SpawnMode as StoreSpawnMode } from '@/store/dataViewerStore';
+import { clearCustomContentForCategory, clearAllCustomContent } from './useContentCreator';
 
 /**
  * Spawn mode types for ExtensionManager content registration.
@@ -320,6 +321,8 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         try {
             // Reset ExtensionManager
             manager.reset(category as any);
+            // Clear custom content cache (localStorage persistence)
+            clearCustomContentForCategory(category as any);
             // Clear from store
             resetStoreSpawnMode(category);
             logger.info('SpawnMode', `Reset category ${category} to defaults`);
@@ -339,6 +342,8 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         try {
             // Reset ExtensionManager
             manager.resetAll();
+            // Clear all custom content cache (localStorage persistence)
+            clearAllCustomContent();
             // Clear all from store
             resetAllStoreSpawnModes();
             logger.info('SpawnMode', 'Reset all categories to defaults');

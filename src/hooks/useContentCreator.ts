@@ -17,8 +17,9 @@ const CUSTOM_CONTENT_STORAGE_KEY = 'playlist-data-showcase:custom-content';
 /**
  * Module-level custom content cache for persistence.
  * This ensures all hook instances share the same persisted state.
+ * Note: Some categories (races, classes) store strings, others store objects.
  */
-let customContentCache: Partial<Record<ContentType, ContentItem[]>> = {};
+let customContentCache: Partial<Record<ContentType, (ContentItem | string)[]>> = {};
 let isCacheLoaded = false;
 let isContentRestored = false;
 
@@ -54,7 +55,7 @@ function saveCustomContentToStorage(): void {
 /**
  * Add an item to the custom content cache and persist
  */
-function addToCustomContentCache(category: ContentType, item: ContentItem): void {
+function addToCustomContentCache(category: ContentType, item: ContentItem | string): void {
     if (!customContentCache[category]) {
         customContentCache[category] = [];
     }
@@ -65,7 +66,7 @@ function addToCustomContentCache(category: ContentType, item: ContentItem): void
 /**
  * Add multiple items to the custom content cache and persist
  */
-function addMultipleToCustomContentCache(category: ContentType, items: ContentItem[]): void {
+function addMultipleToCustomContentCache(category: ContentType, items: (ContentItem | string)[]): void {
     if (!customContentCache[category]) {
         customContentCache[category] = [];
     }
@@ -76,9 +77,31 @@ function addMultipleToCustomContentCache(category: ContentType, items: ContentIt
 /**
  * Update the custom content cache for a category and persist
  */
-function updateCustomContentCache(category: ContentType, items: ContentItem[]): void {
+function updateCustomContentCache(category: ContentType, items: (ContentItem | string)[]): void {
     customContentCache[category] = items;
     saveCustomContentToStorage();
+}
+
+/**
+ * Clear the custom content cache for a specific category and persist
+ * This is called when a category is reset to remove custom items from localStorage
+ */
+function clearCustomContentForCategory(category: ContentType): void {
+    if (customContentCache[category]) {
+        delete customContentCache[category];
+        saveCustomContentToStorage();
+        logger.info('ContentCreator', `Cleared custom content cache for ${category}`);
+    }
+}
+
+/**
+ * Clear all custom content from the cache and persist
+ * This is called when resetting all categories
+ */
+function clearAllCustomContent(): void {
+    customContentCache = {};
+    saveCustomContentToStorage();
+    logger.info('ContentCreator', 'Cleared all custom content cache');
 }
 
 /**
@@ -720,6 +743,61 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         setLastError(null);
 
         try {
+            // String categories store items as strings (race/class names)
+            const stringCategories: ContentType[] = ['races', 'classes'];
+
+            if (stringCategories.includes(category)) {
+                // For string categories, items are strings, not objects
+                const existingItems = manager.getCustom(category as any) as string[];
+                const itemExists = existingItems.includes(itemName);
+
+                if (!itemExists) {
+                    const errorMsg = `Item "${itemName}" not found in ${category}`;
+                    setLastError(errorMsg);
+                    logger.warn('ContentCreator', errorMsg);
+                    return {
+                        success: false,
+                        error: errorMsg,
+                        category
+                    };
+                }
+
+                // Filter out the deleted item (string comparison)
+                const remainingItems = existingItems.filter(item => item !== itemName);
+
+                // Re-register remaining items
+                manager.reset(category as any);
+                if (remainingItems.length > 0) {
+                    manager.register(category as any, remainingItems, { validate: false });
+                }
+
+                // Also delete from the corresponding .data category
+                const dataCategory = `${category}.data` as ContentType;
+                const existingDataItems = manager.getCustom(dataCategory as any) as ContentItem[];
+                const remainingDataItems = existingDataItems.filter(
+                    (item: any) => item.race !== itemName && item.name !== itemName && item.id !== itemName
+                );
+
+                manager.reset(dataCategory as any);
+                if (remainingDataItems.length > 0) {
+                    manager.register(dataCategory as any, remainingDataItems, { validate: false });
+                }
+
+                // Update custom content cache for localStorage persistence
+                updateCustomContentCache(category, remainingItems);
+                updateCustomContentCache(dataCategory, remainingDataItems);
+
+                logger.info('ContentCreator', `Deleted ${category} item: ${itemName}`);
+                notifyDataChanged();
+
+                return {
+                    success: true,
+                    message: `Deleted ${itemName} from ${category}`,
+                    category
+                };
+            }
+
+            // For object categories, use name/id comparison
             // Get existing custom items
             const existingItems = manager.getCustom(category as any) as ContentItem[];
             const itemToDelete = existingItems.find(
@@ -913,3 +991,9 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         clearLastCreated
     };
 };
+
+/**
+ * Export the clear functions for use by other modules (e.g., useSpawnMode)
+ * This allows external code to clear the custom content cache when resetting categories
+ */
+export { clearCustomContentForCategory, clearAllCustomContent };

@@ -14,6 +14,7 @@ import {
     type Equipment,
     type EnhancedEquipment,
     type Race,
+    type Class,
     ensureAppearanceDefaultsInitialized
 } from 'playlist-data-engine';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from './useSpawnMode';
@@ -347,22 +348,56 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, [featureQuery, lastDataChange]);
 
     /**
-     * Load all races from RACE_DATA
+     * Load all races from RACE_DATA + ExtensionManager custom races
      *
      * Task 4.1/4.2: Enhanced Subrace Display
      * Also loads subrace-specific data by querying FeatureQuery for each subrace's traits.
+     *
+     * Updated: Now merges default RACE_DATA with custom races from ExtensionManager.
+     * Custom races are registered via 'races' (string names) and 'races.data' (full data objects).
      */
     const races = useMemo(() => {
         try {
             const raceEntries: RaceDataEntry[] = [];
-            Object.entries(RACE_DATA).forEach(([name, data]) => {
+            const manager = ExtensionManager.getInstance();
+
+            // Get all race names (default + custom)
+            const allRaceNames = manager.get('races') as string[];
+
+            // Get custom race data for additional properties
+            const customRaceData = manager.getCustom('races.data') as Array<{
+                race: string;
+                ability_bonuses?: Partial<Record<'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA', number>>;
+                speed?: number;
+                traits?: string[];
+                subraces?: string[];
+                description?: string;
+                icon?: string;
+                image?: string;
+            }>;
+            const customRaceDataMap = new Map(customRaceData?.map(d => [d.race, d]) ?? []);
+
+            for (const raceName of allRaceNames) {
+                // Check if we have default data for this race
+                const defaultData = RACE_DATA[raceName as Race];
+
+                // Check if we have custom data for this race
+                const customData = customRaceDataMap.get(raceName);
+
+                // Merge default and custom data (custom takes precedence)
+                const data = customData || defaultData;
+
+                if (!data) continue;
+
                 const entry: RaceDataEntry = {
-                    name,
+                    name: raceName,
                     ability_bonuses: data.ability_bonuses || {},
                     speed: data.speed || 30,
                     traits: data.traits || [],
                     subraces: data.subraces,
-                    description: (data as any).description
+                    description: (data as any).description,
+                    icon: (data as any).icon,
+                    image: (data as any).image
                 };
 
                 // Task 4.2: Load subrace-specific data
@@ -372,7 +407,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
                     data.subraces.forEach(subraceName => {
                         try {
                             // Get subrace-specific traits from FeatureQuery
-                            const subraceTraits = featureQuery.getSubraceTraits(name as Race, subraceName);
+                            const subraceTraits = featureQuery.getSubraceTraits(raceName as Race, subraceName);
 
                             // Extract trait names for display
                             const traitNames = subraceTraits.map(trait => trait.name);
@@ -406,7 +441,7 @@ export const useDataViewer = (): UseDataViewerReturn => {
                 }
 
                 raceEntries.push(entry);
-            });
+            }
             return raceEntries;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
@@ -417,25 +452,61 @@ export const useDataViewer = (): UseDataViewerReturn => {
     }, [featureQuery, lastDataChange]);
 
     /**
-     * Load all classes from CLASS_DATA
+     * Load all classes from CLASS_DATA + ExtensionManager custom classes
+     *
+     * Updated: Now merges default CLASS_DATA with custom classes from ExtensionManager.
+     * Custom classes are registered via 'classes' (string names) and 'classes.data' (full data objects).
      *
      * Recomputes when lastDataChange changes (refresh triggered)
      */
     const classes = useMemo(() => {
         try {
             const classEntries: ClassDataEntry[] = [];
-            Object.entries(CLASS_DATA).forEach(([name, data]) => {
+            const manager = ExtensionManager.getInstance();
+
+            // Get all class names (default + custom)
+            const allClassNames = manager.get('classes') as string[];
+
+            // Get custom class data for additional properties
+            const customClassData = manager.getCustom('classes.data') as Array<{
+                name: string;
+                hit_die?: number;
+                primary_ability?: string;
+                saving_throws?: string[];
+                is_spellcaster?: boolean;
+                available_skills?: string[];
+                skill_count?: number;
+                description?: string;
+                icon?: string;
+                image?: string;
+            }>;
+            const customClassDataMap = new Map(customClassData?.map(d => [d.name, d]) ?? []);
+
+            for (const className of allClassNames) {
+                // Check if we have default data for this class
+                const defaultData = CLASS_DATA[className as Class];
+
+                // Check if we have custom data for this class
+                const customData = customClassDataMap.get(className);
+
+                // Merge default and custom data (custom takes precedence)
+                const data = customData || defaultData;
+
+                if (!data) continue;
+
                 classEntries.push({
-                    name,
+                    name: className,
                     hit_die: data.hit_die || 8,
                     primary_ability: data.primary_ability || '',
                     saving_throws: data.saving_throws || [],
                     is_spellcaster: data.is_spellcaster || false,
                     available_skills: data.available_skills || [],
                     skill_count: data.skill_count || 2,
-                    description: (data as any).description
+                    description: (data as any).description,
+                    icon: (data as any).icon,
+                    image: (data as any).image
                 });
-            });
+            }
             return classEntries;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);

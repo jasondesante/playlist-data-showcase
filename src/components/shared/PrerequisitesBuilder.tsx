@@ -23,7 +23,7 @@
  * @see docs/engine/docs/PREREQUISITES.md for prerequisite types reference
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Target,
   Plus,
@@ -147,6 +147,9 @@ export function PrerequisitesBuilder({
   const [expandedSections, setExpandedSections] = useState<Set<PrerequisiteType>>(new Set());
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [addDropdownOpen, setAddDropdownOpen] = useState(false);
+  
+  // Track if we're making internal changes to prevent sync effect from overwriting
+  const isInternalUpdate = useRef(false);
 
   // Load data from registry
   const loadRegistryData = useCallback(() => {
@@ -230,31 +233,40 @@ export function PrerequisitesBuilder({
     loadRegistryData();
   }, [loadRegistryData]);
 
-  // Sync with external value
+  // Sync with external value (only when not from internal update)
   useEffect(() => {
+    // Skip sync if this was triggered by our own internal update
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
     if (value && Object.keys(value).length > 0) {
       setPrerequisites(value);
     }
   }, [value]);
 
   // Get active prerequisite types
+  // Note: We check for !== undefined rather than truthiness so that newly added
+  // prerequisites show their UI sections even when they have empty default values.
   const activePrerequisiteTypes = useMemo(() => {
     const active: PrerequisiteType[] = [];
     if (prerequisites.level !== undefined) active.push('level');
-    if (prerequisites.abilities && Object.keys(prerequisites.abilities).length > 0) active.push('abilities');
-    if (prerequisites.class) active.push('class');
-    if (prerequisites.race) active.push('race');
-    if (prerequisites.subrace) active.push('subrace');
-    if (prerequisites.features && prerequisites.features.length > 0) active.push('features');
-    if (prerequisites.skills && prerequisites.skills.length > 0) active.push('skills');
-    if (prerequisites.spells && prerequisites.spells.length > 0) active.push('spells');
-    if (prerequisites.custom) active.push('custom');
+    if (prerequisites.abilities !== undefined) active.push('abilities');
+    if (prerequisites.class !== undefined) active.push('class');
+    if (prerequisites.race !== undefined) active.push('race');
+    if (prerequisites.subrace !== undefined) active.push('subrace');
+    if (prerequisites.features !== undefined) active.push('features');
+    if (prerequisites.skills !== undefined) active.push('skills');
+    if (prerequisites.spells !== undefined) active.push('spells');
+    if (prerequisites.custom !== undefined) active.push('custom');
     return active;
   }, [prerequisites]);
 
   // Notify parent of changes
   const handleChange = useCallback((newPrerequisites: Prerequisites) => {
     setPrerequisites(newPrerequisites);
+    // Mark this as an internal update so the sync effect doesn't overwrite our state
+    isInternalUpdate.current = true;
     // Filter out empty prerequisites before passing to parent
     const filteredPrereqs: Prerequisites = {};
     if (newPrerequisites.level !== undefined) filteredPrereqs.level = newPrerequisites.level;
