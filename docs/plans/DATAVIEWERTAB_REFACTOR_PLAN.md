@@ -252,8 +252,8 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~100 lines
 
 ### Task 2.10: Create Components Index
-- [ ] Create `src/components/Tabs/DataViewer/components/index.ts`
-- [ ] Export all panel components
+- [x] Create `src/components/Tabs/DataViewer/components/index.ts`
+- [x] Export all panel components
 
 ---
 
