@@ -103,6 +103,7 @@ import {
   getAppearanceIcon
 } from './DataViewer/utils';
 import { SpellsPanel } from './DataViewer/components/SpellsPanel';
+import { SkillsPanel } from './DataViewer/components/SkillsPanel';
 
 export function DataViewerTab() {
   const {
@@ -685,136 +686,6 @@ export function DataViewerTab() {
             </select>
           </div>
         )}
-      </div>
-    );
-  };
-
-  // Render skills grouped by ability
-  // Phase 4.3: Added SkillCreatorForm for custom skill creation
-  // Phase 4.1: Converted to modal pattern
-  const renderSkills = () => {
-    const grouped = groupSkillsByAbility(getFilteredData as CustomSkill[]);
-    const abilities = Object.keys(grouped).sort();
-
-    return (
-      <div className="dataviewer-list">
-        {/* Skill Creation Header */}
-        <div className="dataviewer-section-header">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowSkillCreator(true)}
-            leftIcon={Plus}
-          >
-            Create Skill
-          </Button>
-        </div>
-
-        {/* Skills List */}
-        <div className="dataviewer-grouped-list">
-          {abilities.map(ability => (
-            <div key={ability} className="dataviewer-group">
-              <div className="dataviewer-group-header">
-                <span
-                  className="dataviewer-group-title"
-                  style={{ color: ABILITY_COLORS[ability] || 'var(--color-text-primary)' }}
-                >
-                  {ability}
-                </span>
-                <span className="dataviewer-group-count">({grouped[ability].length})</span>
-              </div>
-              <div className="dataviewer-group-items">
-                {grouped[ability].map(skill => {
-                  const isExpanded = expandedItems.has(skill.id);
-                  const hasDescription = skill.description && skill.description.length > 0;
-                  const isCustom = checkIsCustomItem('skills', skill.name);
-                  const hasImage = skill.image || skill.icon;
-                  const isExpandable = hasDescription || isCustom || hasImage;
-
-                  return (
-                    <div
-                      key={skill.id}
-                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => isExpandable && toggleExpanded(skill.id)}
-                    >
-                      <div className="dataviewer-group-item-header">
-                        {/* Skill image/icon thumbnail */}
-                        {hasImage && (
-                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
-                            <ArweaveImage
-                              src={skill.image || skill.icon || ''}
-                              alt={skill.name}
-                              width={28}
-                              height={28}
-                              showShimmer={true}
-                              fallback={
-                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
-                                  <Target size={14} />
-                                </div>
-                              }
-                            />
-                          </div>
-                        )}
-                        <span className="dataviewer-group-item-name">{skill.name}</span>
-                        <div className="dataviewer-item-badges">
-                          {skill.categories && skill.categories.length > 0 && (
-                            <div className="dataviewer-group-item-tags">
-                              {skill.categories.map(cat => (
-                                <span key={cat} className="dataviewer-tag dataviewer-tag-small">{cat}</span>
-                              ))}
-                            </div>
-                          )}
-                          {isExpandable && (
-                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                          )}
-                        </div>
-                      </div>
-                      {isExpanded && isExpandable && (
-                        <div className="dataviewer-group-item-details">
-                          {/* Full-size skill image when expanded */}
-                          {skill.image && (
-                            <div className="dataviewer-item-image">
-                              <ArweaveImage
-                                src={skill.image}
-                                alt={skill.name}
-                                width={150}
-                                height={150}
-                                showShimmer={true}
-                                fallback={
-                                  <div className="dataviewer-item-image-fallback">
-                                    <Target size={36} />
-                                  </div>
-                                }
-                              />
-                            </div>
-                          )}
-                          {hasDescription && (
-                            <div className="dataviewer-item-description">
-                              {skill.description}
-                            </div>
-                          )}
-                          {isCustom && (
-                            <div className="dataviewer-item-actions">
-                              <CustomContentBadge
-                                category="skills"
-                                itemName={skill.name}
-                                onEdit={() => handleEditItem('skills', skill.name)}
-                                onDelete={() => handleDeleteItem('skills', skill.name)}
-                                onDuplicate={() => handleDuplicateItem('skills', skill.name)}
-                                showActions={true}
-                                size="sm"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     );
   };
@@ -2210,10 +2081,18 @@ export function DataViewerTab() {
         );
       case 'skills':
         return (
-          <>
-            {renderSkills()}
-            {renderSpawnModeControls()}
-          </>
+          <SkillsPanel
+            skills={getFilteredData as CustomSkill[]}
+            groupSkillsByAbility={groupSkillsByAbility}
+            expandedItems={expandedItems}
+            toggleExpanded={toggleExpanded}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onDuplicate={handleDuplicateItem}
+            checkIsCustomItem={checkIsCustomItem}
+            onCreateSkill={() => setShowSkillCreator(true)}
+            renderSpawnModeControls={renderSpawnModeControls}
+          />
         );
       case 'classFeatures':
         return (

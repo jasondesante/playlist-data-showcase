@@ -185,10 +185,10 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~120 lines
 
 ### Task 2.2: Create SkillsPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/SkillsPanel.tsx`
-- [ ] Move `renderSkills()` function and skill card rendering
-- [ ] Accept props for grouped skills and handlers
-- [ ] Import `ABILITY_COLORS` from constants
+- [x] Create `src/components/Tabs/DataViewer/components/SkillsPanel.tsx`
+- [x] Move `renderSkills()` function and skill card rendering
+- [x] Accept props for grouped skills and handlers
+- [x] Import `ABILITY_COLORS` from constants
 
 **Estimated lines moved**: ~130 lines
 
