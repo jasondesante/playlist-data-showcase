@@ -32,6 +32,11 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useContentCreator } from '@/hooks/useContentCreator';
 import { logger } from '@/utils/logger';
+import {
+  CLASS_SPELL_LISTS,
+  SPELL_SLOTS_BY_CLASS,
+  CLASS_STARTING_EQUIPMENT
+} from 'playlist-data-engine';
 import './ClassConfigForm.css';
 
 /**
@@ -177,6 +182,18 @@ export interface ClassConfigFormProps {
   initialTab?: ConfigTab;
   /** Available classes (custom classes) */
   availableClasses?: string[];
+  /** Full class data for pre-filling forms (from useDataViewer) */
+  classData?: Array<{
+    name: string;
+    hit_die: number;
+    primary_ability: string;
+    saving_throws: string[];
+    is_spellcaster: boolean;
+    available_skills: string[];
+    skill_count: number;
+    has_expertise?: boolean;
+    expertise_count?: number;
+  }>;
   /** Available skills */
   availableSkills?: string[];
   /** Available spells */
@@ -254,6 +271,7 @@ function getDefaultStartingEquipmentData(): StartingEquipmentFormData {
 export function ClassConfigForm({
   initialTab = 'skillLists',
   availableClasses,
+  classData,
   availableSkills,
   availableSpells = [],
   availableEquipment = [],
@@ -291,9 +309,31 @@ export function ClassConfigForm({
   // ========================================
 
   const handleSkillListClassChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSkillListData(prev => ({ ...prev, class: e.target.value }));
+    const selectedClass = e.target.value;
+
+    // Find class data for pre-filling
+    const cls = classData?.find(c => c.name === selectedClass);
+
+    if (cls) {
+      // Pre-fill with existing class data
+      setSkillListData({
+        class: selectedClass,
+        skillCount: cls.skill_count || 2,
+        availableSkills: cls.available_skills || [],
+        hasExpertise: cls.has_expertise || false,
+        expertiseCount: cls.expertise_count || 0,
+        skillWeights: {}
+      });
+      logger.debug('ClassConfigForm', `Pre-filled skill data for ${selectedClass}`);
+    } else {
+      // Reset to defaults if no existing data
+      setSkillListData({
+        ...getDefaultSkillListData(),
+        class: selectedClass
+      });
+    }
     setFormErrors([]);
-  }, []);
+  }, [classData]);
 
   const handleSkillCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10) || 0;
@@ -339,7 +379,26 @@ export function ClassConfigForm({
   // ========================================
 
   const handleSpellListClassChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSpellListData(prev => ({ ...prev, class: e.target.value }));
+    const selectedClass = e.target.value;
+
+    // Load existing spell list data from engine constants
+    const classSpellList = CLASS_SPELL_LISTS[selectedClass];
+
+    if (classSpellList) {
+      // Pre-fill with existing spell list data
+      setSpellListData({
+        class: selectedClass,
+        cantrips: classSpellList.cantrips || [],
+        spellsByLevel: classSpellList.spells_by_level ? { ...classSpellList.spells_by_level } : {}
+      });
+      logger.debug('ClassConfigForm', `Pre-filled spell list data for ${selectedClass}`);
+    } else {
+      // Reset to defaults if no existing data
+      setSpellListData({
+        ...getDefaultSpellListData(),
+        class: selectedClass
+      });
+    }
     setFormErrors([]);
   }, []);
 
@@ -375,7 +434,30 @@ export function ClassConfigForm({
   // ========================================
 
   const handleSpellSlotsClassChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSpellSlotsData(prev => ({ ...prev, class: e.target.value }));
+    const selectedClass = e.target.value;
+
+    // Load existing spell slot data from engine constants
+    const classSlots = SPELL_SLOTS_BY_CLASS[selectedClass];
+
+    if (classSlots) {
+      // Pre-fill with existing spell slot data
+      // Deep copy the slots data
+      const slotsCopy: Record<number, Record<number, number>> = {};
+      for (const [charLevel, spellLevels] of Object.entries(classSlots)) {
+        slotsCopy[parseInt(charLevel, 10)] = { ...spellLevels } as Record<number, number>;
+      }
+      setSpellSlotsData({
+        class: selectedClass,
+        slots: slotsCopy
+      });
+      logger.debug('ClassConfigForm', `Pre-filled spell slot data for ${selectedClass}`);
+    } else {
+      // Reset to defaults if no existing data
+      setSpellSlotsData({
+        ...getDefaultSpellSlotsData(),
+        class: selectedClass
+      });
+    }
     setFormErrors([]);
   }, []);
 
@@ -397,7 +479,27 @@ export function ClassConfigForm({
   // ========================================
 
   const handleEquipmentClassChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEquipmentData(prev => ({ ...prev, class: e.target.value }));
+    const selectedClass = e.target.value;
+
+    // Load existing starting equipment from engine constants
+    const classEquipment = CLASS_STARTING_EQUIPMENT[selectedClass];
+
+    if (classEquipment) {
+      // Pre-fill with existing equipment data
+      setEquipmentData({
+        class: selectedClass,
+        weapons: classEquipment.weapons || [],
+        armor: classEquipment.armor || [],
+        items: classEquipment.items || []
+      });
+      logger.debug('ClassConfigForm', `Pre-filled equipment data for ${selectedClass}`);
+    } else {
+      // Reset to defaults if no existing data
+      setEquipmentData({
+        ...getDefaultStartingEquipmentData(),
+        class: selectedClass
+      });
+    }
     setFormErrors([]);
   }, []);
 

@@ -32,8 +32,12 @@ function loadCustomContentFromStorage(): Partial<Record<ContentType, ContentItem
         if (stored) {
             const parsed = JSON.parse(stored);
             if (parsed && typeof parsed === 'object') {
+                const categoryCounts = Object.entries(parsed).map(([cat, items]: [string, any]) => `${cat}:${Array.isArray(items) ? items.length : 0}`);
+                logger.debug('ContentCreator', `Loaded from localStorage: ${categoryCounts.join(', ')}`);
                 return parsed;
             }
+        } else {
+            logger.debug('ContentCreator', 'No custom content found in localStorage');
         }
     } catch (error) {
         logger.warn('ContentCreator', 'Failed to load custom content from localStorage', error);
@@ -46,6 +50,8 @@ function loadCustomContentFromStorage(): Partial<Record<ContentType, ContentItem
  */
 function saveCustomContentToStorage(): void {
     try {
+        const categoryCounts = Object.entries(customContentCache).map(([cat, items]) => `${cat}:${items?.length ?? 0}`);
+        logger.debug('ContentCreator', `Saving to localStorage: ${categoryCounts.join(', ')}`);
         localStorage.setItem(CUSTOM_CONTENT_STORAGE_KEY, JSON.stringify(customContentCache));
     } catch (error) {
         logger.warn('ContentCreator', 'Failed to save custom content to localStorage', error);
@@ -54,23 +60,49 @@ function saveCustomContentToStorage(): void {
 
 /**
  * Add an item to the custom content cache and persist
+ * Only adds items that are marked as custom (source === 'custom') or strings (for string categories)
  */
 function addToCustomContentCache(category: ContentType, item: ContentItem | string): void {
-    if (!customContentCache[category]) {
-        customContentCache[category] = [];
+    // For string categories (races, classes), strings are valid
+    if (typeof item === 'string') {
+        if (!customContentCache[category]) {
+            customContentCache[category] = [];
+        }
+        customContentCache[category]!.push(item);
+        saveCustomContentToStorage();
+        return;
     }
-    customContentCache[category]!.push(item);
-    saveCustomContentToStorage();
+
+    // For object categories, only cache if marked as custom
+    const itemObj = item as any;
+    if (itemObj?.source === 'custom') {
+        if (!customContentCache[category]) {
+            customContentCache[category] = [];
+        }
+        customContentCache[category]!.push(item);
+        saveCustomContentToStorage();
+    } else {
+        logger.warn('ContentCreator', `Refusing to cache non-custom item: ${itemObj?.name || 'unknown'}`);
+    }
 }
 
 /**
  * Add multiple items to the custom content cache and persist
+ * Only adds items that are marked as custom (source === 'custom') or strings (for string categories)
  */
 function addMultipleToCustomContentCache(category: ContentType, items: (ContentItem | string)[]): void {
+    // Filter to only custom items
+    const customItems = items.filter(item => {
+        if (typeof item === 'string') return true;
+        return (item as any)?.source === 'custom';
+    });
+
+    if (customItems.length === 0) return;
+
     if (!customContentCache[category]) {
         customContentCache[category] = [];
     }
-    customContentCache[category]!.push(...items);
+    customContentCache[category]!.push(...customItems);
     saveCustomContentToStorage();
 }
 
@@ -423,17 +455,61 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         if (isContentRestored) return;
 
         const categories = Object.keys(customContentCache) as ContentType[];
+        logger.debug('ContentCreator', `Restoration check: ${categories.length} categories in cache`, { categories });
+
         let hasRestoredContent = false;
 
         categories.forEach(category => {
             const items = customContentCache[category];
             if (items && items.length > 0) {
-                try {
-                    manager.register(category as any, items, { validate: false });
-                    logger.info('ContentCreator', `Restored ${items.length} persisted ${category} items from localStorage`);
-                    hasRestoredContent = true;
-                } catch (error) {
-                    logger.warn('ContentCreator', `Failed to restore ${category} items from localStorage`, error);
+                logger.debug('ContentCreator', `Attempting to restore ${items.length} items for category ${category}`);
+
+                // Filter to only custom items (have source: 'custom') and don't already exist
+                // This prevents restoring default/magic items that were incorrectly cached
+                const existingItems = manager.get(category as any);
+                const existingNames = new Set(existingItems.map((item: any) => item?.name).filter(Boolean));
+                const existingIds = new Set(existingItems.map((item: any) => item?.id).filter(Boolean));
+
+                const itemsToRestore = items.filter(item => {
+                    if (typeof item === 'string') {
+                        // String categories (races, classes) - check if not already existing
+                        return !existingNames.has(item);
+                    }
+                    const itemObj = item as any;
+                    const name = itemObj?.name;
+                    const id = itemObj?.id;
+                    const source = itemObj?.source;
+
+                    // For object categories, only restore if:
+                    // 1. Item is marked as custom (source === 'custom')
+                    // 2. AND doesn't already exist by name or id
+                    const isCustom = source === 'custom';
+                    const alreadyExists = existingNames.has(name) || existingIds.has(id);
+
+                    if (!isCustom) {
+                        logger.debug('ContentCreator', `Skipping non-custom item: ${name}`);
+                    }
+
+                    return isCustom && !alreadyExists;
+                });
+
+                if (itemsToRestore.length > 0) {
+                    try {
+                        manager.register(category as any, itemsToRestore, { validate: false });
+                        logger.info('ContentCreator', `Restored ${itemsToRestore.length} persisted ${category} items from localStorage`);
+                        hasRestoredContent = true;
+                    } catch (error) {
+                        logger.warn('ContentCreator', `Failed to restore ${category} items from localStorage`, error);
+                    }
+                } else {
+                    logger.debug('ContentCreator', `No custom ${category} items to restore`);
+                }
+
+                // Clean up the cache to only include custom items that were restored
+                // This removes any non-custom items that were incorrectly cached
+                if (itemsToRestore.length !== items.length) {
+                    logger.debug('ContentCreator', `Cleaning up ${category} cache: ${items.length} -> ${itemsToRestore.length} items`);
+                    updateCustomContentCache(category, itemsToRestore);
                 }
             }
         });
@@ -442,6 +518,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
 
         // Notify useDataViewer to refresh its data if we restored any content
         if (hasRestoredContent) {
+            logger.debug('ContentCreator', 'Notifying data change after restoration');
             notifyDataChanged();
         }
     }, [manager, notifyDataChanged]);

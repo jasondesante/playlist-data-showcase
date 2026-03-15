@@ -5,7 +5,7 @@ import {
     FeatureQuery,
     DEFAULT_EQUIPMENT,
     RACE_DATA,
-    CLASS_DATA,
+    getClassData,
     ExtensionManager,
     type RegisteredSpell,
     type CustomSkill,
@@ -14,7 +14,6 @@ import {
     type Equipment,
     type EnhancedEquipment,
     type Race,
-    type Class,
     ensureAppearanceDefaultsInitialized
 } from 'playlist-data-engine';
 import { useSpawnMode, type SpawnMode, type SpawnCategory } from './useSpawnMode';
@@ -467,30 +466,9 @@ export const useDataViewer = (): UseDataViewerReturn => {
             // Get all class names (default + custom)
             const allClassNames = manager.get('classes') as string[];
 
-            // Get custom class data for additional properties
-            const customClassData = manager.getCustom('classes.data') as Array<{
-                name: string;
-                hit_die?: number;
-                primary_ability?: string;
-                saving_throws?: string[];
-                is_spellcaster?: boolean;
-                available_skills?: string[];
-                skill_count?: number;
-                description?: string;
-                icon?: string;
-                image?: string;
-            }>;
-            const customClassDataMap = new Map(customClassData?.map(d => [d.name, d]) ?? []);
-
             for (const className of allClassNames) {
-                // Check if we have default data for this class
-                const defaultData = CLASS_DATA[className as Class];
-
-                // Check if we have custom data for this class
-                const customData = customClassDataMap.get(className);
-
-                // Merge default and custom data (custom takes precedence)
-                const data = customData || defaultData;
+                // Use engine's getClassData which handles baseClass merging natively
+                const data = getClassData(className);
 
                 if (!data) continue;
 

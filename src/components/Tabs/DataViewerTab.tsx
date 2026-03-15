@@ -2881,6 +2881,7 @@ export function DataViewerTab() {
         width="lg"
       >
         <ClassConfigForm
+          classData={classes}
           onSave={(config) => {
             logger.info('DataViewer', `Saved class config: ${config.type} for ${config.data.class}`);
             setShowClassConfig(false);
