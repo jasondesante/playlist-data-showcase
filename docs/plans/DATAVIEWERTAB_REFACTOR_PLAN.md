@@ -393,7 +393,10 @@ interface UseDataViewerEditingReturn {
 
 ### Task 5.2: Update Tests
 - [x] Update any import paths in existing tests (Fixed SpawnModeControls.weight.test.tsx mock - added getGlobalMode/setGlobalMode)
-- [ ] Add new tests for panel components if needed
+- [x] Add new tests for panel components if needed
+  - Created `src/components/Tabs/DataViewer/components/__tests__/CategorySelector.test.tsx` (12 tests)
+  - Created `src/components/Tabs/DataViewer/components/__tests__/SpellFilters.test.tsx` (18 tests)
+  - Created `src/components/Tabs/DataViewer/components/__tests__/EquipmentFilters.test.tsx` (20 tests)
 
 ---
 
