@@ -13,31 +13,8 @@
  * - Rarity and school color coding
  * - Raw JSON dump for detailed data inspection
  *
- * ## Enhanced Equipment Display (Phase 1)
- * - Granted skills display with proficiency level (grantsSkills)
- * - Granted spells with level, uses, and recharge info (grantsSpells)
- * - Granted features (both registry references and inline) (grantsFeatures)
- * - Equipment tags display and filtering
- * - Spawn weight badges: Game-Only, Rare Spawn, Uncommon
- *
- * ## Conditional Properties (Phase 2)
- * - Inline condition formatting on equipment properties
- * - Property type icons: stat_bonus, skill_proficiency, ability_unlock, etc.
- * - Condition types: vs_creature_type, at_time_of_day, wielder_race/class, on_hit, etc.
- *
- * ## Subrace Display (Phase 4)
- * - Full subrace expansion with ability bonuses
- * - Subrace-specific traits list
- * - Subrace requirements display (e.g., ability minimums)
- *
- * ## Effects Viewer (Phase 5)
- * - Feature effects display with type, target, value, and condition
- * - Racial trait effects with prerequisites
- * - Reusable EffectsList component with stacking indicators
- *
  * @see docs/plans/DATAVIEWER_ENHANCEMENT_PLAN.md for implementation details
  * @see src/hooks/useDataViewer.ts for data fetching and filtering logic
- * @see src/components/ui/EffectDisplay.tsx for the reusable effects list component
  */
 
 import { useState, useMemo, useEffect } from 'react';
@@ -59,7 +36,6 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import { logger } from '../../utils/logger';
-import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm } from '../shared/EquipmentCreatorForm';
 import { SkillCreatorForm } from './DataViewer/forms/SkillCreatorForm';
@@ -69,24 +45,16 @@ import { RacialTraitCreatorForm } from './DataViewer/forms/RacialTraitCreatorFor
 import { RaceCreatorForm } from './DataViewer/forms/RaceCreatorForm';
 import { ClassCreatorForm } from './DataViewer/forms/ClassCreatorForm';
 import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
-import { Plus, Swords } from 'lucide-react';
+import { Swords } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 import { CATEGORY_CONFIG } from './DataViewer/constants';
-import { SpellsPanel } from './DataViewer/components/SpellsPanel';
-import { SkillsPanel } from './DataViewer/components/SkillsPanel';
-import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
-import { RacialTraitsPanel } from './DataViewer/components/RacialTraitsPanel';
-import { RacesPanel } from './DataViewer/components/RacesPanel';
-import { ClassesPanel } from './DataViewer/components/ClassesPanel';
-import { EquipmentPanel } from './DataViewer/components/EquipmentPanel';
-import { AppearancePanel } from './DataViewer/components/AppearancePanel';
-import { CategorySelector } from './DataViewer/components/CategorySelector';
-import { EquipmentFilters } from './DataViewer/components/EquipmentFilters';
+import { CategorySelector, ContentPanel } from './DataViewer/components';
 import { useDataViewerEditing } from './DataViewer/hooks/useDataViewerEditing';
 
 export function DataViewerTab() {
+  // Data viewer hook
   const {
     isLoading,
     error,
@@ -219,31 +187,20 @@ export function DataViewerTab() {
   useEffect(() => {
     markChangesViewed();
 
-    // Only show "new items" banner if:
-    // 1. lastEquipmentCount > 0 (meaning we've visited before and have a baseline)
-    // 2. The current count is greater than the last known count (actual increase)
     if (lastEquipmentCount > 0 && hasEquipmentCountIncreased(dataCounts.equipment)) {
       setShowNewItemsIndicator(true);
-      // Auto-hide after 5 seconds
       const timer = setTimeout(() => setShowNewItemsIndicator(false), 5000);
-      // Don't return early - we need to update the count below
       return () => clearTimeout(timer);
     }
-
-    // Always update the stored equipment count to current count
-    // Note: This also needs to happen when the toast shows, but the cleanup above
-    // returns early. We handle this by updating the count in a separate effect.
   }, []);
 
-  // Update equipment count when it changes (separate from the toast logic)
+  // Update equipment count when it changes
   useEffect(() => {
     updateEquipmentCount(dataCounts.equipment);
   }, [dataCounts.equipment, updateEquipmentCount]);
 
   // Get filtered data based on active category and filters
-  // Phase 2.2: Apply spawn mode filtering first, then apply search/category filters
-  const getFilteredData = useMemo(() => {
-    // First, apply spawn mode filtering (e.g., absolute mode shows only custom items)
+  const filteredData = useMemo(() => {
     const spawnFilteredData = getFilteredItems(activeCategory);
 
     switch (activeCategory) {
@@ -275,7 +232,6 @@ export function DataViewerTab() {
         if (equipmentRarityFilter !== 'all') {
           filtered = filterEquipmentByRarity(filtered, equipmentRarityFilter);
         }
-        // Task 3.4: Tag filtering logic
         if (equipmentTagFilter !== 'all') {
           filtered = filterEquipmentByTag(filtered, equipmentTagFilter);
         }
@@ -302,260 +258,6 @@ export function DataViewerTab() {
     filterEquipmentByRarity,
     filterEquipmentByTag
   ]);
-
-  // Render content based on active category
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="dataviewer-loading">
-          <RefreshCw size={32} className="dataviewer-loading-icon" />
-          <span>Loading data...</span>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="dataviewer-error">
-          <span className="dataviewer-error-title">Error loading data</span>
-          <span className="dataviewer-error-message">{error}</span>
-        </div>
-      );
-    }
-
-    // Get spawn mode for current category for SpawnModeControls
-    const currentSpawnMode = getSpawnModeForCategory(activeCategory);
-
-    // Calculate actual custom count for current category
-    // This is needed because manager.getInfo() doesn't track spells/skills/features correctly
-    const customCountForCategory = useMemo(() => {
-      switch (activeCategory) {
-        case 'spells':
-          return spells.filter(s => s.source === 'custom').length;
-        case 'skills':
-          return skills.filter(s => s.source === 'custom').length;
-        case 'classFeatures':
-          return classFeatures.filter(f => f.source === 'custom').length;
-        case 'racialTraits':
-          return racialTraits.filter(t => t.source === 'custom').length;
-        case 'equipment':
-          // Equipment uses ExtensionManager tracking
-          return undefined;
-        case 'races':
-        case 'classes':
-        case 'appearance':
-          // These use ExtensionManager tracking
-          return undefined;
-        default:
-          return undefined;
-      }
-    }, [activeCategory, spells, skills, classFeatures, racialTraits]);
-
-    // Render spawn mode controls for the current category
-    const renderSpawnModeControls = () => (
-      <div className="dataviewer-spawn-controls">
-        <SpawnModeControls
-          category={activeCategory as any}
-          categoryLabel={CATEGORY_CONFIG[activeCategory]?.label}
-          showWeightEditor={true}
-          showImportExport={true}
-          customCount={customCountForCategory}
-          onModeChange={(category, mode) => {
-            logger.info('DataViewer', `Spawn mode changed for ${category}: ${mode}`);
-            refreshData();
-          }}
-          onResetCategory={(category) => {
-            logger.info('DataViewer', `Category reset: ${category}`);
-            refreshData();
-          }}
-          onResetAll={() => {
-            logger.info('DataViewer', 'All categories reset');
-            refreshData();
-          }}
-        />
-      </div>
-    );
-
-    if (getFilteredData.length === 0) {
-      return (
-        <div className="dataviewer-empty">
-          <Database size={48} className="dataviewer-empty-icon" />
-          <span className="dataviewer-empty-title">No items found</span>
-          <span className="dataviewer-empty-message">
-            {currentSpawnMode === 'absolute'
-              ? 'No custom items in this category. Switch to "Relative" mode to see all items.'
-              : 'Try adjusting your search or filters'}
-          </span>
-          {renderSpawnModeControls()}
-        </div>
-      );
-    }
-
-    switch (activeCategory) {
-      case 'spells':
-        return (
-          <SpellsPanel
-            spells={getFilteredData as RegisteredSpell[]}
-            expandedItems={expandedItems}
-            toggleExpanded={toggleExpanded}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            onDuplicate={handleDuplicateItem}
-            checkIsCustomItem={checkIsCustomItem}
-            onCreateSpell={() => setShowSpellCreator(true)}
-            renderSpawnModeControls={renderSpawnModeControls}
-            spellLevelFilter={spellLevelFilter}
-            onLevelFilterChange={setSpellLevelFilter}
-            spellSchoolFilter={spellSchoolFilter}
-            onSchoolFilterChange={setSpellSchoolFilter}
-            getSpellSchools={getSpellSchools}
-          />
-        );
-      case 'skills':
-        return (
-          <SkillsPanel
-            skills={getFilteredData as CustomSkill[]}
-            groupSkillsByAbility={groupSkillsByAbility}
-            expandedItems={expandedItems}
-            toggleExpanded={toggleExpanded}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            onDuplicate={handleDuplicateItem}
-            checkIsCustomItem={checkIsCustomItem}
-            onCreateSkill={() => setShowSkillCreator(true)}
-            renderSpawnModeControls={renderSpawnModeControls}
-          />
-        );
-      case 'classFeatures':
-        return (
-          <ClassFeaturesPanel
-            classFeatures={getFilteredData as ClassFeature[]}
-            groupClassFeaturesByClass={groupClassFeaturesByClass}
-            expandedItems={expandedItems}
-            toggleExpanded={toggleExpanded}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            onDuplicate={handleDuplicateItem}
-            checkIsCustomItem={checkIsCustomItem}
-            onCreateFeature={() => setShowClassFeatureCreator(true)}
-            renderSpawnModeControls={renderSpawnModeControls}
-          />
-        );
-      case 'racialTraits':
-        return (
-          <RacialTraitsPanel
-            racialTraits={getFilteredData as RacialTrait[]}
-            groupRacialTraitsByRace={groupRacialTraitsByRace}
-            expandedItems={expandedItems}
-            toggleExpanded={toggleExpanded}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            onDuplicate={handleDuplicateItem}
-            checkIsCustomItem={checkIsCustomItem}
-            onCreateTrait={() => setShowRacialTraitCreator(true)}
-            renderSpawnModeControls={renderSpawnModeControls}
-          />
-        );
-      case 'races':
-        return (
-          <>
-            <RacesPanel
-              races={getFilteredData as RaceDataEntry[]}
-              expandedItems={expandedItems}
-              toggleExpanded={toggleExpanded}
-              onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              onDuplicate={handleDuplicateItem}
-              checkIsCustomItem={checkIsCustomItem}
-              onCreateRace={() => setShowRaceCreator(true)}
-            />
-            {renderSpawnModeControls()}
-          </>
-        );
-      case 'classes':
-        return (
-          <>
-            <ClassesPanel
-              classes={getFilteredData as ClassDataEntry[]}
-              expandedItems={expandedItems}
-              toggleExpanded={toggleExpanded}
-              onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              onDuplicate={handleDuplicateItem}
-              checkIsCustomItem={checkIsCustomItem}
-              onCreateClass={() => setShowClassCreator(true)}
-              onConfigureClass={() => setShowClassConfig(true)}
-            />
-            {renderSpawnModeControls()}
-          </>
-        );
-      case 'equipment':
-        return (
-          <div className="dataviewer-list">
-            {/* Equipment Creation Header */}
-            <div className="dataviewer-section-header">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowEquipmentCreator(true)}
-                leftIcon={Plus}
-              >
-                Create Equipment
-              </Button>
-            </div>
-
-            <EquipmentFilters
-              equipmentTypeFilter={equipmentTypeFilter}
-              onTypeFilterChange={setEquipmentTypeFilter}
-              equipmentRarityFilter={equipmentRarityFilter}
-              onRarityFilterChange={setEquipmentRarityFilter}
-              equipmentTagFilter={equipmentTagFilter}
-              onTagFilterChange={setEquipmentTagFilter}
-              getEquipmentRarities={getEquipmentRarities}
-              getEquipmentTags={getEquipmentTags}
-            />
-            <div className="dataviewer-items">
-              <EquipmentPanel
-                equipment={getFilteredData as Equipment[]}
-                expandedItems={expandedItems}
-                toggleExpanded={toggleExpanded}
-                onEdit={handleEditItem}
-                onDelete={handleDeleteItem}
-                onDuplicate={handleDuplicateItem}
-                checkIsCustomItem={checkIsCustomItem}
-              />
-            </div>
-            {renderSpawnModeControls()}
-          </div>
-        );
-      case 'appearance':
-        return (
-          <>
-            <AppearancePanel
-              appearanceCategories={getFilteredData as AppearanceCategoryData[]}
-              expandedItems={expandedItems}
-              toggleExpanded={toggleExpanded}
-              onDelete={handleDeleteItem}
-              checkIsCustomItem={checkIsCustomItem}
-              getSpawnModeForCategory={getSpawnModeForCategory}
-              appearanceCreatorCategory={appearanceCreatorCategory}
-              setAppearanceCreatorCategory={setAppearanceCreatorCategory}
-              editingAppearanceCategory={editingAppearanceCategory}
-              setEditingAppearanceCategory={setEditingAppearanceCategory}
-              editingAppearanceValue={editingAppearanceValue}
-              setEditingAppearanceValue={setEditingAppearanceValue}
-              selectedAppearanceOption={selectedAppearanceOption}
-              setSelectedAppearanceOption={setSelectedAppearanceOption}
-              onCreateAppearanceOption={handleCreateAppearanceOption}
-              onUpdateAppearanceOption={handleUpdateAppearanceOption}
-            />
-            {renderSpawnModeControls()}
-          </>
-        );
-      default:
-        return null;
-    }
-  };
 
   // Get raw data for the current category
   const getRawData = () => {
@@ -629,7 +331,7 @@ export function DataViewerTab() {
         />
         {searchTerm && (
           <span className="dataviewer-search-count">
-            {getFilteredData.length} results
+            {filteredData.length} results
           </span>
         )}
       </div>
@@ -644,13 +346,64 @@ export function DataViewerTab() {
             })()}
             <span>{CATEGORY_CONFIG[activeCategory].label}</span>
             <span className="dataviewer-content-count">
-              ({getFilteredData.length} / {dataCounts[CATEGORY_CONFIG[activeCategory].countKey]})
+              ({filteredData.length} / {dataCounts[CATEGORY_CONFIG[activeCategory].countKey]})
             </span>
           </div>
         </CardHeader>
 
         <div className="dataviewer-content-body">
-          {renderContent()}
+          <ContentPanel
+            activeCategory={activeCategory}
+            spells={spells}
+            skills={skills}
+            classFeatures={classFeatures}
+            racialTraits={racialTraits}
+            isLoading={isLoading}
+            error={error}
+            filteredData={filteredData}
+            spellLevelFilter={spellLevelFilter}
+            onLevelFilterChange={setSpellLevelFilter}
+            spellSchoolFilter={spellSchoolFilter}
+            onSchoolFilterChange={setSpellSchoolFilter}
+            equipmentTypeFilter={equipmentTypeFilter}
+            onTypeFilterChange={setEquipmentTypeFilter}
+            equipmentRarityFilter={equipmentRarityFilter}
+            onRarityFilterChange={setEquipmentRarityFilter}
+            equipmentTagFilter={equipmentTagFilter}
+            onTagFilterChange={setEquipmentTagFilter}
+            expandedItems={expandedItems}
+            toggleExpanded={toggleExpanded}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onDuplicate={handleDuplicateItem}
+            checkIsCustomItem={checkIsCustomItem}
+            onCreateSpell={() => setShowSpellCreator(true)}
+            onCreateSkill={() => setShowSkillCreator(true)}
+            onCreateFeature={() => setShowClassFeatureCreator(true)}
+            onCreateTrait={() => setShowRacialTraitCreator(true)}
+            onCreateRace={() => setShowRaceCreator(true)}
+            onCreateClass={() => setShowClassCreator(true)}
+            onConfigureClass={() => setShowClassConfig(true)}
+            onCreateEquipment={() => setShowEquipmentCreator(true)}
+            appearanceCreatorCategory={appearanceCreatorCategory}
+            setAppearanceCreatorCategory={setAppearanceCreatorCategory}
+            editingAppearanceCategory={editingAppearanceCategory}
+            setEditingAppearanceCategory={setEditingAppearanceCategory}
+            editingAppearanceValue={editingAppearanceValue}
+            setEditingAppearanceValue={setEditingAppearanceValue}
+            selectedAppearanceOption={selectedAppearanceOption}
+            setSelectedAppearanceOption={setSelectedAppearanceOption}
+            onCreateAppearanceOption={handleCreateAppearanceOption}
+            onUpdateAppearanceOption={handleUpdateAppearanceOption}
+            groupSkillsByAbility={groupSkillsByAbility}
+            groupClassFeaturesByClass={groupClassFeaturesByClass}
+            groupRacialTraitsByRace={groupRacialTraitsByRace}
+            getSpellSchools={getSpellSchools}
+            getEquipmentRarities={getEquipmentRarities}
+            getEquipmentTags={getEquipmentTags}
+            getSpawnModeForCategory={getSpawnModeForCategory}
+            refreshData={refreshData}
+          />
         </div>
       </Card>
 
@@ -663,7 +416,7 @@ export function DataViewerTab() {
         />
       </div>
 
-      {/* Content Creator Modals (Phase 5.4 - Modal Pattern) */}
+      {/* Content Creator Modals */}
       <ContentCreatorModal
         isOpen={showSpellCreator}
         onClose={() => {
@@ -700,7 +453,6 @@ export function DataViewerTab() {
         />
       </ContentCreatorModal>
 
-      {/* Skill Creator Modal (Phase 4.1) */}
       <ContentCreatorModal
         isOpen={showSkillCreator}
         onClose={() => {
@@ -734,7 +486,6 @@ export function DataViewerTab() {
         />
       </ContentCreatorModal>
 
-      {/* Equipment Creator Modal (Phase 4.2) */}
       <ContentCreatorModal
         isOpen={showEquipmentCreator}
         onClose={() => {
@@ -847,7 +598,6 @@ export function DataViewerTab() {
         />
       </ContentCreatorModal>
 
-      {/* Race Creator Modal (Phase 6.1) */}
       <ContentCreatorModal
         isOpen={showRaceCreator}
         onClose={() => {
@@ -872,7 +622,6 @@ export function DataViewerTab() {
             speed: editingRace.speed,
             ability_bonuses: editingRace.ability_bonuses,
             traits: editingRace.traits,
-            // Convert string[] to SubraceEntry[] if needed
             subraces: editingRace.subraces?.map(s => ({ name: s, traits: [] })),
             icon: editingRace.icon,
             image: editingRace.image
@@ -884,7 +633,6 @@ export function DataViewerTab() {
         />
       </ContentCreatorModal>
 
-      {/* Class Creator Modal (Phase 6.2) */}
       <ContentCreatorModal
         isOpen={showClassCreator}
         onClose={() => {
@@ -906,15 +654,15 @@ export function DataViewerTab() {
           initialData={editingClass ? {
             name: editingClass.name,
             description: editingClass.description,
-            baseClass: editingClass.name, // Use the class name as baseClass
+            baseClass: editingClass.name,
             hit_die: editingClass.hit_die,
             primary_ability: editingClass.primary_ability as any,
             saving_throws: editingClass.saving_throws as any,
             skill_count: editingClass.skill_count,
             available_skills: editingClass.available_skills,
-            has_expertise: false, // Default value
-            expertise_count: 0, // Default value
-            is_spellcaster: false, // Default value
+            has_expertise: false,
+            expertise_count: 0,
+            is_spellcaster: false,
             icon: editingClass.icon,
             image: editingClass.image
           } as any : undefined}
@@ -925,7 +673,6 @@ export function DataViewerTab() {
         />
       </ContentCreatorModal>
 
-      {/* Class Config Modal (Phase 6.3) */}
       <ContentCreatorModal
         isOpen={showClassConfig}
         onClose={() => setShowClassConfig(false)}

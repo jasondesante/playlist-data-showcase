@@ -365,15 +365,17 @@ interface UseDataViewerEditingReturn {
 - [x] Import hook from `./DataViewer/hooks`
 
 ### Task 4.2: Simplify DataViewerTab Component
-- [ ] Import `useDataViewerEditing` hook and destructure needed values
-- [ ] Remove all useState declarations (now in hook)
-- [ ] Remove all handler definitions (now in hook)
-- [ ] Replace render functions with panel components
-- [ ] Keep only:
+- [x] Import `useDataViewerEditing` hook and destructure needed values
+- [x] Remove all useState declarations (now in hook)
+- [x] Remove all handler definitions (now in hook)
+- [x] Replace render functions with panel components (extracted renderContent to ContentPanel)
+- [x] Keep only:
   - Hook imports and destructuring
-  - Panel component composition
+  - Panel component composition (via ContentPanel)
   - Modal JSX (ContentCreatorModal instances)
   - Effects tracking (useEffect for changes)
+
+**Lines reduced**: 955 → 702 lines (26% reduction)
 
 ### Task 4.3: Update DataViewer Index
 - [ ] Update `src/components/Tabs/DataViewer/index.ts` to export new components
