@@ -208,10 +208,10 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~150 lines
 
 ### Task 2.5: Create RacesPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/RacesPanel.tsx`
-- [ ] Move `renderRaces()` function
-- [ ] Move `renderSubraceSection()` helper
-- [ ] Accept props for races data and handlers
+- [x] Create `src/components/Tabs/DataViewer/components/RacesPanel.tsx`
+- [x] Move `renderRaces()` function
+- [x] Move `renderSubraceSection()` helper
+- [x] Accept props for races data and handlers
 
 **Estimated lines moved**: ~170 lines
 
