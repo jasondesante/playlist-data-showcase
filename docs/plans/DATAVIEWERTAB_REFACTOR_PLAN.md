@@ -242,12 +242,12 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~220 lines
 
 ### Task 2.9: Create Filter Components
-- [ ] Create `src/components/Tabs/DataViewer/components/CategorySelector.tsx`
-- [ ] Move `renderCategorySelector()` function
-- [ ] Create `src/components/Tabs/DataViewer/components/SpellFilters.tsx`
-- [ ] Move `renderSpellFilters()` function
-- [ ] Create `src/components/Tabs/DataViewer/components/EquipmentFilters.tsx`
-- [ ] Move `renderEquipmentFilters()` function
+- [x] Create `src/components/Tabs/DataViewer/components/CategorySelector.tsx`
+- [x] Move `renderCategorySelector()` function
+- [x] Create `src/components/Tabs/DataViewer/components/SpellFilters.tsx`
+- [x] Move `renderSpellFilters()` function
+- [x] Create `src/components/Tabs/DataViewer/components/EquipmentFilters.tsx`
+- [x] Move `renderEquipmentFilters()` function
 
 **Estimated lines moved**: ~100 lines
 

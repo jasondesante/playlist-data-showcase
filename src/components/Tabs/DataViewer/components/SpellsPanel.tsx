@@ -14,6 +14,7 @@ import { Button } from '../../../ui/Button';
 import { CustomContentBadge } from '../CustomContentBadge';
 import { SCHOOL_COLORS, SCHOOL_BG_COLORS } from '../constants';
 import { formatLevel } from '../utils';
+import { SpellFilters } from './SpellFilters';
 
 /**
  * Props for the SpellsPanel component
@@ -35,10 +36,18 @@ export interface SpellsPanelProps {
   checkIsCustomItem: (category: 'spells', itemName: string) => boolean;
   /** Handler to open spell creator */
   onCreateSpell: () => void;
-  /** Render function for spell filters */
-  renderSpellFilters: () => React.ReactNode;
   /** Render function for spawn mode controls */
   renderSpawnModeControls: () => React.ReactNode;
+  /** Current spell level filter value */
+  spellLevelFilter: number | 'all';
+  /** Handler called when level filter changes */
+  onLevelFilterChange: (level: number | 'all') => void;
+  /** Current spell school filter value */
+  spellSchoolFilter: string | 'all';
+  /** Handler called when school filter changes */
+  onSchoolFilterChange: (school: string | 'all') => void;
+  /** Function to get available spell schools */
+  getSpellSchools: () => string[];
 }
 
 /**
@@ -192,8 +201,12 @@ export function SpellsPanel({
   onDuplicate,
   checkIsCustomItem,
   onCreateSpell,
-  renderSpellFilters,
-  renderSpawnModeControls
+  renderSpawnModeControls,
+  spellLevelFilter,
+  onLevelFilterChange,
+  spellSchoolFilter,
+  onSchoolFilterChange,
+  getSpellSchools
 }: SpellsPanelProps) {
   return (
     <div className="dataviewer-list">
@@ -209,7 +222,13 @@ export function SpellsPanel({
         </Button>
       </div>
 
-      {renderSpellFilters()}
+      <SpellFilters
+        spellLevelFilter={spellLevelFilter}
+        onLevelFilterChange={onLevelFilterChange}
+        spellSchoolFilter={spellSchoolFilter}
+        onSchoolFilterChange={onSchoolFilterChange}
+        getSpellSchools={getSpellSchools}
+      />
 
       <div className="dataviewer-items">
         {spells.map(spell => {

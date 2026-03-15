@@ -75,10 +75,6 @@ import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 import { CATEGORY_CONFIG } from './DataViewer/constants';
-import {
-  formatLevel,
-  formatRarity
-} from './DataViewer/utils';
 import { SpellsPanel } from './DataViewer/components/SpellsPanel';
 import { SkillsPanel } from './DataViewer/components/SkillsPanel';
 import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
@@ -87,6 +83,8 @@ import { RacesPanel } from './DataViewer/components/RacesPanel';
 import { ClassesPanel } from './DataViewer/components/ClassesPanel';
 import { EquipmentPanel } from './DataViewer/components/EquipmentPanel';
 import { AppearancePanel } from './DataViewer/components/AppearancePanel';
+import { CategorySelector } from './DataViewer/components/CategorySelector';
+import { EquipmentFilters } from './DataViewer/components/EquipmentFilters';
 
 export function DataViewerTab() {
   const {
@@ -560,119 +558,6 @@ export function DataViewerTab() {
     refreshData();
   }, [refreshData, editingClass]);
 
-  // Render category selector
-  const renderCategorySelector = () => (
-    <div className="dataviewer-category-selector">
-      {(Object.keys(CATEGORY_CONFIG) as DataCategory[]).map((category) => {
-        const config = CATEGORY_CONFIG[category];
-        const Icon = config.icon;
-        const isActive = activeCategory === category;
-        const count = dataCounts[config.countKey];
-
-        return (
-          <button
-            key={category}
-            className={`dataviewer-category-btn ${isActive ? 'dataviewer-category-btn-active' : ''}`}
-            onClick={() => {
-              setActiveCategory(category);
-              setSearchTerm('');
-              setExpandedItems(new Set());
-            }}
-          >
-            <Icon size={18} />
-            <span className="dataviewer-category-label">{config.label}</span>
-            <span className="dataviewer-category-count">{count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-
-  // Render spell filters
-  const renderSpellFilters = () => (
-    <div className="dataviewer-filters">
-      <div className="dataviewer-filter-group">
-        <label className="dataviewer-filter-label">Level</label>
-        <select
-          value={spellLevelFilter}
-          onChange={(e) => setSpellLevelFilter(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-          className="dataviewer-filter-select"
-        >
-          <option value="all">All Levels</option>
-          <option value={0}>Cantrip</option>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(level => (
-            <option key={level} value={level}>{formatLevel(level)} Level</option>
-          ))}
-        </select>
-      </div>
-      <div className="dataviewer-filter-group">
-        <label className="dataviewer-filter-label">School</label>
-        <select
-          value={spellSchoolFilter}
-          onChange={(e) => setSpellSchoolFilter(e.target.value)}
-          className="dataviewer-filter-select"
-        >
-          <option value="all">All Schools</option>
-          {getSpellSchools().map(school => (
-            <option key={school} value={school}>{school}</option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
-
-  // Render equipment filters
-  const renderEquipmentFilters = () => {
-    const availableTags = getEquipmentTags();
-
-    return (
-      <div className="dataviewer-filters">
-        <div className="dataviewer-filter-group">
-          <label className="dataviewer-filter-label">Type</label>
-          <select
-            value={equipmentTypeFilter}
-            onChange={(e) => setEquipmentTypeFilter(e.target.value as 'weapon' | 'armor' | 'item' | 'all')}
-            className="dataviewer-filter-select"
-          >
-            <option value="all">All Types</option>
-            <option value="weapon">Weapon</option>
-            <option value="armor">Armor</option>
-            <option value="item">Item</option>
-          </select>
-        </div>
-        <div className="dataviewer-filter-group">
-          <label className="dataviewer-filter-label">Rarity</label>
-          <select
-            value={equipmentRarityFilter}
-            onChange={(e) => setEquipmentRarityFilter(e.target.value)}
-            className="dataviewer-filter-select"
-          >
-            <option value="all">All Rarities</option>
-            {getEquipmentRarities().map(rarity => (
-              <option key={rarity} value={rarity}>{formatRarity(rarity)}</option>
-            ))}
-          </select>
-        </div>
-        {/* Task 3.3: Tags Filter Dropdown */}
-        {availableTags.length > 0 && (
-          <div className="dataviewer-filter-group">
-            <label className="dataviewer-filter-label">Tag</label>
-            <select
-              value={equipmentTagFilter}
-              onChange={(e) => setEquipmentTagFilter(e.target.value)}
-              className="dataviewer-filter-select"
-            >
-              <option value="all">All Tags</option>
-              {availableTags.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Render content based on active category
   const renderContent = () => {
     if (isLoading) {
@@ -773,8 +658,12 @@ export function DataViewerTab() {
             onDuplicate={handleDuplicateItem}
             checkIsCustomItem={checkIsCustomItem}
             onCreateSpell={() => setShowSpellCreator(true)}
-            renderSpellFilters={renderSpellFilters}
             renderSpawnModeControls={renderSpawnModeControls}
+            spellLevelFilter={spellLevelFilter}
+            onLevelFilterChange={setSpellLevelFilter}
+            spellSchoolFilter={spellSchoolFilter}
+            onSchoolFilterChange={setSpellSchoolFilter}
+            getSpellSchools={getSpellSchools}
           />
         );
       case 'skills':
@@ -870,7 +759,16 @@ export function DataViewerTab() {
               </Button>
             </div>
 
-            {renderEquipmentFilters()}
+            <EquipmentFilters
+              equipmentTypeFilter={equipmentTypeFilter}
+              onTypeFilterChange={setEquipmentTypeFilter}
+              equipmentRarityFilter={equipmentRarityFilter}
+              onRarityFilterChange={setEquipmentRarityFilter}
+              equipmentTagFilter={equipmentTagFilter}
+              onTagFilterChange={setEquipmentTagFilter}
+              getEquipmentRarities={getEquipmentRarities}
+              getEquipmentTags={getEquipmentTags}
+            />
             <div className="dataviewer-items">
               <EquipmentPanel
                 equipment={getFilteredData as Equipment[]}
@@ -963,7 +861,15 @@ export function DataViewerTab() {
 
       {/* Category Selector */}
       <Card className="dataviewer-category-card">
-        {renderCategorySelector()}
+        <CategorySelector
+          activeCategory={activeCategory}
+          dataCounts={dataCounts}
+          onCategoryChange={(category) => {
+            setActiveCategory(category);
+            setSearchTerm('');
+            setExpandedItems(new Set());
+          }}
+        />
       </Card>
 
       {/* Search Bar */}
