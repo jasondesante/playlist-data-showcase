@@ -223,14 +223,14 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~160 lines
 
 ### Task 2.7: Create EquipmentPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/EquipmentPanel.tsx`
-- [ ] Move `renderEquipment()` function
-- [ ] Move helper functions:
+- [x] Create `src/components/Tabs/DataViewer/components/EquipmentPanel.tsx`
+- [x] Move `renderEquipment()` function
+- [x] Move helper functions:
   - `renderGrantedSkills()`
   - `renderGrantedSpells()`
   - `renderGrantedFeatures()`
   - `renderTags()`
-- [ ] Accept props for equipment data and handlers
+- [x] Accept props for equipment data and handlers
 
 **Estimated lines moved**: ~250 lines
 

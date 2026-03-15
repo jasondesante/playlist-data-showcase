@@ -55,19 +55,17 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { useDataViewer, type DataCategory, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, isEnhancedEquipment } from '../../hooks/useDataViewer';
+import { useDataViewer, type DataCategory, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import { logger } from '../../utils/logger';
 import { showToast } from '../ui/Toast';
-import { CustomContentBadge } from './DataViewer/CustomContentBadge';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
 import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
 import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
 import { AppearanceOptionCreator } from './DataViewer/forms/AppearanceOptionCreator';
-import { ArweaveImage } from '../shared/ArweaveImage';
 import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
 import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
 import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
@@ -79,19 +77,10 @@ import { Plus, X, Swords, Edit2, Trash2 } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
-import {
-  RARITY_COLORS,
-  RARITY_BG_COLORS,
-  CATEGORY_CONFIG,
-  getPropertyTypeConfig
-} from './DataViewer/constants';
+import { CATEGORY_CONFIG } from './DataViewer/constants';
 import {
   formatLevel,
   formatRarity,
-  formatSpawnWeight,
-  formatCondition,
-  formatSpellLevelShort,
-  formatSpellUses,
   isColorOption,
   getAppearanceIcon
 } from './DataViewer/utils';
@@ -101,6 +90,7 @@ import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
 import { RacialTraitsPanel } from './DataViewer/components/RacialTraitsPanel';
 import { RacesPanel } from './DataViewer/components/RacesPanel';
 import { ClassesPanel } from './DataViewer/components/ClassesPanel';
+import { EquipmentPanel } from './DataViewer/components/EquipmentPanel';
 
 export function DataViewerTab() {
   const {
@@ -688,340 +678,6 @@ export function DataViewerTab() {
   };
 
   /**
-   * Render granted skills section for enhanced equipment
-   *
-   * Task 1.2: Display grantsSkills on Equipment Cards
-   *
-   * Displays skills granted by equipment with proficiency level.
- * Uses green tag styling (`.dataviewer-tag-skill`) to distinguish from other grants.
-   *
-   * @param item - The equipment item to render skills for
-   * @returns JSX element with skills section, or null if no granted skills
-   *
-   * @example
-   * // Equipment with granted skills
-   * // Input: item.grantsSkills = [{ skillId: 'Arcana', level: 'expertise' }, { skillId: 'History', level: 'proficient' }]
-   * // Output:
-   * // Skills: Arcana (expertise), History (proficient)
-   */
-  const renderGrantedSkills = (item: Equipment) => {
-    if (!isEnhancedEquipment(item) || !item.grantsSkills || item.grantsSkills.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="dataviewer-item-section">
-        <span className="dataviewer-item-section-title">Skills:</span>
-        <div className="dataviewer-item-tags">
-          {item.grantsSkills.map((skill, idx) => (
-            <span key={idx} className="dataviewer-tag dataviewer-tag-skill">
-              {skill.skillId} ({skill.level})
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  /**
-   * Render granted spells section for enhanced equipment
-   *
-   * Task 1.3: Display grantsSpells on Equipment Cards
-   *
-   * Displays spells granted by equipment with level, uses, and recharge info.
-   * Uses purple tag styling (`.dataviewer-tag-spell`) to distinguish from other grants.
-   *
-   * @param item - The equipment item to render spells for
-   * @returns JSX element with spells section, or null if no granted spells
-   *
-   * @example
-   * // Equipment with granted spells
-   * // Input: item.grantsSpells = [
-   * //   { spellId: 'Fireball', level: 3, uses: 1, recharge: 'dawn' },
-   * //   { spellId: 'Shield', level: 1, uses: null } // unlimited
-   * // ]
-   * // Output:
-   * // Spells: Fireball 3rd level, 1/dawn | Shield 1st level, unlimited
-   */
-  const renderGrantedSpells = (item: Equipment) => {
-    if (!isEnhancedEquipment(item) || !item.grantsSpells || item.grantsSpells.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="dataviewer-item-section">
-        <span className="dataviewer-item-section-title">Spells:</span>
-        <div className="dataviewer-item-tags">
-          {item.grantsSpells.map((spell, idx) => {
-            const levelStr = spell.level !== undefined ? ` ${formatSpellLevelShort(spell.level)} level` : '';
-            const usesStr = formatSpellUses(spell.uses, spell.recharge);
-            return (
-              <span key={idx} className="dataviewer-tag dataviewer-tag-spell">
-                {spell.spellId}{levelStr}, {usesStr}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  /**
-   * Render granted features section for enhanced equipment
-   *
-   * Task 1.4: Display grantsFeatures on Equipment Cards
-   *
-   * Displays features granted by equipment. Features can be:
-   * 1. String references to registry features (e.g., 'darkvision')
-   * 2. Inline EquipmentMiniFeature objects with name/description/effects
-   *
-   * Uses blue tag styling (`.dataviewer-tag-feature`) to distinguish from other grants.
-   *
-   * @param item - The equipment item to render features for
-   * @returns JSX element with features section, or null if no granted features
-   *
-   * @example
-   * // Equipment with mixed feature types
-   * // Input: item.grantsFeatures = [
-   * //   'darkvision',  // string reference to registry
-   * //   { name: 'Blessed Strike', description: '+1d8 radiant damage' }  // inline
-   * // ]
-   * // Output:
-   * // Features: darkvision | Blessed Strike
-   */
-  const renderGrantedFeatures = (item: Equipment) => {
-    if (!isEnhancedEquipment(item) || !item.grantsFeatures || item.grantsFeatures.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="dataviewer-item-section">
-        <span className="dataviewer-item-section-title">Features:</span>
-        <div className="dataviewer-item-tags">
-          {item.grantsFeatures.map((feature, idx) => {
-            // Check if feature is a string (registry reference) or inline object
-            if (typeof feature === 'string') {
-              // Registry feature reference - show the feature ID
-              return (
-                <span key={idx} className="dataviewer-tag dataviewer-tag-feature">
-                  {feature}
-                </span>
-              );
-            } else {
-              // Inline feature object - show name and optional description
-              const inlineFeature = feature;
-              return (
-                <span
-                  key={idx}
-                  className="dataviewer-tag dataviewer-tag-feature"
-                  title={inlineFeature.description || inlineFeature.name}
-                >
-                  {inlineFeature.name}
-                </span>
-              );
-            }
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  /**
-   * Render tags section for enhanced equipment
-   *
-   * Task 1.5: Display Equipment Tags
-   *
-   * Displays tags at the bottom of expanded equipment cards.
-   * Tags are displayed using existing `.dataviewer-tag` styling.
-   *
-   * @param item - The equipment item to render tags for
-   * @returns JSX element with tags section, or null if no tags
-   *
-   * @example
-   * // Equipment with tags
-   * // Input: item.tags = ['magic', 'fire', 'weapon', 'legendary']
-   * // Output:
-   * // Tags: magic, fire, weapon, legendary
-   */
-  const renderTags = (item: Equipment) => {
-    if (!isEnhancedEquipment(item) || !item.tags || item.tags.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="dataviewer-item-section">
-        <span className="dataviewer-item-section-title">Tags:</span>
-        <div className="dataviewer-item-tags">
-          {item.tags.map((tag, idx) => (
-            <span key={idx} className="dataviewer-tag dataviewer-tag-label">
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Render equipment
-  const renderEquipment = () => (
-    <div className="dataviewer-grid">
-      {(getFilteredData as Equipment[]).map(item => {
-        const isExpanded = expandedItems.has(item.name);
-        const rarityColor = RARITY_COLORS[item.rarity || 'common'] || RARITY_COLORS.common;
-        const rarityBg = RARITY_BG_COLORS[item.rarity || 'common'] || RARITY_BG_COLORS.common;
-        const spawnWeightBadge = formatSpawnWeight(item.spawnWeight);
-        const isCustom = checkIsCustomItem('equipment', item.name);
-        const hasImage = item.image || item.icon;
-
-        return (
-          <div
-            key={item.name}
-            className="dataviewer-item-card"
-            style={{ backgroundColor: rarityBg }}
-          >
-            <div
-              className="dataviewer-item-header"
-              onClick={() => toggleExpanded(item.name)}
-            >
-              {/* Equipment image/icon thumbnail */}
-              {hasImage && (
-                <div className="dataviewer-item-thumbnail">
-                  <ArweaveImage
-                    src={item.image || item.icon || ''}
-                    alt={item.name}
-                    width={40}
-                    height={40}
-                    showShimmer={true}
-                    fallback={
-                      <div className="dataviewer-item-thumbnail-fallback">
-                        <Package size={20} />
-                      </div>
-                    }
-                  />
-                </div>
-              )}
-              <div className="dataviewer-item-header-content">
-                <span className="dataviewer-item-name" style={{ color: rarityColor }}>
-                  {item.name}
-                </span>
-                <div className="dataviewer-item-badges">
-                  <span className="dataviewer-badge dataviewer-badge-secondary">
-                    {item.type}
-                  </span>
-                  {/* Custom Content Badge (Phase 2.2) */}
-                  {isCustom && (
-                    <CustomContentBadge
-                      category="equipment"
-                      itemName={item.name}
-                      onEdit={() => handleEditItem('equipment', item.name)}
-                      onDelete={() => handleDeleteItem('equipment', item.name)}
-                      onDuplicate={() => handleDuplicateItem('equipment', item.name)}
-                      showActions={isExpanded}
-                      size="sm"
-                    />
-                  )}
-                </div>
-              </div>
-              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </div>
-
-            {isExpanded && (
-              <div className="dataviewer-item-details">
-                {/* Full-size equipment image when expanded */}
-                {item.image && (
-                  <div className="dataviewer-item-image">
-                    <ArweaveImage
-                      src={item.image}
-                      alt={item.name}
-                      width={200}
-                      height={200}
-                      showShimmer={true}
-                      fallback={
-                        <div className="dataviewer-item-image-fallback">
-                          <Package size={48} />
-                        </div>
-                      }
-                    />
-                  </div>
-                )}
-                <div className="dataviewer-item-stats">
-                  {item.rarity && (
-                    <div className="dataviewer-item-stat">
-                      <span className="dataviewer-item-stat-label">Rarity:</span>
-                      <span className="dataviewer-item-stat-value" style={{ color: rarityColor }}>
-                        {formatRarity(item.rarity)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="dataviewer-item-stat">
-                    <span className="dataviewer-item-stat-label">Weight:</span>
-                    <span className="dataviewer-item-stat-value">{item.weight} lb</span>
-                  </div>
-                  {item.damage && (
-                    <div className="dataviewer-item-stat">
-                      <span className="dataviewer-item-stat-label">Damage:</span>
-                      <span className="dataviewer-item-stat-value">
-                        {item.damage.dice} {item.damage.damageType}
-                      </span>
-                    </div>
-                  )}
-                  {item.acBonus !== undefined && (
-                    <div className="dataviewer-item-stat">
-                      <span className="dataviewer-item-stat-label">AC:</span>
-                      <span className="dataviewer-item-stat-value">+{item.acBonus}</span>
-                    </div>
-                  )}
-                  {item.spawnWeight !== undefined && (
-                    <div className="dataviewer-item-stat">
-                      <span className="dataviewer-item-stat-label">Spawn:</span>
-                      <span className="dataviewer-item-stat-value">
-                        {spawnWeightBadge ? spawnWeightBadge.label : `Normal (${item.spawnWeight})`}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {/* Equipment description */}
-                {item.description && (
-                  <div className="dataviewer-item-description">
-                    {item.description}
-                  </div>
-                )}
-                {item.properties && item.properties.length > 0 && (
-                  <div className="dataviewer-item-section">
-                    <span className="dataviewer-item-section-title">Properties:</span>
-                    <div className="dataviewer-item-tags">
-                      {item.properties.map((prop, idx) => {
-                        const conditionStr = formatCondition(prop.condition);
-                        const displayText = prop.description || `${prop.type}: ${prop.target}`;
-                        const propConfig = getPropertyTypeConfig(prop.type);
-                        const PropIcon = propConfig.icon;
-                        return (
-                          <span key={idx} className="dataviewer-tag dataviewer-tag-property dataviewer-tag-with-icon">
-                            <PropIcon size={12} className="dataviewer-tag-icon" />
-                            {displayText}{conditionStr ? ` (${conditionStr})` : ''}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                {/* Granted Skills Section */}
-                {renderGrantedSkills(item)}
-                {/* Granted Spells Section */}
-                {renderGrantedSpells(item)}
-                {/* Granted Features Section */}
-                {renderGrantedFeatures(item)}
-                {/* Tags Section */}
-                {renderTags(item)}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  /**
    * Render appearance data categories
    *
    * Displays appearance options for character generation:
@@ -1449,7 +1105,15 @@ export function DataViewerTab() {
 
             {renderEquipmentFilters()}
             <div className="dataviewer-items">
-              {renderEquipment()}
+              <EquipmentPanel
+                equipment={getFilteredData as Equipment[]}
+                expandedItems={expandedItems}
+                toggleExpanded={toggleExpanded}
+                onEdit={handleEditItem}
+                onDelete={handleDeleteItem}
+                onDuplicate={handleDuplicateItem}
+                checkIsCustomItem={checkIsCustomItem}
+              />
             </div>
             {renderSpawnModeControls()}
           </div>
