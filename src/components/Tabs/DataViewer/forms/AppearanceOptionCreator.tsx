@@ -100,8 +100,16 @@ const APPEARANCE_CATEGORIES: AppearanceCategoryConfig[] = [
 export interface AppearanceOptionCreatorProps {
   /** Initial category to select */
   initialCategory?: ContentType;
+  /** Initial value (for editing) */
+  initialValue?: string;
+  /** Whether the form is in edit mode */
+  isEditMode?: boolean;
+  /** Original value being edited (used to identify what to update) */
+  originalValue?: string;
   /** Callback when option is created */
   onCreate?: (category: ContentType, value: string) => void;
+  /** Callback when option is updated (edit mode) */
+  onUpdate?: (category: ContentType, originalValue: string, newValue: string) => void;
   /** Callback when cancel is clicked */
   onCancel?: () => void;
   /** Whether the form is disabled */
@@ -144,7 +152,11 @@ function getContrastColor(hexColor: string): string {
  */
 export function AppearanceOptionCreator({
   initialCategory = 'appearance.bodyTypes',
+  initialValue,
+  isEditMode = false,
+  originalValue,
   onCreate,
+  onUpdate,
   onCancel,
   disabled = false,
   submitButtonText,
@@ -152,12 +164,21 @@ export function AppearanceOptionCreator({
 }: AppearanceOptionCreatorProps) {
   const { createContent, isLoading, lastError, clearError } = useContentCreator();
 
-  // Form state
+  // Determine if the initial value is a color
+  const isInitialColor = initialValue && isValidHexColor(initialValue);
+
+  // Form state - initialize with initialValue if in edit mode
   const [selectedCategory, setSelectedCategory] = useState<ContentType>(
     APPEARANCE_CATEGORIES.find(c => c.key === initialCategory)?.key || 'appearance.bodyTypes'
   );
-  const [textValue, setTextValue] = useState('');
-  const [colorValue, setColorValue] = useState('#4a90d9');
+  const [textValue, setTextValue] = useState(() => {
+    if (initialValue && !isInitialColor) return initialValue;
+    return '';
+  });
+  const [colorValue, setColorValue] = useState(() => {
+    if (initialValue && isInitialColor) return initialValue;
+    return '#4a90d9';
+  });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -204,38 +225,45 @@ export function AppearanceOptionCreator({
     setIsSubmitting(true);
 
     try {
-      // For appearance options, we register the string value directly (not wrapped in an object)
-      // The ExtensionManager expects strings for appearance categories
-      const result = createContent(
-        selectedCategory,
-        currentValue, // Pass string directly, not wrapped in object
-        { validate: true, markAsCustom: false }, // Don't add source: 'custom' to strings
-        {
-          onSuccess: () => {
-            // Reset form on success
-            if (isColorCategory) {
-              setColorValue('#4a90d9');
-            } else {
-              setTextValue('');
+      if (isEditMode && originalValue) {
+        // In edit mode, call onUpdate with the original and new values
+        // The parent component will handle deleting the old value and creating the new one
+        onUpdate?.(selectedCategory, originalValue, currentValue);
+        setFormErrors([]);
+      } else {
+        // For appearance options, we register the string value directly (not wrapped in an object)
+        // The ExtensionManager expects strings for appearance categories
+        const result = createContent(
+          selectedCategory,
+          currentValue, // Pass string directly, not wrapped in object
+          { validate: true, markAsCustom: false }, // Don't add source: 'custom' to strings
+          {
+            onSuccess: () => {
+              // Reset form on success
+              if (isColorCategory) {
+                setColorValue('#4a90d9');
+              } else {
+                setTextValue('');
+              }
+              setFormErrors([]);
+              onCreate?.(selectedCategory, currentValue);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
             }
-            setFormErrors([]);
-            onCreate?.(selectedCategory, currentValue);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
           }
-        }
-      );
+        );
 
-      if (!result.success && result.error) {
-        setFormErrors([result.error]);
+        if (!result.success && result.error) {
+          setFormErrors([result.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, currentValue, selectedCategory, createContent, isColorCategory, onCreate]);
+  }, [clearError, validate, currentValue, selectedCategory, createContent, isColorCategory, onCreate, isEditMode, originalValue, onUpdate]);
 
   // Handle category change
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -276,7 +304,7 @@ export function AppearanceOptionCreator({
   // Get button text
   const getButtonText = () => {
     if (submitButtonText) return submitButtonText;
-    return 'Add Option';
+    return isEditMode ? 'Save Changes' : 'Add Option';
   };
 
   // Get icon for category

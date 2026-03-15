@@ -86,7 +86,7 @@ import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/f
 import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
 import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
 import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
-import { Plus, X, Swords } from 'lucide-react';
+import { Plus, X, Swords, Edit2, Trash2 } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, EquipmentCondition, FeaturePrerequisite } from 'playlist-data-engine';
@@ -407,6 +407,16 @@ export function DataViewerTab() {
   // Edit state - track item being edited
   const [editingSpell, setEditingSpell] = useState<RegisteredSpell | null>(null);
   const [editingSkill, setEditingSkill] = useState<CustomSkill | null>(null);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [editingClassFeature, setEditingClassFeature] = useState<ClassFeature | null>(null);
+  const [editingRacialTrait, setEditingRacialTrait] = useState<RacialTrait | null>(null);
+  const [editingRace, setEditingRace] = useState<RaceDataEntry | null>(null);
+  const [editingClass, setEditingClass] = useState<ClassDataEntry | null>(null);
+  // Appearance editing state
+  const [editingAppearanceCategory, setEditingAppearanceCategory] = useState<string | null>(null);
+  const [editingAppearanceValue, setEditingAppearanceValue] = useState<string | null>(null);
+  // Appearance selection state - track which custom option is selected (clicked)
+  const [selectedAppearanceOption, setSelectedAppearanceOption] = useState<{ category: string; option: string } | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
@@ -569,40 +579,40 @@ export function DataViewerTab() {
       case 'classFeatures': {
         const feature = classFeatures.find(f => f.name === itemName || f.id === itemName);
         if (feature) {
-          // TODO: Implement class feature editing
-          showToast(`Editing class feature "${itemName}" is not yet implemented`, 'warning');
+          setEditingClassFeature(feature);
+          setShowClassFeatureCreator(true);
         }
         break;
       }
       case 'racialTraits': {
         const trait = racialTraits.find(t => t.name === itemName || t.id === itemName);
         if (trait) {
-          // TODO: Implement racial trait editing
-          showToast(`Editing racial trait "${itemName}" is not yet implemented`, 'warning');
+          setEditingRacialTrait(trait);
+          setShowRacialTraitCreator(true);
         }
         break;
       }
       case 'equipment': {
         const item = equipment.find(e => e.name === itemName);
         if (item) {
-          // TODO: Equipment editing needs EquipmentCreatorForm to accept initialData
-          showToast(`Editing equipment "${itemName}" is not yet implemented`, 'warning');
+          setEditingEquipment(item);
+          setShowEquipmentCreator(true);
         }
         break;
       }
       case 'races': {
         const race = races.find(r => r.name === itemName);
         if (race) {
-          // TODO: Race editing needs RaceCreatorForm to accept initialData
-          showToast(`Editing race "${itemName}" is not yet implemented`, 'warning');
+          setEditingRace(race);
+          setShowRaceCreator(true);
         }
         break;
       }
       case 'classes': {
         const cls = classes.find(c => c.name === itemName);
         if (cls) {
-          // TODO: Class editing needs ClassCreatorForm to accept initialData
-          showToast(`Editing class "${itemName}" is not yet implemented`, 'warning');
+          setEditingClass(cls);
+          setShowClassCreator(true);
         }
         break;
       }
@@ -655,18 +665,34 @@ export function DataViewerTab() {
    * Handle creation of new equipment via EquipmentCreatorForm
    */
   const handleCreateEquipment = useCallback(async (_formData: EquipmentCreatorFormData, equipment: Equipment) => {
-    const result = createContent('equipment', equipment, { mode: 'relative' });
-
-    if (result.success) {
-      logger.info('DataViewer', `Created equipment: ${equipment.name}`);
-      showToast(`Created equipment "${equipment.name}"`, 'success');
-      setShowEquipmentCreator(false);
-      refreshData();
+    if (editingEquipment) {
+      // Update existing equipment
+      const result = updateContent('equipment', editingEquipment.name, equipment);
+      if (result.success) {
+        logger.info('DataViewer', `Updated equipment: ${equipment.name}`);
+        showToast(`Updated equipment "${equipment.name}"`, 'success');
+        setShowEquipmentCreator(false);
+        setEditingEquipment(null);
+        refreshData();
+      } else {
+        logger.error('DataViewer', `Failed to update equipment: ${result.error}`);
+        showToast(`Failed to update equipment: ${result.error}`, 'error');
+      }
     } else {
-      logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
-      showToast(`Failed to create equipment: ${result.error}`, 'error');
+      // Create new equipment
+      const result = createContent('equipment', equipment, { mode: 'relative' });
+      if (result.success) {
+        logger.info('DataViewer', `Created equipment: ${equipment.name}`);
+        showToast(`Created equipment "${equipment.name}"`, 'success');
+        setShowEquipmentCreator(false);
+        setEditingEquipment(null);
+        refreshData();
+      } else {
+        logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
+        showToast(`Failed to create equipment: ${result.error}`, 'error');
+      }
     }
-  }, [createContent, refreshData]);
+  }, [createContent, updateContent, refreshData, editingEquipment]);
 
   /**
    * Handle creation of new appearance option via AppearanceOptionCreator
@@ -679,90 +705,94 @@ export function DataViewerTab() {
   }, [refreshData]);
 
   /**
+   * Handle update of appearance option
+   * Deletes the old value and creates the new one
+   */
+  const handleUpdateAppearanceOption = useCallback((category: ContentType, originalValue: string, newValue: string) => {
+    logger.info('DataViewer', `Updating appearance option: ${originalValue} -> ${newValue} in ${category}`);
+
+    // Delete the old value
+    const deleteResult = deleteContent(category, originalValue);
+    if (!deleteResult.success) {
+      showToast(`Failed to delete old value: ${deleteResult.error}`, 'error');
+      return;
+    }
+
+    // Create the new value
+    const createResult = createContent(category, newValue, { validate: true, markAsCustom: false });
+    if (createResult.success) {
+      showToast(`Updated "${originalValue}" to "${newValue}"`, 'success');
+      setEditingAppearanceCategory(null);
+      setEditingAppearanceValue(null);
+      refreshData();
+    } else {
+      showToast(`Failed to create new value: ${createResult.error}`, 'error');
+      // Try to restore the old value
+      createContent(category, originalValue, { validate: true, markAsCustom: false });
+    }
+  }, [deleteContent, createContent, refreshData]);
+
+  /**
    * Handle creation of new skill via SkillCreatorForm
    *
-   * Note: The SkillCreatorForm handles content creation internally via useContentCreator.
+   * Note: The SkillCreatorForm handles content creation/update internally via useContentCreator.
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSkill = useCallback((skill: SkillFormData) => {
-    if (editingSkill) {
-      // Update existing skill
-      const result = updateContent('skills', editingSkill.id || editingSkill.name, {
-        ...skill,
-        source: 'custom'
-      });
-      if (result.success) {
-        logger.info('DataViewer', `Updated skill: ${skill.name}`);
-        showToast(`Updated skill "${skill.name}"`, 'success');
-      } else {
-        logger.error('DataViewer', `Failed to update skill: ${result.error}`);
-        showToast(`Failed to update skill: ${result.error}`, 'error');
-      }
-    } else {
-      logger.info('DataViewer', `Created skill: ${skill.name}`);
-      showToast(`Created skill "${skill.name}"`, 'success');
-    }
+    const isEdit = !!editingSkill;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} skill: ${skill.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} skill "${skill.name}"`, 'success');
     setShowSkillCreator(false);
     setEditingSkill(null);
     refreshData();
-  }, [refreshData, editingSkill, updateContent]);
+  }, [refreshData, editingSkill]);
 
   /**
    * Handle creation of new spell via SpellCreatorForm
    *
-   * Note: The SpellCreatorForm handles content creation internally via useContentCreator.
+   * Note: The SpellCreatorForm handles content creation/update internally via useContentCreator.
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateSpell = useCallback((spell: SpellFormData) => {
-    if (editingSpell) {
-      // Update existing spell
-      const result = updateContent('spells', editingSpell.name, {
-        ...spell,
-        source: 'custom'
-      });
-      if (result.success) {
-        logger.info('DataViewer', `Updated spell: ${spell.name}`);
-        showToast(`Updated spell "${spell.name}"`, 'success');
-      } else {
-        logger.error('DataViewer', `Failed to update spell: ${result.error}`);
-        showToast(`Failed to update spell: ${result.error}`, 'error');
-      }
-    } else {
-      logger.info('DataViewer', `Created spell: ${spell.name}`);
-      showToast(`Created spell "${spell.name}"`, 'success');
-    }
+    const isEdit = !!editingSpell;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} spell: ${spell.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} spell "${spell.name}"`, 'success');
     setShowSpellCreator(false);
     setEditingSpell(null);
     refreshData();
-  }, [refreshData, editingSpell, updateContent]);
+  }, [refreshData, editingSpell]);
 
   /**
    * Handle creation of new class feature via ClassFeatureCreatorForm
    * (Phase 5.4: Class Features Creation in DataViewerTab)
    *
-   * Note: The ClassFeatureCreatorForm handles content creation internally via useContentCreator.
+   * Note: The ClassFeatureCreatorForm handles content creation/update internally via useContentCreator.
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateClassFeature = useCallback((feature: ClassFeatureFormData) => {
-    logger.info('DataViewer', `Created class feature: ${feature.name}`);
-    showToast(`Created class feature "${feature.name}"`, 'success');
+    const isEdit = !!editingClassFeature;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} class feature: ${feature.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} class feature "${feature.name}"`, 'success');
     setShowClassFeatureCreator(false);
+    setEditingClassFeature(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingClassFeature]);
 
   /**
    * Handle creation of new racial trait via RacialTraitCreatorForm
    * (Phase 5.4: Racial Traits Creation in DataViewerTab)
    *
-   * Note: The RacialTraitCreatorForm handles content creation internally via useContentCreator.
+   * Note: The RacialTraitCreatorForm handles content creation/update internally via useContentCreator.
    * This handler just manages UI state (closing modal, refreshing data, showing toast).
    */
   const handleCreateRacialTrait = useCallback((trait: RacialTraitFormData) => {
-    logger.info('DataViewer', `Created racial trait: ${trait.name}`);
-    showToast(`Created racial trait "${trait.name}"`, 'success');
+    const isEdit = !!editingRacialTrait;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} racial trait: ${trait.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} racial trait "${trait.name}"`, 'success');
     setShowRacialTraitCreator(false);
+    setEditingRacialTrait(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingRacialTrait]);
 
   /**
    * Handle creation of new race via RaceCreatorForm
@@ -772,11 +802,13 @@ export function DataViewerTab() {
    * internally. This handler just manages UI state and data refresh.
    */
   const handleCreateRace = useCallback((race: RaceFormData) => {
-    logger.info('DataViewer', `Created race: ${race.name}`);
-    showToast(`Created race "${race.name}"`, 'success');
+    const isEdit = !!editingRace;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} race: ${race.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} race "${race.name}"`, 'success');
     setShowRaceCreator(false);
+    setEditingRace(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingRace]);
 
   /**
    * Handle creation of new class via ClassCreatorForm
@@ -786,11 +818,13 @@ export function DataViewerTab() {
    * internally. This handler just manages UI state and data refresh.
    */
   const handleCreateClass = useCallback((cls: ClassFormData) => {
-    logger.info('DataViewer', `Created class: ${cls.name}`);
-    showToast(`Created class "${cls.name}"`, 'success');
+    const isEdit = !!editingClass;
+    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} class: ${cls.name}`);
+    showToast(`${isEdit ? 'Updated' : 'Created'} class "${cls.name}"`, 'success');
     setShowClassCreator(false);
+    setEditingClass(null);
     refreshData();
-  }, [refreshData]);
+  }, [refreshData, editingClass]);
 
   // Render category selector
   const renderCategorySelector = () => (
@@ -2406,6 +2440,9 @@ export function DataViewerTab() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setAppearanceCreatorCategory(isCreatingOption ? null : category.key);
+                      // Clear any editing state when toggling create mode
+                      setEditingAppearanceCategory(null);
+                      setEditingAppearanceValue(null);
                     }}
                     leftIcon={isCreatingOption ? X : Plus}
                   >
@@ -2426,27 +2463,136 @@ export function DataViewerTab() {
                   </div>
                 )}
 
+                {/* Inline Editor Form for editing existing options */}
+                {editingAppearanceCategory === category.key && editingAppearanceValue && (
+                  <div className="dataviewer-appearance-creator dataviewer-appearance-editor">
+                    <AppearanceOptionCreator
+                      initialCategory={category.key as ContentType}
+                      initialValue={editingAppearanceValue}
+                      originalValue={editingAppearanceValue}
+                      isEditMode={true}
+                      onUpdate={handleUpdateAppearanceOption}
+                      onCancel={() => {
+                        setEditingAppearanceCategory(null);
+                        setEditingAppearanceValue(null);
+                      }}
+                      showPreview={true}
+                    />
+                  </div>
+                )}
+
                 {/* Options List - filtered by spawn mode */}
                 <div className="dataviewer-appearance-options">
                   {filteredOptions.map((option, idx) => {
+                    const isCustom = isCustomItem('appearance', option);
+                    const isEditing = editingAppearanceCategory === category.key && editingAppearanceValue === option;
+
                     // Check if this is a color value
                     if (isColorOption(option)) {
                       return (
-                        <div key={idx} className="dataviewer-appearance-color">
+                        <div 
+                          key={idx} 
+                          className={`dataviewer-appearance-color ${isCustom ? 'dataviewer-appearance-option-custom' : ''} ${isEditing ? 'dataviewer-appearance-color-editing' : ''} ${selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option ? 'dataviewer-appearance-selected' : ''}`}
+                          onClick={() => {
+                            if (isCustom) {
+                              // Toggle selection - if already selected, deselect; otherwise select
+                              if (selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option) {
+                                setSelectedAppearanceOption(null);
+                              } else {
+                                setSelectedAppearanceOption({ category: category.key, option });
+                              }
+                            }
+                          }}
+                        >
                           <div
                             className="dataviewer-color-swatch"
                             style={{ backgroundColor: option }}
                             title={option}
                           />
                           <span className="dataviewer-color-value">{option}</span>
+                          {isCustom && !isEditing && selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option && (
+                            <div className="dataviewer-appearance-option-actions">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingAppearanceCategory(category.key);
+                                  setEditingAppearanceValue(option);
+                                  // Close create form if open
+                                  setAppearanceCreatorCategory(null);
+                                  setSelectedAppearanceOption(null);
+                                }}
+                                leftIcon={Edit2}
+                                title="Edit option"
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteItem('appearance', option);
+                                  setSelectedAppearanceOption(null);
+                                }}
+                                leftIcon={Trash2}
+                                title="Delete option"
+                                className="dataviewer-delete-btn"
+                              />
+                            </div>
+                          )}
                         </div>
                       );
                     }
                     // Regular option (text)
                     return (
-                      <span key={idx} className="dataviewer-tag dataviewer-tag-appearance">
-                        {option}
-                      </span>
+                      <div 
+                        key={idx} 
+                        className={`dataviewer-appearance-option ${isCustom ? 'dataviewer-appearance-option-custom' : ''} ${isEditing ? 'dataviewer-appearance-option-editing' : ''} ${selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option ? 'dataviewer-appearance-selected' : ''}`}
+                        onClick={() => {
+                          if (isCustom) {
+                            // Toggle selection - if already selected, deselect; otherwise select
+                            if (selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option) {
+                              setSelectedAppearanceOption(null);
+                            } else {
+                              setSelectedAppearanceOption({ category: category.key, option });
+                            }
+                          }
+                        }}
+                      >
+                        <span className="dataviewer-tag dataviewer-tag-appearance">
+                          {option}
+                        </span>
+                        {isCustom && !isEditing && selectedAppearanceOption?.category === category.key && selectedAppearanceOption?.option === option && (
+                          <div className="dataviewer-appearance-option-actions">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingAppearanceCategory(category.key);
+                                setEditingAppearanceValue(option);
+                                // Close create form if open
+                                setAppearanceCreatorCategory(null);
+                                setSelectedAppearanceOption(null);
+                              }}
+                              leftIcon={Edit2}
+                              title="Edit option"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteItem('appearance', option);
+                                setSelectedAppearanceOption(null);
+                              }}
+                              leftIcon={Trash2}
+                              title="Delete option"
+                              className="dataviewer-delete-btn"
+                            />
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -2756,6 +2902,8 @@ export function DataViewerTab() {
             setEditingSpell(null);
           }}
           submitButtonText={editingSpell ? "Save Changes" : "Create Spell"}
+          isEditMode={!!editingSpell}
+          originalName={editingSpell?.name}
           initialData={editingSpell ? {
             name: editingSpell.name,
             level: editingSpell.level,
@@ -2791,11 +2939,15 @@ export function DataViewerTab() {
             setEditingSkill(null);
           }}
           submitButtonText={editingSkill ? "Save Changes" : "Create Skill"}
+          isEditMode={!!editingSkill}
+          originalId={editingSkill?.id || editingSkill?.name}
           initialData={editingSkill ? {
+            id: editingSkill.id,
             name: editingSkill.name,
             ability: editingSkill.ability,
             description: editingSkill.description || '',
             categories: editingSkill.categories || [],
+            armorPenalty: editingSkill.armorPenalty,
             icon: editingSkill.icon,
             image: editingSkill.image
           } : undefined}
@@ -2805,67 +2957,149 @@ export function DataViewerTab() {
       {/* Equipment Creator Modal (Phase 4.2) */}
       <ContentCreatorModal
         isOpen={showEquipmentCreator}
-        onClose={() => setShowEquipmentCreator(false)}
-        title="Create Custom Equipment"
-        subtitle="Add a new weapon, armor, item, or box"
+        onClose={() => {
+          setShowEquipmentCreator(false);
+          setEditingEquipment(null);
+        }}
+        title={editingEquipment ? `Edit Equipment: ${editingEquipment.name}` : "Create Custom Equipment"}
+        subtitle={editingEquipment ? "Modify the equipment properties" : "Add a new weapon, armor, item, or box"}
         icon={Package}
         showFooter={false}
         width="lg"
       >
         <EquipmentCreatorForm
           onSubmit={handleCreateEquipment}
-          onCancel={() => setShowEquipmentCreator(false)}
+          onCancel={() => {
+            setShowEquipmentCreator(false);
+            setEditingEquipment(null);
+          }}
+          initialData={editingEquipment ? {
+            name: editingEquipment.name,
+            type: editingEquipment.type,
+            rarity: editingEquipment.rarity,
+            weight: editingEquipment.weight,
+            description: editingEquipment.description,
+            properties: editingEquipment.properties,
+            grantsFeatures: editingEquipment.grantsFeatures?.map(f => typeof f === 'string' ? f : f.name),
+            grantsSkills: editingEquipment.grantsSkills?.map(s => ({
+              skillId: s.skillId,
+              level: s.level
+            })),
+            tags: editingEquipment.tags,
+            icon: editingEquipment.icon,
+            image: editingEquipment.image,
+            boxContents: editingEquipment.boxContents
+          } as any : undefined}
+          isEditMode={!!editingEquipment}
           showPreview={true}
           showAdvancedOptions={true}
           showAutoEquip={false}
-          submitButtonText="Create Equipment"
+          submitButtonText={editingEquipment ? "Save Changes" : "Create Equipment"}
         />
       </ContentCreatorModal>
 
       <ContentCreatorModal
         isOpen={showClassFeatureCreator}
-        onClose={() => setShowClassFeatureCreator(false)}
-        title="Create Custom Class Feature"
-        subtitle="Add a new feature for a class"
+        onClose={() => {
+          setShowClassFeatureCreator(false);
+          setEditingClassFeature(null);
+        }}
+        title={editingClassFeature ? `Edit Class Feature: ${editingClassFeature.name}` : "Create Custom Class Feature"}
+        subtitle={editingClassFeature ? "Modify the feature properties" : "Add a new feature for a class"}
         icon={Award}
         showFooter={false}
       >
         <ClassFeatureCreatorForm
           onCreate={handleCreateClassFeature}
-          onCancel={() => setShowClassFeatureCreator(false)}
-          submitButtonText="Create Feature"
+          onCancel={() => {
+            setShowClassFeatureCreator(false);
+            setEditingClassFeature(null);
+          }}
+          isEditMode={!!editingClassFeature}
+          originalId={editingClassFeature?.id || editingClassFeature?.name}
+          initialData={editingClassFeature ? {
+            id: editingClassFeature.id,
+            name: editingClassFeature.name,
+            class: editingClassFeature.class,
+            level: editingClassFeature.level,
+            type: editingClassFeature.type as 'active' | 'passive' | 'reaction',
+            description: editingClassFeature.description,
+            effects: editingClassFeature.effects || [],
+            prerequisites: editingClassFeature.prerequisites || {},
+            icon: editingClassFeature.icon,
+            image: editingClassFeature.image
+          } : undefined}
+          submitButtonText={editingClassFeature ? "Save Changes" : "Create Feature"}
         />
       </ContentCreatorModal>
 
       <ContentCreatorModal
         isOpen={showRacialTraitCreator}
-        onClose={() => setShowRacialTraitCreator(false)}
-        title="Create Custom Racial Trait"
-        subtitle="Add a new trait for a race"
+        onClose={() => {
+          setShowRacialTraitCreator(false);
+          setEditingRacialTrait(null);
+        }}
+        title={editingRacialTrait ? `Edit Racial Trait: ${editingRacialTrait.name}` : "Create Custom Racial Trait"}
+        subtitle={editingRacialTrait ? "Modify the trait properties" : "Add a new trait for a race"}
         icon={User}
         showFooter={false}
       >
         <RacialTraitCreatorForm
           onCreate={handleCreateRacialTrait}
-          onCancel={() => setShowRacialTraitCreator(false)}
-          submitButtonText="Create Trait"
+          onCancel={() => {
+            setShowRacialTraitCreator(false);
+            setEditingRacialTrait(null);
+          }}
+          isEditMode={!!editingRacialTrait}
+          originalId={editingRacialTrait?.id || editingRacialTrait?.name}
+          initialData={editingRacialTrait ? {
+            id: editingRacialTrait.id,
+            name: editingRacialTrait.name,
+            race: editingRacialTrait.race,
+            subrace: editingRacialTrait.subrace || '',
+            description: editingRacialTrait.description,
+            effects: editingRacialTrait.effects || [],
+            prerequisites: editingRacialTrait.prerequisites || {},
+            icon: editingRacialTrait.icon,
+            image: editingRacialTrait.image
+          } : undefined}
+          submitButtonText={editingRacialTrait ? "Save Changes" : "Create Trait"}
         />
       </ContentCreatorModal>
 
       {/* Race Creator Modal (Phase 6.1) */}
       <ContentCreatorModal
         isOpen={showRaceCreator}
-        onClose={() => setShowRaceCreator(false)}
-        title="Create Custom Race"
-        subtitle="Add a new playable race"
+        onClose={() => {
+          setShowRaceCreator(false);
+          setEditingRace(null);
+        }}
+        title={editingRace ? `Edit Race: ${editingRace.name}` : "Create Custom Race"}
+        subtitle={editingRace ? "Modify the race properties" : "Add a new playable race"}
         icon={Shield}
         showFooter={false}
         width="lg"
       >
         <RaceCreatorForm
           onCreate={handleCreateRace}
-          onCancel={() => setShowRaceCreator(false)}
-          submitButtonText="Create Race"
+          onCancel={() => {
+            setShowRaceCreator(false);
+            setEditingRace(null);
+          }}
+          initialData={editingRace ? {
+            name: editingRace.name,
+            description: editingRace.description,
+            speed: editingRace.speed,
+            ability_bonuses: editingRace.ability_bonuses,
+            traits: editingRace.traits,
+            // Convert string[] to SubraceEntry[] if needed
+            subraces: editingRace.subraces?.map(s => ({ name: s, traits: [] })),
+            icon: editingRace.icon,
+            image: editingRace.image
+          } as any : undefined}
+          isEditMode={!!editingRace}
+          originalName={editingRace?.name}
+          submitButtonText={editingRace ? "Save Changes" : "Create Race"}
           availableTraits={racialTraits.map(t => t.name)}
         />
       </ContentCreatorModal>
@@ -2873,17 +3107,40 @@ export function DataViewerTab() {
       {/* Class Creator Modal (Phase 6.2) */}
       <ContentCreatorModal
         isOpen={showClassCreator}
-        onClose={() => setShowClassCreator(false)}
-        title="Create Custom Class"
-        subtitle="Add a new playable class"
+        onClose={() => {
+          setShowClassCreator(false);
+          setEditingClass(null);
+        }}
+        title={editingClass ? `Edit Class: ${editingClass.name}` : "Create Custom Class"}
+        subtitle={editingClass ? "Modify the class properties" : "Add a new playable class"}
         icon={Zap}
         showFooter={false}
         width="lg"
       >
         <ClassCreatorForm
           onCreate={handleCreateClass}
-          onCancel={() => setShowClassCreator(false)}
-          submitButtonText="Create Class"
+          onCancel={() => {
+            setShowClassCreator(false);
+            setEditingClass(null);
+          }}
+          initialData={editingClass ? {
+            name: editingClass.name,
+            description: editingClass.description,
+            baseClass: editingClass.name, // Use the class name as baseClass
+            hit_die: editingClass.hit_die,
+            primary_ability: editingClass.primary_ability as any,
+            saving_throws: editingClass.saving_throws as any,
+            skill_count: editingClass.skill_count,
+            available_skills: editingClass.available_skills,
+            has_expertise: false, // Default value
+            expertise_count: 0, // Default value
+            is_spellcaster: false, // Default value
+            icon: editingClass.icon,
+            image: editingClass.image
+          } as any : undefined}
+          isEditMode={!!editingClass}
+          originalName={editingClass?.name}
+          submitButtonText={editingClass ? "Save Changes" : "Create Class"}
           availableSkills={skills.map(s => s.id)}
         />
       </ContentCreatorModal>

@@ -123,6 +123,10 @@ export interface SpellFormData {
 export interface SpellCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<SpellFormData>;
+  /** Whether the form is in edit mode (updating existing spell) */
+  isEditMode?: boolean;
+  /** Original spell name being edited (used for update operation) */
+  originalName?: string;
   /** Callback when spell is created */
   onCreate?: (spell: SpellFormData) => void;
   /** Callback when cancel is clicked */
@@ -174,6 +178,8 @@ function formatLevel(level: number): string {
  */
 export function SpellCreatorForm({
   initialData,
+  isEditMode = false,
+  originalName,
   onCreate,
   onCancel,
   disabled = false,
@@ -181,7 +187,7 @@ export function SpellCreatorForm({
   contentType = 'spells',
   availableClasses
 }: SpellCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<SpellFormData>(() => ({
@@ -273,7 +279,8 @@ export function SpellCreatorForm({
         range: formData.range,
         components: formData.components,
         duration: formData.duration,
-        description: formData.description
+        description: formData.description,
+        source: 'custom'
       };
 
       // Add class availability if specified
@@ -296,32 +303,51 @@ export function SpellCreatorForm({
       // But for now, we register to the general 'spells' category and include classes in the data
       const actualContentType = contentType.startsWith('spells.') ? 'spells' : contentType;
 
-      const result = createContent(
-        actualContentType,
-        spellItem,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
-          }
-        }
-      );
+      if (isEditMode && originalName) {
+        // Update existing spell
+        const result = updateContent(
+          actualContentType,
+          originalName,
+          spellItem
+        );
 
-      if (!result.success && result.error) {
-        setFormErrors([result.error]);
+        if (result.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (result.error) {
+          setFormErrors([result.error]);
+        }
+      } else {
+        // Create new spell
+        const result = createContent(
+          actualContentType,
+          spellItem,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!result.success && result.error) {
+          setFormErrors([result.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, onCreate]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalName]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

@@ -70,9 +70,9 @@ export function AudioAnalysisTab() {
   const [timelineCount, setTimelineCount] = useState(20); // 5-100 data points
   const [timelineInterval, setTimelineInterval] = useState(2); // 1-10 seconds
 
-  // Genre mode options - topN and threshold
+  // Genre mode options - topN (threshold always 1 to show all results)
   const [genreTopN, setGenreTopN] = useState(10); // 1-20 genres to return
-  const [genreThreshold, setGenreThreshold] = useState(0.05); // 0.01-0.50 minimum confidence
+  const genreThreshold = 0.01; // Fixed at 1% - always show all results
 
   // Model selection state - keys from MODEL_PRESETS (defaults set when selector opens)
   const [selectedGenreModel, setSelectedGenreModel] = useState<string | null>(null);
@@ -550,7 +550,7 @@ export function AudioAnalysisTab() {
             )}
 
             {/* 3. Analysis Mode Selector */}
-            <div className="audio-analysis-mode-card">
+            <div className={`audio-analysis-mode-card${analysisMode === 'genre' ? ' audio-analysis-mode-card--genre' : ''}`}>
               <div className="audio-analysis-mode-header">
                 <span className="audio-analysis-mode-title">Mode</span>
                 <span className="audio-analysis-mode-subtitle">Sampling strategy</span>
@@ -693,30 +693,6 @@ export function AudioAnalysisTab() {
                     <div className="audio-analysis-genre-slider-marks">
                       <span className="audio-analysis-genre-slider-mark">1</span>
                       <span className="audio-analysis-genre-slider-mark">20</span>
-                    </div>
-                  </div>
-
-                  {/* Threshold slider */}
-                  <div className="audio-analysis-genre-slider-container">
-                    <div className="audio-analysis-genre-slider-header">
-                      <span className="audio-analysis-genre-slider-label">Min Confidence</span>
-                      <span className="audio-analysis-genre-slider-value">{(genreThreshold * 100).toFixed(0)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.01"
-                      max="0.50"
-                      step="0.01"
-                      value={genreThreshold}
-                      onChange={(e) => setGenreThreshold(parseFloat(e.target.value))}
-                      className="audio-analysis-genre-slider"
-                      style={{ '--slider-value': `${((genreThreshold - 0.01) / 0.49) * 100}%` } as React.CSSProperties}
-                      aria-label="Minimum confidence threshold"
-                      disabled={isGenreAnalyzing || isGenreModelLoading}
-                    />
-                    <div className="audio-analysis-genre-slider-marks">
-                      <span className="audio-analysis-genre-slider-mark">1%</span>
-                      <span className="audio-analysis-genre-slider-mark">50%</span>
                     </div>
                   </div>
 

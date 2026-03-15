@@ -97,6 +97,10 @@ export interface RacialTraitFormData {
 export interface RacialTraitCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<RacialTraitFormData>;
+  /** Whether the form is in edit mode (updating existing trait) */
+  isEditMode?: boolean;
+  /** Original trait ID being edited (used for update operation) */
+  originalId?: string;
   /** Callback when trait is created */
   onCreate?: (trait: RacialTraitFormData) => void;
   /** Callback when cancel is clicked */
@@ -145,6 +149,8 @@ function getDefaultFormData(): RacialTraitFormData {
  */
 export function RacialTraitCreatorForm({
   initialData,
+  isEditMode = false,
+  originalId,
   onCreate,
   onCancel,
   disabled = false,
@@ -152,7 +158,7 @@ export function RacialTraitCreatorForm({
   contentType = 'racialTraits',
   availableRaces
 }: RacialTraitCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<RacialTraitFormData>(() => ({
@@ -383,32 +389,51 @@ export function RacialTraitCreatorForm({
       // Determine the actual content type
       const actualContentType = contentType.startsWith('racialTraits.') ? 'racialTraits' : contentType;
 
-      const result = createContent(
-        actualContentType,
-        traitItem,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
-          }
-        }
-      );
+      if (isEditMode && originalId) {
+        // Update existing racial trait
+        const result = updateContent(
+          actualContentType,
+          originalId,
+          traitItem
+        );
 
-      if (!result.success && result.error) {
-        setFormErrors([result.error]);
+        if (result.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (result.error) {
+          setFormErrors([result.error]);
+        }
+      } else {
+        // Create new racial trait
+        const result = createContent(
+          actualContentType,
+          traitItem,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!result.success && result.error) {
+          setFormErrors([result.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, onCreate]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId]);
 
   // Field change handlers
   const handleIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

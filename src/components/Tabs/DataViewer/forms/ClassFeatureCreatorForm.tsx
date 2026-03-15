@@ -107,6 +107,10 @@ export interface ClassFeatureFormData {
 export interface ClassFeatureCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<ClassFeatureFormData>;
+  /** Whether the form is in edit mode (updating existing feature) */
+  isEditMode?: boolean;
+  /** Original feature ID being edited (used for update operation) */
+  originalId?: string;
   /** Callback when feature is created */
   onCreate?: (feature: ClassFeatureFormData) => void;
   /** Callback when cancel is clicked */
@@ -156,6 +160,8 @@ function getDefaultFormData(): ClassFeatureFormData {
  */
 export function ClassFeatureCreatorForm({
   initialData,
+  isEditMode = false,
+  originalId,
   onCreate,
   onCancel,
   disabled = false,
@@ -163,7 +169,7 @@ export function ClassFeatureCreatorForm({
   contentType = 'classFeatures',
   availableClasses
 }: ClassFeatureCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<ClassFeatureFormData>(() => ({
@@ -286,7 +292,8 @@ export function ClassFeatureCreatorForm({
         class: formData.class,
         level: formData.level,
         type: formData.type,
-        description: formData.description
+        description: formData.description,
+        source: 'custom'
       };
 
       // Add effects if any
@@ -351,32 +358,51 @@ export function ClassFeatureCreatorForm({
       // Determine the actual content type
       const actualContentType = contentType.startsWith('classFeatures.') ? 'classFeatures' : contentType;
 
-      const result = createContent(
-        actualContentType,
-        featureItem,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
-          }
-        }
-      );
+      if (isEditMode && originalId) {
+        // Update existing class feature
+        const result = updateContent(
+          actualContentType,
+          originalId,
+          featureItem
+        );
 
-      if (!result.success && result.error) {
-        setFormErrors([result.error]);
+        if (result.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (result.error) {
+          setFormErrors([result.error]);
+        }
+      } else {
+        // Create new class feature
+        const result = createContent(
+          actualContentType,
+          featureItem,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!result.success && result.error) {
+          setFormErrors([result.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, onCreate]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId]);
 
   // Field change handlers
   const handleIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

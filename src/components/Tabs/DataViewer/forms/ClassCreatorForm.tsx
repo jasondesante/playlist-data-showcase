@@ -136,6 +136,10 @@ export interface ClassFormData {
 export interface ClassCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<ClassFormData>;
+  /** Whether we're in edit mode (updates existing instead of creating new) */
+  isEditMode?: boolean;
+  /** Original class name (for updates when name changes) */
+  originalName?: string;
   /** Callback when class is created */
   onCreate?: (cls: ClassFormData) => void;
   /** Callback when cancel is clicked */
@@ -179,6 +183,8 @@ function getDefaultFormData(): ClassFormData {
  */
 export function ClassCreatorForm({
   initialData,
+  isEditMode = false,
+  originalName,
   onCreate,
   onCancel,
   disabled = false,
@@ -186,7 +192,7 @@ export function ClassCreatorForm({
   availableSkills,
   availableClasses
 }: ClassCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<ClassFormData>(() => ({
@@ -334,50 +340,69 @@ export function ClassCreatorForm({
         classData.image = formData.image.trim();
       }
 
-      // Register class name in 'classes' category
-      const nameResult = createContent(
-        'classes',
-        { name: formData.name.trim() },
-        { validate: true },
-        {
-          onError: (error) => {
-            setFormErrors([error]);
-          }
+      if (isEditMode && originalName) {
+        // Update existing class data in 'classes.data' category
+        const dataResult = updateContent(
+          'classes.data',
+          originalName,
+          classData
+        );
+
+        if (dataResult.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (dataResult.error) {
+          setFormErrors([dataResult.error]);
         }
-      );
-
-      if (!nameResult.success) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Register class data in 'classes.data' category
-      const dataResult = createContent(
-        'classes.data',
-        classData,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
+      } else {
+        // Create new class
+        // Register class name in 'classes' category
+        const nameResult = createContent(
+          'classes',
+          { name: formData.name.trim() },
+          { validate: true },
+          {
+            onError: (error) => {
+              setFormErrors([error]);
+            }
           }
-        }
-      );
+        );
 
-      if (!dataResult.success && dataResult.error) {
-        setFormErrors([dataResult.error]);
+        if (!nameResult.success) {
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Register class data in 'classes.data' category
+        const dataResult = createContent(
+          'classes.data',
+          classData,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!dataResult.success && dataResult.error) {
+          setFormErrors([dataResult.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, createContent, onCreate]);
+  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

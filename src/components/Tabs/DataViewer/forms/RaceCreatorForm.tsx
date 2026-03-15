@@ -76,6 +76,10 @@ export interface RaceFormData {
 export interface RaceCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<RaceFormData>;
+  /** Whether we're in edit mode (updates existing instead of creating new) */
+  isEditMode?: boolean;
+  /** Original race name (for updates when name changes) */
+  originalName?: string;
   /** Callback when race is created */
   onCreate?: (race: RaceFormData) => void;
   /** Callback when cancel is clicked */
@@ -129,13 +133,15 @@ function calculateTotalBonuses(bonuses: AbilityBonuses): number {
  */
 export function RaceCreatorForm({
   initialData,
+  isEditMode = false,
+  originalName,
   onCreate,
   onCancel,
   disabled = false,
   submitButtonText,
   availableTraits
 }: RaceCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<RaceFormData>(() => ({
@@ -235,50 +241,69 @@ export function RaceCreatorForm({
         raceData.image = formData.image.trim();
       }
 
-      // Register race name in 'races' category
-      const nameResult = createContent(
-        'races',
-        { name: formData.name.trim() },
-        { validate: true },
-        {
-          onError: (error) => {
-            setFormErrors([error]);
-          }
+      if (isEditMode && originalName) {
+        // Update existing race data in 'races.data' category
+        const dataResult = updateContent(
+          'races.data',
+          originalName,
+          raceData
+        );
+
+        if (dataResult.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (dataResult.error) {
+          setFormErrors([dataResult.error]);
         }
-      );
-
-      if (!nameResult.success) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Register race data in 'races.data' category
-      const dataResult = createContent(
-        'races.data',
-        raceData,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
+      } else {
+        // Create new race
+        // Register race name in 'races' category
+        const nameResult = createContent(
+          'races',
+          { name: formData.name.trim() },
+          { validate: true },
+          {
+            onError: (error) => {
+              setFormErrors([error]);
+            }
           }
-        }
-      );
+        );
 
-      if (!dataResult.success && dataResult.error) {
-        setFormErrors([dataResult.error]);
+        if (!nameResult.success) {
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Register race data in 'races.data' category
+        const dataResult = createContent(
+          'races.data',
+          raceData,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!dataResult.success && dataResult.error) {
+          setFormErrors([dataResult.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, createContent, onCreate]);
+  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

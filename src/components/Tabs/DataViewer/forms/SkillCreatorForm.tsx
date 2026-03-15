@@ -87,6 +87,10 @@ export interface SkillFormData {
 export interface SkillCreatorFormProps {
   /** Initial form data (for editing) */
   initialData?: Partial<SkillFormData>;
+  /** Whether the form is in edit mode (updating existing skill) */
+  isEditMode?: boolean;
+  /** Original skill ID being edited (used for update operation) */
+  originalId?: string;
   /** Callback when skill is created */
   onCreate?: (skill: SkillFormData) => void;
   /** Callback when cancel is clicked */
@@ -139,13 +143,15 @@ function getDefaultFormData(): SkillFormData {
  */
 export function SkillCreatorForm({
   initialData,
+  isEditMode = false,
+  originalId,
   onCreate,
   onCancel,
   disabled = false,
   submitButtonText,
   contentType = 'skills'
 }: SkillCreatorFormProps) {
-  const { createContent, isLoading, lastError, clearError } = useContentCreator();
+  const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
   // Form state
   const [formData, setFormData] = useState<SkillFormData>(() => ({
@@ -225,7 +231,8 @@ export function SkillCreatorForm({
       const skillItem: Record<string, unknown> = {
         id: formData.id,
         name: formData.name,
-        ability: formData.ability
+        ability: formData.ability,
+        source: 'custom'
       };
 
       // Add optional fields only if they have values
@@ -249,33 +256,53 @@ export function SkillCreatorForm({
         skillItem.image = formData.image.trim();
       }
 
-      const result = createContent(
-        contentType,
-        skillItem,
-        { validate: true },
-        {
-          onSuccess: () => {
-            // Reset form on success
-            setFormData(getDefaultFormData());
-            setIdManuallyEdited(false);
-            setFormErrors([]);
-            onCreate?.(formData);
-          },
-          onError: (error) => {
-            setFormErrors([error]);
-          }
-        }
-      );
+      if (isEditMode && originalId) {
+        // Update existing skill
+        const result = updateContent(
+          contentType,
+          originalId,
+          skillItem
+        );
 
-      if (!result.success && result.error) {
-        setFormErrors([result.error]);
+        if (result.success) {
+          // Reset form on success
+          setFormData(getDefaultFormData());
+          setIdManuallyEdited(false);
+          setFormErrors([]);
+          onCreate?.(formData);
+        } else if (result.error) {
+          setFormErrors([result.error]);
+        }
+      } else {
+        // Create new skill
+        const result = createContent(
+          contentType,
+          skillItem,
+          { validate: true },
+          {
+            onSuccess: () => {
+              // Reset form on success
+              setFormData(getDefaultFormData());
+              setIdManuallyEdited(false);
+              setFormErrors([]);
+              onCreate?.(formData);
+            },
+            onError: (error) => {
+              setFormErrors([error]);
+            }
+          }
+        );
+
+        if (!result.success && result.error) {
+          setFormErrors([result.error]);
+        }
       }
     } catch (error) {
       setFormErrors([error instanceof Error ? error.message : 'An error occurred']);
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, onCreate]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

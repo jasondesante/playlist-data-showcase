@@ -1292,6 +1292,21 @@
   gap: 0.5rem;
 }
 
+/* Custom appearance options are clickable */
+.dataviewer-appearance-option-custom {
+  cursor: pointer;
+}
+
+.dataviewer-appearance-option-custom:hover {
+  background: hsl(var(--cute-purple) / 0.08);
+  border-color: hsl(var(--cute-purple) / 0.3);
+}
+
+.dataviewer-appearance-option-custom.dataviewer-appearance-color:hover {
+  border-color: hsl(var(--cute-purple) / 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
 .dataviewer-tag-appearance {
   background: hsl(var(--cute-purple) / 0.12);
   color: hsl(var(--cute-purple));
@@ -1326,6 +1341,48 @@
   font-size: 0.75rem;
   font-family: var(--font-mono, monospace);
   color: var(--color-text-secondary);
+}
+
+/* Appearance option selection styles - custom items have pointer cursor via -custom class */
+
+/* Selected state for custom appearance options */
+.dataviewer-appearance-selected {
+  background: hsl(var(--cute-purple) / 0.1);
+  border-color: hsl(var(--cute-purple) / 0.5) !important;
+  box-shadow: 0 0 0 2px hsl(var(--cute-purple) / 0.2);
+}
+
+.dataviewer-appearance-selected.dataviewer-appearance-option {
+  background: hsl(var(--cute-purple) / 0.1);
+  border: 1px solid hsl(var(--cute-purple) / 0.5);
+  border-radius: var(--radius-md);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Action buttons container with smooth transition */
+.dataviewer-appearance-option-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  animation: appearanceActionsFadeIn 0.15s ease-out;
+}
+
+@keyframes appearanceActionsFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Style the action buttons for appearance options */
+.dataviewer-appearance-option-actions .dataviewer-delete-btn:hover {
+  background: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
 }
 
 /* ========================================

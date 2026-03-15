@@ -185,7 +185,7 @@
 
 .audio-analysis-primary-layout {
   display: grid;
-  grid-template-columns: 1.4fr auto auto 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, auto) minmax(0, 1fr);
   gap: 1.5rem;
   align-items: center;
 }
@@ -477,10 +477,13 @@
 
 /* Action Section */
 .audio-analysis-action-integration {
+  grid-column: 1 / -1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .audio-analysis-primary-action-button {
@@ -1093,6 +1096,36 @@
   padding: 0 1.25rem;
   border-left: 1px solid hsl(var(--border) / 0.5);
   border-right: 1px solid hsl(var(--border) / 0.5);
+  flex: 1 1 auto; /* Share space flexibly with other row items */
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Genre mode: expand to fill the empty EQ column */
+.audio-analysis-mode-card--genre {
+  grid-column: 2 / -1;
+  border-left: none;
+}
+
+.audio-analysis-primary-action-button {
+  max-width: 280px;
+  width: 100%;
+  height: 3.25rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--cute-purple)));
+  box-shadow: 0 4px 15px hsl(var(--primary) / 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.audio-analysis-primary-action-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px hsl(var(--primary) / 0.4);
+}
+
+.audio-analysis-primary-action-button:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .audio-analysis-mode-header {
@@ -1616,6 +1649,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
 }
 
 /* Genre slider options - EQ fader style */
@@ -1862,6 +1896,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
 }
 
 .audio-analysis-model-selector-group {
