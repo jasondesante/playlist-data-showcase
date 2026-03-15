@@ -353,6 +353,8 @@ export function SpawnModeControls({
   const [isBatchApplying, setIsBatchApplying] = useState(false);
   const [batchError, setBatchError] = useState<string | null>(null);
   const [affectedCount, setAffectedCount] = useState<number | null>(null);
+  const [isImportingAll, setIsImportingAll] = useState(false);
+  const importAllFileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-dismiss success and feedback messages after 4 seconds
   useEffect(() => {
@@ -907,6 +909,115 @@ export function SpawnModeControls({
     }
   }, [category, setMode, setWeights]);
 
+  // Handle import all file selection
+  const handleImportAllClick = useCallback(() => {
+    importAllFileInputRef.current?.click();
+  }, []);
+
+  // Handle import all (content pack)
+  const handleImportAll = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImportingAll(true);
+    setImportError(null);
+    setFeedbackMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validate structure - must have categories object
+      if (!data.categories || typeof data.categories !== 'object') {
+        throw new Error('Invalid content pack format. Expected { categories: { ... } }');
+      }
+
+      const categories = data.categories as Record<string, { mode?: SpawnMode; weights?: Record<string, number>; items: any[] }>;
+      const categoryKeys = Object.keys(categories);
+
+      if (categoryKeys.length === 0) {
+        setFeedbackMessage('No categories found in the content pack file.');
+        showToast('No categories to import', 'info');
+        return;
+      }
+
+      // Confirm import
+      const totalItems = categoryKeys.reduce((sum, cat) => sum + (categories[cat].items?.length || 0), 0);
+      const proceed = window.confirm(
+        `Import content pack with ${totalItems} items across ${categoryKeys.length} categories?\n\nCategories: ${categoryKeys.join(', ')}`
+      );
+      if (!proceed) {
+        setIsImportingAll(false);
+        return;
+      }
+
+      const manager = ExtensionManager.getInstance();
+      let importedCategories = 0;
+      let importedItems = 0;
+      const errors: string[] = [];
+
+      // Import each category
+      for (const [cat, catData] of Object.entries(categories)) {
+        try {
+          if (!catData.items || !Array.isArray(catData.items)) {
+            errors.push(`${cat}: Invalid items format`);
+            continue;
+          }
+
+          // Set mode if provided
+          if (catData.mode) {
+            setMode(cat as SpawnCategory, catData.mode);
+          }
+
+          // Set weights if provided
+          if (catData.weights) {
+            setWeights(cat as SpawnCategory, catData.weights);
+          }
+
+          // Register items
+          manager.register(cat as any, catData.items, { validate: true });
+
+          importedCategories++;
+          importedItems += catData.items.length;
+        } catch (catError) {
+          const errorMsg = catError instanceof Error ? catError.message : 'Unknown error';
+          errors.push(`${cat}: ${errorMsg}`);
+          logger.error('DataViewer', `Failed to import category ${cat}`, catError);
+        }
+      }
+
+      // Invalidate caches to pick up new data
+      SpellQuery.getInstance().invalidateCache();
+      SkillQuery.getInstance().invalidateCache();
+      FeatureQuery.getInstance().invalidateCache();
+
+      // Trigger UI refresh
+      useDataViewerStore.getState().notifyDataChanged();
+
+      if (errors.length > 0) {
+        setImportError(`Imported ${importedItems} items to ${importedCategories} categories with ${errors.length} error(s): ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`);
+        showToast(`Imported with ${errors.length} error(s)`, 'warning');
+      } else {
+        setSuccessMessage(`Successfully imported ${importedItems} items to ${importedCategories} categories.`);
+        showToast(`Imported ${importedItems} items from content pack`, 'success');
+      }
+
+      logger.info('DataViewer', `Imported content pack: ${importedItems} items to ${importedCategories} categories`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setImportError(errorMessage);
+      showToast(`Import failed: ${errorMessage}`, 'error');
+      logger.error('DataViewer', 'Import all failed', error);
+    } finally {
+      setIsImportingAll(false);
+      // Reset file input
+      if (importAllFileInputRef.current) {
+        importAllFileInputRef.current.value = '';
+      }
+    }
+  }, [setMode, setWeights]);
+
   // Get total item count from grouped items
   const totalItemCount = useMemo(() => {
     return groupedWeightItems.reduce((sum, group) => sum + group.items.length, 0);
@@ -1191,11 +1302,27 @@ export function SpawnModeControls({
             >
               Import
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportAllClick}
+              isLoading={isImportingAll}
+              leftIcon={Upload}
+            >
+              Import All
+            </Button>
             <input
               ref={fileInputRef}
               type="file"
               accept=".json"
               onChange={handleImport}
+              style={{ display: 'none' }}
+            />
+            <input
+              ref={importAllFileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImportAll}
               style={{ display: 'none' }}
             />
           </div>
