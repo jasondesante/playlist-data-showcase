@@ -193,9 +193,9 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 **Estimated lines moved**: ~130 lines
 
 ### Task 2.3: Create ClassFeaturesPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/ClassFeaturesPanel.tsx`
-- [ ] Move `renderClassFeatures()` function
-- [ ] Accept props for grouped features and handlers
+- [x] Create `src/components/Tabs/DataViewer/components/ClassFeaturesPanel.tsx`
+- [x] Move `renderClassFeatures()` function
+- [x] Accept props for grouped features and handlers
 
 **Estimated lines moved**: ~130 lines
 

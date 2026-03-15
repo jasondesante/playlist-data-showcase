@@ -44,7 +44,6 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Database,
   Search,
-  Sword,
   Shield,
   Users,
   Sparkles,
@@ -104,6 +103,7 @@ import {
 } from './DataViewer/utils';
 import { SpellsPanel } from './DataViewer/components/SpellsPanel';
 import { SkillsPanel } from './DataViewer/components/SkillsPanel';
+import { ClassFeaturesPanel } from './DataViewer/components/ClassFeaturesPanel';
 
 export function DataViewerTab() {
   const {
@@ -686,138 +686,6 @@ export function DataViewerTab() {
             </select>
           </div>
         )}
-      </div>
-    );
-  };
-
-  // Render class features grouped by class
-  // Task 5.1: Updated to show feature effects when expanded
-  // Phase 5.4 (updated): Now uses modal pattern
-  const renderClassFeatures = () => {
-    const grouped = groupClassFeaturesByClass(getFilteredData as ClassFeature[]);
-    const classNames = Object.keys(grouped).sort();
-
-    return (
-      <div className="dataviewer-list">
-        {/* Class Feature Creation Header (Phase 5.4) */}
-        <div className="dataviewer-section-header">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowClassFeatureCreator(true)}
-            leftIcon={Plus}
-          >
-            Create Feature
-          </Button>
-        </div>
-
-        <div className="dataviewer-grouped-list">
-          {classNames.map(className => (
-          <div key={className} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span className="dataviewer-group-title">{className}</span>
-              <span className="dataviewer-group-count">({grouped[className].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[className]
-                .sort((a, b) => a.level - b.level)
-                .map(feature => {
-                  const isExpanded = expandedItems.has(feature.id);
-                  const hasEffects = feature.effects && feature.effects.length > 0;
-                  const hasDescription = feature.description && feature.description.length > 0;
-                  const hasImage = feature.image || feature.icon;
-                  const isExpandable = hasEffects || hasDescription || hasImage;
-                  const isCustom = checkIsCustomItem('classFeatures', feature.name);
-
-                  return (
-                    <div
-                      key={feature.id}
-                      className={`dataviewer-group-item ${isExpandable ? 'dataviewer-group-item-expandable' : ''}`}
-                      onClick={() => isExpandable && toggleExpanded(feature.id)}
-                    >
-                      <div className="dataviewer-group-item-header">
-                        {/* Feature image/icon thumbnail */}
-                        {hasImage && (
-                          <div className="dataviewer-item-thumbnail dataviewer-item-thumbnail-small">
-                            <ArweaveImage
-                              src={feature.image || feature.icon || ''}
-                              alt={feature.name}
-                              width={28}
-                              height={28}
-                              showShimmer={true}
-                              fallback={
-                                <div className="dataviewer-item-thumbnail-fallback dataviewer-item-thumbnail-fallback-small">
-                                  <Sword size={14} />
-                                </div>
-                              }
-                            />
-                          </div>
-                        )}
-                        <span className="dataviewer-group-item-name">{feature.name}</span>
-                        <div className="dataviewer-item-badges">
-                          <span className="dataviewer-badge dataviewer-badge-small">Level {feature.level}</span>
-                          {isExpandable && (
-                            isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                          )}
-                        </div>
-                      </div>
-                      {feature.type && (
-                        <span className="dataviewer-group-item-type">{feature.type}</span>
-                      )}
-                      {isExpanded && (
-                        <div className="dataviewer-group-item-details">
-                          {/* Full-size feature image when expanded */}
-                          {feature.image && (
-                            <div className="dataviewer-item-image">
-                              <ArweaveImage
-                                src={feature.image}
-                                alt={feature.name}
-                                width={150}
-                                height={150}
-                                showShimmer={true}
-                                fallback={
-                                  <div className="dataviewer-item-image-fallback">
-                                    <Sword size={36} />
-                                  </div>
-                                }
-                              />
-                            </div>
-                          )}
-                          {feature.description && (
-                            <div className="dataviewer-item-description">
-                              {feature.description}
-                            </div>
-                          )}
-                          {/* Task 5.3: Using reusable EffectsList component */}
-                          <div className="dataviewer-item-section">
-                            <EffectList
-                              effects={(feature.effects || []) as FeatureEffect[]}
-                              compact
-                              showStacking
-                            />
-                          </div>
-                          {isCustom && (
-                            <div className="dataviewer-item-actions">
-                              <CustomContentBadge
-                                category="classFeatures"
-                                itemName={feature.name}
-                                  onEdit={() => handleEditItem('classFeatures', feature.name)}
-                                  onDelete={() => handleDeleteItem('classFeatures', feature.name)}
-                                  onDuplicate={() => handleDuplicateItem('classFeatures', feature.name)}
-                                showActions={true}
-                                size="sm"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        ))}
-        </div>
       </div>
     );
   };
@@ -2096,10 +1964,18 @@ export function DataViewerTab() {
         );
       case 'classFeatures':
         return (
-          <>
-            {renderClassFeatures()}
-            {renderSpawnModeControls()}
-          </>
+          <ClassFeaturesPanel
+            classFeatures={getFilteredData as ClassFeature[]}
+            groupClassFeaturesByClass={groupClassFeaturesByClass}
+            expandedItems={expandedItems}
+            toggleExpanded={toggleExpanded}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onDuplicate={handleDuplicateItem}
+            checkIsCustomItem={checkIsCustomItem}
+            onCreateFeature={() => setShowClassFeatureCreator(true)}
+            renderSpawnModeControls={renderSpawnModeControls}
+          />
         );
       case 'racialTraits':
         return (
