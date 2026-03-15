@@ -176,11 +176,11 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 ## Phase 2: Extract Panel Components
 
 ### Task 2.1: Create SpellsPanel Component
-- [ ] Create `src/components/Tabs/DataViewer/components/SpellsPanel.tsx`
-- [ ] Move `renderSpellCard()` function
-- [ ] Move spell-related JSX from `renderContent()`
-- [ ] Accept props: `spells`, `expandedItems`, `toggleExpanded`, `onEdit`, `onDelete`, `onDuplicate`, `checkIsCustomItem`
-- [ ] Import color constants from `../constants`
+- [x] Create `src/components/Tabs/DataViewer/components/SpellsPanel.tsx`
+- [x] Move `renderSpellCard()` function
+- [x] Move spell-related JSX from `renderContent()`
+- [x] Accept props: `spells`, `expandedItems`, `toggleExpanded`, `onEdit`, `onDelete`, `onDuplicate`, `checkIsCustomItem`
+- [x] Import color constants from `../constants`
 
 **Estimated lines moved**: ~120 lines
 

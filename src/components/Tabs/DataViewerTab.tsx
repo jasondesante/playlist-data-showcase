@@ -44,7 +44,6 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Database,
   Search,
-  Scroll,
   Sword,
   Shield,
   Users,
@@ -85,8 +84,6 @@ import { ContentCreatorModal } from '../modals/ContentCreatorModal';
 import './DataViewerTab.css';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment, FeaturePrerequisite } from 'playlist-data-engine';
 import {
-  SCHOOL_COLORS,
-  SCHOOL_BG_COLORS,
   RARITY_COLORS,
   RARITY_BG_COLORS,
   ABILITY_COLORS,
@@ -105,6 +102,7 @@ import {
   isColorOption,
   getAppearanceIcon
 } from './DataViewer/utils';
+import { SpellsPanel } from './DataViewer/components/SpellsPanel';
 
 export function DataViewerTab() {
   const {
@@ -685,128 +683,6 @@ export function DataViewerTab() {
                 <option key={tag} value={tag}>{tag}</option>
               ))}
             </select>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render a spell card
-  const renderSpellCard = (spell: RegisteredSpell) => {
-    // Use name as unique key since spell.id may be undefined for default spells
-    const spellKey = spell.id || spell.name;
-    const isExpanded = expandedItems.has(spellKey);
-    const schoolColor = SCHOOL_COLORS[spell.school] || 'var(--color-text-secondary)';
-    const schoolBg = SCHOOL_BG_COLORS[spell.school] || 'var(--color-surface-dim)';
-    const hasImage = spell.image || spell.icon;
-    const isCustom = checkIsCustomItem('spells', spell.name);
-
-    return (
-      <div
-        key={spellKey}
-        className="dataviewer-item-card"
-        style={{ backgroundColor: schoolBg }}
-      >
-        <div
-          className="dataviewer-item-header"
-          onClick={() => toggleExpanded(spellKey)}
-        >
-          {/* Spell image/icon thumbnail */}
-          {hasImage && (
-            <div className="dataviewer-item-thumbnail">
-              <ArweaveImage
-                src={spell.image || spell.icon || ''}
-                alt={spell.name}
-                width={40}
-                height={40}
-                showShimmer={true}
-                fallback={
-                  <div className="dataviewer-item-thumbnail-fallback">
-                    <Scroll size={20} />
-                  </div>
-                }
-              />
-            </div>
-          )}
-          <div className="dataviewer-item-header-content">
-            <span className="dataviewer-item-name" style={{ color: schoolColor }}>
-              {spell.name}
-            </span>
-            <div className="dataviewer-item-badges">
-              <span className="dataviewer-badge" style={{ backgroundColor: schoolColor }}>
-                {spell.school}
-              </span>
-              <span className="dataviewer-badge dataviewer-badge-secondary">
-                {formatLevel(spell.level)}
-              </span>
-            </div>
-          </div>
-          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </div>
-
-        {isExpanded && (
-          <div className="dataviewer-item-details">
-            {/* Full-size spell image when expanded */}
-            {spell.image && (
-              <div className="dataviewer-item-image">
-                <ArweaveImage
-                  src={spell.image}
-                  alt={spell.name}
-                  width={200}
-                  height={200}
-                  showShimmer={true}
-                  fallback={
-                    <div className="dataviewer-item-image-fallback">
-                      <Scroll size={48} />
-                    </div>
-                  }
-                />
-              </div>
-            )}
-            <div className="dataviewer-item-stats">
-              <div className="dataviewer-item-stat">
-                <span className="dataviewer-item-stat-label">Casting Time:</span>
-                <span className="dataviewer-item-stat-value">{spell.casting_time}</span>
-              </div>
-              <div className="dataviewer-item-stat">
-                <span className="dataviewer-item-stat-label">Range:</span>
-                <span className="dataviewer-item-stat-value">{spell.range}</span>
-              </div>
-              <div className="dataviewer-item-stat">
-                <span className="dataviewer-item-stat-label">Components:</span>
-                <span className="dataviewer-item-stat-value">{spell.components}</span>
-              </div>
-              <div className="dataviewer-item-stat">
-                <span className="dataviewer-item-stat-label">Duration:</span>
-                <span className="dataviewer-item-stat-value">{spell.duration}</span>
-              </div>
-            </div>
-            {spell.description && (
-              <div className="dataviewer-item-description">
-                {spell.description}
-              </div>
-            )}
-            {spell.classes && spell.classes.length > 0 && (
-              <div className="dataviewer-item-tags">
-                <span className="dataviewer-item-tags-label">Classes:</span>
-                {spell.classes.map(cls => (
-                  <span key={cls} className="dataviewer-tag">{cls}</span>
-                ))}
-              </div>
-            )}
-            {isCustom && (
-              <div className="dataviewer-item-actions">
-                <CustomContentBadge
-                  category="spells"
-                  itemName={spell.name}
-                  onEdit={() => handleEditItem('spells', spell.name)}
-                  onDelete={() => handleDeleteItem('spells', spell.name)}
-                  onDuplicate={() => handleDuplicateItem('spells', spell.name)}
-                  showActions={true}
-                  size="sm"
-                />
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -2319,25 +2195,18 @@ export function DataViewerTab() {
     switch (activeCategory) {
       case 'spells':
         return (
-          <div className="dataviewer-list">
-            {/* Spell Creation Header (Phase 5.4) */}
-            <div className="dataviewer-section-header">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowSpellCreator(true)}
-                leftIcon={Plus}
-              >
-                Create Spell
-              </Button>
-            </div>
-
-            {renderSpellFilters()}
-            <div className="dataviewer-items">
-              {(getFilteredData as RegisteredSpell[]).map(renderSpellCard)}
-            </div>
-            {renderSpawnModeControls()}
-          </div>
+          <SpellsPanel
+            spells={getFilteredData as RegisteredSpell[]}
+            expandedItems={expandedItems}
+            toggleExpanded={toggleExpanded}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onDuplicate={handleDuplicateItem}
+            checkIsCustomItem={checkIsCustomItem}
+            onCreateSpell={() => setShowSpellCreator(true)}
+            renderSpellFilters={renderSpellFilters}
+            renderSpawnModeControls={renderSpawnModeControls}
+          />
         );
       case 'skills':
         return (
