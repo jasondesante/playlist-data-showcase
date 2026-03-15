@@ -358,11 +358,11 @@ interface UseDataViewerEditingReturn {
 ## Phase 4: Refactor Main Component
 
 ### Task 4.1: Update DataViewerTab Imports
-- [ ] Update imports to use new components
-- [ ] Import constants from `./DataViewer/constants`
-- [ ] Import utils from `./DataViewer/utils`
-- [ ] Import panel components from `./DataViewer/components`
-- [ ] Import hook from `./DataViewer/hooks`
+- [x] Update imports to use new components
+- [x] Import constants from `./DataViewer/constants` (CATEGORY_CONFIG)
+- [x] Import utils from `./DataViewer/utils` - **NOT NEEDED**: Utils are used by panel components, not the main component
+- [x] Import panel components from `./DataViewer/components`
+- [x] Import hook from `./DataViewer/hooks`
 
 ### Task 4.2: Simplify DataViewerTab Component
 - [ ] Import `useDataViewerEditing` hook and destructure needed values
