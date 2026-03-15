@@ -40,7 +40,7 @@
  * @see src/components/ui/EffectDisplay.tsx for the reusable effects list component
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Database,
   Search,
@@ -53,22 +53,21 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { useDataViewer, type DataCategory, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData } from '../../hooks/useDataViewer';
+import { useDataViewer, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
 import { useDataViewerStore } from '../../store/dataViewerStore';
 import { logger } from '../../utils/logger';
-import { showToast } from '../ui/Toast';
 import { SpawnModeControls } from './DataViewer/SpawnModeControls';
-import { useContentCreator, type ContentType } from '../../hooks/useContentCreator';
-import { EquipmentCreatorForm, type EquipmentCreatorFormData } from '../shared/EquipmentCreatorForm';
-import { SkillCreatorForm, type SkillFormData } from './DataViewer/forms/SkillCreatorForm';
-import { SpellCreatorForm, type SpellFormData } from './DataViewer/forms/SpellCreatorForm';
-import { ClassFeatureCreatorForm, type ClassFeatureFormData } from './DataViewer/forms/ClassFeatureCreatorForm';
-import { RacialTraitCreatorForm, type RacialTraitFormData } from './DataViewer/forms/RacialTraitCreatorForm';
-import { RaceCreatorForm, type RaceFormData } from './DataViewer/forms/RaceCreatorForm';
-import { ClassCreatorForm, type ClassFormData } from './DataViewer/forms/ClassCreatorForm';
+import { useContentCreator } from '../../hooks/useContentCreator';
+import { EquipmentCreatorForm } from '../shared/EquipmentCreatorForm';
+import { SkillCreatorForm } from './DataViewer/forms/SkillCreatorForm';
+import { SpellCreatorForm } from './DataViewer/forms/SpellCreatorForm';
+import { ClassFeatureCreatorForm } from './DataViewer/forms/ClassFeatureCreatorForm';
+import { RacialTraitCreatorForm } from './DataViewer/forms/RacialTraitCreatorForm';
+import { RaceCreatorForm } from './DataViewer/forms/RaceCreatorForm';
+import { ClassCreatorForm } from './DataViewer/forms/ClassCreatorForm';
 import { ClassConfigForm } from './DataViewer/forms/ClassConfigForm';
 import { Plus, Swords } from 'lucide-react';
 import { ContentCreatorModal } from '../modals/ContentCreatorModal';
@@ -85,6 +84,7 @@ import { EquipmentPanel } from './DataViewer/components/EquipmentPanel';
 import { AppearancePanel } from './DataViewer/components/AppearancePanel';
 import { CategorySelector } from './DataViewer/components/CategorySelector';
 import { EquipmentFilters } from './DataViewer/components/EquipmentFilters';
+import { useDataViewerEditing } from './DataViewer/hooks/useDataViewerEditing';
 
 export function DataViewerTab() {
   const {
@@ -121,34 +121,99 @@ export function DataViewerTab() {
   const { markChangesViewed, updateEquipmentCount, hasEquipmentCountIncreased, lastEquipmentCount } = useDataViewerStore();
 
   // Content creator hook for edit/delete/duplicate operations
-  const { deleteContent, duplicateContent, createContent, updateContent } = useContentCreator();
+  const contentCreator = useContentCreator();
 
-  // State
-  const [activeCategory, setActiveCategory] = useState<DataCategory>('spells');
+  // Editing state and handlers - managed by the useDataViewerEditing hook
+  const editingState = useDataViewerEditing({
+    spells,
+    skills,
+    classFeatures,
+    racialTraits,
+    equipment,
+    races,
+    classes,
+    isCustomItem,
+    refreshData,
+    deleteContent: contentCreator.deleteContent,
+    duplicateContent: contentCreator.duplicateContent,
+    createContent: contentCreator.createContent,
+    updateContent: contentCreator.updateContent,
+  });
+
+  // Destructure editing state for use in the component
+  const {
+    activeCategory,
+    setActiveCategory,
+    showEquipmentCreator,
+    setShowEquipmentCreator,
+    showSkillCreator,
+    setShowSkillCreator,
+    showSpellCreator,
+    setShowSpellCreator,
+    showClassFeatureCreator,
+    setShowClassFeatureCreator,
+    showRacialTraitCreator,
+    setShowRacialTraitCreator,
+    showRaceCreator,
+    setShowRaceCreator,
+    showClassCreator,
+    setShowClassCreator,
+    showClassConfig,
+    setShowClassConfig,
+    appearanceCreatorCategory,
+    setAppearanceCreatorCategory,
+    editingSpell,
+    setEditingSpell,
+    editingSkill,
+    setEditingSkill,
+    editingEquipment,
+    setEditingEquipment,
+    editingClassFeature,
+    setEditingClassFeature,
+    editingRacialTrait,
+    setEditingRacialTrait,
+    editingRace,
+    setEditingRace,
+    editingClass,
+    setEditingClass,
+    editingAppearanceCategory,
+    setEditingAppearanceCategory,
+    editingAppearanceValue,
+    setEditingAppearanceValue,
+    selectedAppearanceOption,
+    setSelectedAppearanceOption,
+    spellLevelFilter,
+    setSpellLevelFilter,
+    spellSchoolFilter,
+    setSpellSchoolFilter,
+    equipmentTypeFilter,
+    setEquipmentTypeFilter,
+    equipmentRarityFilter,
+    setEquipmentRarityFilter,
+    equipmentTagFilter,
+    setEquipmentTagFilter,
+    searchTerm,
+    setSearchTerm,
+    expandedItems,
+    setExpandedItems,
+    toggleExpanded,
+    handleEditItem,
+    handleDeleteItem,
+    handleDuplicateItem,
+    handleCreateEquipment,
+    handleCreateAppearanceOption,
+    handleUpdateAppearanceOption,
+    handleCreateSkill,
+    handleCreateSpell,
+    handleCreateClassFeature,
+    handleCreateRacialTrait,
+    handleCreateRace,
+    handleCreateClass,
+    checkIsCustomItem,
+  } = editingState;
+
+  // New items indicator state (kept separate as it's local to this component)
   const [showNewItemsIndicator, setShowNewItemsIndicator] = useState(false);
-  const [showEquipmentCreator, setShowEquipmentCreator] = useState(false);
-  const [showSkillCreator, setShowSkillCreator] = useState(false);
-  const [showSpellCreator, setShowSpellCreator] = useState(false);
-  const [showClassFeatureCreator, setShowClassFeatureCreator] = useState(false);
-  const [showRacialTraitCreator, setShowRacialTraitCreator] = useState(false);
-  const [showRaceCreator, setShowRaceCreator] = useState(false);
-  const [showClassCreator, setShowClassCreator] = useState(false);
-  const [showClassConfig, setShowClassConfig] = useState(false);
-  const [appearanceCreatorCategory, setAppearanceCreatorCategory] = useState<string | null>(null);
-
-  // Edit state - track item being edited
-  const [editingSpell, setEditingSpell] = useState<RegisteredSpell | null>(null);
-  const [editingSkill, setEditingSkill] = useState<CustomSkill | null>(null);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
-  const [editingClassFeature, setEditingClassFeature] = useState<ClassFeature | null>(null);
-  const [editingRacialTrait, setEditingRacialTrait] = useState<RacialTrait | null>(null);
-  const [editingRace, setEditingRace] = useState<RaceDataEntry | null>(null);
-  const [editingClass, setEditingClass] = useState<ClassDataEntry | null>(null);
-  // Appearance editing state
-  const [editingAppearanceCategory, setEditingAppearanceCategory] = useState<string | null>(null);
-  const [editingAppearanceValue, setEditingAppearanceValue] = useState<string | null>(null);
-  // Appearance selection state - track which custom option is selected (clicked)
-  const [selectedAppearanceOption, setSelectedAppearanceOption] = useState<{ category: string; option: string } | null>(null);
 
   // Mark changes as viewed when tab is mounted and check for new items
   useEffect(() => {
@@ -174,29 +239,6 @@ export function DataViewerTab() {
   useEffect(() => {
     updateEquipmentCount(dataCounts.equipment);
   }, [dataCounts.equipment, updateEquipmentCount]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-
-  // Spell filters
-  const [spellLevelFilter, setSpellLevelFilter] = useState<number | 'all'>('all');
-  const [spellSchoolFilter, setSpellSchoolFilter] = useState<string | 'all'>('all');
-
-  // Equipment filters
-  const [equipmentTypeFilter, setEquipmentTypeFilter] = useState<'weapon' | 'armor' | 'item' | 'all'>('all');
-  const [equipmentRarityFilter, setEquipmentRarityFilter] = useState<string | 'all'>('all');
-  // Task 3.1: Tags filter state
-  const [equipmentTagFilter, setEquipmentTagFilter] = useState<string | 'all'>('all');
-
-  // Toggle expanded state for an item
-  const toggleExpanded = (id: string) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedItems(newExpanded);
-  };
 
   // Get filtered data based on active category and filters
   // Phase 2.2: Apply spawn mode filtering first, then apply search/category filters
@@ -260,303 +302,6 @@ export function DataViewerTab() {
     filterEquipmentByRarity,
     filterEquipmentByTag
   ]);
-
-  // ==========================================
-  // Custom Content Handlers (Phase 2.2)
-  // ==========================================
-
-  /**
-   * Map DataCategory to ContentType for use with content creator
-   */
-  const getContentType = (category: DataCategory): ContentType => {
-    switch (category) {
-      case 'spells': return 'spells';
-      case 'skills': return 'skills';
-      case 'classFeatures': return 'classFeatures';
-      case 'racialTraits': return 'racialTraits';
-      case 'races': return 'races';
-      case 'classes': return 'classes';
-      case 'equipment': return 'equipment';
-      case 'appearance': return 'appearance.bodyTypes';
-      default: return 'equipment';
-    }
-  };
-
-  /**
-   * Handle edit of a custom item
-   *
-   * Opens the appropriate creator modal with the item data pre-filled for editing.
-   */
-  const handleEditItem = useCallback((category: DataCategory, itemName: string) => {
-    logger.info('DataViewer', `Edit requested for ${category}/${itemName}`);
-
-    // Find the item data and open the appropriate editor
-    switch (category) {
-      case 'spells': {
-        const spell = spells.find(s => s.name === itemName);
-        if (spell) {
-          setEditingSpell(spell);
-          setShowSpellCreator(true);
-        }
-        break;
-      }
-      case 'skills': {
-        const skill = skills.find(s => s.name === itemName || s.id === itemName);
-        if (skill) {
-          setEditingSkill(skill);
-          setShowSkillCreator(true);
-        }
-        break;
-      }
-      case 'classFeatures': {
-        const feature = classFeatures.find(f => f.name === itemName || f.id === itemName);
-        if (feature) {
-          setEditingClassFeature(feature);
-          setShowClassFeatureCreator(true);
-        }
-        break;
-      }
-      case 'racialTraits': {
-        const trait = racialTraits.find(t => t.name === itemName || t.id === itemName);
-        if (trait) {
-          setEditingRacialTrait(trait);
-          setShowRacialTraitCreator(true);
-        }
-        break;
-      }
-      case 'equipment': {
-        const item = equipment.find(e => e.name === itemName);
-        if (item) {
-          setEditingEquipment(item);
-          setShowEquipmentCreator(true);
-        }
-        break;
-      }
-      case 'races': {
-        const race = races.find(r => r.name === itemName);
-        if (race) {
-          setEditingRace(race);
-          setShowRaceCreator(true);
-        }
-        break;
-      }
-      case 'classes': {
-        const cls = classes.find(c => c.name === itemName);
-        if (cls) {
-          setEditingClass(cls);
-          setShowClassCreator(true);
-        }
-        break;
-      }
-      default:
-        logger.warn('DataViewer', `Edit not supported for category: ${category}`);
-    }
-  }, [spells, skills, classFeatures, racialTraits, equipment, races, classes]);
-
-  /**
-   * Handle delete of a custom item
-   */
-  const handleDeleteItem = useCallback(async (category: DataCategory, itemName: string) => {
-    const contentType = getContentType(category);
-    const result = deleteContent(contentType, itemName);
-    if (result.success) {
-      logger.info('DataViewer', `Deleted ${category}/${itemName}`);
-      showToast(`Deleted "${itemName}" successfully`, 'success');
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to delete ${category}/${itemName}: ${result.error}`);
-      showToast(`Failed to delete "${itemName}"`, 'error');
-    }
-  }, [deleteContent, refreshData]);
-
-  /**
-   * Handle duplicate of an item (creates a custom copy)
-   */
-  const handleDuplicateItem = useCallback(async (category: DataCategory, itemName: string) => {
-    const contentType = getContentType(category);
-    const newName = `${itemName} (Copy)`;
-    const result = duplicateContent(contentType, itemName, newName);
-    if (result.success) {
-      logger.info('DataViewer', `Duplicated ${category}/${itemName} as ${newName}`);
-      showToast(`Duplicated "${itemName}" as "${newName}"`, 'success');
-      refreshData();
-    } else {
-      logger.error('DataViewer', `Failed to duplicate ${category}/${itemName}: ${result.error}`);
-      showToast(`Failed to duplicate "${itemName}"`, 'error');
-    }
-  }, [duplicateContent, refreshData]);
-
-  /**
-   * Check if an item is custom (for showing the badge)
-   */
-  const checkIsCustomItem = useCallback((category: DataCategory, itemName: string): boolean => {
-    return isCustomItem(category, itemName);
-  }, [isCustomItem]);
-
-  /**
-   * Handle creation of new equipment via EquipmentCreatorForm
-   */
-  const handleCreateEquipment = useCallback(async (_formData: EquipmentCreatorFormData, equipment: Equipment) => {
-    if (editingEquipment) {
-      // Update existing equipment
-      const result = updateContent('equipment', editingEquipment.name, equipment);
-      if (result.success) {
-        logger.info('DataViewer', `Updated equipment: ${equipment.name}`);
-        showToast(`Updated equipment "${equipment.name}"`, 'success');
-        setShowEquipmentCreator(false);
-        setEditingEquipment(null);
-        refreshData();
-      } else {
-        logger.error('DataViewer', `Failed to update equipment: ${result.error}`);
-        showToast(`Failed to update equipment: ${result.error}`, 'error');
-      }
-    } else {
-      // Create new equipment
-      const result = createContent('equipment', equipment, { mode: 'relative' });
-      if (result.success) {
-        logger.info('DataViewer', `Created equipment: ${equipment.name}`);
-        showToast(`Created equipment "${equipment.name}"`, 'success');
-        setShowEquipmentCreator(false);
-        setEditingEquipment(null);
-        refreshData();
-      } else {
-        logger.error('DataViewer', `Failed to create equipment: ${result.error}`);
-        showToast(`Failed to create equipment: ${result.error}`, 'error');
-      }
-    }
-  }, [createContent, updateContent, refreshData, editingEquipment]);
-
-  /**
-   * Handle creation of new appearance option via AppearanceOptionCreator
-   */
-  const handleCreateAppearanceOption = useCallback((category: ContentType, value: string) => {
-    logger.info('DataViewer', `Created appearance option: ${value} in ${category}`);
-    showToast(`Added "${value}" to ${category.replace('appearance.', '')}`, 'success');
-    setAppearanceCreatorCategory(null);
-    refreshData();
-  }, [refreshData]);
-
-  /**
-   * Handle update of appearance option
-   * Deletes the old value and creates the new one
-   */
-  const handleUpdateAppearanceOption = useCallback((category: ContentType, originalValue: string, newValue: string) => {
-    logger.info('DataViewer', `Updating appearance option: ${originalValue} -> ${newValue} in ${category}`);
-
-    // Delete the old value
-    const deleteResult = deleteContent(category, originalValue);
-    if (!deleteResult.success) {
-      showToast(`Failed to delete old value: ${deleteResult.error}`, 'error');
-      return;
-    }
-
-    // Create the new value
-    const createResult = createContent(category, newValue, { validate: true, markAsCustom: false });
-    if (createResult.success) {
-      showToast(`Updated "${originalValue}" to "${newValue}"`, 'success');
-      setEditingAppearanceCategory(null);
-      setEditingAppearanceValue(null);
-      refreshData();
-    } else {
-      showToast(`Failed to create new value: ${createResult.error}`, 'error');
-      // Try to restore the old value
-      createContent(category, originalValue, { validate: true, markAsCustom: false });
-    }
-  }, [deleteContent, createContent, refreshData]);
-
-  /**
-   * Handle creation of new skill via SkillCreatorForm
-   *
-   * Note: The SkillCreatorForm handles content creation/update internally via useContentCreator.
-   * This handler just manages UI state (closing modal, refreshing data, showing toast).
-   */
-  const handleCreateSkill = useCallback((skill: SkillFormData) => {
-    const isEdit = !!editingSkill;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} skill: ${skill.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} skill "${skill.name}"`, 'success');
-    setShowSkillCreator(false);
-    setEditingSkill(null);
-    refreshData();
-  }, [refreshData, editingSkill]);
-
-  /**
-   * Handle creation of new spell via SpellCreatorForm
-   *
-   * Note: The SpellCreatorForm handles content creation/update internally via useContentCreator.
-   * This handler just manages UI state (closing modal, refreshing data, showing toast).
-   */
-  const handleCreateSpell = useCallback((spell: SpellFormData) => {
-    const isEdit = !!editingSpell;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} spell: ${spell.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} spell "${spell.name}"`, 'success');
-    setShowSpellCreator(false);
-    setEditingSpell(null);
-    refreshData();
-  }, [refreshData, editingSpell]);
-
-  /**
-   * Handle creation of new class feature via ClassFeatureCreatorForm
-   * (Phase 5.4: Class Features Creation in DataViewerTab)
-   *
-   * Note: The ClassFeatureCreatorForm handles content creation/update internally via useContentCreator.
-   * This handler just manages UI state (closing modal, refreshing data, showing toast).
-   */
-  const handleCreateClassFeature = useCallback((feature: ClassFeatureFormData) => {
-    const isEdit = !!editingClassFeature;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} class feature: ${feature.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} class feature "${feature.name}"`, 'success');
-    setShowClassFeatureCreator(false);
-    setEditingClassFeature(null);
-    refreshData();
-  }, [refreshData, editingClassFeature]);
-
-  /**
-   * Handle creation of new racial trait via RacialTraitCreatorForm
-   * (Phase 5.4: Racial Traits Creation in DataViewerTab)
-   *
-   * Note: The RacialTraitCreatorForm handles content creation/update internally via useContentCreator.
-   * This handler just manages UI state (closing modal, refreshing data, showing toast).
-   */
-  const handleCreateRacialTrait = useCallback((trait: RacialTraitFormData) => {
-    const isEdit = !!editingRacialTrait;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} racial trait: ${trait.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} racial trait "${trait.name}"`, 'success');
-    setShowRacialTraitCreator(false);
-    setEditingRacialTrait(null);
-    refreshData();
-  }, [refreshData, editingRacialTrait]);
-
-  /**
-   * Handle creation of new race via RaceCreatorForm
-   * (Phase 6.1: Race Creation in DataViewerTab)
-   *
-   * Note: The RaceCreatorForm handles registration to both 'races' and 'races.data'
-   * internally. This handler just manages UI state and data refresh.
-   */
-  const handleCreateRace = useCallback((race: RaceFormData) => {
-    const isEdit = !!editingRace;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} race: ${race.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} race "${race.name}"`, 'success');
-    setShowRaceCreator(false);
-    setEditingRace(null);
-    refreshData();
-  }, [refreshData, editingRace]);
-
-  /**
-   * Handle creation of new class via ClassCreatorForm
-   * (Phase 6.2: Class Creation in DataViewerTab)
-   *
-   * Note: The ClassCreatorForm handles registration to both 'classes' and 'classes.data'
-   * internally. This handler just manages UI state and data refresh.
-   */
-  const handleCreateClass = useCallback((cls: ClassFormData) => {
-    const isEdit = !!editingClass;
-    logger.info('DataViewer', `${isEdit ? 'Updated' : 'Created'} class: ${cls.name}`);
-    showToast(`${isEdit ? 'Updated' : 'Created'} class "${cls.name}"`, 'success');
-    setShowClassCreator(false);
-    setEditingClass(null);
-    refreshData();
-  }, [refreshData, editingClass]);
 
   // Render content based on active category
   const renderContent = () => {

@@ -263,11 +263,11 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
 
 > **Design Decision**: This hook uses the "Controller Hook" pattern - it manages both state AND handlers together, keeping related logic co-located.
 
-- [ ] Create `src/components/Tabs/DataViewer/hooks/` directory
-- [ ] Create `useDataViewerEditing.ts`
-- [ ] Move all editing states (28 useState calls) into the hook:
+- [x] Create `src/components/Tabs/DataViewer/hooks/` directory
+- [x] Create `useDataViewerEditing.ts`
+- [x] Move all editing states (28 useState calls) into the hook:
   - `activeCategory`, `setActiveCategory`
-  - `showNewItemsIndicator`, `setShowNewItemsIndicator`
+  - `showNewItemsIndicator`, `setShowNewItemsIndicator` (kept in component - local UI state)
   - `showNewSpellCreator`, `setShowNewSpellCreator`
   - `showNewSkillCreator`, `setShowNewSkillCreator`
   - `showNewClassFeatureCreator`, `setShowNewClassFeatureCreator`
@@ -295,7 +295,7 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
   - `equipmentRarityFilter`, `setEquipmentRarityFilter`
   - `equipmentTagFilter`, `setEquipmentTagFilter`
   - `searchTerm`, `setSearchTerm`
-- [ ] Move all handler functions:
+- [x] Move all handler functions:
   - `handleEditItem()`
   - `handleDeleteItem()`
   - `handleDuplicateItem()`
@@ -311,8 +311,8 @@ src/components/Tabs/DataViewerTab.tsx  (~300 lines after refactor)
   - `getContentType()`
   - `checkIsCustomItem()`
   - `toggleExpanded()`
-- [ ] Accept parameters from useDataViewer and useContentCreator
-- [ ] Return both states and handlers in a single object
+- [x] Accept parameters from useDataViewer and useContentCreator
+- [x] Return both states and handlers in a single object
 
 **Hook Return Interface**:
 ```typescript
