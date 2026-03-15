@@ -378,7 +378,7 @@ interface UseDataViewerEditingReturn {
 **Lines reduced**: 955 → 702 lines (26% reduction)
 
 ### Task 4.3: Update DataViewer Index
-- [ ] Update `src/components/Tabs/DataViewer/index.ts` to export new components
+- [x] Update `src/components/Tabs/DataViewer/index.ts` to export new components
 
 ---
 
