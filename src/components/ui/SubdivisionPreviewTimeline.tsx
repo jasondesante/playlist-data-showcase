@@ -296,6 +296,10 @@ export function SubdivisionPreviewTimeline({
     const dragStartXRef = useRef(0);
     const dragStartTimeRef = useRef(0);
 
+    // Quick scroll state
+    const [isQuickScrollDragging, setIsQuickScrollDragging] = useState(false);
+    const quickScrollRef = useRef<HTMLDivElement>(null);
+
     // Keep refs in sync
     useEffect(() => {
         lastAudioTimeRef.current = {
@@ -488,6 +492,62 @@ export function SubdivisionPreviewTimeline({
         }
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
+    // Quick scroll handlers - click to jump, drag to scrub
+    const handleQuickScrollClick = useCallback((event: React.MouseEvent) => {
+        if (disabled || !quickScrollRef.current || !duration) return;
+
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const trackWidth = rect.width;
+        const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+        const newTime = positionRatio * duration;
+
+        seek(newTime);
+    }, [disabled, duration, seek]);
+
+    const handleQuickScrollDragStart = useCallback((event: React.MouseEvent) => {
+        if (disabled || !quickScrollRef.current || !duration) return;
+
+        event.preventDefault();
+        setIsQuickScrollDragging(true);
+
+        // Immediately seek on mousedown
+        const rect = quickScrollRef.current.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const trackWidth = rect.width;
+        const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+        const newTime = positionRatio * duration;
+        seek(newTime);
+    }, [disabled, duration, seek]);
+
+    // Quick scroll drag handling
+    useEffect(() => {
+        if (!isQuickScrollDragging || !duration) return;
+
+        const handleQuickScrollMove = (event: MouseEvent) => {
+            if (!quickScrollRef.current) return;
+
+            const rect = quickScrollRef.current.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const positionRatio = Math.max(0, Math.min(1, clickX / trackWidth));
+            const newTime = positionRatio * duration;
+            seek(newTime);
+        };
+
+        const handleQuickScrollEnd = () => {
+            setIsQuickScrollDragging(false);
+        };
+
+        window.addEventListener('mousemove', handleQuickScrollMove);
+        window.addEventListener('mouseup', handleQuickScrollEnd);
+
+        return () => {
+            window.removeEventListener('mousemove', handleQuickScrollMove);
+            window.removeEventListener('mouseup', handleQuickScrollEnd);
+        };
+    }, [isQuickScrollDragging, duration, seek]);
+
     // Play/pause toggle
     // Handles the case where audio hasn't been loaded yet (fresh page load)
     const handlePlayPause = useCallback(() => {
@@ -626,6 +686,47 @@ export function SubdivisionPreviewTimeline({
                             <span>{type}</span>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Quick scrollbar for fast navigation */}
+            {duration && duration > 0 && (
+                <div className="subdivision-preview-timeline-quickscroll">
+                    <div
+                        ref={quickScrollRef}
+                        className="subdivision-preview-timeline-quickscroll-track"
+                        onClick={handleQuickScrollClick}
+                        onMouseDown={handleQuickScrollDragStart}
+                    >
+                        {/* Downbeat markers in the quick scroll */}
+                        {quarterBeats
+                            .filter(beat => beat.isDownbeat)
+                            .map((beat, index) => {
+                                const position = beat.timestamp / duration;
+                                return (
+                                    <div
+                                        key={`quickscroll-downbeat-${index}`}
+                                        className="subdivision-preview-timeline-quickscroll-marker"
+                                        style={{ left: `${position * 100}%` }}
+                                    />
+                                );
+                            })}
+
+                        {/* Viewport indicator - shows current visible window */}
+                        <div
+                            className="subdivision-preview-timeline-quickscroll-viewport"
+                            style={{
+                                left: `${Math.max(0, ((smoothTime - pastWindow) / duration) * 100)}%`,
+                                width: `${Math.min(100, (totalWindow / duration) * 100)}%`,
+                            }}
+                        />
+
+                        {/* Current position indicator */}
+                        <div
+                            className="subdivision-preview-timeline-quickscroll-position"
+                            style={{ left: `${(smoothTime / duration) * 100}%` }}
+                        />
+                    </div>
                 </div>
             )}
         </div>
