@@ -21,6 +21,7 @@ import {
     useTimeSignature,
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 import type { SubdivisionType } from '@/types';
 
 /**
@@ -270,10 +271,13 @@ export function SubdivisionPreviewTimeline({
     // Audio player state
     const currentTime = useAudioPlayerStore((state) => state.currentTime);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
     const seek = useAudioPlayerStore((state) => state.seek);
     const resume = useAudioPlayerStore((state) => state.resume);
     const pause = useAudioPlayerStore((state) => state.pause);
+    const play = useAudioPlayerStore((state) => state.play);
     const duration = useAudioPlayerStore((state) => state.duration);
+    const { selectedTrack } = usePlaylistStore();
 
     const isPlaying = playbackState === 'playing';
 
@@ -300,9 +304,28 @@ export function SubdivisionPreviewTimeline({
         };
     }, [currentTime]);
 
+    // Track playback state transitions to handle play/pause start smoothly
+    const prevIsPlayingRef = useRef(isPlaying);
+
     useEffect(() => {
         isPlayingRef.current = isPlaying;
-    }, [isPlaying]);
+
+        // CRITICAL: When playback STARTS (transitions from false to true),
+        // reset the timestamp reference to prevent visual stutter.
+        // Without this, the animation loop calculates elapsed time using
+        // a stale timestamp from when the audio was last paused.
+        const playbackJustStarted = isPlaying && !prevIsPlayingRef.current;
+        if (playbackJustStarted) {
+            lastAudioTimeRef.current = {
+                time: currentTime,
+                timestamp: performance.now(),
+            };
+            // Sync smoothTime to currentTime immediately for smooth start
+            setSmoothTime(currentTime);
+        }
+
+        prevIsPlayingRef.current = isPlaying;
+    }, [isPlaying, currentTime]);
 
     // Animation loop for smooth scrolling
     useEffect(() => {
@@ -466,13 +489,21 @@ export function SubdivisionPreviewTimeline({
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
     // Play/pause toggle
+    // Handles the case where audio hasn't been loaded yet (fresh page load)
     const handlePlayPause = useCallback(() => {
         if (isPlaying) {
             pause();
         } else {
-            resume();
+            // CRITICAL FIX: If there's a selectedTrack but no currentUrl loaded, play the track
+            // This handles the case where the page is refreshed and the track is restored
+            // (selectedTrack is set) but the audio hasn't been loaded yet (currentUrl is null)
+            if (selectedTrack && !currentUrl) {
+                play(selectedTrack.audio_url);
+            } else {
+                resume();
+            }
         }
-    }, [isPlaying, pause, resume]);
+    }, [isPlaying, pause, resume, play, selectedTrack, currentUrl]);
 
     // Get unique subdivision types for legend
     const usedSubdivisions = useMemo(() => {
