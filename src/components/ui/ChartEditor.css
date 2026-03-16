@@ -192,7 +192,7 @@
 /* Grid track (inner container) */
 .chart-editor-track {
     display: flex;
-    min-height: 4rem;
+    min-height: 5rem;
     padding: 0.5rem 0;
     position: relative;
 }
@@ -203,7 +203,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: 4rem;
+    min-height: 5rem;
     padding: 0.5rem 0;
 }
 
