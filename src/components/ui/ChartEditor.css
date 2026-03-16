@@ -170,6 +170,13 @@
     border-radius: 0.375rem;
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    cursor: grab;
+}
+
+/* Drag-to-pan active state */
+.chart-editor-container--panning {
+    cursor: grabbing;
+    user-select: none;
 }
 
 .chart-editor-container::-webkit-scrollbar {
@@ -195,6 +202,49 @@
     min-height: 5rem;
     padding: 0.5rem 0;
     position: relative;
+}
+
+/* ============================================
+   PLAYHEAD INDICATOR
+   Shows current playback position in the timeline
+   ============================================ */
+
+.chart-editor-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.6), 0 0 16px hsl(var(--primary) / 0.3);
+    pointer-events: none;
+    z-index: 10;
+    transition: left 0.05s linear;
+}
+
+/* Playhead top marker */
+.chart-editor-playhead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid hsl(var(--primary));
+}
+
+/* Playhead glow effect */
+.chart-editor-playhead::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+    background: hsl(var(--primary) / 0.1);
+    pointer-events: none;
 }
 
 /* Virtualized content container */

@@ -28,6 +28,7 @@ import {
     useEditorMode,
     useKeyMap,
 } from '../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 
 /**
  * Minimal event interface for beat click handling.
@@ -184,6 +185,11 @@ export function ChartEditor({
     // Total beats
     const totalBeats = subdividedBeatMap?.beats.length ?? 0;
 
+    // Audio player state for playback follow and playhead
+    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const isPlaying = playbackState === 'playing';
+
     // Refs
     const gridRef = useRef<HTMLDivElement>(null);
     const isDraggingRef = useRef(false);
@@ -192,6 +198,12 @@ export function ChartEditor({
 
     // Local state for drag selection preview
     const [dragPreview, setDragPreview] = useState<Set<number>>(new Set());
+
+    // Drag-to-pan state
+    const [isPanning, setIsPanning] = useState(false);
+    const [isPanPending, setIsPanPending] = useState(false); // Mouse down, waiting for movement
+    const panStartRef = useRef<{ x: number; scrollLeft: number }>({ x: 0, scrollLeft: 0 });
+    const PAN_THRESHOLD = 5; // pixels - movement beyond this triggers pan mode
 
     // Virtualization
     const virtualization = useVirtualization(gridRef, totalBeats, cellWidth);
@@ -301,6 +313,249 @@ export function ChartEditor({
         return () => window.removeEventListener('mouseup', handleMouseUp);
     }, [handleMouseUp]);
 
+    // ========================================
+    // Drag-to-Pan Functionality
+    // ========================================
+
+    /**
+     * Handle mouse down on grid container - potentially start panning
+     * Pan works when clicking on:
+     * - The measure label area (above cells)
+     * - Empty areas of the grid
+     * - Cells (but only if mouse moves significantly before cell selection starts)
+     */
+    const handleGridMouseDown = useCallback((e: MouseEvent) => {
+        // Only handle left click
+        if (e.button !== 0) return;
+
+        // Check if clicking on a cell - we'll handle this differently
+        const cell = (e.target as HTMLElement).closest('.chart-editor-cell');
+        if (cell) {
+            // For cells, we don't start pan immediately - let cell selection happen first
+            // But store the start position in case the user drags horizontally
+            panStartRef.current = {
+                x: e.clientX,
+                scrollLeft: gridRef.current?.scrollLeft ?? 0,
+            };
+            // Don't set isPanPending for cells - cell selection takes priority
+            return;
+        }
+
+        // Clicking on measure label or empty area - start pan ready state
+        panStartRef.current = {
+            x: e.clientX,
+            scrollLeft: gridRef.current?.scrollLeft ?? 0,
+        };
+        setIsPanPending(true);
+    }, []);
+
+    /**
+     * Handle mouse move - start panning if movement exceeds threshold
+     */
+    const handleGridMouseMove = useCallback((e: MouseEvent) => {
+        if (!gridRef.current || panStartRef.current.x === 0) return;
+
+        // Don't pan if we're in cell selection mode
+        if (isDraggingRef.current) return;
+
+        const dx = e.clientX - panStartRef.current.x;
+
+        // Check if we should start panning (movement beyond threshold)
+        if (!isPanning && (isPanPending || Math.abs(dx) > PAN_THRESHOLD)) {
+            setIsPanning(true);
+            setIsPanPending(false);
+        }
+
+        if (isPanning) {
+            gridRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+        }
+    }, [isPanning, isPanPending]);
+
+    /**
+     * Handle mouse up - end panning
+     */
+    const handleGridMouseUp = useCallback(() => {
+        setIsPanning(false);
+        setIsPanPending(false);
+        panStartRef.current = { x: 0, scrollLeft: 0 };
+    }, []);
+
+    /**
+     * Add/remove pan event listeners
+     */
+    useEffect(() => {
+        const container = gridRef.current;
+        if (!container) return;
+
+        container.addEventListener('mousedown', handleGridMouseDown);
+
+        // Listen for mousemove/mouseup when panning OR when mouse is down waiting for movement
+        if (isPanning || isPanPending) {
+            window.addEventListener('mousemove', handleGridMouseMove);
+            window.addEventListener('mouseup', handleGridMouseUp);
+        }
+
+        return () => {
+            container.removeEventListener('mousedown', handleGridMouseDown);
+            window.removeEventListener('mousemove', handleGridMouseMove);
+            window.removeEventListener('mouseup', handleGridMouseUp);
+        };
+    }, [isPanning, isPanPending, handleGridMouseDown, handleGridMouseMove, handleGridMouseUp]);
+
+    // ========================================
+    // Playhead Indicator
+    // ========================================
+
+    // Smooth playhead animation using requestAnimationFrame
+    // The audio timeupdate event only fires ~every 250ms, so we interpolate
+    // for smooth 60fps movement
+    const [playheadPosition, setPlayheadPosition] = useState<number | null>(null);
+    const lastUpdateTimeRef = useRef<{ time: number; timestamp: number } | null>(null);
+    const rafRef = useRef<number | null>(null);
+
+    // Calculate playhead position from a given time value
+    const calculatePlayheadPosition = useCallback((time: number): number | null => {
+        if (!subdividedBeatMap) return null;
+
+        const beats = subdividedBeatMap.beats;
+
+        // Find the closest beat to current time
+        let closestBeatIndex = 0;
+        let closestDiff = Infinity;
+
+        for (let i = 0; i < beats.length; i++) {
+            const diff = Math.abs(beats[i].timestamp - time);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestBeatIndex = i;
+            }
+        }
+
+        // Calculate exact position based on interpolation between beats
+        const currentBeat = beats[closestBeatIndex];
+        const nextBeat = beats[closestBeatIndex + 1];
+
+        let exactPosition: number;
+        if (nextBeat) {
+            // Interpolate between current and next beat
+            const beatDuration = nextBeat.timestamp - currentBeat.timestamp;
+            const timeSinceBeat = time - currentBeat.timestamp;
+            const interpolationRatio = Math.max(0, Math.min(1, timeSinceBeat / beatDuration));
+            exactPosition = (closestBeatIndex + interpolationRatio) * cellWidth;
+        } else {
+            // Last beat - use position directly
+            exactPosition = closestBeatIndex * cellWidth;
+        }
+
+        return exactPosition;
+    }, [subdividedBeatMap, cellWidth]);
+
+    // Smooth animation loop for playhead (when playing)
+    // When paused, show playhead at current position without animation
+    useEffect(() => {
+        if (!subdividedBeatMap) {
+            setPlayheadPosition(null);
+            lastUpdateTimeRef.current = null;
+            return;
+        }
+
+        // When paused, just show the playhead at the current position
+        if (!isPlaying) {
+            const position = calculatePlayheadPosition(currentTime);
+            setPlayheadPosition(position);
+            lastUpdateTimeRef.current = null;
+            return;
+        }
+
+        // Store the current time when we get an update
+        lastUpdateTimeRef.current = {
+            time: currentTime,
+            timestamp: performance.now(),
+        };
+
+        // Initial position
+        const initialPos = calculatePlayheadPosition(currentTime);
+        setPlayheadPosition(initialPos);
+
+        // Animation loop
+        const animate = () => {
+            const updateInfo = lastUpdateTimeRef.current;
+            if (!updateInfo) {
+                rafRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
+            // Calculate interpolated time
+            const elapsed = (performance.now() - updateInfo.timestamp) / 1000;
+            const interpolatedTime = updateInfo.time + elapsed;
+
+            // Clamp to duration
+            const duration = subdividedBeatMap.beats[subdividedBeatMap.beats.length - 1]?.timestamp ?? 0;
+            const clampedTime = Math.min(interpolatedTime, duration);
+
+            const position = calculatePlayheadPosition(clampedTime);
+            setPlayheadPosition(position);
+
+            if (clampedTime < duration) {
+                rafRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        rafRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
+    }, [isPlaying, subdividedBeatMap, currentTime, calculatePlayheadPosition]);
+
+    // ========================================
+    // Playback Follow - Auto-scroll to current beat
+    // ========================================
+
+    /**
+     * Auto-scroll the grid to follow the current playback position
+     * Only scrolls when playing and not currently panning/selection-dragging
+     */
+    useEffect(() => {
+        if (!isPlaying || !gridRef.current || !subdividedBeatMap || isPanning || isDraggingRef.current) return;
+
+        // Find the beat closest to current time
+        const beats = subdividedBeatMap.beats;
+        let closestBeatIndex = 0;
+        let closestDiff = Infinity;
+
+        for (let i = 0; i < beats.length; i++) {
+            const diff = Math.abs(beats[i].timestamp - currentTime);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestBeatIndex = i;
+            }
+        }
+
+        // Calculate the scroll position to center the current beat
+        const container = gridRef.current;
+        const containerWidth = container.clientWidth;
+        const beatPosition = closestBeatIndex * cellWidth;
+        const targetScrollLeft = beatPosition - (containerWidth / 2);
+
+        // Smoothly scroll to keep the current beat in view
+        // Only auto-scroll if the beat is getting close to the edge
+        const currentScrollLeft = container.scrollLeft;
+        const visibleStart = currentScrollLeft;
+        const visibleEnd = currentScrollLeft + containerWidth;
+        const beatVisible = beatPosition >= visibleStart && beatPosition <= visibleEnd;
+
+        if (!beatVisible) {
+            // Beat is out of view, scroll to it
+            container.scrollTo({
+                left: Math.max(0, targetScrollLeft),
+                behavior: 'smooth',
+            });
+        }
+    }, [currentTime, isPlaying, subdividedBeatMap, cellWidth, isPanning]);
+
     // Handle clear all keys
     const handleClearAll = useCallback(() => {
         if (disabled) return;
@@ -403,12 +658,25 @@ export function ChartEditor({
                 )}
             </div>
 
-            {/* Grid container with horizontal scroll */}
-            <div className="chart-editor-container" ref={gridRef}>
+            {/* Grid container with horizontal scroll and drag-to-pan */}
+            <div
+                className={cn(
+                    'chart-editor-container',
+                    isPanning && 'chart-editor-container--panning'
+                )}
+                ref={gridRef}
+            >
                 <div
                     className="chart-editor-track"
                     style={{ width: `${totalBeats * cellWidth}px` }}
                 >
+                    {/* Playhead indicator - shows current playback position */}
+                    {playheadPosition !== null && (
+                        <div
+                            className="chart-editor-playhead"
+                            style={{ left: `${playheadPosition}px` }}
+                        />
+                    )}
                     {/* Virtualized content container */}
                     <div
                         className="chart-editor-virtualized"
