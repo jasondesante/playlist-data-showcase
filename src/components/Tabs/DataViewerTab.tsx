@@ -30,7 +30,7 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { useDataViewer, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData } from '../../hooks/useDataViewer';
+import { useDataViewer, type RaceDataEntry, type ClassDataEntry, type AppearanceCategoryData, type DataCounts } from '../../hooks/useDataViewer';
 import { RawJsonDump } from '../ui/RawJsonDump';
 import { Button } from '../ui/Button';
 import { Card, CardHeader } from '../ui/Card';
@@ -259,6 +259,20 @@ export function DataViewerTab() {
     filterEquipmentByTag
   ]);
 
+  // Compute filtered counts for all categories (respects spawn mode)
+  const filteredCounts = useMemo((): DataCounts => {
+    return {
+      spells: getFilteredItems('spells').length,
+      skills: getFilteredItems('skills').length,
+      classFeatures: getFilteredItems('classFeatures').length,
+      racialTraits: getFilteredItems('racialTraits').length,
+      races: getFilteredItems('races').length,
+      classes: getFilteredItems('classes').length,
+      equipment: getFilteredItems('equipment').length,
+      appearance: getFilteredItems('appearance').length
+    };
+  }, [getFilteredItems]);
+
   // Get raw data for the current category
   const getRawData = () => {
     switch (activeCategory) {
@@ -311,6 +325,7 @@ export function DataViewerTab() {
         <CategorySelector
           activeCategory={activeCategory}
           dataCounts={dataCounts}
+          filteredCounts={filteredCounts}
           onCategoryChange={(category) => {
             setActiveCategory(category);
             setSearchTerm('');

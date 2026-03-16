@@ -1023,6 +1023,17 @@ export function SpawnModeControls({
     return groupedWeightItems.reduce((sum, group) => sum + group.items.length, 0);
   }, [groupedWeightItems]);
 
+  // Get display count for weight editor header (respects spawn mode)
+  // In absolute/replace mode, show only custom items count
+  const displayItemCount = useMemo(() => {
+    if (currentMode === 'absolute' || currentMode === 'replace') {
+      // Only show custom items count in these modes
+      return categoryInfo.customCount;
+    }
+    // In relative/default mode, show all items
+    return totalItemCount;
+  }, [currentMode, categoryInfo.customCount, totalItemCount]);
+
   // Use override custom count if provided, otherwise use categoryInfo
   const displayCustomCount = customCountOverride ?? categoryInfo.customCount;
 
@@ -1114,7 +1125,7 @@ export function SpawnModeControls({
             <Weight size={14} aria-hidden="true" />
             <span>Weight Editor</span>
             <span className="spawn-mode-weight-count">
-              {totalItemCount} items
+              {displayItemCount} items
             </span>
             {isAdvancedOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
           </button>

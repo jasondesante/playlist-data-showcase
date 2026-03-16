@@ -18,6 +18,8 @@ export interface CategorySelectorProps {
   activeCategory: DataCategory;
   /** Counts for each data category */
   dataCounts: DataCounts;
+  /** Optional filtered counts based on spawn mode (if not provided, uses dataCounts) */
+  filteredCounts?: DataCounts;
   /** Handler called when category changes */
   onCategoryChange: (category: DataCategory) => void;
 }
@@ -28,6 +30,7 @@ export interface CategorySelectorProps {
 export function CategorySelector({
   activeCategory,
   dataCounts,
+  filteredCounts,
   onCategoryChange
 }: CategorySelectorProps) {
   return (
@@ -36,7 +39,8 @@ export function CategorySelector({
         const config = CATEGORY_CONFIG[category];
         const Icon = config.icon;
         const isActive = activeCategory === category;
-        const count = dataCounts[config.countKey];
+        // Use filtered count if available (respects spawn mode), otherwise use total count
+        const displayCount = filteredCounts ? filteredCounts[config.countKey] : dataCounts[config.countKey];
 
         return (
           <button
@@ -46,7 +50,7 @@ export function CategorySelector({
           >
             <Icon size={18} />
             <span className="dataviewer-category-label">{config.label}</span>
-            <span className="dataviewer-category-count">{count}</span>
+            <span className="dataviewer-category-count">{displayCount}</span>
           </button>
         );
       })}
