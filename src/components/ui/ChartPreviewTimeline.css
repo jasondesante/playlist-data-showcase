@@ -1,0 +1,494 @@
+/* ============================================
+   CHART PREVIEW TIMELINE
+   Horizontal timeline for chart editor preview
+   ============================================ */
+
+.chart-preview-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Empty state */
+.chart-preview-timeline--empty {
+    padding: 1rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border: 1px dashed hsl(var(--border) / 0.5);
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.chart-preview-timeline-empty-message {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+}
+
+/* ============================================
+   CONTROLS
+   ============================================ */
+
+.chart-preview-timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-preview-timeline-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--cute-purple) / 0.8));
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: hsl(var(--background));
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.chart-preview-timeline-play-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+}
+
+.chart-preview-timeline-play-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.chart-preview-timeline-play-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.chart-preview-timeline-time {
+    font-size: 0.625rem;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+    padding: 0.25rem 0.5rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border-radius: 0.25rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* ============================================
+   TIMELINE TRACK
+   ============================================ */
+
+.chart-preview-timeline-track {
+    position: relative;
+    height: 4.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+}
+
+.chart-preview-timeline-track:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.chart-preview-timeline-track.dragging {
+    cursor: grabbing;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+.chart-preview-timeline-track.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Background Layers */
+.chart-preview-timeline-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--surface-3)) 0%,
+        hsl(var(--surface-2)) 30%,
+        hsl(var(--surface-2)) 70%,
+        hsl(var(--surface-3)) 100%
+    );
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+/* Past Region (left of now line) */
+.chart-preview-timeline-past-region {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--background) / 0.3) 0%,
+        transparent 100%
+    );
+}
+
+/* Future Region (right of now line) */
+.chart-preview-timeline-future-region {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        hsl(var(--primary) / 0.05) 100%
+    );
+}
+
+/* ============================================
+   QUARTER NOTE BOUNDARIES
+   ============================================ */
+
+.chart-preview-timeline-quarter-boundary {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: hsl(var(--muted-foreground) / 0.2);
+    z-index: 2;
+}
+
+.chart-preview-timeline-quarter-boundary.downbeat {
+    width: 2px;
+    background: hsl(var(--primary) / 0.4);
+}
+
+.chart-preview-timeline-measure-label {
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    color: hsl(var(--primary) / 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px hsl(var(--background) / 0.8);
+}
+
+/* ============================================
+   BEAT MARKERS
+   ============================================ */
+
+.chart-preview-timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.chart-preview-timeline-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.chart-preview-timeline-marker-dot {
+    border-radius: 50%;
+    background: var(--beat-color, hsl(var(--cute-yellow)));
+    box-shadow: 0 0 6px var(--beat-color, hsl(var(--cute-yellow)) / 0.6);
+    transition: all 0.1s ease;
+    border: 2px solid hsl(var(--background) / 0.8);
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Quarter note markers (larger) */
+.chart-preview-timeline-marker.quarter-note .chart-preview-timeline-marker-dot {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    border: 2px solid hsl(var(--background));
+    box-shadow: 0 0 6px var(--beat-color, hsl(var(--cute-yellow)) / 0.7);
+}
+
+/* Downbeat markers (largest) */
+.chart-preview-timeline-marker.downbeat .chart-preview-timeline-marker-dot {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    box-shadow: 0 0 12px var(--beat-color, hsl(var(--primary) / 0.8));
+    border: 3px solid hsl(var(--background));
+}
+
+/* Past markers */
+.chart-preview-timeline-marker.past {
+    opacity: 1;
+}
+
+.chart-preview-timeline-marker.past .chart-preview-timeline-marker-dot {
+    opacity: 0.85;
+}
+
+/* Markers with keys - highlighted */
+.chart-preview-timeline-marker.has-key .chart-preview-timeline-marker-dot {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--beat-color, hsl(var(--cute-yellow) / 0.8)), 0 0 0 2px var(--beat-color);
+}
+
+/* Beat number label */
+.chart-preview-timeline-marker-number {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.125rem;
+    font-size: 0.5rem;
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 1px 2px hsl(var(--background) / 0.8);
+}
+
+.chart-preview-timeline-marker.downbeat .chart-preview-timeline-marker-number {
+    color: hsl(var(--primary) / 0.9);
+}
+
+/* Key symbol on marker */
+.chart-preview-timeline-marker-key {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 0 8px currentColor;
+}
+
+/* ============================================
+   KEY COLORS
+   ============================================ */
+
+.chart-preview-marker--blue {
+    --beat-color: hsl(210 100% 50%);
+}
+
+.chart-preview-marker--green {
+    --beat-color: hsl(142 76% 46%);
+}
+
+.chart-preview-marker--red {
+    --beat-color: hsl(0 84% 60%);
+}
+
+.chart-preview-marker--purple {
+    --beat-color: hsl(280 80% 55%);
+}
+
+.chart-preview-marker--yellow {
+    --beat-color: hsl(48 96% 53%);
+}
+
+.chart-preview-marker--orange {
+    --beat-color: hsl(24 95% 60%);
+}
+
+.chart-preview-marker--quarter {
+    --beat-color: hsl(var(--subdivision-quarter));
+}
+
+.chart-preview-marker--eighth {
+    --beat-color: hsl(var(--subdivision-eighth));
+}
+
+.chart-preview-marker--sixteenth {
+    --beat-color: hsl(var(--subdivision-sixteenth));
+}
+
+/* ============================================
+   NOW LINE
+   ============================================ */
+
+.chart-preview-timeline-now-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 2px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.chart-preview-timeline-now-line-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.8);
+}
+
+.chart-preview-timeline-now-label {
+    position: absolute;
+    bottom: 0.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.4375rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--primary));
+    background: hsl(var(--background) / 0.8);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
+    white-space: nowrap;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.chart-preview-timeline-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    background: hsl(var(--surface-2) / 0.5);
+    border-radius: 0.25rem;
+}
+
+.chart-preview-timeline-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.5rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.chart-preview-timeline-legend-marker {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--beat-color, hsl(var(--cute-yellow)));
+    box-shadow: 0 0 4px var(--beat-color, hsl(var(--cute-yellow) / 0.5));
+}
+
+/* ============================================
+   QUICK SCROLL BAR
+   ============================================ */
+
+.chart-preview-timeline-quickscroll {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-preview-timeline-quickscroll-track {
+    position: relative;
+    flex: 1;
+    height: 0.5rem;
+    background: hsl(var(--surface-3));
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.chart-preview-timeline-quickscroll-track:hover {
+    background: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+.chart-preview-timeline-quickscroll-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: hsl(var(--primary) / 0.3);
+    transform: translateX(-50%);
+}
+
+.chart-preview-timeline-quickscroll-viewport {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: hsl(var(--primary) / 0.2);
+    border-left: 1px solid hsl(var(--primary) / 0.5);
+    border-right: 1px solid hsl(var(--primary) / 0.5);
+    border-radius: 0.125rem;
+    pointer-events: none;
+    min-width: 4px;
+}
+
+.chart-preview-timeline-quickscroll-position {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 2px;
+    background: hsl(var(--primary));
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.8);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 640px) {
+    .chart-preview-timeline-track {
+        height: 4rem;
+    }
+
+    .chart-preview-timeline-marker.quarter-note .chart-preview-timeline-marker-dot {
+        min-width: 1.25rem;
+        min-height: 1.25rem;
+    }
+
+    .chart-preview-timeline-marker.downbeat .chart-preview-timeline-marker-dot {
+        min-width: 1.5rem;
+        min-height: 1.5rem;
+    }
+
+    .chart-preview-timeline-legend {
+        gap: 0.375rem;
+    }
+
+    .chart-preview-timeline-legend-item {
+        font-size: 0.4375rem;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .chart-preview-timeline-play-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .chart-preview-timeline-marker.quarter-note .chart-preview-timeline-marker-dot {
+        min-width: 1.5rem;
+        min-height: 1.5rem;
+    }
+
+    .chart-preview-timeline-marker.downbeat .chart-preview-timeline-marker-dot {
+        min-width: 1.75rem;
+        min-height: 1.75rem;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .chart-preview-timeline-marker,
+    .chart-preview-timeline-marker-dot,
+    .chart-preview-timeline-play-btn {
+        transition: none;
+    }
+}

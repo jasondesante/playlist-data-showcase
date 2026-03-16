@@ -13,6 +13,7 @@ import { BeatDetectionSettings } from '../ui/BeatDetectionSettings';
 import { SubdivisionSettings } from '../ui/SubdivisionSettings';
 import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
+import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
@@ -535,6 +536,8 @@ export function BeatDetectionTab() {
                     <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
                         <div className="audio-analysis-chart-editor-section">
                             <h3 className="audio-analysis-step-title">Chart Editor</h3>
+                            {/* Chart Preview Timeline */}
+                            <ChartPreviewTimeline disabled={isBeatGenerating} />
                             <ChartEditorToolbar
                                 disabled={isBeatGenerating}
                                 audioTitle={selectedTrack?.title}
