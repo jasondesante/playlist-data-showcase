@@ -535,13 +535,12 @@ export function BeatDetectionTab() {
                 return wrapContent(
                     <Card variant="elevated" padding="lg" className="audio-analysis-chart-editor-card">
                         <div className="audio-analysis-chart-editor-section">
-                            <h3 className="audio-analysis-step-title">Chart Editor</h3>
-                            {/* Chart Preview Timeline */}
-                            <ChartPreviewTimeline disabled={isBeatGenerating} />
+                            <h3 className="audio-analysis-step-title">Chart Editor <Tooltip content="Assign keys to beats to create a playable rhythm chart" /></h3>
                             <ChartEditorToolbar
                                 disabled={isBeatGenerating}
                                 audioTitle={selectedTrack?.title}
                             />
+                            <ChartPreviewTimeline disabled={isBeatGenerating} />
                             <ChartEditor disabled={isBeatGenerating} />
                         </div>
 
