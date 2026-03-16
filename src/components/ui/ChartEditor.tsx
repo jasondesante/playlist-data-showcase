@@ -22,6 +22,7 @@ import './ChartEditor.css';
 import {
     useBeatDetectionStore,
     useSubdividedBeatMap,
+    useUnifiedBeatMap,
     useTimeSignature,
     useChartStyle,
     useSelectedKey,
@@ -168,6 +169,7 @@ export function ChartEditor({
     className,
 }: ChartEditorProps) {
     const subdividedBeatMap = useSubdividedBeatMap();
+    const unifiedBeatMap = useUnifiedBeatMap();
     const storeBeatsPerMeasure = useTimeSignature();
     const chartStyle = useChartStyle();
     const selectedKey = useSelectedKey();
@@ -209,30 +211,65 @@ export function ChartEditor({
     const virtualization = useVirtualization(gridRef, totalBeats, cellWidth);
 
     // Group beats by measure (for virtualized rendering)
+    // Uses unifiedBeatMap to correctly identify measure boundaries based on quarter notes
     const measures = useMemo(() => {
-        if (!subdividedBeatMap) return [];
+        if (!subdividedBeatMap || !unifiedBeatMap) return [];
 
         const { startIndex, endIndex } = virtualization;
-        const grouped: Array<Array<{ beatIndex: number; requiredKey?: string }>> = [];
-        let currentMeasure: Array<{ beatIndex: number; requiredKey?: string }> = [];
+        const grouped: Array<Array<{
+            beatIndex: number;
+            requiredKey?: string;
+            isQuarterNote: boolean;
+            quarterNoteIndex: number;
+            measureNumber: number;
+        }>> = [];
+        let currentMeasure: Array<{
+            beatIndex: number;
+            requiredKey?: string;
+            isQuarterNote: boolean;
+            quarterNoteIndex: number;
+            measureNumber: number;
+        }> = [];
+
 
         for (let i = startIndex; i < endIndex && i < totalBeats; i++) {
             const beat = subdividedBeatMap.beats[i];
             const requiredKey = keyMap.get(i);
 
-            // Start new measure on downbeat (except for first visible beat)
-            if (beat.isDownbeat && i > startIndex) {
+            // Get the quarter note index this beat belongs to
+            const quarterNoteIndex = beat.originalBeatIndex ?? Math.floor(i / 2);
+
+            // A beat is a quarter note if:
+            // 1. Its subdivisionType is 'quarter', OR
+            // 2. Its timestamp matches a beat in the unified beat map (fallback)
+            let isQuarterNote = beat.subdivisionType === 'quarter';
+
+            // Fallback: check if this beat's timestamp matches a unified beat
+            if (!isQuarterNote && unifiedBeatMap) {
+                const unifiedBeat = unifiedBeatMap.beats[quarterNoteIndex];
+                if (unifiedBeat) {
+                    // Allow small tolerance for floating point comparison
+                    const timeDiff = Math.abs(beat.timestamp - unifiedBeat.timestamp);
+                    isQuarterNote = timeDiff < 0.001;
+                }
+            }
+
+            // Calculate measure number from the quarter note index
+            const measureNumber = Math.floor(quarterNoteIndex / actualBeatsPerMeasure) + 1;
+
+            // Start new measure when we encounter a downbeat (except first visible beat)
+            if (beat.isDownbeat && i > startIndex && currentMeasure.length > 0) {
                 grouped.push(currentMeasure);
                 currentMeasure = [];
             }
 
-            currentMeasure.push({ beatIndex: i, requiredKey });
-
-            // Also start new measure when we hit the beats per measure count
-            if (currentMeasure.length >= actualBeatsPerMeasure) {
-                grouped.push(currentMeasure);
-                currentMeasure = [];
-            }
+            currentMeasure.push({
+                beatIndex: i,
+                requiredKey,
+                isQuarterNote,
+                quarterNoteIndex,
+                measureNumber
+            });
         }
 
         // Push any remaining beats
@@ -241,7 +278,7 @@ export function ChartEditor({
         }
 
         return grouped;
-    }, [subdividedBeatMap, totalBeats, keyMap, actualBeatsPerMeasure, virtualization]);
+    }, [subdividedBeatMap, unifiedBeatMap, totalBeats, keyMap, actualBeatsPerMeasure, virtualization]);
 
     // Handle beat click
     const handleBeatClick = useCallback(
@@ -687,9 +724,11 @@ export function ChartEditor({
                     >
                         {/* Measure groups */}
                         {measures.map((measure, measureIndex) => {
-                            const firstBeatIndex = measure[0]?.beatIndex ?? 0;
+                            const firstBeat = measure[0];
+                            const firstBeatIndex = firstBeat?.beatIndex ?? 0;
                             const lastBeatIndex = measure[measure.length - 1]?.beatIndex ?? firstBeatIndex;
-                            const actualMeasureNumber = Math.floor(firstBeatIndex / actualBeatsPerMeasure) + 1;
+                            // Use the measure number from the beat data (calculated from quarter note index)
+                            const displayMeasureNumber = firstBeat?.measureNumber ?? 1;
                             const measureKey = `measure-${firstBeatIndex}-${lastBeatIndex}-${measureIndex}`;
 
                             return (
@@ -700,11 +739,11 @@ export function ChartEditor({
                                 >
                                     {/* Measure number label */}
                                     <div className="chart-editor-measure-label">
-                                        M{actualMeasureNumber}
+                                        M{displayMeasureNumber}
                                     </div>
 
                                     {/* Beat cells */}
-                                    {measure.map(({ beatIndex, requiredKey }) => {
+                                    {measure.map(({ beatIndex, requiredKey, isQuarterNote, quarterNoteIndex }) => {
                                         const hasKey = !!requiredKey;
                                         const isPainting = dragPreview.has(beatIndex);
                                         const keyColorClass = requiredKey ? getKeyColorClass(requiredKey) : '';
@@ -714,6 +753,7 @@ export function ChartEditor({
                                                 key={beatIndex}
                                                 className={cn(
                                                     'chart-editor-cell',
+                                                    isQuarterNote && 'chart-editor-cell--quarter',
                                                     hasKey && 'chart-editor-cell--has-key',
                                                     hasKey && keyColorClass,
                                                     isPainting && 'chart-editor-cell--painting',
@@ -726,7 +766,7 @@ export function ChartEditor({
                                                 onMouseEnter={() => handleMouseEnter(beatIndex)}
                                                 role="button"
                                                 tabIndex={disabled ? -1 : 0}
-                                                aria-label={`Beat ${beatIndex + 1}${requiredKey ? `, key: ${requiredKey}` : ', no key'}`}
+                                                aria-label={`Beat ${quarterNoteIndex + 1}${requiredKey ? `, key: ${requiredKey}` : ', no key'}`}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' || e.key === ' ') {
                                                         e.preventDefault();
@@ -734,10 +774,12 @@ export function ChartEditor({
                                                     }
                                                 }}
                                             >
-                                                {/* Beat number */}
-                                                <span className="chart-editor-cell-number">
-                                                    {beatIndex + 1}
-                                                </span>
+                                                {/* Beat number - only show on quarter notes */}
+                                                {isQuarterNote && (
+                                                    <span className="chart-editor-cell-number">
+                                                        {quarterNoteIndex + 1}
+                                                    </span>
+                                                )}
 
                                                 {/* Key indicator */}
                                                 {requiredKey && (

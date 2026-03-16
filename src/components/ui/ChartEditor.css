@@ -355,6 +355,17 @@
     left: 0.125rem;
 }
 
+/* Quarter note cell - subtle styling */
+.chart-editor-cell--quarter {
+    background: hsl(var(--surface-2) / 0.8);
+}
+
+/* Quarter note beat number */
+.chart-editor-cell--quarter .chart-editor-cell-number {
+    color: hsl(var(--primary));
+    font-weight: 700;
+}
+
 /* Empty indicator (no key assigned) */
 .chart-editor-cell-empty {
     width: 0.5rem;
