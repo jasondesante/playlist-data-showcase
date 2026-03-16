@@ -68,6 +68,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { RefreshCw, Clock, PieChart } from 'lucide-react';
 import { BeatSubdivisionGrid } from './BeatSubdivisionGrid';
 import { SubdivisionToolbar, SUBDIVISION_TYPES } from './SubdivisionToolbar';
+import { SubdivisionPreviewTimeline } from './SubdivisionPreviewTimeline';
 import './SubdivisionSettings.css';
 import {
     useBeatDetectionStore,
@@ -269,6 +270,16 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
         setSelection(newSelection);
     }, []);
 
+    // Handle beat click from preview timeline
+    const handlePreviewBeatClick = useCallback((beatIndex: number) => {
+        // Update selection to include this beat
+        setSelection({
+            selectedBeats: new Set([beatIndex]),
+            rangeStart: beatIndex,
+            rangeEnd: beatIndex,
+        });
+    }, []);
+
     return (
         <div className="subdivision-settings">
             {/* Status Info */}
@@ -327,6 +338,15 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
                     selectionCount={selection.selectedBeats.size}
                     disabled={disabled}
                     compact={false}
+                />
+            )}
+
+            {/* Subdivision Preview Timeline */}
+            {hasUnifiedBeatMap && (
+                <SubdivisionPreviewTimeline
+                    disabled={disabled || isGenerating}
+                    onBeatClick={handlePreviewBeatClick}
+                    selectedBeatIndex={selection.rangeStart}
                 />
             )}
 
