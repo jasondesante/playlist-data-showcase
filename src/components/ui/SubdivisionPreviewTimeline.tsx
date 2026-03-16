@@ -45,7 +45,29 @@ function formatTime(seconds: number): string {
 }
 
 /**
+ * Get the triplet4 chain position (0 = first in pair, 1 = second in pair)
+ * This determines how triplet4 beats are handled in consecutive chains
+ */
+function getTriplet4ChainPosition(
+    beatIndex: number,
+    subdivisionConfig: { beatSubdivisions: Map<number, SubdivisionType>; defaultSubdivision: SubdivisionType }
+): number {
+    let consecutiveCount = 0;
+    for (let i = beatIndex - 1; i >= 0; i--) {
+        const prevSubdivision = subdivisionConfig.beatSubdivisions.get(i) ?? subdivisionConfig.defaultSubdivision;
+        if (prevSubdivision === 'triplet4') {
+            consecutiveCount++;
+        } else {
+            break;
+        }
+    }
+    // Position in chain: 0 = first in pair, 1 = second in pair
+    return consecutiveCount % 2;
+}
+
+/**
  * Calculate preview subdivisions for beats in the visible window
+ * This mirrors the logic in BeatSubdivider.ts from playlist-data-engine
  */
 function calculatePreviewSubdivisions(
     quarterBeats: Array<{ timestamp: number; isDownbeat: boolean }>,
@@ -72,18 +94,39 @@ function calculatePreviewSubdivisions(
         const subdivisionType = subdivisionConfig.beatSubdivisions.get(i)
             ?? subdivisionConfig.defaultSubdivision;
 
-        // Add the quarter note marker (always visible)
-        previewBeats.push({
-            timestamp: quarterBeat.timestamp,
-            quarterNoteIndex: i,
-            positionInQuarter: 0,
-            subdivisionType,
-            isDownbeat: quarterBeat.isDownbeat,
-            isQuarterNote: true,
-        });
+        // For triplet4, check if this is the second beat in a consecutive chain
+        // If so, we skip the original beat marker (it's part of the previous triplet)
+        const triplet4ChainPosition = subdivisionType === 'triplet4'
+            ? getTriplet4ChainPosition(i, subdivisionConfig)
+            : 0;
+
+        const skipOriginalBeat = subdivisionType === 'triplet4' && triplet4ChainPosition === 1;
+
+        // Add the quarter note marker (unless it's the second beat of a triplet4 pair)
+        if (!skipOriginalBeat) {
+            previewBeats.push({
+                timestamp: quarterBeat.timestamp,
+                quarterNoteIndex: i,
+                positionInQuarter: 0,
+                subdivisionType,
+                isDownbeat: quarterBeat.isDownbeat,
+                isQuarterNote: true,
+            });
+        }
 
         // Add subdivision markers based on type
-        if (subdivisionType === 'eighth' || subdivisionType === 'swing' || subdivisionType === 'offbeat8') {
+        if (subdivisionType === 'eighth' || subdivisionType === 'swing') {
+            // Eighth note: divides quarter into 2 parts
+            previewBeats.push({
+                timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
+                quarterNoteIndex: i,
+                positionInQuarter: 0.5,
+                subdivisionType,
+                isDownbeat: false,
+                isQuarterNote: false,
+            });
+        } else if (subdivisionType === 'offbeat8') {
+            // Offbeat eighth: only the offbeat (no downbeat)
             previewBeats.push({
                 timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
                 quarterNoteIndex: i,
@@ -93,6 +136,7 @@ function calculatePreviewSubdivisions(
                 isQuarterNote: false,
             });
         } else if (subdivisionType === 'sixteenth') {
+            // Sixteenth note: divides quarter into 4 parts
             for (let j = 1; j <= 3; j++) {
                 previewBeats.push({
                     timestamp: quarterBeat.timestamp + (quarterInterval * j / 4),
@@ -104,6 +148,7 @@ function calculatePreviewSubdivisions(
                 });
             }
         } else if (subdivisionType === 'triplet8') {
+            // Eighth triplet: 3 beats in the space of 1 quarter
             for (let j = 1; j <= 2; j++) {
                 previewBeats.push({
                     timestamp: quarterBeat.timestamp + (quarterInterval * j / 3),
@@ -116,11 +161,27 @@ function calculatePreviewSubdivisions(
             }
         } else if (subdivisionType === 'triplet4') {
             // Quarter triplet: 3 beats in the space of 2 quarters
-            for (let j = 1; j <= 2; j++) {
+            // This is a 2-beat structure:
+            // - Position 0 (first beat): original beat at 0, interpolated at 2/3
+            // - Position 1 (second beat): interpolated at 1/3 (relative to this beat)
+
+            if (triplet4ChainPosition === 0) {
+                // First beat in pair: add interpolated beat at 2/3
                 previewBeats.push({
-                    timestamp: quarterBeat.timestamp + (quarterInterval * j * 2 / 3),
+                    timestamp: quarterBeat.timestamp + (quarterInterval * 2 / 3),
                     quarterNoteIndex: i,
-                    positionInQuarter: j * 2 / 3,
+                    positionInQuarter: 2 / 3,
+                    subdivisionType,
+                    isDownbeat: false,
+                    isQuarterNote: false,
+                });
+            } else {
+                // Second beat in pair: add interpolated beat at 1/3
+                // This connects to the previous triplet4 beat
+                previewBeats.push({
+                    timestamp: quarterBeat.timestamp + (quarterInterval * 1 / 3),
+                    quarterNoteIndex: i,
+                    positionInQuarter: 1 / 3,
                     subdivisionType,
                     isDownbeat: false,
                     isQuarterNote: false,

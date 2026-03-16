@@ -231,12 +231,14 @@
     box-shadow: 0 0 8px var(--beat-color, hsl(var(--cute-orange)) / 0.8), 0 0 0 1px var(--beat-color, hsl(var(--cute-orange)));
 }
 
-/* Downbeat markers (largest) */
+/* Downbeat markers (largest) - use subdivision color but with extra emphasis */
 .subdivision-preview-timeline-marker.downbeat .subdivision-preview-timeline-marker-dot {
     width: 1rem;
     height: 1rem;
-    background: hsl(var(--primary));
-    box-shadow: 0 0 12px hsl(var(--primary) / 0.8);
+    /* Use the subdivision color, not primary */
+    background: var(--beat-color, hsl(var(--primary)));
+    box-shadow: 0 0 12px var(--beat-color, hsl(var(--primary))) / 0.8;
+    border: 3px solid hsl(var(--background));
 }
 
 /* Past markers - keep FULLY VISIBLE, just slightly dimmed */
