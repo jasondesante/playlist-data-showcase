@@ -1329,7 +1329,7 @@ const createInitialState = (): BeatDetectionState => ({
     // Downbeat configuration state
     downbeatConfig: null, // null = using default config
     // Measure visualization toggle (Phase 4: Measure Visualization)
-    showMeasureBoundaries: false, // Off by default, user opt-in
+    showMeasureBoundaries: true, // On by default, show measure boundaries
     // Downbeat selection mode (Phase 5: BeatMapSummary Integration - Task 5.3)
     isDownbeatSelectionMode: false, // Off by default
     // Multi-tempo analysis (default: enabled)
