@@ -70,7 +70,7 @@ function getTriplet4ChainPosition(
  * This mirrors the logic in BeatSubdivider.ts from playlist-data-engine
  */
 function calculatePreviewSubdivisions(
-    quarterBeats: Array<{ timestamp: number; isDownbeat: boolean }>,
+    quarterBeats: Array<{ timestamp: number; isDownbeat: boolean; beatInMeasure?: number }>,
     subdivisionConfig: { beatSubdivisions: Map<number, SubdivisionType>; defaultSubdivision: SubdivisionType },
     windowStart: number,
     windowEnd: number,
@@ -94,15 +94,33 @@ function calculatePreviewSubdivisions(
         const subdivisionType = subdivisionConfig.beatSubdivisions.get(i)
             ?? subdivisionConfig.defaultSubdivision;
 
+        // Get beatInMeasure - default to i % 4 if not provided
+        const beatInMeasure = quarterBeat.beatInMeasure ?? (i % 4);
+
         // For triplet4, check if this is the second beat in a consecutive chain
         // If so, we skip the original beat marker (it's part of the previous triplet)
         const triplet4ChainPosition = subdivisionType === 'triplet4'
             ? getTriplet4ChainPosition(i, subdivisionConfig)
             : 0;
 
-        const skipOriginalBeat = subdivisionType === 'triplet4' && triplet4ChainPosition === 1;
+        // Determine if we should skip the original beat
+        // - offbeat8: always skip (rest on downbeat, hit on upbeat)
+        // - triplet4 position 1: skip (part of previous triplet)
+        // - half/dotted4 on odd beats: skip (2-beat structure, only hit on beats 0, 2, 4...)
+        let skipOriginalBeat = false;
 
-        // Add the quarter note marker (unless it's the second beat of a triplet4 pair)
+        if (subdivisionType === 'offbeat8') {
+            skipOriginalBeat = true;
+        } else if (subdivisionType === 'triplet4' && triplet4ChainPosition === 1) {
+            skipOriginalBeat = true;
+        } else if (subdivisionType === 'half' || subdivisionType === 'dotted4') {
+            // 2-beat structure: only show original beat on even beat positions (0, 2, 4...)
+            if (beatInMeasure % 2 !== 0) {
+                skipOriginalBeat = true;
+            }
+        }
+
+        // Add the quarter note marker (unless skipped)
         if (!skipOriginalBeat) {
             previewBeats.push({
                 timestamp: quarterBeat.timestamp,
@@ -115,7 +133,7 @@ function calculatePreviewSubdivisions(
         }
 
         // Add subdivision markers based on type
-        if (subdivisionType === 'eighth' || subdivisionType === 'swing') {
+        if (subdivisionType === 'eighth') {
             // Eighth note: divides quarter into 2 parts
             previewBeats.push({
                 timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
@@ -125,8 +143,18 @@ function calculatePreviewSubdivisions(
                 isDownbeat: false,
                 isQuarterNote: false,
             });
+        } else if (subdivisionType === 'swing') {
+            // Swing feel: beat at 2/3 (2:1 long-short ratio)
+            previewBeats.push({
+                timestamp: quarterBeat.timestamp + (quarterInterval * 2 / 3),
+                quarterNoteIndex: i,
+                positionInQuarter: 2 / 3,
+                subdivisionType,
+                isDownbeat: false,
+                isQuarterNote: false,
+            });
         } else if (subdivisionType === 'offbeat8') {
-            // Offbeat eighth: only the offbeat (no downbeat)
+            // Offbeat eighth: only the offbeat (no downbeat) - beat at 0.5
             previewBeats.push({
                 timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
                 quarterNoteIndex: i,
@@ -135,6 +163,32 @@ function calculatePreviewSubdivisions(
                 isDownbeat: false,
                 isQuarterNote: false,
             });
+        } else if (subdivisionType === 'dotted8') {
+            // Dotted eighth: beat at 3/4 (3:1 long-short ratio, 3 sixteenth notes)
+            previewBeats.push({
+                timestamp: quarterBeat.timestamp + (quarterInterval * 3 / 4),
+                quarterNoteIndex: i,
+                positionInQuarter: 3 / 4,
+                subdivisionType,
+                isDownbeat: false,
+                isQuarterNote: false,
+            });
+        } else if (subdivisionType === 'dotted4') {
+            // Dotted quarter: 2-beat structure
+            // - Even beats (0, 2, 4...): Add original beat at 0 (the downbeat hit)
+            // - Odd beats (1, 3, 5...): Skip original beat, add interpolated beat at 0.5 (the "and" of this 2nd beat)
+            // The original beat on odd positions is already skipped above
+            if (beatInMeasure % 2 === 1) {
+                // This is the 2nd beat of the pair - add the "and" at 0.5
+                previewBeats.push({
+                    timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
+                    quarterNoteIndex: i,
+                    positionInQuarter: 0.5,
+                    subdivisionType,
+                    isDownbeat: false,
+                    isQuarterNote: false,
+                });
+            }
         } else if (subdivisionType === 'sixteenth') {
             // Sixteenth note: divides quarter into 4 parts
             for (let j = 1; j <= 3; j++) {
@@ -188,6 +242,7 @@ function calculatePreviewSubdivisions(
                 });
             }
         }
+        // half and quarter notes have no interpolated beats
     }
 
     return previewBeats.sort((a, b) => a.timestamp - b.timestamp);
@@ -299,6 +354,7 @@ export function SubdivisionPreviewTimeline({
         return unifiedBeatMap.beats.map(b => ({
             timestamp: b.timestamp,
             isDownbeat: b.isDownbeat ?? false,
+            beatInMeasure: b.beatInMeasure,
         }));
     }, [unifiedBeatMap]);
 

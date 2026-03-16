@@ -266,6 +266,7 @@ export function BeatSubdivisionGrid({
 
     // Drag-to-pan state
     const [isPanning, setIsPanning] = useState(false);
+    const [isPanPending, setIsPanPending] = useState(false); // Mouse down, waiting for movement
     const panStartRef = useRef<{ x: number; scrollLeft: number }>({ x: 0, scrollLeft: 0 });
     const PAN_THRESHOLD = 5; // pixels - movement beyond this triggers pan mode
 
@@ -478,6 +479,7 @@ export function BeatSubdivisionGrid({
                 x: e.clientX,
                 scrollLeft: gridRef.current?.scrollLeft ?? 0,
             };
+            // Don't set isPanPending for cells - cell selection takes priority
             return;
         }
 
@@ -486,6 +488,7 @@ export function BeatSubdivisionGrid({
             x: e.clientX,
             scrollLeft: gridRef.current?.scrollLeft ?? 0,
         };
+        setIsPanPending(true);
     }, []);
 
     /**
@@ -500,20 +503,22 @@ export function BeatSubdivisionGrid({
         const dx = e.clientX - panStartRef.current.x;
 
         // Check if we should start panning (movement beyond threshold)
-        if (!isPanning && Math.abs(dx) > PAN_THRESHOLD) {
+        if (!isPanning && (isPanPending || Math.abs(dx) > PAN_THRESHOLD)) {
             setIsPanning(true);
+            setIsPanPending(false);
         }
 
         if (isPanning) {
             gridRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
         }
-    }, [isPanning, isDragging]);
+    }, [isPanning, isPanPending, isDragging]);
 
     /**
      * Handle mouse up - end panning
      */
     const handleGridMouseUp = useCallback(() => {
         setIsPanning(false);
+        setIsPanPending(false);
         panStartRef.current = { x: 0, scrollLeft: 0 };
     }, []);
 
@@ -526,7 +531,8 @@ export function BeatSubdivisionGrid({
 
         container.addEventListener('mousedown', handleGridMouseDown);
 
-        if (isPanning) {
+        // Listen for mousemove/mouseup when panning OR when mouse is down waiting for movement
+        if (isPanning || isPanPending) {
             window.addEventListener('mousemove', handleGridMouseMove);
             window.addEventListener('mouseup', handleGridMouseUp);
         }
@@ -536,7 +542,7 @@ export function BeatSubdivisionGrid({
             window.removeEventListener('mousemove', handleGridMouseMove);
             window.removeEventListener('mouseup', handleGridMouseUp);
         };
-    }, [isPanning, handleGridMouseDown, handleGridMouseMove, handleGridMouseUp]);
+    }, [isPanning, isPanPending, handleGridMouseDown, handleGridMouseMove, handleGridMouseUp]);
 
     // ========================================
     // Playback Follow - Auto-scroll to current beat
@@ -654,10 +660,19 @@ export function BeatSubdivisionGrid({
         return exactPosition;
     }, [unifiedBeatMap, cellWidth]);
 
-    // Smooth animation loop for playhead
+    // Smooth animation loop for playhead (when playing)
+    // When paused, show playhead at current position without animation
     useEffect(() => {
-        if (!isPlaying || !unifiedBeatMap) {
+        if (!unifiedBeatMap) {
             setPlayheadPosition(null);
+            lastUpdateTimeRef.current = null;
+            return;
+        }
+
+        // When paused, just show the playhead at the current position
+        if (!isPlaying) {
+            const position = calculatePlayheadPosition(currentTime);
+            setPlayheadPosition(position);
             lastUpdateTimeRef.current = null;
             return;
         }

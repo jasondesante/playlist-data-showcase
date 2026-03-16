@@ -385,49 +385,49 @@
     box-shadow: 0 0 4px var(--beat-color) / 0.5;
 }
 
-/* Legend marker colors */
+/* Legend marker colors - using official subdivision colors from base.css */
 .subdivision-preview-timeline-legend-marker--quarter {
-    --beat-color: hsl(var(--cute-yellow));
+    --beat-color: hsl(var(--subdivision-quarter));
 }
 
 .subdivision-preview-timeline-legend-marker--half {
-    --beat-color: hsl(var(--cute-green));
+    --beat-color: hsl(var(--subdivision-half));
 }
 
 .subdivision-preview-timeline-legend-marker--eighth {
-    --beat-color: hsl(var(--cute-orange));
+    --beat-color: hsl(var(--subdivision-eighth));
 }
 
 .subdivision-preview-timeline-legend-marker--sixteenth {
-    --beat-color: hsl(var(--cute-red));
+    --beat-color: hsl(var(--subdivision-sixteenth));
 }
 
 .subdivision-preview-timeline-legend-marker--triplet8 {
-    --beat-color: hsl(var(--cute-purple));
+    --beat-color: hsl(var(--subdivision-triplet8));
 }
 
 .subdivision-preview-timeline-legend-marker--triplet4 {
-    --beat-color: hsl(var(--cute-blue));
+    --beat-color: hsl(var(--subdivision-triplet4));
 }
 
 .subdivision-preview-timeline-legend-marker--dotted4 {
-    --beat-color: hsl(var(--cute-teal));
+    --beat-color: hsl(var(--subdivision-dotted4));
 }
 
 .subdivision-preview-timeline-legend-marker--dotted8 {
-    --beat-color: hsl(var(--cute-pink));
+    --beat-color: hsl(var(--subdivision-dotted8));
 }
 
 .subdivision-preview-timeline-legend-marker--rest {
-    --beat-color: hsl(var(--muted));
+    --beat-color: hsl(var(--subdivision-rest));
 }
 
 .subdivision-preview-timeline-legend-marker--swing {
-    --beat-color: hsl(var(--cute-amber));
+    --beat-color: hsl(var(--subdivision-swing));
 }
 
 .subdivision-preview-timeline-legend-marker--offbeat8 {
-    --beat-color: hsl(var(--cute-lime));
+    --beat-color: hsl(var(--subdivision-offbeat8));
 }
 
 /* ============================================
