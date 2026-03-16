@@ -364,6 +364,73 @@ export function BeatMapSummary({
         </div>
       </div>
 
+      {/* Actions - Start Practice Mode */}
+      <div className="beat-map-summary-actions">
+        <Button
+          variant="primary"
+          size="lg"
+          className="beat-map-summary-button"
+          onClick={onStartPractice}
+          isLoading={isLoading}
+          disabled={!canStartPractice}
+          leftIcon={Play}
+        >
+          Start Practice Mode
+        </Button>
+        {!canStartPractice ? (
+          <p className="beat-map-summary-note beat-map-summary-note--disabled">
+            {isUnreliableBeat
+              ? 'Practice mode unavailable - no clear beat detected'
+              : `Practice mode requires at least ${MIN_BEATS_FOR_PRACTICE} beats`}
+          </p>
+        ) : isLowQualityBeat ? (
+          <p className="beat-map-summary-note beat-map-summary-note--warning">
+            Practice mode available, but timing accuracy may be reduced
+          </p>
+        ) : (
+          <p className="beat-map-summary-note">
+            Tap along to the beat and see your timing accuracy
+          </p>
+        )}
+      </div>
+
+      {/* Downbeat Configuration Panel (Task 5.2) */}
+      <DownbeatConfigPanel disabled={!beatMap} />
+
+      {/* Beat Timeline Preview - for downbeat selection (Phase 5: BeatMapSummary Integration) */}
+      {isDownbeatSelectionMode && (
+        <div className="beat-map-summary-timeline">
+          <div className="beat-map-summary-timeline-header">
+            <span className="beat-map-summary-timeline-label">
+              Drag to navigate, click a beat marker to set as downbeat:
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePlayPause}
+              leftIcon={isAudioPlaying ? Pause : Play}
+              className="beat-map-summary-timeline-play-btn"
+            >
+              {isAudioPlaying ? 'Pause' : 'Play'}
+            </Button>
+          </div>
+          <BeatTimeline
+            beatMap={beatMap}
+            currentTime={previewTime}
+            anticipationWindow={5}
+            pastWindow={10}
+            isPlaying={isAudioPlaying}
+            interpolationData={interpolationData}
+            showGridOverlay={showGridOverlay}
+            showTempoDriftVisualization={showTempoDriftVisualization}
+            enableBeatSelection={isDownbeatSelectionMode}
+            onBeatClick={handleBeatClick}
+            onSeek={handlePreviewSeek}
+            showMeasureBoundaries={showMeasureBoundaries}
+          />
+        </div>
+      )}
+
       {/* Detection Settings (from metadata) - Task 6.2 */}
       <div className="beat-map-summary-settings">
         <span className="beat-map-settings-label">Settings used:</span>
@@ -743,73 +810,6 @@ export function BeatMapSummary({
           />
         </div>
       )}
-
-      {/* Downbeat Configuration Panel (Task 5.2) */}
-      <DownbeatConfigPanel disabled={!beatMap} />
-
-      {/* Beat Timeline Preview - for downbeat selection (Phase 5: BeatMapSummary Integration) */}
-      {isDownbeatSelectionMode && (
-        <div className="beat-map-summary-timeline">
-          <div className="beat-map-summary-timeline-header">
-            <span className="beat-map-summary-timeline-label">
-              Drag to navigate, click a beat marker to set as downbeat:
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePlayPause}
-              leftIcon={isAudioPlaying ? Pause : Play}
-              className="beat-map-summary-timeline-play-btn"
-            >
-              {isAudioPlaying ? 'Pause' : 'Play'}
-            </Button>
-          </div>
-          <BeatTimeline
-            beatMap={beatMap}
-            currentTime={previewTime}
-            anticipationWindow={5}
-            pastWindow={10}
-            isPlaying={isAudioPlaying}
-            interpolationData={interpolationData}
-            showGridOverlay={showGridOverlay}
-            showTempoDriftVisualization={showTempoDriftVisualization}
-            enableBeatSelection={isDownbeatSelectionMode}
-            onBeatClick={handleBeatClick}
-            onSeek={handlePreviewSeek}
-            showMeasureBoundaries={showMeasureBoundaries}
-          />
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="beat-map-summary-actions">
-        <Button
-          variant="primary"
-          size="lg"
-          className="beat-map-summary-button"
-          onClick={onStartPractice}
-          isLoading={isLoading}
-          disabled={!canStartPractice}
-          leftIcon={Play}
-        >
-          Start Practice Mode
-        </Button>
-        {!canStartPractice ? (
-          <p className="beat-map-summary-note beat-map-summary-note--disabled">
-            {isUnreliableBeat
-              ? 'Practice mode unavailable - no clear beat detected'
-              : `Practice mode requires at least ${MIN_BEATS_FOR_PRACTICE} beats`}
-          </p>
-        ) : isLowQualityBeat ? (
-          <p className="beat-map-summary-note beat-map-summary-note--warning">
-            Practice mode available, but timing accuracy may be reduced
-          </p>
-        ) : (
-          <p className="beat-map-summary-note">
-            Tap along to the beat and see your timing accuracy
-          </p>
-        )}
-      </div>
     </div>
   );
 }
