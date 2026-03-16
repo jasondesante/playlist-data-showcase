@@ -7,7 +7,8 @@
  * @see docs/plans/DATAVIEWERTAB_REFACTOR_PLAN.md - Task 2.2
  */
 
-import { ChevronDown, ChevronUp, Target, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, ChevronsDownUp, Target, Plus } from 'lucide-react';
 import type { CustomSkill } from 'playlist-data-engine';
 import { ArweaveImage } from '../../../shared/ArweaveImage';
 import { Button } from '../../../ui/Button';
@@ -163,10 +164,61 @@ export function SkillsPanel({
   const grouped = groupSkillsByAbility(skills);
   const abilities = Object.keys(grouped).sort();
 
+  // State for collapsed groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Toggle a single group's collapse state
+  const toggleGroupCollapse = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupName)) {
+        next.delete(groupName);
+      } else {
+        next.add(groupName);
+      }
+      return next;
+    });
+  };
+
+  // Expand all groups
+  const expandAllGroups = () => {
+    setCollapsedGroups(new Set());
+  };
+
+  // Collapse all groups
+  const collapseAllGroups = () => {
+    setCollapsedGroups(new Set(abilities));
+  };
+
+  // Check if all groups are collapsed
+  const allCollapsed = abilities.length > 0 && collapsedGroups.size === abilities.length;
+  const allExpanded = collapsedGroups.size === 0;
+
   return (
     <div className="dataviewer-list">
       {/* Skill Creation Header */}
       <div className="dataviewer-section-header">
+        {/* Collapse/Expand All buttons */}
+        <div className="dataviewer-group-controls">
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={collapseAllGroups}
+            disabled={allCollapsed}
+            title="Collapse all groups"
+          >
+            <ChevronsDownUp />
+            <span>Collapse All</span>
+          </button>
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={expandAllGroups}
+            disabled={allExpanded}
+            title="Expand all groups"
+          >
+            <ChevronsDownUp style={{ transform: 'rotate(180deg)' }} />
+            <span>Expand All</span>
+          </button>
+        </div>
         <Button
           variant="primary"
           size="sm"
@@ -179,37 +231,49 @@ export function SkillsPanel({
 
       {/* Skills List */}
       <div className="dataviewer-grouped-list">
-        {abilities.map(ability => (
-          <div key={ability} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span
-                className="dataviewer-group-title"
-                style={{ color: ABILITY_COLORS[ability] || 'var(--color-text-primary)' }}
-              >
-                {ability}
-              </span>
-              <span className="dataviewer-group-count">({grouped[ability].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[ability].map(skill => {
-                const isExpanded = expandedItems.has(skill.id);
+        {abilities.map(ability => {
+          const isCollapsed = collapsedGroups.has(ability);
 
-                return (
-                  <SkillCard
-                    key={skill.id}
-                    skill={skill}
-                    isExpanded={isExpanded}
-                    onToggle={() => toggleExpanded(skill.id)}
-                    onEdit={() => onEdit('skills', skill.name)}
-                    onDelete={() => onDelete('skills', skill.name)}
-                    onDuplicate={() => onDuplicate('skills', skill.name)}
-                    checkIsCustomItem={(itemName) => checkIsCustomItem('skills', itemName)}
-                  />
-                );
-              })}
+          return (
+            <div key={ability} className="dataviewer-group">
+              <div
+                className="dataviewer-group-header"
+                onClick={() => toggleGroupCollapse(ability)}
+              >
+                <span className="dataviewer-group-header-chevron">
+                  {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                </span>
+                <span
+                  className="dataviewer-group-title"
+                  style={{ color: ABILITY_COLORS[ability] || 'var(--color-text-primary)' }}
+                >
+                  {ability}
+                </span>
+                <span className="dataviewer-group-count">({grouped[ability].length})</span>
+              </div>
+              {!isCollapsed && (
+                <div className="dataviewer-group-items">
+                  {grouped[ability].map(skill => {
+                    const isExpanded = expandedItems.has(skill.id);
+
+                    return (
+                      <SkillCard
+                        key={skill.id}
+                        skill={skill}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleExpanded(skill.id)}
+                        onEdit={() => onEdit('skills', skill.name)}
+                        onDelete={() => onDelete('skills', skill.name)}
+                        onDuplicate={() => onDuplicate('skills', skill.name)}
+                        checkIsCustomItem={(itemName) => checkIsCustomItem('skills', itemName)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {renderSpawnModeControls()}

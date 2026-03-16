@@ -7,7 +7,8 @@
  * @see docs/plans/DATAVIEWERTAB_REFACTOR_PLAN.md - Task 2.4
  */
 
-import { ChevronDown, ChevronUp, Users, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, ChevronsDownUp, Users, Plus } from 'lucide-react';
 import type { RacialTrait, FeaturePrerequisite } from 'playlist-data-engine';
 import { ArweaveImage } from '../../../shared/ArweaveImage';
 import { Button } from '../../../ui/Button';
@@ -197,10 +198,61 @@ export function RacialTraitsPanel({
   const grouped = groupRacialTraitsByRace(racialTraits);
   const raceNames = Object.keys(grouped).sort();
 
+  // State for collapsed groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Toggle a single group's collapse state
+  const toggleGroupCollapse = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupName)) {
+        next.delete(groupName);
+      } else {
+        next.add(groupName);
+      }
+      return next;
+    });
+  };
+
+  // Expand all groups
+  const expandAllGroups = () => {
+    setCollapsedGroups(new Set());
+  };
+
+  // Collapse all groups
+  const collapseAllGroups = () => {
+    setCollapsedGroups(new Set(raceNames));
+  };
+
+  // Check if all groups are collapsed
+  const allCollapsed = raceNames.length > 0 && collapsedGroups.size === raceNames.length;
+  const allExpanded = collapsedGroups.size === 0;
+
   return (
     <div className="dataviewer-list">
       {/* Racial Trait Creation Header */}
       <div className="dataviewer-section-header">
+        {/* Collapse/Expand All buttons */}
+        <div className="dataviewer-group-controls">
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={collapseAllGroups}
+            disabled={allCollapsed}
+            title="Collapse all groups"
+          >
+            <ChevronsDownUp />
+            <span>Collapse All</span>
+          </button>
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={expandAllGroups}
+            disabled={allExpanded}
+            title="Expand all groups"
+          >
+            <ChevronsDownUp style={{ transform: 'rotate(180deg)' }} />
+            <span>Expand All</span>
+          </button>
+        </div>
         <Button
           variant="primary"
           size="sm"
@@ -212,32 +264,44 @@ export function RacialTraitsPanel({
       </div>
 
       <div className="dataviewer-grouped-list">
-        {raceNames.map(raceName => (
-          <div key={raceName} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span className="dataviewer-group-title">{raceName}</span>
-              <span className="dataviewer-group-count">({grouped[raceName].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[raceName].map(trait => {
-                const isExpanded = expandedItems.has(trait.id);
+        {raceNames.map(raceName => {
+          const isCollapsed = collapsedGroups.has(raceName);
 
-                return (
-                  <RacialTraitCard
-                    key={trait.id}
-                    trait={trait}
-                    isExpanded={isExpanded}
-                    onToggle={() => toggleExpanded(trait.id)}
-                    onEdit={() => onEdit('racialTraits', trait.name)}
-                    onDelete={() => onDelete('racialTraits', trait.name)}
-                    onDuplicate={() => onDuplicate('racialTraits', trait.name)}
-                    checkIsCustomItem={(itemName) => checkIsCustomItem('racialTraits', itemName)}
-                  />
-                );
-              })}
+          return (
+            <div key={raceName} className="dataviewer-group">
+              <div
+                className="dataviewer-group-header"
+                onClick={() => toggleGroupCollapse(raceName)}
+              >
+                <span className="dataviewer-group-header-chevron">
+                  {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                </span>
+                <span className="dataviewer-group-title">{raceName}</span>
+                <span className="dataviewer-group-count">({grouped[raceName].length})</span>
+              </div>
+              {!isCollapsed && (
+                <div className="dataviewer-group-items">
+                  {grouped[raceName].map(trait => {
+                    const isExpanded = expandedItems.has(trait.id);
+
+                    return (
+                      <RacialTraitCard
+                        key={trait.id}
+                        trait={trait}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleExpanded(trait.id)}
+                        onEdit={() => onEdit('racialTraits', trait.name)}
+                        onDelete={() => onDelete('racialTraits', trait.name)}
+                        onDuplicate={() => onDuplicate('racialTraits', trait.name)}
+                        checkIsCustomItem={(itemName) => checkIsCustomItem('racialTraits', itemName)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {renderSpawnModeControls()}

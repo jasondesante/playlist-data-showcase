@@ -7,7 +7,8 @@
  * @see docs/plans/DATAVIEWERTAB_REFACTOR_PLAN.md - Task 2.3
  */
 
-import { ChevronDown, ChevronUp, Sword, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Sword, Plus, ChevronsDownUp } from 'lucide-react';
 import type { ClassFeature } from 'playlist-data-engine';
 import { ArweaveImage } from '../../../shared/ArweaveImage';
 import { Button } from '../../../ui/Button';
@@ -170,10 +171,61 @@ export function ClassFeaturesPanel({
   const grouped = groupClassFeaturesByClass(classFeatures);
   const classNames = Object.keys(grouped).sort();
 
+  // State for collapsed groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Toggle a single group's collapse state
+  const toggleGroupCollapse = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupName)) {
+        next.delete(groupName);
+      } else {
+        next.add(groupName);
+      }
+      return next;
+    });
+  };
+
+  // Expand all groups
+  const expandAllGroups = () => {
+    setCollapsedGroups(new Set());
+  };
+
+  // Collapse all groups
+  const collapseAllGroups = () => {
+    setCollapsedGroups(new Set(classNames));
+  };
+
+  // Check if all groups are collapsed
+  const allCollapsed = classNames.length > 0 && collapsedGroups.size === classNames.length;
+  const allExpanded = collapsedGroups.size === 0;
+
   return (
     <div className="dataviewer-list">
       {/* Class Feature Creation Header */}
       <div className="dataviewer-section-header">
+        {/* Collapse/Expand All buttons */}
+        <div className="dataviewer-group-controls">
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={collapseAllGroups}
+            disabled={allCollapsed}
+            title="Collapse all groups"
+          >
+            <ChevronsDownUp />
+            <span>Collapse All</span>
+          </button>
+          <button
+            className="dataviewer-group-controls-btn"
+            onClick={expandAllGroups}
+            disabled={allExpanded}
+            title="Expand all groups"
+          >
+            <ChevronsDownUp style={{ transform: 'rotate(180deg)' }} />
+            <span>Expand All</span>
+          </button>
+        </div>
         <Button
           variant="primary"
           size="sm"
@@ -185,34 +237,46 @@ export function ClassFeaturesPanel({
       </div>
 
       <div className="dataviewer-grouped-list">
-        {classNames.map(className => (
-          <div key={className} className="dataviewer-group">
-            <div className="dataviewer-group-header">
-              <span className="dataviewer-group-title">{className}</span>
-              <span className="dataviewer-group-count">({grouped[className].length})</span>
-            </div>
-            <div className="dataviewer-group-items">
-              {grouped[className]
-                .sort((a, b) => a.level - b.level)
-                .map(feature => {
-                  const isExpanded = expandedItems.has(feature.id);
+        {classNames.map(className => {
+          const isCollapsed = collapsedGroups.has(className);
 
-                  return (
-                    <ClassFeatureCard
-                      key={feature.id}
-                      feature={feature}
-                      isExpanded={isExpanded}
-                      onToggle={() => toggleExpanded(feature.id)}
-                      onEdit={() => onEdit('classFeatures', feature.name)}
-                      onDelete={() => onDelete('classFeatures', feature.name)}
-                      onDuplicate={() => onDuplicate('classFeatures', feature.name)}
-                      checkIsCustomItem={(itemName) => checkIsCustomItem('classFeatures', itemName)}
-                    />
-                  );
-                })}
+          return (
+            <div key={className} className="dataviewer-group">
+              <div
+                className="dataviewer-group-header"
+                onClick={() => toggleGroupCollapse(className)}
+              >
+                <span className="dataviewer-group-header-chevron">
+                  {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                </span>
+                <span className="dataviewer-group-title">{className}</span>
+                <span className="dataviewer-group-count">({grouped[className].length})</span>
+              </div>
+              {!isCollapsed && (
+                <div className="dataviewer-group-items">
+                  {grouped[className]
+                    .sort((a, b) => a.level - b.level)
+                    .map(feature => {
+                      const isExpanded = expandedItems.has(feature.id);
+
+                      return (
+                        <ClassFeatureCard
+                          key={feature.id}
+                          feature={feature}
+                          isExpanded={isExpanded}
+                          onToggle={() => toggleExpanded(feature.id)}
+                          onEdit={() => onEdit('classFeatures', feature.name)}
+                          onDelete={() => onDelete('classFeatures', feature.name)}
+                          onDuplicate={() => onDuplicate('classFeatures', feature.name)}
+                          checkIsCustomItem={(itemName) => checkIsCustomItem('classFeatures', itemName)}
+                        />
+                      );
+                    })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {renderSpawnModeControls()}
