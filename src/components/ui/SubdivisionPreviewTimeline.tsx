@@ -258,6 +258,12 @@ export function SubdivisionPreviewTimeline({
 
     // Calculate preview beats
     const quarterBeats = useMemo(() => {
+        console.log('[SubdivisionPreviewTimeline] quarterBeats calculation:', {
+            hasUnifiedBeatMap: !!unifiedBeatMap,
+            beatsLength: unifiedBeatMap?.beats?.length,
+            firstBeat: unifiedBeatMap?.beats?.[0],
+            firstThreeBeats: unifiedBeatMap?.beats?.slice(0, 3),
+        });
         if (!unifiedBeatMap) return [];
         return unifiedBeatMap.beats.map(b => ({
             timestamp: b.timestamp,
@@ -290,12 +296,23 @@ export function SubdivisionPreviewTimeline({
             .filter(beat => beat.timestamp >= windowStart && beat.timestamp <= windowEnd);
     }, [quarterBeats, smoothTime, pastWindow, anticipationWindow]);
 
+    // Total visible time window
+    const totalWindow = pastWindow + anticipationWindow;
+
+    // Position of NOW line (as fraction from 0 to 1)
+    const nowPosition = pastWindow / totalWindow;
+
     // Position calculation helper
     const calculatePosition = useCallback((timestamp: number): number => {
-        const timeUntilBeat = timestamp - smoothTime;
-        // Position 0.5 = NOW, 0 = pastWindow ago, 1 = anticipationWindow ahead
-        return 0.5 + (timeUntilBeat / anticipationWindow) * 0.5;
-    }, [smoothTime, anticipationWindow]);
+        // The full visible range spans from (smoothTime - pastWindow) to (smoothTime + anticipationWindow)
+        // We map this to positions 0 to 1, where:
+        // - Position 0 = pastWindow seconds ago
+        // - Position (pastWindow / totalWindow) = NOW (smoothTime)
+        // - Position 1 = anticipationWindow seconds in the future
+        const pastStartTime = smoothTime - pastWindow;
+        const timeFromPastStart = timestamp - pastStartTime;
+        return timeFromPastStart / totalWindow;
+    }, [smoothTime, pastWindow, totalWindow]);
 
     // Drag-to-scrub and click-to-seek functionality
     const DRAG_THRESHOLD = 5; // pixels - movement beyond this is considered a drag
@@ -318,12 +335,13 @@ export function SubdivisionPreviewTimeline({
 
         // If moved beyond threshold, treat as drag (scrub)
         if (Math.abs(deltaX) > DRAG_THRESHOLD) {
-            const timePerPixel = (anticipationWindow * 2) / trackWidth;
+            const totalWindow = pastWindow + anticipationWindow;
+            const timePerPixel = totalWindow / trackWidth;
             const deltaTime = -deltaX * timePerPixel;
             const newTime = Math.max(0, Math.min(duration || 9999, dragStartTimeRef.current + deltaTime));
             seek(newTime);
         }
-    }, [isDragging, anticipationWindow, duration, seek]);
+    }, [isDragging, pastWindow, anticipationWindow, duration, seek]);
 
     const handleMouseUp = useCallback((event: MouseEvent) => {
         if (!isDragging || !trackRef.current) return;
@@ -337,16 +355,17 @@ export function SubdivisionPreviewTimeline({
             const trackWidth = rect.width;
 
             // Calculate time from click position
-            // Position 0 = pastWindow ago, 0.5 = now, 1 = anticipationWindow ahead
+            // Position 0 = (smoothTime - pastWindow), 1 = (smoothTime + anticipationWindow)
+            const totalWindow = pastWindow + anticipationWindow;
             const positionRatio = clickX / trackWidth;
-            const timeOffset = (positionRatio - 0.5) * anticipationWindow * 2;
-            const newTime = Math.max(0, Math.min(duration || 9999, smoothTime + timeOffset));
+            const timeFromPastStart = positionRatio * totalWindow;
+            const newTime = Math.max(0, Math.min(duration || 9999, (smoothTime - pastWindow) + timeFromPastStart));
 
             seek(newTime);
         }
 
         setIsDragging(false);
-    }, [isDragging, anticipationWindow, duration, seek, smoothTime]);
+    }, [isDragging, pastWindow, anticipationWindow, duration, seek, smoothTime]);
 
     useEffect(() => {
         if (isDragging) {
@@ -474,8 +493,11 @@ export function SubdivisionPreviewTimeline({
                     );
                 })}
 
-                {/* NOW line */}
-                <div className="subdivision-preview-timeline-now-line">
+                {/* NOW line - positioned dynamically based on past/future window ratio */}
+                <div
+                    className="subdivision-preview-timeline-now-line"
+                    style={{ left: `${nowPosition * 100}%` }}
+                >
                     <div className="subdivision-preview-timeline-now-line-inner" />
                     <span className="subdivision-preview-timeline-now-label">NOW</span>
                 </div>
