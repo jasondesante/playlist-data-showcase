@@ -161,12 +161,10 @@ describe('BeatSubdivisionGrid', () => {
         it('renders zoom controls', () => {
             render(<BeatSubdivisionGrid />);
 
-            expect(screen.getByText('Zoom:')).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: '0.5x' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: '1x' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: '2x' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: '4x' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: '8x' })).toBeInTheDocument();
+            // New zoom controls: -, current zoom display, +
+            expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Reset to 1x' })).toBeInTheDocument();
         });
 
         it('renders selection action buttons', () => {
@@ -299,37 +297,65 @@ describe('BeatSubdivisionGrid', () => {
         it('starts with 1x zoom by default', () => {
             render(<BeatSubdivisionGrid />);
 
-            const zoomBtn1x = screen.getByRole('button', { name: '1x' });
-            expect(zoomBtn1x).toHaveClass('beat-subdivision-grid-zoom-btn--active');
+            // The reset button shows current zoom level
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+            expect(zoomDisplay).toHaveTextContent('1x');
+            // At default zoom, reset button should be disabled
+            expect(zoomDisplay).toBeDisabled();
         });
 
         it('starts with initial zoom when specified', () => {
             render(<BeatSubdivisionGrid initialZoom={2} />);
 
-            const zoomBtn2x = screen.getByRole('button', { name: '2x' });
-            expect(zoomBtn2x).toHaveClass('beat-subdivision-grid-zoom-btn--active');
+            // The reset button shows current zoom level
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+            expect(zoomDisplay).toHaveTextContent('2x');
+            // At non-default zoom, reset button should be enabled
+            expect(zoomDisplay).not.toBeDisabled();
         });
 
-        it('changes zoom level when zoom button is clicked', () => {
+        it('increases zoom when zoom in button is clicked', () => {
             render(<BeatSubdivisionGrid />);
 
-            const zoomBtn2x = screen.getByRole('button', { name: '2x' });
-            fireEvent.click(zoomBtn2x);
+            const zoomInBtn = screen.getByRole('button', { name: 'Zoom in' });
+            fireEvent.click(zoomInBtn);
 
-            expect(zoomBtn2x).toHaveClass('beat-subdivision-grid-zoom-btn--active');
-            expect(screen.getByRole('button', { name: '1x' })).not.toHaveClass('beat-subdivision-grid-zoom-btn--active');
+            // Should now show 2x
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+            expect(zoomDisplay).toHaveTextContent('2x');
+        });
+
+        it('decreases zoom when zoom out button is clicked', () => {
+            render(<BeatSubdivisionGrid initialZoom={2} />);
+
+            const zoomOutBtn = screen.getByRole('button', { name: 'Zoom out' });
+            fireEvent.click(zoomOutBtn);
+
+            // Should now show 1x
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+            expect(zoomDisplay).toHaveTextContent('1x');
+        });
+
+        it('resets to default zoom when reset button is clicked', () => {
+            render(<BeatSubdivisionGrid initialZoom={4} />);
+
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+            expect(zoomDisplay).toHaveTextContent('4x');
+            fireEvent.click(zoomDisplay);
+
+            expect(zoomDisplay).toHaveTextContent('1x');
         });
 
         it('disables zoom buttons when grid is disabled', () => {
             render(<BeatSubdivisionGrid disabled />);
 
-            const zoomButtons = screen.getAllByRole('button').filter(btn =>
-                btn.classList.contains('beat-subdivision-grid-zoom-btn')
-            );
+            const zoomInBtn = screen.getByRole('button', { name: 'Zoom in' });
+            const zoomOutBtn = screen.getByRole('button', { name: 'Zoom out' });
+            const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
 
-            zoomButtons.forEach(btn => {
-                expect(btn).toBeDisabled();
-            });
+            expect(zoomInBtn).toBeDisabled();
+            expect(zoomOutBtn).toBeDisabled();
+            expect(zoomDisplay).toBeDisabled();
         });
     });
 
@@ -1070,36 +1096,47 @@ describe('BeatSubdivisionGrid', () => {
             it('changes zoom level within performance threshold', () => {
                 render(<BeatSubdivisionGrid />);
 
-                const zoomBtn2x = screen.getByRole('button', { name: '2x' });
+                const zoomInBtn = screen.getByRole('button', { name: 'Zoom in' });
 
                 const { durationMs } = measureTime(() => {
-                    fireEvent.click(zoomBtn2x);
+                    fireEvent.click(zoomInBtn);
                 });
 
                 expect(durationMs).toBeLessThan(ZOOM_THRESHOLD_MS);
-                expect(zoomBtn2x).toHaveClass('beat-subdivision-grid-zoom-btn--active');
+                // Should now show 2x
+                const zoomDisplay = screen.getByRole('button', { name: 'Reset to 1x' });
+                expect(zoomDisplay).toHaveTextContent('2x');
             });
 
             it('handles rapid zoom changes without lag', () => {
                 render(<BeatSubdivisionGrid />);
 
-                const zoomLevels = ['0.5x', '1x', '2x', '4x', '8x'] as const;
+                const zoomInBtn = screen.getByRole('button', { name: 'Zoom in' });
+                const zoomOutBtn = screen.getByRole('button', { name: 'Zoom out' });
 
                 const { durationMs } = measureTime(() => {
-                    zoomLevels.forEach(level => {
-                        fireEvent.click(screen.getByRole('button', { name: level }));
-                    });
+                    // Zoom in 3 times (1x -> 2x -> 4x -> 8x)
+                    fireEvent.click(zoomInBtn);
+                    fireEvent.click(zoomInBtn);
+                    fireEvent.click(zoomInBtn);
+                    // Zoom out 3 times (8x -> 4x -> 2x -> 1x)
+                    fireEvent.click(zoomOutBtn);
+                    fireEvent.click(zoomOutBtn);
+                    fireEvent.click(zoomOutBtn);
                 });
 
-                // All 5 zoom changes should complete quickly
+                // All 6 zoom changes should complete quickly
                 expect(durationMs).toBeLessThan(ZOOM_THRESHOLD_MS * 3);
             });
 
             it('maintains virtualization after zoom change', () => {
                 render(<BeatSubdivisionGrid />);
 
-                // Change to max zoom
-                fireEvent.click(screen.getByRole('button', { name: '8x' }));
+                // Change to max zoom by clicking zoom in 3 times (1x -> 2x -> 4x -> 8x)
+                const zoomInBtn = screen.getByRole('button', { name: 'Zoom in' });
+                fireEvent.click(zoomInBtn);
+                fireEvent.click(zoomInBtn);
+                fireEvent.click(zoomInBtn);
 
                 const beatCells = screen.getAllByRole('button').filter(btn =>
                     btn.classList.contains('beat-subdivision-grid-cell')

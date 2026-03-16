@@ -37,6 +37,12 @@ const MIN_CELL_WIDTH = 20; // Minimum cell width for virtualization calculations
 type ZoomLevel = 0.5 | 1 | 2 | 4 | 8;
 
 /**
+ * Zoom level options for iteration
+ */
+const ZOOM_LEVELS: ZoomLevel[] = [0.5, 1, 2, 4, 8];
+const DEFAULT_ZOOM: ZoomLevel = 1;
+
+/**
  * Virtualization state - which beats are visible in the viewport.
  * Used for rendering only the visible cells to maintain performance with large beat counts.
  *
@@ -578,10 +584,126 @@ export function BeatSubdivisionGrid({
         }
     }, [currentTime, isPlaying, unifiedBeatMap, cellWidth, isPanning, isDragging]);
 
-    // Handle zoom change
-    const handleZoomChange = useCallback((newZoom: ZoomLevel) => {
-        setZoom(newZoom);
+    // Handle zoom in - move to next higher zoom level
+    const handleZoomIn = useCallback(() => {
+        const currentIndex = ZOOM_LEVELS.indexOf(zoom);
+        if (currentIndex < ZOOM_LEVELS.length - 1) {
+            setZoom(ZOOM_LEVELS[currentIndex + 1]);
+        }
+    }, [zoom]);
+
+    // Handle zoom out - move to next lower zoom level
+    const handleZoomOut = useCallback(() => {
+        const currentIndex = ZOOM_LEVELS.indexOf(zoom);
+        if (currentIndex > 0) {
+            setZoom(ZOOM_LEVELS[currentIndex - 1]);
+        }
+    }, [zoom]);
+
+    // Handle reset zoom to default
+    const handleZoomReset = useCallback(() => {
+        setZoom(DEFAULT_ZOOM);
     }, []);
+
+    // Check zoom bounds for button disabled states
+    const canZoomIn = zoom < 8;
+    const canZoomOut = zoom > 0.5;
+    const isDefaultZoom = zoom === DEFAULT_ZOOM;
+
+    // Smooth playhead animation using requestAnimationFrame
+    // The audio timeupdate event only fires ~every 250ms, so we interpolate
+    // for smooth 60fps movement
+    const [playheadPosition, setPlayheadPosition] = useState<number | null>(null);
+    const lastUpdateTimeRef = useRef<{ time: number; timestamp: number } | null>(null);
+    const rafRef = useRef<number | null>(null);
+
+    // Calculate playhead position from a given time value
+    const calculatePlayheadPosition = useCallback((time: number): number | null => {
+        if (!unifiedBeatMap) return null;
+
+        const beats = unifiedBeatMap.beats;
+
+        // Find the closest beat to current time
+        let closestBeatIndex = 0;
+        let closestDiff = Infinity;
+
+        for (let i = 0; i < beats.length; i++) {
+            const diff = Math.abs(beats[i].timestamp - time);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestBeatIndex = i;
+            }
+        }
+
+        // Calculate exact position based on interpolation between beats
+        const currentBeat = beats[closestBeatIndex];
+        const nextBeat = beats[closestBeatIndex + 1];
+
+        let exactPosition: number;
+        if (nextBeat) {
+            // Interpolate between current and next beat
+            const beatDuration = nextBeat.timestamp - currentBeat.timestamp;
+            const timeSinceBeat = time - currentBeat.timestamp;
+            const interpolationRatio = Math.max(0, Math.min(1, timeSinceBeat / beatDuration));
+            exactPosition = (closestBeatIndex + interpolationRatio) * cellWidth;
+        } else {
+            // Last beat - use position directly
+            exactPosition = closestBeatIndex * cellWidth;
+        }
+
+        return exactPosition;
+    }, [unifiedBeatMap, cellWidth]);
+
+    // Smooth animation loop for playhead
+    useEffect(() => {
+        if (!isPlaying || !unifiedBeatMap) {
+            setPlayheadPosition(null);
+            lastUpdateTimeRef.current = null;
+            return;
+        }
+
+        // Store the current time when we get an update
+        lastUpdateTimeRef.current = {
+            time: currentTime,
+            timestamp: performance.now(),
+        };
+
+        // Initial position
+        const initialPos = calculatePlayheadPosition(currentTime);
+        setPlayheadPosition(initialPos);
+
+        // Animation loop
+        const animate = () => {
+            const updateInfo = lastUpdateTimeRef.current;
+            if (!updateInfo) {
+                rafRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
+            // Calculate interpolated time
+            const elapsed = (performance.now() - updateInfo.timestamp) / 1000;
+            const interpolatedTime = updateInfo.time + elapsed;
+
+            // Clamp to duration
+            const duration = unifiedBeatMap.beats[unifiedBeatMap.beats.length - 1]?.timestamp ?? 0;
+            const clampedTime = Math.min(interpolatedTime, duration);
+
+            const position = calculatePlayheadPosition(clampedTime);
+            setPlayheadPosition(position);
+
+            if (clampedTime < duration) {
+                rafRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        rafRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
+    }, [isPlaying, unifiedBeatMap, currentTime, calculatePlayheadPosition]);
 
     // Clear selection
     const clearSelection = useCallback(() => {
@@ -682,20 +804,36 @@ export function BeatSubdivisionGrid({
 
                 {/* Zoom controls */}
                 <div className="beat-subdivision-grid-zoom">
-                    <span className="beat-subdivision-grid-zoom-label">Zoom:</span>
-                    {([0.5, 1, 2, 4, 8] as ZoomLevel[]).map((z) => (
-                        <button
-                            key={z}
-                            className={cn(
-                                'beat-subdivision-grid-zoom-btn',
-                                zoom === z && 'beat-subdivision-grid-zoom-btn--active'
-                            )}
-                            onClick={() => handleZoomChange(z)}
-                            disabled={disabled}
-                        >
-                            {z}x
-                        </button>
-                    ))}
+                    <button
+                        className="beat-subdivision-grid-zoom-btn"
+                        onClick={handleZoomOut}
+                        disabled={disabled || !canZoomOut}
+                        title="Zoom out"
+                        aria-label="Zoom out"
+                    >
+                        −
+                    </button>
+                    <button
+                        className={cn(
+                            'beat-subdivision-grid-zoom-btn',
+                            'beat-subdivision-grid-zoom-btn--reset'
+                        )}
+                        onClick={handleZoomReset}
+                        disabled={disabled || isDefaultZoom}
+                        title={`Reset to ${DEFAULT_ZOOM}x`}
+                        aria-label={`Reset to ${DEFAULT_ZOOM}x`}
+                    >
+                        {zoom}x
+                    </button>
+                    <button
+                        className="beat-subdivision-grid-zoom-btn"
+                        onClick={handleZoomIn}
+                        disabled={disabled || !canZoomIn}
+                        title="Zoom in"
+                        aria-label="Zoom in"
+                    >
+                        +
+                    </button>
                 </div>
 
                 {/* Selection actions */}
@@ -729,6 +867,13 @@ export function BeatSubdivisionGrid({
                     className="beat-subdivision-grid-track"
                     style={{ width: `${totalBeats * cellWidth}px` }}
                 >
+                    {/* Playhead indicator - shows current playback position */}
+                    {playheadPosition !== null && (
+                        <div
+                            className="beat-subdivision-grid-playhead"
+                            style={{ left: `${playheadPosition}px` }}
+                        />
+                    )}
                     {/* Virtualized content container - positioned with offset */}
                     <div
                         className="beat-subdivision-grid-virtualized"
