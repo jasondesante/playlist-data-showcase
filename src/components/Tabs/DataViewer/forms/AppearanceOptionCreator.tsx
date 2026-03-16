@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './AppearanceOptionCreator.css';
 
 /**
@@ -164,6 +165,9 @@ export function AppearanceOptionCreator({
 }: AppearanceOptionCreatorProps) {
   const { createContent, isLoading, lastError, clearError } = useContentCreator();
 
+  // Get spawn mode function to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
+
   // Determine if the initial value is a color
   const isInitialColor = initialValue && isValidHexColor(initialValue);
 
@@ -231,12 +235,15 @@ export function AppearanceOptionCreator({
         onUpdate?.(selectedCategory, originalValue, currentValue);
         setFormErrors([]);
       } else {
+        // Get the current spawn mode for this category to preserve it when creating content
+        const currentMode = getMode(selectedCategory as any) || 'relative';
+
         // For appearance options, we register the string value directly (not wrapped in an object)
         // The ExtensionManager expects strings for appearance categories
         const result = createContent(
           selectedCategory,
           currentValue, // Pass string directly, not wrapped in object
-          { validate: true, markAsCustom: false }, // Don't add source: 'custom' to strings
+          { validate: true, markAsCustom: false, mode: currentMode }, // Preserve current spawn mode
           {
             onSuccess: () => {
               // Reset form on success
@@ -263,7 +270,7 @@ export function AppearanceOptionCreator({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, currentValue, selectedCategory, createContent, isColorCategory, onCreate, isEditMode, originalValue, onUpdate]);
+  }, [clearError, validate, currentValue, selectedCategory, createContent, isColorCategory, onCreate, isEditMode, originalValue, onUpdate, getMode]);
 
   // Handle category change
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {

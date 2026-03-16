@@ -24,6 +24,7 @@ import { showToast } from '@/components/ui/Toast';
 import type { RegisteredSpell, CustomSkill, ClassFeature, RacialTrait, Equipment } from 'playlist-data-engine';
 import type { DataCategory, RaceDataEntry, ClassDataEntry } from '@/hooks/useDataViewer';
 import type { ContentType } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 
 // ==========================================
 // Types
@@ -197,6 +198,9 @@ export function useDataViewerEditing(props: UseDataViewerEditingProps): UseDataV
     createContent,
     updateContent
   } = props;
+
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
 
   // ==========================================
   // Category State
@@ -399,6 +403,9 @@ export function useDataViewerEditing(props: UseDataViewerEditingProps): UseDataV
    * Handle creation of new equipment via EquipmentCreatorForm
    */
   const handleCreateEquipment = useCallback(async (_formData: any, equip: Equipment) => {
+    // Get the current spawn mode for equipment to preserve it when creating content
+    const currentMode = getMode('equipment') || 'relative';
+
     if (editingEquipment) {
       // Update existing equipment
       const result = updateContent('equipment', editingEquipment.name, equip);
@@ -413,8 +420,8 @@ export function useDataViewerEditing(props: UseDataViewerEditingProps): UseDataV
         showToast(`Failed to update equipment: ${result.error}`, 'error');
       }
     } else {
-      // Create new equipment
-      const result = createContent('equipment', equip, { mode: 'relative' });
+      // Create new equipment - preserve current spawn mode
+      const result = createContent('equipment', equip, { mode: currentMode });
       if (result.success) {
         logger.info('DataViewer', `Created equipment: ${equip.name}`);
         showToast(`Created equipment "${equip.name}"`, 'success');
@@ -426,7 +433,7 @@ export function useDataViewerEditing(props: UseDataViewerEditingProps): UseDataV
         showToast(`Failed to create equipment: ${result.error}`, 'error');
       }
     }
-  }, [createContent, updateContent, refreshData, editingEquipment]);
+  }, [createContent, updateContent, refreshData, editingEquipment, getMode]);
 
   /**
    * Handle creation of new appearance option via AppearanceOptionCreator

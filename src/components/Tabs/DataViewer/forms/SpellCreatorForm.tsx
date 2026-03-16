@@ -36,6 +36,7 @@ import { CastingTimeSelect } from '@/components/shared/CastingTimeSelect';
 import { RangeSelect } from '@/components/shared/RangeSelect';
 import { DurationSelect } from '@/components/shared/DurationSelect';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './SpellCreatorForm.css';
 
 /**
@@ -189,6 +190,9 @@ export function SpellCreatorForm({
 }: SpellCreatorFormProps) {
   const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
 
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
+
   // Form state
   // Filter out undefined values from initialData to prevent them from overriding defaults
   const [formData, setFormData] = useState<SpellFormData>(() => {
@@ -310,6 +314,9 @@ export function SpellCreatorForm({
       // But for now, we register to the general 'spells' category and include classes in the data
       const actualContentType = contentType.startsWith('spells.') ? 'spells' : contentType;
 
+      // Get the current spawn mode for this category to preserve it when creating content
+      const currentMode = getMode(actualContentType as any) || 'relative';
+
       if (isEditMode && originalName) {
         // Update existing spell
         const result = updateContent(
@@ -327,11 +334,11 @@ export function SpellCreatorForm({
           setFormErrors([result.error]);
         }
       } else {
-        // Create new spell
+        // Create new spell - preserve current spawn mode
         const result = createContent(
           actualContentType,
           spellItem,
-          { validate: true },
+          { validate: true, mode: currentMode },
           {
             onSuccess: () => {
               // Reset form on success
@@ -354,7 +361,7 @@ export function SpellCreatorForm({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalName]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalName, getMode]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

@@ -34,6 +34,7 @@ import { EffectsBuilder, type Effect } from '@/components/shared/EffectsBuilder'
 import { PrerequisitesBuilder, type Prerequisites } from '@/components/shared/PrerequisitesBuilder';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './ClassFeatureCreatorForm.css';
 
 /**
@@ -170,6 +171,9 @@ export function ClassFeatureCreatorForm({
   availableClasses
 }: ClassFeatureCreatorFormProps) {
   const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
+
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
 
   // Form state
   // Filter out undefined values from initialData to prevent them from overriding defaults
@@ -365,6 +369,9 @@ export function ClassFeatureCreatorForm({
       // Determine the actual content type
       const actualContentType = contentType.startsWith('classFeatures.') ? 'classFeatures' : contentType;
 
+      // Get the current spawn mode for this category to preserve it when creating content
+      const currentMode = getMode(actualContentType as any) || 'relative';
+
       if (isEditMode && originalId) {
         // Update existing class feature
         const result = updateContent(
@@ -382,11 +389,11 @@ export function ClassFeatureCreatorForm({
           setFormErrors([result.error]);
         }
       } else {
-        // Create new class feature
+        // Create new class feature - preserve current spawn mode
         const result = createContent(
           actualContentType,
           featureItem,
-          { validate: true },
+          { validate: true, mode: currentMode },
           {
             onSuccess: () => {
               // Reset form on success
@@ -409,7 +416,7 @@ export function ClassFeatureCreatorForm({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId, getMode]);
 
   // Field change handlers
   const handleIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

@@ -36,6 +36,7 @@ import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useContentCreator } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './ClassCreatorForm.css';
 
 /**
@@ -194,6 +195,9 @@ export function ClassCreatorForm({
 }: ClassCreatorFormProps) {
   const { createContent, updateContent, deleteContent, isLoading, lastError, clearError } = useContentCreator();
 
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
+
   // Form state
   // Filter out undefined values from initialData to prevent them from overriding defaults
   const [formData, setFormData] = useState<ClassFormData>(() => {
@@ -347,6 +351,10 @@ export function ClassCreatorForm({
         classData.image = formData.image.trim();
       }
 
+      // Get the current spawn modes to preserve them when creating content
+      const classesMode = getMode('classes') || 'relative';
+      const classesDataMode = getMode('classes.data') || 'relative';
+
       if (isEditMode && originalName) {
         // Update existing class data in 'classes.data' category
         const dataResult = updateContent(
@@ -362,7 +370,7 @@ export function ClassCreatorForm({
             // Remove old name and add new name in 'classes' category
             const deleteResult = deleteContent('classes', originalName);
             if (deleteResult.success) {
-              createContent('classes', newName, { validate: false });
+              createContent('classes', newName, { validate: false, mode: classesMode });
             }
           }
           // Reset form on success
@@ -378,7 +386,7 @@ export function ClassCreatorForm({
         const nameResult = createContent(
           'classes',
           formData.name.trim(),  // Pass string directly for string-based categories
-          { validate: true },
+          { validate: true, mode: classesMode },
           {
             onError: (error) => {
               setFormErrors([error]);
@@ -395,7 +403,7 @@ export function ClassCreatorForm({
         const dataResult = createContent(
           'classes.data',
           classData,
-          { validate: true },
+          { validate: true, mode: classesDataMode },
           {
             onSuccess: () => {
               // Reset form on success
@@ -418,7 +426,7 @@ export function ClassCreatorForm({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName]);
+  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName, getMode, deleteContent]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

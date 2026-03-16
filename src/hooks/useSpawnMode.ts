@@ -251,7 +251,7 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
         setSpawnMode: setStoreSpawnMode,
         getSpawnWeights: getStoreSpawnWeights,
         setSpawnWeights: setStoreSpawnWeights,
-        resetSpawnMode: resetStoreSpawnMode,
+        // Note: resetSpawnMode is intentionally not used - we preserve spawn mode when resetting categories
         resetAllSpawnModes: resetAllStoreSpawnModes,
         getGlobalSpawnMode: getStoreGlobalSpawnMode,
         setGlobalSpawnMode: setStoreGlobalSpawnMode
@@ -440,7 +440,7 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
 
     /**
      * Reset a category to its default state
-     * Clears both ExtensionManager and store
+     * Clears custom content and weights, but preserves the spawn mode setting
      */
     const resetCategory = useCallback((category: SpawnCategory): void => {
         try {
@@ -450,17 +450,16 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
                 for (const subCat of APPEARANCE_SUBCATEGORIES) {
                     manager.reset(subCat as any);
                     clearCustomContentForCategory(subCat as any);
-                    resetStoreSpawnMode(subCat);
+                    // Note: We intentionally do NOT reset the spawn mode - user's mode preference is preserved
                 }
-                logger.info('SpawnMode', `Reset all appearance sub-categories to defaults`);
+                logger.info('SpawnMode', `Reset all appearance sub-categories to defaults (spawn mode preserved)`);
             } else {
                 // Reset ExtensionManager
                 manager.reset(category as any);
                 // Clear custom content cache (localStorage persistence)
                 clearCustomContentForCategory(category as any);
-                // Clear from store
-                resetStoreSpawnMode(category);
-                logger.info('SpawnMode', `Reset category ${category} to defaults`);
+                // Note: We intentionally do NOT reset the spawn mode - user's mode preference is preserved
+                logger.info('SpawnMode', `Reset category ${category} to defaults (spawn mode preserved)`);
             }
             bumpVersion();
             notifyDataChanged();
@@ -468,7 +467,7 @@ export const useSpawnMode = (): UseSpawnModeReturn => {
             logger.error('SpawnMode', `Failed to reset category ${category}`, { error: String(error) });
             throw error;
         }
-    }, [manager, resetStoreSpawnMode, bumpVersion, notifyDataChanged]);
+    }, [manager, bumpVersion, notifyDataChanged]);
 
     /**
      * Reset all categories to their default state

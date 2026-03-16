@@ -31,6 +31,7 @@ import {
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator, type ContentType } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './SkillCreatorForm.css';
 
 /**
@@ -152,6 +153,9 @@ export function SkillCreatorForm({
   contentType = 'skills'
 }: SkillCreatorFormProps) {
   const { createContent, updateContent, isLoading, lastError, clearError } = useContentCreator();
+
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
 
   // Form state
   // Filter out undefined values from initialData to prevent them from overriding defaults
@@ -281,11 +285,14 @@ export function SkillCreatorForm({
           setFormErrors([result.error]);
         }
       } else {
-        // Create new skill
+        // Get the current spawn mode for this category to preserve it when creating content
+        const currentMode = getMode(contentType as any) || 'relative';
+
+        // Create new skill - preserve current spawn mode
         const result = createContent(
           contentType,
           skillItem,
-          { validate: true },
+          { validate: true, mode: currentMode },
           {
             onSuccess: () => {
               // Reset form on success
@@ -309,7 +316,7 @@ export function SkillCreatorForm({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId]);
+  }, [clearError, validate, formData, contentType, createContent, updateContent, onCreate, isEditMode, originalId, getMode]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

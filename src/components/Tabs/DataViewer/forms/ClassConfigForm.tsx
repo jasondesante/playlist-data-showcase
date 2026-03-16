@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import { logger } from '@/utils/logger';
 import {
   CLASS_SPELL_LISTS,
@@ -280,6 +281,9 @@ export function ClassConfigForm({
   disabled = false
 }: ClassConfigFormProps) {
   const { createContent, isLoading, lastError, clearError } = useContentCreator();
+
+  // Get spawn mode function to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
 
   // Tab state
   const [activeTab, setActiveTab] = useState<ConfigTab>(initialTab);
@@ -693,7 +697,10 @@ export function ClassConfigForm({
           throw new Error(`Unknown tab: ${activeTab}`);
       }
 
-      const result = createContent(category as any, item, { mode: 'relative' });
+      // Get the current spawn mode for this category to preserve it when creating content
+      const currentMode = getMode(category as any) || 'relative';
+
+      const result = createContent(category as any, item, { mode: currentMode });
 
       if (result.success) {
         logger.info('ClassConfigForm', `Saved ${activeTab} config for ${item.class as string}`);
@@ -716,7 +723,8 @@ export function ClassConfigForm({
     clearError,
     validateCurrentTab,
     createContent,
-    onSave
+    onSave,
+    getMode
   ]);
 
   const handleCancel = useCallback(() => {

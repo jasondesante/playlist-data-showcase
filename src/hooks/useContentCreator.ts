@@ -593,7 +593,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         const {
             validate = true,
             markAsCustom: shouldMarkAsCustom = true,
-            mode,
+            // mode is intentionally not used during registration - it's a display/generation setting
+            // that should only affect filtering via getFilteredItems(), not data storage
             weights
         } = options;
         const {
@@ -664,12 +665,14 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 : item;
 
             // Build registration options
-            const registerOptions: { validate: boolean; mode?: SpawnMode; weights?: Record<string, number> } = {
+            // NOTE: We intentionally do NOT pass 'mode' during registration.
+            // The mode is a display/generation setting stored separately via useSpawnMode,
+            // and should only affect filtering (via getFilteredItems) and procedural generation weights.
+            // Passing mode='absolute' during registration was causing the ExtensionManager to
+            // incorrectly treat it like mode='replace' and clear all previous custom items.
+            const registerOptions: { validate: boolean; weights?: Record<string, number> } = {
                 validate: false // We already validated above
             };
-            if (mode) {
-                registerOptions.mode = mode;
-            }
             if (weights) {
                 registerOptions.weights = weights;
             }
@@ -731,7 +734,7 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         const {
             validate = true,
             markAsCustom: shouldMarkAsCustom = true,
-            mode,
+            // mode is intentionally not used during registration - it's a display/generation setting
             weights
         } = options;
 
@@ -769,12 +772,12 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 : items) as T[];
 
             // Build registration options
-            const registerOptions: { validate: boolean; mode?: SpawnMode; weights?: Record<string, number> } = {
+            // NOTE: We intentionally do NOT pass 'mode' during registration.
+            // The mode is a display/generation setting stored separately via useSpawnMode,
+            // and should only affect filtering (via getFilteredItems) and procedural generation weights.
+            const registerOptions: { validate: boolean; weights?: Record<string, number> } = {
                 validate: false
             };
-            if (mode) {
-                registerOptions.mode = mode;
-            }
             if (weights) {
                 registerOptions.weights = weights;
             }
@@ -870,10 +873,18 @@ export const useContentCreator = (): UseContentCreatorReturn => {
             );
             newItems.push(updatedItem);
 
+            // Preserve spawn mode before reset (manager.reset() clears spawn mode in ExtensionManager)
+            const savedMode = manager.getMode(category as any);
+
             // Re-register all custom items (this is how ExtensionManager works)
             // First reset, then re-register
             manager.reset(category as any);
             manager.register(category as any, newItems, { validate: false });
+
+            // Restore spawn mode after reset
+            if (savedMode) {
+                manager.setMode(category as any, savedMode as any);
+            }
 
             // Update custom content cache for localStorage persistence
             updateCustomContentCache(category, newItems);
@@ -910,10 +921,8 @@ export const useContentCreator = (): UseContentCreatorReturn => {
         setLastError(null);
 
         try {
-            // String categories store items as strings (race/class names)
-            const stringCategories: ContentType[] = ['races', 'classes'];
-
-            if (stringCategories.includes(category)) {
+            // String categories store items as strings (race/class names AND appearance options)
+            if (isStringBasedCategory(category)) {
                 // For string categories, items are strings, not objects
                 const existingItems = manager.getCustom(category as any) as string[];
                 const itemExists = existingItems.includes(itemName);
@@ -932,10 +941,18 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 // Filter out the deleted item (string comparison)
                 const remainingItems = existingItems.filter(item => item !== itemName);
 
+                // Preserve spawn mode before reset (manager.reset() clears spawn mode in ExtensionManager)
+                const savedMode = manager.getMode(category as any);
+
                 // Re-register remaining items
                 manager.reset(category as any);
                 if (remainingItems.length > 0) {
                     manager.register(category as any, remainingItems, { validate: false });
+                }
+
+                // Restore spawn mode after reset
+                if (savedMode) {
+                    manager.setMode(category as any, savedMode as any);
                 }
 
                 // Also delete from the corresponding .data category
@@ -987,10 +1004,18 @@ export const useContentCreator = (): UseContentCreatorReturn => {
                 (item: any) => item.name !== itemName && item.id !== itemName
             );
 
+            // Preserve spawn mode before reset (manager.reset() clears spawn mode in ExtensionManager)
+            const savedMode = manager.getMode(category as any);
+
             // Re-register remaining items
             manager.reset(category as any);
             if (remainingItems.length > 0) {
                 manager.register(category as any, remainingItems, { validate: false });
+            }
+
+            // Restore spawn mode after reset
+            if (savedMode) {
+                manager.setMode(category as any, savedMode as any);
             }
 
             // Update custom content cache for localStorage persistence

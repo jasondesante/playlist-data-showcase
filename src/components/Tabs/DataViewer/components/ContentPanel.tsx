@@ -208,6 +208,96 @@ export function ContentPanel({
     </div>
   );
 
+  // Create button renderer for empty state
+  const renderCreateButton = () => {
+    const categoryConfig = CATEGORY_CONFIG[activeCategory];
+    const createButtonLabel = `Create ${categoryConfig?.label?.slice(0, -1) || 'Item'}`; // Remove trailing 's'
+
+    switch (activeCategory) {
+      case 'spells':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateSpell}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'skills':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateSkill}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'classFeatures':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateFeature}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'racialTraits':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateTrait}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'races':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateRace}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'classes':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateClass}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'equipment':
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onCreateEquipment}
+            leftIcon={Plus}
+          >
+            {createButtonLabel}
+          </Button>
+        );
+      case 'appearance':
+        return null; // Appearance has a different flow
+      default:
+        return null;
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -236,9 +326,15 @@ export function ContentPanel({
         <span className="dataviewer-empty-title">No items found</span>
         <span className="dataviewer-empty-message">
           {currentSpawnMode === 'absolute'
-            ? 'No custom items in this category. Switch to "Relative" mode to see all items.'
+            ? 'No custom items in this category yet. Create your first custom item below!'
             : 'Try adjusting your search or filters'}
         </span>
+        {/* Show create button in absolute mode or when there are no items at all */}
+        {currentSpawnMode === 'absolute' && renderCreateButton() && (
+          <div className="dataviewer-empty-create">
+            {renderCreateButton()}
+          </div>
+        )}
         {renderSpawnModeControls()}
       </div>
     );

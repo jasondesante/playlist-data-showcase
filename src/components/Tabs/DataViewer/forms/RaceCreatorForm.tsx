@@ -34,6 +34,7 @@ import {
 import { ImageFieldInput } from '@/components/shared/ImageFieldInput';
 import { Button } from '@/components/ui/Button';
 import { useContentCreator } from '@/hooks/useContentCreator';
+import { useSpawnMode } from '@/hooks/useSpawnMode';
 import './RaceCreatorForm.css';
 
 /**
@@ -143,6 +144,9 @@ export function RaceCreatorForm({
 }: RaceCreatorFormProps) {
   const { createContent, updateContent, deleteContent, isLoading, lastError, clearError } = useContentCreator();
 
+  // Get spawn mode functions to preserve current mode when creating content
+  const { getMode } = useSpawnMode();
+
   // Form state
   // Filter out undefined values from initialData to prevent them from overriding defaults
   const [formData, setFormData] = useState<RaceFormData>(() => {
@@ -248,6 +252,10 @@ export function RaceCreatorForm({
         raceData.image = formData.image.trim();
       }
 
+      // Get the current spawn modes to preserve them when creating content
+      const racesMode = getMode('races') || 'relative';
+      const racesDataMode = getMode('races.data') || 'relative';
+
       if (isEditMode && originalName) {
         // Update existing race data in 'races.data' category
         const dataResult = updateContent(
@@ -263,7 +271,7 @@ export function RaceCreatorForm({
             // Remove old name and add new name in 'races' category
             const deleteResult = deleteContent('races', originalName);
             if (deleteResult.success) {
-              createContent('races', newName, { validate: false });
+              createContent('races', newName, { validate: false, mode: racesMode });
             }
           }
           // Reset form on success
@@ -279,7 +287,7 @@ export function RaceCreatorForm({
         const nameResult = createContent(
           'races',
           formData.name.trim(),  // Pass string directly for string-based categories
-          { validate: true },
+          { validate: true, mode: racesMode },
           {
             onError: (error) => {
               setFormErrors([error]);
@@ -296,7 +304,7 @@ export function RaceCreatorForm({
         const dataResult = createContent(
           'races.data',
           raceData,
-          { validate: true },
+          { validate: true, mode: racesDataMode },
           {
             onSuccess: () => {
               // Reset form on success
@@ -319,7 +327,7 @@ export function RaceCreatorForm({
     } finally {
       setIsSubmitting(false);
     }
-  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName]);
+  }, [clearError, validate, formData, createContent, updateContent, onCreate, isEditMode, originalName, getMode, deleteContent]);
 
   // Field change handlers
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
