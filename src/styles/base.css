@@ -178,8 +178,12 @@
   --subdivision-dotted4: 180 70% 45%;
   /* Dotted8 - Yellow/Gold (dotted eighth, swing pattern) */
   --subdivision-dotted8: 48 96% 53%;
-  /* Rest - Muted gray (no beat) */
-  --subdivision-rest: 220 10% 40%;
+  /* Swing - Cyan (jazzy, swung feel, 2:1 ratio) */
+  --subdivision-swing: 195 85% 50%;
+  /* Offbeat8 - Lime (syncopated, unexpected, only the "&") */
+  --subdivision-offbeat8: 75 85% 48%;
+  /* Rest - Lavender gray (no beat, but still musical) */
+  --subdivision-rest: 260 25% 50%;
 
   /* Subdivision background variants (with transparency for badges/tags/overlays) */
   --subdivision-quarter-bg: hsl(var(--subdivision-quarter) / 0.18);
@@ -190,6 +194,8 @@
   --subdivision-triplet4-bg: hsl(var(--subdivision-triplet4) / 0.18);
   --subdivision-dotted4-bg: hsl(var(--subdivision-dotted4) / 0.18);
   --subdivision-dotted8-bg: hsl(var(--subdivision-dotted8) / 0.18);
+  --subdivision-swing-bg: hsl(var(--subdivision-swing) / 0.18);
+  --subdivision-offbeat8-bg: hsl(var(--subdivision-offbeat8) / 0.18);
   --subdivision-rest-bg: hsl(var(--subdivision-rest) / 0.18);
 
   /* ========================================

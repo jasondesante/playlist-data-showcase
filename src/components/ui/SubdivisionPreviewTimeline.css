@@ -303,7 +303,7 @@
 }
 
 .subdivision-preview-timeline-marker--rest {
-    --beat-color: hsl(var(--muted));
+    --beat-color: hsl(var(--subdivision-rest));
 }
 
 .subdivision-preview-timeline-marker--swing {

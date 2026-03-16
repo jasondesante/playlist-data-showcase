@@ -450,15 +450,34 @@
   box-shadow: 0 0 10px hsl(var(--subdivision-dotted8) / 0.7);
 }
 
-/* Rest - Muted gray */
+/* Swing - Cyan (jazzy, swung feel) */
+.beat-subdivision-grid-cell-indicator--swing {
+  background: hsl(var(--subdivision-swing));
+  box-shadow: 0 0 6px hsl(var(--subdivision-swing) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--swing {
+  box-shadow: 0 0 10px hsl(var(--subdivision-swing) / 0.7);
+}
+
+/* Offbeat8 - Lime (syncopated, only the "&") */
+.beat-subdivision-grid-cell-indicator--offbeat8 {
+  background: hsl(var(--subdivision-offbeat8));
+  box-shadow: 0 0 6px hsl(var(--subdivision-offbeat8) / 0.5);
+}
+
+.beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--offbeat8 {
+  box-shadow: 0 0 10px hsl(var(--subdivision-offbeat8) / 0.7);
+}
+
+/* Rest - Lavender gray (no beat) */
 .beat-subdivision-grid-cell-indicator--rest {
-  background: hsl(var(--muted-foreground) / 0.4);
-  box-shadow: none;
-  border: 1px dashed hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--subdivision-rest));
+  box-shadow: 0 0 4px hsl(var(--subdivision-rest) / 0.4);
 }
 
 .beat-subdivision-grid-cell--selected .beat-subdivision-grid-cell-indicator--rest {
-  background: hsl(var(--muted-foreground) / 0.5);
+  box-shadow: 0 0 8px hsl(var(--subdivision-rest) / 0.6);
 }
 
 /* ============================================
@@ -498,8 +517,16 @@
   background: hsl(var(--subdivision-dotted8-bg));
 }
 
+.beat-subdivision-grid-cell--swing {
+  background: hsl(var(--subdivision-swing-bg));
+}
+
+.beat-subdivision-grid-cell--offbeat8 {
+  background: hsl(var(--subdivision-offbeat8-bg));
+}
+
 .beat-subdivision-grid-cell--rest {
-  background: hsl(var(--muted) / 0.3);
+  background: hsl(var(--subdivision-rest-bg));
 }
 
 /* ============================================
@@ -571,9 +598,19 @@
   box-shadow: 0 0 4px hsl(var(--subdivision-dotted8) / 0.5);
 }
 
+.beat-subdivision-grid-legend-color--swing {
+  background: hsl(var(--subdivision-swing));
+  box-shadow: 0 0 4px hsl(var(--subdivision-swing) / 0.5);
+}
+
+.beat-subdivision-grid-legend-color--offbeat8 {
+  background: hsl(var(--subdivision-offbeat8));
+  box-shadow: 0 0 4px hsl(var(--subdivision-offbeat8) / 0.5);
+}
+
 .beat-subdivision-grid-legend-color--rest {
-  background: hsl(var(--muted-foreground) / 0.4);
-  border: 1px dashed hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--subdivision-rest));
+  box-shadow: 0 0 4px hsl(var(--subdivision-rest) / 0.4);
 }
 
 .beat-subdivision-grid-legend-label {

@@ -259,8 +259,8 @@ interface SubdivisionPreviewTimelineProps {
 
 export function SubdivisionPreviewTimeline({
     disabled = false,
-    anticipationWindow = 2.0,
-    pastWindow = 4.0,
+    anticipationWindow = 3.0,
+    pastWindow = 3.0,
 }: SubdivisionPreviewTimelineProps) {
     // Store subscriptions
     const unifiedBeatMap = useUnifiedBeatMap();
