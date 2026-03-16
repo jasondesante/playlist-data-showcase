@@ -345,8 +345,6 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
             {hasUnifiedBeatMap && (
                 <SubdivisionPreviewTimeline
                     disabled={disabled || isGenerating}
-                    onBeatClick={handlePreviewBeatClick}
-                    selectedBeatIndex={selection.rangeStart}
                 />
             )}
 

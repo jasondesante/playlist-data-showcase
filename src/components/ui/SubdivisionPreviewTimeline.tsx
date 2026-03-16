@@ -24,40 +24,6 @@ import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type { SubdivisionType } from '@/types';
 
 /**
- * Subdivision density multipliers - how many beats per quarter note
- */
-const SUBDIVISION_DENSITY: Record<SubdivisionType, number> = {
-    quarter: 1,
-    half: 0.5,
-    eighth: 2,
-    sixteenth: 4,
-    triplet8: 3,
-    triplet4: 1.5,
-    dotted4: 0.67, // 2/3
-    dotted8: 1.33, // 4/3
-    rest: 0,
-    swing: 2,
-    offbeat8: 1,
-};
-
-/**
- * Color mapping for subdivision types
- */
-const SUBDIVISION_COLORS: Record<SubdivisionType, string> = {
-    quarter: 'var(--cute-yellow)',
-    half: 'var(--cute-green)',
-    eighth: 'var(--cute-orange)',
-    sixteenth: 'var(--cute-red)',
-    triplet8: 'var(--cute-purple)',
-    triplet4: 'var(--cute-blue)',
-    dotted4: 'var(--cute-teal)',
-    dotted8: 'var(--cute-pink)',
-    rest: 'var(--muted)',
-    swing: 'var(--cute-amber)',
-    offbeat8: 'var(--cute-lime)',
-};
-
-/**
  * Preview beat representation for rendering
  */
 interface PreviewBeat {
@@ -79,69 +45,85 @@ function formatTime(seconds: number): string {
 }
 
 /**
- * Calculate preview subdivisions for a time window
+ * Calculate preview subdivisions for beats in the visible window
  */
 function calculatePreviewSubdivisions(
     quarterBeats: Array<{ timestamp: number; isDownbeat: boolean }>,
     subdivisionConfig: { beatSubdivisions: Map<number, SubdivisionType>; defaultSubdivision: SubdivisionType },
     windowStart: number,
     windowEnd: number,
-    _beatsPerMeasure: number // Used for future measure boundary calculations
+    _beatsPerMeasure: number
 ): PreviewBeat[] {
     const previewBeats: PreviewBeat[] = [];
 
     for (let i = 0; i < quarterBeats.length; i++) {
         const quarterBeat = quarterBeats[i];
-
-        // Skip if outside window (with buffer)
-        if (quarterBeat.timestamp > windowEnd + 2) break;
-
         const nextQuarter = quarterBeats[i + 1];
+
+        // Skip beats outside the visible window (with buffer for subdivisions)
+        if (quarterBeat.timestamp < windowStart - 1) continue;
+        if (quarterBeat.timestamp > windowEnd + 1) break;
+
         const quarterInterval = nextQuarter
             ? nextQuarter.timestamp - quarterBeat.timestamp
-            : 0.5; // Default fallback
+            : 0.5;
 
         // Get subdivision type for this quarter note
         const subdivisionType = subdivisionConfig.beatSubdivisions.get(i)
             ?? subdivisionConfig.defaultSubdivision;
 
-        const density = SUBDIVISION_DENSITY[subdivisionType] ?? 1;
+        // Add the quarter note marker (always visible)
+        previewBeats.push({
+            timestamp: quarterBeat.timestamp,
+            quarterNoteIndex: i,
+            positionInQuarter: 0,
+            subdivisionType,
+            isDownbeat: quarterBeat.isDownbeat,
+            isQuarterNote: true,
+        });
 
-        // Skip rest subdivisions
-        if (density === 0) continue;
-
-        // For half notes, only show on downbeats
-        if (subdivisionType === 'half' && !quarterBeat.isDownbeat) continue;
-
-        // For offbeat8, skip the quarter note position
-        if (subdivisionType === 'offbeat8') {
-            const timestamp = quarterBeat.timestamp + (quarterInterval * 0.5);
-            if (timestamp >= windowStart && timestamp <= windowEnd) {
+        // Add subdivision markers based on type
+        if (subdivisionType === 'eighth' || subdivisionType === 'swing' || subdivisionType === 'offbeat8') {
+            previewBeats.push({
+                timestamp: quarterBeat.timestamp + (quarterInterval * 0.5),
+                quarterNoteIndex: i,
+                positionInQuarter: 0.5,
+                subdivisionType,
+                isDownbeat: false,
+                isQuarterNote: false,
+            });
+        } else if (subdivisionType === 'sixteenth') {
+            for (let j = 1; j <= 3; j++) {
                 previewBeats.push({
-                    timestamp,
+                    timestamp: quarterBeat.timestamp + (quarterInterval * j / 4),
                     quarterNoteIndex: i,
-                    positionInQuarter: 0.5,
+                    positionInQuarter: j / 4,
                     subdivisionType,
                     isDownbeat: false,
                     isQuarterNote: false,
                 });
             }
-            continue;
-        }
-
-        // Generate subdivided beats
-        for (let j = 0; j < density; j++) {
-            const positionInQuarter = j / density;
-            const timestamp = quarterBeat.timestamp + (quarterInterval * positionInQuarter);
-
-            if (timestamp >= windowStart && timestamp <= windowEnd) {
+        } else if (subdivisionType === 'triplet8') {
+            for (let j = 1; j <= 2; j++) {
                 previewBeats.push({
-                    timestamp,
+                    timestamp: quarterBeat.timestamp + (quarterInterval * j / 3),
                     quarterNoteIndex: i,
-                    positionInQuarter,
+                    positionInQuarter: j / 3,
                     subdivisionType,
-                    isDownbeat: quarterBeat.isDownbeat && j === 0,
-                    isQuarterNote: j === 0,
+                    isDownbeat: false,
+                    isQuarterNote: false,
+                });
+            }
+        } else if (subdivisionType === 'triplet4') {
+            // Quarter triplet: 3 beats in the space of 2 quarters
+            for (let j = 1; j <= 2; j++) {
+                previewBeats.push({
+                    timestamp: quarterBeat.timestamp + (quarterInterval * j * 2 / 3),
+                    quarterNoteIndex: i,
+                    positionInQuarter: j * 2 / 3,
+                    subdivisionType,
+                    isDownbeat: false,
+                    isQuarterNote: false,
                 });
             }
         }
@@ -157,18 +139,12 @@ interface SubdivisionPreviewTimelineProps {
     anticipationWindow?: number;
     /** Past window in seconds */
     pastWindow?: number;
-    /** Callback when a beat is clicked */
-    onBeatClick?: (quarterNoteIndex: number) => void;
-    /** Currently selected beat index */
-    selectedBeatIndex?: number | null;
 }
 
 export function SubdivisionPreviewTimeline({
     disabled = false,
     anticipationWindow = 2.0,
     pastWindow = 4.0,
-    onBeatClick,
-    selectedBeatIndex,
 }: SubdivisionPreviewTimelineProps) {
     // Store subscriptions
     const unifiedBeatMap = useUnifiedBeatMap();
@@ -258,12 +234,6 @@ export function SubdivisionPreviewTimeline({
 
     // Calculate preview beats
     const quarterBeats = useMemo(() => {
-        console.log('[SubdivisionPreviewTimeline] quarterBeats calculation:', {
-            hasUnifiedBeatMap: !!unifiedBeatMap,
-            beatsLength: unifiedBeatMap?.beats?.length,
-            firstBeat: unifiedBeatMap?.beats?.[0],
-            firstThreeBeats: unifiedBeatMap?.beats?.slice(0, 3),
-        });
         if (!unifiedBeatMap) return [];
         return unifiedBeatMap.beats.map(b => ({
             timestamp: b.timestamp,
@@ -387,12 +357,6 @@ export function SubdivisionPreviewTimeline({
         }
     }, [isPlaying, pause, resume]);
 
-    // Beat click handler
-    const handleBeatClick = useCallback((beat: PreviewBeat, event: React.MouseEvent) => {
-        event.stopPropagation();
-        onBeatClick?.(beat.quarterNoteIndex);
-    }, [onBeatClick]);
-
     // Get unique subdivision types for legend
     const usedSubdivisions = useMemo(() => {
         const types = new Set<SubdivisionType>();
@@ -436,8 +400,14 @@ export function SubdivisionPreviewTimeline({
             >
                 {/* Background layers */}
                 <div className="subdivision-preview-timeline-background" />
-                <div className="subdivision-preview-timeline-past-region" />
-                <div className="subdivision-preview-timeline-future-region" />
+                <div
+                    className="subdivision-preview-timeline-past-region"
+                    style={{ width: `${nowPosition * 100}%` }}
+                />
+                <div
+                    className="subdivision-preview-timeline-future-region"
+                    style={{ width: `${(1 - nowPosition) * 100}%` }}
+                />
 
                 {/* Quarter note boundaries */}
                 {quarterNoteBoundaries.map((beat) => {
@@ -464,9 +434,6 @@ export function SubdivisionPreviewTimeline({
                     const position = calculatePosition(beat.timestamp);
                     if (position < 0 || position > 1) return null;
 
-                    const isSelected = selectedBeatIndex === beat.quarterNoteIndex;
-                    const color = SUBDIVISION_COLORS[beat.subdivisionType];
-
                     return (
                         <div
                             key={`beat-${beat.quarterNoteIndex}-${beat.positionInQuarter}-${index}`}
@@ -474,14 +441,11 @@ export function SubdivisionPreviewTimeline({
                                 subdivision-preview-timeline-marker--${beat.subdivisionType}
                                 ${beat.isDownbeat ? 'downbeat' : ''}
                                 ${beat.isQuarterNote ? 'quarter-note' : ''}
-                                ${isSelected ? 'selected' : ''}
                                 ${beat.timestamp < smoothTime ? 'past' : ''}
                             `}
                             style={{
                                 left: `${position * 100}%`,
-                                '--beat-color': color,
-                            } as React.CSSProperties}
-                            onClick={(e) => handleBeatClick(beat, e)}
+                            }}
                         >
                             <div className="subdivision-preview-timeline-marker-dot" />
                             {beat.isQuarterNote && (
@@ -510,7 +474,6 @@ export function SubdivisionPreviewTimeline({
                         <div key={type} className="subdivision-preview-timeline-legend-item">
                             <div
                                 className={`subdivision-preview-timeline-legend-marker subdivision-preview-timeline-legend-marker--${type}`}
-                                style={{ '--beat-color': SUBDIVISION_COLORS[type] } as React.CSSProperties}
                             />
                             <span>{type}</span>
                         </div>
