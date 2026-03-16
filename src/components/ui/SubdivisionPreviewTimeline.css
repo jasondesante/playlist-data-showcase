@@ -200,12 +200,7 @@
     border: 2px solid hsl(var(--background) / 0.8);
 }
 
-/* Quarter note markers (larger and always visible) */
-.subdivision-preview-timeline-marker.quarter-note {
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
+/* Quarter note markers (larger) */
 .subdivision-preview-timeline-marker.quarter-note .subdivision-preview-timeline-marker-dot {
     width: 0.875rem;
     height: 0.875rem;
@@ -213,20 +208,10 @@
     box-shadow: 0 0 6px var(--beat-color, hsl(var(--cute-yellow)) / 0.7);
 }
 
-/* Subdivision markers - ALWAYS VISIBLE, ALWAYS PROMINENT */
-.subdivision-preview-timeline-marker:not(.quarter-note) {
-    /* Ensure subdivision markers are always visible */
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-}
-
+/* Subdivision markers */
 .subdivision-preview-timeline-marker:not(.quarter-note) .subdivision-preview-timeline-marker-dot {
     width: 0.875rem;
     height: 0.875rem;
-    opacity: 1 !important;
-    visibility: visible !important;
-    /* Make them stand out with a contrasting border */
     border: 2px solid hsl(var(--background));
     box-shadow: 0 0 8px var(--beat-color, hsl(var(--cute-orange)) / 0.8), 0 0 0 1px var(--beat-color, hsl(var(--cute-orange)));
 }
@@ -241,9 +226,9 @@
     border: 3px solid hsl(var(--background));
 }
 
-/* Past markers - keep FULLY VISIBLE, just slightly dimmed */
+/* Past markers - keep visible, just slightly dimmed */
 .subdivision-preview-timeline-marker.past {
-    opacity: 1 !important;
+    opacity: 1;
 }
 
 .subdivision-preview-timeline-marker.past .subdivision-preview-timeline-marker-dot {
@@ -282,38 +267,39 @@
 
 /* ============================================
    SUBDIVISION TYPE COLORS
+   Using official subdivision colors from base.css
    ============================================ */
 
 .subdivision-preview-timeline-marker--quarter {
-    --beat-color: hsl(var(--cute-yellow));
+    --beat-color: hsl(var(--subdivision-quarter));
 }
 
 .subdivision-preview-timeline-marker--half {
-    --beat-color: hsl(var(--cute-green));
+    --beat-color: hsl(var(--subdivision-half));
 }
 
 .subdivision-preview-timeline-marker--eighth {
-    --beat-color: hsl(var(--cute-orange));
+    --beat-color: hsl(var(--subdivision-eighth));
 }
 
 .subdivision-preview-timeline-marker--sixteenth {
-    --beat-color: hsl(var(--cute-red));
+    --beat-color: hsl(var(--subdivision-sixteenth));
 }
 
 .subdivision-preview-timeline-marker--triplet8 {
-    --beat-color: hsl(var(--cute-purple));
+    --beat-color: hsl(var(--subdivision-triplet8));
 }
 
 .subdivision-preview-timeline-marker--triplet4 {
-    --beat-color: hsl(var(--cute-blue));
+    --beat-color: hsl(var(--subdivision-triplet4));
 }
 
 .subdivision-preview-timeline-marker--dotted4 {
-    --beat-color: hsl(var(--cute-teal));
+    --beat-color: hsl(var(--subdivision-dotted4));
 }
 
 .subdivision-preview-timeline-marker--dotted8 {
-    --beat-color: hsl(var(--cute-pink));
+    --beat-color: hsl(var(--subdivision-dotted8));
 }
 
 .subdivision-preview-timeline-marker--rest {
@@ -321,11 +307,11 @@
 }
 
 .subdivision-preview-timeline-marker--swing {
-    --beat-color: hsl(var(--cute-amber));
+    --beat-color: hsl(var(--subdivision-swing));
 }
 
 .subdivision-preview-timeline-marker--offbeat8 {
-    --beat-color: hsl(var(--cute-lime));
+    --beat-color: hsl(var(--subdivision-offbeat8));
 }
 
 /* ============================================
