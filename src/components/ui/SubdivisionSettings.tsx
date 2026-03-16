@@ -66,7 +66,6 @@
  */
 import { useState, useCallback, useMemo } from 'react';
 import { RefreshCw, Clock, PieChart } from 'lucide-react';
-import { Tooltip } from './Tooltip';
 import { BeatSubdivisionGrid } from './BeatSubdivisionGrid';
 import { SubdivisionToolbar, SUBDIVISION_TYPES } from './SubdivisionToolbar';
 import './SubdivisionSettings.css';
@@ -272,14 +271,6 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
 
     return (
         <div className="subdivision-settings">
-            {/* Header */}
-            <div className="subdivision-settings-header">
-                <div className="subdivision-settings-title">
-                    <h3>Subdivision Settings</h3>
-                    <Tooltip content="Configure rhythmic subdivision patterns for each beat" />
-                </div>
-            </div>
-
             {/* Status Info */}
             <div className="subdivision-settings-status">
                 {!hasUnifiedBeatMap && (

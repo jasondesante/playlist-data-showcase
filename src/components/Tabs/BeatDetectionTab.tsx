@@ -18,6 +18,7 @@ import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
 import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
 import { StepNav, type Step } from '../ui/StepNav';
+import { Tooltip } from '../ui/Tooltip';
 import { logger } from '../../utils/logger';
 
 /**
@@ -500,7 +501,7 @@ export function BeatDetectionTab() {
                 return wrapContent(
                     <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card">
                         <div className="audio-analysis-subdivision-section">
-                            <h3 className="audio-analysis-step-title">Subdivisions</h3>
+                            <h3 className="audio-analysis-step-title">Subdivisions <Tooltip content="Configure rhythmic subdivision patterns for each beat" /></h3>
                             <SubdivisionSettings disabled={isBeatGenerating} />
                         </div>
 
