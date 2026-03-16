@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward } from 'lucide-react';
+import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
@@ -17,7 +17,7 @@ import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useSubdivisionConfig, useChartStyle, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
 import { StepNav, type Step } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { logger } from '../../utils/logger';
@@ -55,12 +55,12 @@ export function BeatDetectionTab() {
     const loadCachedBeatMap = useBeatDetectionStore((state) => state.actions.loadCachedBeatMap);
     const clearBeatMap = useBeatDetectionStore((state) => state.actions.clearBeatMap);
     const setCurrentStep = useBeatDetectionStore((state) => state.actions.setCurrentStep);
+    const exportFullBeatMap = useBeatDetectionStore((state) => state.actions.exportFullBeatMap);
+    const importFullBeatMap = useBeatDetectionStore((state) => state.actions.importFullBeatMap);
     const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
     const storageError = useBeatDetectionStore((state) => state.storageError);
     const interpolatedBeatMap = useInterpolatedBeatMap();
     const subdividedBeatMap = useSubdividedBeatMap();
-    const subdivisionConfig = useSubdivisionConfig();
-    const chartStyle = useChartStyle();
     const chartStatistics = useChartStatistics();
 
     // Step navigation state
@@ -71,6 +71,7 @@ export function BeatDetectionTab() {
 
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Step configuration for StepNav
     const steps: Step[] = [
@@ -107,103 +108,13 @@ export function BeatDetectionTab() {
     }, [navigationDirection]);
 
     /**
-     * Export interpolated beat map as JSON for debugging/analysis
-     * Includes subdivision data when a SubdividedBeatMap has been generated.
-     * Includes chart data (requiredKey on beats, chart metadata) when keys are assigned.
+     * Export complete beat map as JSON for full state preservation.
+     * Includes detected beats, interpolated beats, subdivided beats, and chart with required keys.
+     * This export can be imported back to fully restore the beat map state.
      */
     const handleExportBeatMap = useCallback(() => {
-        if (!interpolatedBeatMap || !beatMap) return;
-
-        const exportData = {
-            exportTimestamp: new Date().toISOString(),
-            beatMapDuration: beatMap.duration,
-            quarterNoteBpm: interpolatedBeatMap.quarterNoteBpm,
-            quarterNoteConfidence: interpolatedBeatMap.quarterNoteConfidence,
-            detectedBeats: interpolatedBeatMap.detectedBeats.map(b => ({
-                timestamp: b.timestamp,
-                isDownbeat: b.isDownbeat,
-                confidence: b.confidence,
-                beatInMeasure: b.beatInMeasure,
-                measureNumber: b.measureNumber,
-                intensity: b.intensity,
-            })),
-            mergedBeats: interpolatedBeatMap.mergedBeats.map(b => ({
-                timestamp: b.timestamp,
-                source: b.source,
-                confidence: b.confidence,
-                isDownbeat: b.isDownbeat,
-                beatInMeasure: b.beatInMeasure,
-                measureNumber: b.measureNumber,
-                intensity: b.intensity,
-                distanceToAnchor: b.distanceToAnchor,
-                nearestAnchorTimestamp: b.nearestAnchorTimestamp,
-            })),
-            metadata: {
-                interpolatedBeatCount: interpolatedBeatMap.interpolationMetadata.interpolatedBeatCount,
-                detectedBeatCount: interpolatedBeatMap.interpolationMetadata.detectedBeatCount,
-                totalBeatCount: interpolatedBeatMap.interpolationMetadata.totalBeatCount,
-                interpolationRatio: interpolatedBeatMap.interpolationMetadata.interpolationRatio,
-                avgInterpolatedConfidence: interpolatedBeatMap.interpolationMetadata.avgInterpolatedConfidence,
-                tempoDriftRatio: interpolatedBeatMap.interpolationMetadata.tempoDriftRatio,
-                quarterNoteDetection: {
-                    intervalSeconds: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.intervalSeconds,
-                    bpm: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.bpm,
-                    confidence: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.confidence,
-                    method: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.method,
-                    denseSectionCount: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionCount,
-                    denseSectionBeats: interpolatedBeatMap.interpolationMetadata.quarterNoteDetection.denseSectionBeats,
-                },
-                gapAnalysis: {
-                    totalGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.totalGaps,
-                    halfNoteGaps: interpolatedBeatMap.interpolationMetadata.gapAnalysis.halfNoteGaps,
-                    anomalies: interpolatedBeatMap.interpolationMetadata.gapAnalysis.anomalies,
-                    avgGapSize: interpolatedBeatMap.interpolationMetadata.gapAnalysis.avgGapSize,
-                    gridAlignmentScore: interpolatedBeatMap.interpolationMetadata.gapAnalysis.gridAlignmentScore,
-                },
-            },
-            // Subdivision configuration (always included)
-            subdivision: {
-                config: subdivisionConfig,
-                // Include SubdividedBeatMap if generated
-                ...(subdividedBeatMap ? {
-                    beatMap: {
-                        audioId: subdividedBeatMap.audioId,
-                        duration: subdividedBeatMap.duration,
-                        beats: subdividedBeatMap.beats.map(b => ({
-                            timestamp: b.timestamp,
-                            beatInMeasure: b.beatInMeasure,
-                            isDownbeat: b.isDownbeat,
-                            measureNumber: b.measureNumber,
-                            intensity: b.intensity,
-                            confidence: b.confidence,
-                            isDetected: b.isDetected,
-                            originalBeatIndex: b.originalBeatIndex,
-                            subdivisionType: b.subdivisionType,
-                            // Include requiredKey if assigned (for chart/rhythm game data)
-                            ...(b.requiredKey !== undefined && { requiredKey: b.requiredKey }),
-                        })),
-                        detectedBeatIndices: subdividedBeatMap.detectedBeatIndices,
-                    },
-                    metadata: {
-                        originalBeatCount: subdividedBeatMap.subdivisionMetadata.originalBeatCount,
-                        subdividedBeatCount: subdividedBeatMap.subdivisionMetadata.subdividedBeatCount,
-                        averageDensityMultiplier: subdividedBeatMap.subdivisionMetadata.averageDensityMultiplier,
-                        explicitBeatCount: subdividedBeatMap.subdivisionMetadata.explicitBeatCount,
-                        subdivisionsUsed: subdividedBeatMap.subdivisionMetadata.subdivisionsUsed,
-                        hasMultipleTempos: subdividedBeatMap.subdivisionMetadata.hasMultipleTempos,
-                        maxDensity: subdividedBeatMap.subdivisionMetadata.maxDensity,
-                    },
-                } : null),
-            },
-            // Chart metadata (when keys are assigned)
-            ...(chartStatistics.keyCount > 0 && {
-                chart: {
-                    style: chartStyle,
-                    keyCount: chartStatistics.keyCount,
-                    usedKeys: chartStatistics.usedKeys,
-                },
-            }),
-        };
+        const exportData = exportFullBeatMap(selectedTrack?.title);
+        if (!exportData) return;
 
         const json = JSON.stringify(exportData, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -211,12 +122,50 @@ export function BeatDetectionTab() {
         const link = document.createElement('a');
         link.href = url;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        link.download = `interpolated-beatmap-${timestamp}.json`;
+        link.download = `beatmap-${exportData.audioId}-${timestamp}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-    }, [interpolatedBeatMap, beatMap, subdivisionConfig, subdividedBeatMap, chartStyle, chartStatistics]);
+    }, [exportFullBeatMap, selectedTrack?.title]);
+
+    /**
+     * Import a complete beat map from JSON file.
+     * Restores all beat data: detected, interpolated, subdivided, and chart keys.
+     */
+    const handleImportBeatMap = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Clear the input so the same file can be selected again
+        event.target.value = '';
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            const result = importFullBeatMap(data);
+
+            if (result.success) {
+                const chartInfo = data.chart ? ` with ${data.chart.keyCount} chart keys` : '';
+                const subInfo = data.subdivision ? ` (${data.subdivision.beats.length} subdivided beats)` : '';
+                logger.info('BeatDetection', `Beat map imported successfully${chartInfo}${subInfo}`, {
+                    audioId: data.audioId,
+                    detectedBeats: data.detectedBeats?.length,
+                    mergedBeats: data.mergedBeats?.length,
+                });
+                // Could show a success toast here
+            } else {
+                logger.warn('BeatDetection', 'Beat map import failed', { errors: result.errors });
+                // Could show an error toast here
+                alert(`Import failed: ${result.errors.join(', ')}`);
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to parse file';
+            logger.error('BeatDetection', 'Beat map import error', { error: message });
+            alert(`Import error: ${message}`);
+        }
+    }, [importFullBeatMap]);
 
     /**
      * Load cached beat map when the selected track changes.
@@ -566,7 +515,7 @@ export function BeatDetectionTab() {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">
                             <div className="audio-analysis-step-placeholder">
-                                <div className="audio-analysis-step-placeholder-icon">🎯</div>
+                                <div className="audio-analysis-step-placeholder-icon">🀽</div>
                                 <h4 className="audio-analysis-step-placeholder-title">Not Ready</h4>
                                 <p className="audio-analysis-step-placeholder-text">
                                     Complete Step 1 (Analyze) to access practice mode and export options.
@@ -596,10 +545,27 @@ export function BeatDetectionTab() {
                                         >
                                             Export Beat Map
                                         </Button>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".json,application/json"
+                                            onChange={handleImportBeatMap}
+                                            style={{ display: 'none' }}
+                                            aria-hidden="true"
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            leftIcon={Upload}
+                                            className="audio-analysis-import-btn"
+                                        >
+                                            Import Beat Map
+                                        </Button>
                                         <span className="audio-analysis-export-hint">
                                             {subdividedBeatMap
-                                                ? 'Download beat map with subdivision data as JSON'
-                                                : 'Download interpolated beat map data as JSON'}
+                                                ? 'Full chart with beats, subdivisions, and keys'
+                                                : 'Detected beats and timing data'}
                                         </span>
                                     </div>
                                 )}
@@ -628,6 +594,7 @@ export function BeatDetectionTab() {
         handleBeatAnalysis,
         handleStartPracticeMode,
         handleExportBeatMap,
+        handleImportBeatMap,
         clearOldestCachedBeatMaps,
         clearStorageError,
         getAnalysisStatus,
@@ -635,6 +602,7 @@ export function BeatDetectionTab() {
         getPhaseLabel,
         stepCompletion,
         chartStatistics,
+        fileInputRef,
     ]);
 
     return (

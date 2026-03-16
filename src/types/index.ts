@@ -4,6 +4,10 @@
  * Re-exports types from playlist-data-engine to ensure parity.
  */
 
+import type {
+    SubdivisionType as SubdivisionTypeImport,
+} from 'playlist-data-engine';
+
 export type {
     // Playlist
     ServerlessPlaylist,
@@ -1197,6 +1201,230 @@ export function validateLevelExportData(data: unknown): LevelImportValidationRes
 
     return {
         valid: errors.length === 0,
+        errors,
+        warnings,
+    };
+}
+
+// ============================================================
+// Full Beat Map Export Types (Complete State Export)
+// ============================================================
+
+/**
+ * Beat data for detected beats in full beat map export.
+ */
+export interface FullExportDetectedBeat {
+    timestamp: number;
+    isDownbeat: boolean;
+    confidence: number;
+    beatInMeasure: number;
+    measureNumber: number;
+    intensity: number;
+}
+
+/**
+ * Beat data for merged/interpolated beats in full beat map export.
+ */
+export interface FullExportMergedBeat extends FullExportDetectedBeat {
+    source: 'detected' | 'interpolated';
+    distanceToAnchor?: number;
+    nearestAnchorTimestamp?: number;
+}
+
+/**
+ * Beat data for subdivided beats in full beat map export.
+ */
+export interface FullExportSubdividedBeat {
+    timestamp: number;
+    beatInMeasure: number;
+    isDownbeat: boolean;
+    measureNumber: number;
+    intensity: number;
+    confidence: number;
+    isDetected: boolean;
+    originalBeatIndex: number | null;
+    subdivisionType: string;
+    /** Required key for rhythm game chart (if assigned) */
+    requiredKey?: string;
+}
+
+/**
+ * Complete beat map export data for full state preservation.
+ *
+ * This format includes EVERYTHING needed to fully restore the beat detection state:
+ * - Original detected beats from audio analysis
+ * - Interpolated beats that fill gaps
+ * - Subdivided beats with all timing details
+ * - Chart data with required keys for each note
+ * - All metadata for reconstruction
+ *
+ * Use this for saving/loading complete projects, not just playable levels.
+ *
+ * @example
+ * ```typescript
+ * const fullData: FullBeatMapExportData = {
+ *   version: 1,
+ *   format: 'full-beatmap',
+ *   audioId: 'spotify-track-123',
+ *   audioTitle: 'Song Name',
+ *   exportedAt: Date.now(),
+ *   duration: 180.5,
+ *   quarterNoteBpm: 120,
+ *   detectedBeats: [...],
+ *   mergedBeats: [...],
+ *   interpolatedMetadata: {...},
+ *   subdivision: {
+ *     config: {...},
+ *     beats: [...],
+ *     metadata: {...},
+ *   },
+ *   chart: {
+ *     style: 'ddr',
+ *     keyCount: 45,
+ *     usedKeys: ['up', 'down', 'left', 'right'],
+ *   },
+ * };
+ * ```
+ */
+export interface FullBeatMapExportData {
+    /** Schema version for future migrations (currently always 1) */
+    version: 1;
+    /** Format identifier to distinguish from LevelExportData */
+    format: 'full-beatmap';
+    /** Audio identifier */
+    audioId: string;
+    /** Optional audio title for display purposes */
+    audioTitle?: string;
+    /** Unix timestamp when this export was created */
+    exportedAt: number;
+
+    // Duration and tempo info
+    /** Total duration of the audio in seconds */
+    duration: number;
+    /** Detected quarter note BPM */
+    quarterNoteBpm: number;
+    /** Confidence of the BPM detection (0-1) */
+    quarterNoteConfidence: number;
+
+    // Beat data
+    /** Originally detected beats from audio analysis */
+    detectedBeats: FullExportDetectedBeat[];
+    /** Merged beats (detected + interpolated) */
+    mergedBeats: FullExportMergedBeat[];
+    /** Interpolation metadata */
+    interpolatedMetadata: {
+        interpolatedBeatCount: number;
+        detectedBeatCount: number;
+        totalBeatCount: number;
+        interpolationRatio: number;
+        avgInterpolatedConfidence: number;
+        tempoDriftRatio: number;
+        hasMultipleTempos: boolean;
+        quarterNoteDetection: {
+            intervalSeconds: number;
+            bpm: number;
+            confidence: number;
+            histogramPeak: number;
+            secondaryPeaks: number[];
+            method: 'histogram' | 'kde' | 'tempo-detector-fallback';
+            denseSectionCount: number;
+            denseSectionBeats: number;
+        };
+        gapAnalysis: {
+            totalGaps: number;
+            halfNoteGaps: number;
+            anomalies: number[];
+            avgGapSize: number;
+            gridAlignmentScore: number;
+        };
+    };
+
+    // Subdivision data
+    /** Subdivision configuration and beats (if subdivision was applied) */
+    subdivision: {
+        config: SubdivisionConfig;
+        beats: FullExportSubdividedBeat[];
+        metadata: {
+            originalBeatCount: number;
+            subdividedBeatCount: number;
+            averageDensityMultiplier: number;
+            explicitBeatCount: number;
+            subdivisionsUsed: SubdivisionTypeImport[];
+            hasMultipleTempos: boolean;
+            maxDensity: number;
+        };
+    } | null;
+
+    // Chart data
+    /** Chart metadata (if keys are assigned) */
+    chart: {
+        style: ChartStyle;
+        keyCount: number;
+        usedKeys: string[];
+    } | null;
+}
+
+/**
+ * Result of validating a full beat map import.
+ */
+export interface FullBeatMapImportResult {
+    /** Whether the import was successful */
+    success: boolean;
+    /** Array of error messages if import failed */
+    errors: string[];
+    /** Array of warning messages (non-blocking issues) */
+    warnings: string[];
+}
+
+/**
+ * Validates a FullBeatMapExportData structure.
+ */
+export function validateFullBeatMapExportData(data: unknown): FullBeatMapImportResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (typeof data !== 'object' || data === null) {
+        return { success: false, errors: ['Data must be a non-null object'], warnings: [] };
+    }
+
+    const exportData = data as Record<string, unknown>;
+
+    // Check required fields
+    if (exportData.version !== 1) {
+        errors.push(`version must be 1, got ${exportData.version}`);
+    }
+    if (exportData.format !== 'full-beatmap') {
+        errors.push(`format must be 'full-beatmap', got '${exportData.format}'`);
+    }
+    if (typeof exportData.audioId !== 'string') {
+        errors.push('audioId must be a string');
+    }
+    if (typeof exportData.duration !== 'number') {
+        errors.push('duration must be a number');
+    }
+    if (typeof exportData.quarterNoteBpm !== 'number') {
+        errors.push('quarterNoteBpm must be a number');
+    }
+    if (!Array.isArray(exportData.detectedBeats)) {
+        errors.push('detectedBeats must be an array');
+    }
+    if (!Array.isArray(exportData.mergedBeats)) {
+        errors.push('mergedBeats must be an array');
+    }
+
+    // Warnings for optional fields
+    if (!exportData.audioTitle) {
+        warnings.push('audioTitle is missing');
+    }
+    if (!exportData.subdivision) {
+        warnings.push('No subdivision data - beat map was not subdivided');
+    }
+    if (!exportData.chart) {
+        warnings.push('No chart data - no keys were assigned');
+    }
+
+    return {
+        success: errors.length === 0,
         errors,
         warnings,
     };

@@ -62,11 +62,14 @@ import {
     KeyLaneViewMode,
     DEFAULT_CHART_EDITOR_STATE,
     KeyAssignment,
-    // Level Import/Export types (Phase 2: Task 2.5)
-    LevelExportData,
+// Level Import/Export types (Phase 2: Task 2.5)
+LevelExportData,
     LevelExportBeat,
     LevelImportValidationResult,
     validateLevelExportData,
+    // Full Beat Map Export types (Complete State Export)
+    FullBeatMapExportData,
+    validateFullBeatMapExportData,
     getKeyCount,
     getUsedKeys,
     // Groove Analyzer types (Phase 2: Task 2.1 - Groove State)
@@ -1042,6 +1045,31 @@ interface BeatDetectionActions {
      * @returns Validation result with errors if import failed
      */
     importLevel: (data: LevelExportData) => LevelImportValidationResult;
+
+    // ============================================================
+    // Full Beat Map Export/Import Actions
+    // ============================================================
+
+    /**
+     * Export the complete beat map state including detected beats,
+     * interpolated beats, subdivided beats, and chart with required keys.
+     * This is the comprehensive export for saving the full work state.
+     * @param audioTitle - Optional title for display purposes
+     * @returns The FullBeatMapExportData object, or null if no beat map exists
+     */
+    exportFullBeatMap: (audioTitle?: string) => FullBeatMapExportData | null;
+
+    /**
+     * Import a complete beat map state from FullBeatMapExportData.
+     * Restores all beat data: detected, interpolated, subdivided, and chart keys.
+     * @param data - The full beat map data to import
+     * @returns Validation result with success/errors/warnings
+     */
+    importFullBeatMap: (data: FullBeatMapExportData) => {
+        success: boolean;
+        errors: string[];
+        warnings: string[];
+    };
 
     // ============================================================
     // Groove Analyzer Actions (Phase 2: Task 2.2 - Groove Actions)
@@ -3355,6 +3383,314 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                         });
 
                         return successResult;
+                    },
+
+                    // ============================================================
+                    // Full Beat Map Export/Import Actions (Complete State Export)
+                    // ============================================================
+
+                    exportFullBeatMap: (audioTitle?: string) => {
+                        const state = get();
+
+                        // Need at least an interpolated beat map to export
+                        if (!state.interpolatedBeatMap || !state.beatMap) {
+                            logger.warn('BeatDetection', 'Cannot export full beat map: no beat map loaded');
+                            return null;
+                        }
+
+                        const interpolatedMap = state.interpolatedBeatMap;
+                        const originalBeatMap = state.beatMap;
+
+                        // Build the export data
+                        const exportData: FullBeatMapExportData = {
+                            version: 1,
+                            format: 'full-beatmap',
+                            audioId: interpolatedMap.audioId,
+                            audioTitle,
+                            exportedAt: Date.now(),
+                            duration: originalBeatMap.duration,
+                            quarterNoteBpm: interpolatedMap.quarterNoteBpm,
+                            quarterNoteConfidence: interpolatedMap.quarterNoteConfidence,
+                            detectedBeats: interpolatedMap.detectedBeats.map(b => ({
+                                timestamp: b.timestamp,
+                                isDownbeat: b.isDownbeat,
+                                confidence: b.confidence,
+                                beatInMeasure: b.beatInMeasure,
+                                measureNumber: b.measureNumber,
+                                intensity: b.intensity,
+                            })),
+                            mergedBeats: interpolatedMap.mergedBeats.map(b => ({
+                                timestamp: b.timestamp,
+                                isDownbeat: b.isDownbeat,
+                                confidence: b.confidence,
+                                beatInMeasure: b.beatInMeasure,
+                                measureNumber: b.measureNumber,
+                                intensity: b.intensity,
+                                source: b.source,
+                                distanceToAnchor: b.distanceToAnchor,
+                                nearestAnchorTimestamp: b.nearestAnchorTimestamp,
+                            })),
+                            interpolatedMetadata: {
+                                interpolatedBeatCount: interpolatedMap.interpolationMetadata.interpolatedBeatCount,
+                                detectedBeatCount: interpolatedMap.interpolationMetadata.detectedBeatCount,
+                                totalBeatCount: interpolatedMap.interpolationMetadata.totalBeatCount,
+                                interpolationRatio: interpolatedMap.interpolationMetadata.interpolationRatio,
+                                avgInterpolatedConfidence: interpolatedMap.interpolationMetadata.avgInterpolatedConfidence,
+                                tempoDriftRatio: interpolatedMap.interpolationMetadata.tempoDriftRatio,
+                                hasMultipleTempos: interpolatedMap.interpolationMetadata.hasMultipleTempos,
+                                quarterNoteDetection: {
+                                    intervalSeconds: interpolatedMap.interpolationMetadata.quarterNoteDetection.intervalSeconds,
+                                    bpm: interpolatedMap.interpolationMetadata.quarterNoteDetection.bpm,
+                                    confidence: interpolatedMap.interpolationMetadata.quarterNoteDetection.confidence,
+                                    histogramPeak: interpolatedMap.interpolationMetadata.quarterNoteDetection.histogramPeak,
+                                    secondaryPeaks: interpolatedMap.interpolationMetadata.quarterNoteDetection.secondaryPeaks,
+                                    method: interpolatedMap.interpolationMetadata.quarterNoteDetection.method,
+                                    denseSectionCount: interpolatedMap.interpolationMetadata.quarterNoteDetection.denseSectionCount,
+                                    denseSectionBeats: interpolatedMap.interpolationMetadata.quarterNoteDetection.denseSectionBeats,
+                                },
+                                gapAnalysis: {
+                                    totalGaps: interpolatedMap.interpolationMetadata.gapAnalysis.totalGaps,
+                                    halfNoteGaps: interpolatedMap.interpolationMetadata.gapAnalysis.halfNoteGaps,
+                                    anomalies: interpolatedMap.interpolationMetadata.gapAnalysis.anomalies,
+                                    avgGapSize: interpolatedMap.interpolationMetadata.gapAnalysis.avgGapSize,
+                                    gridAlignmentScore: interpolatedMap.interpolationMetadata.gapAnalysis.gridAlignmentScore,
+                                },
+                            },
+                            subdivision: state.subdividedBeatMap ? {
+                                config: state.subdivisionConfig,
+                                beats: state.subdividedBeatMap.beats.map(b => ({
+                                    timestamp: b.timestamp,
+                                    beatInMeasure: b.beatInMeasure,
+                                    isDownbeat: b.isDownbeat,
+                                    measureNumber: b.measureNumber,
+                                    intensity: b.intensity,
+                                    confidence: b.confidence,
+                                    isDetected: b.isDetected,
+                                    originalBeatIndex: b.originalBeatIndex ?? null,
+                                    subdivisionType: b.subdivisionType,
+                                    ...(b.requiredKey !== undefined && { requiredKey: b.requiredKey }),
+                                })),
+                                metadata: {
+                                    originalBeatCount: state.subdividedBeatMap.subdivisionMetadata.originalBeatCount,
+                                    subdividedBeatCount: state.subdividedBeatMap.subdivisionMetadata.subdividedBeatCount,
+                                    averageDensityMultiplier: state.subdividedBeatMap.subdivisionMetadata.averageDensityMultiplier,
+                                    explicitBeatCount: state.subdividedBeatMap.subdivisionMetadata.explicitBeatCount,
+                                    subdivisionsUsed: state.subdividedBeatMap.subdivisionMetadata.subdivisionsUsed as SubdivisionType[],
+                                    hasMultipleTempos: state.subdividedBeatMap.subdivisionMetadata.hasMultipleTempos,
+                                    maxDensity: state.subdividedBeatMap.subdivisionMetadata.maxDensity,
+                                },
+                            } : null,
+                            chart: state.subdividedBeatMap && getKeyCount(state.subdividedBeatMap) > 0 ? {
+                                style: state.chartStyle,
+                                keyCount: getKeyCount(state.subdividedBeatMap),
+                                usedKeys: getUsedKeys(state.subdividedBeatMap),
+                            } : null,
+                        };
+
+                        logger.info('BeatDetection', 'Exported full beat map', {
+                            audioId: exportData.audioId,
+                            detectedBeatCount: exportData.detectedBeats.length,
+                            mergedBeatCount: exportData.mergedBeats.length,
+                            hasSubdivision: !!exportData.subdivision,
+                            hasChart: !!exportData.chart,
+                        });
+
+                        return exportData;
+                    },
+
+                    importFullBeatMap: (data: FullBeatMapExportData) => {
+                        // First validate the structure
+                        const validation = validateFullBeatMapExportData(data);
+                        if (!validation.success) {
+                            logger.warn('BeatDetection', 'Full beat map import failed: invalid structure', {
+                                errors: validation.errors,
+                            });
+                            return validation;
+                        }
+
+                        logger.info('BeatDetection', 'Importing full beat map', {
+                            audioId: data.audioId,
+                            detectedBeatCount: data.detectedBeats.length,
+                            mergedBeatCount: data.mergedBeats.length,
+                            hasSubdivision: !!data.subdivision,
+                            hasChart: !!data.chart,
+                        });
+
+                        // Reconstruct the interpolated beat map
+                        const interpolatedBeatMap: InterpolatedBeatMap = {
+                            audioId: data.audioId,
+                            duration: data.duration,
+                            quarterNoteBpm: data.quarterNoteBpm,
+                            quarterNoteConfidence: data.quarterNoteConfidence,
+                            quarterNoteInterval: data.quarterNoteBpm > 0 ? 60 / data.quarterNoteBpm : 0.5,
+                            originalMetadata: {
+                                algorithm: 'imported',
+                                version: '1.0',
+                                generatedAt: new Date().toISOString(),
+                                minBpm: 60,
+                                maxBpm: 200,
+                                sensitivity: 1.0,
+                                filter: 0.5,
+                                noiseFloorThreshold: 0.1,
+                                hopSizeMs: 11.6,
+                                fftSize: 2048,
+                                dpAlpha: 0.5,
+                                melBands: 80,
+                                highPassCutoff: 80,
+                                gaussianSmoothMs: 20,
+                                tempoCenter: 0.5,
+                                tempoWidth: 1.0,
+                            },
+                            detectedBeats: data.detectedBeats.map(b => ({
+                                timestamp: b.timestamp,
+                                isDownbeat: b.isDownbeat,
+                                confidence: b.confidence,
+                                beatInMeasure: b.beatInMeasure,
+                                measureNumber: b.measureNumber,
+                                intensity: b.intensity,
+                            })),
+                            mergedBeats: data.mergedBeats.map(b => ({
+                                timestamp: b.timestamp,
+                                isDownbeat: b.isDownbeat,
+                                confidence: b.confidence,
+                                beatInMeasure: b.beatInMeasure,
+                                measureNumber: b.measureNumber,
+                                intensity: b.intensity,
+                                source: b.source,
+                                distanceToAnchor: b.distanceToAnchor,
+                                nearestAnchorTimestamp: b.nearestAnchorTimestamp,
+                            })),
+                            interpolationMetadata: {
+                                interpolatedBeatCount: data.interpolatedMetadata.interpolatedBeatCount,
+                                detectedBeatCount: data.interpolatedMetadata.detectedBeatCount,
+                                totalBeatCount: data.interpolatedMetadata.totalBeatCount,
+                                interpolationRatio: data.interpolatedMetadata.interpolationRatio,
+                                avgInterpolatedConfidence: data.interpolatedMetadata.avgInterpolatedConfidence,
+                                tempoDriftRatio: data.interpolatedMetadata.tempoDriftRatio,
+                                hasMultipleTempos: data.interpolatedMetadata.hasMultipleTempos,
+                                quarterNoteDetection: {
+                                    intervalSeconds: data.interpolatedMetadata.quarterNoteDetection.intervalSeconds,
+                                    bpm: data.interpolatedMetadata.quarterNoteDetection.bpm,
+                                    confidence: data.interpolatedMetadata.quarterNoteDetection.confidence,
+                                    histogramPeak: data.interpolatedMetadata.quarterNoteDetection.histogramPeak,
+                                    secondaryPeaks: data.interpolatedMetadata.quarterNoteDetection.secondaryPeaks,
+                                    method: data.interpolatedMetadata.quarterNoteDetection.method,
+                                    denseSectionCount: data.interpolatedMetadata.quarterNoteDetection.denseSectionCount,
+                                    denseSectionBeats: data.interpolatedMetadata.quarterNoteDetection.denseSectionBeats,
+                                },
+                                gapAnalysis: {
+                                    totalGaps: data.interpolatedMetadata.gapAnalysis.totalGaps,
+                                    halfNoteGaps: data.interpolatedMetadata.gapAnalysis.halfNoteGaps,
+                                    anomalies: data.interpolatedMetadata.gapAnalysis.anomalies,
+                                    avgGapSize: data.interpolatedMetadata.gapAnalysis.avgGapSize,
+                                    gridAlignmentScore: data.interpolatedMetadata.gapAnalysis.gridAlignmentScore,
+                                },
+                            },
+                        };
+
+                        // Reconstruct the original beat map (minimal version for reference)
+                        const beatMap: BeatMap = {
+                            audioId: data.audioId,
+                            duration: data.duration,
+                            beats: data.detectedBeats.map(b => ({
+                                timestamp: b.timestamp,
+                                isDownbeat: b.isDownbeat,
+                                confidence: b.confidence,
+                                beatInMeasure: b.beatInMeasure,
+                                measureNumber: b.measureNumber,
+                                intensity: b.intensity,
+                            })),
+                            bpm: data.quarterNoteBpm,
+                            metadata: {
+                                algorithm: 'imported',
+                                version: '1.0',
+                                generatedAt: new Date().toISOString(),
+                                minBpm: 60,
+                                maxBpm: 200,
+                                sensitivity: 1.0,
+                                filter: 0.5,
+                                noiseFloorThreshold: 0.1,
+                                hopSizeMs: 11.6,
+                                fftSize: 2048,
+                                dpAlpha: 0.5,
+                                melBands: 80,
+                                highPassCutoff: 80,
+                                gaussianSmoothMs: 20,
+                                tempoCenter: 0.5,
+                                tempoWidth: 1.0,
+                            },
+                        };
+
+                        // Build the update state
+                        const updateState: Partial<BeatDetectionState> = {
+                            beatMap,
+                            interpolatedBeatMap,
+                            // Clear any previous error
+                            storageError: null,
+                        };
+
+                        // Restore subdivision data if present
+                        if (data.subdivision) {
+                            const subdividedBeatMap: SubdividedBeatMap = {
+                                audioId: data.audioId,
+                                duration: data.duration,
+                                beats: data.subdivision.beats.map(b => ({
+                                    timestamp: b.timestamp,
+                                    beatInMeasure: b.beatInMeasure,
+                                    isDownbeat: b.isDownbeat,
+                                    measureNumber: b.measureNumber,
+                                    intensity: b.intensity,
+                                    confidence: b.confidence,
+                                    isDetected: b.isDetected,
+                                    originalBeatIndex: b.originalBeatIndex ?? undefined,
+                                    subdivisionType: b.subdivisionType as SubdivisionType,
+                                    ...(b.requiredKey !== undefined && { requiredKey: b.requiredKey }),
+                                })),
+                                detectedBeatIndices: [],  // We don't store this in export, but it's not critical
+                                subdivisionConfig: data.subdivision.config,
+                                downbeatConfig: DEFAULT_DOWNBEAT_CONFIG,
+                                subdivisionMetadata: {
+                                    originalBeatCount: data.subdivision.metadata.originalBeatCount,
+                                    subdividedBeatCount: data.subdivision.metadata.subdividedBeatCount,
+                                    averageDensityMultiplier: data.subdivision.metadata.averageDensityMultiplier,
+                                    explicitBeatCount: data.subdivision.metadata.explicitBeatCount,
+                                    subdivisionsUsed: data.subdivision.metadata.subdivisionsUsed,
+                                    hasMultipleTempos: data.subdivision.metadata.hasMultipleTempos,
+                                    maxDensity: data.subdivision.metadata.maxDensity,
+                                },
+                            };
+
+                            (updateState as Record<string, unknown>).subdividedBeatMap = subdividedBeatMap;
+                            (updateState as Record<string, unknown>).subdivisionConfig = data.subdivision.config;
+
+                            // Cache the subdivided beat map
+                            const currentCache = get().cachedSubdividedBeatMaps;
+                            (updateState as Record<string, unknown>).cachedSubdividedBeatMaps = {
+                                ...currentCache,
+                                [data.audioId]: subdividedBeatMap,
+                            };
+                        }
+
+                        // Restore chart data if present
+                        if (data.chart) {
+                            (updateState as Record<string, unknown>).chartStyle = data.chart.style;
+                        }
+
+                        // Apply the update
+                        set(updateState);
+
+                        logger.info('BeatDetection', 'Full beat map import successful', {
+                            audioId: data.audioId,
+                            hasSubdivision: !!data.subdivision,
+                            hasChart: !!data.chart,
+                            chartKeyCount: data.chart?.keyCount ?? 0,
+                        });
+
+                        return {
+                            success: true,
+                            errors: [],
+                            warnings: validation.warnings,
+                        };
                     },
 
                     // ============================================================
