@@ -1249,6 +1249,17 @@ export interface FullExportSubdividedBeat {
 }
 
 /**
+ * JSON-serializable version of SubdivisionConfig.
+ * Used for export/import since Map cannot be serialized to JSON.
+ */
+export interface SubdivisionConfigJSON {
+    /** Subdivision assignments as array of [beatIndex, subdivisionType] tuples */
+    beatSubdivisions: [number, string][];
+    /** Default subdivision for beats not in the beatSubdivisions array */
+    defaultSubdivision: string;
+}
+
+/**
  * Complete beat map export data for full state preservation.
  *
  * This format includes EVERYTHING needed to fully restore the beat detection state:
@@ -1342,7 +1353,7 @@ export interface FullBeatMapExportData {
     // Subdivision data
     /** Subdivision configuration and beats (if subdivision was applied) */
     subdivision: {
-        config: SubdivisionConfig;
+        config: SubdivisionConfigJSON;
         beats: FullExportSubdividedBeat[];
         metadata: {
             originalBeatCount: number;

@@ -3457,7 +3457,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 },
                             },
                             subdivision: state.subdividedBeatMap ? {
-                                config: state.subdivisionConfig,
+                                config: {
+                                    beatSubdivisions: Array.from(state.subdivisionConfig.beatSubdivisions.entries()),
+                                    defaultSubdivision: state.subdivisionConfig.defaultSubdivision,
+                                },
                                 beats: state.subdividedBeatMap.beats.map(b => ({
                                     timestamp: b.timestamp,
                                     beatInMeasure: b.beatInMeasure,
@@ -3631,6 +3634,14 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
 
                         // Restore subdivision data if present
                         if (data.subdivision) {
+                            // Convert JSON config back to proper SubdivisionConfig with Map
+                            const subdivisionConfig: SubdivisionConfig = {
+                                beatSubdivisions: new Map(data.subdivision.config.beatSubdivisions.map(
+                                    ([idx, type]) => [idx, type as SubdivisionType]
+                                )),
+                                defaultSubdivision: data.subdivision.config.defaultSubdivision as SubdivisionType,
+                            };
+
                             const subdividedBeatMap: SubdividedBeatMap = {
                                 audioId: data.audioId,
                                 duration: data.duration,
@@ -3647,7 +3658,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                     ...(b.requiredKey !== undefined && { requiredKey: b.requiredKey }),
                                 })),
                                 detectedBeatIndices: [],  // We don't store this in export, but it's not critical
-                                subdivisionConfig: data.subdivision.config,
+                                subdivisionConfig: subdivisionConfig,
                                 downbeatConfig: DEFAULT_DOWNBEAT_CONFIG,
                                 subdivisionMetadata: {
                                     originalBeatCount: data.subdivision.metadata.originalBeatCount,
@@ -3661,7 +3672,7 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             };
 
                             (updateState as Record<string, unknown>).subdividedBeatMap = subdividedBeatMap;
-                            (updateState as Record<string, unknown>).subdivisionConfig = data.subdivision.config;
+                            (updateState as Record<string, unknown>).subdivisionConfig = subdivisionConfig;
 
                             // Cache the subdivided beat map
                             const currentCache = get().cachedSubdividedBeatMaps;
