@@ -270,16 +270,6 @@ export function SubdivisionSettings({ disabled = false }: SubdivisionSettingsPro
         setSelection(newSelection);
     }, []);
 
-    // Handle beat click from preview timeline
-    const handlePreviewBeatClick = useCallback((beatIndex: number) => {
-        // Update selection to include this beat
-        setSelection({
-            selectedBeats: new Set([beatIndex]),
-            rangeStart: beatIndex,
-            rangeEnd: beatIndex,
-        });
-    }, []);
-
     return (
         <div className="subdivision-settings">
             {/* Status Info */}

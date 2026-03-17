@@ -1,0 +1,220 @@
+/* ============================================
+   SUBDIVISION PLAYGROUND CONTAINER
+   Phase 6: Task 6.4 - Real-time subdivision switching
+   Phase 8: Task 8.3 - Use centralized subdivision color scheme
+   ============================================ */
+
+.beat-practice-subdivision-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Active state for container when playback is active */
+.beat-practice-subdivision-container:has(.subdivision-buttons--active) {
+  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.08);
+}
+
+.beat-practice-subdivision-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beat-practice-subdivision-icon {
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--subdivision-quarter));
+  transition: color 0.3s ease;
+}
+
+/* Icon color updates based on active button */
+.beat-practice-subdivision-container:has([data-subdivision-index="0"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-quarter));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="1"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-half));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="2"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-eighth));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="3"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-sixteenth));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="4"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-triplet8));
+}
+
+.beat-practice-subdivision-container:has([data-subdivision-index="5"].subdivision-buttons-btn--active) .beat-practice-subdivision-icon {
+  color: hsl(var(--subdivision-dotted8));
+}
+
+.beat-practice-subdivision-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: 0.03em;
+}
+
+.beat-practice-subdivision-active-indicator {
+  margin-left: auto;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--cute-green));
+  background: hsl(var(--cute-green) / 0.15);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--cute-green) / 0.3);
+  animation: subdivision-active-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes subdivision-active-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   TRANSITION MODE TOGGLE
+   Phase 6, Task 6.7: Transition Mode Configuration
+   ============================================ */
+
+.beat-practice-transition-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.2);
+  margin-top: 0.25rem;
+}
+
+.beat-practice-transition-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.beat-practice-transition-mode-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-transition-mode-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-transition-mode-toggles {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.beat-practice-transition-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.4), hsl(var(--surface-2) / 0.6));
+  border: 1px solid hsl(var(--border) / 0.4);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-transition-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.6), hsl(var(--surface-2) / 0.8));
+  border-color: hsl(var(--border));
+}
+
+.beat-practice-transition-toggle:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.6);
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.beat-practice-transition-toggle--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--cute-purple) / 0.1));
+  border-color: hsl(var(--primary) / 0.6);
+  color: hsl(var(--primary));
+}
+
+.beat-practice-transition-toggle--active:hover {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--cute-purple) / 0.15));
+}
+
+.beat-practice-transition-toggle-text {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.beat-practice-transition-mode-description {
+  font-size: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  text-align: center;
+}
+
+/* Responsive adjustments for subdivision */
+@media (max-width: 640px) {
+  .beat-practice-subdivision-container {
+    padding: 0.5rem;
+  }
+
+  .beat-practice-subdivision-title {
+    font-size: 0.6875rem;
+  }
+
+  .beat-practice-subdivision-active-indicator {
+    font-size: 0.5rem;
+    padding: 0.0625rem 0.25rem;
+  }
+
+  .beat-practice-transition-mode {
+    padding-top: 0.375rem;
+    gap: 0.25rem;
+  }
+
+  .beat-practice-transition-mode-icon {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .beat-practice-transition-mode-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-practice-transition-toggle {
+    padding: 0.3125rem 0.375rem;
+  }
+
+  .beat-practice-transition-toggle-text {
+    font-size: 0.5rem;
+  }
+
+  .beat-practice-transition-mode-description {
+    font-size: 0.4375rem;
+  }
+}

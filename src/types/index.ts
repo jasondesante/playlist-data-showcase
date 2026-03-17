@@ -942,6 +942,32 @@ export const DDR_KEYS: readonly DdrKey[] = ['left', 'down', 'up', 'right'] as co
 export const GUITAR_KEYS: readonly GuitarKey[] = ['1', '2', '3', '4', '5'] as const;
 
 /**
+ * Tap statistics returned by useTapStatistics hook.
+ * Contains counts by accuracy, timing stats, and source breakdown.
+ */
+export interface TapStatistics {
+  totalTaps: number;
+  perfect: number;
+  great: number;
+  good: number;
+  ok: number;
+  miss: number;
+  wrongKey: number;
+  averageOffset: number;
+  totalDeviation: number;
+  standardDeviation: number;
+  currentStreak: number;
+  bestStreak: number;
+  accuracyPercentage: number;
+  detectedBeatsTotal: number;
+  detectedBeatsHit: number;
+  interpolatedBeatsTotal: number;
+  interpolatedBeatsHit: number;
+}
+
+// Re-export RhythmSessionTotals from playlist-data-engine for convenience
+
+/**
  * Check if a key is a DDR arrow key.
  *
  * @param key - The key to check

@@ -1,0 +1,133 @@
+/* ============================================
+   BEAT STREAM MODE TOGGLE
+   Task 6.1: Practice Mode Stream Toggle
+   ============================================ */
+
+.beat-practice-stream-toggle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: hsl(var(--surface-2) / 0.5);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.beat-practice-stream-toggle-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-stream-toggles {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.beat-practice-stream-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.beat-practice-stream-toggle:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.beat-practice-stream-toggle:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-practice-stream-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state - green tint for stream modes */
+.beat-practice-stream-toggle--active {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.18), hsl(142 76% 36% / 0.12));
+  border-color: hsl(142 76% 36%);
+  box-shadow: 0 0 12px hsl(142 76% 36% / 0.2);
+  color: hsl(142 76% 45%);
+}
+
+.beat-practice-stream-toggle--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(142 76% 36% / 0.22), hsl(142 76% 36% / 0.16));
+  box-shadow: 0 0 16px hsl(142 76% 36% / 0.3);
+}
+
+/* Disabled but not active state styling */
+.beat-practice-stream-toggle--disabled:not(.beat-practice-stream-toggle--active) {
+  opacity: 0.5;
+  background: hsl(var(--surface-2) / 0.3);
+}
+
+.beat-practice-stream-toggle-text {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Indicator for unavailable interpolation */
+.beat-practice-stream-toggle-indicator {
+  font-size: 0.5rem;
+  color: hsl(var(--cute-amber, 38 92% 50%));
+}
+
+.beat-practice-stream-toggle-description {
+  font-size: 0.5625rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+/* Stream mode toggle - mobile */
+@media (max-width: 640px) {
+  .beat-practice-stream-toggle-container {
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .beat-practice-stream-toggle-label {
+    font-size: 0.5rem;
+  }
+
+  .beat-practice-stream-toggle {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .beat-practice-stream-toggle-text {
+    font-size: 0.625rem;
+  }
+
+  .beat-practice-stream-toggle-description {
+    font-size: 0.5rem;
+  }
+}
+
+/* Stream mode toggle - extra small */
+@media (max-width: 400px) {
+  .beat-practice-stream-toggle-container {
+    padding: 0.375rem;
+  }
+
+  .beat-practice-stream-toggle {
+    padding: 0.25rem 0.375rem;
+  }
+
+  .beat-practice-stream-toggle-text {
+    font-size: 0.5625rem;
+  }
+}

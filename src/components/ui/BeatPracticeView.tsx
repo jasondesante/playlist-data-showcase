@@ -15,10 +15,13 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { List } from 'react-window';
-import { Play, Pause, SkipBack, X, Music, Activity, Clock, Settings, Target, Layers, Zap, Gamepad2 } from 'lucide-react';
+import { Play, Pause, SkipBack, X, Music, Activity, Settings, Layers } from 'lucide-react';
 import { BeatSubdivider, type SubdivisionType } from 'playlist-data-engine';
 import './BeatPracticeView.css';
+import { SubdivisionPlayground } from './SubdivisionPlayground';
+import { BeatStreamModeToggle } from './BeatStreamModeToggle';
+import { ViewModeToggle } from './ViewModeToggle';
+import { TapTimingDebugPanel, type TapDebugInfo } from './TapTimingDebugPanel';
 import {
     useBeatDetectionStore,
     useDifficultyPreset,
@@ -53,7 +56,6 @@ import { BeatTimeline } from './BeatTimeline';
 import { TapArea, useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
-import { SubdivisionButtons } from './SubdivisionButtons';
 import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
 import { BonusNotification } from './BonusNotification';
@@ -65,7 +67,7 @@ import { logger } from '../../utils/logger';
 import { showToast } from './Toast';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import type { LevelUpDetail } from 'playlist-data-engine';
-import type { ExtendedBeatAccuracy, DifficultyPreset, SubdividedBeatMap, AccuracyThresholds } from '../../types';
+import type { DifficultyPreset, SubdividedBeatMap } from '../../types';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterStore } from '../../store/characterStore';
 
@@ -76,28 +78,6 @@ import { useCharacterStore } from '../../store/characterStore';
  * prevents most accidental rapid taps.
  */
 const MIN_TAP_INTERVAL_MS = 100;
-
-/**
- * Debug info for a single tap - helps track input latency
- */
-interface TapDebugInfo {
-  /** When the tap was registered (performance.now()) */
-  registeredAt: number;
-  /** Audio time at the moment of tap */
-  audioTime: number;
-  /** The beat that was matched */
-  beatTime: number;
-  /** Calculated offset in ms */
-  offsetMs: number;
-  /** Accuracy rating (includes 'ok') */
-  accuracy: ExtendedBeatAccuracy;
-  /** Raw score from hit (10 for perfect, 7 for great, etc.) - Phase 6: Task 6.1 */
-  scorePoints?: number;
-  /** XP earned (after ratio applied) - Phase 6: Task 6.1 */
-  characterXP?: number;
-  /** Total multiplier applied - Phase 6: Task 6.1 */
-  multiplier?: number;
-}
 
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
@@ -129,122 +109,6 @@ function getDifficultyDisplayInfo(preset: DifficultyPreset): { label: string; cl
     default:
       return { label: 'Medium', className: 'beat-practice-difficulty--medium' };
   }
-}
-
-/**
- * Format threshold value for display (convert seconds to ms)
- */
-function formatThresholdMs(seconds: number): string {
-  return `${Math.round(seconds * 1000)}ms`;
-}
-
-/**
- * Props for the virtualized tap row (passed via rowProps)
- */
-interface TapRowProps {
-  taps: TapDebugInfo[];
-  accuracyThresholds: AccuracyThresholds;
-}
-
-/**
- * Row renderer for react-window virtualized tap history list
- */
-function TapRow({
-  index,
-  style,
-  taps,
-  accuracyThresholds,
-}: {
-  index: number;
-  style: React.CSSProperties;
-  taps: TapDebugInfo[];
-  accuracyThresholds: AccuracyThresholds;
-}) {
-  const tap = taps[index];
-
-  if (!tap) return null;
-
-  // Calculate position percentage for visual comparison
-  const maxOffsetMs = Math.round(accuracyThresholds.ok * 1000);
-  const clampedOffset = Math.max(-maxOffsetMs, Math.min(maxOffsetMs, tap.offsetMs));
-  const positionPercent = ((clampedOffset + maxOffsetMs) / (maxOffsetMs * 2)) * 100;
-
-  // Calculate threshold boundaries for visualization
-  const perfectMs = Math.round(accuracyThresholds.perfect * 1000);
-  const greatMs = Math.round(accuracyThresholds.great * 1000);
-  const goodMs = Math.round(accuracyThresholds.good * 1000);
-  const okMs = Math.round(accuracyThresholds.ok * 1000);
-
-  // Calculate zone widths (each side from center)
-  const perfectWidth = (perfectMs / okMs) * 50;
-  const greatWidth = (greatMs / okMs) * 50;
-  const goodWidth = (goodMs / okMs) * 50;
-
-  return (
-    <div style={style}>
-      <div className={`beat-practice-debug-tap beat-practice-debug-tap--${tap.accuracy}`}>
-        <div className="beat-practice-debug-tap-main">
-          <span className="beat-practice-debug-accuracy">{tap.accuracy.toUpperCase()}</span>
-          <span className="beat-practice-debug-offset">
-            {tap.offsetMs >= 0 ? '+' : ''}{tap.offsetMs}ms
-          </span>
-        </div>
-
-        {/* Phase 6: Task 6.1 - XP Stats Display */}
-        {(tap.scorePoints !== undefined || tap.characterXP !== undefined) && (
-          <div className="beat-practice-debug-tap-xp">
-            <span className={`beat-practice-debug-score beat-practice-debug-score--${tap.accuracy}`}>
-              {tap.scorePoints ?? 0}pts
-            </span>
-            <span className="beat-practice-debug-xp">
-              +{(tap.characterXP ?? 0).toFixed(1)} XP
-            </span>
-            <span className={`beat-practice-debug-multiplier ${(tap.multiplier ?? 1) > 1 ? 'beat-practice-debug-multiplier--active' : ''}`}>
-              {(tap.multiplier ?? 1) > 1 ? `${(tap.multiplier ?? 1).toFixed(1)}x` : '-'}
-            </span>
-          </div>
-        )}
-
-        {/* Visual threshold comparison bar */}
-        <div className="beat-practice-debug-tap-visual">
-          <div className="beat-practice-debug-threshold-bar">
-            <div className="beat-practice-debug-zone beat-practice-debug-zone--miss-left" />
-            <div
-              className="beat-practice-debug-zone beat-practice-debug-zone--ok"
-              style={{ left: `${50 - goodWidth}%`, right: `${50 - goodWidth}%` }}
-            />
-            <div
-              className="beat-practice-debug-zone beat-practice-debug-zone--good"
-              style={{ left: `${50 - greatWidth}%`, right: `${50 - greatWidth}%` }}
-            />
-            <div
-              className="beat-practice-debug-zone beat-practice-debug-zone--great"
-              style={{ left: `${50 - perfectWidth}%`, right: `${50 - perfectWidth}%` }}
-            />
-            <div
-              className="beat-practice-debug-zone beat-practice-debug-zone--perfect"
-              style={{ left: `${50 - perfectWidth}%`, right: `${50 - perfectWidth}%` }}
-            />
-            <div className="beat-practice-debug-center-line" />
-            <div
-              className="beat-practice-debug-tap-marker"
-              style={{ left: `${positionPercent}%` }}
-            />
-          </div>
-          <div className="beat-practice-debug-scale">
-            <span>-{okMs}ms</span>
-            <span>0</span>
-            <span>+{okMs}ms</span>
-          </div>
-        </div>
-
-        <div className="beat-practice-debug-tap-details">
-          <span>Audio: {tap.audioTime.toFixed(3)}s</span>
-          <span>Beat: {tap.beatTime.toFixed(3)}s</span>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
@@ -353,10 +217,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Debug: track taps for timing analysis (limited to 1000, virtualized with react-window)
   const MAX_DEBUG_HISTORY = 1000;
   const [tapDebugHistory, setTapDebugHistory] = useState<TapDebugInfo[]>([]);
-
-  // Virtualization constants for react-window
-  const TAP_ITEM_HEIGHT = 80; // Height of each tap item in pixels
-  const TAP_LIST_HEIGHT = 300; // Max height of the visible container
 
   // Track audio time for debug info
   const audioTimeRef = useRef<number>(currentTime);
@@ -1052,54 +912,12 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       </div>
 
       {/* Beat Stream Mode Toggle (Task 6.1) */}
-      <div className="beat-practice-stream-toggle-container">
-        <span className="beat-practice-stream-toggle-label">Beat Stream</span>
-        <div className="beat-practice-stream-toggles">
-          <button
-            type="button"
-            className={`beat-practice-stream-toggle ${beatStreamMode === 'detected' ? 'beat-practice-stream-toggle--active' : ''}`}
-            onClick={() => setBeatStreamMode('detected')}
-            aria-pressed={beatStreamMode === 'detected'}
-          >
-            <span className="beat-practice-stream-toggle-text">Detected Only</span>
-          </button>
-          <button
-            type="button"
-            className={`beat-practice-stream-toggle ${beatStreamMode === 'merged' ? 'beat-practice-stream-toggle--active' : ''} ${!interpolatedBeatMap ? 'beat-practice-stream-toggle--disabled' : ''}`}
-            onClick={() => interpolatedBeatMap && setBeatStreamMode('merged')}
-            disabled={!interpolatedBeatMap}
-            aria-pressed={beatStreamMode === 'merged'}
-            title={!interpolatedBeatMap ? 'Interpolation not available' : undefined}
-          >
-            <span className="beat-practice-stream-toggle-text">Merged</span>
-            {!interpolatedBeatMap && <span className="beat-practice-stream-toggle-indicator">✦</span>}
-          </button>
-          <button
-            type="button"
-            className={`beat-practice-stream-toggle ${beatStreamMode === 'subdivided' ? 'beat-practice-stream-toggle--active' : ''} ${!subdividedBeatMap ? 'beat-practice-stream-toggle--disabled' : ''}`}
-            onClick={() => subdividedBeatMap && setBeatStreamMode('subdivided')}
-            disabled={!subdividedBeatMap}
-            aria-pressed={beatStreamMode === 'subdivided'}
-            title={!subdividedBeatMap ? 'Subdivision not available - generate in Analysis tab' : undefined}
-          >
-            <span className="beat-practice-stream-toggle-text">Subdivided</span>
-            {!subdividedBeatMap && <span className="beat-practice-stream-toggle-indicator">✦</span>}
-          </button>
-        </div>
-        <span className="beat-practice-stream-toggle-description">
-          {beatStreamMode === 'detected'
-            ? 'Using originally detected beats'
-            : beatStreamMode === 'merged'
-              ? (interpolatedBeatMap
-                  ? 'Using interpolated beats with detected anchors'
-                  : 'Interpolation not available')
-              : beatStreamMode === 'subdivided'
-                ? (subdividedBeatMap
-                    ? `Using ${subdividedBeatMap.subdivisionMetadata.subdivisionsUsed.join(' → ')} subdivision`
-                    : 'Subdivision not available')
-                : 'Unknown mode'}
-        </span>
-      </div>
+      <BeatStreamModeToggle
+        mode={beatStreamMode}
+        onModeChange={setBeatStreamMode}
+        interpolatedBeatMap={interpolatedBeatMap}
+        subdividedBeatMap={subdividedBeatMap}
+      />
 
       {/* BPM and Position Display */}
       <div className="beat-practice-stats">
@@ -1247,68 +1065,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         />
       )}
 
-      {/* Subdivision Buttons (Phase 6: Task 6.4) - Real-time subdivision switching */}
-      {subdivisionPlaybackAvailable && showSubdivisionPlayground && (
-        <div className="beat-practice-subdivision-container">
-          <div className="beat-practice-subdivision-header">
-            <Layers className="beat-practice-subdivision-icon" />
-            <span className="beat-practice-subdivision-title">Subdivision Playground</span>
-            {subdivisionIsActive && (
-              <span className="beat-practice-subdivision-active-indicator">Active</span>
-            )}
-          </div>
-          <SubdivisionButtons
-            currentSubdivision={currentSubdivision}
-            onSubdivisionChange={setSubdivision}
-            disabled={false}
-            isActive={isPlaying && subdivisionIsActive && currentSubdivision !== 'quarter'}
-          />
-
-          {/* Transition Mode Toggle (Phase 6: Task 6.7) */}
-          <div className="beat-practice-transition-mode">
-            <div className="beat-practice-transition-mode-header">
-              <Zap className="beat-practice-transition-mode-icon" />
-              <span className="beat-practice-transition-mode-label">Transition</span>
-            </div>
-            <div className="beat-practice-transition-mode-toggles">
-              <button
-                type="button"
-                className={`beat-practice-transition-toggle ${transitionMode === 'immediate' ? 'beat-practice-transition-toggle--active' : ''}`}
-                onClick={() => setTransitionMode('immediate')}
-                aria-pressed={transitionMode === 'immediate'}
-                title="Switch subdivision instantly"
-              >
-                <span className="beat-practice-transition-toggle-text">Instant</span>
-              </button>
-              <button
-                type="button"
-                className={`beat-practice-transition-toggle ${transitionMode === 'next-downbeat' ? 'beat-practice-transition-toggle--active' : ''}`}
-                onClick={() => setTransitionMode('next-downbeat')}
-                aria-pressed={transitionMode === 'next-downbeat'}
-                title="Apply at next beat 1"
-              >
-                <span className="beat-practice-transition-toggle-text">Downbeat</span>
-              </button>
-              <button
-                type="button"
-                className={`beat-practice-transition-toggle ${transitionMode === 'next-measure' ? 'beat-practice-transition-toggle--active' : ''}`}
-                onClick={() => setTransitionMode('next-measure')}
-                aria-pressed={transitionMode === 'next-measure'}
-                title="Apply when entering new measure"
-              >
-                <span className="beat-practice-transition-toggle-text">Next Measure</span>
-              </button>
-            </div>
-            <span className="beat-practice-transition-mode-description">
-              {transitionMode === 'immediate'
-                ? 'Subdivision changes apply instantly'
-                : transitionMode === 'next-downbeat'
-                  ? 'Changes apply on next beat 1'
-                  : 'Changes apply when entering new measure'}
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Subdivision Playground (Phase 6: Task 6.4) - Real-time subdivision switching */}
+      <SubdivisionPlayground
+        available={subdivisionPlaybackAvailable}
+        visible={showSubdivisionPlayground}
+        currentSubdivision={currentSubdivision}
+        isActive={subdivisionIsActive}
+        isPlaying={isPlaying}
+        transitionMode={transitionMode}
+        onSubdivisionChange={setSubdivision}
+        onTransitionModeChange={setTransitionMode}
+      />
 
       {/* Playback Controls */}
       <div className="beat-practice-controls">
@@ -1333,61 +1100,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       </div>
 
       {/* View Mode Toggle (Phase 10: Task 10.3) - Switch between TapArea and KeyLane views */}
-      {subdividedBeatMap && (
-        <div className="beat-practice-view-mode-container">
-          <div className="beat-practice-view-mode-header">
-            <Gamepad2 className="beat-practice-view-mode-icon" />
-            <span className="beat-practice-view-mode-title">Practice View</span>
-            {hasRequiredKeys && (
-              <span className="beat-practice-view-mode-chart-style">
-                {chartStyle === 'ddr' ? 'DDR Chart' : 'Guitar Hero Chart'}
-              </span>
-            )}
-          </div>
-          <div className="beat-practice-view-mode-toggles">
-            <button
-              type="button"
-              className={`beat-practice-view-toggle ${keyLaneViewMode === 'off' ? 'beat-practice-view-toggle--active' : ''}`}
-              onClick={() => setKeyLaneViewMode('off')}
-              aria-pressed={keyLaneViewMode === 'off'}
-              title="Default tap area view"
-            >
-              <span className="beat-practice-view-toggle-text">Tap Area</span>
-            </button>
-            <button
-              type="button"
-              className={`beat-practice-view-toggle ${keyLaneViewMode === 'ddr' ? 'beat-practice-view-toggle--active' : ''}`}
-              onClick={() => setKeyLaneViewMode('ddr')}
-              aria-pressed={keyLaneViewMode === 'ddr'}
-              title="DDR 4-lane view (arrow keys)"
-            >
-              <span className="beat-practice-view-toggle-text">DDR Lanes</span>
-            </button>
-            <button
-              type="button"
-              className={`beat-practice-view-toggle ${keyLaneViewMode === 'guitar-hero' ? 'beat-practice-view-toggle--active' : ''}`}
-              onClick={() => setKeyLaneViewMode('guitar-hero')}
-              aria-pressed={keyLaneViewMode === 'guitar-hero'}
-              title="Guitar Hero 5-lane view (number keys 1-5)"
-            >
-              <span className="beat-practice-view-toggle-text">Guitar Lanes</span>
-            </button>
-          </div>
-          <span className="beat-practice-view-mode-description">
-            {keyLaneViewMode === 'off'
-              ? 'Classic tap area - use spacebar or click'
-              : keyLaneViewMode === 'ddr'
-                ? 'DDR style - use arrow keys to hit notes'
-                : 'Guitar Hero style - use number keys 1-5'}
-            {!hasRequiredKeys && keyLaneViewMode !== 'off' && (
-              <span className="beat-practice-view-mode-warning"> (no key assignments - edit chart first)</span>
-            )}
-            {hasRequiredKeys && keyLaneViewMode !== 'off' && chartStyle !== keyLaneViewMode && (
-              <span className="beat-practice-view-mode-warning"> (style mismatch - chart is {chartStyle})</span>
-            )}
-          </span>
-        </div>
-      )}
+      <ViewModeToggle
+        subdividedBeatMap={subdividedBeatMap}
+        mode={keyLaneViewMode}
+        onModeChange={setKeyLaneViewMode}
+        hasRequiredKeys={hasRequiredKeys}
+        chartStyle={chartStyle}
+      />
 
       {/* Practice View - TapArea or KeyLane based on view mode */}
       {keyLaneViewMode === 'off' ? (
@@ -1486,91 +1205,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       </div>
 
       {/* Tap Timing Debug Panel - helps detect input latency */}
-      <div className="beat-practice-debug-panel">
-        <div className="beat-practice-debug-header">
-          <Clock className="beat-practice-debug-icon" />
-          <span>TAP TIMING DEBUG</span>
-          <span className="beat-practice-debug-hint">({tapDebugHistory.length} taps this session)</span>
-        </div>
-
-        {/* Session Stats Summary */}
-        {tapDebugHistory.length > 0 && (
-          <div className="beat-practice-debug-session-stats">
-            <div className="beat-practice-debug-session-stat">
-              <span className="beat-practice-debug-session-value">{tapStats.accuracyPercentage}%</span>
-              <span className="beat-practice-debug-session-label">Accuracy</span>
-            </div>
-            <div className="beat-practice-debug-session-stat">
-              <span className="beat-practice-debug-session-value">{tapStats.averageOffset}ms</span>
-              <span className="beat-practice-debug-session-label">Avg Deviation</span>
-            </div>
-            <div className="beat-practice-debug-session-stat">
-              <span className="beat-practice-debug-session-value">{tapStats.totalDeviation}ms</span>
-              <span className="beat-practice-debug-session-label">Total Deviation</span>
-            </div>
-            <div className="beat-practice-debug-session-stat">
-              <span className="beat-practice-debug-session-value">{tapStats.totalTaps}</span>
-              <span className="beat-practice-debug-session-label">Total Taps</span>
-            </div>
-            <div className="beat-practice-debug-session-stat">
-              <span className="beat-practice-debug-session-value">{tapStats.miss}</span>
-              <span className="beat-practice-debug-session-label">Missed Taps</span>
-            </div>
-            {/* Phase 6: Task 6.3 - Total XP in debug panel session stats */}
-            <div className="beat-practice-debug-session-stat beat-practice-debug-session-stat--xp">
-              <span className="beat-practice-debug-session-value beat-practice-debug-session-value--xp">
-                {(rhythmSessionTotals?.totalXP ?? 0).toFixed(1)}
-              </span>
-              <span className="beat-practice-debug-session-label">Total XP</span>
-            </div>
-          </div>
-        )}
-
-        {/* Active Thresholds Display */}
-        <div className="beat-practice-debug-thresholds">
-          <div className="beat-practice-debug-thresholds-header">
-            <Target className="beat-practice-debug-thresholds-icon" />
-            <span>Active Thresholds</span>
-            <span className={`beat-practice-debug-thresholds-preset ${difficultyInfo.className}`}>
-              {difficultyInfo.label}
-            </span>
-          </div>
-          <div className="beat-practice-debug-thresholds-values">
-            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--perfect">
-              <span className="beat-practice-debug-threshold-label">Perfect</span>
-              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.perfect)}</span>
-            </div>
-            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--great">
-              <span className="beat-practice-debug-threshold-label">Great</span>
-              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.great)}</span>
-            </div>
-            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--good">
-              <span className="beat-practice-debug-threshold-label">Good</span>
-              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.good)}</span>
-            </div>
-            <div className="beat-practice-debug-threshold beat-practice-debug-threshold--ok">
-              <span className="beat-practice-debug-threshold-label">OK</span>
-              <span className="beat-practice-debug-threshold-value">±{formatThresholdMs(accuracyThresholds.ok)}</span>
-            </div>
-          </div>
-        </div>
-
-        {tapDebugHistory.length === 0 ? (
-          <div className="beat-practice-debug-empty">Tap to see timing details...</div>
-        ) : (
-          <List<TapRowProps>
-            className="beat-practice-debug-taps beat-practice-debug-taps--virtualized"
-            style={{ height: TAP_LIST_HEIGHT }}
-            rowCount={tapDebugHistory.length}
-            rowHeight={TAP_ITEM_HEIGHT}
-            rowComponent={TapRow}
-            rowProps={{
-              taps: tapDebugHistory,
-              accuracyThresholds,
-            }}
-          />
-        )}
-      </div>
+      <TapTimingDebugPanel
+        tapHistory={tapDebugHistory}
+        tapStats={tapStats}
+        accuracyThresholds={accuracyThresholds}
+        difficultyPreset={difficultyPreset}
+        rhythmSessionTotals={rhythmSessionTotals}
+      />
 
       {/* Difficulty Settings Panel */}
       <DifficultySettingsPanel
