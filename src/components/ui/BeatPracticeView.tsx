@@ -56,6 +56,7 @@ import {
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
 import { useKeyboardInput } from '../../hooks/useKeyboardInput';
+import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
@@ -135,7 +136,9 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const timeSignature = useTimeSignature();
 
   // Audio player state
-  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
+  const { playbackState, currentTime, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
+  // Use shared hook for validated duration with metadata fallback
+  const duration = useTrackDuration();
   const isPlaying = playbackState === 'playing';
 
   // Beat stream mode state (Task 6.1)
@@ -860,7 +863,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         beatMapBpm={beatMap.bpm}
         interpolationStats={interpolationStats}
         currentTime={currentTime}
-        duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
+        duration={duration}
         rhythmSessionTotals={rhythmSessionTotals}
         lastRhythmXPResult={lastRhythmXPResult}
         currentCombo={currentCombo}
@@ -892,7 +895,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       <PracticeProgressBar
         beatMap={beatMap}
         currentTime={currentTime}
-        duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
+        duration={duration}
         onSeek={handleSeek}
       />
 

@@ -5,6 +5,7 @@ import { usePlaylistStore } from '../../store/playlistStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useAudioAnalyzer } from '../../hooks/useAudioAnalyzer';
 import { useMusicClassifier, MODEL_PRESETS, UseMusicClassifierOptions } from '../../hooks/useMusicClassifier';
+import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { GenreClassificationCard } from '../AudioAnalysis/GenreClassificationCard';
 import { MoodClassificationCard } from '../AudioAnalysis/MoodClassificationCard';
 import { VibeMetricsCard } from '../AudioAnalysis/VibeMetricsCard';
@@ -33,7 +34,9 @@ import { ColorExtractor } from 'playlist-data-engine';
  */
 export function AudioAnalysisTab() {
   const { selectedTrack, audioProfile, setAudioProfile, musicClassification } = usePlaylistStore();
-  const { playbackState, currentTime, duration, seek } = useAudioPlayerStore();
+  const { playbackState, currentTime, seek } = useAudioPlayerStore();
+  // Use shared hook for validated duration with metadata fallback
+  const duration = useTrackDuration();
   const { analyzeTrackWithPalette, isAnalyzing, progress, setAudioAnalyzerOptions, analyzeTimeline, isTimelineAnalyzing, timelineData } = useAudioAnalyzer();
   const {
     analyze,
@@ -1035,7 +1038,7 @@ export function AudioAnalysisTab() {
                     selectedIndex={selectedTimelineIndex}
                     onSelectionChange={setSelectedTimelineIndex}
                     currentTime={currentTime}
-                    duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
+                    duration={duration}
                     audioSyncEnabled={audioSyncEnabled}
                     onAudioSyncToggle={() => setAudioSyncEnabled(!audioSyncEnabled)}
                     onSeek={seek}

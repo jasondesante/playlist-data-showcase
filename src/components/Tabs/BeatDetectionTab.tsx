@@ -2,8 +2,8 @@ import React, { useEffect, useCallback, useMemo, useRef } from 'react';
 import { Music, Sparkles, Drum, Download, ArrowRight, SkipForward, Upload } from 'lucide-react';
 import './BeatDetectionTab.css';
 import { usePlaylistStore } from '../../store/playlistStore';
-import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { useBeatDetection } from '../../hooks/useBeatDetection';
+import { useTrackDuration } from '../../hooks/useTrackDuration';
 import { StatusIndicator } from '../ui/StatusIndicator';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -36,9 +36,8 @@ import { logger } from '../../utils/logger';
  */
 export function BeatDetectionTab() {
     const { selectedTrack } = usePlaylistStore();
-    const audioPlayerDuration = useAudioPlayerStore((state) => state.duration);
-    // Use fallback to track metadata duration if audio player duration is invalid
-    const duration = Number.isFinite(audioPlayerDuration) ? audioPlayerDuration : (selectedTrack?.duration || 0);
+    // Use shared hook for validated duration with metadata fallback
+    const duration = useTrackDuration();
 
     // Beat detection hook for beat map generation
     const {

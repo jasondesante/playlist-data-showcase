@@ -26,3 +26,4 @@ export * from './useBeatDetection';
 export * from './useSubdivisionPlayback';
 export * from './useKeyboardInput';
 export * from './useMusicClassifier';
+export * from './useTrackDuration';

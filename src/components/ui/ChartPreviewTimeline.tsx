@@ -22,6 +22,7 @@ import {
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../store/playlistStore';
+import { useTrackDuration } from '../../hooks/useTrackDuration';
 import type { SubdivisionType, SupportedKey } from '@/types';
 import { getKeySymbol } from '@/types';
 import { formatTime } from '../../utils/formatters';
@@ -85,11 +86,9 @@ export function ChartPreviewTimeline({
     const resume = useAudioPlayerStore((state) => state.resume);
     const pause = useAudioPlayerStore((state) => state.pause);
     const play = useAudioPlayerStore((state) => state.play);
-    const audioPlayerDuration = useAudioPlayerStore((state) => state.duration);
     const { selectedTrack } = usePlaylistStore();
-
-    // Use fallback to track metadata duration if audio player duration is invalid
-    const duration = Number.isFinite(audioPlayerDuration) ? audioPlayerDuration : (selectedTrack?.duration || 0);
+    // Use shared hook for validated duration with metadata fallback
+    const duration = useTrackDuration();
 
     const isPlaying = playbackState === 'playing';
 
