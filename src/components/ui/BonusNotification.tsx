@@ -51,15 +51,15 @@ export function BonusNotification({
             setIsExiting(false);
             bonusKeyRef.current += 1;
 
-            // Start exit animation after 1.7 seconds, then dismiss
+            // Start exit animation after 3 seconds, then dismiss
             const exitTimeout = setTimeout(() => {
                 setIsExiting(true);
-            }, 1700);
+            }, 3000);
 
             const dismissTimeout = setTimeout(() => {
                 setDisplayedBonus(null);
                 onBonusDisplayed?.();
-            }, 2000);
+            }, 3400);
 
             return () => {
                 clearTimeout(exitTimeout);
