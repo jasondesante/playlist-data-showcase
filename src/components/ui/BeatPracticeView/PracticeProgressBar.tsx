@@ -8,7 +8,7 @@
  */
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import type { BeatMap } from '../../types';
+import type { BeatMap } from '@/types';
 
 interface PracticeProgressBarProps {
   /** The beat map containing beat timestamps for marker display */
