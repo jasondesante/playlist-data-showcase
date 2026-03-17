@@ -23,6 +23,7 @@ import {
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { usePlaylistStore } from '../../store/playlistStore';
 import type { SubdivisionType } from '@/types';
+import { formatTime } from '../../utils/formatters';
 
 /**
  * Preview beat representation for rendering
@@ -34,15 +35,6 @@ interface PreviewBeat {
     subdivisionType: SubdivisionType;
     isDownbeat: boolean;
     isQuarterNote: boolean;
-}
-
-/**
- * Format time as MM:SS
- */
-function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -276,8 +268,11 @@ export function SubdivisionPreviewTimeline({
     const resume = useAudioPlayerStore((state) => state.resume);
     const pause = useAudioPlayerStore((state) => state.pause);
     const play = useAudioPlayerStore((state) => state.play);
-    const duration = useAudioPlayerStore((state) => state.duration);
+    const audioPlayerDuration = useAudioPlayerStore((state) => state.duration);
     const { selectedTrack } = usePlaylistStore();
+
+    // Use fallback to track metadata duration if audio player duration is invalid
+    const duration = Number.isFinite(audioPlayerDuration) ? audioPlayerDuration : (selectedTrack?.duration || 0);
 
     const isPlaying = playbackState === 'playing';
 
@@ -596,7 +591,7 @@ export function SubdivisionPreviewTimeline({
                     {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                 </button>
                 <span className="subdivision-preview-timeline-time">
-                    {formatTime(smoothTime)} / {formatTime(duration || 0)}
+                    {formatTime(smoothTime)} / {formatTime(duration)}
                 </span>
             </div>
 

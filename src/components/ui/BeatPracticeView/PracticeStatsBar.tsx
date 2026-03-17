@@ -9,6 +9,7 @@
 
 import { RhythmXPStats } from '../RhythmXPStats';
 import type { RhythmSessionTotals, RhythmXPResult, TempoSection } from '../../../types';
+import { formatTime } from '../../../utils/formatters';
 
 interface PracticeStatsBarProps {
   /** Current rolling BPM from beat stream */
@@ -36,15 +37,6 @@ interface PracticeStatsBarProps {
   currentSubdivision: string;
   /** Whether subdivision playback is currently active */
   subdivisionIsActive: boolean;
-}
-
-/**
- * Format time in seconds to MM:SS format
- */
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 export function PracticeStatsBar({

@@ -36,7 +36,9 @@ import { logger } from '../../utils/logger';
  */
 export function BeatDetectionTab() {
     const { selectedTrack } = usePlaylistStore();
-    const { duration } = useAudioPlayerStore();
+    const audioPlayerDuration = useAudioPlayerStore((state) => state.duration);
+    // Use fallback to track metadata duration if audio player duration is invalid
+    const duration = Number.isFinite(audioPlayerDuration) ? audioPlayerDuration : (selectedTrack?.duration || 0);
 
     // Beat detection hook for beat map generation
     const {

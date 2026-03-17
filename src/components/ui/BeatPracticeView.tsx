@@ -860,7 +860,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         beatMapBpm={beatMap.bpm}
         interpolationStats={interpolationStats}
         currentTime={currentTime}
-        duration={duration}
+        duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
         rhythmSessionTotals={rhythmSessionTotals}
         lastRhythmXPResult={lastRhythmXPResult}
         currentCombo={currentCombo}
@@ -892,7 +892,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       <PracticeProgressBar
         beatMap={beatMap}
         currentTime={currentTime}
-        duration={duration}
+        duration={Number.isFinite(duration) ? duration : (selectedTrack?.duration || 0)}
         onSeek={handleSeek}
       />
 
