@@ -28,6 +28,7 @@ import type {
     ExtendedBeatAccuracy,
     SubdividedBeatMap,
     Beat,
+    ComboEndBonusResult,
 } from '@/types';
 import { isDdrKey, isGuitarKey } from '@/types';
 import './KeyLaneView.css';
@@ -72,6 +73,10 @@ export interface KeyLaneViewProps {
     combo?: number;
     /** Current XP multiplier for ComboFeedbackDisplay (Phase 3.5: Task 3.5.3) */
     multiplier?: number;
+    /** Pending combo end bonus to display */
+    comboBonus?: ComboEndBonusResult | null;
+    /** Callback when bonus has been displayed */
+    onBonusDisplayed?: () => void;
 }
 
 /**
@@ -281,6 +286,8 @@ export function KeyLaneView({
     score = 0,
     combo = 0,
     multiplier = 1.0,
+    comboBonus,
+    onBonusDisplayed,
 }: KeyLaneViewProps) {
     // ========================================
     // Smooth Animation with requestAnimationFrame
@@ -782,11 +789,13 @@ export function KeyLaneView({
 
                 {/* Tap feedback panel */}
                 <div className="key-lane-view-feedback">
-                    {/* Combo feedback display (Phase 3.5: Task 3.5.3) - always visible */}
+                    {/* Combo feedback display - always visible */}
                     <ComboFeedbackDisplay
                         score={score}
                         combo={combo}
                         multiplier={multiplier}
+                        comboBonus={comboBonus}
+                        onBonusDisplayed={onBonusDisplayed}
                     />
 
                     {/* Accuracy feedback - shows accuracy rating and timing offset */}

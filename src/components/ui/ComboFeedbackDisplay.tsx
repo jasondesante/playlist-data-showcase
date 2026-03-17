@@ -10,6 +10,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/utils/cn';
+import type { ComboEndBonusResult } from '@/types';
+import { BonusNotification } from './BonusNotification';
 import './ComboFeedbackDisplay.css';
 
 interface ComboFeedbackDisplayProps {
@@ -21,6 +23,10 @@ interface ComboFeedbackDisplayProps {
     multiplier: number;
     /** Optional className for styling */
     className?: string;
+    /** Pending combo end bonus to display */
+    comboBonus?: ComboEndBonusResult | null;
+    /** Callback when bonus has been displayed (for clearing state) */
+    onBonusDisplayed?: () => void;
 }
 
 /**
@@ -70,6 +76,8 @@ export function ComboFeedbackDisplay({
     combo,
     multiplier,
     className,
+    comboBonus,
+    onBonusDisplayed,
 }: ComboFeedbackDisplayProps) {
     // Track previous combo for reset animation (Phase 3.5: Task 3.5.5)
     const [showResetAnimation, setShowResetAnimation] = useState(false);
@@ -143,6 +151,12 @@ export function ComboFeedbackDisplay({
                     </span>
                 </div>
             </div>
+
+            {/* Combo End Bonus Notification */}
+            <BonusNotification
+                comboBonus={comboBonus ?? null}
+                onBonusDisplayed={onBonusDisplayed}
+            />
 
             {/* Accessibility: Screen reader summary */}
             <div role="status" aria-live="polite" className="sr-only">

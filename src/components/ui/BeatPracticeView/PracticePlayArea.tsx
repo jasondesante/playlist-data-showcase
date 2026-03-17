@@ -24,7 +24,6 @@ import { BeatTimeline } from '../BeatTimeline';
 import { TapArea } from '../TapArea';
 import { KeyLaneView } from '../KeyLaneView';
 import { GrooveMeter } from '../GrooveMeter';
-import { BonusNotification } from '../BonusNotification';
 import { ComboFeedbackDisplay } from '../ComboFeedbackDisplay';
 
 export interface PracticePlayAreaProps {
@@ -128,10 +127,6 @@ export function PracticePlayArea({
               pendingBonus={pendingGrooveEndBonus}
               onBonusDisplayed={clearPendingBonuses}
             />
-            <BonusNotification
-              comboBonus={pendingComboEndBonus}
-              onBonusDisplayed={clearPendingBonuses}
-            />
           </div>
         </div>
       )}
@@ -177,6 +172,8 @@ export function PracticePlayArea({
               score={rhythmSessionTotals?.totalScore ?? 0}
               combo={currentCombo}
               multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
+              comboBonus={pendingComboEndBonus}
+              onBonusDisplayed={clearPendingBonuses}
             />
           </div>
           <TapArea
@@ -192,7 +189,6 @@ export function PracticePlayArea({
       ) : (
         <>
           {/* GrooveMeter for KeyLane mode - above lanes */}
-          {/* Combo Bonus Notification */}
           {grooveState && (
             <div className="beat-practice-groove-container beat-practice-groove-container--keylane">
               <GrooveMeter
@@ -202,10 +198,6 @@ export function PracticePlayArea({
                 streak={grooveState.streakLength}
                 variant="full"
                 pendingBonus={pendingGrooveEndBonus}
-                onBonusDisplayed={clearPendingBonuses}
-              />
-              <BonusNotification
-                comboBonus={pendingComboEndBonus}
                 onBonusDisplayed={clearPendingBonuses}
               />
             </div>
@@ -224,6 +216,8 @@ export function PracticePlayArea({
             score={rhythmSessionTotals?.totalScore ?? 0}
             combo={currentCombo}
             multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
+            comboBonus={pendingComboEndBonus}
+            onBonusDisplayed={clearPendingBonuses}
           />
         </>
       )}
