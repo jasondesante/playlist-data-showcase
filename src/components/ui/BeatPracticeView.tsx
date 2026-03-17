@@ -22,30 +22,32 @@ import { SubdivisionPlayground } from './BeatPracticeView/SubdivisionPlayground'
 import { BeatStreamModeToggle } from './BeatPracticeView/BeatStreamModeToggle';
 import { ViewModeToggle } from './BeatPracticeView/ViewModeToggle';
 import { TapTimingDebugPanel, type TapDebugInfo } from './BeatPracticeView/TapTimingDebugPanel';
+import { ExitPromptModal } from './BeatPracticeView/ExitPromptModal';
+import { PracticeStatsBar } from './BeatPracticeView/PracticeStatsBar';
 import {
-    useBeatDetectionStore,
-    useDifficultyPreset,
-    useAccuracyThresholds,
-    useInterpolationVisualizationData,
-    useBeatStreamMode,
-    useInterpolatedBeatMap,
-    useSubdividedBeatMap,
-    useShowGridOverlay,
-    useShowTempoDriftVisualization,
-    useIsDownbeatSelectionMode,
-    useShowMeasureBoundaries,
-    useTimeSignature,
-    useInterpolationStatistics,
-    useTapStatistics,
-    useSubdivisionTransitionMode,
-    usePendingSubdivision,
-    useUnifiedBeatMap,
-    useKeyLaneViewMode,
-    useChartStyle,
-    useHasRequiredKeys,
-    useGrooveState,
-    useBestGrooveHotness,
-    useBestGrooveStreak,
+  useBeatDetectionStore,
+  useDifficultyPreset,
+  useAccuracyThresholds,
+  useInterpolationVisualizationData,
+  useBeatStreamMode,
+  useInterpolatedBeatMap,
+  useSubdividedBeatMap,
+  useShowGridOverlay,
+  useShowTempoDriftVisualization,
+  useIsDownbeatSelectionMode,
+  useShowMeasureBoundaries,
+  useTimeSignature,
+  useInterpolationStatistics,
+  useTapStatistics,
+  useSubdivisionTransitionMode,
+  usePendingSubdivision,
+  useUnifiedBeatMap,
+  useKeyLaneViewMode,
+  useChartStyle,
+  useHasRequiredKeys,
+  useGrooveState,
+  useBestGrooveHotness,
+  useBestGrooveStreak,
 } from '../../store/beatDetectionStore';
 import { useBeatStream } from '../../hooks/useBeatStream';
 import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
@@ -60,7 +62,6 @@ import { KeyLaneView } from './KeyLaneView';
 import { GrooveMeter } from './GrooveMeter';
 import { BonusNotification } from './BonusNotification';
 import { GrooveStats } from './GrooveStats';
-import { RhythmXPStats } from './RhythmXPStats';
 import { RhythmXPSessionStats } from './RhythmXPSessionStats';
 import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import { logger } from '../../utils/logger';
@@ -82,15 +83,6 @@ const MIN_TAP_INTERVAL_MS = 100;
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
   onExit: () => void;
-}
-
-/**
- * Format time in seconds to MM:SS format
- */
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -303,7 +295,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // Keyboard input hook for rhythm game key input (Phase 5: Task 5.1)
   // Tracks pressed keys for key-matching gameplay (DDR arrows + Guitar Hero numbers)
   // Note: We use a ref to store handleTap to avoid stale closure issues in the callback
-  const handleTapRef = useRef<(pressedKey?: string) => void>(() => {});
+  const handleTapRef = useRef<(pressedKey?: string) => void>(() => { });
   const { pressedKey: _pressedKey, keyDownList, clearKeys } = useKeyboardInput({
     enabled: true, // Always enabled in practice mode
     onKeyDown: (key) => {
@@ -447,8 +439,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
     // Use subdivision tap check when real-time subdivision is active
     const useSubdivisionTap = subdivisionPlaybackAvailable &&
-                              currentSubdivision !== 'quarter' &&
-                              subdivisionIsActive;
+      currentSubdivision !== 'quarter' &&
+      subdivisionIsActive;
 
     // Pass pressedKey to checkTap for key-matching gameplay
     const result = useSubdivisionTap ? checkSubdivisionTap(pressedKey) : checkTap(pressedKey);
@@ -920,52 +912,31 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       />
 
       {/* BPM and Position Display */}
-      <div className="beat-practice-stats">
-        <div className="beat-practice-stat">
-          <span className={`beat-practice-stat-value ${currentBpm > 0 ? 'beat-practice-stat-value--live' : ''}`}>
-            {Math.round(currentBpm) || Math.round(beatMap.bpm)}
-          </span>
-          <span className="beat-practice-stat-label">
-            BPM
-            {currentBpm > 0 && <span className="beat-practice-bpm-indicator">rolling</span>}
-          </span>
-          {/* Multi-tempo indicator (Phase 4: Task 4.1) */}
-          {interpolationStats?.hasMultiTempoApplied && interpolationStats.tempoSections && interpolationStats.tempoSections.length > 1 && (
-            <span className="beat-practice-multi-tempo-indicator">
-              {Math.round(Math.min(...interpolationStats.tempoSections.map(s => s.bpm)))}-{Math.round(Math.max(...interpolationStats.tempoSections.map(s => s.bpm)))} BPM ({interpolationStats.tempoSections.length} sections)
-            </span>
-          )}
-        </div>
-        <div className="beat-practice-stat">
-          <span className="beat-practice-stat-value">{formatTime(currentTime)}</span>
-          <span className="beat-practice-stat-label">Position</span>
-        </div>
-        <div className="beat-practice-stat">
-          <span className="beat-practice-stat-value">{formatTime(duration)}</span>
-          <span className="beat-practice-stat-label">Duration</span>
-        </div>
-        {/* Rhythm XP Stats (Phase 3: Task 3.3 - Real-Time XP Display) */}
-        <RhythmXPStats
-          sessionTotals={rhythmSessionTotals}
-          lastResult={lastRhythmXPResult}
-          currentCombo={currentCombo}
-        />
-        {/* Current Subdivision Display (Phase 6: Task 6.5, Phase 8: Task 8.3) */}
-        {subdivisionPlaybackAvailable && (
-          <div
-            className="beat-practice-stat beat-practice-stat--subdivision"
-            data-subdivision={currentSubdivision}
-          >
-            <span className={`beat-practice-stat-value beat-practice-stat-value--subdivision ${subdivisionIsActive ? 'beat-practice-stat-value--subdivision-active' : ''}`}>
-              {currentSubdivision}
-            </span>
-            <span className="beat-practice-stat-label">
-              Subdivision
-              {subdivisionIsActive && currentSubdivision !== 'quarter' && <span className="beat-practice-subdivision-indicator">live</span>}
-            </span>
-          </div>
-        )}
-      </div>
+      <PracticeStatsBar
+        currentBpm={currentBpm}
+        beatMapBpm={beatMap.bpm}
+        interpolationStats={interpolationStats}
+        currentTime={currentTime}
+        duration={duration}
+        rhythmSessionTotals={rhythmSessionTotals}
+        lastRhythmXPResult={lastRhythmXPResult}
+        currentCombo={currentCombo}
+        subdivisionPlaybackAvailable={subdivisionPlaybackAvailable}
+        currentSubdivision={currentSubdivision}
+        subdivisionIsActive={subdivisionIsActive}
+      />
+
+      {/* Subdivision Playground - Real-time subdivision switching */}
+      <SubdivisionPlayground
+        available={subdivisionPlaybackAvailable}
+        visible={showSubdivisionPlayground}
+        currentSubdivision={currentSubdivision}
+        isActive={subdivisionIsActive}
+        isPlaying={isPlaying}
+        transitionMode={transitionMode}
+        onSubdivisionChange={setSubdivision}
+        onTransitionModeChange={setTransitionMode}
+      />
 
       {/* Progress Bar for Absolute Seeking */}
       <div className="beat-practice-progress-container">
@@ -1033,6 +1004,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           </div>
         </div>
       )}
+
       {keyLaneViewMode === 'off' && (
         <BeatTimeline
           beatMap={beatMap}
@@ -1064,18 +1036,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
           }
         />
       )}
-
-      {/* Subdivision Playground (Phase 6: Task 6.4) - Real-time subdivision switching */}
-      <SubdivisionPlayground
-        available={subdivisionPlaybackAvailable}
-        visible={showSubdivisionPlayground}
-        currentSubdivision={currentSubdivision}
-        isActive={subdivisionIsActive}
-        isPlaying={isPlaying}
-        transitionMode={transitionMode}
-        onSubdivisionChange={setSubdivision}
-        onTransitionModeChange={setTransitionMode}
-      />
 
       {/* Playback Controls */}
       <div className="beat-practice-controls">
@@ -1171,7 +1131,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       {/* Tap Statistics - Using dedicated TapStats component */}
       <TapStats />
 
-      {/* Rhythm XP Session Stats (Phase 4: Task 4.5) */}
+      {/* Rhythm XP Session Stats */}
       <RhythmXPSessionStats
         sessionTotals={rhythmSessionTotals}
         pendingComboBonus={pendingComboEndBonus}
@@ -1181,7 +1141,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         hasCharacter={hasCharacter}
       />
 
-      {/* Groove Session Stats (Phase 5: Task 5.6) */}
+      {/* Groove Session Stats */}
       {(bestGrooveHotness > 0 || bestGrooveStreak > 0) && (
         <GrooveStats
           bestHotness={bestGrooveHotness}
@@ -1219,67 +1179,18 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onClose={() => setIsSettingsPanelOpen(false)}
       />
 
-      {/* Exit Prompt Modal (Phase 2: Task 2.6 - End Session on Practice Exit) */}
-      {showExitPrompt && (
-        <div
-          className="exit-prompt-overlay"
-          onClick={(e) => e.target === e.currentTarget && handleCancelExit()}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="exit-prompt-title"
-        >
-          <div className="exit-prompt-container">
-            <h2 id="exit-prompt-title" className="exit-prompt-title">
-              Session Summary
-            </h2>
+      {/* Exit Prompt Modal (End Session on Practice Exit) */}
+      <ExitPromptModal
+        isOpen={showExitPrompt}
+        totalScore={rhythmSessionTotals?.totalScore ?? 0}
+        totalXP={rhythmSessionTotals?.totalXP ?? 0}
+        maxCombo={maxCombo}
+        onClaimXPAndExit={handleClaimXPAndExit}
+        onDiscardAndExit={handleDiscardAndExit}
+        onCancel={handleCancelExit}
+      />
 
-            <div className="exit-prompt-summary">
-              <div className="exit-prompt-stat">
-                <span className="exit-prompt-stat-value">{Math.round(rhythmSessionTotals?.totalScore ?? 0)}</span>
-                <span className="exit-prompt-stat-label">Score</span>
-              </div>
-              <div className="exit-prompt-stat exit-prompt-stat--xp">
-                <span className="exit-prompt-stat-value">{Math.round(rhythmSessionTotals?.totalXP ?? 0)}</span>
-                <span className="exit-prompt-stat-label">XP</span>
-              </div>
-              <div className="exit-prompt-stat">
-                <span className="exit-prompt-stat-value">{maxCombo}</span>
-                <span className="exit-prompt-stat-label">Max Combo</span>
-              </div>
-            </div>
-
-            <p className="exit-prompt-message">
-              You have unclaimed XP from this session. What would you like to do?
-            </p>
-
-            <div className="exit-prompt-actions">
-              <button
-                type="button"
-                className="exit-prompt-btn exit-prompt-btn--primary"
-                onClick={handleClaimXPAndExit}
-              >
-                Claim {Math.round(rhythmSessionTotals?.totalXP ?? 0)} XP
-              </button>
-              <button
-                type="button"
-                className="exit-prompt-btn exit-prompt-btn--danger"
-                onClick={handleDiscardAndExit}
-              >
-                Discard & Exit
-              </button>
-              <button
-                type="button"
-                className="exit-prompt-btn exit-prompt-btn--secondary"
-                onClick={handleCancelExit}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Level-Up Detail Modal (Phase 8: Task 8.3 - Claim XP Handler) */}
+      {/* Level-Up Detail Modal (Claim XP Handler) */}
       <LevelUpDetailModal
         levelUpDetails={levelUpDetails}
         isOpen={showLevelUpModal}
