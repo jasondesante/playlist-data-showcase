@@ -276,8 +276,13 @@ export function GrooveMeter({
         aria-valuemax={100}
         aria-label={accessibleLabel}
       >
-        {/* Tier label display */}
+        {/* Tier label display with bonus placeholder for full variant */}
         <div className="groove-meter__tier-row">
+          {/* Left spacer to balance the layout */}
+          {variant === 'full' && (
+            <div className="groove-meter__bonus-placeholder groove-meter__bonus-placeholder--left" />
+          )}
+          
           <div
             className={cn(
               'groove-meter__tier-label',
@@ -289,6 +294,30 @@ export function GrooveMeter({
           >
             <span className="groove-meter__tier-label-text">{tierInfo.label}</span>
           </div>
+          
+          {/* Bonus placeholder for full variant - right side */}
+          {variant === 'full' && (
+            <div className="groove-meter__bonus-placeholder groove-meter__bonus-placeholder--right">
+              {displayedBonus ? (
+                <div
+                  className="groove-meter__bonus groove-meter__bonus--inline"
+                  key={`bonus-${bonusKeyRef.current}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span className="groove-meter__bonus-icon" aria-hidden="true">✨</span>
+                  <span className="groove-meter__bonus-xp">
+                    +{displayedBonus.bonusXP.toFixed(1)} XP
+                  </span>
+                </div>
+              ) : (
+                <div className="groove-meter__bonus-placeholder-content">
+                  <span className="groove-meter__bonus-placeholder-text">groove bonus</span>
+                  <span className="groove-meter__bonus-placeholder-value">---</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Main bar section */}
@@ -347,21 +376,38 @@ export function GrooveMeter({
         </div>
 
         {/* Groove End Bonus Display (Phase 5: Task 5.1) */}
-        {displayedBonus && (
+        {/* For compact variant: show bonus placeholder inline at bottom */}
+        {variant === 'compact' && (
           <div
-            className="groove-meter__bonus"
+            className={cn(
+              'groove-meter__bonus',
+              !displayedBonus && 'groove-meter__bonus--placeholder'
+            )}
             key={`bonus-${bonusKeyRef.current}`}
             role="status"
             aria-live="polite"
           >
             <span className="groove-meter__bonus-icon" aria-hidden="true">✨</span>
             <div className="groove-meter__bonus-content">
-              <span className="groove-meter__bonus-xp">
-                +{displayedBonus.bonusXP.toFixed(1)} XP
-              </span>
-              <span className="groove-meter__bonus-detail">
-                Groove Complete!
-              </span>
+              {displayedBonus ? (
+                <>
+                  <span className="groove-meter__bonus-xp">
+                    +{displayedBonus.bonusXP.toFixed(1)} XP
+                  </span>
+                  <span className="groove-meter__bonus-detail">
+                    Groove Complete!
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="groove-meter__bonus-xp groove-meter__bonus-xp--placeholder">
+                    groove bonus
+                  </span>
+                  <span className="groove-meter__bonus-detail">
+                    soon
+                  </span>
+                </>
+              )}
             </div>
           </div>
         )}
