@@ -18,10 +18,10 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, X, Music, Activity, Settings, Layers } from 'lucide-react';
 import { BeatSubdivider, type SubdivisionType } from 'playlist-data-engine';
 import './BeatPracticeView.css';
-import { SubdivisionPlayground } from './SubdivisionPlayground';
-import { BeatStreamModeToggle } from './BeatStreamModeToggle';
-import { ViewModeToggle } from './ViewModeToggle';
-import { TapTimingDebugPanel, type TapDebugInfo } from './TapTimingDebugPanel';
+import { SubdivisionPlayground } from './BeatPracticeView/SubdivisionPlayground';
+import { BeatStreamModeToggle } from './BeatPracticeView/BeatStreamModeToggle';
+import { ViewModeToggle } from './BeatPracticeView/ViewModeToggle';
+import { TapTimingDebugPanel, type TapDebugInfo } from './BeatPracticeView/TapTimingDebugPanel';
 import {
     useBeatDetectionStore,
     useDifficultyPreset,
