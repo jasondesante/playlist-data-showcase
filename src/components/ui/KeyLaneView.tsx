@@ -474,7 +474,7 @@ export function KeyLaneView({
      */
     useEffect(() => {
         if (isPaused) {
-            // When paused, just use the current time directly (no animation)
+            // When paused, update smoothTime whenever currentTime changes (e.g., from seeking)
             setSmoothTime(currentTime);
             return;
         }
@@ -514,7 +514,7 @@ export function KeyLaneView({
                 animationFrameRef.current = null;
             }
         };
-    }, [isPaused, beatMap?.duration]); // Removed currentTime - animation loop uses lastAudioTimeRef which is updated separately
+    }, [isPaused, beatMap?.duration, currentTime]); // Include currentTime so paused seeking updates smoothTime
 
     // Track hit/miss state for beats (persists across renders)
     const beatHitStateRef = useRef<BeatHitState>(new Map());
