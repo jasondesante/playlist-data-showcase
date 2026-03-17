@@ -14,6 +14,23 @@
     border-radius: 0.375rem;
     animation: bonus-notification-pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     margin-top: 4px;
+    /* Fixed width to prevent layout shift when bonus appears */
+    width: 175px;
+}
+
+/* Placeholder state - visible but muted */
+.bonus-notification--placeholder {
+    background: hsl(var(--muted) / 0.3);
+    border-color: hsl(var(--border) / 0.5);
+    animation: none;
+}
+
+.bonus-notification--placeholder .bonus-notification__xp {
+    color: hsl(var(--muted-foreground));
+}
+
+.bonus-notification--placeholder .bonus-notification__detail {
+    color: hsl(var(--muted-foreground) / 0.7);
 }
 
 /* Pop-in animation */

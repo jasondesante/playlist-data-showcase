@@ -135,7 +135,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   const timeSignature = useTimeSignature();
 
   // Audio player state
-  const { playbackState, currentTime, duration, pause, resume, seek } = useAudioPlayerStore();
+  const { playbackState, currentTime, duration, pause, resume, seek, play, currentUrl } = useAudioPlayerStore();
   const isPlaying = playbackState === 'playing';
 
   // Beat stream mode state (Task 6.1)
@@ -615,14 +615,22 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   /**
    * Handle play/pause toggle
+   * Handles three cases:
+   * 1. Playing -> pause
+   * 2. Paused/ended with URL loaded -> resume
+   * 3. Idle (no URL loaded) -> play the selected track
    */
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
       pause();
-    } else {
+    } else if (currentUrl) {
+      // Audio already loaded - resume playback
       resume();
+    } else if (selectedTrack?.audio_url) {
+      // No audio loaded yet - start playing the selected track
+      play(selectedTrack.audio_url);
     }
-  }, [isPlaying, pause, resume]);
+  }, [isPlaying, pause, resume, play, currentUrl, selectedTrack]);
 
   /**
    * Handle exit practice mode

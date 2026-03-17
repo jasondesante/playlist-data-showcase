@@ -68,14 +68,14 @@ export function BonusNotification({
         }
     }, [comboBonus, onBonusDisplayed]);
 
-    if (!displayedBonus) {
-        return null;
-    }
+    // Always render the container to maintain consistent layout
+    const hasBonus = !!displayedBonus;
 
     return (
         <div
             className={cn(
                 'bonus-notification',
+                !hasBonus && 'bonus-notification--placeholder',
                 isExiting && 'bonus-notification--exiting',
                 className
             )}
@@ -84,14 +84,14 @@ export function BonusNotification({
             aria-live="polite"
         >
             <span className="bonus-notification__icon" aria-hidden="true">
-                🔥
+                {hasBonus ? '🔥' : '✨'}
             </span>
             <div className="bonus-notification__content">
                 <span className="bonus-notification__xp">
-                    +{formatXP(displayedBonus.bonusXP)} XP
+                    {hasBonus ? `+${formatXP(displayedBonus.bonusXP)} XP` : 'Last Combo'}
                 </span>
                 <span className="bonus-notification__detail">
-                    Combo: {displayedBonus.comboLength} hits
+                    {hasBonus ? `${displayedBonus.comboLength} hits` : 'soon...'}
                 </span>
             </div>
         </div>
