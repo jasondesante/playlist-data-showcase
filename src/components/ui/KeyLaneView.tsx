@@ -301,6 +301,9 @@ export function KeyLaneView({
     // Track playing state in ref for animation loop
     const isPlayingRef = useRef(!isPaused);
 
+    // Track previous paused state to detect transitions
+    const wasPausedRef = useRef(isPaused);
+
     // ========================================
     // Click/Drag Seeking (Vertical)
     // ========================================
@@ -476,7 +479,19 @@ export function KeyLaneView({
         if (isPaused) {
             // When paused, update smoothTime whenever currentTime changes (e.g., from seeking)
             setSmoothTime(currentTime);
+            wasPausedRef.current = true;
             return;
+        }
+
+        // Reset the ref when transitioning from paused to playing to avoid stutter
+        // from stale timestamp. Use smoothTime as the base so animation continues
+        // seamlessly from where we left off.
+        if (wasPausedRef.current) {
+            lastAudioTimeRef.current = {
+                time: smoothTime,
+                timestamp: performance.now(),
+            };
+            wasPausedRef.current = false;
         }
 
         /**
