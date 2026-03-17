@@ -6,7 +6,7 @@
  *
  * Extracted from BeatPracticeView.tsx (Task 6.1)
  */
-import type { InterpolatedBeatMap, SubdividedBeatMap } from '../../types';
+import type { InterpolatedBeatMap, SubdividedBeatMap } from '../../../types';
 import './BeatStreamModeToggle.css';
 
 export type BeatStreamMode = 'detected' | 'merged' | 'subdivided';

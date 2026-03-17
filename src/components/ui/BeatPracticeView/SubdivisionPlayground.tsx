@@ -8,7 +8,7 @@
  */
 import { Layers, Zap } from 'lucide-react';
 import type { SubdivisionType } from 'playlist-data-engine';
-import { SubdivisionButtons } from './SubdivisionButtons';
+import { SubdivisionButtons } from '../SubdivisionButtons';
 import './SubdivisionPlayground.css';
 
 export type TransitionMode = 'immediate' | 'next-downbeat' | 'next-measure';
