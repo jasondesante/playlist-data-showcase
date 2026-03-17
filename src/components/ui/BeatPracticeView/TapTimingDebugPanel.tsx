@@ -181,7 +181,7 @@ interface TapTimingDebugPanelProps {
 }
 
 // Virtualization constants for react-window
-const TAP_ITEM_HEIGHT = 80; // Height of each tap item in pixels
+const TAP_ITEM_HEIGHT = 120; // Height of each tap item in pixels (includes main, XP stats, visual bar, and details)
 const TAP_LIST_HEIGHT = 300; // Max height of the visible container
 
 export function TapTimingDebugPanel({
