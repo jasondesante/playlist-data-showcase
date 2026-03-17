@@ -93,11 +93,28 @@
   box-shadow: 0 0 16px hsl(271 91% 65% / 0.3);
 }
 
+.beat-practice-view-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Disabled but not active state styling */
+.beat-practice-view-toggle--disabled:not(.beat-practice-view-toggle--active) {
+  opacity: 0.5;
+  background: hsl(var(--surface-2) / 0.3);
+}
+
 .beat-practice-view-toggle-text {
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+/* Indicator for unavailable mode */
+.beat-practice-view-toggle-indicator {
+  font-size: 0.5rem;
+  color: hsl(var(--cute-amber, 38 92% 50%));
 }
 
 .beat-practice-view-mode-description {

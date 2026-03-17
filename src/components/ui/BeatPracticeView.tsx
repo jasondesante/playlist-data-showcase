@@ -209,6 +209,10 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   // State for subdivision playground visibility
   const [showSubdivisionPlayground, setShowSubdivisionPlayground] = useState(false);
 
+  // Ref to track previous beatStreamMode before forcing by subdivision playground
+  // Used to restore the mode when subdivision playground is turned off
+  const previousBeatStreamModeRef = useRef<typeof beatStreamMode | null>(null);
+
   // State for exit prompt modal (Phase 2: Task 2.6 - End Session on Practice Exit)
   const [showExitPrompt, setShowExitPrompt] = useState(false);
 
@@ -253,6 +257,66 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
 
   // Beat stream mode action (state is already declared above)
   const setBeatStreamMode = useBeatDetectionStore((state) => state.actions.setBeatStreamMode);
+
+  /**
+   * Effect to force beatStreamMode based on view mode and subdivision playground state.
+   *
+   * Rules:
+   * 1. When subdivision playground is turned ON while in DDR/Guitar view → switch to Tap Area
+   *    (subdivision playground requires merged mode, which conflicts with lane views)
+   * 2. When view mode is "ddr" or "guitar-hero" → force beatStreamMode to "subdivided"
+   *    (only subdivided mode is playable in lane views)
+   * 3. When subdivision playground is active AND view mode is "off" → force beatStreamMode to "merged"
+   *    (subdivision playground needs merged beats to work with real-time subdivision)
+   * 4. When subdivision playground is turned off AND view mode is "off" → restore previous mode
+   */
+  useEffect(() => {
+    // Priority 0: Subdivision playground conflicts with lane views - switch to tap area
+    if (showSubdivisionPlayground && (keyLaneViewMode === 'ddr' || keyLaneViewMode === 'guitar-hero')) {
+      // Save current mode before switching
+      if (previousBeatStreamModeRef.current === null) {
+        previousBeatStreamModeRef.current = beatStreamMode;
+      }
+      setKeyLaneViewMode('off');
+      // Don't return - let the effect run again with the new view mode
+      return;
+    }
+
+    // Priority 1: Lane views require subdivided mode
+    if (keyLaneViewMode === 'ddr' || keyLaneViewMode === 'guitar-hero') {
+      if (beatStreamMode !== 'subdivided') {
+        // Save current mode before forcing (for potential restoration)
+        // Only save if we're not already in a forced state
+        if (previousBeatStreamModeRef.current === null) {
+          previousBeatStreamModeRef.current = beatStreamMode;
+        }
+        setBeatStreamMode('subdivided');
+      }
+      return;
+    }
+
+    // Priority 2: Subdivision playground requires merged mode (only in tap area view)
+    if (showSubdivisionPlayground && keyLaneViewMode === 'off') {
+      if (beatStreamMode !== 'merged') {
+        // Save current mode before forcing
+        if (previousBeatStreamModeRef.current === null) {
+          previousBeatStreamModeRef.current = beatStreamMode;
+        }
+        setBeatStreamMode('merged');
+      }
+      return;
+    }
+
+    // Priority 3: Restore previous mode when constraints are lifted
+    if (previousBeatStreamModeRef.current !== null && !showSubdivisionPlayground && keyLaneViewMode === 'off') {
+      // Only restore if the current mode was forced (merged when playground was active)
+      // or if we're coming from a lane view
+      if (beatStreamMode === 'merged' || beatStreamMode === 'subdivided') {
+        setBeatStreamMode(previousBeatStreamModeRef.current);
+      }
+      previousBeatStreamModeRef.current = null;
+    }
+  }, [keyLaneViewMode, showSubdivisionPlayground, beatStreamMode, setBeatStreamMode, setKeyLaneViewMode]);
 
   // Subdivision playback hook for real-time subdivision switching (Phase 6: Task 6.4)
   // Check if subdivision playback is available (requires UnifiedBeatMap)
@@ -708,7 +772,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }, [clearKeys]);
 
   // ============================================================
-  // Groove Analyzer Initialization (Phase 5: Task 5.1)
+  // Groove Analyzer Initialization
   // ============================================================
 
   /**
@@ -721,7 +785,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }, [initGrooveAnalyzer]);
 
   // ============================================================
-  // Rhythm XP Initialization (Phase 2: Task 2.1)
+  // Rhythm XP Initialization
   // ============================================================
 
   /**
@@ -773,6 +837,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onModeChange={setBeatStreamMode}
         interpolatedBeatMap={interpolatedBeatMap}
         subdividedBeatMap={subdividedBeatMap}
+        viewMode={keyLaneViewMode}
+        subdivisionPlaygroundActive={showSubdivisionPlayground}
       />
 
       {/* View Mode Toggle - Switch between TapArea and KeyLane views */}
@@ -782,6 +848,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onModeChange={setKeyLaneViewMode}
         hasRequiredKeys={hasRequiredKeys}
         chartStyle={chartStyle}
+        subdivisionPlaygroundActive={showSubdivisionPlayground}
       />
 
       {/* BPM and Position Display */}

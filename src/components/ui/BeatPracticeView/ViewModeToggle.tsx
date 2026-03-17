@@ -25,6 +25,8 @@ interface ViewModeToggleProps {
   hasRequiredKeys: boolean;
   /** The chart style (ddr or guitar-hero) */
   chartStyle: 'ddr' | 'guitar-hero';
+  /** Whether subdivision playground is active (disables lane views) */
+  subdivisionPlaygroundActive?: boolean;
 }
 
 /**
@@ -67,12 +69,24 @@ export function ViewModeToggle({
   onModeChange,
   hasRequiredKeys,
   chartStyle,
+  subdivisionPlaygroundActive = false,
 }: ViewModeToggleProps) {
   if (!subdividedBeatMap) {
     return null;
   }
 
   const { text, warning } = getModeDescription(mode, hasRequiredKeys, chartStyle);
+
+  // Lane views are disabled when subdivision playground is active
+  const laneViewsDisabled = subdivisionPlaygroundActive;
+
+  // Get appropriate title for disabled lane view buttons
+  const getLaneDisabledTitle = (): string | undefined => {
+    if (subdivisionPlaygroundActive) {
+      return 'Not available while Subdivision Playground is active';
+    }
+    return undefined;
+  };
 
   return (
     <div className="beat-practice-view-mode-container">
@@ -97,21 +111,25 @@ export function ViewModeToggle({
         </button>
         <button
           type="button"
-          className={`beat-practice-view-toggle ${mode === 'ddr' ? 'beat-practice-view-toggle--active' : ''}`}
-          onClick={() => onModeChange('ddr')}
+          className={`beat-practice-view-toggle ${mode === 'ddr' ? 'beat-practice-view-toggle--active' : ''} ${laneViewsDisabled ? 'beat-practice-view-toggle--disabled' : ''}`}
+          onClick={() => !laneViewsDisabled && onModeChange('ddr')}
+          disabled={laneViewsDisabled}
           aria-pressed={mode === 'ddr'}
-          title="DDR 4-lane view (arrow keys)"
+          title={getLaneDisabledTitle() || 'DDR 4-lane view (arrow keys)'}
         >
           <span className="beat-practice-view-toggle-text">DDR Lanes</span>
+          {laneViewsDisabled && <span className="beat-practice-view-toggle-indicator">✦</span>}
         </button>
         <button
           type="button"
-          className={`beat-practice-view-toggle ${mode === 'guitar-hero' ? 'beat-practice-view-toggle--active' : ''}`}
-          onClick={() => onModeChange('guitar-hero')}
+          className={`beat-practice-view-toggle ${mode === 'guitar-hero' ? 'beat-practice-view-toggle--active' : ''} ${laneViewsDisabled ? 'beat-practice-view-toggle--disabled' : ''}`}
+          onClick={() => !laneViewsDisabled && onModeChange('guitar-hero')}
+          disabled={laneViewsDisabled}
           aria-pressed={mode === 'guitar-hero'}
-          title="Guitar Hero 5-lane view (number keys 1-5)"
+          title={getLaneDisabledTitle() || 'Guitar Hero 5-lane view (number keys 1-5)'}
         >
           <span className="beat-practice-view-toggle-text">Guitar Lanes</span>
+          {laneViewsDisabled && <span className="beat-practice-view-toggle-indicator">✦</span>}
         </button>
       </div>
       <span className="beat-practice-view-mode-description">
