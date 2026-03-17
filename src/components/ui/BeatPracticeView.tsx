@@ -27,6 +27,7 @@ import { PracticeStatsBar } from './BeatPracticeView/PracticeStatsBar';
 import { PracticeProgressBar } from './BeatPracticeView/PracticeProgressBar';
 import { PracticeHeader } from './BeatPracticeView/PracticeHeader';
 import { PlaybackControls } from './BeatPracticeView/PlaybackControls';
+import { PracticePlayArea } from './BeatPracticeView/PracticePlayArea';
 import {
   useBeatDetectionStore,
   useDifficultyPreset,
@@ -57,8 +58,7 @@ import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../h
 import { useKeyboardInput } from '../../hooks/useKeyboardInput';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import { Button } from './Button';
-import { BeatTimeline } from './BeatTimeline';
-import { TapArea, useTapFeedback } from './TapArea';
+import { useTapFeedback } from './TapArea';
 import { TapStats } from './TapStats';
 import { DifficultySettingsPanel } from './DifficultySettingsPanel';
 import { KeyLaneView } from './KeyLaneView';
@@ -66,7 +66,6 @@ import { GrooveMeter } from './GrooveMeter';
 import { BonusNotification } from './BonusNotification';
 import { GrooveStats } from './GrooveStats';
 import { RhythmXPSessionStats } from './RhythmXPSessionStats';
-import { ComboFeedbackDisplay } from './ComboFeedbackDisplay';
 import { logger } from '../../utils/logger';
 import { showToast } from './Toast';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
@@ -893,121 +892,53 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onSeek={handleSeek}
       />
 
-      {/* Beat Timeline Visualization - Hidden when in DDR/Guitar lane mode */}
-      {/* GrooveMeter for TapArea mode - inline with timeline */}
-      {/* Combo Bonus Notification */}
-      {keyLaneViewMode === 'off' && grooveState && (
-        <div className="beat-practice-groove-row">
-          <div className="beat-practice-groove-container">
-            <GrooveMeter
-              hotness={grooveState.hotness}
-              tier={grooveState.tier}
-              direction={grooveState.pocketDirection}
-              streak={grooveState.streakLength}
-              variant="compact"
-              pendingBonus={pendingGrooveEndBonus}
-              onBonusDisplayed={clearPendingBonuses}
-            />
-            <BonusNotification
-              comboBonus={pendingComboEndBonus}
-              onBonusDisplayed={clearPendingBonuses}
-            />
-          </div>
-        </div>
-      )}
+      {/* Practice Play Area - Timeline, GrooveMeter, TapArea/KeyLane */}
+      <PracticePlayArea
+        keyLaneViewMode={keyLaneViewMode}
+        beatMap={beatMap}
+        subdividedBeatMap={subdividedBeatMap}
+        realtimeSubdividedBeatMap={realtimeSubdividedBeatMap}
+        beatStreamMode={beatStreamMode}
+        currentTime={currentTime}
+        isPlaying={isPlaying}
+        streamIsActive={streamIsActive}
+        streamIsPaused={streamIsPaused}
+        lastBeatEvent={lastBeatEvent}
+        handleTap={handleTap}
+        lastTapResult={lastTapResult}
+        showFeedback={showFeedback}
+        hideTapFeedback={hideTapFeedback}
+        showTooFast={showTooFast}
+        tapVisualTime={tapVisualTime}
+        rhythmSessionTotals={rhythmSessionTotals}
+        currentCombo={currentCombo}
+        lastRhythmXPResult={lastRhythmXPResult}
+        grooveState={grooveState}
+        pendingGrooveEndBonus={pendingGrooveEndBonus}
+        pendingComboEndBonus={pendingComboEndBonus}
+        clearPendingBonuses={clearPendingBonuses}
+        interpolationData={interpolationData}
+        showGridOverlay={showGridOverlay}
+        showTempoDriftVisualization={showTempoDriftVisualization}
+        isDownbeatSelectionMode={isDownbeatSelectionMode}
+        showMeasureBoundaries={showMeasureBoundaries}
+        handleSeek={handleSeek}
+        handleBeatClick={handleBeatClick}
+      />
 
-      {keyLaneViewMode === 'off' && (
-        <BeatTimeline
-          beatMap={beatMap}
-          currentTime={currentTime}
-          lastBeatEvent={lastBeatEvent}
-          lastTapTime={tapVisualTime}
-          lastTapAccuracy={lastTapResult?.accuracy ?? null}
-          onSeek={handleSeek}
-          anticipationWindow={2.0}
-          isPlaying={isPlaying}
-          audioContext={null}
-          interpolationData={interpolationData}
-          showGridOverlay={showGridOverlay}
-          showTempoDriftVisualization={showTempoDriftVisualization}
-          enableBeatSelection={isDownbeatSelectionMode}
-          onBeatClick={handleBeatClick}
-          showMeasureBoundaries={showMeasureBoundaries}
-          // Pass subdivided beat map for visualization
-          // Priority: 1) Pre-calculated (beatStreamMode='subdivided'), 2) Real-time generated
-          subdividedBeatMap={
-            beatStreamMode === 'subdivided'
-              ? subdividedBeatMap
-              : realtimeSubdividedBeatMap
-          }
-          showSubdivisionVisualization={
-            beatStreamMode === 'subdivided'
-              ? !!subdividedBeatMap
-              : !!realtimeSubdividedBeatMap
-          }
+      {/* Stream status indicator */}
+      <div className="beat-practice-stream-status">
+        <Activity
+          className={`beat-practice-stream-icon ${streamIsActive && !streamIsPaused ? 'beat-practice-stream-icon--active' : ''} ${streamIsPaused ? 'beat-practice-stream-icon--paused' : ''}`}
         />
-      )}
+        <span className="beat-practice-stream-label">
+          {streamIsActive
+            ? (streamIsPaused ? 'Beat stream paused' : 'Beat stream active')
+            : 'Beat stream inactive'}
+        </span>
+      </div>
 
-      {/* Practice View - TapArea or KeyLane based on view mode */}
-      {keyLaneViewMode === 'off' ? (
-        <>
-          {/* ComboFeedbackDisplay for TapArea mode (Phase 3.5: Task 3.5.4) */}
-          <div className="beat-practice-combo-feedback-row">
-            <ComboFeedbackDisplay
-              score={rhythmSessionTotals?.totalScore ?? 0}
-              combo={currentCombo}
-              multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
-            />
-          </div>
-          <TapArea
-            onTap={handleTap}
-            isActive={streamIsActive}
-            lastTapResult={lastTapResult}
-            showFeedback={showFeedback}
-            feedbackDuration={500}
-            onFeedbackComplete={hideTapFeedback}
-            showTooFast={showTooFast}
-          />
-        </>
-      ) : (
-        <>
-          {/* GrooveMeter for KeyLane mode - above lanes */}
-          {/* Combo Bonus Notification */}
-          {grooveState && (
-            <div className="beat-practice-groove-container beat-practice-groove-container--keylane">
-              <GrooveMeter
-                hotness={grooveState.hotness}
-                tier={grooveState.tier}
-                direction={grooveState.pocketDirection}
-                streak={grooveState.streakLength}
-                variant="full"
-                pendingBonus={pendingGrooveEndBonus}
-                onBonusDisplayed={clearPendingBonuses}
-              />
-              <BonusNotification
-                comboBonus={pendingComboEndBonus}
-                onBonusDisplayed={clearPendingBonuses}
-              />
-            </div>
-          )}
-          <KeyLaneView
-            beatMap={subdividedBeatMap}
-            currentTime={currentTime}
-            chartStyle={keyLaneViewMode}
-            isActive={streamIsActive}
-            isPaused={streamIsPaused}
-            lastAccuracy={lastTapResult?.accuracy ?? null}
-            lastPressedKey={lastTapResult?.pressedKey ?? null}
-            lastHitBeatTimestamp={lastTapResult?.matchedBeat?.timestamp ?? null}
-            lastTapOffsetMs={lastTapResult ? Math.round(lastTapResult.offset * 1000) : null}
-            onSeek={handleSeek}
-            score={rhythmSessionTotals?.totalScore ?? 0}
-            combo={currentCombo}
-            multiplier={lastRhythmXPResult?.totalMultiplier ?? 1.0}
-          />
-        </>
-      )}
-
+      {/* Game Stats - For Post Game */}
       {/* Tap Statistics - Using dedicated TapStats component */}
       <TapStats />
 
@@ -1032,18 +963,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         />
       )}
 
-      {/* Stream status indicator */}
-      <div className="beat-practice-stream-status">
-        <Activity
-          className={`beat-practice-stream-icon ${streamIsActive && !streamIsPaused ? 'beat-practice-stream-icon--active' : ''} ${streamIsPaused ? 'beat-practice-stream-icon--paused' : ''}`}
-        />
-        <span className="beat-practice-stream-label">
-          {streamIsActive
-            ? (streamIsPaused ? 'Beat stream paused' : 'Beat stream active')
-            : 'Beat stream inactive'}
-        </span>
-      </div>
-
       {/* Tap Timing Debug Panel - helps detect input latency */}
       <TapTimingDebugPanel
         tapHistory={tapDebugHistory}
@@ -1053,6 +972,7 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         rhythmSessionTotals={rhythmSessionTotals}
       />
 
+      {/* Modals */}
       {/* Difficulty Settings Panel */}
       <DifficultySettingsPanel
         isOpen={isSettingsPanelOpen}
