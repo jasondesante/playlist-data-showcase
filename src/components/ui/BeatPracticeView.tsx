@@ -15,7 +15,7 @@
  * Part of Task 3.2: BeatPracticeView Component (The Main Container)
  */
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, X, Music, Activity, Settings, Layers } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { BeatSubdivider, type SubdivisionType } from 'playlist-data-engine';
 import './BeatPracticeView.css';
 import { SubdivisionPlayground } from './BeatPracticeView/SubdivisionPlayground';
@@ -25,6 +25,8 @@ import { TapTimingDebugPanel, type TapDebugInfo } from './BeatPracticeView/TapTi
 import { ExitPromptModal } from './BeatPracticeView/ExitPromptModal';
 import { PracticeStatsBar } from './BeatPracticeView/PracticeStatsBar';
 import { PracticeProgressBar } from './BeatPracticeView/PracticeProgressBar';
+import { PracticeHeader } from './BeatPracticeView/PracticeHeader';
+import { PlaybackControls } from './BeatPracticeView/PlaybackControls';
 import {
   useBeatDetectionStore,
   useDifficultyPreset,
@@ -69,7 +71,7 @@ import { logger } from '../../utils/logger';
 import { showToast } from './Toast';
 import { LevelUpDetailModal } from '../LevelUpDetailModal';
 import type { LevelUpDetail } from 'playlist-data-engine';
-import type { DifficultyPreset, SubdividedBeatMap } from '../../types';
+import type { SubdividedBeatMap } from '../../types';
 import { usePlaylistStore } from '../../store/playlistStore';
 import { useCharacterStore } from '../../store/characterStore';
 
@@ -84,24 +86,6 @@ const MIN_TAP_INTERVAL_MS = 100;
 interface BeatPracticeViewProps {
   /** Callback to exit practice mode */
   onExit: () => void;
-}
-
-/**
- * Get display info for a difficulty preset
- */
-function getDifficultyDisplayInfo(preset: DifficultyPreset): { label: string; className: string } {
-  switch (preset) {
-    case 'easy':
-      return { label: 'Easy', className: 'beat-practice-difficulty--easy' };
-    case 'medium':
-      return { label: 'Medium', className: 'beat-practice-difficulty--medium' };
-    case 'hard':
-      return { label: 'Hard', className: 'beat-practice-difficulty--hard' };
-    case 'custom':
-      return { label: 'Custom', className: 'beat-practice-difficulty--custom' };
-    default:
-      return { label: 'Medium', className: 'beat-practice-difficulty--medium' };
-  }
 }
 
 export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
@@ -771,53 +755,17 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
   }
 
   // Get difficulty display info
-  const difficultyInfo = getDifficultyDisplayInfo(difficultyPreset);
-
   return (
     <div className="beat-practice-view" ref={containerRef}>
       {/* Header Bar */}
-      <div className="beat-practice-header">
-        <div className="beat-practice-header-left">
-          <Music className="beat-practice-header-icon" />
-          <span className="beat-practice-title">Practice Mode</span>
-          <span className={`beat-practice-difficulty-badge ${difficultyInfo.className}`}>
-            {difficultyInfo.label}
-          </span>
-        </div>
-        <div className="beat-practice-header-right">
-          {subdivisionPlaybackAvailable && (
-            <Button
-              variant={showSubdivisionPlayground ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowSubdivisionPlayground(!showSubdivisionPlayground)}
-              leftIcon={Layers}
-              aria-label="Toggle subdivision playground"
-              title="Subdivision Playground"
-            >
-              Playground
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsSettingsPanelOpen(true)}
-            leftIcon={Settings}
-            aria-label="Open difficulty settings"
-            title="Difficulty Settings"
-          >
-            Settings
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExit}
-            leftIcon={X}
-            aria-label="Exit practice mode"
-          >
-            Exit
-          </Button>
-        </div>
-      </div>
+      <PracticeHeader
+        difficultyPreset={difficultyPreset}
+        subdivisionPlaybackAvailable={subdivisionPlaybackAvailable}
+        showSubdivisionPlayground={showSubdivisionPlayground}
+        onToggleSubdivisionPlayground={() => setShowSubdivisionPlayground(!showSubdivisionPlayground)}
+        onOpenSettings={() => setIsSettingsPanelOpen(true)}
+        onExit={handleExit}
+      />
 
       {/* Beat Stream Mode Toggle */}
       <BeatStreamModeToggle
@@ -825,6 +773,15 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         onModeChange={setBeatStreamMode}
         interpolatedBeatMap={interpolatedBeatMap}
         subdividedBeatMap={subdividedBeatMap}
+      />
+
+      {/* View Mode Toggle - Switch between TapArea and KeyLane views */}
+      <ViewModeToggle
+        subdividedBeatMap={subdividedBeatMap}
+        mode={keyLaneViewMode}
+        onModeChange={setKeyLaneViewMode}
+        hasRequiredKeys={hasRequiredKeys}
+        chartStyle={chartStyle}
       />
 
       {/* BPM and Position Display */}
@@ -840,6 +797,13 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         subdivisionPlaybackAvailable={subdivisionPlaybackAvailable}
         currentSubdivision={currentSubdivision}
         subdivisionIsActive={subdivisionIsActive}
+      />
+
+      {/* Playback Controls */}
+      <PlaybackControls
+        isPlaying={isPlaying}
+        onRestart={() => handleSeek(0)}
+        onPlayPause={handlePlayPause}
       />
 
       {/* Subdivision Playground - Real-time subdivision switching */}
@@ -863,8 +827,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
       />
 
       {/* Beat Timeline Visualization - Hidden when in DDR/Guitar lane mode */}
-      {/* GrooveMeter for TapArea mode - inline with timeline (Phase 5: Task 5.5) */}
-      {/* Combo Bonus Notification (Phase 9: Task 9.2) */}
+      {/* GrooveMeter for TapArea mode - inline with timeline */}
+      {/* Combo Bonus Notification */}
       {keyLaneViewMode === 'off' && grooveState && (
         <div className="beat-practice-groove-row">
           <div className="beat-practice-groove-container">
@@ -917,37 +881,6 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         />
       )}
 
-      {/* Playback Controls */}
-      <div className="beat-practice-controls">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleSeek(0)}
-          leftIcon={SkipBack}
-          aria-label="Restart"
-        >
-          Restart
-        </Button>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handlePlayPause}
-          leftIcon={isPlaying ? Pause : Play}
-          className="beat-practice-play-button"
-        >
-          {isPlaying ? 'Pause' : 'Play'}
-        </Button>
-      </div>
-
-      {/* View Mode Toggle (Phase 10: Task 10.3) - Switch between TapArea and KeyLane views */}
-      <ViewModeToggle
-        subdividedBeatMap={subdividedBeatMap}
-        mode={keyLaneViewMode}
-        onModeChange={setKeyLaneViewMode}
-        hasRequiredKeys={hasRequiredKeys}
-        chartStyle={chartStyle}
-      />
-
       {/* Practice View - TapArea or KeyLane based on view mode */}
       {keyLaneViewMode === 'off' ? (
         <>
@@ -971,8 +904,8 @@ export function BeatPracticeView({ onExit }: BeatPracticeViewProps) {
         </>
       ) : (
         <>
-          {/* GrooveMeter for KeyLane mode - above lanes (Phase 5: Task 5.5) */}
-          {/* Combo Bonus Notification (Phase 9: Task 9.2) */}
+          {/* GrooveMeter for KeyLane mode - above lanes */}
+          {/* Combo Bonus Notification */}
           {grooveState && (
             <div className="beat-practice-groove-container beat-practice-groove-container--keylane">
               <GrooveMeter
