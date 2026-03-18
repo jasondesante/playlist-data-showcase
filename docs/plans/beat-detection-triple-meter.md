@@ -77,7 +77,8 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Added `useTripleMeter` row to TempoDetector Config Options table at `/workspace/docs/engine/DATA_ENGINE_REFERENCE.md` line 1966. Documents TPS3 triple meter resolution for 3/4 and 6/8 time signatures, default value, and notes that it works independently of useOctaveResolution.
 
 ### Task 2.5: Update engine README/changelog
-- [ ] Add entry to CHANGELOG.md in `playlist-data-engine` for the new feature
+- [x] Add entry to CHANGELOG.md in `playlist-data-engine` for the new feature
+  **Note**: Added triple meter resolution entry to `/workspace/docs/engine/CHANGELOG.md` following the same format as octave resolution. Documents the feature, default value, interaction with useOctaveResolution, and the TPS3 formula.
 
 ---
 
