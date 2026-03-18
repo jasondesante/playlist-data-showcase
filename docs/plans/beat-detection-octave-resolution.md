@@ -58,9 +58,9 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
 
 ### Task 2.3: Update DATA_ENGINE_REFERENCE.md
-- [ ] Add `useOctaveResolution` option to `TempoDetectorConfig` section in `docs/DATA_ENGINE_REFERENCE.md`
-- [ ] Document the default value (`true`) and behavior
-- [ ] Explain when/why to disable it
+- [x] Add `useOctaveResolution` option to `TempoDetectorConfig` section in `docs/DATA_ENGINE_REFERENCE.md`
+- [x] Document the default value (`false`) and behavior
+- [x] Explain when/why to enable it (opt-in feature)
 
 ### Task 2.4: Update engine README/changelog
 - [ ] Add entry to CHANGELOG.md in `playlist-data-engine` for the new feature
