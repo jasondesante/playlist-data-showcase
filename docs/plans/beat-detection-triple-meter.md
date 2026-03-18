@@ -107,10 +107,11 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Added `useOctaveResolution` and `useTripleMeter` to BeatMapMetadata interface. Updated BeatMapGenerator.ts and BeatStream.ts to store these settings in metadata. Updated BeatMapSummary.tsx to display meter settings in the "Settings used" section with visual highlighting (shows "Meter: Duple (TPS2)", "Meter: Triple (TPS3)", or "Meter: Duple + Triple"). Build passes for both playlist-data-engine and playlist-data-showcase.
 
 ### Task 3.4: Integration testing
-- [ ] Create `src/tests/tripleMeter.integration.test.ts` (similar to octaveResolution test)
-- [ ] Test with triple meter track (waltz, 6/8 shuffle) - optimal case is detecting triple meter correctly
-- [ ] Verify improved beat count for triple meter tracks
-- [ ] Document default configuration (useTripleMeter: false)
+- [x] Create `src/tests/tripleMeter.integration.test.ts` (similar to octaveResolution test)
+- [x] Test with triple meter track (waltz, 6/8 shuffle) - optimal case is detecting triple meter correctly
+- [x] Verify improved beat count for triple meter tracks
+- [x] Document default configuration (useTripleMeter: false)
+  **Note**: Created integration test file with 22 tests covering waltz (3/4) and 6/8 shuffle scenarios. Tests verify beat count improvement (~3x), default configuration (useTripleMeter: false), combined useOctaveResolution + useTripleMeter, and TPS3 formula benefits. All tests pass.
 
 ---
 
