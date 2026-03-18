@@ -35,10 +35,13 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Return updated `TempoEstimate` with corrected primary BPM
 
 ### Task 1.4: Add unit tests
-- [ ] Test case: half-tempo detection (73 BPM should become 146 BPM)
-- [ ] Test case: correct tempo preserved (146 BPM stays 146 BPM)
-- [ ] Test case: sub-harmonic detection (24 BPM should become 146 BPM if 146 is primary)
-- [ ] Test with `useOctaveResolution: false` to verify backward compatibility
+- [x] Test case: half-tempo detection (73 BPM should become 146 BPM)
+- [x] Test case: correct tempo preserved (146 BPM stays 146 BPM)
+- [x] Test case: sub-harmonic detection (24 BPM should become 146 BPM if 146 is primary)
+- [x] Test with `useOctaveResolution: false` to verify backward compatibility
+- [x] Test that `useOctaveResolution` defaults to `false`
+- [x] Test that `useOctaveResolution` can be explicitly enabled
+- [x] Test octave resolution with various tempos (80, 100, 120, 140, 160 BPM)
 
 ---
 
