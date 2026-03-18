@@ -124,6 +124,9 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
 > npm test -- src/tests/tripleMeter.integration.test.ts
 > ```
 
+> **Build Status**: ✅ Build passes (verified 2026-03-18)
+> **Note**: These tests require manual human interaction - loading audio files and observing UI behavior.
+
 **How to Access the Triple Meter Toggle:**
 1. Open the Beat Detection tab in the showcase app
 2. Expand "Advanced Settings" section
