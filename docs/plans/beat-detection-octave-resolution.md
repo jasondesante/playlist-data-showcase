@@ -20,12 +20,13 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant
 
 ### Task 1.2: Re-enable TPS2 calculation
-- [ ] Uncomment `calculateTPS2()` method in `TempoDetector.ts` (currently at lines 47-48)
-- [ ] Uncomment `calculateTPS3()` method if needed for triple meter support
-- [ ] Verify the calculation logic is correct per Ellis paper Equation 7:
+- [x] Uncomment `calculateTPS2()` method in `TempoDetector.ts` (exists at lines 301-314, not 47-48 as originally noted)
+- [x] Uncomment `calculateTPS3()` method if needed for triple meter support (exists at lines 328-341)
+- [x] Verify the calculation logic is correct per Ellis paper Equation 7:
   ```
   TPS2(τ) = TPS(τ) + 0.5×TPS(2τ) + 0.25×TPS(2τ-1) + 0.25×TPS(2τ+1)
   ```
+  **Verified**: Code matches equation exactly. Note: Methods exist but calls are commented out at lines 120-121.
 
 ### Task 1.3: Integrate TPS2 into tempo estimation
 - [ ] Modify `estimateTempo()` to use TPS2 score when `useOctaveResolution` is true
