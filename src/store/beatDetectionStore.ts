@@ -157,6 +157,7 @@ const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     tempoCenter: 0.5,
     tempoWidth: 1.4,
     useOctaveResolution: false,  // Opt-in - uses TPS2 to prevent half-tempo/double-tempo errors
+    useTripleMeter: false,  // Opt-in - uses TPS3 for triple meter detection (waltzes, 6/8 shuffles)
 };
 
 /**

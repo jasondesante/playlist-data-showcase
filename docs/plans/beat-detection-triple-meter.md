@@ -19,10 +19,10 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
 ## Phase 1: Add Triple Meter to TempoDetector (playlist-data-engine)
 
 ### Task 1.1: Add new configuration option
-- [ ] Add `useTripleMeter?: boolean` to `TempoDetectorConfig` in `src/core/types/BeatMap.ts`
-- [ ] Set default value to `false` (opt-in)
-- [ ] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant in TempoDetector.ts
-- [ ] Update `DEFAULT_BEATMAP_GENERATOR_OPTIONS` in BeatMap.ts
+- [x] Add `useTripleMeter?: boolean` to `TempoDetectorConfig` in `src/core/types/BeatMap.ts`
+- [x] Set default value to `false` (opt-in)
+- [x] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant in TempoDetector.ts
+- [x] Update `DEFAULT_BEATMAP_GENERATOR_OPTIONS` in BeatMap.ts
 
 ### Task 1.2: Document TPS3 calculation
 - [ ] Verify the TPS3 calculation in `calculateTPS3()` method is correct per Ellis paper:
