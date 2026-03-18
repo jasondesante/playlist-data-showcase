@@ -153,6 +153,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const filter = generatorOptions.filter ?? DEFAULTS.filter;
   const tempoCenter = generatorOptions.tempoCenter ?? DEFAULTS.tempoCenter;
   const noiseFloorThreshold = generatorOptions.noiseFloorThreshold ?? DEFAULTS.noiseFloorThreshold;
+  const useOctaveResolution = generatorOptions.useOctaveResolution ?? false;
 
   // Handle BPM Range changes
   const handleMinBpmChange = (value: number) => {
@@ -238,6 +239,22 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   const handleNoiseFloorThresholdReset = () => {
     setGeneratorOptions({ noiseFloorThreshold: DEFAULTS.noiseFloorThreshold });
+  };
+
+  // ============================================================
+  // OCTAVE RESOLUTION TOGGLE
+  // ============================================================
+
+  /**
+   * Handle Octave Resolution toggle change.
+   * When enabled, uses TPS2 (duple meter) calculation from Ellis 2007
+   * to prefer tempos with strong half-period evidence.
+   * This fixes half-tempo/double-tempo ambiguity issues.
+   *
+   * @param enabled - Whether octave resolution is enabled
+   */
+  const handleOctaveResolutionChange = (enabled: boolean) => {
+    setGeneratorOptions({ useOctaveResolution: enabled });
   };
 
   // ============================================================
@@ -1013,6 +1030,55 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                     <span className="beat-detection-ose-toggle-value">{GAUSSIAN_SMOOTH_PRESETS[mode].value}ms</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* ============================================================
+             * OCTAVE RESOLUTION TOGGLE
+             *
+             * What it does: Enables TPS2 (duple meter) calculation from Ellis 2007
+             * to fix half-tempo/double-tempo ambiguity in beat tracking.
+             *
+             * When enabled, the algorithm prefers tempos with strong half-period
+             * evidence. This helps when the beat tracker incorrectly detects
+             * 73 BPM instead of 146 BPM (or similar octave errors).
+             *
+             * Default: Off (opt-in) to preserve backward compatibility.
+             * ============================================================ */}
+            <div className="beat-detection-settings-section">
+              <div className="beat-detection-settings-header">
+                <div className="beat-detection-settings-label-with-tooltip">
+                  <span className="beat-detection-settings-label">Octave Resolution</span>
+                  <Tooltip content="Fixes half-tempo detection errors. Enable if beat count is too low (e.g., detecting 73 BPM instead of 146 BPM). Uses Ellis 2007 TPS2 calculation to prefer tempos with strong beat subdivisions." />
+                </div>
+                <span className={`beat-detection-settings-value ${useOctaveResolution ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {useOctaveResolution ? 'On' : 'Off'}
+                </span>
+              </div>
+              <div className="beat-detection-octave-resolution-toggle">
+                <button
+                  type="button"
+                  className={`beat-detection-octave-resolution-btn ${useOctaveResolution ? 'beat-detection-octave-resolution-btn--active' : ''}`}
+                  onClick={() => handleOctaveResolutionChange(true)}
+                  disabled={disabled}
+                  aria-pressed={useOctaveResolution}
+                  aria-label="Enable octave resolution"
+                >
+                  On
+                </button>
+                <button
+                  type="button"
+                  className={`beat-detection-octave-resolution-btn ${!useOctaveResolution ? 'beat-detection-octave-resolution-btn--active' : ''}`}
+                  onClick={() => handleOctaveResolutionChange(false)}
+                  disabled={disabled}
+                  aria-pressed={!useOctaveResolution}
+                  aria-label="Disable octave resolution"
+                >
+                  Off
+                </button>
+              </div>
+              <div className="beat-detection-slider-description">
+                Helps fix sparse beat detection on fast tracks
               </div>
             </div>
 

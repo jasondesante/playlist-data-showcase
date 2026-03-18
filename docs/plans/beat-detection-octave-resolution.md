@@ -77,10 +77,10 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Set default value to `false` (opt-in, preserves current behavior)
 - [x] Add selector hook if needed (not strictly needed - `useGeneratorOptions` already provides access, same pattern as other simple options)
 
-### Task 3.2: Add UI toggle (optional - may be hidden)
-- [ ] Consider adding to Advanced Settings in `BeatDetectionSettings.tsx`
-- [ ] Or keep as hidden/always-on option for initial release
-- [ ] Add to settings note/info section if visible
+### Task 3.2: Add UI toggle
+- [x] Consider adding to Advanced Settings in `BeatDetectionSettings.tsx`
+- [x] Or keep as hidden/always-on option for initial release (Decision: Made it visible in Advanced Settings)
+- [x] Add to settings note/info section if visible
 
 ### Task 3.3: Integration testing
 - [ ] Test with problem track (146 BPM, 60 beats detected)

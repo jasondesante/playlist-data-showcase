@@ -974,6 +974,99 @@
 }
 
 /* ============================================
+   OCTAVE RESOLUTION TOGGLE
+   Simple On/Off toggle for TPS2 octave resolution
+   ============================================ */
+
+/* Toggle container */
+.beat-detection-octave-resolution-toggle {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+/* Toggle button */
+.beat-detection-octave-resolution-btn {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.5), hsl(var(--surface-2) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.15s ease;
+}
+
+.beat-detection-octave-resolution-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, hsl(var(--surface-3) / 0.7), hsl(var(--surface-2) / 0.9));
+  border-color: hsl(var(--border));
+}
+
+.beat-detection-octave-resolution-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.beat-detection-octave-resolution-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state - primary color with glow */
+.beat-detection-octave-resolution-btn--active {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--cute-purple) / 0.12));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
+
+.beat-detection-octave-resolution-btn--active:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--cute-purple) / 0.16));
+  box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
+}
+
+/* Responsive - tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .beat-detection-octave-resolution-toggle {
+    gap: 0.1875rem;
+    margin-top: 0.3125rem;
+  }
+
+  .beat-detection-octave-resolution-btn {
+    padding: 0.3125rem 0.4375rem;
+    font-size: 0.5rem;
+  }
+}
+
+/* Responsive - mobile */
+@media (max-width: 640px) {
+  .beat-detection-octave-resolution-toggle {
+    gap: 0.125rem;
+    margin-top: 0.25rem;
+  }
+
+  .beat-detection-octave-resolution-btn {
+    padding: 0.25rem 0.375rem;
+    font-size: 0.5rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .beat-detection-octave-resolution-btn {
+    min-height: 44px;
+    padding: 0.625rem 0.5rem;
+  }
+
+  .beat-detection-octave-resolution-btn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
    TASK 4.2: CUSTOM INPUT STYLES
    Number input field for custom hop size values
    ============================================ */
