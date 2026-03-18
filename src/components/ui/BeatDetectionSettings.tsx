@@ -86,6 +86,7 @@ const DEFAULTS = {
   sensitivity: 1.0,  // Default: 1.0 (range 0.1-10.0)
   filter: 0.0,       // Default: 0.0 (range 0.0-1.0)
   tempoCenter: 0.5,
+  noiseFloorThreshold: 0,  // Default: 0 (range 0.0-0.5) - was 0.1, caused 82% beat loss
 };
 
 // ============================================
@@ -151,6 +152,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const sensitivity = generatorOptions.sensitivity ?? DEFAULTS.sensitivity;
   const filter = generatorOptions.filter ?? DEFAULTS.filter;
   const tempoCenter = generatorOptions.tempoCenter ?? DEFAULTS.tempoCenter;
+  const noiseFloorThreshold = generatorOptions.noiseFloorThreshold ?? DEFAULTS.noiseFloorThreshold;
 
   // Handle BPM Range changes
   const handleMinBpmChange = (value: number) => {
@@ -216,6 +218,26 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
 
   const handleFilterReset = () => {
     setGeneratorOptions({ filter: DEFAULTS.filter });
+  };
+
+  /**
+   * Handle Noise Floor Threshold change (0.0 - 0.5)
+   *
+   * This sets the minimum onset intensity required for a beat to be kept.
+   * Higher values = fewer beats (only strong onsets)
+   * Lower values = more beats (includes weaker onsets)
+   * 0 = keep all beats (recommended)
+   *
+   * @param value - Noise floor threshold (0.0-0.5)
+   */
+  const handleNoiseFloorThresholdChange = (value: number) => {
+    setGeneratorOptions({ noiseFloorThreshold: value });
+  };
+
+  const isNoiseFloorThresholdDefault = noiseFloorThreshold === DEFAULTS.noiseFloorThreshold;
+
+  const handleNoiseFloorThresholdReset = () => {
+    setGeneratorOptions({ noiseFloorThreshold: DEFAULTS.noiseFloorThreshold });
   };
 
   // ============================================================
@@ -707,6 +729,73 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
                 <span className="beat-detection-slider-mark">~86 BPM</span>
                 <span className="beat-detection-slider-mark">~120 BPM</span>
                 <span className="beat-detection-slider-mark">~200 BPM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================
+           * NOISE FLOOR THRESHOLD SLIDER
+           *
+           * What it does: Sets the minimum onset intensity required for a beat to be kept.
+           * This is a post-processing filter applied after beat detection.
+           *
+           * Range: 0.0 to 0.2
+           * - 0.0 = Keep all detected beats (recommended)
+           * - 0.1 = Filter out weak beats (old default, caused 82% beat loss!)
+           * - 0.2 = Only keep strong beats
+           *
+           * Effect on output:
+           * - Lower values = more beats kept (includes weaker onsets)
+           * - Higher values = fewer beats kept (only strong onsets)
+           *
+           * NOTE: The old default of 0.1 was filtering out 82% of correctly
+           * detected beats! The new default is 0 (keep all beats).
+           * ============================================================ */}
+          <div className="beat-detection-settings-section">
+            <div className="beat-detection-settings-header">
+              <div className="beat-detection-settings-label-with-tooltip">
+                <span className="beat-detection-settings-label">Noise Floor</span>
+                <Tooltip content="Minimum onset intensity for a beat to be kept. 0 = keep all beats (recommended); 0.2 = only strong beats. Old default of 0.1 caused 82% beat loss!" />
+              </div>
+              <div className="beat-detection-settings-header-right">
+                <span className={`beat-detection-settings-value ${!isNoiseFloorThresholdDefault ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {noiseFloorThreshold.toFixed(2)}
+                </span>
+                {!isNoiseFloorThresholdDefault && (
+                  <button
+                    type="button"
+                    className="beat-detection-reset-btn"
+                    onClick={handleNoiseFloorThresholdReset}
+                    disabled={disabled}
+                    aria-label="Reset noise floor threshold to default"
+                    title="Reset to default (0)"
+                  >
+                    <RotateCcw className="beat-detection-reset-btn-icon" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="beat-detection-slider-container">
+              <input
+                type="range"
+                min="0"
+                max="0.2"
+                step="0.01"
+                value={noiseFloorThreshold}
+                onChange={(e) => handleNoiseFloorThresholdChange(parseFloat(e.target.value))}
+                className="beat-detection-slider"
+                style={{ '--slider-value': `${(noiseFloorThreshold / 0.2) * 100}%` } as React.CSSProperties}
+                disabled={disabled}
+                aria-label="Noise floor threshold"
+              />
+              <div className="beat-detection-slider-marks">
+                <span className="beat-detection-slider-mark">0 (all)</span>
+                <span className="beat-detection-slider-mark">0.1</span>
+                <span className="beat-detection-slider-mark">0.2</span>
+              </div>
+              <div className="beat-detection-slider-description">
+                0 = keep all beats, higher = fewer beats
               </div>
             </div>
           </div>
