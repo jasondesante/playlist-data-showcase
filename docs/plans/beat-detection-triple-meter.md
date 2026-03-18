@@ -33,10 +33,11 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Verified**: Implementation is correct - matches Ellis 2007 formula exactly with proper bounds checking.
 
 ### Task 1.3: Integrate TPS3 into tempo estimation
-- [ ] Modify `estimateTempo()` to use TPS3 score when `useTripleMeter` is true
-- [ ] Compare primary tempo with third-period tempo using TPS3 scores
-- [ ] Prefer faster tempo if TPS3 score is stronger (triple-time vs single-time)
-- [ ] Consider interaction with `useOctaveResolution` - both can be enabled simultaneously
+- [x] Modify `estimateTempo()` to use TPS3 score when `useTripleMeter` is true
+- [x] Compare primary tempo with third-period tempo using TPS3 scores
+- [x] Prefer faster tempo if TPS3 score is stronger (triple-time vs single-time)
+- [x] Consider interaction with `useOctaveResolution` - both can be enabled simultaneously
+  **Note**: Added Step 5 to `estimateTempo()` in TempoDetector.ts (lines 164-185). TPS3 runs independently after TPS2, so both options can be enabled simultaneously.
 
 ### Task 1.4: Add unit tests
 - [ ] Test case: triple meter detection (slow 3/4 tempo should detect proper beat)
