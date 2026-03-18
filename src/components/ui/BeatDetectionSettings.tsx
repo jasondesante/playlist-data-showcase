@@ -154,6 +154,7 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
   const tempoCenter = generatorOptions.tempoCenter ?? DEFAULTS.tempoCenter;
   const noiseFloorThreshold = generatorOptions.noiseFloorThreshold ?? DEFAULTS.noiseFloorThreshold;
   const useOctaveResolution = generatorOptions.useOctaveResolution ?? false;
+  const useTripleMeter = generatorOptions.useTripleMeter ?? false;
 
   // Handle BPM Range changes
   const handleMinBpmChange = (value: number) => {
@@ -255,6 +256,22 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
    */
   const handleOctaveResolutionChange = (enabled: boolean) => {
     setGeneratorOptions({ useOctaveResolution: enabled });
+  };
+
+  // ============================================================
+  // TRIPLE METER TOGGLE
+  // ============================================================
+
+  /**
+   * Handle Triple Meter toggle change.
+   * When enabled, uses TPS3 calculation from Ellis 2007 to detect
+   * triple meter music (3/4, 6/8 time signatures).
+   * This helps with waltzes and shuffle feels where beats group in threes.
+   *
+   * @param enabled - Whether triple meter resolution is enabled
+   */
+  const handleTripleMeterChange = (enabled: boolean) => {
+    setGeneratorOptions({ useTripleMeter: enabled });
   };
 
   // ============================================================
@@ -1085,6 +1102,52 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
               </div>
               <div className="beat-detection-slider-description">
                 Helps fix sparse beat detection on fast tracks
+              </div>
+            </div>
+
+            {/* ============================================================
+             * TRIPLE METER TOGGLE
+             *
+             * When enabled, uses TPS3 calculation from Ellis 2007 to detect
+             * triple meter music (3/4, 6/8 time signatures).
+             * Helps with waltzes and shuffle feels where beats group in threes.
+             *
+             * Default: Off (opt-in) to preserve backward compatibility.
+             * ============================================================ */}
+            <div className="beat-detection-settings-section">
+              <div className="beat-detection-settings-header">
+                <div className="beat-detection-settings-label-with-tooltip">
+                  <span className="beat-detection-settings-label">Triple Meter</span>
+                  <Tooltip content="Detects triple meter music (3/4, 6/8 time signatures). Enable for waltzes and shuffle feels where beats group in threes. Uses Ellis 2007 TPS3 calculation." />
+                </div>
+                <span className={`beat-detection-settings-value ${useTripleMeter ? 'beat-detection-settings-value--modified' : ''}`}>
+                  {useTripleMeter ? 'On' : 'Off'}
+                </span>
+              </div>
+              <div className="beat-detection-octave-resolution-toggle">
+                <button
+                  type="button"
+                  className={`beat-detection-octave-resolution-btn ${useTripleMeter ? 'beat-detection-octave-resolution-btn--active' : ''}`}
+                  onClick={() => handleTripleMeterChange(true)}
+                  disabled={disabled}
+                  aria-pressed={useTripleMeter}
+                  aria-label="Enable triple meter"
+                >
+                  On
+                </button>
+                <button
+                  type="button"
+                  className={`beat-detection-octave-resolution-btn ${!useTripleMeter ? 'beat-detection-octave-resolution-btn--active' : ''}`}
+                  onClick={() => handleTripleMeterChange(false)}
+                  disabled={disabled}
+                  aria-pressed={!useTripleMeter}
+                  aria-label="Disable triple meter"
+                >
+                  Off
+                </button>
+              </div>
+              <div className="beat-detection-slider-description">
+                For waltzes and 6/8 shuffle feels
               </div>
             </div>
 

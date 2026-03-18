@@ -87,15 +87,17 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
 > **Note**: This phase is done in the `playlist-data-showcase` project.
 
 ### Task 3.1: Add option to Zustand store
-- [ ] Add `useTripleMeter: boolean` to `generatorOptions` in `beatDetectionStore.ts`
-- [ ] Set default value to `false` (opt-in, preserves current behavior)
-- [ ] No new selector hook needed (`useGeneratorOptions` already provides access)
+- [x] Add `useTripleMeter: boolean` to `generatorOptions` in `beatDetectionStore.ts`
+- [x] Set default value to `false` (opt-in, preserves current behavior)
+- [x] No new selector hook needed (`useGeneratorOptions` already provides access)
+  **Note**: Already present at line 160 in beatDetectionStore.ts. Verified build passes.
 
 ### Task 3.2: Add UI toggle
-- [ ] Add to Advanced Settings in `BeatDetectionSettings.tsx` (below Octave Resolution)
-- [ ] Use the same On/Off button pattern as Octave Resolution
-- [ ] Add tooltip explaining triple meter detection
-- [ ] Add to settings info section
+- [x] Add to Advanced Settings in `BeatDetectionSettings.tsx` (below Octave Resolution)
+- [x] Use the same On/Off button pattern as Octave Resolution
+- [x] Add tooltip explaining triple meter detection
+- [x] Add to settings info section
+  **Note**: Added Triple Meter toggle in BeatDetectionSettings.tsx at line 1117. Includes tooltip, On/Off buttons, and description. Build verified passing.
 
 ### Task 3.3: Add visual feedback for triple meter detection
 - [ ] Add visual indicator in the beat display when triple meter is detected
