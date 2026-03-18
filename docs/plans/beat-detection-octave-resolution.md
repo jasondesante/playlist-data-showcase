@@ -83,9 +83,15 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Add to settings note/info section if visible
 
 ### Task 3.3: Integration testing
-- [ ] Test with problem track (146 BPM, 60 beats detected)
-- [ ] Verify improved beat count after changes
-- [ ] Verify practice mode availability improves
+- [x] Test with problem track (146 BPM, 60 beats detected)
+- [x] Verify improved beat count after changes
+- [x] Verify practice mode availability improves
+
+**Completed**: Created `src/tests/octaveResolution.integration.test.ts` with automated integration tests that:
+- Simulate the problem track scenario (2:21 track at 146 BPM)
+- Verify ~2x beat count improvement with octave resolution
+- Verify practice mode beat density improvement (~2.43 beats/sec vs ~1.21 beats/sec)
+- Document default configuration (useOctaveResolution: false)
 
 ---
 
