@@ -441,6 +441,19 @@ export function BeatMapSummary({
           <span className="beat-map-settings-value">
             Filter: {(beatMap.metadata.filter ?? 0.0).toFixed(2)}
           </span>
+          {(beatMap.metadata.useOctaveResolution || beatMap.metadata.useTripleMeter) && (
+            <span className="beat-map-settings-value beat-map-settings-value--meter">
+              {(beatMap.metadata.useOctaveResolution || beatMap.metadata.useTripleMeter) && (
+                <>
+                  {beatMap.metadata.useOctaveResolution && beatMap.metadata.useTripleMeter
+                    ? 'Meter: Duple + Triple'
+                    : beatMap.metadata.useOctaveResolution
+                      ? 'Meter: Duple (TPS2)'
+                      : 'Meter: Triple (TPS3)'}
+                </>
+              )}
+            </span>
+          )}
         </div>
       </div>
 

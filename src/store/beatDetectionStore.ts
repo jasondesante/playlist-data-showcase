@@ -3545,6 +3545,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 gaussianSmoothMs: 20,
                                 tempoCenter: 0.5,
                                 tempoWidth: 1.4,
+                                useOctaveResolution: false,
+                                useTripleMeter: false,
                             },
                             detectedBeats: data.detectedBeats.map(b => ({
                                 timestamp: b.timestamp,
@@ -3623,6 +3625,8 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                                 gaussianSmoothMs: 20,
                                 tempoCenter: 0.5,
                                 tempoWidth: 1.4,
+                                useOctaveResolution: false,
+                                useTripleMeter: false,
                             },
                         };
 

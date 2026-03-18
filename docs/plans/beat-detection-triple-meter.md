@@ -100,10 +100,11 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Added Triple Meter toggle in BeatDetectionSettings.tsx at line 1117. Includes tooltip, On/Off buttons, and description. Build verified passing.
 
 ### Task 3.3: Add visual feedback for triple meter detection
-- [ ] Add visual indicator in the beat display when triple meter is detected
-- [ ] Show meter type (duple/triple) in beat visualization or info panel
-- [ ] Visual feedback helps users understand how the feature works through the information it provides
-- [ ] Consider showing beat groupings (1-2-3 pattern) when triple meter is active
+- [x] Add visual indicator in the beat display when triple meter is detected
+- [x] Show meter type (duple/triple) in beat visualization or info panel
+- [x] Visual feedback helps users understand how the feature works through the information it provides
+- [x] Consider showing beat groupings (1-2-3 pattern) when triple meter is active
+  **Note**: Added `useOctaveResolution` and `useTripleMeter` to BeatMapMetadata interface. Updated BeatMapGenerator.ts and BeatStream.ts to store these settings in metadata. Updated BeatMapSummary.tsx to display meter settings in the "Settings used" section with visual highlighting (shows "Meter: Duple (TPS2)", "Meter: Triple (TPS3)", or "Meter: Duple + Triple"). Build passes for both playlist-data-engine and playlist-data-showcase.
 
 ### Task 3.4: Integration testing
 - [ ] Create `src/tests/tripleMeter.integration.test.ts` (similar to octaveResolution test)

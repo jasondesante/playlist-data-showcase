@@ -312,6 +312,15 @@
   font-weight: 600;
 }
 
+/* Meter setting indicator */
+.beat-map-settings-value--meter {
+  background: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary));
+}
+
 /* ============================================
    Task 4.1: Interpolation Statistics Section
    Shows interpolation results after analysis
