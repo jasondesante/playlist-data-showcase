@@ -15,9 +15,9 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 ## Phase 1: Add Octave Resolution to TempoDetector (playlist-data-engine)
 
 ### Task 1.1: Add new configuration option
-- [ ] Add `useOctaveResolution?: boolean` to `TempoDetectorConfig` in `src/core/types/BeatMap.ts`
-- [ ] Set default value to `false` (opt-in)
-- [ ] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant
+- [x] Add `useOctaveResolution?: boolean` to `TempoDetectorConfig` in `src/core/types/BeatMap.ts`
+- [x] Set default value to `false` (opt-in)
+- [x] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant
 
 ### Task 1.2: Re-enable TPS2 calculation
 - [ ] Uncomment `calculateTPS2()` method in `TempoDetector.ts` (currently at lines 47-48)
