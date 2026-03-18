@@ -58,12 +58,12 @@ import { BeatInterpolationSettings } from './BeatInterpolationSettings';
 import './BeatDetectionSettings.css';
 import { useBeatDetectionStore, useOseSettingsChanged, useInterpolationSettingsChanged } from '../../store/beatDetectionStore';
 import {
-    HopSizeMode,
-    MelBandsMode,
-    GaussianSmoothMode,
-    HOP_SIZE_PRESETS,
-    MEL_BANDS_PRESETS,
-    GAUSSIAN_SMOOTH_PRESETS,
+  HopSizeMode,
+  MelBandsMode,
+  GaussianSmoothMode,
+  HOP_SIZE_PRESETS,
+  MEL_BANDS_PRESETS,
+  GAUSSIAN_SMOOTH_PRESETS,
 } from '@/types';
 
 /**
@@ -527,7 +527,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
        * ============================================================ */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
-          <span className="beat-detection-settings-label">Sensitivity</span>
+          <div className="beat-detection-settings-label-with-tooltip">
+            <span className="beat-detection-settings-label">Sensitivity</span>
+            <Tooltip content="Controls how aggressively beats are detected. Lower = fewer beats (only strong ones); Higher = more beats (includes subtle ones). Default 1.0 is balanced for most music." />
+          </div>
           <div className="beat-detection-settings-header-right">
             <span className={`beat-detection-settings-value ${!isSensitivityDefault ? 'beat-detection-settings-value--modified' : ''}`}>
               {sensitivity.toFixed(1)}
@@ -603,7 +606,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
        * ============================================================ */}
       <div className="beat-detection-settings-section">
         <div className="beat-detection-settings-header">
-          <span className="beat-detection-settings-label">Filter</span>
+          <div className="beat-detection-settings-label-with-tooltip">
+            <span className="beat-detection-settings-label">Filter</span>
+            <Tooltip content="Removes weak beats after detection. 0 = keep all beats; 1 = only strongest beats. Works independently from Sensitivity." />
+          </div>
           <div className="beat-detection-settings-header-right">
             <span className={`beat-detection-settings-value ${!isFilterDefault ? 'beat-detection-settings-value--modified' : ''}`}>
               {filter.toFixed(2)}
@@ -756,10 +762,10 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
            * What it does: Sets the minimum onset intensity required for a beat to be kept.
            * This is a post-processing filter applied after beat detection.
            *
-           * Range: 0.0 to 0.2
+           * Range: 0.0 to 0.1
            * - 0.0 = Keep all detected beats (recommended)
-           * - 0.1 = Filter out weak beats (old default, caused 82% beat loss!)
-           * - 0.2 = Only keep strong beats
+           * - 0.05 = Filter out weak beats
+           * - 0.1 = Only keep strong beats
            *
            * Effect on output:
            * - Lower values = more beats kept (includes weaker onsets)
@@ -772,11 +778,11 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
             <div className="beat-detection-settings-header">
               <div className="beat-detection-settings-label-with-tooltip">
                 <span className="beat-detection-settings-label">Noise Floor</span>
-                <Tooltip content="Minimum onset intensity for a beat to be kept. 0 = keep all beats (recommended); 0.2 = only strong beats. Old default of 0.1 caused 82% beat loss!" />
+                <Tooltip content="Minimum onset intensity for a beat to be kept. 0 = keep all beats (recommended); 100 = only strong beats." />
               </div>
               <div className="beat-detection-settings-header-right">
                 <span className={`beat-detection-settings-value ${!isNoiseFloorThresholdDefault ? 'beat-detection-settings-value--modified' : ''}`}>
-                  {noiseFloorThreshold.toFixed(2)}
+                  {Math.round(noiseFloorThreshold * 1000)}
                 </span>
                 {!isNoiseFloorThresholdDefault && (
                   <button
@@ -797,19 +803,19 @@ export function BeatDetectionSettings({ disabled = false }: BeatDetectionSetting
               <input
                 type="range"
                 min="0"
-                max="0.2"
-                step="0.01"
+                max="0.1"
+                step="0.005"
                 value={noiseFloorThreshold}
                 onChange={(e) => handleNoiseFloorThresholdChange(parseFloat(e.target.value))}
                 className="beat-detection-slider"
-                style={{ '--slider-value': `${(noiseFloorThreshold / 0.2) * 100}%` } as React.CSSProperties}
+                style={{ '--slider-value': `${(noiseFloorThreshold / 0.1) * 100}%` } as React.CSSProperties}
                 disabled={disabled}
                 aria-label="Noise floor threshold"
               />
               <div className="beat-detection-slider-marks">
                 <span className="beat-detection-slider-mark">0 (all)</span>
-                <span className="beat-detection-slider-mark">0.1</span>
-                <span className="beat-detection-slider-mark">0.2</span>
+                <span className="beat-detection-slider-mark">50</span>
+                <span className="beat-detection-slider-mark">100</span>
               </div>
               <div className="beat-detection-slider-description">
                 0 = keep all beats, higher = fewer beats
