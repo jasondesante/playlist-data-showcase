@@ -63,8 +63,8 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Explain when/why to enable it (opt-in feature)
 
 ### Task 2.4: Update engine README/changelog
-- [ ] Add entry to CHANGELOG.md in `playlist-data-engine` for the new feature
-- [ ] Update any relevant sections in README or docs/
+- [x] Add entry to CHANGELOG.md in `playlist-data-engine` for the new feature
+- [x] Update any relevant sections in README or docs/
 
 ---
 
