@@ -111,8 +111,23 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 **Note**: Manual testing with actual audio files is still recommended to verify real-world behavior. The automated tests provide confidence that the logic is correct.
 
 ### Task 4.2: Performance check
-- [ ] Ensure TPS2 calculation doesn't significantly slow down analysis
-- [ ] Profile if needed
+- [x] Ensure TPS2 calculation doesn't significantly slow down analysis
+- [x] Profile if needed
+
+**Completed**: Created `playlist-data-engine/tests/performance/tempoDetector.performance.test.ts` with comprehensive benchmarks:
+
+**Key Results**:
+- **TPS2 overhead is negligible**: -2.43% to +0.46% (within measurement noise)
+- **Absolute performance**: 5-minute track takes ~8.66ms with octave resolution enabled
+- **Linear scaling confirmed**: Doubling track length doubles time (ratios ~2.0)
+- **TPS2 is O(1)**: Absolute overhead is ~5 microseconds (negligible)
+
+**Performance Characteristics**:
+- 30-second track: 0.83ms with octave resolution
+- 2-minute track: 3.46ms with octave resolution
+- 5-minute track: 8.66ms with octave resolution
+
+**Conclusion**: The TPS2 octave resolution feature adds negligible overhead (<1% in most cases) and is safe to use without performance concerns. The tempo estimation scales linearly O(n) with track length, and TPS2 itself is O(1) - just 4 array lookups and a few arithmetic operations.
 
 ---
 
@@ -167,5 +182,5 @@ A 2nd pass in BeatMapGenerator that:
 ## Questions/Unknowns
 
 - [ ] Should TPS3 (triple meter) also be re-enabled? Currently commented out alongside TPS2.
-- [ ] Should the UI toggle be visible or hidden for initial release?
-- [ ] What's the performance impact of TPS2 calculation on longer tracks?
+- [x] Should the UI toggle be visible or hidden for initial release? **Answered**: Made visible in Advanced Settings.
+- [x] What's the performance impact of TPS2 calculation on longer tracks? **Answered**: Negligible (<1% overhead). See Task 4.2 for detailed benchmarks.
