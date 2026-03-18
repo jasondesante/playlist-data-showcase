@@ -66,9 +66,10 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Enhanced interface-level JSDoc with comprehensive documentation of key options (useOctaveResolution, useTripleMeter) and reference to Ellis 2007 paper. Property-level JSDoc already existed for useTripleMeter.
 
 ### Task 2.3: Update BEAT_DETECTION.md
-- [ ] Add `useTripleMeter` option to `TempoDetectorConfig` section in `docs/BEAT_DETECTION.md`
-- [ ] Document the default value (`false`) and behavior
-- [ ] Explain when/why to enable it (opt-in feature for triple meter music)
+- [x] Add `useTripleMeter` option to `TempoDetectorConfig` section in `docs/BEAT_DETECTION.md`
+- [x] Document the default value (`false`) and behavior
+- [x] Explain when/why to enable it (opt-in feature for triple meter music)
+  **Note**: Added `useTripleMeter` row to TempoDetectorConfig table at `/workspace/docs/engine/docs/BEAT_DETECTION.md` line 600. Documents TPS3 triple meter resolution for 3/4 and 6/8 time signatures, default value, and notes that it works independently of useOctaveResolution.
 
 ### Task 2.4: Update DATA_ENGINE_REFERENCE.md
 - [ ] Add `useTripleMeter` option to `TempoDetectorConfig` section
