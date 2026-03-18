@@ -50,9 +50,9 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 > **Note**: This phase updates documentation in the `playlist-data-engine` project.
 
 ### Task 2.1: Update TempoDetector documentation
-- [ ] Update JSDoc for `TempoDetectorConfig` to document new `useOctaveResolution` option
-- [ ] Update JSDoc for `estimateTempo()` to explain octave resolution behavior
-- [ ] Document the TPS2 calculation and its purpose
+- [x] Update JSDoc for `TempoDetectorConfig` to document new `useOctaveResolution` option
+- [x] Update JSDoc for `estimateTempo()` to explain octave resolution behavior
+- [x] Document the TPS2 calculation and its purpose
 
 ### Task 2.2: Update BeatMap types documentation
 - [ ] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
