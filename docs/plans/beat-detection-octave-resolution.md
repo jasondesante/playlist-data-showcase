@@ -55,7 +55,7 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 - [x] Document the TPS2 calculation and its purpose
 
 ### Task 2.2: Update BeatMap types documentation
-- [ ] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
+- [x] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
 
 ### Task 2.3: Update DATA_ENGINE_REFERENCE.md
 - [ ] Add `useOctaveResolution` option to `TempoDetectorConfig` section in `docs/DATA_ENGINE_REFERENCE.md`
