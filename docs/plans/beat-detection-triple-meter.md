@@ -56,9 +56,10 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
 > **Note**: This phase updates documentation in the `playlist-data-engine` project.
 
 ### Task 2.1: Update TempoDetector documentation
-- [ ] Update JSDoc for `TempoDetectorConfig` to document new `useTripleMeter` option
-- [ ] Update JSDoc for `estimateTempo()` to explain triple meter behavior
-- [ ] Document the TPS3 calculation and its purpose (triple meter detection)
+- [x] Update JSDoc for `TempoDetectorConfig` to document new `useTripleMeter` option
+- [x] Update JSDoc for `estimateTempo()` to explain triple meter behavior
+- [x] Document the TPS3 calculation and its purpose (triple meter detection)
+  **Note**: Updated TempoDetector.ts with comprehensive JSDoc for TPS3 at class-level, constructor, and estimateTempo() method. BeatMap.ts already had good JSDoc for useTripleMeter. All 38 TempoDetector tests pass.
 
 ### Task 2.2: Update BeatMap types documentation
 - [ ] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
