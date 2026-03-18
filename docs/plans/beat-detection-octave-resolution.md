@@ -29,10 +29,10 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
   **Verified**: Code matches equation exactly. Note: Methods exist but calls are commented out at lines 120-121.
 
 ### Task 1.3: Integrate TPS2 into tempo estimation
-- [ ] Modify `estimateTempo()` to use TPS2 score when `useOctaveResolution` is true
-- [ ] Compare primary tempo with half-period tempo using TPS2 scores
-- [ ] Prefer faster tempo if TPS2 score is stronger
-- [ ] Return updated `TempoEstimate` with corrected primary BPM
+- [x] Modify `estimateTempo()` to use TPS2 score when `useOctaveResolution` is true
+- [x] Compare primary tempo with half-period tempo using TPS2 scores
+- [x] Prefer faster tempo if TPS2 score is stronger
+- [x] Return updated `TempoEstimate` with corrected primary BPM
 
 ### Task 1.4: Add unit tests
 - [ ] Test case: half-tempo detection (73 BPM should become 146 BPM)
