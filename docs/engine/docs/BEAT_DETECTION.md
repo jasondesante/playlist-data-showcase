@@ -416,7 +416,7 @@ Configuration for beat map generation:
 | `maxBpm` | `number` | 180 | Maximum BPM to detect |
 | `sensitivity` | `number` | 1.0 | Pre-processing sensitivity (0.1-10.0) |
 | `filter` | `number` | 0.0 | Post-processing grid-alignment filter (0.0-1.0) |
-| `noiseFloorThreshold` | `number` | 0.1 | Noise floor threshold |
+| `noiseFloorThreshold` | `number` | 0 | Noise floor threshold |
 | `hopSizeMs` | `number` | 4 | Milliseconds between FFT frames |
 | `hopSizeMode` | `HopSizeConfig` | `{ mode: 'standard' }` | Hop size mode (alternative to `hopSizeMs`) |
 | `fftSize` | `number` | 2048 | FFT window size in samples |
@@ -2648,8 +2648,8 @@ new GrooveAnalyzer(options?: Partial<GrooveAnalyzerOptions>)
 | `basePocketWindowFraction` | `number` | `0.03125` | Base window as fraction of beat (1/32 note) |
 | `minPocketWindowSeconds` | `number` | `0.015` | Minimum window size (15ms floor) |
 | `hotnessGainPerHit` | `number` | `8` | Hotness increase on consistent hit |
-| `hotnessLossOnBreak` | `number` | `20` | Hotness decrease on pocket break |
-| `hotnessLossOnMiss` | `number` | `10` | Hotness decrease on missed beat |
+| `hotnessLossOnBreak` | `number` | `80` | Hotness decrease on pocket break |
+| `hotnessLossOnMiss` | `number` | `80` | Hotness decrease on missed beat |
 | `averagingWindowSize` | `number` | `4` | Recent hits to average for pocket |
 | `neutralDeadZone` | `number` | `0.010` | Dead zone for neutral (±10ms) |
 
@@ -2686,9 +2686,9 @@ Groove penalties can be adjusted based on difficulty level. Higher difficulties 
 
 | Preset | `hotnessLossOnMiss` | `hotnessLossOnBreak` | Description |
 |--------|---------------------|----------------------|-------------|
-| `easy` | 35 | 35 | Forgiving for casual players |
-| `medium` | 50 | 50 | Balanced difficulty |
-| `hard` | 65 | 65 | Strict for veterans |
+| `easy` | 50 | 50 | Forgiving for casual players |
+| `medium` | 80 | 80 | Balanced difficulty |
+| `hard` | 120 | 120 | Strict for veterans |
 | `custom` | (varies) | (varies) | Use `customPenalties` parameter |
 
 ```typescript
