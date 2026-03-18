@@ -62,7 +62,8 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Updated TempoDetector.ts with comprehensive JSDoc for TPS3 at class-level, constructor, and estimateTempo() method. BeatMap.ts already had good JSDoc for useTripleMeter. All 38 TempoDetector tests pass.
 
 ### Task 2.2: Update BeatMap types documentation
-- [ ] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
+- [x] Update JSDoc for `TempoDetectorConfig` interface in `BeatMap.ts`
+  **Note**: Enhanced interface-level JSDoc with comprehensive documentation of key options (useOctaveResolution, useTripleMeter) and reference to Ellis 2007 paper. Property-level JSDoc already existed for useTripleMeter.
 
 ### Task 2.3: Update BEAT_DETECTION.md
 - [ ] Add `useTripleMeter` option to `TempoDetectorConfig` section in `docs/BEAT_DETECTION.md`
