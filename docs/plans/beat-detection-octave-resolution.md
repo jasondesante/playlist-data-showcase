@@ -73,9 +73,9 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 > **Note**: This phase is done in the `playlist-data-showcase` project.
 
 ### Task 3.1: Add option to Zustand store
-- [ ] Add `useOctaveResolution: boolean` to `generatorOptions` in `beatDetectionStore.ts`
-- [ ] Set default value to `false` (opt-in, preserves current behavior)
-- [ ] Add selector hook if needed
+- [x] Add `useOctaveResolution: boolean` to `generatorOptions` in `beatDetectionStore.ts`
+- [x] Set default value to `false` (opt-in, preserves current behavior)
+- [x] Add selector hook if needed (not strictly needed - `useGeneratorOptions` already provides access, same pattern as other simple options)
 
 ### Task 3.2: Add UI toggle (optional - may be hidden)
 - [ ] Consider adding to Advanced Settings in `BeatDetectionSettings.tsx`

@@ -156,6 +156,7 @@ const DEFAULT_GENERATOR_OPTIONS: BeatMapGeneratorOptions = {
     gaussianSmoothMs: GAUSSIAN_SMOOTH_PRESETS.standard.value,  // 20ms - resolved from 'standard' mode
     tempoCenter: 0.5,
     tempoWidth: 1.4,
+    useOctaveResolution: false,  // Opt-in - uses TPS2 to prevent half-tempo/double-tempo errors
 };
 
 /**
