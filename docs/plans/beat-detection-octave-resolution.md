@@ -16,7 +16,7 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 
 ### Task 1.1: Add new configuration option
 - [ ] Add `useOctaveResolution?: boolean` to `TempoDetectorConfig` in `src/core/types/BeatMap.ts`
-- [ ] Set default value to `true`
+- [ ] Set default value to `false` (opt-in)
 - [ ] Update `DEFAULT_TEMPO_DETECTOR_CONFIG` constant
 
 ### Task 1.2: Re-enable TPS2 calculation
@@ -70,7 +70,7 @@ The Ellis 2007 beat tracking algorithm has a fundamental weakness: it cannot dis
 
 ### Task 3.1: Add option to Zustand store
 - [ ] Add `useOctaveResolution: boolean` to `generatorOptions` in `beatDetectionStore.ts`
-- [ ] Set default to `true`
+- [ ] Set default value to `false` (opt-in, preserves current behavior)
 - [ ] Add selector hook if needed
 
 ### Task 3.2: Add UI toggle (optional - may be hidden)
