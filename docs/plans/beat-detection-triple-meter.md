@@ -40,13 +40,14 @@ TPS3(τ) = TPS(τ) + 0.33×TPS(3τ) + 0.33×TPS(3τ-1) + 0.33×TPS(3τ+1)
   **Note**: Added Step 5 to `estimateTempo()` in TempoDetector.ts (lines 164-185). TPS3 runs independently after TPS2, so both options can be enabled simultaneously.
 
 ### Task 1.4: Add unit tests
-- [ ] Test case: triple meter detection (slow 3/4 tempo should detect proper beat)
-- [ ] Test case: correct tempo preserved for duple meter when triple meter is enabled
-- [ ] Test case: combined useOctaveResolution + useTripleMeter
-- [ ] Test with `useTripleMeter: false` to verify backward compatibility
-- [ ] Test that `useTripleMeter` defaults to `false`
-- [ ] Test that `useTripleMeter` can be explicitly enabled
-- [ ] Test triple meter resolution with various tempos (60, 80, 100, 120, 140 BPM)
+- [x] Test case: triple meter detection (slow 3/4 tempo should detect proper beat)
+- [x] Test case: correct tempo preserved for duple meter when triple meter is enabled
+- [x] Test case: combined useOctaveResolution + useTripleMeter
+- [x] Test with `useTripleMeter: false` to verify backward compatibility
+- [x] Test that `useTripleMeter` defaults to `false`
+- [x] Test that `useTripleMeter` can be explicitly enabled
+- [x] Test triple meter resolution with various tempos (60, 80, 100, 120, 140 BPM)
+  **Note**: Added `describe('triple meter resolution (useTripleMeter)')` block in `tests/unit/beat/tempoDetector.test.ts` with 8 tests covering all scenarios. All 38 tests pass.
 
 ---
 
