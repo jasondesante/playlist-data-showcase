@@ -16,6 +16,7 @@ import { useMemo, useState } from 'react';
 import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
 import './QuantizationPanel.css';
 import { GridDecisionTimeline } from './GridDecisionTimeline';
+import { QuantizedBeatTimeline } from './QuantizedBeatTimeline';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -238,8 +239,23 @@ export function QuantizationPanel({
     const bandStreams = rhythm.bandStreams;
     const composite = rhythm.composite;
 
-    // State for band filter in timeline
+    // State for band filter in grid decision timeline
     const [selectedBand, setSelectedBand] = useState<Band | 'all'>('all');
+
+    // State for beat timeline band filter
+    const [selectedBeatBand, setSelectedBeatBand] = useState<Band | 'all'>('all');
+
+    // Get beats for QuantizedBeatTimeline
+    const allBeatsForTimeline = useMemo(() => {
+        if (selectedBeatBand === 'all') {
+            return [
+                ...bandStreams.low.beats,
+                ...bandStreams.mid.beats,
+                ...bandStreams.high.beats,
+            ];
+        }
+        return bandStreams[selectedBeatBand].beats;
+    }, [bandStreams, selectedBeatBand]);
 
     // Calculate overall statistics
     const overallStats = useMemo(() => {
@@ -453,13 +469,39 @@ export function QuantizationPanel({
                 />
             </div>
 
-            {/* Timeline placeholder for Task 6.3 */}
-            <div className="quantization-timeline-placeholder">
-                <div className="quantization-placeholder-content">
-                    <Grid3X3 size={24} />
-                    <p>Quantized Beat Timeline (Task 6.3)</p>
-                    <span>Visualize final quantized output with error indicators</span>
+            {/* Quantized Beat Timeline (Task 6.3) */}
+            <div className="quantization-beat-timeline-section">
+                <div className="quantization-timeline-header">
+                    <h4 className="quantization-section-title">Quantized Beat Timeline</h4>
+                    <div className="quantization-band-selector">
+                        <span className="quantization-band-selector-label">Band:</span>
+                        <button
+                            className={`quantization-band-btn ${selectedBeatBand === 'all' ? 'active' : ''}`}
+                            onClick={() => setSelectedBeatBand('all')}
+                        >
+                            All
+                        </button>
+                        {bands.map((band) => (
+                            <button
+                                key={band}
+                                className={`quantization-band-btn ${selectedBeatBand === band ? 'active' : ''}`}
+                                onClick={() => setSelectedBeatBand(band)}
+                                style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                            >
+                                {band.charAt(0).toUpperCase() + band.slice(1)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+                <QuantizedBeatTimeline
+                    beats={allBeatsForTimeline}
+                    quarterNoteInterval={composite.quarterNoteInterval}
+                    currentTime={currentTime}
+                    duration={duration}
+                    isPlaying={isPlaying}
+                    onSeek={onSeek}
+                    filterBand={selectedBeatBand}
+                />
             </div>
         </div>
     );

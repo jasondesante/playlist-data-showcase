@@ -297,13 +297,13 @@ interface GeneratedRhythm {
   - [x] Hover shows confidence score and offset values
   - [x] Sync with audio playback
 
-- [ ] **Task 6.3: Create QuantizedBeatTimeline component**
-  - [ ] Shows final quantized output
-  - [ ] Beat grid lines (subtle)
-  - [ ] Quantized beats as markers
-  - [ ] Color by band, size by intensity
-  - [ ] Hover shows quantization error
-  - [ ] Sync with audio playback
+- [x] **Task 6.3: Create QuantizedBeatTimeline component**
+  - [x] Shows final quantized output
+  - [x] Beat grid lines (subtle)
+  - [x] Quantized beats as markers
+  - [x] Color by band, size by intensity
+  - [x] Hover shows quantization error
+  - [x] Sync with audio playback
 
 - [ ] **Task 6.4: Add quantization error histogram (optional)**
   - [ ] Show distribution of quantization errors

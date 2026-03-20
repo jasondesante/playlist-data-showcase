@@ -480,3 +480,29 @@
         transition: none;
     }
 }
+
+/* ============================================
+   QUANTIZED BEAT TIMELINE SECTION (Task 6.3)
+   ============================================ */
+
+.quantization-beat-timeline-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.quantization-beat-timeline-section .quantization-timeline-header {
+    margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .quantization-beat-timeline-section {
+        padding: 0.75rem;
+    }
+
+    .quantization-beat-timeline-section .quantization-band-selector {
+        flex-wrap: wrap;
+    }
+}

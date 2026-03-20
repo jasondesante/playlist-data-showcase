@@ -1,0 +1,526 @@
+/* ============================================
+   QUANTized Beat Timeline (Task 6.3)
+   Timeline showing final quantized output with:
+   - Beat grid lines (subtle)
+   - Quantized beats as markers
+   - Color-coded by band
+   - Size based on intensity
+   - Hover shows quantization error
+   - Sync with audio playback
+   ============================================ */
+
+/* Main container */
+.quantized-beat-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quantized-beat-timeline-track {
+    position: relative;
+    height: 5rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    cursor: default;
+    background: hsl(var(--surface-2));
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+.quantized-beat-timeline-track--draggable {
+    cursor: grab;
+}
+
+.quantized-beat-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.quantized-beat-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.quantized-beat-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
+   BACKGROUND LAYERS
+   ============================================ */
+
+.quantized-beat-timeline-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--surface-3)) 0%,
+        hsl(var(--surface-2)) 30%,
+        hsl(var(--surface-2)) 50%,
+        hsl(var(--surface-2)) 70%,
+        hsl(var(--surface-3)) 100%
+    );
+    border-radius: 0.75rem;
+}
+
+/* ============================================
+   BEAT GRID LINES
+   ============================================ */
+
+.quantized-beat-timeline-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background: hsl(var(--border) / 0.15);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Subtle grid line labels */
+.quantized-beat-timeline-grid-line:not(.gridLine) {
+    opacity: 0.2;
+}
+
+.quantized-beat-timeline-grid-line::after {
+    opacity: 0.15;
+}
+
+/* Past Region (left of now line) */
+.quantized-beat-timeline-past-region {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--background) / 0.3) 0%,
+        transparent 100%
+    );
+}
+
+/* Future Region (right of now line) */
+.quantized-beat-timeline-future-region {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        hsl(var(--background) / 0.1) 100%
+    );
+}
+
+/* ============================================
+   BEAT MARKERS
+   ============================================ */
+
+.quantized-beat-timeline-beat {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.15s ease, opacity 0.3s;
+}
+
+/* Hovered state */
+.quantized-beat-timeline-beat--hovered {
+    transform: translateX(-50%) scale(1.1);
+    z-index: 25;
+    opacity: 1;
+}
+
+/* Past beat markers (faded) */
+.quantized-beat-timeline-beat--past {
+    opacity: 0.5;
+}
+
+.quantized-beat-timeline-beat--past .quantized-beat-timeline-beat-dot {
+    opacity: 0.6;
+}
+
+/* Selected beat marker */
+.quantized-beat-timeline-beat--selected {
+    z-index: 20;
+}
+
+.quantized-beat-timeline-beat--selected .quantized-beat-timeline-beat-dot {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+    transform: scale(1.3);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+}
+
+.quantized-beat-timeline-beat--selected:hover .quantized-beat-timeline-beat-dot {
+    transform: scale(1.6);
+}
+
+/* Focus state for keyboard navigation */
+.quantized-beat-timeline-beat:focus {
+    outline: none;
+}
+
+.quantized-beat-timeline-beat:focus-visible .quantized-beat-timeline-beat-dot {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Beat dot */
+.quantized-beat-timeline-beat-dot {
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0 2px 4px rgba(0, 0, 0,0.2);
+    background: var(--band-color, hsl(var(--primary)));
+}
+
+.quantized-beat-timeline-beat:hover .quantized-beat-timeline-beat-dot {
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Error indicator badge */
+.quantized-beat-timeline-beat-error-badge {
+    position: absolute;
+    top: -2px;
+    right: 2px;
+    font-size: 0.5rem;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 0 3px;
+    background: hsl(var(--error) / 0.8);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.quantized-beat-timeline-beat--high-error .quantized-beat-timeline-beat-error-badge {
+    background: hsl(var(--error));
+    color: hsl(var(--error));
+}
+
+.quantized-beat-timeline-beat--low-error .quantized-beat-timeline-beat-error-badge {
+    background: hsl(var(--success) / 0.6);
+    color: hsl(var(--success));
+}
+
+/* ============================================
+   NOW LINE (Playhead)
+   ============================================ */
+
+.quantized-beat-timeline-now-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    width: 2px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+.quantized-beat-timeline-now-line-inner {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        hsl(var(--primary) / 0.2) 0%,
+        hsl(var(--primary)) 50%,
+        hsl(var(--primary)) 70%,
+        hsl(var(--primary) / 0.2) 100%
+    );
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.6);
+}
+
+.quantized-beat-timeline-now-label {
+    position: absolute;
+    top: -1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 4px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+
+.quantized-beat-timeline-tooltip {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    margin-top: -0.5rem;
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    min-width: 200px;
+    box-shadow: 0 4px 12px hsl(var(--background) / 0.3);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.quantized-beat-tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.quantized-beat-tooltip-time {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.quantized-beat-tooltip-band {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.quantized-beat-tooltip-band-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.quantized-beat-tooltip-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.quantized-beat-tooltip-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.quantized-beat-tooltip-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.quantized-beat-tooltip-stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* Error highlighting */
+.quantized-beat-tooltip-stat--error .quantized-beat-tooltip-stat-value {
+    color: hsl(var(--error));
+}
+
+.quantized-beat-tooltip-stat--warning .quantized-beat-tooltip-stat-value {
+    color: hsl(var(--warning));
+}
+
+/* ============================================
+   INFO BAR
+   ============================================ */
+
+.quantized-beat-timeline-info {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.quantized-beat-timeline-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.quantized-beat-timeline-info-label {
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quantized-beat-timeline-info-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* Error indicator */
+.quantized-beat-timeline-info-item--error .quantized-beat-timeline-info-value {
+    color: hsl(var(--error));
+}
+
+/* Warning indicator */
+.quantized-beat-timeline-info-item--warning .quantized-beat-timeline-info-value {
+    color: hsl(var(--warning));
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.quantized-beat-timeline-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.quantized-beat-timeline-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.quantized-beat-timeline-legend-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.quantized-beat-timeline-legend-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: capitalize;
+}
+
+.quantized-beat-timeline-legend-item svg {
+    color: hsl(var(--muted-foreground));
+}
+
+/* Intensity legend (size indicator) */
+.quantized-beat-timeline-legend-size {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.quantized-beat-timeline-legend-size-small {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+.quantized-beat-timeline-legend-size-large {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+/* Error legend */
+.quantized-beat-timeline-legend-error {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.quantized-beat-timeline-legend-error-bar {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: hsl(var(--success) / 0.6);
+}
+
+.quantized-beat-timeline-legend-error-bar--warning {
+    background: hsl(var(--warning) / 0.6);
+}
+
+.quantized-beat-timeline-legend-error-bar--high {
+    background: hsl(var(--error) / 0.8);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .quantized-beat-timeline-track {
+        height: 4rem;
+    }
+
+    .quantized-beat-timeline-info {
+        gap: 0.5rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .quantized-beat-timeline-legend {
+        gap: 0.5rem;
+        padding: 0.375rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .quantized-beat-timeline-track {
+        height: 3.5rem;
+    }
+
+    .quantized-beat-timeline-info {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .quantized-beat-timeline-legend {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .quantized-beat-timeline-tooltip {
+        min-width: 160px;
+        padding: 0.5rem;
+    }
+
+    .quantized-beat-tooltip-stat {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.quantized-beat-timeline *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .quantized-beat-timeline-beat {
+        transition: none;
+    }
+
+    .quantized-beat-timeline-beat:hover .quantized-beat-timeline-beat-dot {
+        transform: none;
+    }
+
+    .quantized-beat-timeline-beat--selected .quantized-beat-timeline-beat-dot {
+        transform: none;
+    }
+}
