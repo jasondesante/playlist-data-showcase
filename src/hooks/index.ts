@@ -27,3 +27,4 @@ export * from './useSubdivisionPlayback';
 export * from './useKeyboardInput';
 export * from './useMusicClassifier';
 export * from './useTrackDuration';
+export * from './useRhythmGeneration';

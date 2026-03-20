@@ -5744,6 +5744,22 @@ export const useGenerationMode = (): 'manual' | 'automatic' =>
     useBeatDetectionStore((state) => state.generationMode);
 
 /**
+ * Selector to get the generated rhythm data.
+ * Returns the GeneratedRhythm from the RhythmGenerator, or null if not generated yet.
+ * This is session-only state (not persisted to localStorage).
+ */
+export const useGeneratedRhythm = () =>
+    useBeatDetectionStore((state) => state.generatedRhythm);
+
+/**
+ * Selector to get the rhythm generation progress.
+ * Returns progress information during rhythm generation, or null if not generating.
+ * Tracks phases: multiBand → transients → quantize → phrases → composite → variants
+ */
+export const useRhythmGenerationProgress = () =>
+    useBeatDetectionStore((state) => state.rhythmGenerationProgress);
+
+/**
  * Navigation direction for step content animations.
  * - 'forward': Navigating to a higher step number (slide left animation)
  * - 'backward': Navigating to a lower step number (slide right animation)

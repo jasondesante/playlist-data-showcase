@@ -144,12 +144,12 @@ interface GeneratedRhythm {
   - [x] Step 3 (Ready) available when step 1 complete
   - [x] When switching from auto to manual: navigate to Step 2 (Subdivide)
 
-- [ ] **Task 1.3: Create useRhythmGeneration hook**
-  - [ ] Integrate with `AudioAnalyzer.generateRhythm()` from playlist-data-engine
-  - [ ] Handle progress callbacks for pipeline stages
-  - [ ] Return: `{ generate, isGenerating, progress, error, rhythm }`
-  - [ ] Progress phases: multiBand → transients → quantize → phrases → composite → variants
-  - [ ] Support retry on error
+- [x] **Task 1.3: Create useRhythmGeneration hook**
+  - [x] Integrate with `AudioAnalyzer.generateRhythm()` from playlist-data-engine
+  - [x] Handle progress callbacks for pipeline stages
+  - [x] Return: `{ generate, isGenerating, progress, error, rhythm }`
+  - [x] Progress phases: multiBand → transients → quantize → phrases → composite → variants
+  - [x] Support retry on error
 
 - [x] **Task 1.4: Create rhythm generation types**
   - [x] Create `src/types/rhythmGeneration.ts`
