@@ -21,6 +21,9 @@ import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, us
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { AutoLevelToggle } from '../ui/AutoLevelToggle';
+import { AutoLevelSettings } from '../ui/AutoLevelSettings';
+import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
+import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { logger } from '../../utils/logger';
 
 /**
@@ -73,6 +76,11 @@ export function BeatDetectionTab() {
     const navigationDirection = useStepNavigationDirection();
     const steps = useStepsForMode();
     const generationMode = useGenerationMode();
+
+    // Task 2.3: Auto level settings state for Step 1 when auto mode is on
+    const [autoLevelSettings, setAutoLevelSettings] = React.useState<AutoLevelSettingsType>(
+        DEFAULT_AUTO_LEVEL_SETTINGS
+    );
 
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
@@ -383,6 +391,15 @@ export function BeatDetectionTab() {
                                             : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
                                     </Button>
                                 </div>
+                                {/* Task 2.3: Show AutoLevelSettings when auto mode is on */}
+                                {generationMode === 'automatic' && (
+                                    <AutoLevelSettings
+                                        settings={autoLevelSettings}
+                                        onChange={setAutoLevelSettings}
+                                        disabled={isBeatGenerating}
+                                        defaultCollapsed={false}
+                                    />
+                                )}
                                 {beatError && (
                                     <div className="audio-analysis-error-message">
                                         {beatError}
@@ -421,14 +438,14 @@ export function BeatDetectionTab() {
                             visible={stepCompletion.step1 && !isBeatGenerating}
                             actions={[
                                 {
-                                    label: 'Go to Subdivide',
+                                    label: generationMode === 'automatic' ? 'Go to Rhythm Generation' : 'Go to Subdivide',
                                     onClick: () => setCurrentStep(2),
                                     variant: 'primary',
                                     icon: ArrowRight,
                                 },
                                 {
-                                    label: 'Skip to practice/export',
-                                    onClick: () => setCurrentStep(4),
+                                    label: 'Skip to practice',
+                                    onClick: () => setCurrentStep(generationMode === 'automatic' ? 3 : 4),
                                     variant: 'secondary',
                                     icon: SkipForward,
                                 },
@@ -438,7 +455,60 @@ export function BeatDetectionTab() {
                 );
 
             case 2:
-                // Step 2: Subdivide - Subdivision settings card
+                // Step 2: Mode-dependent content
+                // - Auto mode: Rhythm Generation (placeholder for Task 3.x)
+                // - Manual mode: Subdivide settings
+                if (generationMode === 'automatic') {
+                    // Task 2.3: Rhythm Generation step in auto mode
+                    // This is a placeholder - Task 3.x will build the actual visualization
+                    if (!beatMap || isBeatGenerating) {
+                        return wrapContent(
+                            <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
+                                <div className="audio-analysis-step-placeholder">
+                                    <div className="audio-analysis-step-placeholder-icon">🔄</div>
+                                    <h4 className="audio-analysis-step-placeholder-title">Beat Map Required</h4>
+                                    <p className="audio-analysis-step-placeholder-text">
+                                        Complete Step 1 (Analyze) to start rhythm generation.
+                                    </p>
+                                </div>
+                            </Card>
+                        );
+                    }
+                    return wrapContent(
+                        <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
+                            <div className="audio-analysis-rhythm-generation-section">
+                                <h3 className="audio-analysis-step-title">
+                                    Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
+                                </h3>
+                                <div className="audio-analysis-rhythm-generation-placeholder">
+                                    <div className="audio-analysis-rhythm-generation-placeholder-icon">🎵</div>
+                                    <h4 className="audio-analysis-rhythm-generation-placeholder-title">
+                                        Rhythm Generation Coming Soon
+                                    </h4>
+                                    <p className="audio-analysis-rhythm-generation-placeholder-text">
+                                        This feature is under development. Transient detection, multi-band analysis,
+                                        and difficulty variant visualizations will appear here.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Post-completion prompt for Step 2 in auto mode */}
+                            <StepCompletionPrompt
+                                message="Rhythm generated!"
+                                visible={stepCompletion.step2 && !isBeatGenerating}
+                                actions={[
+                                    {
+                                        label: 'Go to Practice',
+                                        onClick: () => setCurrentStep(3),
+                                        variant: 'primary',
+                                        icon: ArrowRight,
+                                    },
+                                ]}
+                            />
+                        </Card>
+                    );
+                }
+                // Manual mode: Subdivide
                 if (!beatMap || isBeatGenerating) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="audio-analysis-subdivision-timeline-card">
@@ -482,7 +552,75 @@ export function BeatDetectionTab() {
                 );
 
             case 3:
-                // Step 3: Chart Editor - Key assignment for rhythm game
+                // Step 3: Mode-dependent content
+                // - Auto mode: Ready (practice mode, export) - same as Step 4 in manual
+                // - Manual mode: Chart Editor
+                if (generationMode === 'automatic') {
+                    // Task 2.3: In auto mode, Step 3 is the Ready step
+                    if (!beatMap) {
+                        return wrapContent(
+                            <Card variant="elevated" padding="lg" className="beat-detection-results-card">
+                                <div className="audio-analysis-step-placeholder">
+                                    <div className="audio-analysis-step-placeholder-icon">🀽</div>
+                                    <h4 className="audio-analysis-step-placeholder-title">Not Ready</h4>
+                                    <p className="audio-analysis-step-placeholder-text">
+                                        Complete Step 1 (Analyze) to access practice mode and export options.
+                                    </p>
+                                </div>
+                            </Card>
+                        );
+                    }
+                    return wrapContent(
+                        <Card variant="elevated" padding="lg" className="beat-detection-results-card">
+                            {isBeatGenerating ? (
+                                <BeatMapSummarySkeleton />
+                            ) : (
+                                <>
+                                    <BeatMapSummary
+                                        beatMap={beatMap}
+                                        onStartPractice={handleStartPracticeMode}
+                                    />
+                                    {interpolatedBeatMap && (
+                                        <div className="audio-analysis-export-section">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleExportBeatMap}
+                                                leftIcon={Download}
+                                                className="audio-analysis-export-btn"
+                                            >
+                                                Export Beat Map
+                                            </Button>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept=".json,application/json"
+                                                onChange={handleImportBeatMap}
+                                                style={{ display: 'none' }}
+                                                aria-hidden="true"
+                                            />
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                leftIcon={Upload}
+                                                className="audio-analysis-import-btn"
+                                            >
+                                                Import Beat Map
+                                            </Button>
+                                            <span className="audio-analysis-export-hint">
+                                                {subdividedBeatMap
+                                                    ? 'Full chart with beats, subdivisions, and keys'
+                                                    : 'Detected beats and timing data'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </Card>
+                    );
+                }
+                // Manual mode: Chart Editor
                 // Note: Step 3 is disabled in StepNav when subdividedBeatMap is null,
                 // so this content is only rendered when the step is available.
                 return wrapContent(
@@ -515,6 +653,7 @@ export function BeatDetectionTab() {
 
             case 4:
                 // Step 4: Ready/Practice - Beat map summary, practice mode, export
+                // Note: This step only exists in manual mode (4 steps). In auto mode, Step 3 is Ready.
                 if (!beatMap) {
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="beat-detection-results-card">

@@ -176,12 +176,12 @@ interface GeneratedRhythm {
   - [x] Intensity threshold slider (0.0-1.0, default 0.2)
   - [x] Collapsible "Advanced Options" within this panel
 
-- [ ] **Task 2.3: Update BeatDetectionTab for dual mode**
-  - [ ] Import AutoLevelToggle and AutoLevelSettings
-  - [ ] Get generationMode from store
-  - [ ] When auto mode is on, show AutoLevelSettings in Step 1
-  - [ ] Pass mode-aware steps to StepNav
-  - [ ] Conditionally render step content based on mode
+- [x] **Task 2.3: Update BeatDetectionTab for dual mode**
+  - [x] Import AutoLevelToggle and AutoLevelSettings
+  - [x] Get generationMode from store
+  - [x] When auto mode is on, show AutoLevelSettings in Step 1
+  - [x] Pass mode-aware steps to StepNav
+  - [x] Conditionally render step content based on mode
 
 - [ ] **Task 2.4: Update StepNav for dynamic step count**
   - [ ] Accept steps array as prop (already does)
