@@ -314,11 +314,13 @@ interface GeneratedRhythm {
 
 ## Phase 7: Difficulty Variants Visualization (Side-by-Side Comparison)
 
-- [ ] **Task 7.1: Create DifficultyVariantsPanel component**
-  - [ ] Container for side-by-side comparison view
-  - [ ] Three columns: Easy | Medium | Hard
-  - [ ] Highlight "natural" difficulty (unedited variant) with badge
-  - [ ] Stats for each variant (beat count, density)
+- [x] **Task 7.1: Create DifficultyVariantsPanel component**
+  - [x] Container for side-by-side comparison view
+  - [x] Three columns: Easy | Medium | Hard
+  - [x] Highlight "natural" difficulty (unedited variant) with badge
+  - [x] Stats for each variant (beat count, density, edit type)
+  - [x] Mini timeline visualization for each difficulty
+  - [x] Conversion/enhancement metadata display
 
 - [ ] **Task 7.2: Create VariantTimeline component**
   - [ ] Timeline showing beats for a single difficulty

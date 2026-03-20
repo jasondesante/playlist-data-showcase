@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -24,6 +24,7 @@ import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
 import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
 import { MultiBandVisualization } from '../ui/MultiBandVisualization';
 import { QuantizationPanel } from '../ui/QuantizationPanel';
+import { DifficultyVariantsPanel } from '../ui/DifficultyVariantsPanel';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -171,13 +172,10 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                 <CollapsibleSection
                     title="Difficulty Variants"
                     subtitle="Easy / Medium / Hard variations"
-                    icon={<Zap size={18} />}
+                    icon={<Trophy size={18} />}
                     defaultCollapsed={false}
                 >
-                    <div className="rhythm-generation-visualization-placeholder">
-                        <Zap size={24} />
-                        <p>Difficulty variants visualization coming in Phase 7</p>
-                    </div>
+                    <DifficultyVariantsPanel rhythm={rhythm} />
                 </CollapsibleSection>
 
                 <CollapsibleSection
