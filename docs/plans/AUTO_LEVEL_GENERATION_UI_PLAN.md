@@ -229,11 +229,14 @@ interface GeneratedRhythm {
 
 ## Phase 4: Transient Detection Visualization
 
-- [ ] **Task 4.1: Create TransientDetectionPanel component**
-  - [ ] Container for transient visualizations
-  - [ ] Header with total transient count
-  - [ ] Intensity filter slider (filters displayed transients)
-  - [ ] "Show all bands" toggle
+- [x] **Task 4.1: Create TransientDetectionPanel component**
+  - [x] Container for transient visualizations
+  - [x] Header with total transient count
+  - [x] Intensity filter slider (filters displayed transients)
+  - [x] "Show all bands" toggle
+  - [x] Band breakdown cards (inline BandBreakdownCard subcomponent)
+  - [x] Timeline placeholder (ready for Task 4.2)
+  - [x] Inspector placeholder (ready for Task 4.4)
 
 - [ ] **Task 4.2: Create TransientTimeline component**
   - [ ] Horizontal timeline similar to existing BeatTimeline
@@ -244,14 +247,15 @@ interface GeneratedRhythm {
   - [ ] Click to inspect individual transient details
   - [ ] Show playhead position synced with audio
 
-- [ ] **Task 4.3: Create TransientBandBreakdown component**
-  - [ ] Three cards in a row for Low/Mid/High bands
-  - [ ] Each card shows:
+- [x] **Task 4.3: Create TransientBandBreakdown component**
+  - [x] Three cards in a row for Low/Mid/High bands
+  - [x] Each card shows:
     - Band name and frequency range
     - Transient count
     - Average intensity
     - Detection method badge (Energy/Flux/HFC)
     - Color indicator matching timeline
+  > Note: Implemented inline as BandBreakdownCard within TransientDetectionPanel
 
 - [ ] **Task 4.4: Create TransientInspector component**
   - [ ] Tooltip or side panel showing selected transient details

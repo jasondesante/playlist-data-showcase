@@ -1,0 +1,445 @@
+/* ============================================
+   TRANSIENT DETECTION PANEL (Task 4.1)
+   Container for transient detection visualizations.
+   ============================================ */
+
+/* Main container */
+.transient-detection-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.transient-detection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.transient-detection-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.transient-detection-title svg {
+    color: hsl(var(--primary));
+}
+
+.transient-detection-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+}
+
+.transient-detection-count-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+}
+
+.transient-detection-count-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   FILTER CONTROLS
+   ============================================ */
+
+.transient-detection-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+/* Intensity Filter */
+.transient-intensity-filter {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.transient-intensity-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+}
+
+.transient-intensity-label svg {
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-intensity-value {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.transient-intensity-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: hsl(var(--border));
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.transient-intensity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.transient-intensity-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.transient-intensity-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease;
+}
+
+.transient-intensity-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+}
+
+.transient-intensity-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Band Toggle */
+.transient-band-toggle {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.transient-band-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+}
+
+.transient-band-toggle-label svg {
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-band-buttons {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.transient-band-button {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-transform: capitalize;
+}
+
+.transient-band-button:hover {
+    background: hsl(var(--surface-3));
+    color: hsl(var(--foreground));
+}
+
+.transient-band-button.active {
+    background: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary) / 0.4);
+    color: hsl(var(--primary));
+}
+
+.transient-band-button.active[style*="--band-color"] {
+    background: color-mix(in srgb, var(--band-color) 15%, transparent);
+    border-color: color-mix(in srgb, var(--band-color) 40%, transparent);
+    color: var(--band-color);
+}
+
+/* ============================================
+   BAND BREAKDOWN CARDS
+   ============================================ */
+
+.transient-detection-bands {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+}
+
+.transient-band-card {
+    position: relative;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+}
+
+.transient-band-card-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.transient-band-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.transient-band-card-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.transient-band-card-count {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--band-color, hsl(var(--primary)));
+    font-family: var(--font-mono);
+}
+
+.transient-band-card-range {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 0.75rem;
+}
+
+.transient-band-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.transient-band-card-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.transient-band-card-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-band-card-stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.transient-band-card-stat-badge {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background: hsl(var(--surface-3));
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* ============================================
+   TIMELINE PLACEHOLDER (Task 4.2)
+   ============================================ */
+
+.transient-timeline-placeholder {
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px dashed hsl(var(--border));
+    overflow: hidden;
+}
+
+.transient-timeline-placeholder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--surface-3));
+    border-bottom: 1px dashed hsl(var(--border));
+}
+
+.transient-timeline-placeholder-title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+}
+
+.transient-timeline-placeholder-count {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-timeline-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+}
+
+.transient-timeline-placeholder-content svg {
+    opacity: 0.5;
+}
+
+.transient-timeline-placeholder-content p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* ============================================
+   INSPECTOR PLACEHOLDER (Task 4.4)
+   ============================================ */
+
+.transient-inspector-placeholder {
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px dashed hsl(var(--border));
+    overflow: hidden;
+}
+
+.transient-inspector-placeholder-title {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--surface-3));
+    border-bottom: 1px dashed hsl(var(--border));
+}
+
+.transient-inspector-placeholder-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+}
+
+.transient-inspector-placeholder-content p {
+    font-size: 0.8125rem;
+    margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .transient-detection-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .transient-intensity-filter,
+    .transient-band-toggle {
+        min-width: 100%;
+    }
+
+    .transient-detection-bands {
+        grid-template-columns: 1fr;
+    }
+
+    .transient-band-buttons {
+        flex-wrap: wrap;
+    }
+
+    .transient-band-button {
+        flex: 1 1 calc(50% - 0.375rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .transient-detection-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .transient-band-card {
+        padding: 0.75rem;
+    }
+
+    .transient-timeline-placeholder-content,
+    .transient-inspector-placeholder-content {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.transient-intensity-slider:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+.transient-band-button:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .transient-intensity-slider::-webkit-slider-thumb,
+    .transient-intensity-slider::-moz-range-thumb,
+    .transient-band-button {
+        transition: none;
+    }
+}

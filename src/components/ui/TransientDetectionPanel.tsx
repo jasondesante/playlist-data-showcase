@@ -1,0 +1,346 @@
+/**
+ * TransientDetectionPanel Component
+ *
+ * Container for transient detection visualizations in the rhythm generation feature.
+ * Displays:
+ * - Header with total transient count
+ * - Intensity filter slider (filters displayed transients)
+ * - "Show all bands" toggle
+ * - Band breakdown cards (placeholder for Task 4.3)
+ * - Timeline visualization (placeholder for Task 4.2)
+ * - Inspector for selected transient (placeholder for Task 4.4)
+ *
+ * Part of Phase 4: Transient Detection Visualization (Task 4.1)
+ */
+
+import { useState, useMemo } from 'react';
+import { Zap, Filter, Layers } from 'lucide-react';
+import './TransientDetectionPanel.css';
+import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
+
+// ============================================================
+// Types
+// ============================================================
+
+export interface TransientDetectionPanelProps {
+    /** The generated rhythm containing transient analysis */
+    rhythm: GeneratedRhythm;
+    /** Current audio playback time in seconds (for timeline sync) */
+    currentTime?: number;
+    /** Whether audio is currently playing */
+    isPlaying?: boolean;
+    /** Callback when user seeks to a time position */
+    onSeek?: (time: number) => void;
+    /** Additional CSS class names */
+    className?: string;
+}
+
+/**
+ * Band color scheme (as defined in the plan)
+ */
+const BAND_COLORS: Record<Band, string> = {
+    low: '#3b82f6',    // Blue
+    mid: '#22c55e',    // Green
+    high: '#f97316',   // Orange
+};
+
+/**
+ * Frequency range labels for each band
+ */
+const BAND_RANGES: Record<Band, string> = {
+    low: '20-500 Hz',
+    mid: '500-2000 Hz',
+    high: '2000-20000 Hz',
+};
+
+/**
+ * Detection method display names
+ */
+const DETECTION_METHOD_LABELS: Record<string, string> = {
+    energy: 'Energy',
+    spectral_flux: 'Spectral Flux',
+    hfc: 'HFC',
+};
+
+// ============================================================
+// Sub-components
+// ============================================================
+
+/**
+ * Intensity filter slider component
+ */
+interface IntensityFilterProps {
+    value: number;
+    onChange: (value: number) => void;
+    min?: number;
+    max?: number;
+    step?: number;
+}
+
+function IntensityFilter({ value, onChange, min = 0, max = 1, step = 0.05 }: IntensityFilterProps) {
+    return (
+        <div className="transient-intensity-filter">
+            <label className="transient-intensity-label">
+                <Filter size={14} />
+                <span>Intensity Threshold</span>
+                <span className="transient-intensity-value">{(value * 100).toFixed(0)}%</span>
+            </label>
+            <input
+                type="range"
+                min={min}
+                max={max}
+                step={step}
+                value={value}
+                onChange={(e) => onChange(parseFloat(e.target.value))}
+                className="transient-intensity-slider"
+                aria-label="Filter transients by intensity"
+            />
+            <div className="transient-intensity-range">
+                <span>0%</span>
+                <span>100%</span>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Toggle for showing/hiding bands
+ */
+interface BandToggleProps {
+    showAllBands: boolean;
+    onChange: (value: boolean) => void;
+    activeBand: Band | 'all';
+    onBandChange: (band: Band | 'all') => void;
+}
+
+function BandToggle({ showAllBands: _showAllBands, onChange, activeBand, onBandChange }: BandToggleProps) {
+    const bands: (Band | 'all')[] = ['all', 'low', 'mid', 'high'];
+
+    return (
+        <div className="transient-band-toggle">
+            <label className="transient-band-toggle-label">
+                <Layers size={14} />
+                <span>Show Bands</span>
+            </label>
+            <div className="transient-band-buttons">
+                {bands.map((band) => (
+                    <button
+                        key={band}
+                        className={`transient-band-button ${activeBand === band ? 'active' : ''}`}
+                        onClick={() => {
+                            onBandChange(band);
+                            onChange(band === 'all');
+                        }}
+                        style={band !== 'all' ? { '--band-color': BAND_COLORS[band] } as React.CSSProperties : {}}
+                        aria-pressed={activeBand === band}
+                    >
+                        {band === 'all' ? 'All' : band.charAt(0).toUpperCase() + band.slice(1)}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Band breakdown card showing statistics for a single band
+ */
+interface BandBreakdownCardProps {
+    band: Band;
+    transients: TransientResult[];
+    color: string;
+    frequencyRange: string;
+}
+
+function BandBreakdownCard({ band, transients, color, frequencyRange }: BandBreakdownCardProps) {
+    // Calculate statistics
+    const count = transients.length;
+    const avgIntensity = count > 0
+        ? transients.reduce((sum, t) => sum + t.intensity, 0) / count
+        : 0;
+
+    // Get detection method breakdown
+    const methodCounts = transients.reduce((acc, t) => {
+        acc[t.detectionMethod] = (acc[t.detectionMethod] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const primaryMethod = Object.entries(methodCounts)
+        .sort((a, b) => b[1] - a[1])[0];
+
+    return (
+        <div className="transient-band-card" style={{ '--band-color': color } as React.CSSProperties}>
+            <div className="transient-band-card-header">
+                <span className="transient-band-card-name">{band.charAt(0).toUpperCase() + band.slice(1)}</span>
+                <span className="transient-band-card-count">{count}</span>
+            </div>
+            <div className="transient-band-card-range">{frequencyRange}</div>
+            <div className="transient-band-card-stats">
+                <div className="transient-band-card-stat">
+                    <span className="transient-band-card-stat-label">Avg Intensity</span>
+                    <span className="transient-band-card-stat-value">{(avgIntensity * 100).toFixed(0)}%</span>
+                </div>
+                {primaryMethod && (
+                    <div className="transient-band-card-stat">
+                        <span className="transient-band-card-stat-label">Method</span>
+                        <span className="transient-band-card-stat-badge">
+                            {DETECTION_METHOD_LABELS[primaryMethod[0]] || primaryMethod[0]}
+                        </span>
+                    </div>
+                )}
+            </div>
+            <div className="transient-band-card-indicator" style={{ backgroundColor: color }} />
+        </div>
+    );
+}
+
+/**
+ * Placeholder for timeline visualization (Task 4.2)
+ */
+interface TransientTimelinePlaceholderProps {
+    transients: TransientResult[];
+    filteredCount: number;
+}
+
+function TransientTimelinePlaceholder({ transients, filteredCount }: TransientTimelinePlaceholderProps) {
+    return (
+        <div className="transient-timeline-placeholder">
+            <div className="transient-timeline-placeholder-header">
+                <span className="transient-timeline-placeholder-title">
+                    Transient Timeline
+                </span>
+                <span className="transient-timeline-placeholder-count">
+                    {filteredCount} of {transients.length} visible
+                </span>
+            </div>
+            <div className="transient-timeline-placeholder-content">
+                <Zap size={24} />
+                <p>Transient timeline visualization coming in Task 4.2</p>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Placeholder for inspector (Task 4.4)
+ */
+function TransientInspectorPlaceholder() {
+    return (
+        <div className="transient-inspector-placeholder">
+            <div className="transient-inspector-placeholder-title">
+                Click a transient to inspect
+            </div>
+            <div className="transient-inspector-placeholder-content">
+                <p>Inspector details coming in Task 4.4</p>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// Main Component
+// ============================================================
+
+/**
+ * TransientDetectionPanel
+ *
+ * Main container for transient detection visualizations.
+ * Provides filtering controls and displays band breakdowns and timeline.
+ */
+export function TransientDetectionPanel({
+    rhythm,
+    currentTime: _currentTime = 0,
+    isPlaying: _isPlaying = false,
+    onSeek: _onSeek,
+    className,
+}: TransientDetectionPanelProps) {
+    // Get transient analysis from the rhythm
+    const transientAnalysis = rhythm.analysis.transientAnalysis;
+    const allTransients = transientAnalysis.transients;
+
+    // Filter state
+    const [intensityThreshold, setIntensityThreshold] = useState(0);
+    const [activeBand, setActiveBand] = useState<Band | 'all'>('all');
+
+    // Filter transients based on intensity and band
+    const filteredTransients = useMemo(() => {
+        return allTransients.filter((t) => {
+            // Intensity filter
+            if (t.intensity < intensityThreshold) return false;
+            // Band filter
+            if (activeBand !== 'all' && t.band !== activeBand) return false;
+            return true;
+        });
+    }, [allTransients, intensityThreshold, activeBand]);
+
+    // Group transients by band for breakdown cards
+    const transientsByBand = useMemo(() => {
+        const groups: Record<Band, TransientResult[]> = {
+            low: [],
+            mid: [],
+            high: [],
+        };
+        allTransients.forEach((t) => {
+            groups[t.band].push(t);
+        });
+        return groups;
+    }, [allTransients]);
+
+    // Calculate total visible count
+    const totalCount = allTransients.length;
+    const visibleCount = filteredTransients.length;
+
+    return (
+        <div className={`transient-detection-panel ${className || ''}`}>
+            {/* Header with total count */}
+            <div className="transient-detection-header">
+                <div className="transient-detection-title">
+                    <Zap size={18} />
+                    <span>Transient Detection</span>
+                </div>
+                <div className="transient-detection-count">
+                    <span className="transient-detection-count-value">{totalCount}</span>
+                    <span className="transient-detection-count-label">transients detected</span>
+                </div>
+            </div>
+
+            {/* Filter controls */}
+            <div className="transient-detection-controls">
+                <IntensityFilter
+                    value={intensityThreshold}
+                    onChange={setIntensityThreshold}
+                />
+                <BandToggle
+                    showAllBands={activeBand === 'all'}
+                    onChange={(showAll) => setActiveBand(showAll ? 'all' : 'low')}
+                    activeBand={activeBand}
+                    onBandChange={setActiveBand}
+                />
+            </div>
+
+            {/* Band breakdown cards */}
+            <div className="transient-detection-bands">
+                {(Object.keys(transientsByBand) as Band[]).map((band) => (
+                    <BandBreakdownCard
+                        key={band}
+                        band={band}
+                        transients={transientsByBand[band]}
+                        color={BAND_COLORS[band]}
+                        frequencyRange={BAND_RANGES[band]}
+                    />
+                ))}
+            </div>
+
+            {/* Timeline placeholder (Task 4.2) */}
+            <TransientTimelinePlaceholder
+                transients={allTransients}
+                filteredCount={visibleCount}
+            />
+
+            {/* Inspector placeholder (Task 4.4) */}
+            <TransientInspectorPlaceholder />
+        </div>
+    );
+}
+
+export default TransientDetectionPanel;

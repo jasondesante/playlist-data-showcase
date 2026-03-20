@@ -21,6 +21,7 @@ import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
+import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -144,10 +145,7 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     badge={metadata.transientsDetected}
                     defaultCollapsed={false}
                 >
-                    <div className="rhythm-generation-visualization-placeholder">
-                        <Music size={24} />
-                        <p>Transient timeline visualization coming in Phase 4</p>
-                    </div>
+                    <TransientDetectionPanel rhythm={rhythm} />
                 </CollapsibleSection>
 
                 <CollapsibleSection
