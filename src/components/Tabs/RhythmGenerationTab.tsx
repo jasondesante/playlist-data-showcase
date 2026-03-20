@@ -22,6 +22,7 @@ import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
 import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
+import { MultiBandVisualization } from '../ui/MultiBandVisualization';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -154,10 +155,7 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     icon={<Layers size={18} />}
                     defaultCollapsed={true}
                 >
-                    <div className="rhythm-generation-visualization-placeholder">
-                        <Layers size={24} />
-                        <p>Multi-band visualization coming in Phase 5</p>
-                    </div>
+                    <MultiBandVisualization rhythm={rhythm} />
                 </CollapsibleSection>
 
                 <CollapsibleSection

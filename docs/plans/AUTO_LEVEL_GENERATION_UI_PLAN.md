@@ -265,21 +265,22 @@ interface GeneratedRhythm {
 
 ## Phase 5: Multi-Band Visualization
 
-- [ ] **Task 5.1: Create MultiBandVisualization component**
-  - [ ] Three stacked timelines (Low/Mid/High)
-  - [ ] Each timeline shows:
+- [x] **Task 5.1: Create MultiBandVisualization component**
+  - [x] Three stacked timelines (Low/Mid/High)
+  - [x] Each timeline shows:
     - Band label with frequency range
     - Detection method indicator
     - Transients for that band only
     - Optional: waveform/envelope background
-  - [ ] Vertical alignment so transients line up by time
-  - [ ] Sync with audio playback
+  - [x] Vertical alignment so transients line up by time
+  - [x] Sync with audio playback
 
-- [ ] **Task 5.2: Create BandTimeline component**
-  - [ ] Reusable timeline for a single band
-  - [ ] Props: band, transients, currentTime, isPlaying
-  - [ ] Color-coded by band type
-  - [ ] Support intensity-based sizing
+- [x] **Task 5.2: Create BandTimeline component**
+  - [x] Reusable timeline for a single band
+  - [x] Props: band, transients, currentTime, isPlaying
+  - [x] Color-coded by band type
+  - [x] Support intensity-based sizing
+  > Note: Implemented inline as BandTimeline subcomponent within MultiBandVisualization
 
 ---
 
