@@ -24,6 +24,7 @@ import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { AutoLevelSettings } from '../ui/AutoLevelSettings';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
+import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
 import { logger } from '../../utils/logger';
 
 /**
@@ -82,9 +83,21 @@ export function BeatDetectionTab() {
         DEFAULT_AUTO_LEVEL_SETTINGS
     );
 
+    // Task 2.5: Rhythm generation hook for auto mode
+    const {
+        generate: generateRhythm,
+        isGenerating: isRhythmGenerating,
+        progress: rhythmProgress,
+        rhythm: generatedRhythm,
+        error: rhythmError,
+    } = useRhythmGeneration();
+
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Task 2.5: Flag to trigger auto-start of rhythm generation in auto mode
+    const shouldAutoStartRhythmGenerationRef = useRef(false);
 
     // Compute completed steps set
     const completedSteps = useMemo(() => {
@@ -207,16 +220,69 @@ export function BeatDetectionTab() {
      * Only triggers when transitioning from generating (true) to not generating (false)
      * AND a beatMap exists (indicating successful analysis).
      * Does not trigger when loading from cache or returning to Step 1.
+     *
+     * Task 2.5: In auto mode, also sets a flag to trigger rhythm generation.
      */
     useEffect(() => {
         // Check if we just finished generating
         if (wasGeneratingRef.current && !isBeatGenerating && beatMap) {
-            // Auto-advance to Step 2 (Subdivide) after successful analysis
+            // Auto-advance to Step 2 after successful analysis
             setCurrentStep(2);
+
+            // Task 2.5: In auto mode, flag that we should auto-start rhythm generation
+            if (generationMode === 'automatic') {
+                shouldAutoStartRhythmGenerationRef.current = true;
+                logger.info('BeatDetection', 'Auto mode: setting flag to auto-start rhythm generation');
+            }
         }
         // Update the ref for the next render
         wasGeneratingRef.current = isBeatGenerating;
-    }, [isBeatGenerating, beatMap, setCurrentStep]);
+    }, [isBeatGenerating, beatMap, setCurrentStep, generationMode]);
+
+    /**
+     * Task 2.5: Auto-start rhythm generation when in auto mode.
+     * Triggers when:
+     * - We're in automatic mode
+     * - We're on Step 2 (Rhythm Generation)
+     * - The auto-start flag is set
+     * - We have an audio URL and beat map
+     * - We're not already generating rhythm
+     */
+    useEffect(() => {
+        // Check if we should auto-start rhythm generation
+        if (
+            generationMode === 'automatic' &&
+            currentStep === 2 &&
+            shouldAutoStartRhythmGenerationRef.current &&
+            selectedTrack?.audio_url &&
+            beatMap &&
+            !isRhythmGenerating &&
+            !generatedRhythm
+        ) {
+            // Clear the flag so we don't trigger again
+            shouldAutoStartRhythmGenerationRef.current = false;
+
+            logger.info('BeatDetection', 'Auto-starting rhythm generation', {
+                settings: autoLevelSettings,
+            });
+
+            // Start rhythm generation with the auto level settings
+            generateRhythm(selectedTrack.audio_url, {
+                difficulty: autoLevelSettings.difficulty,
+                outputMode: autoLevelSettings.outputMode,
+                minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+            });
+        }
+    }, [
+        generationMode,
+        currentStep,
+        selectedTrack?.audio_url,
+        beatMap,
+        isRhythmGenerating,
+        generatedRhythm,
+        autoLevelSettings,
+        generateRhythm,
+    ]);
 
     /**
      * Map beat generation phases to human-readable labels
@@ -456,11 +522,10 @@ export function BeatDetectionTab() {
 
             case 2:
                 // Step 2: Mode-dependent content
-                // - Auto mode: Rhythm Generation (placeholder for Task 3.x)
+                // - Auto mode: Rhythm Generation (Task 2.5: with auto-start)
                 // - Manual mode: Subdivide settings
                 if (generationMode === 'automatic') {
-                    // Task 2.3: Rhythm Generation step in auto mode
-                    // This is a placeholder - Task 3.x will build the actual visualization
+                    // Task 2.5: Rhythm Generation step in auto mode
                     if (!beatMap || isBeatGenerating) {
                         return wrapContent(
                             <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
@@ -474,28 +539,131 @@ export function BeatDetectionTab() {
                             </Card>
                         );
                     }
+
+                    // Task 2.5: Show rhythm generation progress
+                    if (isRhythmGenerating) {
+                        return wrapContent(
+                            <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
+                                <div className="audio-analysis-rhythm-generation-section">
+                                    <h3 className="audio-analysis-step-title">
+                                        Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
+                                    </h3>
+                                    <div className="audio-analysis-rhythm-generation-progress">
+                                        <div className="audio-analysis-progress-indicator">
+                                            <Sparkles className="audio-analysis-sparkle-icon" />
+                                        </div>
+                                        <h4 className="audio-analysis-progress-title">Generating Rhythm Patterns...</h4>
+                                        {rhythmProgress && (
+                                            <>
+                                                <div className="audio-analysis-progress-bar-container">
+                                                    <div
+                                                        className="audio-analysis-progress-bar"
+                                                        style={{ width: `${rhythmProgress.progress}%` }}
+                                                    />
+                                                </div>
+                                                <p className="audio-analysis-progress-phase">
+                                                    {rhythmProgress.message}
+                                                </p>
+                                                <p className="audio-analysis-progress-percent">
+                                                    {rhythmProgress.progress}% - Phase: {rhythmProgress.phase}
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    }
+
+                    // Task 2.5: Show error state if rhythm generation failed
+                    if (rhythmError && !generatedRhythm) {
+                        return wrapContent(
+                            <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
+                                <div className="audio-analysis-rhythm-generation-section">
+                                    <h3 className="audio-analysis-step-title">
+                                        Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
+                                    </h3>
+                                    <div className="audio-analysis-rhythm-generation-error">
+                                        <div className="audio-analysis-error-icon">⚠️</div>
+                                        <h4 className="audio-analysis-error-title">Rhythm Generation Failed</h4>
+                                        <p className="audio-analysis-error-text">
+                                            {rhythmError}
+                                        </p>
+                                        <div className="audio-analysis-error-actions">
+                                            <Button
+                                                variant="primary"
+                                                onClick={() => {
+                                                    if (selectedTrack?.audio_url) {
+                                                        generateRhythm(selectedTrack.audio_url, {
+                                                            difficulty: autoLevelSettings.difficulty,
+                                                            outputMode: autoLevelSettings.outputMode,
+                                                            minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                Retry
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setGenerationMode('manual')}
+                                            >
+                                                Switch to Manual Mode
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    }
+
+                    // Task 2.5: Show completion state with generated rhythm info
                     return wrapContent(
                         <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
                             <div className="audio-analysis-rhythm-generation-section">
                                 <h3 className="audio-analysis-step-title">
                                     Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
                                 </h3>
-                                <div className="audio-analysis-rhythm-generation-placeholder">
-                                    <div className="audio-analysis-rhythm-generation-placeholder-icon">🎵</div>
-                                    <h4 className="audio-analysis-rhythm-generation-placeholder-title">
-                                        Rhythm Generation Coming Soon
-                                    </h4>
-                                    <p className="audio-analysis-rhythm-generation-placeholder-text">
-                                        This feature is under development. Transient detection, multi-band analysis,
-                                        and difficulty variant visualizations will appear here.
-                                    </p>
-                                </div>
+                                {generatedRhythm ? (
+                                    <div className="audio-analysis-rhythm-generation-result">
+                                        <div className="audio-analysis-result-icon">✅</div>
+                                        <h4 className="audio-analysis-result-title">Rhythm Generated Successfully!</h4>
+                                        <div className="audio-analysis-result-stats">
+                                            <div className="audio-analysis-result-stat">
+                                                <span className="audio-analysis-stat-label">Transients Detected:</span>
+                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.transientsDetected}</span>
+                                            </div>
+                                            <div className="audio-analysis-result-stat">
+                                                <span className="audio-analysis-stat-label">Phrases Detected:</span>
+                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.phrasesDetected}</span>
+                                            </div>
+                                            <div className="audio-analysis-result-stat">
+                                                <span className="audio-analysis-stat-label">Natural Difficulty:</span>
+                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.naturalDifficulty}</span>
+                                            </div>
+                                        </div>
+                                        <p className="audio-analysis-result-note">
+                                            Full visualizations (transient timeline, multi-band analysis, difficulty variants)
+                                            coming in Phase 3+.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="audio-analysis-rhythm-generation-placeholder">
+                                        <div className="audio-analysis-rhythm-generation-placeholder-icon">🎵</div>
+                                        <h4 className="audio-analysis-rhythm-generation-placeholder-title">
+                                            Ready to Generate
+                                        </h4>
+                                        <p className="audio-analysis-rhythm-generation-placeholder-text">
+                                            Click "Re-Analyze" in Step 1 to regenerate the beat map and rhythm patterns.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Post-completion prompt for Step 2 in auto mode */}
                             <StepCompletionPrompt
                                 message="Rhythm generated!"
-                                visible={stepCompletion.step2 && !isBeatGenerating}
+                                visible={!!generatedRhythm && !isRhythmGenerating}
                                 actions={[
                                     {
                                         label: 'Go to Practice',

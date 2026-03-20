@@ -2421,6 +2421,241 @@
   }
 }
 
+/* ============================================
+   RHYTHM GENERATION PROGRESS (Task 2.5)
+   ============================================ */
+
+.audio-analysis-rhythm-generation-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  gap: 1rem;
+  background: hsl(var(--surface-2));
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.audio-analysis-progress-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: hsl(var(--accent) / 0.1);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.audio-analysis-progress-indicator svg {
+  width: 32px;
+  height: 32px;
+  color: hsl(var(--accent));
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.audio-analysis-progress-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.audio-analysis-progress-bar-container {
+  width: 100%;
+  max-width: 400px;
+  height: 8px;
+  background: hsl(var(--surface-3));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.audio-analysis-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(var(--accent)), hsl(var(--accent) / 0.8));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.audio-analysis-progress-phase {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+.audio-analysis-progress-percent {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+/* ============================================
+   RHYTHM GENERATION ERROR (Task 2.5)
+   ============================================ */
+
+.audio-analysis-rhythm-generation-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  gap: 1rem;
+  background: hsl(var(--destructive) / 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--destructive) / 0.2);
+}
+
+.audio-analysis-error-icon {
+  font-size: 3rem;
+}
+
+.audio-analysis-error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--destructive));
+  margin: 0;
+}
+
+.audio-analysis-error-text {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+  max-width: 450px;
+  margin: 0;
+}
+
+.audio-analysis-error-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ============================================
+   RHYTHM GENERATION RESULT (Task 2.5)
+   ============================================ */
+
+.audio-analysis-rhythm-generation-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  gap: 1rem;
+  background: hsl(var(--success) / 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--success) / 0.2);
+}
+
+.audio-analysis-result-icon {
+  font-size: 3rem;
+}
+
+.audio-analysis-result-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--success));
+  margin: 0;
+}
+
+.audio-analysis-result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.audio-analysis-result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.audio-analysis-stat-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.audio-analysis-stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-family: var(--font-mono);
+}
+
+.audio-analysis-result-note {
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  margin: 0;
+  max-width: 400px;
+}
+
+/* Responsive styles for rhythm generation result */
+@media (max-width: 768px) {
+  .audio-analysis-rhythm-generation-progress,
+  .audio-analysis-rhythm-generation-error,
+  .audio-analysis-rhythm-generation-result {
+    padding: 2rem 1.5rem;
+  }
+
+  .audio-analysis-result-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .audio-analysis-error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .audio-analysis-error-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .audio-analysis-rhythm-generation-progress,
+  .audio-analysis-rhythm-generation-error,
+  .audio-analysis-rhythm-generation-result {
+    padding: 1.5rem 1rem;
+  }
+
+  .audio-analysis-progress-title,
+  .audio-analysis-error-title,
+  .audio-analysis-result-title {
+    font-size: 1.125rem;
+  }
+
+  .audio-analysis-progress-indicator {
+    width: 48px;
+    height: 48px;
+  }
+
+  .audio-analysis-progress-indicator svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 
 /* ============================================
    ACCESSIBILITY - Screen Reader Only

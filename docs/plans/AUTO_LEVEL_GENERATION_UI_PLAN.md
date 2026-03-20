@@ -188,12 +188,15 @@ interface GeneratedRhythm {
   - [x] Handle 3-step vs 4-step configurations gracefully
   - [x] Animate step changes when mode toggles
 
-- [ ] **Task 2.5: Implement auto-start behavior**
-  - [ ] When auto mode is on and user clicks "Analyze":
+- [x] **Task 2.5: Implement auto-start behavior**
+  - [x] When auto mode is on and user clicks "Analyze":
     1. Run beat detection (quarter notes)
     2. Auto-advance to Step 2 (Rhythm Generation)
     3. Automatically start rhythm generation using settings from Step 1
-  - [ ] No additional button clicks needed in auto mode
+  - [x] No additional button clicks needed in auto mode
+  - [x] Show progress UI during rhythm generation
+  - [x] Show error state with retry option if rhythm generation fails
+  - [x] Show completion state with generated rhythm metadata
 
 ---
 
