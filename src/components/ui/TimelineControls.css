@@ -1,0 +1,344 @@
+/**
+ * TimelineControls Component Styles
+ *
+ * Styles for the unified timeline controls component.
+ * Includes playback controls, scrubber, and zoom controls.
+ *
+ * Part of Task 9.3: Add timeline controls
+ */
+
+/* ========================================
+   Container
+   ======================================== */
+
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.75rem;
+  user-select: none;
+}
+
+.timeline-controls:focus {
+  outline: none;
+}
+
+/* ========================================
+   Time Display
+   ======================================== */
+
+.timeline-controls-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-width: 5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875rem;
+}
+
+.timeline-controls-time-current {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.timeline-controls-time-separator {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.timeline-controls-time-total {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   Playback Controls
+   ======================================== */
+
+.timeline-controls-playback {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeline-controls-play-btn {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-controls-skip-btn {
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.timeline-controls-skip-btn:hover {
+  opacity: 1;
+}
+
+.timeline-controls-skip-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   Scrubber Track
+   ======================================== */
+
+.timeline-controls-scrubber {
+  flex: 1;
+  min-width: 100px;
+}
+
+.timeline-scrubber-track {
+  position: relative;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  overflow: visible;
+}
+
+.timeline-scrubber-track:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.timeline-scrubber-track--dragging {
+  cursor: grabbing;
+}
+
+/* Track background line */
+.timeline-scrubber-track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* Buffered indicator */
+.timeline-scrubber-buffered {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Progress fill */
+.timeline-scrubber-progress {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.8), hsl(var(--primary)));
+  border-radius: 2px;
+  pointer-events: none;
+  transition: width 0.1s ease-out;
+}
+
+.timeline-scrubber-track--dragging .timeline-scrubber-progress {
+  transition: none;
+}
+
+/* Hover indicator */
+.timeline-scrubber-hover {
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 2px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Hover tooltip */
+.timeline-scrubber-hover-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.timeline-scrubber-track:hover .timeline-scrubber-hover-tooltip {
+  opacity: 1;
+}
+
+/* Playhead handle */
+.timeline-scrubber-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 10;
+  transition: transform 0.1s ease;
+}
+
+.timeline-scrubber-track:hover .timeline-scrubber-handle,
+.timeline-scrubber-track--dragging .timeline-scrubber-handle {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* ========================================
+   Zoom Controls
+   ======================================== */
+
+.timeline-controls-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.timeline-controls-zoom-btn {
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.timeline-controls-zoom-btn:hover {
+  opacity: 1;
+}
+
+.timeline-controls-zoom-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.timeline-controls-zoom-level {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 2.5rem;
+  text-align: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+  .timeline-controls {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .timeline-controls-time {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .timeline-controls-playback {
+    order: 2;
+    flex: 0 0 auto;
+  }
+
+  .timeline-controls-zoom {
+    order: 4;
+    flex: 0 0 auto;
+  }
+
+  .timeline-controls-scrubber {
+    order: 3;
+    flex: 1 1 100%;
+  }
+
+  .timeline-controls-skip-btn {
+    display: none;
+  }
+
+  .timeline-scrubber-track {
+    height: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-controls-time {
+    font-size: 0.75rem;
+    min-width: 4rem;
+  }
+
+  .timeline-controls-play-btn {
+    min-width: 2rem;
+    min-height: 2rem;
+  }
+
+  .timeline-controls-play-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .timeline-controls-zoom-level {
+    display: none;
+  }
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.timeline-scrubber-track:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .timeline-scrubber-progress,
+  .timeline-scrubber-handle,
+  .timeline-controls-skip-btn,
+  .timeline-controls-zoom-btn {
+    transition: none;
+  }
+}
+
+/* ========================================
+   Dark Mode Support
+   ======================================== */
+
+@media (prefers-color-scheme: light) {
+  .timeline-controls {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .timeline-scrubber-track::before {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .timeline-scrubber-buffered {
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .timeline-scrubber-hover-tooltip {
+    background: rgba(0, 0, 0, 0.85);
+  }
+}

@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
@@ -28,6 +28,7 @@ import { QuantizationPanel } from '../ui/QuantizationPanel';
 import { DifficultyVariantsPanel } from '../ui/DifficultyVariantsPanel';
 import { VariantComparisonView } from '../ui/VariantComparisonView';
 import { PhraseDetectionPanel } from '../ui/PhraseDetectionPanel';
+import { TimelineControls } from '../ui/TimelineControls';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -116,6 +117,8 @@ interface RhythmGenerationResultProps {
     isPlaying?: boolean;
     /** Callback when user seeks to a time position */
     onSeek?: (time: number) => void;
+    /** Callback to toggle play/pause */
+    onPlayPause?: () => void;
 }
 
 function RhythmGenerationResult({
@@ -125,8 +128,15 @@ function RhythmGenerationResult({
     duration = 0,
     isPlaying = false,
     onSeek,
+    onPlayPause,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
+
+    // ========================================
+    // Timeline Controls State
+    // ========================================
+
+    const [zoomLevel, setZoomLevel] = useState(1);
 
     // ========================================
     // Phrase Selection State for Highlighting
@@ -192,6 +202,25 @@ function RhythmGenerationResult({
                     </span>
                 </div>
             </div>
+
+            {/* Timeline Controls - Part of Task 9.3 */}
+            {onPlayPause && onSeek && (
+                <div className="rhythm-generation-timeline-controls">
+                    <TimelineControls
+                        currentTime={currentTime}
+                        duration={duration}
+                        isPlaying={isPlaying}
+                        onPlayPause={onPlayPause}
+                        onSeek={onSeek}
+                        zoomLevel={zoomLevel}
+                        minZoom={0.5}
+                        maxZoom={4}
+                        onZoomChange={setZoomLevel}
+                        showSkipButtons={true}
+                        skipInterval={10}
+                    />
+                </div>
+            )}
 
             {/* Visualization panels placeholder - will be expanded in future phases */}
             <div className="rhythm-generation-visualizations">
@@ -350,6 +379,9 @@ export function RhythmGenerationTab({
     const duration = useAudioPlayerStore((state) => state.duration);
     const playbackState = useAudioPlayerStore((state) => state.playbackState);
     const seek = useAudioPlayerStore((state) => state.seek);
+    const pause = useAudioPlayerStore((state) => state.pause);
+    const resume = useAudioPlayerStore((state) => state.resume);
+    const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
     const isPlaying = playbackState === 'playing';
 
     // Determine the current state
@@ -376,6 +408,16 @@ export function RhythmGenerationTab({
     const handleSeek = (time: number) => {
         seek(time);
     };
+
+    // Handle play/pause toggle (Part of Task 9.3)
+    const handlePlayPause = useCallback(() => {
+        if (isPlaying) {
+            pause();
+        } else if (currentUrl) {
+            // Audio already loaded - resume playback
+            resume();
+        }
+    }, [isPlaying, pause, resume, currentUrl]);
 
     // Render based on state
     const renderContent = () => {
@@ -406,6 +448,7 @@ export function RhythmGenerationTab({
                     duration={duration}
                     isPlaying={isPlaying}
                     onSeek={handleSeek}
+                    onPlayPause={handlePlayPause}
                 />
             );
         }

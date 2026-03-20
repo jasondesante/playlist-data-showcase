@@ -155,6 +155,14 @@
   gap: 0.5rem;
 }
 
+/* Timeline Controls container (Task 9.3) */
+.rhythm-generation-timeline-controls {
+  padding: 1rem;
+  background: hsl(var(--surface-2));
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+}
+
 /* Placeholder for future visualizations */
 .rhythm-generation-visualization-placeholder {
   display: flex;

@@ -392,11 +392,18 @@ interface GeneratedRhythm {
   > - `timelineColors.ts` - Shared color constants for bands, grid types, difficulties, etc.
   > - `timeline.css` - Base CSS classes for consistent timeline styling
 
-- [ ] **Task 9.3: Add timeline controls**
-  - [ ] Play/pause button
-  - [ ] Zoom controls
-  - [ ] Timeline scrubber
-  - [ ] Match existing timeline control patterns
+- [x] **Task 9.3: Add timeline controls**
+  - [x] Play/pause button
+  - [x] Zoom controls
+  - [x] Timeline scrubber
+  - [x] Match existing timeline control patterns
+  > Note: Created `src/components/ui/TimelineControls.tsx` and `TimelineControls.css` with:
+  > - Play/pause button with skip forward/backward
+  > - Zoom in/out controls with level display
+  > - Timeline scrubber with hover preview, drag-to-seek, and progress bar
+  > - Current time and duration display
+  > - Keyboard shortcuts (space/k for play, arrows for skip, +/- for zoom)
+  > - Integrated into RhythmGenerationTab's RhythmGenerationResult component
 
 ---
 
