@@ -6,9 +6,9 @@
  * - Header with total transient count
  * - Intensity filter slider (filters displayed transients)
  * - "Show all bands" toggle
- * - Band breakdown cards (placeholder for Task 4.3)
- * - Timeline visualization (placeholder for Task 4.2)
- * - Inspector for selected transient (placeholder for Task 4.4)
+ * - Band breakdown cards
+ * - Timeline visualization (Task 4.2)
+ * - Inspector for selected transient (Task 4.4)
  *
  * Part of Phase 4: Transient Detection Visualization (Task 4.1)
  */
