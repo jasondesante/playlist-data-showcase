@@ -1,0 +1,391 @@
+/**
+ * QuantizationPanel Component
+ *
+ * Container for quantization visualizations in the rhythm generation feature.
+ * Displays:
+ * - Header with total quantized beats count
+ * - Summary statistics (avg quantization error, grid type distribution)
+ * - Per-band quantization breakdown cards
+ * - Placeholder for timeline visualizations (Tasks 6.2 and 6.3)
+ *
+ * Part of Phase 6: Quantization Visualization (Task 6.1)
+ */
+
+import { useMemo } from 'react';
+import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
+import './QuantizationPanel.css';
+import type {
+    GeneratedRhythm,
+    GeneratedBeat,
+    GridDecision,
+    Band,
+} from '../../types/rhythmGeneration';
+
+// ============================================================
+// Types
+// ============================================================
+
+export interface QuantizationPanelProps {
+    /** The generated rhythm containing quantization results */
+    rhythm: GeneratedRhythm;
+    /** Additional CSS class names */
+    className?: string;
+}
+
+/**
+ * Band color scheme (as defined in the plan)
+ */
+const BAND_COLORS: Record<Band, string> = {
+    low: '#3b82f6',    // Blue
+    mid: '#22c55e',    // Green
+    high: '#f97316',   // Orange
+};
+
+// ============================================================
+// Sub-components
+// ============================================================
+
+/**
+ * Summary stat card component
+ */
+interface StatCardProps {
+    label: string;
+    value: string | number;
+    icon?: React.ReactNode;
+    badge?: string;
+    color?: 'default' | 'primary' | 'success' | 'warning';
+}
+
+function StatCard({ label, value, icon, badge, color = 'default' }: StatCardProps) {
+    return (
+        <div className={`quantization-stat-card quantization-stat-card--${color}`}>
+            {icon && <div className="quantization-stat-icon">{icon}</div>}
+            <div className="quantization-stat-content">
+                <span className="quantization-stat-label">{label}</span>
+                <div className="quantization-stat-value-row">
+                    <span className="quantization-stat-value">{value}</span>
+                    {badge && <span className="quantization-stat-badge">{badge}</span>}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Grid type distribution bar component
+ */
+interface GridDistributionBarProps {
+    straightCount: number;
+    tripletCount: number;
+}
+
+function GridDistributionBar({ straightCount, tripletCount }: GridDistributionBarProps) {
+    const total = straightCount + tripletCount;
+    const straightPercent = total > 0 ? (straightCount / total) * 100 : 0;
+    const tripletPercent = total > 0 ? (tripletCount / total) * 100 : 0;
+
+    return (
+        <div className="quantization-grid-distribution">
+            <div className="quantization-distribution-bar">
+                <div
+                    className="quantization-distribution-segment quantization-distribution-segment--straight"
+                    style={{ width: `${straightPercent}%` }}
+                    title={`Straight 16th: ${straightCount} (${straightPercent.toFixed(1)}%)`}
+                />
+                <div
+                    className="quantization-distribution-segment quantization-distribution-segment--triplet"
+                    style={{ width: `${tripletPercent}%` }}
+                    title={`Triplet 8th: ${tripletCount} (${tripletPercent.toFixed(1)}%)`}
+                />
+            </div>
+            <div className="quantization-distribution-legend">
+                <div className="quantization-distribution-legend-item">
+                    <span className="quantization-distribution-marker quantization-distribution-marker--straight" />
+                    <span className="quantization-distribution-label">Straight 16th</span>
+                    <span className="quantization-distribution-count">{straightCount}</span>
+                </div>
+                <div className="quantization-distribution-legend-item">
+                    <span className="quantization-distribution-marker quantization-distribution-marker--triplet" />
+                    <span className="quantization-distribution-label">Triplet 8th</span>
+                    <span className="quantization-distribution-count">{tripletCount}</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Per-band quantization breakdown card
+ */
+interface BandQuantizationCardProps {
+    band: Band;
+    beats: GeneratedBeat[];
+    gridDecisions: GridDecision[];
+    color: string;
+}
+
+function BandQuantizationCard({ band, beats, gridDecisions, color }: BandQuantizationCardProps) {
+    const stats = useMemo(() => {
+        const count = beats.length;
+        const avgIntensity = count > 0
+            ? beats.reduce((sum, b) => sum + b.intensity, 0) / count
+            : 0;
+
+        // Calculate average quantization error (only for beats that have it)
+        const beatsWithError = beats.filter(b => b.quantizationError !== undefined);
+        const avgError = beatsWithError.length > 0
+            ? beatsWithError.reduce((sum, b) => sum + (b.quantizationError || 0), 0) / beatsWithError.length
+            : 0;
+
+        // Grid type distribution
+        const straightCount = gridDecisions.filter(d => d.selectedGrid === 'straight_16th').length;
+        const tripletCount = gridDecisions.filter(d => d.selectedGrid === 'triplet_8th').length;
+
+        // Average confidence
+        const avgConfidence = gridDecisions.length > 0
+            ? gridDecisions.reduce((sum, d) => sum + d.confidence, 0) / gridDecisions.length
+            : 0;
+
+        return {
+            count,
+            avgIntensity,
+            avgError,
+            straightCount,
+            tripletCount,
+            avgConfidence,
+        };
+    }, [beats, gridDecisions]);
+
+    return (
+        <div className="quantization-band-card" style={{ '--band-color': color } as React.CSSProperties}>
+            <div className="quantization-band-card-header">
+                <span className="quantization-band-card-name">
+                    {band.charAt(0).toUpperCase() + band.slice(1)}
+                </span>
+                <span className="quantization-band-card-count">{stats.count}</span>
+            </div>
+
+            <div className="quantization-band-card-stats">
+                <div className="quantization-band-card-stat">
+                    <span className="quantization-band-card-stat-label">Avg Error</span>
+                    <span className="quantization-band-card-stat-value">
+                        {stats.avgError.toFixed(1)}ms
+                    </span>
+                </div>
+                <div className="quantization-band-card-stat">
+                    <span className="quantization-band-card-stat-label">Avg Intensity</span>
+                    <span className="quantization-band-card-stat-value">
+                        {(stats.avgIntensity * 100).toFixed(0)}%
+                    </span>
+                </div>
+                <div className="quantization-band-card-stat">
+                    <span className="quantization-band-card-stat-label">Grid Split</span>
+                    <span className="quantization-band-card-stat-value">
+                        {stats.straightCount} / {stats.tripletCount}
+                    </span>
+                </div>
+                <div className="quantization-band-card-stat">
+                    <span className="quantization-band-card-stat-label">Avg Confidence</span>
+                    <span className="quantization-band-card-stat-value">
+                        {(stats.avgConfidence * 100).toFixed(0)}%
+                    </span>
+                </div>
+            </div>
+
+            {/* Mini grid distribution bar */}
+            {(stats.straightCount > 0 || stats.tripletCount > 0) && (
+                <GridDistributionBar
+                    straightCount={stats.straightCount}
+                    tripletCount={stats.tripletCount}
+                />
+            )}
+
+            <div className="quantization-band-card-indicator" style={{ backgroundColor: color }} />
+        </div>
+    );
+}
+
+// ============================================================
+// Main Component
+// ============================================================
+
+/**
+ * QuantizationPanel
+ *
+ * Main container for quantization visualizations.
+ * Displays summary statistics and per-band quantization breakdowns.
+ */
+export function QuantizationPanel({
+    rhythm,
+    className,
+}: QuantizationPanelProps) {
+    // Get quantization data from the rhythm
+    const quantizationResult = rhythm.analysis.quantizationResult;
+    const bandStreams = rhythm.bandStreams;
+
+    // Calculate overall statistics
+    const overallStats = useMemo(() => {
+        const allBeats: GeneratedBeat[] = [
+            ...bandStreams.low.beats,
+            ...bandStreams.mid.beats,
+            ...bandStreams.high.beats,
+        ];
+
+        const allGridDecisions: GridDecision[] = [
+            ...bandStreams.low.gridDecisions,
+            ...bandStreams.mid.gridDecisions,
+            ...bandStreams.high.gridDecisions,
+        ];
+
+        const totalBeats = allBeats.length;
+
+        // Average quantization error
+        const beatsWithError = allBeats.filter(b => b.quantizationError !== undefined);
+        const avgError = beatsWithError.length > 0
+            ? beatsWithError.reduce((sum, b) => sum + (b.quantizationError || 0), 0) / beatsWithError.length
+            : 0;
+
+        // Max quantization error
+        const maxError = beatsWithError.length > 0
+            ? Math.max(...beatsWithError.map(b => b.quantizationError || 0))
+            : 0;
+
+        // Grid type distribution
+        const straightCount = allGridDecisions.filter(d => d.selectedGrid === 'straight_16th').length;
+        const tripletCount = allGridDecisions.filter(d => d.selectedGrid === 'triplet_8th').length;
+
+        // Average confidence across all grid decisions
+        const avgConfidence = allGridDecisions.length > 0
+            ? allGridDecisions.reduce((sum, d) => sum + d.confidence, 0) / allGridDecisions.length
+            : 0;
+
+        // Density validation info
+        const densityValidation = quantizationResult.metadata.densityValidation;
+
+        return {
+            totalBeats,
+            avgError,
+            maxError,
+            straightCount,
+            tripletCount,
+            avgConfidence,
+            densityValidation,
+            transientsFiltered: quantizationResult.metadata.transientsFilteredByIntensity,
+        };
+    }, [bandStreams, quantizationResult]);
+
+    // Get bands in order
+    const bands: Band[] = ['low', 'mid', 'high'];
+
+    return (
+        <div className={`quantization-panel ${className || ''}`}>
+            {/* Header with total count */}
+            <div className="quantization-header">
+                <div className="quantization-title">
+                    <Grid3X3 size={18} />
+                    <span>Quantization Results</span>
+                </div>
+                <div className="quantization-count">
+                    <span className="quantization-count-value">{overallStats.totalBeats}</span>
+                    <span className="quantization-count-label">quantized beats</span>
+                </div>
+            </div>
+
+            {/* Summary statistics */}
+            <div className="quantization-summary">
+                <StatCard
+                    label="Total Beats"
+                    value={overallStats.totalBeats}
+                    icon={<Grid3X3 size={16} />}
+                    color="primary"
+                />
+                <StatCard
+                    label="Avg Error"
+                    value={`${overallStats.avgError.toFixed(1)}ms`}
+                    icon={<TrendingUp size={16} />}
+                    badge={overallStats.maxError > 50 ? `max ${overallStats.maxError.toFixed(0)}ms` : undefined}
+                    color={overallStats.avgError < 20 ? 'success' : 'warning'}
+                />
+                <StatCard
+                    label="Avg Confidence"
+                    value={`${(overallStats.avgConfidence * 100).toFixed(0)}%`}
+                    icon={<BarChart3 size={16} />}
+                    color="default"
+                />
+            </div>
+
+            {/* Overall grid distribution */}
+            <div className="quantization-grid-section">
+                <h4 className="quantization-section-title">Grid Type Distribution</h4>
+                <GridDistributionBar
+                    straightCount={overallStats.straightCount}
+                    tripletCount={overallStats.tripletCount}
+                />
+            </div>
+
+            {/* Density validation info */}
+            {overallStats.densityValidation && (
+                <div className="quantization-density-info">
+                    <div className="quantization-density-item">
+                        <span className="quantization-density-label">Density Validation</span>
+                        <span className={`quantization-density-status ${overallStats.densityValidation.isValid ? 'valid' : 'warning'}`}>
+                            {overallStats.densityValidation.isValid ? 'Passed' : 'Adjusted'}
+                        </span>
+                    </div>
+                    {overallStats.densityValidation.retryCount > 0 && (
+                        <div className="quantization-density-item">
+                            <span className="quantization-density-label">Retries</span>
+                            <span className="quantization-density-value">
+                                {overallStats.densityValidation.retryCount}
+                            </span>
+                        </div>
+                    )}
+                    {overallStats.transientsFiltered > 0 && (
+                        <div className="quantization-density-item">
+                            <span className="quantization-density-label">Filtered</span>
+                            <span className="quantization-density-value">
+                                {overallStats.transientsFiltered} transients
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Per-band breakdown cards */}
+            <div className="quantization-bands-section">
+                <h4 className="quantization-section-title">Per-Band Breakdown</h4>
+                <div className="quantization-bands">
+                    {bands.map((band) => (
+                        <BandQuantizationCard
+                            key={band}
+                            band={band}
+                            beats={bandStreams[band].beats}
+                            gridDecisions={bandStreams[band].gridDecisions}
+                            color={BAND_COLORS[band]}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Timeline placeholder for Task 6.2 */}
+            <div className="quantization-timeline-placeholder">
+                <div className="quantization-placeholder-content">
+                    <Grid3X3 size={24} />
+                    <p>Grid Decision Timeline (Task 6.2)</p>
+                    <span>Visualize per-beat grid choices with confidence scores</span>
+                </div>
+            </div>
+
+            {/* Timeline placeholder for Task 6.3 */}
+            <div className="quantization-timeline-placeholder">
+                <div className="quantization-placeholder-content">
+                    <Grid3X3 size={24} />
+                    <p>Quantized Beat Timeline (Task 6.3)</p>
+                    <span>Visualize final quantized output with error indicators</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default QuantizationPanel;

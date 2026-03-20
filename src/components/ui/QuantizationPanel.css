@@ -1,0 +1,482 @@
+/* ============================================
+   QUANTIZATION PANEL (Task 6.1)
+   Container for quantization visualizations.
+   ============================================ */
+
+/* Main container */
+.quantization-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.quantization-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.quantization-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.quantization-title svg {
+    color: hsl(var(--primary));
+}
+
+.quantization-count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+}
+
+.quantization-count-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+}
+
+.quantization-count-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   SUMMARY STATISTICS
+   ============================================ */
+
+.quantization-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.quantization-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.quantization-stat-card--primary {
+    border-color: hsl(var(--primary) / 0.3);
+    background: hsl(var(--primary) / 0.05);
+}
+
+.quantization-stat-card--success {
+    border-color: hsl(var(--success) / 0.3);
+    background: hsl(var(--success) / 0.05);
+}
+
+.quantization-stat-card--warning {
+    border-color: hsl(var(--warning) / 0.3);
+    background: hsl(var(--warning) / 0.05);
+}
+
+.quantization-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 0.375rem;
+    background: hsl(var(--surface-3));
+    color: hsl(var(--muted-foreground));
+}
+
+.quantization-stat-card--primary .quantization-stat-icon {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+}
+
+.quantization-stat-card--success .quantization-stat-icon {
+    background: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+}
+
+.quantization-stat-card--warning .quantization-stat-icon {
+    background: hsl(var(--warning) / 0.15);
+    color: hsl(var(--warning));
+}
+
+.quantization-stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.quantization-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quantization-stat-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.quantization-stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.quantization-stat-badge {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: hsl(var(--warning));
+    background: hsl(var(--warning) / 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* ============================================
+   SECTION TITLES
+   ============================================ */
+
+.quantization-section-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin: 0 0 0.5rem 0;
+}
+
+.quantization-grid-section,
+.quantization-bands-section {
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+/* ============================================
+   GRID DISTRIBUTION BAR
+   ============================================ */
+
+.quantization-grid-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.quantization-distribution-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: hsl(var(--surface-3));
+}
+
+.quantization-distribution-segment {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.quantization-distribution-segment--straight {
+    background: hsl(var(--primary));
+}
+
+.quantization-distribution-segment--triplet {
+    background: hsl(280 70% 60%);
+}
+
+.quantization-distribution-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.quantization-distribution-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantization-distribution-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.quantization-distribution-marker--straight {
+    background: hsl(var(--primary));
+}
+
+.quantization-distribution-marker--triplet {
+    background: hsl(280 70% 60%);
+}
+
+.quantization-distribution-label {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.quantization-distribution-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   DENSITY VALIDATION INFO
+   ============================================ */
+
+.quantization-density-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+}
+
+.quantization-density-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantization-density-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quantization-density-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.quantization-density-status {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.quantization-density-status.valid {
+    background: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+}
+
+.quantization-density-status.warning {
+    background: hsl(var(--warning) / 0.15);
+    color: hsl(var(--warning));
+}
+
+/* ============================================
+   BAND BREAKDOWN CARDS
+   ============================================ */
+
+.quantization-bands {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.quantization-band-card {
+    position: relative;
+    padding: 1rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+}
+
+.quantization-band-card-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.quantization-band-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.quantization-band-card-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    text-transform: capitalize;
+}
+
+.quantization-band-card-count {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--band-color, hsl(var(--primary)));
+    font-family: var(--font-mono);
+}
+
+.quantization-band-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.quantization-band-card-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quantization-band-card-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quantization-band-card-stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* Mini grid distribution in band cards */
+.quantization-band-card .quantization-grid-distribution {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.quantization-band-card .quantization-distribution-bar {
+    height: 4px;
+}
+
+.quantization-band-card .quantization-distribution-legend {
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.quantization-band-card .quantization-distribution-marker {
+    width: 8px;
+    height: 8px;
+}
+
+.quantization-band-card .quantization-distribution-label,
+.quantization-band-card .quantization-distribution-count {
+    font-size: 0.625rem;
+}
+
+/* ============================================
+   TIMELINE PLACEHOLDERS (Tasks 6.2, 6.3)
+   ============================================ */
+
+.quantization-timeline-placeholder {
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px dashed hsl(var(--border));
+    overflow: hidden;
+}
+
+.quantization-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+}
+
+.quantization-placeholder-content svg {
+    opacity: 0.5;
+}
+
+.quantization-placeholder-content p {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+    color: hsl(var(--foreground));
+}
+
+.quantization-placeholder-content span {
+    font-size: 0.75rem;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .quantization-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .quantization-bands {
+        grid-template-columns: 1fr;
+    }
+
+    .quantization-density-info {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .quantization-distribution-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .quantization-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .quantization-stat-card {
+        padding: 0.75rem;
+    }
+
+    .quantization-band-card {
+        padding: 0.75rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.quantization-panel *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .quantization-distribution-segment {
+        transition: none;
+    }
+}

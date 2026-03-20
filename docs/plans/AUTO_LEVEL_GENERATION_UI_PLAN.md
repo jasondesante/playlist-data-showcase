@@ -286,9 +286,9 @@ interface GeneratedRhythm {
 
 ## Phase 6: Quantization Visualization
 
-- [ ] **Task 6.1: Create QuantizationPanel component**
-  - [ ] Container for quantization visualizations
-  - [ ] Summary stats (total quantized beats, avg error, grid type distribution)
+- [x] **Task 6.1: Create QuantizationPanel component**
+  - [x] Container for quantization visualizations
+  - [x] Summary stats (total quantized beats, avg error, grid type distribution)
 
 - [ ] **Task 6.2: Create GridDecisionTimeline component**
   - [ ] Shows per-beat grid choice (16th vs triplet)

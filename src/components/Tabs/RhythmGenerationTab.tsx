@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { AlertTriangle, CheckCircle, Music, Zap, Layers } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3 } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -23,6 +23,7 @@ import { CollapsibleSection } from '../Party/CollapsibleSection';
 import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
 import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
 import { MultiBandVisualization } from '../ui/MultiBandVisualization';
+import { QuantizationPanel } from '../ui/QuantizationPanel';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -161,13 +162,10 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                 <CollapsibleSection
                     title="Quantization"
                     subtitle="Beat grid quantization results"
-                    icon={<Music size={18} />}
+                    icon={<Grid3X3 size={18} />}
                     defaultCollapsed={true}
                 >
-                    <div className="rhythm-generation-visualization-placeholder">
-                        <Music size={24} />
-                        <p>Quantization visualization coming in Phase 6</p>
-                    </div>
+                    <QuantizationPanel rhythm={rhythm} />
                 </CollapsibleSection>
 
                 <CollapsibleSection
