@@ -1,0 +1,504 @@
+/**
+ * Timeline Base Styles
+ *
+ * Shared CSS styles for timeline components.
+ * Provides consistent styling across BeatTimeline, TransientTimeline,
+ * QuantizedBeatTimeline, GridDecisionTimeline, VariantTimeline, etc.
+ *
+ * Part of Task 9.2: Create shared timeline utilities
+ *
+ * Usage:
+ * Import this file and use the classes directly, or extend with component-specific modifiers.
+ * Component-specific styles should use the base class + modifier pattern:
+ * .component-timeline-track extends .timeline-track
+ */
+
+/* ========================================
+   CSS Custom Properties (Variables)
+   ======================================== */
+
+:root {
+  /* Band colors */
+  --timeline-band-low: #3b82f6;
+  --timeline-band-mid: #22c55e;
+  --timeline-band-high: #f97316;
+
+  /* Grid type colors */
+  --timeline-grid-straight: #3b82f6;
+  --timeline-grid-triplet: #a855f7;
+
+  /* Difficulty colors */
+  --timeline-difficulty-easy: #22c55e;
+  --timeline-difficulty-medium: #eab308;
+  --timeline-difficulty-hard: #ef4444;
+
+  /* Now line */
+  --timeline-now-color: #ef4444;
+  --timeline-now-width: 2px;
+
+  /* Grid lines */
+  --timeline-grid-color: rgba(255, 255, 255, 0.1);
+  --timeline-measure-color: rgba(255, 255, 255, 0.3);
+
+  /* Background regions */
+  --timeline-bg: rgba(0, 0, 0, 0.2);
+  --timeline-past-bg: rgba(0, 0, 0, 0.3);
+  --timeline-future-bg: rgba(0, 0, 0, 0.1);
+
+  /* Text colors */
+  --timeline-text: rgba(255, 255, 255, 0.7);
+  --timeline-text-muted: rgba(255, 255, 255, 0.5);
+
+  /* Sizing */
+  --timeline-height: 5rem;
+  --timeline-height-compact: 3.5rem;
+  --timeline-border-radius: 0.75rem;
+  --timeline-marker-size: 0.75rem;
+  --timeline-marker-size-large: 1rem;
+
+  /* Animation */
+  --timeline-transition-fast: 0.15s ease-out;
+  --timeline-transition-normal: 0.25s ease-out;
+}
+
+/* ========================================
+   Base Timeline Container
+   ======================================== */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* ========================================
+   Timeline Track
+   ======================================== */
+
+.timeline-track {
+  position: relative;
+  height: var(--timeline-height);
+  background: var(--timeline-bg);
+  border-radius: var(--timeline-border-radius);
+  overflow: hidden;
+  user-select: none;
+}
+
+.timeline-track--compact {
+  height: var(--timeline-height-compact);
+}
+
+.timeline-track--draggable {
+  cursor: grab;
+}
+
+.timeline-track--dragging {
+  cursor: grabbing;
+}
+
+/* ========================================
+   Background Regions
+   ======================================== */
+
+.timeline-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+.timeline-past-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--timeline-past-bg);
+  pointer-events: none;
+}
+
+.timeline-future-region {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--timeline-future-bg);
+  pointer-events: none;
+}
+
+/* ========================================
+   Now Line
+   ======================================== */
+
+.timeline-now-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--timeline-now-width);
+  height: 100%;
+  background: var(--timeline-now-color);
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.timeline-now-line-inner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background: var(--timeline-now-color);
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px var(--timeline-now-color);
+}
+
+.timeline-now-label {
+  position: absolute;
+  top: 0.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--timeline-now-color);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+/* Now line pulse animation */
+.timeline-now-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: var(--timeline-now-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: timeline-pulse 0.3s ease-out;
+}
+
+@keyframes timeline-pulse {
+  0% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2);
+  }
+}
+
+/* ========================================
+   Markers
+   ======================================== */
+
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  transition: opacity var(--timeline-transition-fast);
+}
+
+.timeline-marker--past {
+  opacity: 0.5;
+}
+
+.timeline-marker--upcoming {
+  opacity: 1;
+}
+
+.timeline-marker-dot {
+  width: var(--timeline-marker-size);
+  height: var(--timeline-marker-size);
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.timeline-marker--large .timeline-marker-dot {
+  width: var(--timeline-marker-size-large);
+  height: var(--timeline-marker-size-large);
+}
+
+/* Marker ring for emphasis (e.g., downbeats) */
+.timeline-marker-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--timeline-marker-size-large) + 6px);
+  height: calc(var(--timeline-marker-size-large) + 6px);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ========================================
+   Grid Lines
+   ======================================== */
+
+.timeline-grid-line {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: var(--timeline-grid-color);
+  pointer-events: none;
+}
+
+.timeline-grid-line--measure {
+  background: var(--timeline-measure-color);
+  width: 2px;
+}
+
+/* ========================================
+   Measure Boundaries
+   ======================================== */
+
+.timeline-measure-boundary {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.timeline-measure-line {
+  width: 2px;
+  height: 100%;
+  background: var(--timeline-measure-color);
+}
+
+.timeline-measure-number {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--timeline-text-muted);
+  margin-top: 0.25rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.125rem;
+}
+
+/* ========================================
+   Info Bar
+   ======================================== */
+
+.timeline-info {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.timeline-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.timeline-info-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--timeline-text-muted);
+}
+
+.timeline-info-value {
+  font-weight: 600;
+  color: var(--timeline-text);
+}
+
+/* ========================================
+   Legend
+   ======================================== */
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.timeline-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.timeline-legend-marker {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: white;
+}
+
+.timeline-legend-label {
+  color: var(--timeline-text-muted);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Legend color variants */
+.timeline-legend-marker--low {
+  background: var(--timeline-band-low);
+}
+
+.timeline-legend-marker--mid {
+  background: var(--timeline-band-mid);
+}
+
+.timeline-legend-marker--high {
+  background: var(--timeline-band-high);
+}
+
+.timeline-legend-marker--easy {
+  background: var(--timeline-difficulty-easy);
+}
+
+.timeline-legend-marker--medium {
+  background: var(--timeline-difficulty-medium);
+}
+
+.timeline-legend-marker--hard {
+  background: var(--timeline-difficulty-hard);
+}
+
+/* ========================================
+   Highlighted Regions (for phrases)
+   ======================================== */
+
+.timeline-highlight {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ========================================
+   Tooltip
+   ======================================== */
+
+.timeline-tooltip {
+  position: absolute;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: white;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+/* ========================================
+   Loading State
+   ======================================== */
+
+.timeline-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--timeline-height);
+  background: var(--timeline-bg);
+  border-radius: var(--timeline-border-radius);
+  color: var(--timeline-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ========================================
+   Empty State
+   ======================================== */
+
+.timeline-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--timeline-height);
+  background: var(--timeline-bg);
+  border-radius: var(--timeline-border-radius);
+  color: var(--timeline-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.timeline-focus-visible {
+  outline: 2px solid var(--timeline-now-color);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .timeline-now-pulse {
+    animation: none;
+  }
+
+  .timeline-marker,
+  .timeline-info,
+  .timeline-legend {
+    transition: none;
+  }
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 640px) {
+  :root {
+    --timeline-height: 4rem;
+    --timeline-height-compact: 3rem;
+    --timeline-marker-size: 0.625rem;
+    --timeline-marker-size-large: 0.875rem;
+  }
+
+  .timeline-info {
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.625rem;
+  }
+
+  .timeline-legend {
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.625rem;
+  }
+}

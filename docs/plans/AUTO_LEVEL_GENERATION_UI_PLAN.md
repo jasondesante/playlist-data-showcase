@@ -378,10 +378,19 @@ interface GeneratedRhythm {
   - [x] Seek functionality works across all timelines
   > Note: Connected RhythmGenerationTab to audioPlayerStore. All visualization panels (TransientDetectionPanel, MultiBandVisualization, QuantizationPanel, DifficultyVariantsPanel, VariantComparisonView, PhraseDetectionPanel) now receive audio state props (currentTime, duration, isPlaying, onSeek).
 
-- [ ] **Task 9.2: Create shared timeline utilities**
-  - [ ] Extract common timeline logic from BeatTimeline
-  - [ ] Reusable hooks: `useTimelineZoom`, `useTimelineSeek`
-  - [ ] Consistent styling across all timeline components
+- [x] **Task 9.2: Create shared timeline utilities**
+  - [x] Extract common timeline logic from BeatTimeline
+  - [x] Reusable hooks: `useTimelineAnimation`, `useTimelineDrag`, `useTimelineSeek`, `useTimelinePosition`
+  - [x] Consistent styling across all timeline components
+  - [x] Color utilities: `src/utils/timelineColors.ts`
+  - [x] Base CSS: `src/components/ui/timeline.css`
+  > Note: Created comprehensive shared timeline utilities:
+  > - `useTimelineAnimation` - Smooth time interpolation with requestAnimationFrame
+  > - `useTimelineDrag` - Drag-to-scrub functionality
+  > - `useTimelineSeek` - Combined drag + click-to-seek with threshold detection
+  > - `useTimelinePosition` - Position calculation and visible item filtering
+  > - `timelineColors.ts` - Shared color constants for bands, grid types, difficulties, etc.
+  > - `timeline.css` - Base CSS classes for consistent timeline styling
 
 - [ ] **Task 9.3: Add timeline controls**
   - [ ] Play/pause button

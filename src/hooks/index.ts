@@ -28,3 +28,7 @@ export * from './useKeyboardInput';
 export * from './useMusicClassifier';
 export * from './useTrackDuration';
 export * from './useRhythmGeneration';
+export * from './useTimelineAnimation';
+export * from './useTimelineDrag';
+export * from './useTimelineSeek';
+export * from './useTimelinePosition';
