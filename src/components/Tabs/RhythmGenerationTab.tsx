@@ -32,6 +32,7 @@ import {
     useRhythmGenerationProgress,
     useBeatDetectionActions,
 } from '../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type {
     GeneratedRhythm,
 } from '../../types/rhythmGeneration';
@@ -103,9 +104,24 @@ function RhythmGenerationError({ error, onRetry, onSwitchToManual }: RhythmGener
 interface RhythmGenerationResultProps {
     rhythm: GeneratedRhythm;
     onProceed?: () => void;
+    /** Current audio playback time in seconds (for timeline sync) */
+    currentTime?: number;
+    /** Total audio duration in seconds */
+    duration?: number;
+    /** Whether audio is currently playing */
+    isPlaying?: boolean;
+    /** Callback when user seeks to a time position */
+    onSeek?: (time: number) => void;
 }
 
-function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultProps) {
+function RhythmGenerationResult({
+    rhythm,
+    onProceed,
+    currentTime = 0,
+    duration = 0,
+    isPlaying = false,
+    onSeek,
+}: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
     return (
@@ -150,7 +166,12 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     badge={metadata.transientsDetected}
                     defaultCollapsed={false}
                 >
-                    <TransientDetectionPanel rhythm={rhythm} />
+                    <TransientDetectionPanel
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
 
                 <CollapsibleSection
@@ -159,7 +180,13 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     icon={<Layers size={18} />}
                     defaultCollapsed={true}
                 >
-                    <MultiBandVisualization rhythm={rhythm} />
+                    <MultiBandVisualization
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
 
                 <CollapsibleSection
@@ -168,7 +195,13 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     icon={<Grid3X3 size={18} />}
                     defaultCollapsed={true}
                 >
-                    <QuantizationPanel rhythm={rhythm} />
+                    <QuantizationPanel
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
 
                 <CollapsibleSection
@@ -177,7 +210,13 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     icon={<Trophy size={18} />}
                     defaultCollapsed={false}
                 >
-                    <DifficultyVariantsPanel rhythm={rhythm} />
+                    <DifficultyVariantsPanel
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
 
                 <CollapsibleSection
@@ -186,7 +225,13 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     icon={<GitCompare size={18} />}
                     defaultCollapsed={true}
                 >
-                    <VariantComparisonView rhythm={rhythm} />
+                    <VariantComparisonView
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
 
                 <CollapsibleSection
@@ -196,7 +241,12 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     badge={metadata.phrasesDetected}
                     defaultCollapsed={true}
                 >
-                    <PhraseDetectionPanel rhythm={rhythm} />
+                    <PhraseDetectionPanel
+                        rhythm={rhythm}
+                        currentTime={currentTime}
+                        isPlaying={isPlaying}
+                        onSeek={onSeek}
+                    />
                 </CollapsibleSection>
             </div>
 
@@ -256,6 +306,13 @@ export function RhythmGenerationTab({
     const progress = useRhythmGenerationProgress();
     const actions = useBeatDetectionActions();
 
+    // Get audio player state for timeline sync
+    const currentTime = useAudioPlayerStore((state) => state.currentTime);
+    const duration = useAudioPlayerStore((state) => state.duration);
+    const playbackState = useAudioPlayerStore((state) => state.playbackState);
+    const seek = useAudioPlayerStore((state) => state.seek);
+    const isPlaying = playbackState === 'playing';
+
     // Determine the current state
     const isGenerating = progress !== null && !progress.message.startsWith('Error:');
     const hasError = progress?.message.startsWith('Error:') ?? false;
@@ -274,6 +331,11 @@ export function RhythmGenerationTab({
             onSwitchToManual();
             actions.setGenerationMode('manual');
         }
+    };
+
+    // Handle seek from visualization panels
+    const handleSeek = (time: number) => {
+        seek(time);
     };
 
     // Render based on state
@@ -295,9 +357,18 @@ export function RhythmGenerationTab({
             );
         }
 
-        // Success state - show result
+        // Success state - show result with audio sync
         if (hasRhythm && generatedRhythm) {
-            return <RhythmGenerationResult rhythm={generatedRhythm} onProceed={onProceed} />;
+            return (
+                <RhythmGenerationResult
+                    rhythm={generatedRhythm}
+                    onProceed={onProceed}
+                    currentTime={currentTime}
+                    duration={duration}
+                    isPlaying={isPlaying}
+                    onSeek={handleSeek}
+                />
+            );
         }
 
         // Default/placeholder state
