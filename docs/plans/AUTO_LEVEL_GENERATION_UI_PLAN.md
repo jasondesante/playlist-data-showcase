@@ -183,10 +183,10 @@ interface GeneratedRhythm {
   - [x] Pass mode-aware steps to StepNav
   - [x] Conditionally render step content based on mode
 
-- [ ] **Task 2.4: Update StepNav for dynamic step count**
-  - [ ] Accept steps array as prop (already does)
-  - [ ] Handle 3-step vs 4-step configurations gracefully
-  - [ ] Animate step changes when mode toggles
+- [x] **Task 2.4: Update StepNav for dynamic step count**
+  - [x] Accept steps array as prop (already does)
+  - [x] Handle 3-step vs 4-step configurations gracefully
+  - [x] Animate step changes when mode toggles
 
 - [ ] **Task 2.5: Implement auto-start behavior**
   - [ ] When auto mode is on and user clicks "Analyze":

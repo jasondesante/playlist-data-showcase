@@ -14,7 +14,7 @@
  * - Full accessibility with ARIA attributes
  */
 
-import { useCallback, useRef, type KeyboardEvent } from 'react';
+import { useCallback, useRef, useEffect, useState, type KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 import './StepNav.css';
 
@@ -47,6 +47,8 @@ export interface StepNavProps {
     panelId?: string;
     /** Optional class name for the container */
     className?: string;
+    /** Key to force re-render/animation when mode changes (e.g., 'manual' or 'automatic') */
+    modeKey?: string;
 }
 
 /**
@@ -63,8 +65,11 @@ export function StepNav({
     onStepClick,
     panelId,
     className,
+    modeKey,
 }: StepNavProps) {
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const prevStepCountRef = useRef(steps.length);
 
     const handleKeyDown = useCallback((event: KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
         const availableStepIndices = steps
@@ -115,6 +120,26 @@ export function StepNav({
         }
     }, [steps, availableSteps]);
 
+    /**
+     * Detect step count changes and trigger animation.
+     * This handles the transition between 3-step (auto mode) and 4-step (manual mode) configurations.
+     */
+    useEffect(() => {
+        const currentStepCount = steps.length;
+        if (prevStepCountRef.current !== currentStepCount) {
+            // Step count changed - trigger animation
+            setIsAnimating(true);
+            prevStepCountRef.current = currentStepCount;
+
+            // Remove animation class after animation completes
+            const timer = setTimeout(() => {
+                setIsAnimating(false);
+            }, 300); // Match animation duration
+
+            return () => clearTimeout(timer);
+        }
+    }, [steps.length, modeKey]);
+
     const getStepLabel = (step: Step, isAvailable: boolean): string => {
         if (step.dynamicLabel) {
             return isAvailable ? step.dynamicLabel.available : step.dynamicLabel.disabled;
@@ -130,9 +155,14 @@ export function StepNav({
 
     return (
         <nav
-            className={cn('step-nav', className)}
+            className={cn(
+                'step-nav',
+                isAnimating && 'step-nav-animating',
+                className
+            )}
             role="tablist"
             aria-label="Beat detection workflow steps"
+            key={modeKey}
         >
             {steps.map((step, index) => {
                 const isCompleted = completedSteps.has(step.id);

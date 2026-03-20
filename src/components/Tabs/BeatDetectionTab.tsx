@@ -779,6 +779,7 @@ export function BeatDetectionTab() {
                         onStepClick={handleStepClick}
                         panelId="beat-detection-step-panel"
                         className="beat-detection-step-nav"
+                        modeKey={generationMode}
                     />
                     {/* Screen reader announcement for step changes */}
                     <div
