@@ -14,12 +14,13 @@
  * - Metadata display on successful generation
  */
 
-import { Sparkles, AlertTriangle, CheckCircle, Music, Zap, Layers } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Tooltip } from '../ui/Tooltip';
 import { CollapsibleSection } from '../Party/CollapsibleSection';
+import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -27,7 +28,6 @@ import {
 } from '../../store/beatDetectionStore';
 import type {
     GeneratedRhythm,
-    RhythmGenerationProgress,
 } from '../../types/rhythmGeneration';
 import { cn } from '../../utils/cn';
 
@@ -54,98 +54,9 @@ export interface RhythmGenerationTabProps {
     className?: string;
 }
 
-interface PipelineStage {
-    id: string;
-    label: string;
-    description: string;
-}
-
-// ============================================================
-// Constants
-// ============================================================
-
-const PIPELINE_STAGES: PipelineStage[] = [
-    { id: 'multiBand', label: 'Multi-Band Analysis', description: 'Analyzing frequency bands' },
-    { id: 'transients', label: 'Transient Detection', description: 'Detecting audio transients' },
-    { id: 'quantize', label: 'Quantization', description: 'Quantizing to beat grid' },
-    { id: 'phrases', label: 'Phrase Detection', description: 'Detecting rhythmic phrases' },
-    { id: 'composite', label: 'Composite Stream', description: 'Building composite stream' },
-    { id: 'variants', label: 'Difficulty Variants', description: 'Generating difficulty variants' },
-];
-
-const PHASE_ORDER = ['multiBand', 'transients', 'quantize', 'phrases', 'composite', 'variants'];
-
 // ============================================================
 // Sub-components
 // ============================================================
-
-/**
- * Progress indicator for the rhythm generation pipeline.
- */
-interface RhythmGenerationProgressUIProps {
-    progress: RhythmGenerationProgress;
-}
-
-function RhythmGenerationProgressUI({ progress }: RhythmGenerationProgressUIProps) {
-    const currentPhaseIndex = PHASE_ORDER.indexOf(progress.phase);
-
-    return (
-        <div className="rhythm-generation-progress">
-            <div className="rhythm-generation-progress-header">
-                <Sparkles className="rhythm-generation-progress-icon" />
-                <h4 className="rhythm-generation-progress-title">Generating Rhythm Patterns...</h4>
-            </div>
-
-            {/* Overall progress bar */}
-            <div className="rhythm-generation-progress-bar-container">
-                <div
-                    className="rhythm-generation-progress-bar"
-                    style={{ width: `${progress.progress}%` }}
-                />
-            </div>
-
-            {/* Phase message */}
-            <p className="rhythm-generation-progress-message">{progress.message}</p>
-
-            {/* Pipeline stages */}
-            <div className="rhythm-generation-pipeline">
-                {PIPELINE_STAGES.map((stage, index) => {
-                    const isActive = stage.id === progress.phase;
-                    const isComplete = index < currentPhaseIndex;
-                    const isPending = index > currentPhaseIndex;
-
-                    return (
-                        <div
-                            key={stage.id}
-                            className={cn(
-                                'rhythm-generation-pipeline-stage',
-                                isActive && 'active',
-                                isComplete && 'complete',
-                                isPending && 'pending'
-                            )}
-                        >
-                            <div className="rhythm-generation-pipeline-stage-indicator">
-                                {isComplete ? (
-                                    <CheckCircle size={14} />
-                                ) : isActive ? (
-                                    <Zap size={14} className="rhythm-generation-pulse" />
-                                ) : (
-                                    <div className="rhythm-generation-pipeline-stage-dot" />
-                                )}
-                            </div>
-                            <span className="rhythm-generation-pipeline-stage-label">
-                                {stage.label}
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Progress percentage */}
-            <p className="rhythm-generation-progress-percent">{progress.progress}%</p>
-        </div>
-    );
-}
 
 /**
  * Error state UI with retry option.
@@ -217,9 +128,9 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     </span>
                 </div>
                 <div className="rhythm-generation-stat">
-                    <span className="rhythm-generation-stat-label">Processing Time</span>
+                    <span className="rhythm-generation-stat-label">Total Beats</span>
                     <span className="rhythm-generation-stat-value">
-                        {metadata.processingTimeMs}ms
+                        {metadata.totalBeats}
                     </span>
                 </div>
             </div>
@@ -369,7 +280,7 @@ export function RhythmGenerationTab({
     const renderContent = () => {
         // Loading state - show progress
         if (isGenerating && progress) {
-            return <RhythmGenerationProgressUI progress={progress} />;
+            return <RhythmGenerationProgress progress={progress} />;
         }
 
         // Error state

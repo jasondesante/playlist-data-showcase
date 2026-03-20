@@ -1,0 +1,237 @@
+/* ============================================
+   RHYTHM GENERATION PROGRESS COMPONENT (Task 3.2)
+   Displays progress for the rhythm generation pipeline.
+   Shows pipeline stages with status indicators and duration tracking.
+   ============================================ */
+
+/* Main container */
+.rhythm-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Progress bar container */
+.rhythm-progress__bar-container {
+  width: 100%;
+  max-width: 400px;
+  height: 10px;
+  background: hsl(var(--surface-3));
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* Progress bar fill */
+.rhythm-progress__bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(var(--cute-purple))
+  );
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+/* Progress percentage */
+.rhythm-progress__percentage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: hsl(var(--muted-foreground));
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* Status message */
+.rhythm-progress__message {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Pipeline stages container */
+.rhythm-progress__stages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Individual stage */
+.rhythm-progress-stage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--surface-2));
+  border-radius: var(--radius-md);
+  border: 1px solid hsl(var(--border));
+  transition: all 0.2s ease;
+  min-width: 160px;
+}
+
+/* Stage states */
+.rhythm-progress-stage--pending {
+  opacity: 0.5;
+}
+
+.rhythm-progress-stage--active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
+}
+
+.rhythm-progress-stage--complete {
+  border-color: hsl(var(--success));
+  background: hsl(var(--success) / 0.05);
+}
+
+/* Stage indicator icon container */
+.rhythm-progress-stage__indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+/* Stage indicator icons */
+.rhythm-progress-stage__icon {
+  transition: all 0.2s ease;
+}
+
+.rhythm-progress-stage__icon--pending {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.4;
+}
+
+.rhythm-progress-stage__icon--active {
+  color: hsl(var(--primary));
+  animation: rhythm-progress-pulse 1.5s ease-in-out infinite;
+}
+
+.rhythm-progress-stage__icon--complete {
+  color: hsl(var(--success));
+}
+
+/* Pulse animation for active stage */
+@keyframes rhythm-progress-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Stage content */
+.rhythm-progress-stage__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* Stage label */
+.rhythm-progress-stage__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+}
+
+/* Stage description (shown only for active stage) */
+.rhythm-progress-stage__description {
+  font-size: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* Stage duration (shown only for complete stages) */
+.rhythm-progress-stage__duration {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: hsl(var(--success));
+  white-space: nowrap;
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .rhythm-progress {
+    padding: 1.5rem;
+  }
+
+  .rhythm-progress__stages {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rhythm-progress-stage {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .rhythm-progress-stage__description {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .rhythm-progress {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .rhythm-progress__bar-container {
+    height: 8px;
+  }
+
+  .rhythm-progress-stage {
+    padding: 0.375rem 0.5rem;
+    gap: 0.375rem;
+  }
+
+  .rhythm-progress-stage__indicator {
+    width: 20px;
+    height: 20px;
+  }
+
+  .rhythm-progress-stage__label {
+    font-size: 0.6875rem;
+  }
+
+  .rhythm-progress-stage__description,
+  .rhythm-progress-stage__duration {
+    font-size: 0.5625rem;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.rhythm-progress .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

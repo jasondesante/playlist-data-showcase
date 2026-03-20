@@ -212,12 +212,13 @@ interface GeneratedRhythm {
   - [x] Collapsible sections for each visualization panel
   - [x] No settings panel - settings are in Step 1
 
-- [ ] **Task 3.2: Create RhythmGenerationProgress component**
-  - [ ] Show pipeline stages as they complete with status indicators
-  - [ ] Stages: Multi-Band Analysis → Transient Detection → Quantization → Phrase Detection → Composite → Variants
-  - [ ] Each stage shows: name, status (pending/active/complete), duration
-  - [ ] Overall progress bar
-  - [ ] Match style of existing beat detection progress
+- [x] **Task 3.2: Create RhythmGenerationProgress component**
+  - [x] Create `src/components/ui/RhythmGenerationProgress.tsx` standalone component file
+  - [x] Create `src/components/ui/RhythmGenerationProgress.css` for styles
+  - [x] Add phase timing tracking to show duration for completed stages
+  - [x] Overall progress bar
+  - [x] Match style of existing beat detection progress
+  - [x] Integrate component into RhythmGenerationTab to replacing inline progress UI
 
 - [ ] **Task 3.3: Create error handling UI**
   - [ ] Show error message if rhythm generation fails
