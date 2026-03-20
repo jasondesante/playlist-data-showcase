@@ -167,14 +167,14 @@ interface GeneratedRhythm {
   - [x] Position in Step 1 (Analyze) header area, near the Analyze button
   - [x] Does NOT persist preference (always start in manual mode)
 
-- [ ] **Task 2.2: Create AutoLevelSettings component**
-  - [ ] Collapsible/expandable section that appears when auto mode is toggled ON
-  - [ ] Position: Below the toggle, within Step 1 (Analyze)
-  - [ ] Preset dropdown (casual, standard, challenge, bass)
-  - [ ] Difficulty selector (Easy/Medium/Hard)
-  - [ ] Output mode selector (Composite/Low/Mid/High)
-  - [ ] Intensity threshold slider (0.0-1.0, default 0.2)
-  - [ ] Collapsible "Advanced Options" within this panel
+- [x] **Task 2.2: Create AutoLevelSettings component**
+  - [x] Collapsible/expandable section that appears when auto mode is toggled ON
+  - [x] Position: Below the toggle, within Step 1 (Analyze)
+  - [x] Preset dropdown (casual, standard, challenge, bass)
+  - [x] Difficulty selector (Easy/Medium/Hard)
+  - [x] Output mode selector (Composite/Low/Mid/High)
+  - [x] Intensity threshold slider (0.0-1.0, default 0.2)
+  - [x] Collapsible "Advanced Options" within this panel
 
 - [ ] **Task 2.3: Update BeatDetectionTab for dual mode**
   - [ ] Import AutoLevelToggle and AutoLevelSettings

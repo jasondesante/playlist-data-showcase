@@ -1,0 +1,494 @@
+/* ============================================
+   AUTO LEVEL SETTINGS COMPONENT
+   Task 2.2 of AUTO_LEVEL_GENERATION_UI_PLAN.md
+   ============================================ */
+
+/* Main container */
+.auto-level-settings {
+    margin-top: 0.75rem;
+}
+
+/* Content container */
+.auto-level-settings__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Form groups */
+.auto-level-settings__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+    .auto-level-settings__form-label {
+        font-size: 0.875rem;
+    }
+}
+
+/* Preset buttons */
+.auto-level-settings__preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__preset-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__preset-button:hover:not(:disabled) {
+    background-color: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__preset-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__preset-button--active {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+}
+
+.auto-level-settings__preset-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Difficulty buttons */
+.auto-level-settings__difficulty-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__difficulty-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__difficulty-button:hover:not(:disabled) {
+    background-color: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__difficulty-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__difficulty-button--active {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+}
+
+.auto-level-settings__difficulty-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Output mode buttons */
+.auto-level-settings__output-mode-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.auto-level-settings__output-mode-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--surface-3));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__output-mode-button:hover:not(:disabled) {
+    background-color: hsl(var(--surface-4));
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.auto-level-settings__output-mode-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__output-mode-button--active {
+    background-color: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+}
+
+.auto-level-settings__output-mode-button--active.auto-level-settings__output-mode-button--low {
+    background-color: hsl(217 91% 60% / 0.15);
+    border-color: hsl(217 91% 60%);
+    color: hsl(217 91% 60%);
+}
+
+.auto-level-settings__output-mode-button--active.auto-level-settings__output-mode-button--mid {
+    background-color: hsl(142 76% 36% / 0.15);
+    border-color: hsl(142 76% 36%);
+    color: hsl(142 76% 36%);
+}
+
+.auto-level-settings__output-mode-button--active.auto-level-settings__output-mode-button--high {
+    background-color: hsl(25 95% 53% / 0.15);
+    border-color: hsl(25 95% 53%);
+    color: hsl(25 95% 53%);
+}
+
+.auto-level-settings__output-mode-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Band color dot */
+.auto-level-settings__band-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Slider */
+.auto-level-settings__slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.375rem;
+}
+
+.auto-level-settings__slider-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+@media (min-width: 768px) {
+    .auto-level-settings__slider-label {
+        font-size: 0.875rem;
+    }
+}
+
+.auto-level-settings__slider-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--primary));
+    font-family: var(--font-mono);
+    background-color: hsl(var(--surface-3));
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+}
+
+.auto-level-settings__slider {
+    width: 100%;
+    height: 0.5rem;
+    appearance: none;
+    background-color: hsl(var(--surface-3));
+    border-radius: var(--radius-full);
+    cursor: pointer;
+}
+
+.auto-level-settings__slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    background-color: hsl(var(--primary));
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out-cubic);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.auto-level-settings__slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.auto-level-settings__slider::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    background-color: hsl(var(--primary));
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: transform var(--duration-fast) var(--ease-out-cubic);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.auto-level-settings__slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+}
+
+.auto-level-settings__slider:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__slider:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+}
+
+.auto-level-settings__slider:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+}
+
+.auto-level-settings__slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.auto-level-settings__slider-help {
+    margin-top: 0.375rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.4;
+}
+
+/* Advanced toggle */
+.auto-level-settings__advanced-toggle {
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1rem;
+    margin-top: 0.25rem;
+}
+
+.auto-level-settings__advanced-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background-color: transparent;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__advanced-toggle-btn:hover:not(:disabled) {
+    background-color: hsl(var(--surface-3));
+    color: hsl(var(--foreground));
+}
+
+.auto-level-settings__advanced-toggle-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__advanced-toggle-btn--active {
+    background-color: hsl(var(--surface-3));
+    color: hsl(var(--foreground));
+}
+
+.auto-level-settings__advanced-toggle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auto-level-settings__advanced-chevron {
+    transition: transform var(--duration-normal) var(--ease-out-cubic);
+}
+
+.auto-level-settings__advanced-chevron--rotated {
+    transform: rotate(180deg);
+}
+
+/* Advanced content */
+.auto-level-settings__advanced-content {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: hsl(var(--surface-2));
+    border-radius: var(--radius);
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auto-level-settings__section {
+    margin-bottom: 0.75rem;
+}
+
+.auto-level-settings__section:last-child {
+    margin-bottom: 0;
+}
+
+.auto-level-settings__section-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+/* Band colors preview */
+.auto-level-settings__band-colors {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.auto-level-settings__band-color-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.auto-level-settings__band-color-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.auto-level-settings__band-color-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Advanced info text */
+.auto-level-settings__advanced-info {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.5;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+}
+
+.auto-level-settings__advanced-info code {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    background-color: hsl(var(--surface-3));
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+/* Reset button */
+.auto-level-settings__reset {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--border));
+}
+
+.auto-level-settings__reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    background-color: transparent;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.auto-level-settings__reset-btn:hover:not(:disabled) {
+    background-color: hsl(var(--surface-3));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.auto-level-settings__reset-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+
+.auto-level-settings__reset-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .auto-level-settings__preset-buttons,
+    .auto-level-settings__difficulty-buttons,
+    .auto-level-settings__output-mode-buttons {
+        gap: 0.375rem;
+    }
+
+    .auto-level-settings__preset-button,
+    .auto-level-settings__difficulty-button,
+    .auto-level-settings__output-mode-button {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.6875rem;
+    }
+
+    .auto-level-settings__band-colors {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 769px) and (max-width: 1023px) {
+    .auto-level-settings__content {
+        gap: 1.125rem;
+    }
+
+    .auto-level-settings__form-group {
+        gap: 0.4375rem;
+    }
+
+    .auto-level-settings__preset-button,
+    .auto-level-settings__difficulty-button,
+    .auto-level-settings__output-mode-button {
+        padding: 0.4375rem 0.75rem;
+        font-size: 0.7188rem;
+    }
+}
