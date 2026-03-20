@@ -238,14 +238,14 @@ interface GeneratedRhythm {
   - [x] Timeline placeholder (ready for Task 4.2)
   - [x] Inspector placeholder (ready for Task 4.4)
 
-- [ ] **Task 4.2: Create TransientTimeline component**
-  - [ ] Horizontal timeline similar to existing BeatTimeline
-  - [ ] Sync with audio playback (currentTime prop)
-  - [ ] Transients rendered as colored dots (by band)
-  - [ ] Size based on intensity
-  - [ ] Zoomable/scrollable (match existing timeline behavior)
-  - [ ] Click to inspect individual transient details
-  - [ ] Show playhead position synced with audio
+- [x] **Task 4.2: Create TransientTimeline component**
+  - [x] Horizontal timeline similar to existing BeatTimeline
+  - [x] Sync with audio playback (currentTime prop)
+  - [x] Transients rendered as colored dots (by band)
+  - [x] Size based on intensity
+  - [x] Zoomable/scrollable (match existing timeline behavior)
+  - [x] Click to inspect individual transient details
+  - [x] Show playhead position synced with audio
 
 - [x] **Task 4.3: Create TransientBandBreakdown component**
   - [x] Three cards in a row for Low/Mid/High bands

@@ -16,6 +16,7 @@
 import { useState, useMemo } from 'react';
 import { Zap, Filter, Layers } from 'lucide-react';
 import './TransientDetectionPanel.css';
+import { TransientTimeline } from './TransientTimeline';
 import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -195,43 +196,64 @@ function BandBreakdownCard({ band, transients, color, frequencyRange }: BandBrea
 }
 
 /**
- * Placeholder for timeline visualization (Task 4.2)
- */
-interface TransientTimelinePlaceholderProps {
-    transients: TransientResult[];
-    filteredCount: number;
-}
-
-function TransientTimelinePlaceholder({ transients, filteredCount }: TransientTimelinePlaceholderProps) {
-    return (
-        <div className="transient-timeline-placeholder">
-            <div className="transient-timeline-placeholder-header">
-                <span className="transient-timeline-placeholder-title">
-                    Transient Timeline
-                </span>
-                <span className="transient-timeline-placeholder-count">
-                    {filteredCount} of {transients.length} visible
-                </span>
-            </div>
-            <div className="transient-timeline-placeholder-content">
-                <Zap size={24} />
-                <p>Transient timeline visualization coming in Task 4.2</p>
-            </div>
-        </div>
-    );
-}
-
-/**
  * Placeholder for inspector (Task 4.4)
  */
-function TransientInspectorPlaceholder() {
+interface TransientInspectorPlaceholderProps {
+    selectedTransient?: TransientResult | null;
+}
+
+function TransientInspectorPlaceholder({ selectedTransient }: TransientInspectorPlaceholderProps) {
+    if (selectedTransient) {
+        return (
+            <div className="transient-inspector-placeholder">
+                <div className="transient-inspector-placeholder-title">
+                    Selected Transient
+                </div>
+                <div className="transient-inspector-content">
+                    <div className="transient-inspector-row">
+                        <span className="transient-inspector-label">Timestamp</span>
+                        <span className="transient-inspector-value">
+                            {selectedTransient.timestamp.toFixed(3)}s
+                        </span>
+                    </div>
+                    <div className="transient-inspector-row">
+                        <span className="transient-inspector-label">Band</span>
+                        <span className="transient-inspector-value transient-inspector-value--band">
+                            {selectedTransient.band.toUpperCase()}
+                        </span>
+                    </div>
+                    <div className="transient-inspector-row">
+                        <span className="transient-inspector-label">Intensity</span>
+                        <span className="transient-inspector-value">
+                            {(selectedTransient.intensity * 100).toFixed(0)}%
+                        </span>
+                    </div>
+                    <div className="transient-inspector-row">
+                        <span className="transient-inspector-label">Detection</span>
+                        <span className="transient-inspector-value">
+                            {DETECTION_METHOD_LABELS[selectedTransient.detectionMethod] || selectedTransient.detectionMethod}
+                        </span>
+                    </div>
+                    {selectedTransient.nearestBeat && (
+                        <div className="transient-inspector-row">
+                            <span className="transient-inspector-label">Nearest Beat</span>
+                            <span className="transient-inspector-value">
+                                #{selectedTransient.nearestBeat.index} ({selectedTransient.nearestBeat.distance.toFixed(0)}ms)
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="transient-inspector-placeholder">
             <div className="transient-inspector-placeholder-title">
                 Click a transient to inspect
             </div>
             <div className="transient-inspector-placeholder-content">
-                <p>Inspector details coming in Task 4.4</p>
+                <p>Select a transient on the timeline to see details</p>
             </div>
         </div>
     );
@@ -249,29 +271,27 @@ function TransientInspectorPlaceholder() {
  */
 export function TransientDetectionPanel({
     rhythm,
-    currentTime: _currentTime = 0,
-    isPlaying: _isPlaying = false,
-    onSeek: _onSeek,
+    currentTime = 0,
+    isPlaying = false,
+    onSeek,
     className,
 }: TransientDetectionPanelProps) {
     // Get transient analysis from the rhythm
     const transientAnalysis = rhythm.analysis.transientAnalysis;
     const allTransients = transientAnalysis.transients;
 
+    // Get duration from metadata or estimate from last transient
+    const duration = rhythm.metadata.duration > 0
+        ? rhythm.metadata.duration
+        : Math.max(...allTransients.map(t => t.timestamp), 0) + 1;
+
     // Filter state
     const [intensityThreshold, setIntensityThreshold] = useState(0);
     const [activeBand, setActiveBand] = useState<Band | 'all'>('all');
 
-    // Filter transients based on intensity and band
-    const filteredTransients = useMemo(() => {
-        return allTransients.filter((t) => {
-            // Intensity filter
-            if (t.intensity < intensityThreshold) return false;
-            // Band filter
-            if (activeBand !== 'all' && t.band !== activeBand) return false;
-            return true;
-        });
-    }, [allTransients, intensityThreshold, activeBand]);
+    // Selected transient state for inspector
+    const [selectedTransient, setSelectedTransient] = useState<TransientResult | null>(null);
+    const [selectedTransientIndex, setSelectedTransientIndex] = useState<number | null>(null);
 
     // Group transients by band for breakdown cards
     const transientsByBand = useMemo(() => {
@@ -286,9 +306,14 @@ export function TransientDetectionPanel({
         return groups;
     }, [allTransients]);
 
-    // Calculate total visible count
+    // Calculate total count
     const totalCount = allTransients.length;
-    const visibleCount = filteredTransients.length;
+
+    // Handle transient click for inspector
+    const handleTransientClick = (transient: TransientResult, index: number) => {
+        setSelectedTransient(transient);
+        setSelectedTransientIndex(index);
+    };
 
     return (
         <div className={`transient-detection-panel ${className || ''}`}>
@@ -331,14 +356,23 @@ export function TransientDetectionPanel({
                 ))}
             </div>
 
-            {/* Timeline placeholder (Task 4.2) */}
-            <TransientTimelinePlaceholder
-                transients={allTransients}
-                filteredCount={visibleCount}
-            />
+            {/* Transient Timeline (Task 4.2) */}
+            <div className="transient-timeline-section">
+                <TransientTimeline
+                    transients={allTransients}
+                    currentTime={currentTime}
+                    duration={duration}
+                    isPlaying={isPlaying}
+                    onSeek={onSeek}
+                    onTransientClick={handleTransientClick}
+                    selectedTransientIndex={selectedTransientIndex}
+                    filterBand={activeBand}
+                    intensityThreshold={intensityThreshold}
+                />
+            </div>
 
-            {/* Inspector placeholder (Task 4.4) */}
-            <TransientInspectorPlaceholder />
+            {/* Inspector (Task 4.4) */}
+            <TransientInspectorPlaceholder selectedTransient={selectedTransient} />
         </div>
     );
 }

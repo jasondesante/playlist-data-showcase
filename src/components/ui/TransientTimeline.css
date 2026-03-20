@@ -1,0 +1,358 @@
+/* ============================================
+   TRANSIENT TIMELINE - Horizontal Scrolling Visualization
+   Part of Phase 4: Transient Detection Visualization (Task 4.2)
+   ============================================ */
+
+/* Main container */
+.transient-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   TIMELINE TRACK
+   ============================================ */
+
+.transient-timeline-track {
+    position: relative;
+    height: 5rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    cursor: default;
+}
+
+.transient-timeline-track--draggable {
+    cursor: grab;
+}
+
+.transient-timeline-track--draggable:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.transient-timeline-track--dragging {
+    cursor: grabbing;
+}
+
+.transient-timeline-track--dragging:hover {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
+   BACKGROUND LAYERS
+   ============================================ */
+
+.transient-timeline-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--surface-3)) 0%,
+        hsl(var(--surface-2)) 30%,
+        hsl(var(--surface-2)) 70%,
+        hsl(var(--surface-3)) 100%
+    );
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border) / 0.4);
+}
+
+/* Past Region (left of now line) */
+.transient-timeline-past-region {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--background) / 0.3) 0%,
+        transparent 100%
+    );
+}
+
+/* Future Region (right of now line) */
+.transient-timeline-future-region {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(
+        270deg,
+        hsl(var(--background) / 0.15) 0%,
+        transparent 100%
+    );
+}
+
+/* ============================================
+   TRANSIENT MARKERS
+   ============================================ */
+
+.transient-timeline-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.transient-timeline-marker-dot {
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.transient-timeline-marker:hover .transient-timeline-marker-dot {
+    transform: scale(1.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Past transient markers (faded) */
+.transient-timeline-marker--past {
+    opacity: 0.5;
+}
+
+.transient-timeline-marker--past .transient-timeline-marker-dot {
+    opacity: 0.6;
+}
+
+/* Selected transient marker */
+.transient-timeline-marker--selected {
+    z-index: 3;
+}
+
+.transient-timeline-marker--selected .transient-timeline-marker-dot {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    transform: scale(1.3);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
+}
+
+.transient-timeline-marker--selected:hover .transient-timeline-marker-dot {
+    transform: scale(1.4);
+}
+
+/* Focus state for keyboard navigation */
+.transient-timeline-marker:focus {
+    outline: none;
+}
+
+.transient-timeline-marker:focus-visible .transient-timeline-marker-dot {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* ============================================
+   NOW LINE (Playhead)
+   ============================================ */
+
+.transient-timeline-now-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.transient-timeline-now-line-inner {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        hsl(var(--primary) / 0.2) 0%,
+        hsl(var(--primary)) 30%,
+        hsl(var(--primary)) 70%,
+        hsl(var(--primary) / 0.2) 100%
+    );
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+}
+
+.transient-timeline-now-label {
+    position: absolute;
+    bottom: -1.5rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 4px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================
+   IMPACT ZONE (visual indicator at NOW line)
+   ============================================ */
+
+.transient-timeline-impact-zone {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3rem;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        hsl(var(--primary) / 0.15) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ============================================
+   INFO BAR
+   ============================================ */
+
+.transient-timeline-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.transient-timeline-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.transient-timeline-info-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-timeline-info-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.transient-timeline-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.transient-timeline-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transient-timeline-legend-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.transient-timeline-legend-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: capitalize;
+}
+
+/* Intensity legend (size indicator) */
+.transient-timeline-legend-size {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.transient-timeline-legend-size-small {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+.transient-timeline-legend-size-large {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .transient-timeline-track {
+        height: 4rem;
+    }
+
+    .transient-timeline-info {
+        gap: 0.5rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .transient-timeline-legend {
+        gap: 0.5rem;
+        padding: 0.375rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .transient-timeline-track {
+        height: 3.5rem;
+    }
+
+    .transient-timeline-info {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .transient-timeline-legend {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .transient-timeline-now-label {
+        font-size: 0.5rem;
+        bottom: -1.25rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .transient-timeline-marker-dot {
+        transition: none;
+    }
+
+    .transient-timeline-marker:hover .transient-timeline-marker-dot {
+        transform: none;
+    }
+
+    .transient-timeline-marker--selected .transient-timeline-marker-dot {
+        transform: none;
+    }
+}
