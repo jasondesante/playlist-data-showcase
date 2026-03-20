@@ -6,14 +6,16 @@
  * - Header with total quantized beats count
  * - Summary statistics (avg quantization error, grid type distribution)
  * - Per-band quantization breakdown cards
- * - Placeholder for timeline visualizations (Tasks 6.2 and 6.3)
+ * - Grid decision timeline (Task 6.2)
+ * - Placeholder for quantized beat timeline (Task 6.3)
  *
  * Part of Phase 6: Quantization Visualization (Task 6.1)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
 import './QuantizationPanel.css';
+import { GridDecisionTimeline } from './GridDecisionTimeline';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -28,6 +30,14 @@ import type {
 export interface QuantizationPanelProps {
     /** The generated rhythm containing quantization results */
     rhythm: GeneratedRhythm;
+    /** Current audio playback time in seconds (for timeline sync) */
+    currentTime?: number;
+    /** Total audio duration in seconds */
+    duration?: number;
+    /** Whether audio is currently playing */
+    isPlaying?: boolean;
+    /** Callback when user seeks to a time position */
+    onSeek?: (time: number) => void;
     /** Additional CSS class names */
     className?: string;
 }
@@ -217,11 +227,19 @@ function BandQuantizationCard({ band, beats, gridDecisions, color }: BandQuantiz
  */
 export function QuantizationPanel({
     rhythm,
+    currentTime = 0,
+    duration = 0,
+    isPlaying = false,
+    onSeek,
     className,
 }: QuantizationPanelProps) {
     // Get quantization data from the rhythm
     const quantizationResult = rhythm.analysis.quantizationResult;
     const bandStreams = rhythm.bandStreams;
+    const composite = rhythm.composite;
+
+    // State for band filter in timeline
+    const [selectedBand, setSelectedBand] = useState<Band | 'all'>('all');
 
     // Calculate overall statistics
     const overallStats = useMemo(() => {
@@ -276,6 +294,40 @@ export function QuantizationPanel({
 
     // Get bands in order
     const bands: Band[] = ['low', 'mid', 'high'];
+
+    // Get grid decisions for selected band
+    const gridDecisionsForTimeline = useMemo(() => {
+        if (selectedBand === 'all') {
+            // For "all" view, we need to merge grid decisions
+            // Since beatIndex can overlap between bands, we'll show all of them
+            return [
+                ...bandStreams.low.gridDecisions,
+                ...bandStreams.mid.gridDecisions,
+                ...bandStreams.high.gridDecisions,
+            ];
+        }
+        return bandStreams[selectedBand].gridDecisions;
+    }, [bandStreams, selectedBand]);
+
+    // Calculate beat timestamps from quarter note interval
+    // The beatIndex in GridDecision refers to quarter note beats
+    const beatTimestamps = useMemo(() => {
+        const quarterNoteInterval = composite.quarterNoteInterval;
+        const maxBeatIndex = Math.max(
+            ...bandStreams.low.gridDecisions.map(d => d.beatIndex),
+            ...bandStreams.mid.gridDecisions.map(d => d.beatIndex),
+            ...bandStreams.high.gridDecisions.map(d => d.beatIndex),
+            0
+        );
+
+        // Create array of timestamps: index -> timestamp
+        // Beat 0 is at time 0, beat 1 is at quarterNoteInterval, etc.
+        const timestamps: number[] = [];
+        for (let i = 0; i <= maxBeatIndex; i++) {
+            timestamps.push(i * quarterNoteInterval);
+        }
+        return timestamps;
+    }, [composite.quarterNoteInterval, bandStreams]);
 
     return (
         <div className={`quantization-panel ${className || ''}`}>
@@ -367,13 +419,38 @@ export function QuantizationPanel({
                 </div>
             </div>
 
-            {/* Timeline placeholder for Task 6.2 */}
-            <div className="quantization-timeline-placeholder">
-                <div className="quantization-placeholder-content">
-                    <Grid3X3 size={24} />
-                    <p>Grid Decision Timeline (Task 6.2)</p>
-                    <span>Visualize per-beat grid choices with confidence scores</span>
+            {/* Grid Decision Timeline (Task 6.2) */}
+            <div className="quantization-timeline-section">
+                <div className="quantization-timeline-header">
+                    <h4 className="quantization-section-title">Grid Decision Timeline</h4>
+                    <div className="quantization-band-selector">
+                        <span className="quantization-band-selector-label">Band:</span>
+                        <button
+                            className={`quantization-band-btn ${selectedBand === 'all' ? 'active' : ''}`}
+                            onClick={() => setSelectedBand('all')}
+                        >
+                            All
+                        </button>
+                        {bands.map((band) => (
+                            <button
+                                key={band}
+                                className={`quantization-band-btn ${selectedBand === band ? 'active' : ''}`}
+                                onClick={() => setSelectedBand(band)}
+                                style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                            >
+                                {band.charAt(0).toUpperCase() + band.slice(1)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+                <GridDecisionTimeline
+                    gridDecisions={gridDecisionsForTimeline}
+                    beatTimestamps={beatTimestamps}
+                    currentTime={currentTime}
+                    duration={duration}
+                    isPlaying={isPlaying}
+                    onSeek={onSeek}
+                />
             </div>
 
             {/* Timeline placeholder for Task 6.3 */}

@@ -290,12 +290,12 @@ interface GeneratedRhythm {
   - [x] Container for quantization visualizations
   - [x] Summary stats (total quantized beats, avg error, grid type distribution)
 
-- [ ] **Task 6.2: Create GridDecisionTimeline component**
-  - [ ] Shows per-beat grid choice (16th vs triplet)
-  - [ ] Color coding: Blue for straight_16th, Purple for triplet_8th
-  - [ ] Opacity based on confidence
-  - [ ] Hover shows confidence score and offset values
-  - [ ] Sync with audio playback
+- [x] **Task 6.2: Create GridDecisionTimeline component**
+  - [x] Shows per-beat grid choice (16th vs triplet)
+  - [x] Color coding: Blue for straight_16th, Purple for triplet_8th
+  - [x] Opacity based on confidence
+  - [x] Hover shows confidence score and offset values
+  - [x] Sync with audio playback
 
 - [ ] **Task 6.3: Create QuantizedBeatTimeline component**
   - [ ] Shows final quantized output
