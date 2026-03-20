@@ -5573,6 +5573,17 @@ export interface StepCompletionStatus {
 
 /**
  * Hook to get the completion status of each step in the beat detection wizard.
+ *
+ * Manual Mode:
+ * - step1 (Analyze): complete when beatMap exists
+ * - step2 (Subdivide): complete when subdividedBeatMap exists
+ * - step3 (Chart): complete when keys are assigned
+ *
+ * Automatic Mode:
+ * - step1 (Analyze): complete when beatMap exists
+ * - step2 (Rhythm Generation): complete when generatedRhythm exists
+ * - step3 (Ready): not applicable (final step, no completion)
+ *
  * Uses a two-step approach to prevent infinite loops:
  * 1. First, select raw data with useShallow for stable references
  * 2. Then, memoize the computed result based on those stable values
@@ -5582,9 +5593,21 @@ export const useStepCompletion = (): StepCompletionStatus => {
     // Step 1: Select raw data with useShallow for stable references
     const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
     const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
+    const generatedRhythm = useBeatDetectionStore(useShallow((state) => state.generatedRhythm));
+    const generationMode = useBeatDetectionStore(useShallow((state) => state.generationMode));
 
     // Step 2: Memoize the computed result based on stable raw data
     return useMemo(() => {
+        if (generationMode === 'automatic') {
+            // Automatic mode: 3 steps
+            return {
+                step1: beatMap !== null,
+                step2: generatedRhythm !== null,
+                step3: false, // Ready step has no completion status
+            };
+        }
+
+        // Manual mode: 4 steps
         // Count keys in subdivided beat map for step 3 completion
         let keyCount = 0;
         if (subdividedBeatMap) {
@@ -5600,17 +5623,22 @@ export const useStepCompletion = (): StepCompletionStatus => {
             step2: subdividedBeatMap !== null,
             step3: keyCount > 0,
         };
-    }, [beatMap, subdividedBeatMap]);
+    }, [beatMap, subdividedBeatMap, generatedRhythm, generationMode]);
 };
 
 /**
  * Hook to get which steps are clickable/available in the beat detection wizard.
  *
- * Step availability rules:
+ * Manual Mode Step availability rules:
  * - step1: always available (assumes track is selected)
  * - step2: available when step1 is complete (beatMap exists)
  * - step3: available when step2 is complete (subdividedBeatMap exists)
  * - step4: available when step1 is complete (beatMap exists)
+ *
+ * Automatic Mode Step availability rules:
+ * - step1: always available (assumes track is selected)
+ * - step2 (Rhythm Generation): available when step1 is complete (beatMap exists)
+ * - step3 (Ready): available when step1 is complete (beatMap exists)
  *
  * Uses a two-step approach to prevent infinite loops.
  * @returns Set of available step numbers
@@ -5619,6 +5647,7 @@ export const useStepAvailability = (): Set<number> => {
     // Step 1: Select raw data with useShallow for stable references
     const beatMap = useBeatDetectionStore(useShallow((state) => state.beatMap));
     const subdividedBeatMap = useBeatDetectionStore(useShallow((state) => state.subdividedBeatMap));
+    const generationMode = useBeatDetectionStore(useShallow((state) => state.generationMode));
 
     // Step 2: Memoize the computed Set based on stable raw data
     return useMemo(() => {
@@ -5627,21 +5656,92 @@ export const useStepAvailability = (): Set<number> => {
         // Step 1 is always available
         available.add(1);
 
-        // Step 2 is available when step1 is complete (beatMap exists)
-        if (beatMap !== null) {
-            available.add(2);
-            // Step 4 is available when step1 is complete (beatMap exists)
-            available.add(4);
-        }
+        if (generationMode === 'automatic') {
+            // Automatic mode: 3 steps (Analyze → Rhythm Generation → Ready)
+            // Step 2 (Rhythm Generation) available when step 1 complete
+            // Step 3 (Ready) available when step 1 complete
+            if (beatMap !== null) {
+                available.add(2);
+                available.add(3);
+            }
+        } else {
+            // Manual mode: 4 steps (Analyze → Subdivide → Chart → Ready)
+            // Step 2 is available when step1 is complete (beatMap exists)
+            if (beatMap !== null) {
+                available.add(2);
+                // Step 4 is available when step1 is complete (beatMap exists)
+                available.add(4);
+            }
 
-        // Step 3 is available when step2 is complete (subdividedBeatMap exists)
-        if (subdividedBeatMap !== null) {
-            available.add(3);
+            // Step 3 is available when step2 is complete (subdividedBeatMap exists)
+            if (subdividedBeatMap !== null) {
+                available.add(3);
+            }
         }
 
         return available;
-    }, [beatMap, subdividedBeatMap]);
+    }, [beatMap, subdividedBeatMap, generationMode]);
 };
+
+/**
+ * Step configuration for a single step in the beat detection wizard.
+ * Matches the Step interface from StepNav component.
+ */
+export interface StepConfig {
+    /** Step identifier */
+    id: number;
+    /** Base label for the step */
+    label: string;
+    /** Optional dynamic label - overrides label when step becomes available */
+    dynamicLabel?: {
+        /** Label when step is available */
+        available: string;
+        /** Label when step is disabled */
+        disabled: string;
+    };
+}
+
+/**
+ * Manual mode step configuration (4 steps).
+ */
+const MANUAL_STEPS: StepConfig[] = [
+    { id: 1, label: 'Analyze' },
+    { id: 2, label: 'Subdivide' },
+    { id: 3, label: 'Chart' },
+    { id: 4, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
+];
+
+/**
+ * Automatic mode step configuration (3 steps).
+ */
+const AUTOMATIC_STEPS: StepConfig[] = [
+    { id: 1, label: 'Analyze' },
+    { id: 2, label: 'Rhythm Generation' },
+    { id: 3, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
+];
+
+/**
+ * Hook to get step configuration based on current generation mode.
+ *
+ * Manual Mode: 4 steps (Analyze → Subdivide → Chart → Ready)
+ * Automatic Mode: 3 steps (Analyze → Rhythm Generation → Ready)
+ *
+ * @returns Array of step configurations
+ */
+export const useStepsForMode = (): StepConfig[] => {
+    const generationMode = useBeatDetectionStore((state) => state.generationMode);
+
+    return useMemo(() => {
+        return generationMode === 'automatic' ? AUTOMATIC_STEPS : MANUAL_STEPS;
+    }, [generationMode]);
+};
+
+/**
+ * Hook to get the current generation mode.
+ * @returns 'manual' or 'automatic'
+ */
+export const useGenerationMode = (): 'manual' | 'automatic' =>
+    useBeatDetectionStore((state) => state.generationMode);
 
 /**
  * Navigation direction for step content animations.

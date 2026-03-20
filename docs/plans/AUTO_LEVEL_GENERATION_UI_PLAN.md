@@ -135,14 +135,14 @@ interface GeneratedRhythm {
   - [x] When switching from auto to manual mode: keep beatMap, clear generatedRhythm
   - [x] Do NOT persist generationMode to localStorage (always start in manual)
 
-- [ ] **Task 1.2: Update step availability logic for auto mode**
-  - [ ] Create `useStepsForMode()` hook - returns different step configs based on mode
+- [x] **Task 1.2: Update step availability logic for auto mode**
+  - [x] Create `useStepsForMode()` hook - returns different step configs based on mode
     - Manual: 4 steps (Analyze, Subdivide, Chart, Ready)
     - Automatic: 3 steps (Analyze, Rhythm Generation, Ready)
-  - [ ] Update `useStepAvailability()` to respect mode
-  - [ ] Step 2 (Rhythm Generation) available when step 1 complete
-  - [ ] Step 3 (Ready) available when step 1 complete
-  - [ ] When switching from auto to manual: navigate to Step 2 (Subdivide)
+  - [x] Update `useStepAvailability()` to respect mode
+  - [x] Step 2 (Rhythm Generation) available when step 1 complete
+  - [x] Step 3 (Ready) available when step 1 complete
+  - [x] When switching from auto to manual: navigate to Step 2 (Subdivide)
 
 - [ ] **Task 1.3: Create useRhythmGeneration hook**
   - [ ] Integrate with `AudioAnalyzer.generateRhythm()` from playlist-data-engine

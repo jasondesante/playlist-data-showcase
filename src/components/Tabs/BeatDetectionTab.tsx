@@ -17,8 +17,8 @@ import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection } from '../../store/beatDetectionStore';
-import { StepNav, type Step } from '../ui/StepNav';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode } from '../../store/beatDetectionStore';
+import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { logger } from '../../utils/logger';
 
@@ -69,18 +69,11 @@ export function BeatDetectionTab() {
     const stepCompletion = useStepCompletion();
     const availableSteps = useStepAvailability();
     const navigationDirection = useStepNavigationDirection();
+    const steps = useStepsForMode();
 
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Step configuration for StepNav
-    const steps: Step[] = [
-        { id: 1, label: 'Analyze' },
-        { id: 2, label: 'Subdivide' },
-        { id: 3, label: 'Chart' },
-        { id: 4, label: 'Ready', dynamicLabel: { available: 'Ready', disabled: 'Not Ready' } },
-    ];
 
     // Compute completed steps set
     const completedSteps = useMemo(() => {
