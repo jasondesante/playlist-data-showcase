@@ -14,6 +14,7 @@
  * - Metadata display on successful generation
  */
 
+import { useState, useMemo } from 'react';
 import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
@@ -35,7 +36,10 @@ import {
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
 import type {
     GeneratedRhythm,
+    RhythmicPhrase,
+    HighlightedRegion,
 } from '../../types/rhythmGeneration';
+import { getPhraseHighlightColor } from '../../types/rhythmGeneration';
 import { cn } from '../../utils/cn';
 
 // ============================================================
@@ -124,6 +128,38 @@ function RhythmGenerationResult({
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
+    // ========================================
+    // Phrase Selection State for Highlighting
+    // ========================================
+
+    const [selectedPhrase, setSelectedPhrase] = useState<RhythmicPhrase | null>(null);
+
+    // Compute highlighted regions from selected phrase
+    const highlightedRegions = useMemo((): HighlightedRegion[] => {
+        if (!selectedPhrase) return [];
+
+        // Find the phrase index for color generation
+        const phraseIndex = rhythm.analysis.phraseAnalysis.phrases.findIndex(
+            p => p.id === selectedPhrase.id
+        );
+
+        const color = getPhraseHighlightColor(phraseIndex >= 0 ? phraseIndex : 0);
+
+        // Convert phrase occurrences to highlighted regions
+        return selectedPhrase.occurrences.map((occurrence, idx) => ({
+            id: `${selectedPhrase.id}-occurrence-${idx}`,
+            startTimestamp: occurrence.startTimestamp,
+            endTimestamp: occurrence.endTimestamp,
+            color,
+            label: `Phrase: ${selectedPhrase.sizeInBeats} beats (${idx + 1}/${selectedPhrase.occurrences.length})`,
+        }));
+    }, [selectedPhrase, rhythm.analysis.phraseAnalysis.phrases]);
+
+    // Handle phrase selection from PhraseDetectionPanel
+    const handlePhraseSelect = (phrase: RhythmicPhrase | null) => {
+        setSelectedPhrase(phrase);
+    };
+
     return (
         <div className="rhythm-generation-result">
             <div className="rhythm-generation-result-header">
@@ -201,6 +237,7 @@ function RhythmGenerationResult({
                         duration={duration}
                         isPlaying={isPlaying}
                         onSeek={onSeek}
+                        highlightedRegions={highlightedRegions}
                     />
                 </CollapsibleSection>
 
@@ -246,6 +283,8 @@ function RhythmGenerationResult({
                         currentTime={currentTime}
                         isPlaying={isPlaying}
                         onSeek={onSeek}
+                        onPhraseSelect={handlePhraseSelect}
+                        selectedPhrase={selectedPhrase}
                     />
                 </CollapsibleSection>
             </div>

@@ -87,6 +87,25 @@
 }
 
 /* ============================================
+   HIGHLIGHTED REGIONS (Phrase Occurrences)
+   ============================================ */
+
+.variant-timeline-highlight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    pointer-events: none;
+    border-radius: 0.25rem;
+    transition: opacity 0.2s ease;
+}
+
+/* Highlight hover effect for debugging/interaction */
+.variant-timeline-highlight:hover {
+    opacity: 0.8;
+}
+
+/* ============================================
    BEAT MARKERS
    ============================================ */
 

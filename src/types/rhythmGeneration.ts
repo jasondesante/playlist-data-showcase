@@ -105,3 +105,38 @@ export const DEFAULT_AUTO_LEVEL_SETTINGS: AutoLevelSettings = {
     outputMode: 'composite',
     intensityThreshold: 0.2,
 };
+
+/**
+ * A highlighted region on a timeline.
+ * Used for phrase occurrence highlighting.
+ */
+export interface HighlightedRegion {
+    /** Unique identifier for this region */
+    id: string;
+    /** Start timestamp in seconds */
+    startTimestamp: number;
+    /** End timestamp in seconds */
+    endTimestamp: number;
+    /** Background color for the region (CSS color) */
+    color: string;
+    /** Optional label for the region */
+    label?: string;
+}
+
+/**
+ * Generate a color for a phrase pattern based on its index.
+ * Returns a consistent color from a predefined palette.
+ */
+export function getPhraseHighlightColor(index: number): string {
+    const colors = [
+        'rgba(59, 130, 246, 0.3)',   // Blue
+        'rgba(34, 197, 94, 0.3)',    // Green
+        'rgba(249, 115, 22, 0.3)',   // Orange
+        'rgba(168, 85, 247, 0.3)',   // Purple
+        'rgba(236, 72, 153, 0.3)',   // Pink
+        'rgba(20, 184, 166, 0.3)',   // Teal
+        'rgba(245, 158, 11, 0.3)',   // Amber
+        'rgba(239, 68, 68, 0.3)',    // Red
+    ];
+    return colors[index % colors.length];
+}

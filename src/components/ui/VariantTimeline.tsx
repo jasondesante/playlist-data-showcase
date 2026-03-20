@@ -21,6 +21,7 @@ import type {
     EditType,
     Band,
     DifficultyVariant,
+    HighlightedRegion,
 } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -68,6 +69,8 @@ export interface VariantTimelineProps {
     anticipationWindow?: number;
     /** Past window in seconds for showing beats that have passed (default: 4.0) */
     pastWindow?: number;
+    /** Highlighted regions to show on the timeline (for phrase occurrences) */
+    highlightedRegions?: HighlightedRegion[];
     /** Additional CSS class names */
     className?: string;
 }
@@ -151,6 +154,7 @@ export function VariantTimeline({
     isNatural = false,
     anticipationWindow = 2.0,
     pastWindow = 4.0,
+    highlightedRegions = [],
     className,
 }: VariantTimelineProps) {
     const trackRef = useRef<HTMLDivElement>(null);
@@ -345,6 +349,39 @@ export function VariantTimeline({
     const visibleBeats = getVisibleBeats();
 
     // ========================================
+    // Highlighted Regions for Phrase Occurrences
+    // ========================================
+
+    /**
+     * Calculate visible highlighted regions
+     */
+    const getVisibleHighlightedRegions = useCallback((): Array<{
+        region: HighlightedRegion;
+        startPosition: number;
+        endPosition: number;
+    }> => {
+        const minTime = smoothTime - pastWindow;
+        const maxTime = smoothTime + anticipationWindow;
+
+        return highlightedRegions
+            .filter((region) => {
+                // Region is visible if it overlaps with the visible time window
+                return region.endTimestamp >= minTime && region.startTimestamp <= maxTime;
+            })
+            .map((region) => {
+                const startPosition = calculatePosition(region.startTimestamp);
+                const endPosition = calculatePosition(region.endTimestamp);
+                return { region, startPosition, endPosition };
+            })
+            .filter((item) => {
+                // At least partially visible
+                return item.endPosition >= 0 && item.startPosition <= 1;
+            });
+    }, [highlightedRegions, smoothTime, pastWindow, anticipationWindow, calculatePosition]);
+
+    const visibleHighlightedRegions = getVisibleHighlightedRegions();
+
+    // ========================================
     // Statistics for info bar
     // ========================================
 
@@ -500,6 +537,20 @@ export function VariantTimeline({
 
                 {/* Future region indicator */}
                 <div className="variant-timeline-future-region" />
+
+                {/* Highlighted regions (for phrase occurrences) */}
+                {visibleHighlightedRegions.map(({ region, startPosition, endPosition }) => (
+                    <div
+                        key={`highlight-${region.id}`}
+                        className="variant-timeline-highlight"
+                        style={{
+                            left: `${Math.max(0, startPosition) * 100}%`,
+                            width: `${(Math.min(1, endPosition) - Math.max(0, startPosition)) * 100}%`,
+                            backgroundColor: region.color,
+                        }}
+                        title={region.label}
+                    />
+                ))}
 
                 {/* Variant beat markers */}
                 {visibleBeats.map(({ beat, index, position, isPast }) => {

@@ -22,6 +22,7 @@ import type {
     GeneratedBeat,
     GridDecision,
     Band,
+    HighlightedRegion,
 } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -39,6 +40,8 @@ export interface QuantizationPanelProps {
     isPlaying?: boolean;
     /** Callback when user seeks to a time position */
     onSeek?: (time: number) => void;
+    /** Highlighted regions to show on timelines (for phrase occurrences) */
+    highlightedRegions?: HighlightedRegion[];
     /** Additional CSS class names */
     className?: string;
 }
@@ -232,6 +235,7 @@ export function QuantizationPanel({
     duration = 0,
     isPlaying = false,
     onSeek,
+    highlightedRegions = [],
     className,
 }: QuantizationPanelProps) {
     // Get quantization data from the rhythm
@@ -501,6 +505,7 @@ export function QuantizationPanel({
                     isPlaying={isPlaying}
                     onSeek={onSeek}
                     filterBand={selectedBeatBand}
+                    highlightedRegions={highlightedRegions}
                 />
             </div>
         </div>

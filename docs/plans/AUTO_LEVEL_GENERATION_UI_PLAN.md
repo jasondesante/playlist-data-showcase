@@ -356,11 +356,17 @@ interface GeneratedRhythm {
   > Note: Extracted as standalone component from PhraseDetectionPanel inline code.
   > Created: src/components/ui/PhrasePatternCard.tsx and PhrasePatternCard.css
 
-- [ ] **Task 8.3: Add phrase occurrence highlighting**
-  - [ ] When phrase is selected, highlight all its occurrences on the main timeline
-  - [ ] Show occurrence markers as colored regions on timeline
-  - [ ] Different color for each phrase pattern
-  - [ ] Clear highlighting when phrase is deselected
+- [x] **Task 8.3: Add phrase occurrence highlighting**
+  - [x] When phrase is selected, highlight all its occurrences on the main timeline
+  - [x] Show occurrence markers as colored regions on timeline
+  - [x] Different color for each phrase pattern
+  - [x] Clear highlighting when phrase is deselected
+  > Note: Added HighlightedRegion type and getPhraseHighlightColor utility to rhythmGeneration.ts.
+  > Updated QuantizedBeatTimeline and VariantTimeline to accept highlightedRegions prop.
+  > Updated QuantizationPanel to pass highlightedRegions to QuantizedBeatTimeline.
+  > Added phrase selection state in RhythmGenerationTab's RhythmGenerationResult component.
+  > Connected PhraseDetectionPanel's onPhraseSelect callback to manage highlighting state.
+  > Added CSS styles for .quantized-beat-timeline-highlight and .variant-timeline-highlight.
 
 ---
 
