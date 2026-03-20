@@ -1466,3 +1466,30 @@ export function validateFullBeatMapExportData(data: unknown): FullBeatMapImportR
         warnings,
     };
 }
+
+// ============================================================
+// Rhythm Generation Types (Auto Level Generation)
+// ============================================================
+
+export type {
+    GenerationMode,
+    RhythmGenerationPhase,
+    RhythmGenerationProgress,
+    AutoLevelSettings,
+} from './rhythmGeneration.js';
+
+export {
+    DEFAULT_AUTO_LEVEL_SETTINGS,
+    RhythmGenerator,
+    RHYTHM_PRESETS,
+    getRhythmPreset,
+    getRhythmPresetNames,
+    type RhythmGenerationOptions,
+    type GeneratedRhythm,
+    type RhythmMetadata,
+    type OutputMode,
+    type Band,
+    type CachePhase,
+    type RhythmPresetName,
+    type RhythmPresetConfig,
+} from './rhythmGeneration.js';

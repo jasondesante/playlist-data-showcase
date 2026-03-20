@@ -125,15 +125,15 @@ interface GeneratedRhythm {
 
 ## Phase 1: Core Infrastructure
 
-- [ ] **Task 1.1: Add generation mode state to beatDetectionStore**
-  - [ ] Add `generationMode: 'manual' | 'automatic'` to store state (default: 'manual')
-  - [ ] Add `setGenerationMode(mode)` action
-  - [ ] Add `generatedRhythm: GeneratedRhythm | null` state (session-only, not persisted)
-  - [ ] Add `rhythmGenerationProgress: RhythmGenerationProgress | null` state
-  - [ ] Add actions: `setGeneratedRhythm()`, `clearGeneratedRhythm()`
-  - [ ] Reset generatedRhythm when track changes
-  - [ ] When switching from auto to manual mode: keep beatMap, clear generatedRhythm
-  - [ ] Do NOT persist generationMode to localStorage (always start in manual)
+- [x] **Task 1.1: Add generation mode state to beatDetectionStore**
+  - [x] Add `generationMode: 'manual' | 'automatic'` to store state (default: 'manual')
+  - [x] Add `setGenerationMode(mode)` action
+  - [x] Add `generatedRhythm: GeneratedRhythm | null` state (session-only, not persisted)
+  - [x] Add `rhythmGenerationProgress: RhythmGenerationProgress | null` state
+  - [x] Add actions: `setGeneratedRhythm()`, `clearGeneratedRhythm()`, `setRhythmGenerationProgress()`
+  - [x] Reset generatedRhythm when track changes
+  - [x] When switching from auto to manual mode: keep beatMap, clear generatedRhythm
+  - [x] Do NOT persist generationMode to localStorage (always start in manual)
 
 - [ ] **Task 1.2: Update step availability logic for auto mode**
   - [ ] Create `useStepsForMode()` hook - returns different step configs based on mode
@@ -151,10 +151,10 @@ interface GeneratedRhythm {
   - [ ] Progress phases: multiBand → transients → quantize → phrases → composite → variants
   - [ ] Support retry on error
 
-- [ ] **Task 1.4: Create rhythm generation types**
-  - [ ] Create `src/types/rhythmGeneration.ts`
-  - [ ] Export all rhythm generation interfaces
-  - [ ] Add to `src/types/index.ts`
+- [x] **Task 1.4: Create rhythm generation types**
+  - [x] Create `src/types/rhythmGeneration.ts`
+  - [x] Export all rhythm generation interfaces
+  - [x] Add to `src/types/index.ts`
 
 ---
 

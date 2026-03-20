@@ -98,6 +98,8 @@ import {
     unifyBeatMap,
     GrooveAnalyzer,
     RhythmXPCalculator,
+    // Rhythm Generation types (Task 1.1)
+    type GeneratedRhythm,
 } from 'playlist-data-engine';
 
 /**
@@ -583,6 +585,36 @@ interface BeatDetectionState {
      * Used to determine if we're navigating forward (slide left) or backward (slide right).
      */
     previousStep: number | null;
+
+    // ============================================================
+    // Rhythm Generation State (Task 1.1)
+    // ============================================================
+
+    /**
+     * Generation mode for the beat detection wizard.
+     * - 'manual': 4-step wizard (Analyze → Subdivide → Chart → Ready)
+     * - 'automatic': 3-step wizard (Analyze → Rhythm Generation → Ready)
+     * Default: 'manual' (NOT persisted - always start in manual mode)
+     */
+    generationMode: 'manual' | 'automatic';
+
+    /**
+     * Generated rhythm data from the RhythmGenerator.
+     * This is session-only state (NOT persisted to localStorage).
+     * Cleared when track changes or when switching from auto to manual mode.
+     */
+    generatedRhythm: GeneratedRhythm | null;
+
+    /**
+     * Progress state for rhythm generation pipeline.
+     * Tracks the current phase and progress percentage.
+     * Phases: multiBand → transients → quantize → phrases → composite → variants
+     */
+    rhythmGenerationProgress: {
+        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+        progress: number;
+        message: string;
+    } | null;
 }
 
 interface BeatDetectionActions {
@@ -1215,6 +1247,46 @@ interface BeatDetectionActions {
      * @param step - The step number to navigate to (1-4)
      */
     setCurrentStep: (step: 1 | 2 | 3 | 4) => void;
+
+    // ============================================================
+    // Rhythm Generation Actions (Task 1.1)
+    // ============================================================
+
+    /**
+     * Set the generation mode for the beat detection wizard.
+     * When switching from 'automatic' to 'manual':
+     * - Keeps beatMap (if any)
+     * - Clears generatedRhythm
+     * - Navigates to Step 2 (Subdivide)
+     * @param mode - The generation mode ('manual' or 'automatic')
+     */
+    setGenerationMode: (mode: 'manual' | 'automatic') => void;
+
+    /**
+     * Set the generated rhythm data.
+     * This is session-only state (not persisted to localStorage).
+     * @param rhythm - The generated rhythm data from RhythmGenerator, or null to clear
+     */
+    setGeneratedRhythm: (rhythm: GeneratedRhythm | null) => void;
+
+    /**
+     * Set the rhythm generation progress state.
+     * @param progress - The current progress of the rhythm generation pipeline
+     */
+    setRhythmGenerationProgress: (progress: {
+        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+        progress: number;
+        message: string;
+    } | null) => void;
+
+    /**
+     * Clear the generated rhythm state.
+     * Called when:
+     * - Track changes
+     * - Switching from 'automatic' to 'manual' mode
+     * - User manually clears the rhythm
+     */
+    clearGeneratedRhythm: () => void;
 }
 
 interface BeatDetectionStoreState extends BeatDetectionState {
@@ -1396,6 +1468,11 @@ const createInitialState = (): BeatDetectionState => ({
     // Step Navigation state (Phase 1: Task 1.1)
     currentStep: 1, // Start on the Analyze step
     previousStep: null, // No navigation has occurred yet
+
+    // Rhythm Generation state (Task 1.1)
+    generationMode: 'manual', // Always start in manual mode
+    generatedRhythm: null, // Session-only
+    rhythmGenerationProgress: null, // Session-only
 });
 
 /**
@@ -1873,6 +1950,10 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             // Reset step navigation to initial state
                             currentStep: 1,
                             previousStep: null,
+                            // Reset rhythm generation state (Task 1.1)
+                            // Note: generationMode stays as-is (not reset to manual)
+                            generatedRhythm: null,
+                            rhythmGenerationProgress: null,
                         });
                     },
 
@@ -4115,6 +4196,107 @@ export const useBeatDetectionStore = create<BeatDetectionStoreState>()(
                             set({
                                 previousStep: currentStep,
                                 currentStep: step,
+                            });
+                        }
+                    },
+
+                    // ============================================================
+                    // Rhythm Generation Actions (Task 1.1)
+                    // ============================================================
+
+                    /**
+                     * Set the generation mode for the beat detection wizard.
+                     * When switching from 'automatic' to 'manual':
+                     * - Keeps beatMap (if any)
+                     * - Clears generatedRhythm
+                     * - Navigates to Step 2 (Subdivide)
+                     */
+                    setGenerationMode: (mode: 'manual' | 'automatic') => {
+                        const state = get();
+                        const previousMode = state.generationMode;
+
+                        if (previousMode === mode) {
+                            return; // No change needed
+                        }
+
+                        logger.info('BeatDetection', 'Changing generation mode', {
+                            from: previousMode,
+                            to: mode,
+                        });
+
+                        // When switching from auto to manual:
+                        // - Keep beatMap
+                        // - Clear generated rhythm
+                        // - Navigate to Step 2 (Subdivide)
+                        if (previousMode === 'automatic' && mode === 'manual') {
+                            set({
+                                generationMode: mode,
+                                generatedRhythm: null,
+                                rhythmGenerationProgress: null,
+                            });
+                            // Navigate to Step 2 (Subdivide) if we have a beat map
+                            if (state.beatMap) {
+                                state.actions.setCurrentStep(2);
+                            }
+                        } else {
+                            // Switching from manual to auto: just update mode
+                            // Clear any previously generated rhythm
+                            set({
+                                generationMode: mode,
+                                generatedRhythm: null,
+                                rhythmGenerationProgress: null,
+                            });
+                        }
+                    },
+
+                    /**
+                     * Set the generated rhythm data.
+                     * This is session-only state (not persisted to localStorage).
+                     */
+                    setGeneratedRhythm: (rhythm: GeneratedRhythm | null) => {
+                        if (rhythm) {
+                            logger.info('BeatDetection', 'Setting generated rhythm', {
+                                bandStreams: Object.keys(rhythm.bandStreams),
+                                hasComposite: !!rhythm.composite,
+                                hasVariants: !!rhythm.difficultyVariants,
+                                phrasesDetected: rhythm.analysis?.phraseAnalysis?.phrases?.length ?? 0,
+                                naturalDifficulty: rhythm.metadata?.naturalDifficulty,
+                            });
+                        } else {
+                            logger.info('BeatDetection', 'Clearing generated rhythm');
+                        }
+                        set({ generatedRhythm: rhythm });
+                    },
+
+                    /**
+                     * Set the rhythm generation progress state.
+                     */
+                    setRhythmGenerationProgress: (progress: {
+                        phase: 'multiBand' | 'transients' | 'quantize' | 'phrases' | 'composite' | 'variants';
+                        progress: number;
+                        message: string;
+                    } | null) => {
+                        if (progress) {
+                            logger.debug('BeatDetection', 'Rhythm generation progress', {
+                                phase: progress.phase,
+                                progress: progress.progress,
+                                message: progress.message,
+                            });
+                        }
+                        set({ rhythmGenerationProgress: progress });
+                    },
+
+                    /**
+                     * Clear the generated rhythm data and progress.
+                     * Called when track changes or when switching modes.
+                     */
+                    clearGeneratedRhythm: () => {
+                        const state = get();
+                        if (state.generatedRhythm || state.rhythmGenerationProgress) {
+                            logger.info('BeatDetection', 'Clearing generated rhythm state');
+                            set({
+                                generatedRhythm: null,
+                                rhythmGenerationProgress: null,
                             });
                         }
                     },
