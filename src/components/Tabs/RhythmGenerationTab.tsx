@@ -26,6 +26,7 @@ import { MultiBandVisualization } from '../ui/MultiBandVisualization';
 import { QuantizationPanel } from '../ui/QuantizationPanel';
 import { DifficultyVariantsPanel } from '../ui/DifficultyVariantsPanel';
 import { VariantComparisonView } from '../ui/VariantComparisonView';
+import { PhraseDetectionPanel } from '../ui/PhraseDetectionPanel';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -195,10 +196,7 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     badge={metadata.phrasesDetected}
                     defaultCollapsed={true}
                 >
-                    <div className="rhythm-generation-visualization-placeholder">
-                        <Music size={24} />
-                        <p>Phrase detection visualization coming in Phase 8</p>
-                    </div>
+                    <PhraseDetectionPanel rhythm={rhythm} />
                 </CollapsibleSection>
             </div>
 

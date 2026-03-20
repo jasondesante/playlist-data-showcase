@@ -340,11 +340,11 @@ interface GeneratedRhythm {
 
 ## Phase 8: Phrase Detection Visualization (List with Timeline Highlight)
 
-- [ ] **Task 8.1: Create PhraseDetectionPanel component**
-  - [ ] List of detected rhythmic phrases
-  - [ ] Total phrase count
-  - [ ] Sort by significance
-  - [ ] Compact card for each phrase
+- [x] **Task 8.1: Create PhraseDetectionPanel component**
+  - [x] List of detected rhythmic phrases
+  - [x] Total phrase count
+  - [x] Sort by significance
+  - [x] Compact card for each phrase
 
 - [ ] **Task 8.2: Create PhrasePatternCard component**
   - [ ] Shows a single detected pattern
