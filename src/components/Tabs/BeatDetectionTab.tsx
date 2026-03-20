@@ -22,6 +22,7 @@ import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { AutoLevelSettings } from '../ui/AutoLevelSettings';
+import { RhythmGenerationTab } from './RhythmGenerationTab';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
@@ -84,12 +85,11 @@ export function BeatDetectionTab() {
     );
 
     // Task 2.5: Rhythm generation hook for auto mode
+    // Note: RhythmGenerationTab component reads progress and error directly from the store
     const {
         generate: generateRhythm,
         isGenerating: isRhythmGenerating,
-        progress: rhythmProgress,
         rhythm: generatedRhythm,
-        error: rhythmError,
     } = useRhythmGeneration();
 
     // Track if we were generating to detect analysis completion
@@ -522,10 +522,10 @@ export function BeatDetectionTab() {
 
             case 2:
                 // Step 2: Mode-dependent content
-                // - Auto mode: Rhythm Generation (Task 2.5: with auto-start)
+                // - Auto mode: Rhythm Generation (Task 3.1: using RhythmGenerationTab)
                 // - Manual mode: Subdivide settings
                 if (generationMode === 'automatic') {
-                    // Task 2.5: Rhythm Generation step in auto mode
+                    // Task 3.1: Rhythm Generation step in auto mode using RhythmGenerationTab component
                     if (!beatMap || isBeatGenerating) {
                         return wrapContent(
                             <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
@@ -540,140 +540,25 @@ export function BeatDetectionTab() {
                         );
                     }
 
-                    // Task 2.5: Show rhythm generation progress
-                    if (isRhythmGenerating) {
-                        return wrapContent(
-                            <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
-                                <div className="audio-analysis-rhythm-generation-section">
-                                    <h3 className="audio-analysis-step-title">
-                                        Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
-                                    </h3>
-                                    <div className="audio-analysis-rhythm-generation-progress">
-                                        <div className="audio-analysis-progress-indicator">
-                                            <Sparkles className="audio-analysis-sparkle-icon" />
-                                        </div>
-                                        <h4 className="audio-analysis-progress-title">Generating Rhythm Patterns...</h4>
-                                        {rhythmProgress && (
-                                            <>
-                                                <div className="audio-analysis-progress-bar-container">
-                                                    <div
-                                                        className="audio-analysis-progress-bar"
-                                                        style={{ width: `${rhythmProgress.progress}%` }}
-                                                    />
-                                                </div>
-                                                <p className="audio-analysis-progress-phase">
-                                                    {rhythmProgress.message}
-                                                </p>
-                                                <p className="audio-analysis-progress-percent">
-                                                    {rhythmProgress.progress}% - Phase: {rhythmProgress.phase}
-                                                </p>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    // Task 2.5: Show error state if rhythm generation failed
-                    if (rhythmError && !generatedRhythm) {
-                        return wrapContent(
-                            <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
-                                <div className="audio-analysis-rhythm-generation-section">
-                                    <h3 className="audio-analysis-step-title">
-                                        Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
-                                    </h3>
-                                    <div className="audio-analysis-rhythm-generation-error">
-                                        <div className="audio-analysis-error-icon">⚠️</div>
-                                        <h4 className="audio-analysis-error-title">Rhythm Generation Failed</h4>
-                                        <p className="audio-analysis-error-text">
-                                            {rhythmError}
-                                        </p>
-                                        <div className="audio-analysis-error-actions">
-                                            <Button
-                                                variant="primary"
-                                                onClick={() => {
-                                                    if (selectedTrack?.audio_url) {
-                                                        generateRhythm(selectedTrack.audio_url, {
-                                                            difficulty: autoLevelSettings.difficulty,
-                                                            outputMode: autoLevelSettings.outputMode,
-                                                            minimumTransientIntensity: autoLevelSettings.intensityThreshold,
-                                                        });
-                                                    }
-                                                }}
-                                            >
-                                                Retry
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => setGenerationMode('manual')}
-                                            >
-                                                Switch to Manual Mode
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    // Task 2.5: Show completion state with generated rhythm info
+                    // Task 3.1: Use RhythmGenerationTab component
                     return wrapContent(
-                        <Card variant="elevated" padding="lg" className="audio-analysis-rhythm-generation-card">
-                            <div className="audio-analysis-rhythm-generation-section">
-                                <h3 className="audio-analysis-step-title">
-                                    Rhythm Generation <Tooltip content="Automatic rhythm pattern generation using transient detection and quantization" />
-                                </h3>
-                                {generatedRhythm ? (
-                                    <div className="audio-analysis-rhythm-generation-result">
-                                        <div className="audio-analysis-result-icon">✅</div>
-                                        <h4 className="audio-analysis-result-title">Rhythm Generated Successfully!</h4>
-                                        <div className="audio-analysis-result-stats">
-                                            <div className="audio-analysis-result-stat">
-                                                <span className="audio-analysis-stat-label">Transients Detected:</span>
-                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.transientsDetected}</span>
-                                            </div>
-                                            <div className="audio-analysis-result-stat">
-                                                <span className="audio-analysis-stat-label">Phrases Detected:</span>
-                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.phrasesDetected}</span>
-                                            </div>
-                                            <div className="audio-analysis-result-stat">
-                                                <span className="audio-analysis-stat-label">Natural Difficulty:</span>
-                                                <span className="audio-analysis-stat-value">{generatedRhythm.metadata.naturalDifficulty}</span>
-                                            </div>
-                                        </div>
-                                        <p className="audio-analysis-result-note">
-                                            Full visualizations (transient timeline, multi-band analysis, difficulty variants)
-                                            coming in Phase 3+.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="audio-analysis-rhythm-generation-placeholder">
-                                        <div className="audio-analysis-rhythm-generation-placeholder-icon">🎵</div>
-                                        <h4 className="audio-analysis-rhythm-generation-placeholder-title">
-                                            Ready to Generate
-                                        </h4>
-                                        <p className="audio-analysis-rhythm-generation-placeholder-text">
-                                            Click "Re-Analyze" in Step 1 to regenerate the beat map and rhythm patterns.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Post-completion prompt for Step 2 in auto mode */}
-                            <StepCompletionPrompt
-                                message="Rhythm generated!"
-                                visible={!!generatedRhythm && !isRhythmGenerating}
-                                actions={[
-                                    {
-                                        label: 'Go to Practice',
-                                        onClick: () => setCurrentStep(3),
-                                        variant: 'primary',
-                                        icon: ArrowRight,
-                                    },
-                                ]}
-                            />
-                        </Card>
+                        <RhythmGenerationTab
+                            audioUrl={selectedTrack?.audio_url}
+                            difficulty={autoLevelSettings.difficulty}
+                            outputMode={autoLevelSettings.outputMode}
+                            intensityThreshold={autoLevelSettings.intensityThreshold}
+                            onSwitchToManual={() => setGenerationMode('manual')}
+                            onRetry={() => {
+                                if (selectedTrack?.audio_url) {
+                                    generateRhythm(selectedTrack.audio_url, {
+                                        difficulty: autoLevelSettings.difficulty,
+                                        outputMode: autoLevelSettings.outputMode,
+                                        minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+                                    });
+                                }
+                            }}
+                            onProceed={() => setCurrentStep(3)}
+                        />
                     );
                 }
                 // Manual mode: Subdivide
