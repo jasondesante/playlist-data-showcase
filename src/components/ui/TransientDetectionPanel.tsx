@@ -17,6 +17,7 @@ import { useState, useMemo } from 'react';
 import { Zap, Filter, Layers } from 'lucide-react';
 import './TransientDetectionPanel.css';
 import { TransientTimeline } from './TransientTimeline';
+import { TransientInspector } from './TransientInspector';
 import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -195,69 +196,6 @@ function BandBreakdownCard({ band, transients, color, frequencyRange }: BandBrea
     );
 }
 
-/**
- * Placeholder for inspector (Task 4.4)
- */
-interface TransientInspectorPlaceholderProps {
-    selectedTransient?: TransientResult | null;
-}
-
-function TransientInspectorPlaceholder({ selectedTransient }: TransientInspectorPlaceholderProps) {
-    if (selectedTransient) {
-        return (
-            <div className="transient-inspector-placeholder">
-                <div className="transient-inspector-placeholder-title">
-                    Selected Transient
-                </div>
-                <div className="transient-inspector-content">
-                    <div className="transient-inspector-row">
-                        <span className="transient-inspector-label">Timestamp</span>
-                        <span className="transient-inspector-value">
-                            {selectedTransient.timestamp.toFixed(3)}s
-                        </span>
-                    </div>
-                    <div className="transient-inspector-row">
-                        <span className="transient-inspector-label">Band</span>
-                        <span className="transient-inspector-value transient-inspector-value--band">
-                            {selectedTransient.band.toUpperCase()}
-                        </span>
-                    </div>
-                    <div className="transient-inspector-row">
-                        <span className="transient-inspector-label">Intensity</span>
-                        <span className="transient-inspector-value">
-                            {(selectedTransient.intensity * 100).toFixed(0)}%
-                        </span>
-                    </div>
-                    <div className="transient-inspector-row">
-                        <span className="transient-inspector-label">Detection</span>
-                        <span className="transient-inspector-value">
-                            {DETECTION_METHOD_LABELS[selectedTransient.detectionMethod] || selectedTransient.detectionMethod}
-                        </span>
-                    </div>
-                    {selectedTransient.nearestBeat && (
-                        <div className="transient-inspector-row">
-                            <span className="transient-inspector-label">Nearest Beat</span>
-                            <span className="transient-inspector-value">
-                                #{selectedTransient.nearestBeat.index} ({selectedTransient.nearestBeat.distance.toFixed(0)}ms)
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="transient-inspector-placeholder">
-            <div className="transient-inspector-placeholder-title">
-                Click a transient to inspect
-            </div>
-            <div className="transient-inspector-placeholder-content">
-                <p>Select a transient on the timeline to see details</p>
-            </div>
-        </div>
-    );
-}
 
 // ============================================================
 // Main Component
@@ -372,7 +310,16 @@ export function TransientDetectionPanel({
             </div>
 
             {/* Inspector (Task 4.4) */}
-            <TransientInspectorPlaceholder selectedTransient={selectedTransient} />
+            <TransientInspector
+                selectedTransient={selectedTransient}
+                selectedIndex={selectedTransientIndex}
+                currentTime={currentTime}
+                onClear={() => {
+                    setSelectedTransient(null);
+                    setSelectedTransientIndex(null);
+                }}
+                onSeek={onSeek}
+            />
         </div>
     );
 }

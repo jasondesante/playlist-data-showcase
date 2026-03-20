@@ -257,9 +257,9 @@ interface GeneratedRhythm {
     - Color indicator matching timeline
   > Note: Implemented inline as BandBreakdownCard within TransientDetectionPanel
 
-- [ ] **Task 4.4: Create TransientInspector component**
-  - [ ] Tooltip or side panel showing selected transient details
-  - [ ] Display: timestamp, intensity, band, detection method, nearest beat info
+- [x] **Task 4.4: Create TransientInspector component**
+  - [x] Tooltip or side panel showing selected transient details
+  - [x] Display: timestamp, intensity, band, detection method, nearest beat info
 
 ---
 

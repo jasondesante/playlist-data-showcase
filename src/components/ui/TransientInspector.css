@@ -1,0 +1,439 @@
+/* ============================================
+   TRANSIENT INSPECTOR (Task 4.4)
+   Side panel/inspector for selected transient details.
+   ============================================ */
+
+/* Main container */
+.transient-inspector {
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.transient-inspector:hover {
+    border-color: hsl(var(--border) / 0.8);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.transient-inspector--empty {
+    background: hsl(var(--surface-1));
+}
+
+.transient-inspector-empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.transient-inspector-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background: hsl(var(--surface-3));
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-inspector-empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    margin-bottom: 0.5rem;
+}
+
+.transient-inspector-empty-description {
+    font-size: 0.8125rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    line-height: 1.5;
+    max-width: 240px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.transient-inspector-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--surface-3));
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.transient-inspector-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.transient-inspector-band-indicator {
+    width: 4px;
+    height: 24px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.transient-inspector-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.transient-inspector-title-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.transient-inspector-index {
+    font-size: 0.6875rem;
+    font-family: var(--font-mono);
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-inspector-clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.transient-inspector-clear-btn:hover {
+    background: hsl(var(--surface-2));
+    color: hsl(var(--foreground));
+}
+
+.transient-inspector-clear-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* ============================================
+   INTENSITY BAR
+   ============================================ */
+
+.transient-inspector-intensity {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.transient-inspector-intensity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.transient-inspector-intensity-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-inspector-intensity-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: hsl(var(--foreground));
+}
+
+.transient-inspector-intensity-bar-container {
+    width: 100%;
+    height: 8px;
+    background: hsl(var(--surface-1));
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.transient-inspector-intensity-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Intensity level colors */
+.transient-inspector-intensity.intensity--very-high .transient-inspector-intensity-bar {
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(350 80% 55%));
+}
+
+.transient-inspector-intensity.intensity--high .transient-inspector-intensity-bar {
+    background: linear-gradient(90deg, hsl(210 70% 50%), hsl(var(--primary)));
+}
+
+.transient-inspector-intensity.intensity--medium .transient-inspector-intensity-bar {
+    background: hsl(var(--primary));
+}
+
+.transient-inspector-intensity.intensity--low .transient-inspector-intensity-bar {
+    background: hsl(var(--primary) / 0.6);
+}
+
+.transient-inspector-intensity.intensity--very-low .transient-inspector-intensity-bar {
+    background: hsl(var(--primary) / 0.4);
+}
+
+.transient-inspector-intensity-level {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-align: right;
+    margin-top: 0.375rem;
+}
+
+/* ============================================
+   DETAILS SECTION
+   ============================================ */
+
+.transient-inspector-details {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.transient-inspector-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.2);
+}
+
+.transient-inspector-row:last-child {
+    border-bottom: none;
+}
+
+.transient-inspector-row-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transient-inspector-row-icon {
+    display: flex;
+    align-items: center;
+    color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.transient-inspector-row-value {
+    font-size: 0.8125rem;
+    color: hsl(var(--foreground));
+    text-align: right;
+}
+
+/* Timestamp Group */
+.transient-inspector-timestamp-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.125rem;
+}
+
+.transient-inspector-timestamp {
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.transient-inspector-offset {
+    font-size: 0.6875rem;
+    font-family: var(--font-mono);
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-inspector-offset.offset--past {
+    color: hsl(var(--muted-foreground));
+}
+
+.transient-inspector-offset.offset--future {
+    color: hsl(var(--primary));
+}
+
+.transient-inspector-offset.offset--now {
+    color: hsl(142 70% 45%);
+}
+
+/* Band Group */
+.transient-inspector-band-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.transient-inspector-band-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.transient-inspector-band-range {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Method Group */
+.transient-inspector-method-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.transient-inspector-method-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: hsl(var(--foreground));
+    background: hsl(var(--surface-3));
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.transient-inspector-method-desc {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    max-width: 180px;
+    text-align: right;
+}
+
+/* Beat Group */
+.transient-inspector-beat-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.transient-inspector-beat-index {
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.transient-inspector-beat-distance {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   ACTIONS
+   ============================================ */
+
+.transient-inspector-actions {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid hsl(var(--border));
+    display: flex;
+    gap: 0.5rem;
+}
+
+.transient-inspector-seek-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.transient-inspector-seek-btn:hover {
+    background: hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.transient-inspector-seek-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+.transient-inspector-seek-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 480px) {
+    .transient-inspector-empty-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .transient-inspector-header {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .transient-inspector-details {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .transient-inspector-intensity {
+        padding: 0.75rem;
+    }
+
+    .transient-inspector-actions {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .transient-inspector-method-desc {
+        max-width: 140px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .transient-inspector,
+    .transient-inspector-clear-btn,
+    .transient-inspector-intensity-bar,
+    .transient-inspector-seek-btn {
+        transition: none;
+    }
+}
+
+/* Focus visible styles */
+.transient-inspector-clear-btn:focus-visible,
+.transient-inspector-seek-btn:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
