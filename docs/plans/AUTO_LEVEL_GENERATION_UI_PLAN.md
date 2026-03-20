@@ -346,13 +346,15 @@ interface GeneratedRhythm {
   - [x] Sort by significance
   - [x] Compact card for each phrase
 
-- [ ] **Task 8.2: Create PhrasePatternCard component**
-  - [ ] Shows a single detected pattern
-  - [ ] Visual representation of the rhythm (mini timeline or grid)
-  - [ ] Size (1/2/4/8 beats)
-  - [ ] Occurrence count
-  - [ ] Significance score
-  - [ ] Click to highlight all occurrences on main timeline
+- [x] **Task 8.2: Create PhrasePatternCard component**
+  - [x] Shows a single detected pattern
+  - [x] Visual representation of the rhythm (mini timeline or grid)
+  - [x] Size (1/2/4/8 beats)
+  - [x] Occurrence count
+  - [x] Significance score
+  - [x] Click to highlight all occurrences on main timeline
+  > Note: Extracted as standalone component from PhraseDetectionPanel inline code.
+  > Created: src/components/ui/PhrasePatternCard.tsx and PhrasePatternCard.css
 
 - [ ] **Task 8.3: Add phrase occurrence highlighting**
   - [ ] When phrase is selected, highlight all its occurrences on the main timeline

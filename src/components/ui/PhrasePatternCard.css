@@ -1,0 +1,240 @@
+/* ============================================
+   PHRASE PATTERN CARD (Task 8.2)
+   Compact card for a single detected pattern.
+   ============================================ */
+
+/* Main card container */
+.phrase-pattern-card {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+    background: hsl(var(--surface-2));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.phrase-pattern-card:hover {
+    border-color: color-mix(in srgb, var(--phrase-band-color) 40%, transparent);
+    background: hsl(var(--surface-3));
+}
+
+.phrase-pattern-card.selected {
+    border-color: var(--phrase-band-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--phrase-band-color) 20%, transparent);
+}
+
+.phrase-pattern-card:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+}
+
+/* ============================================
+   LEFT SECTION: Index and Band Indicator
+   ============================================ */
+
+.phrase-pattern-card-index {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 3rem;
+}
+
+.phrase-pattern-card-number {
+    font-size: 1rem;
+    font-weight: 700;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+.phrase-pattern-card-band-indicator {
+    width: 4px;
+    height: 100%;
+    min-height: 2rem;
+    border-radius: 2px;
+    flex: 1;
+}
+
+/* ============================================
+   CENTER SECTION: Content
+   ============================================ */
+
+.phrase-pattern-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Header with size, band, and badges */
+.phrase-pattern-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.phrase-pattern-card-size {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.phrase-pattern-card-band {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--phrase-band-color);
+    font-weight: 600;
+}
+
+.phrase-pattern-card-badge {
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+
+.phrase-pattern-card-badge.variation {
+    background: hsl(var(--info) / 0.15);
+    color: hsl(var(--info));
+}
+
+.phrase-pattern-card-badge.reusable {
+    background: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+}
+
+/* ============================================
+   STATS ROW
+   ============================================ */
+
+.phrase-pattern-card-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.phrase-pattern-card-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.phrase-pattern-card-stat-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+}
+
+.phrase-pattern-card-stat-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+/* ============================================
+   RIGHT SECTION: Selection Indicator
+   ============================================ */
+
+.phrase-pattern-card-selected-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    color: var(--phrase-band-color);
+}
+
+/* ============================================
+   MINI PATTERN VISUALIZATION
+   Grid representation of beats in the phrase
+   ============================================ */
+
+.phrase-mini-pattern {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6px, 1fr));
+    gap: 2px;
+    padding: 0.5rem;
+    background: hsl(var(--surface-1));
+    border-radius: 0.25rem;
+    height: 1.5rem;
+}
+
+.phrase-pattern-cell {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: hsl(var(--surface-3));
+    transition: background-color 0.1s ease;
+}
+
+.phrase-pattern-cell.beat-start {
+    border-left: 1px solid hsl(var(--border) / 0.5);
+}
+
+.phrase-pattern-cell.has-beat {
+    border-radius: 2px;
+    transition: transform 0.1s ease;
+}
+
+.phrase-pattern-card:hover .phrase-pattern-cell.has-beat {
+    transform: scale(1.1);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .phrase-pattern-card {
+        padding: 0.75rem;
+    }
+
+    .phrase-pattern-card-index {
+        min-width: 2.5rem;
+    }
+
+    .phrase-pattern-card-stats {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .phrase-pattern-card {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .phrase-pattern-card-index {
+        flex-direction: row;
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .phrase-pattern-card-band-indicator {
+        width: 100%;
+        height: 3px;
+        min-height: unset;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .phrase-pattern-card,
+    .phrase-pattern-cell.has-beat {
+        transition: none;
+    }
+}

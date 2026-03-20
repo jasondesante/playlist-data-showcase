@@ -13,6 +13,7 @@
 
 import { useState, useMemo } from 'react';
 import { Music, TrendingUp, Hash, Clock, Layers, ChevronUp, ChevronDown } from 'lucide-react';
+import { PhrasePatternCard } from './PhrasePatternCard';
 import './PhraseDetectionPanel.css';
 import type {
     GeneratedRhythm,
@@ -43,25 +44,6 @@ export interface PhraseDetectionPanelProps {
 
 type SortOption = 'significance' | 'occurrences' | 'size';
 type SortDirection = 'asc' | 'desc';
-
-/**
- * Band color scheme (as defined in the plan)
- */
-const BAND_COLORS: Record<Band, string> = {
-    low: '#3b82f6',    // Blue
-    mid: '#22c55e',    // Green
-    high: '#f97316',   // Orange
-};
-
-/**
- * Size labels for phrase patterns
- */
-const SIZE_LABELS: Record<number, string> = {
-    1: '1 Beat',
-    2: '2 Beats',
-    4: '4 Beats',
-    8: '8 Beats',
-};
 
 // ============================================================
 // Sub-components
@@ -123,134 +105,6 @@ function SortControl({ sortBy, sortDirection, onSortChange }: SortControlProps) 
                     sortDirection === 'desc' ? <ChevronDown size={12} /> : <ChevronUp size={12} />
                 )}
             </button>
-        </div>
-    );
-}
-
-/**
- * Mini rhythm pattern visualization
- */
-interface MiniPatternProps {
-    beats: RhythmicPhrase['pattern'];
-    sizeInBeats: number;
-    bandColor: string;
-}
-
-function MiniPattern({ beats, sizeInBeats, bandColor }: MiniPatternProps) {
-    // Create a grid of cells representing subdivisions within the phrase
-    const cellsPerBeat = 4; // 16th notes
-    const totalCells = sizeInBeats * cellsPerBeat;
-
-    // Map beats to cell positions
-    const beatPositions = useMemo(() => {
-        const positions = new Set<number>();
-        beats.forEach(beat => {
-            const beatOffset = beat.beatIndex * cellsPerBeat + beat.gridPosition;
-            positions.add(beatOffset);
-        });
-        return positions;
-    }, [beats]);
-
-    return (
-        <div className="phrase-mini-pattern">
-            {Array.from({ length: totalCells }).map((_, index) => {
-                const hasBeat = beatPositions.has(index);
-                const isBeatStart = index % cellsPerBeat === 0;
-
-                return (
-                    <div
-                        key={index}
-                        className={`phrase-pattern-cell ${hasBeat ? 'has-beat' : ''} ${isBeatStart ? 'beat-start' : ''}`}
-                        style={hasBeat ? { backgroundColor: bandColor } : undefined}
-                    />
-                );
-            })}
-        </div>
-    );
-}
-
-/**
- * Compact card for a single phrase pattern
- */
-interface PhraseCardProps {
-    phrase: RhythmicPhrase;
-    index: number;
-    isSelected: boolean;
-    onSelect: () => void;
-}
-
-function PhraseCard({ phrase, index, isSelected, onSelect }: PhraseCardProps) {
-    const bandColor = BAND_COLORS[phrase.sourceBand];
-    const sizeLabel = SIZE_LABELS[phrase.sizeInBeats] || `${phrase.sizeInBeats} beats`;
-
-    return (
-        <div
-            className={`phrase-card ${isSelected ? 'selected' : ''}`}
-            onClick={onSelect}
-            style={{ '--phrase-band-color': bandColor } as React.CSSProperties}
-            role="button"
-            tabIndex={0}
-            aria-pressed={isSelected}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelect();
-                }
-            }}
-        >
-            {/* Left: Index and band indicator */}
-            <div className="phrase-card-index">
-                <span className="phrase-card-number">{index + 1}</span>
-                <div
-                    className="phrase-card-band-indicator"
-                    style={{ backgroundColor: bandColor }}
-                    title={`${phrase.sourceBand} band`}
-                />
-            </div>
-
-            {/* Center: Pattern visualization and details */}
-            <div className="phrase-card-content">
-                <div className="phrase-card-header">
-                    <span className="phrase-card-size">{sizeLabel}</span>
-                    <span className="phrase-card-band">{phrase.sourceBand}</span>
-                    {phrase.hasVariation && (
-                        <span className="phrase-card-badge variation">Varied</span>
-                    )}
-                    {phrase.availableForReuse && (
-                        <span className="phrase-card-badge reusable">Reusable</span>
-                    )}
-                </div>
-
-                <MiniPattern
-                    beats={phrase.pattern}
-                    sizeInBeats={phrase.sizeInBeats}
-                    bandColor={bandColor}
-                />
-
-                <div className="phrase-card-stats">
-                    <div className="phrase-card-stat">
-                        <span className="phrase-card-stat-label">Occurrences</span>
-                        <span className="phrase-card-stat-value">{phrase.occurrences.length}</span>
-                    </div>
-                    <div className="phrase-card-stat">
-                        <span className="phrase-card-stat-label">Significance</span>
-                        <span className="phrase-card-stat-value">
-                            {phrase.significance.toFixed(2)}
-                        </span>
-                    </div>
-                    <div className="phrase-card-stat">
-                        <span className="phrase-card-stat-label">Beats</span>
-                        <span className="phrase-card-stat-value">{phrase.pattern.length}</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right: Selection indicator */}
-            {isSelected && (
-                <div className="phrase-card-selected-indicator">
-                    <Layers size={16} />
-                </div>
-            )}
         </div>
     );
 }
@@ -440,10 +294,10 @@ export function PhraseDetectionPanel({
                         onSortChange={handleSortChange}
                     />
 
-                    {/* Phrase list */}
+                    {/* Phrase list using extracted PhrasePatternCard component */}
                     <div className="phrase-list">
                         {sortedPhrases.map((phrase, index) => (
-                            <PhraseCard
+                            <PhrasePatternCard
                                 key={phrase.id}
                                 phrase={phrase}
                                 index={index}
