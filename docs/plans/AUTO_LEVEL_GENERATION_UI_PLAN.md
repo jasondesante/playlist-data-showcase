@@ -160,12 +160,12 @@ interface GeneratedRhythm {
 
 ## Phase 2: Mode Toggle UI
 
-- [ ] **Task 2.1: Create AutoLevelToggle component**
-  - [ ] Simple toggle switch with "Auto" label
-  - [ ] "Beta" badge next to label
-  - [ ] Tooltip explaining the feature
-  - [ ] Position in Step 1 (Analyze) header area, near the Analyze button
-  - [ ] Does NOT persist preference (always start in manual mode)
+- [x] **Task 2.1: Create AutoLevelToggle component**
+  - [x] Simple toggle switch with "Auto" label
+  - [x] "Beta" badge next to label
+  - [x] Tooltip explaining the feature
+  - [x] Position in Step 1 (Analyze) header area, near the Analyze button
+  - [x] Does NOT persist preference (always start in manual mode)
 
 - [ ] **Task 2.2: Create AutoLevelSettings component**
   - [ ] Collapsible/expandable section that appears when auto mode is toggled ON

@@ -17,9 +17,10 @@ import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
 import { BeatPracticeView } from '../ui/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
-import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode } from '../../store/beatDetectionStore';
+import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode } from '../../store/beatDetectionStore';
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
+import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { logger } from '../../utils/logger';
 
 /**
@@ -58,6 +59,7 @@ export function BeatDetectionTab() {
     const setCurrentStep = useBeatDetectionStore((state) => state.actions.setCurrentStep);
     const exportFullBeatMap = useBeatDetectionStore((state) => state.actions.exportFullBeatMap);
     const importFullBeatMap = useBeatDetectionStore((state) => state.actions.importFullBeatMap);
+    const setGenerationMode = useBeatDetectionStore((state) => state.actions.setGenerationMode);
     const practiceModeActive = useBeatDetectionStore((state) => state.practiceModeActive);
     const storageError = useBeatDetectionStore((state) => state.storageError);
     const interpolatedBeatMap = useInterpolatedBeatMap();
@@ -70,6 +72,7 @@ export function BeatDetectionTab() {
     const availableSteps = useStepAvailability();
     const navigationDirection = useStepNavigationDirection();
     const steps = useStepsForMode();
+    const generationMode = useGenerationMode();
 
     // Track if we were generating to detect analysis completion
     const wasGeneratingRef = useRef(isBeatGenerating);
@@ -361,18 +364,25 @@ export function BeatDetectionTab() {
 
                             {/* Action Section */}
                             <div className="audio-analysis-action-integration">
-                                <Button
-                                    onClick={handleBeatAnalysis}
-                                    disabled={isBeatGenerating}
-                                    isLoading={isBeatGenerating}
-                                    variant="primary"
-                                    size="lg"
-                                    className="audio-analysis-primary-action-button"
-                                >
-                                    {isBeatGenerating && beatProgress
-                                        ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
-                                        : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
-                                </Button>
+                                <div className="audio-analysis-action-row">
+                                    <AutoLevelToggle
+                                        value={generationMode}
+                                        onChange={setGenerationMode}
+                                        disabled={isBeatGenerating}
+                                    />
+                                    <Button
+                                        onClick={handleBeatAnalysis}
+                                        disabled={isBeatGenerating}
+                                        isLoading={isBeatGenerating}
+                                        variant="primary"
+                                        size="lg"
+                                        className="audio-analysis-primary-action-button"
+                                    >
+                                        {isBeatGenerating && beatProgress
+                                            ? `${beatProgress.progress}% - ${getPhaseLabel(beatProgress.phase)}`
+                                            : beatMap ? 'Re-Analyze' : 'Analyze Beats'}
+                                    </Button>
+                                </div>
                                 {beatError && (
                                     <div className="audio-analysis-error-message">
                                         {beatError}
