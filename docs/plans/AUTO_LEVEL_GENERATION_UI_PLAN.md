@@ -322,12 +322,12 @@ interface GeneratedRhythm {
   - [x] Mini timeline visualization for each difficulty
   - [x] Conversion/enhancement metadata display
 
-- [ ] **Task 7.2: Create VariantTimeline component**
-  - [ ] Timeline showing beats for a single difficulty
-  - [ ] Color-code inserted patterns differently from base transients
-  - [ ] Show edit type indicator (simplified/interpolated/pattern_inserted)
-  - [ ] Sync with audio playback
-  - [ ] Reusable for each difficulty column
+- [x] **Task 7.2: Create VariantTimeline component**
+  - [x] Timeline showing beats for a single difficulty
+  - [x] Color-code inserted patterns differently from base transients
+  - [x] Show edit type indicator (simplified/interpolated/pattern_inserted)
+  - [x] Sync with audio playback
+  - [x] Reusable for each difficulty column
 
 - [ ] **Task 7.3: Create VariantComparisonView component**
   - [ ] Stacked view of all three difficulties (3 rows)
