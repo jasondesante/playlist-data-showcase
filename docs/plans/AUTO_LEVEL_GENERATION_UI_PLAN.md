@@ -220,10 +220,10 @@ interface GeneratedRhythm {
   - [x] Match style of existing beat detection progress
   - [x] Integrate component into RhythmGenerationTab to replacing inline progress UI
 
-- [ ] **Task 3.3: Create error handling UI**
-  - [ ] Show error message if rhythm generation fails
-  - [ ] "Retry" button to re-attempt generation
-  - [ ] "Switch to Manual" button as fallback option
+- [x] **Task 3.3: Create error handling UI**
+  - [x] Show error message if rhythm generation fails
+  - [x] "Retry" button to re-attempt generation
+  - [x] "Switch to Manual" button as fallback option
 
 ---
 
