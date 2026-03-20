@@ -17,6 +17,7 @@ import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
 import './QuantizationPanel.css';
 import { GridDecisionTimeline } from './GridDecisionTimeline';
 import { QuantizedBeatTimeline } from './QuantizedBeatTimeline';
+import { QuantizationErrorHistogram } from './QuantizationErrorHistogram';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -394,6 +395,15 @@ export function QuantizationPanel({
                     tripletCount={overallStats.tripletCount}
                 />
             </div>
+
+            {/* Quantization Error Histogram (Task 6.4) */}
+            <QuantizationErrorHistogram
+                beats={[
+                    ...bandStreams.low.beats,
+                    ...bandStreams.mid.beats,
+                    ...bandStreams.high.beats,
+                ]}
+            />
 
             {/* Density validation info */}
             {overallStats.densityValidation && (

@@ -305,10 +305,17 @@ interface GeneratedRhythm {
   - [x] Hover shows quantization error
   - [x] Sync with audio playback
 
-- [ ] **Task 6.4: Add quantization error histogram (optional)**
-  - [ ] Show distribution of quantization errors
-  - [ ] X-axis: error in ms
-  - [ ] Y-axis: count of beats
+- [x] **Task 6.4: Add quantization error histogram (optional)**
+  - [x] Show distribution of quantization errors
+  - [x] X-axis: error in ms
+  - [x] Y-axis: count of beats
+  > Note: Created `src/components/ui/QuantizationErrorHistogram.tsx` and `QuantizationErrorHistogram.css`.
+  > Features:
+  > - Histogram bars color-coded by error severity (excellent/good/acceptable/poor)
+  > - Stats summary showing average, median, and max error
+  > - Interactive bars with hover tooltips showing count and percentage
+  > - Legend explaining error zones
+  > - Integrated into QuantizationPanel after grid distribution section
 
 ---
 
