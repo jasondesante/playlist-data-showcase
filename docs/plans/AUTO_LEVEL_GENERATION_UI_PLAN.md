@@ -329,12 +329,12 @@ interface GeneratedRhythm {
   - [x] Sync with audio playback
   - [x] Reusable for each difficulty column
 
-- [ ] **Task 7.3: Create VariantComparisonView component**
-  - [ ] Stacked view of all three difficulties (3 rows)
-  - [ ] Visual density comparison at a glance
-  - [ ] Beat count labels for each difficulty
-  - [ ] Vertical alignment so beats line up by time across all three
-  - [ ] Shared zoom/scroll across all three timelines
+- [x] **Task 7.3: Create VariantComparisonView component**
+  - [x] Stacked view of all three difficulties (3 rows)
+  - [x] Visual density comparison at a glance
+  - [x] Beat count labels for each difficulty
+  - [x] Vertical alignment so beats line up by time across all three
+  - [x] Shared zoom/scroll across all three timelines
 
 ---
 

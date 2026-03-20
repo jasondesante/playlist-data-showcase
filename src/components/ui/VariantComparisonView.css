@@ -1,0 +1,613 @@
+/* ============================================
+   VARIANT COMPARISON VIEW (Task 7.3)
+   Stacked view of all three difficulties with:
+   - Shared zoom/scroll across all timelines
+   - Visual density comparison at a glance
+   - Beat count labels for each difficulty
+   - Vertical alignment so beats line up by time
+   ============================================ */
+
+/* Main container */
+.variant-comparison-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-family: var(--font-sans);
+}
+
+/* Header */
+.variant-comparison-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.variant-comparison-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.variant-comparison-title svg {
+    color: hsl(var(--primary));
+}
+
+/* Zoom controls */
+.variant-comparison-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.variant-comparison-zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    background: hsl(var(--surface-2));
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.variant-comparison-zoom-btn:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+}
+
+.variant-comparison-zoom-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.variant-comparison-zoom-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Summary stats row */
+.variant-comparison-summary {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.variant-comparison-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.variant-comparison-stat-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.variant-comparison-stat-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-family: var(--font-mono);
+}
+
+.variant-comparison-stat-divider {
+    width: 1px;
+    height: 1rem;
+    background: hsl(var(--border));
+    margin: 0 0.25rem;
+}
+
+/* Stacked rows container */
+.variant-comparison-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Individual row */
+.variant-comparison-row {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    background: hsl(var(--surface-2));
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.variant-comparison-row:hover {
+    border-color: hsl(var(--border));
+}
+
+/* Row is natural difficulty */
+.variant-comparison-row--natural {
+    border-color: color-mix(in srgb, var(--variant-color) 50%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--variant-color) 20%, transparent);
+}
+
+/* Row label */
+.variant-comparison-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    min-width: 120px;
+    background: hsl(var(--surface-3));
+    border-right: 1px solid hsl(var(--border) / 0.3);
+}
+
+.variant-comparison-row-name {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+}
+
+.variant-comparison-row-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    color: hsl(var(--success));
+    background: hsl(var(--success) / 0.15);
+}
+
+.variant-comparison-row-badge svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Beat count */
+.variant-comparison-row-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+/* Density bar */
+.variant-comparison-row-density {
+    height: 4px;
+    background: hsl(var(--surface-1));
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.variant-comparison-density-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.2s ease;
+}
+
+/* Timeline container (contains the track + markers) */
+.variant-comparison-timeline-container {
+    position: relative;
+    flex: 1;
+    height: 48px;
+    overflow-x: hidden;
+    cursor: grab;
+}
+
+.variant-comparison-timeline-container--draggable {
+    cursor: grab;
+}
+
+/* Timeline background */
+.variant-comparison-timeline-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--surface-1)) 0%,
+        hsl(var(--surface-2)) 30%,
+        hsl(var(--surface-2)) 70%,
+        hsl(var(--surface-1)) 100%
+    );
+    border-radius: 0 0.25rem 0.25rem 0;
+}
+
+/* Time markers */
+.variant-comparison-timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 12px;
+    border-top: 1px solid hsl(var(--border) / 0.3);
+    transform: translateY(-50%);
+}
+
+.variant-comparison-timeline-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 12px;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+    transform: translateY(-50%);
+}
+
+/* Beat marker */
+.variant-comparison-beat {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.variant-comparison-beat:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 4px currentColor;
+    z-index: 20;
+}
+
+/* Beat intensity indicator */
+.variant-comparison-beat-intensity {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+/* Playhead */
+.variant-comparison-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: linear-gradient(
+        180deg,
+        hsl(var(--primary) / 0.2) 0%,
+        hsl(var(--primary)) 50%,
+        hsl(var(--primary) / 0.2) 100%
+    );
+    z-index: 30;
+    pointer-events: none;
+    box-shadow: 0 0 4px hsl(var(--primary) / 0.4);
+}
+
+/* Time labels */
+.variant-comparison-time-label {
+    position: absolute;
+    bottom: -1.5rem;
+    left: 0;
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    pointer-events: none;
+}
+
+/* Legend */
+.variant-comparison-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--surface-2));
+    border-radius: 0.375rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.variant-comparison-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.variant-comparison-legend-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.variant-comparison-legend-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .variant-comparison-view {
+        gap: 0.75rem;
+    }
+
+    .variant-comparison-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .variant-comparison-controls {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-summary {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .variant-comparison-row-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-timeline-container {
+        height: 40px;
+    }
+}
+
+    @media (max-width: 480px) {
+    .variant-comparison-view {
+        gap: 0.5rem;
+    }
+
+    .variant-comparison-header {
+        padding: 0.5rem;
+    }
+
+    .variant-comparison-controls {
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-summary {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-rows {
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-row {
+        flex-direction: column;
+    }
+
+    .variant-comparison-row-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .variant-comparison-row-count {
+        font-size: 0.6875rem;
+    }
+
+    .variant-comparison-legend {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .variant-comparison-beat {
+        transition: none;
+    }
+}
+
+/* ============================================
+   Additional styles for TSX component
+   ============================================ */
+
+/* Control buttons */
+.variant-comparison-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    background: hsl(var(--surface-2));
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.variant-comparison-control:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    color: hsl(var(--primary));
+    background: hsl(var(--surface-3));
+}
+
+/* Zoom level display */
+.variant-comparison-zoom-level {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Summary items */
+.variant-comparison-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.variant-comparison-summary-label {
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    margin-left: 0.25rem;
+}
+
+.variant-comparison-summary-value {
+    font-family: var(--font-mono);
+}
+
+/* Time ruler */
+.variant-comparison-ruler {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid hsl(var(--border) / 0.3);
+}
+
+.variant-comparison-ruler-label {
+    min-width: 120px;
+    padding: 0 1rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.variant-comparison-ruler-track {
+    flex: 1;
+    position: relative;
+    height: 20px;
+}
+
+.variant-comparison-ruler-tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.variant-comparison-ruler-time {
+    font-size: 0.625rem;
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-mono);
+}
+
+/* Natural difficulty indicator in row */
+.variant-comparison-row-natural {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    color: hsl(var(--success));
+    background: hsl(var(--success) / 0.15);
+}
+
+/* Timeline track */
+.variant-comparison-track {
+    position: relative;
+    flex: 1;
+    height: 48px;
+    overflow: hidden;
+    cursor: grab;
+}
+
+.variant-comparison-track--dragging {
+    cursor: grabbing;
+}
+
+.variant-comparison-track-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        hsl(var(--surface-1)) 0%,
+        hsl(var(--surface-2)) 30%,
+        hsl(var(--surface-2)) 70%,
+        hsl(var(--surface-1)) 100%
+    );
+}
+
+/* Density bar */
+.variant-comparison-density {
+    height: 4px;
+    background: hsl(var(--surface-1));
+    border-radius: 0 0 0.5rem 0.5rem;
+    overflow: hidden;
+}
+
+/* Legend sections */
+.variant-comparison-legend-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.variant-comparison-legend-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-right: 0.25rem;
+}
+
+/* Intensity size legend */
+.variant-comparison-legend-size {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.variant-comparison-legend-size-small {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+.variant-comparison-legend-size-large {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: hsl(var(--muted-foreground));
+}
+
+/* Instructions footer */
+.variant-comparison-instructions {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.5rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.variant-comparison-instructions span::before {
+    content: '•';
+    margin-right: 0.375rem;
+    color: hsl(var(--border));
+}

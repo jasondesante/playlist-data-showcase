@@ -14,7 +14,7 @@
  * - Metadata display on successful generation
  */
 
-import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
 import './RhythmGenerationTab.css';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -25,6 +25,7 @@ import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
 import { MultiBandVisualization } from '../ui/MultiBandVisualization';
 import { QuantizationPanel } from '../ui/QuantizationPanel';
 import { DifficultyVariantsPanel } from '../ui/DifficultyVariantsPanel';
+import { VariantComparisonView } from '../ui/VariantComparisonView';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
@@ -176,6 +177,15 @@ function RhythmGenerationResult({ rhythm, onProceed }: RhythmGenerationResultPro
                     defaultCollapsed={false}
                 >
                     <DifficultyVariantsPanel rhythm={rhythm} />
+                </CollapsibleSection>
+
+                <CollapsibleSection
+                    title="Difficulty Comparison"
+                    subtitle="Stacked view with shared zoom/scroll"
+                    icon={<GitCompare size={18} />}
+                    defaultCollapsed={true}
+                >
+                    <VariantComparisonView rhythm={rhythm} />
                 </CollapsibleSection>
 
                 <CollapsibleSection
