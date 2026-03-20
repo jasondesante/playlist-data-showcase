@@ -14,7 +14,8 @@
  * - Does NOT persist preference (always starts in manual mode)
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import './AutoLevelToggle.css';
@@ -45,11 +46,32 @@ export function AutoLevelToggle({
     disabled = false,
 }: AutoLevelToggleProps) {
     const [showTooltip, setShowTooltip] = useState(false);
+    const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+    const infoBtnRef = useRef<HTMLButtonElement>(null);
     const isAuto = value === 'automatic';
 
     const handleToggle = () => {
         if (disabled) return;
         onChange(isAuto ? 'manual' : 'automatic');
+    };
+
+    const updateTooltipPosition = () => {
+        if (infoBtnRef.current) {
+            const rect = infoBtnRef.current.getBoundingClientRect();
+            setTooltipPosition({
+                top: rect.bottom + 8,
+                left: rect.left,
+            });
+        }
+    };
+
+    const handleMouseEnter = () => {
+        updateTooltipPosition();
+        setShowTooltip(true);
+    };
+
+    const handleMouseLeave = () => {
+        setShowTooltip(false);
     };
 
     return (
@@ -77,17 +99,30 @@ export function AutoLevelToggle({
                 </button>
 
                 <button
+                    ref={infoBtnRef}
                     type="button"
                     className="auto-level-toggle-info-btn"
                     onClick={() => setShowTooltip(!showTooltip)}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     aria-label="Show info about automatic level generation"
                     aria-expanded={showTooltip}
                 >
                     <Info size={14} />
                 </button>
 
-                {showTooltip && (
-                    <div className="auto-level-toggle-tooltip" role="tooltip">
+                {showTooltip && createPortal(
+                    <div
+                        className="auto-level-toggle-tooltip"
+                        role="tooltip"
+                        style={{
+                            position: 'fixed',
+                            top: `${tooltipPosition.top}px`,
+                            left: `${tooltipPosition.left}px`,
+                        }}
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                    >
                         <div className="auto-level-toggle-tooltip-content">
                             <p>
                                 <strong>Automatic Mode:</strong> After beat detection, the system automatically generates
@@ -106,7 +141,8 @@ export function AutoLevelToggle({
                         >
                             x
                         </button>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </div>
         </div>

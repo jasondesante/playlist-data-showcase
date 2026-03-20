@@ -35,6 +35,7 @@ import {
     useBeatDetectionActions,
 } from '../../store/beatDetectionStore';
 import { useAudioPlayerStore } from '../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../store/playlistStore';
 import type {
     GeneratedRhythm,
     RhythmicPhrase,
@@ -381,11 +382,22 @@ export function RhythmGenerationTab({
     const seek = useAudioPlayerStore((state) => state.seek);
     const pause = useAudioPlayerStore((state) => state.pause);
     const resume = useAudioPlayerStore((state) => state.resume);
+    const play = useAudioPlayerStore((state) => state.play);
     const currentUrl = useAudioPlayerStore((state) => state.currentUrl);
     const isPlaying = playbackState === 'playing';
 
+    // Get selected track from playlist store (for initiating playback when audio not loaded)
+    const { selectedTrack } = usePlaylistStore();
+
+    // Compute duration with fallback to track duration when audio hasn't loaded yet
+    // This matches the pattern used in AppHeader's mini player
+    const effectiveDuration = Number.isFinite(duration) && duration > 0
+        ? duration
+        : (selectedTrack?.duration || 0);
+
     // Determine the current state
-    const isGenerating = progress !== null && !progress.message.startsWith('Error:');
+    // Note: isGenerating is false when progress reaches 100% (completion) to allow transition to results view
+    const isGenerating = progress !== null && !progress.message.startsWith('Error:') && progress.progress < 100;
     const hasError = progress?.message.startsWith('Error:') ?? false;
     const hasRhythm = generatedRhythm !== null;
 
@@ -416,8 +428,11 @@ export function RhythmGenerationTab({
         } else if (currentUrl) {
             // Audio already loaded - resume playback
             resume();
+        } else if (selectedTrack?.audio_url) {
+            // No audio loaded yet, but we have a selected track - start playback
+            play(selectedTrack.audio_url);
         }
-    }, [isPlaying, pause, resume, currentUrl]);
+    }, [isPlaying, pause, resume, currentUrl, selectedTrack, play]);
 
     // Render based on state
     const renderContent = () => {
@@ -445,7 +460,7 @@ export function RhythmGenerationTab({
                     rhythm={generatedRhythm}
                     onProceed={onProceed}
                     currentTime={currentTime}
-                    duration={duration}
+                    duration={effectiveDuration}
                     isPlaying={isPlaying}
                     onSeek={handleSeek}
                     onPlayPause={handlePlayPause}

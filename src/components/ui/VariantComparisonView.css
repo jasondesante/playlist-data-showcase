@@ -15,6 +15,16 @@
     font-family: var(--font-sans);
 }
 
+/* Loading state */
+.variant-comparison-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+}
+
 /* Header */
 .variant-comparison-header {
     display: flex;

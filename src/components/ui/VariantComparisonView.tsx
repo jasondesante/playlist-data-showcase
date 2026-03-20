@@ -404,6 +404,18 @@ export function VariantComparisonView({
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }, []);
 
+    // Guard against invalid duration - this can happen if audioPlayerStore hasn't loaded yet
+    // or if the duration prop is NaN/undefined
+    if (!duration || !isFinite(duration) || duration <= 0) {
+        return (
+            <div className={`variant-comparison-view ${className || ''}`}>
+                <div className="variant-comparison-loading">
+                    Loading timeline...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={`variant-comparison-view ${className || ''}`}>
             {/* Header */}
