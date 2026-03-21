@@ -13,11 +13,12 @@
  * Part of Phase 4: Transient Detection Visualization (Task 4.1)
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Zap, Filter, Layers } from 'lucide-react';
 import './TransientDetectionPanel.css';
 import { TransientTimeline } from './TransientTimeline';
 import { TransientInspector } from './TransientInspector';
+import { ZoomControls } from './ZoomControls';
 import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -235,6 +236,15 @@ export function TransientDetectionPanel({
     const [selectedTransient, setSelectedTransient] = useState<TransientResult | null>(null);
     const [selectedTransientIndex, setSelectedTransientIndex] = useState<number | null>(null);
 
+    // Zoom state - controls the visible time window
+    const [zoomLevel, setZoomLevel] = useState(1);
+    // Base windows at zoom level 1
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
+    const anticipationWindow = baseAnticipationWindow / zoomLevel;
+    const pastWindow = basePastWindow / zoomLevel;
+
     // Group transients by band for breakdown cards
     const transientsByBand = useMemo(() => {
         const groups: Record<Band, TransientResult[]> = {
@@ -305,6 +315,17 @@ export function TransientDetectionPanel({
 
             {/* Transient Timeline (Task 4.2) */}
             <div className="transient-timeline-section">
+                {/* Timeline header with zoom controls */}
+                <div className="transient-timeline-header">
+                    <span className="transient-timeline-title">Timeline</span>
+                    <ZoomControls
+                        zoomLevel={zoomLevel}
+                        onZoomChange={setZoomLevel}
+                        minZoom={0.5}
+                        maxZoom={4}
+                        size="sm"
+                    />
+                </div>
                 <TransientTimeline
                     transients={allTransients}
                     currentTime={currentTime}
@@ -315,6 +336,8 @@ export function TransientDetectionPanel({
                     selectedTransientIndex={selectedTransientIndex}
                     filterBand={activeBand}
                     intensityThreshold={intensityThreshold}
+                    anticipationWindow={anticipationWindow}
+                    pastWindow={pastWindow}
                 />
             </div>
 

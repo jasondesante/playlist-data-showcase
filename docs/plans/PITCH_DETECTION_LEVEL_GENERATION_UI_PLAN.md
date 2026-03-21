@@ -129,6 +129,148 @@ PitchResult → PitchAtBeat → MelodyContourAnalysisResult → ButtonMappingMet
 
 ---
 
+## Phase 0: Data Pipeline Handshake (Checkpoint)
+
+> **Goal**: Verify the data flows correctly from rhythm generation to level generation BEFORE building any UI.
+> **Stopping Point**: After Phase 0, you can test in the browser and confirm the handshake works.
+
+### What This Phase Accomplishes
+
+This phase creates the **minimum viable data pipeline** to verify:
+1. Rhythm generation output → Level generation input (data contract)
+2. LevelGenerator can use cached rhythm (no re-generation)
+3. All 3 difficulties generate successfully
+4. Results are stored in the beatDetectionStore
+5. The auto-continue pipeline triggers correctly
+
+### Task 0.1: Add Level Generation State to Store
+- [ ] Add `generatedLevel: GeneratedLevel | null` to beatDetectionStore
+- [ ] Add `allDifficultyLevels: AllDifficultiesResult | null` for all 3 difficulties
+- [ ] Add `levelGenerationProgress: LevelGenerationProgress | null`
+- [ ] Add `pitchAnalysis: MelodyContourAnalysisResult | null`
+- [ ] Add `selectedDifficulty: 'easy' | 'medium' | 'hard'` (from Step 1)
+- [ ] Add actions: `setGeneratedLevel()`, `clearGeneratedLevel()`, `setLevelGenerationProgress()`, `setSelectedDifficulty()`
+- [ ] Reset all level state when track changes
+- [ ] Clear level state when switching from auto to manual mode
+
+### Task 0.2: Create useLevelGeneration Hook
+- [ ] Create `src/hooks/useLevelGeneration.ts`
+- [ ] Import `LevelGenerator` from playlist-data-engine
+- [ ] Accept cached `GeneratedRhythm` from store (avoid re-generation)
+- [ ] Call `generateAllDifficulties()` to generate all 3 at once
+- [ ] Map engine progress phases to UI progress phases
+- [ ] Return: `{ generate, isGenerating, progress, error, level, allDifficulties }`
+- [ ] Support retry on error
+
+### Task 0.3: Wire Auto-Continue Pipeline
+- [ ] In BeatDetectionTab, when rhythm generation completes in auto mode:
+  1. Auto-start level generation using cached rhythm
+  2. Store results in beatDetectionStore
+  3. Auto-advance to Step 3 (Pitch & Level)
+- [ ] Ensure pitch detection runs on the same band-filtered audio as rhythm
+
+### Task 0.4: Add Debug Display for Testing
+- [ ] Add temporary debug panel in RhythmGenerationTab (or create PitchLevelTab skeleton)
+- [ ] Display:
+  - "Level Generation Complete!" message
+  - `generatedLevel.metadata` (difficulty, controller mode, total beats)
+  - `pitchAnalysis.directionStats` (up/down/stable/none counts)
+  - `pitchAnalysis.intervalStats` (unison/small/medium/large/very_large counts)
+  - `allDifficultyLevels.easy.chart.beats.length`
+  - `allDifficultyLevels.medium.chart.beats.length`
+  - `allDifficultyLevels.hard.chart.beats.length`
+- [ ] This panel is temporary - will be replaced by proper visualizations in later phases
+
+### Task 0.5: Create Level Generation Types
+- [ ] Create `src/types/levelGeneration.ts`
+- [ ] Re-export from playlist-data-engine:
+  - `PitchResult`, `PitchDetectorConfig`
+  - `PitchAtBeat`, `BandPitchAtBeat`, `LinkedPitchAnalysis`
+  - `MelodyContourAnalysisResult`, `MelodyContour`, `MelodySegment`
+  - `DirectionStats`, `IntervalStats`, `IntervalCategory`
+  - `ButtonMappingConfig`, `ControllerMode`
+  - `DDRButton`, `GuitarHeroButton`, `Button`
+  - `MappedLevelResult`, `ButtonMappingMetadata`
+  - `LevelGenerationOptions`, `LevelMetadata`, `GeneratedLevel`
+  - `LevelGenerationProgress`, `ChartedBeat`, `ChartedBeatMap`
+  - `AllDifficultiesResult`
+- [ ] Add to `src/types/index.ts`
+
+### Task 0.6: Create Data Contract Validation UI
+- [ ] Create `src/components/ui/DataContractValidator.tsx` - validation panel
+- [ ] Validate rhythm generation output has all required fields for level generation:
+  ```
+  Required from GeneratedRhythm:
+  - bandStreams.low.beats[] ✓/✗
+  - bandStreams.mid.beats[] ✓/✗  
+  - bandStreams.high.beats[] ✓/✗
+  - composite.stream[] ✓/✗
+  - difficultyVariants.easy.stream[] ✓/✗
+  - difficultyVariants.medium.stream[] ✓/✗
+  - difficultyVariants.hard.stream[] ✓/✗
+  - phrases[] ✓/✗
+  - metadata.transientsDetected ✓/✗
+  ```
+- [ ] Validate each beat has required fields:
+  ```
+  Required from GeneratedBeat:
+  - timestamp ✓/✗
+  - beatIndex ✓/✗
+  - intensity ✓/✗
+  - band ✓/✗
+  - quantizationError ✓/✗
+  ```
+- [ ] Color coding: Green ✓ for pass, Red ✗ for fail with explanation
+- [ ] Show actual counts/values where helpful (e.g., "low.beats: 234 found")
+- [ ] "Ready for Level Generation" message only when all checks pass
+- [ ] If validation fails, show specific error: "Missing field X on beats[42]"
+- [ ] Export `validateGeneratedRhythm()` function for reuse in testing
+
+### Task 0.7: Integrate Validator into Pipeline
+- [ ] Add validator panel to RhythmGenerationTab (shown after rhythm completes)
+- [ ] Auto-validate when rhythm generation completes
+- [ ] Show validation status in the auto-continue flow:
+  - If validation passes → proceed to level generation
+  - If validation fails → show error, don't proceed, offer "Retry" or "Debug"
+- [ ] Log validation results to console for debugging
+
+### Testing Phase 0
+
+After completing Phase 0, you should be able to:
+
+1. **Start the dev server** and navigate to Beat Detection tab
+2. **Toggle Auto mode on** and click "Analyze"
+3. **Watch rhythm generation complete** (existing progress UI)
+4. **See the Data Contract Validator panel** appear showing:
+   - ✅/✗ checks for each required data field
+   - Actual counts (e.g., "low.beats: 234 found")
+   - Red error messages if anything is missing/wrong
+   - Green "Ready for Level Generation" if all checks pass
+5. **If validation passes**: Watch level generation start automatically
+6. **See the debug panel** showing:
+   - "Level Generation Complete!" message
+   - Total beats in generated level
+   - Direction stats (up/down/stable/none counts)
+   - Interval stats (unison/small/medium/large/very_large)
+   - Beat counts for each difficulty (Easy/Medium/Hard)
+7. **Inspect Redux/store** to see full data structure
+
+**If Phase 0 works**: The data pipeline is verified. All green checkmarks. Continue to Phase 1+ to build visualizations.
+
+**If Phase 0 shows red ✗**: The validator tells you exactly what's missing. Debug the data contract before building UI.
+5. **See the debug panel** showing:
+   - Total beats in generated level
+   - Direction stats (up/down/stable/none)
+   - Interval stats (how many small/medium/large intervals)
+   - Beat counts for each difficulty
+6. **Inspect Redux/store** to see full data structure
+
+**If Phase 0 works**: The data pipeline is verified. Continue to Phase 1+ to build visualizations.
+
+**If Phase 0 fails**: Debug the data contract between rhythm and level generation before building UI.
+
+---
+
 ## Phase 1: Infrastructure & State Management
 
 ### Task 1.1: Add Level Generation State to Store

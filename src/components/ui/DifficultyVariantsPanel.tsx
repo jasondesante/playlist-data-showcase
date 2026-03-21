@@ -11,9 +11,10 @@
  * Part of Phase 7: Difficulty Variants Visualization (Task 7.1)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Trophy, BarChart3, Edit3, CheckCircle } from 'lucide-react';
 import './DifficultyVariantsPanel.css';
+import { ZoomControls } from './ZoomControls';
 import type {
     GeneratedRhythm,
     DifficultyVariant,
@@ -184,29 +185,55 @@ interface VariantMiniTimelineProps {
     duration: number;
     color: string;
     currentTime?: number;
+    zoomLevel?: number;
 }
 
-function VariantMiniTimeline({ beats, duration, color, currentTime = 0 }: VariantMiniTimelineProps) {
-    // Limit displayed beats for performance
+function VariantMiniTimeline({ beats, duration, color, currentTime = 0, zoomLevel = 1 }: VariantMiniTimelineProps) {
+    // Calculate visible time range based on zoom
+    // At zoom 1x, we see the full duration. At zoom 2x, we see half, etc.
+    const visibleDuration = duration / zoomLevel;
+
+    // Calculate scroll offset to center on current time when zoomed
+    const scrollOffset = useMemo(() => {
+        if (zoomLevel <= 1) return 0;
+        // Center on current time, but clamp to valid range
+        const halfVisible = visibleDuration / 2;
+        const offset = Math.max(0, Math.min(duration - visibleDuration, currentTime - halfVisible));
+        return offset;
+    }, [currentTime, duration, visibleDuration, zoomLevel]);
+
+    const startTime = scrollOffset;
+    const endTime = scrollOffset + visibleDuration;
+
+    // Filter beats to only those in visible range
     const displayBeats = useMemo(() => {
-        if (beats.length <= 100) return beats;
-        // Sample evenly
-        const step = beats.length / 100;
-        const sampled = [];
-        for (let i = 0; i < beats.length; i += step) {
-            sampled.push(beats[Math.floor(i)]);
+        const visible = beats.filter(beat =>
+            beat.timestamp >= startTime - 0.1 &&
+            beat.timestamp <= endTime + 0.1
+        );
+
+        // Limit for performance if still too many
+        if (visible.length <= 150) return visible;
+        const step = visible.length / 150;
+        const sampled: VariantBeat[] = [];
+        for (let i = 0; i < visible.length; i += step) {
+            sampled.push(visible[Math.floor(i)]);
         }
         return sampled;
-    }, [beats]);
+    }, [beats, startTime, endTime]);
 
-    // Playhead position percentage
-    const playheadPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+    // Playhead position as percentage within visible range
+    const playheadPercent = useMemo(() => {
+        if (currentTime < startTime || currentTime > endTime) return -1; // Hidden
+        return ((currentTime - startTime) / visibleDuration) * 100;
+    }, [currentTime, startTime, endTime, visibleDuration]);
 
     return (
         <div className="difficulty-variant-timeline">
             <div className="difficulty-variant-timeline-track">
                 {displayBeats.map((beat, index) => {
-                    const leftPercent = duration > 0 ? (beat.timestamp / duration) * 100 : 0;
+                    // Position as percentage within visible range
+                    const leftPercent = ((beat.timestamp - startTime) / visibleDuration) * 100;
                     const size = 4 + (beat.intensity || 0.5) * 6;
 
                     return (
@@ -224,11 +251,13 @@ function VariantMiniTimeline({ beats, duration, color, currentTime = 0 }: Varian
                         />
                     );
                 })}
-                {/* Playhead */}
-                <div
-                    className="difficulty-variant-playhead"
-                    style={{ left: `${playheadPercent}%` }}
-                />
+                {/* Playhead - only show if in visible range */}
+                {playheadPercent >= 0 && playheadPercent <= 100 && (
+                    <div
+                        className="difficulty-variant-playhead"
+                        style={{ left: `${playheadPercent}%` }}
+                    />
+                )}
             </div>
         </div>
     );
@@ -326,9 +355,10 @@ interface DifficultyColumnProps {
     duration: number;
     color: string;
     currentTime?: number;
+    zoomLevel?: number;
 }
 
-function DifficultyColumn({ difficulty, variant, isNatural, duration, color, currentTime }: DifficultyColumnProps) {
+function DifficultyColumn({ difficulty, variant, isNatural, duration, color, currentTime, zoomLevel = 1 }: DifficultyColumnProps) {
     return (
         <div
             className={`difficulty-variant-column ${isNatural ? 'difficulty-variant-column--natural' : ''}`}
@@ -345,6 +375,7 @@ function DifficultyColumn({ difficulty, variant, isNatural, duration, color, cur
                 duration={duration}
                 color={color}
                 currentTime={currentTime}
+                zoomLevel={zoomLevel}
             />
             <ConversionInfo variant={variant} />
             <EnhancementInfo variant={variant} />
@@ -373,6 +404,9 @@ export function DifficultyVariantsPanel({
     // Get variants from rhythm
     const variants = rhythm.difficultyVariants;
     const naturalDifficulty = rhythm.metadata.naturalDifficulty;
+
+    // Zoom state for all timelines
+    const [zoomLevel, setZoomLevel] = useState(1);
 
     // Get duration from metadata or estimate from beats
     const duration = useMemo(() => {
@@ -429,6 +463,14 @@ export function DifficultyVariantsPanel({
                         <span>{comparisonStats.uneditedCount} unedited</span>
                     </div>
                 </div>
+                {/* Zoom controls for all timelines */}
+                <ZoomControls
+                    zoomLevel={zoomLevel}
+                    onZoomChange={setZoomLevel}
+                    minZoom={0.5}
+                    maxZoom={4}
+                    size="sm"
+                />
             </div>
 
             {/* Natural difficulty indicator */}
@@ -456,6 +498,7 @@ export function DifficultyVariantsPanel({
                         duration={duration}
                         color={DIFFICULTY_COLORS[difficulty]}
                         currentTime={currentTime}
+                        zoomLevel={zoomLevel}
                     />
                 ))}
             </div>

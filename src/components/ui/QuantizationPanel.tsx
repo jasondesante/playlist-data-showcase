@@ -18,6 +18,7 @@ import './QuantizationPanel.css';
 import { GridDecisionTimeline } from './GridDecisionTimeline';
 import { QuantizedBeatTimeline } from './QuantizedBeatTimeline';
 import { QuantizationErrorHistogram } from './QuantizationErrorHistogram';
+import { ZoomControls } from './ZoomControls';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
@@ -250,6 +251,15 @@ export function QuantizationPanel({
     // State for beat timeline band filter
     const [selectedBeatBand, setSelectedBeatBand] = useState<Band | 'all'>('all');
 
+    // Zoom state - controls the visible time window for timelines
+    const [zoomLevel, setZoomLevel] = useState(1);
+    // Base windows at zoom level 1
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
+    const anticipationWindow = baseAnticipationWindow / zoomLevel;
+    const pastWindow = basePastWindow / zoomLevel;
+
     // Get beats for QuantizedBeatTimeline
     const allBeatsForTimeline = useMemo(() => {
         if (selectedBeatBand === 'all') {
@@ -453,24 +463,33 @@ export function QuantizationPanel({
             <div className="quantization-timeline-section">
                 <div className="quantization-timeline-header">
                     <h4 className="quantization-section-title">Grid Decision Timeline</h4>
-                    <div className="quantization-band-selector">
-                        <span className="quantization-band-selector-label">Band:</span>
-                        <button
-                            className={`quantization-band-btn ${selectedBand === 'all' ? 'active' : ''}`}
-                            onClick={() => setSelectedBand('all')}
-                        >
-                            All
-                        </button>
-                        {bands.map((band) => (
+                    <div className="quantization-timeline-controls">
+                        <div className="quantization-band-selector">
+                            <span className="quantization-band-selector-label">Band:</span>
                             <button
-                                key={band}
-                                className={`quantization-band-btn ${selectedBand === band ? 'active' : ''}`}
-                                onClick={() => setSelectedBand(band)}
-                                style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                                className={`quantization-band-btn ${selectedBand === 'all' ? 'active' : ''}`}
+                                onClick={() => setSelectedBand('all')}
                             >
-                                {band.charAt(0).toUpperCase() + band.slice(1)}
+                                All
                             </button>
-                        ))}
+                            {bands.map((band) => (
+                                <button
+                                    key={band}
+                                    className={`quantization-band-btn ${selectedBand === band ? 'active' : ''}`}
+                                    onClick={() => setSelectedBand(band)}
+                                    style={{ '--band-color': BAND_COLORS[band] } as React.CSSProperties}
+                                >
+                                    {band.charAt(0).toUpperCase() + band.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                        <ZoomControls
+                            zoomLevel={zoomLevel}
+                            onZoomChange={setZoomLevel}
+                            minZoom={0.5}
+                            maxZoom={4}
+                            size="sm"
+                        />
                     </div>
                 </div>
                 <GridDecisionTimeline
@@ -480,6 +499,8 @@ export function QuantizationPanel({
                     duration={duration}
                     isPlaying={isPlaying}
                     onSeek={onSeek}
+                    anticipationWindow={anticipationWindow}
+                    pastWindow={pastWindow}
                 />
             </div>
 

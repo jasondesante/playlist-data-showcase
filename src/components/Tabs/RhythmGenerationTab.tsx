@@ -134,12 +134,6 @@ function RhythmGenerationResult({
     const { metadata } = rhythm;
 
     // ========================================
-    // Timeline Controls State
-    // ========================================
-
-    const [zoomLevel, setZoomLevel] = useState(1);
-
-    // ========================================
     // Phrase Selection State for Highlighting
     // ========================================
 
@@ -205,6 +199,7 @@ function RhythmGenerationResult({
             </div>
 
             {/* Timeline Controls - Part of Task 9.3 */}
+            {/* Note: Zoom controls moved to individual timeline sections for better UX */}
             {onPlayPause && onSeek && (
                 <div className="rhythm-generation-timeline-controls">
                     <TimelineControls
@@ -213,10 +208,6 @@ function RhythmGenerationResult({
                         isPlaying={isPlaying}
                         onPlayPause={onPlayPause}
                         onSeek={onSeek}
-                        zoomLevel={zoomLevel}
-                        minZoom={0.5}
-                        maxZoom={4}
-                        onZoomChange={setZoomLevel}
                         showSkipButtons={true}
                         skipInterval={10}
                     />

@@ -13,9 +13,10 @@
  * Part of Phase 5: Multi-Band Visualization (Task 5.1)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Layers } from 'lucide-react';
 import './MultiBandVisualization.css';
+import { ZoomControls } from './ZoomControls';
 import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
 
 // ============================================================
@@ -268,8 +269,8 @@ export function MultiBandVisualization({
     onTransientClick,
     onSeek,
     intensityThreshold = 0,
-    anticipationWindow = 2.0,
-    pastWindow = 4.0,
+    anticipationWindow: propAnticipationWindow,
+    pastWindow: propPastWindow,
     className,
 }: MultiBandVisualizationProps) {
     // Get transient analysis from the rhythm
@@ -280,6 +281,16 @@ export function MultiBandVisualization({
     const duration = propDuration ?? rhythm.metadata.duration > 0
         ? rhythm.metadata.duration
         : Math.max(...allTransients.map(t => t.timestamp), 0) + 1;
+
+    // Zoom state - controls the visible time window
+    const [zoomLevel, setZoomLevel] = useState(1);
+    // Base windows at zoom level 1
+    const baseAnticipationWindow = 2.0;
+    const basePastWindow = 4.0;
+    // Calculate windows based on zoom (higher zoom = smaller windows = more detail)
+    // Use prop overrides if provided, otherwise use zoom-based calculation
+    const anticipationWindow = propAnticipationWindow ?? baseAnticipationWindow / zoomLevel;
+    const pastWindow = propPastWindow ?? basePastWindow / zoomLevel;
 
     // Group transients by band
     const transientsByBand = useMemo(() => {
@@ -320,6 +331,14 @@ export function MultiBandVisualization({
                     <span className="multi-band-summary-total">{totalTransients}</span>
                     <span className="multi-band-summary-label">total transients</span>
                 </div>
+                {/* Zoom controls */}
+                <ZoomControls
+                    zoomLevel={zoomLevel}
+                    onZoomChange={setZoomLevel}
+                    minZoom={0.5}
+                    maxZoom={4}
+                    size="sm"
+                />
             </div>
 
             {/* Stacked timelines */}
