@@ -74,12 +74,14 @@ const DETECTION_METHOD_LABELS: Record<string, string> = {
 interface IntensityFilterProps {
     value: number;
     onChange: (value: number) => void;
+    totalTransients: number;
+    hiddenCount: number;
     min?: number;
     max?: number;
     step?: number;
 }
 
-function IntensityFilter({ value, onChange, min = 0, max = 1, step = 0.05 }: IntensityFilterProps) {
+function IntensityFilter({ value, onChange, totalTransients, hiddenCount, min = 0, max = 1, step = 0.05 }: IntensityFilterProps) {
     return (
         <div className="transient-intensity-filter">
             <label className="transient-intensity-label">
@@ -101,6 +103,13 @@ function IntensityFilter({ value, onChange, min = 0, max = 1, step = 0.05 }: Int
                 <span>0%</span>
                 <span>100%</span>
             </div>
+            {hiddenCount > 0 && (
+                <div className="transient-intensity-hidden-count">
+                    <span className="transient-intensity-hidden-label">Hidden:</span>
+                    <span className="transient-intensity-hidden-value">{hiddenCount}</span>
+                    <span className="transient-intensity-hidden-total">/ {totalTransients} transients</span>
+                </div>
+            )}
         </div>
     );
 }
@@ -109,13 +118,11 @@ function IntensityFilter({ value, onChange, min = 0, max = 1, step = 0.05 }: Int
  * Toggle for showing/hiding bands
  */
 interface BandToggleProps {
-    showAllBands: boolean;
-    onChange: (value: boolean) => void;
     activeBand: Band | 'all';
     onBandChange: (band: Band | 'all') => void;
 }
 
-function BandToggle({ showAllBands: _showAllBands, onChange, activeBand, onBandChange }: BandToggleProps) {
+function BandToggle({ activeBand, onBandChange }: BandToggleProps) {
     const bands: (Band | 'all')[] = ['all', 'low', 'mid', 'high'];
 
     return (
@@ -129,10 +136,7 @@ function BandToggle({ showAllBands: _showAllBands, onChange, activeBand, onBandC
                     <button
                         key={band}
                         className={`transient-band-button ${activeBand === band ? 'active' : ''}`}
-                        onClick={() => {
-                            onBandChange(band);
-                            onChange(band === 'all');
-                        }}
+                        onClick={() => onBandChange(band)}
                         style={band !== 'all' ? { '--band-color': BAND_COLORS[band] } as React.CSSProperties : {}}
                         aria-pressed={activeBand === band}
                     >
@@ -247,6 +251,11 @@ export function TransientDetectionPanel({
     // Calculate total count
     const totalCount = allTransients.length;
 
+    // Calculate hidden transients count based on intensity threshold
+    const hiddenByIntensity = useMemo(() => {
+        return allTransients.filter((t) => t.intensity < intensityThreshold).length;
+    }, [allTransients, intensityThreshold]);
+
     // Handle transient click for inspector
     const handleTransientClick = (transient: TransientResult, index: number) => {
         setSelectedTransient(transient);
@@ -272,10 +281,10 @@ export function TransientDetectionPanel({
                 <IntensityFilter
                     value={intensityThreshold}
                     onChange={setIntensityThreshold}
+                    totalTransients={totalCount}
+                    hiddenCount={hiddenByIntensity}
                 />
                 <BandToggle
-                    showAllBands={activeBand === 'all'}
-                    onChange={(showAll) => setActiveBand(showAll ? 'all' : 'low')}
                     activeBand={activeBand}
                     onBandChange={setActiveBand}
                 />
