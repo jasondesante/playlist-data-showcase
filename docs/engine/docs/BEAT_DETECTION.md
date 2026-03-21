@@ -29,6 +29,16 @@ The Playlist Data Engine provides beat detection and rhythm analysis features fo
 - [Difficulty Variant Generation](#difficulty-variant-generation) — Easy/Medium/Hard variants
 - [Usage Examples](#usage-examples) — Common workflows for rhythm generation
 
+### Automatic Level Generation — Pitch Detection & Button Mapping
+
+> **Note**: This is the pitch detection and button mapping half of automatic level generation. It depends on the rhythm generation outputs.
+
+- [Pitch Detection](#pitch-detection) — pYIN algorithm and multi-band analysis
+- [Melody Contour Analysis](#melody-contour-analysis) — Pitch direction and interval tracking
+- [Button Mapping Strategies](#button-mapping-strategies) — DDR and Guitar Hero modes
+- [Level Generation Examples](#level-generation-examples) — Complete workflows
+- [Serialization Format](#serialization-format) — FullBeatMapExportData structure and compatibility
+
 ### Reference
 
 - [References](#references)
@@ -3674,8 +3684,874 @@ console.log(`  Hard beats: ${rhythm.difficultyVariants.hard.stream.length}`);
 
 ---
 
+## Pitch Detection
+
+The pitch detection system extracts melodic information from audio to create button patterns that follow the music's melody. This is separate from beat/transient detection—while beats tell us *when* to press buttons, pitch detection tells us *which* buttons to press.
+
+### Source Files
+
+| Component | Location |
+|-----------|----------|
+| **PitchDetector** (pYIN algorithm) | [src/core/analysis/PitchDetector.ts](../src/core/analysis/PitchDetector.ts) |
+| **MultiBandPitchAnalyzer** | [src/core/analysis/MultiBandPitchAnalyzer.ts](../src/core/analysis/MultiBandPitchAnalyzer.ts) |
+| **PitchBeatLinker** | [src/core/generation/PitchBeatLinker.ts](../src/core/generation/PitchBeatLinker.ts) |
+
+### pYIN Algorithm Explanation
+
+The engine uses **pYIN** (probabilistic YIN), a robust pitch detection algorithm that extends the classic YIN algorithm with probabilistic modeling and Hidden Markov Model (HMM) tracking.
+
+#### How pYIN Works Conceptually
+
+pYIN operates in two layers:
+
+1. **YIN Core**: Analyzes each audio frame to find candidate pitches with associated probabilities
+2. **HMM Layer**: Tracks pitch over time, using temporal context to make smooth, consistent pitch decisions
+
+This two-layer approach produces more accurate results than YIN alone, especially in challenging audio with noise, polyphony, or rapid pitch changes.
+
+#### YIN Core: Difference Function and CMNDF
+
+The YIN algorithm finds the fundamental frequency by measuring how well the signal repeats at different periods:
+
+**Step 1: Difference Function**
+
+For each lag τ (candidate period), compute:
+```
+d(τ) = Σ (x[i] - x[i+τ])²
+```
+
+A low value indicates the signal repeats with that period. The lag with the lowest difference corresponds to the pitch period.
+
+**Step 2: Cumulative Mean Normalized Difference Function (CMNDF)**
+
+Normalize the difference function to make it robust to amplitude variations:
+```
+cmndf(τ) = d(τ) / (1/τ × Σ d(j) for j=1 to τ)
+```
+
+This normalization helps distinguish true pitch periods from amplitude-related artifacts.
+
+**Step 3: Pitch Candidate Selection**
+
+Find local minima in the CMNDF below a threshold. Each minimum represents a pitch candidate with probability `1 - cmndf[lag]`. Multiple candidates are kept for the HMM to evaluate.
+
+#### HMM Layer: Pitch State Tracking
+
+The Hidden Markov Model provides temporal smoothing:
+
+**States**: Each state represents a specific pitch (frequency). The engine uses 2 bins per semitone across the configured frequency range, plus an "unvoiced" state for non-pitched audio.
+
+**Transition Probabilities**: Closer pitches have higher transition probabilities. The model penalizes large pitch jumps, encouraging smooth trajectories.
+
+**Viterbi Decoding**: Finds the optimal sequence of pitch states that maximizes the overall probability, considering both:
+- Observation probabilities (how well each frame matches each pitch)
+- Transition probabilities (how likely it is to move between pitches)
+
+#### Why pYIN Over Alternatives
+
+| Algorithm | Pros | Cons |
+|-----------|------|------|
+| **pYIN** (chosen) | Probabilistic output, handles polyphony well, smooth tracking | Slightly more complex |
+| YIN | Simple, fast | No temporal smoothing, octave errors common |
+| CREPE | Very accurate on monophonic audio | Heavy neural network, browser-incompatible |
+
+pYIN strikes the best balance for browser-based rhythm games: accurate enough for melody following, efficient enough for real-time use.
+
+#### Configurable Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `minFrequency` | 80 Hz | Lowest frequency to detect (low guitar string) |
+| `maxFrequency` | 1000 Hz | Highest frequency to detect (high vocals) |
+| `voicingThreshold` | 0.5 | Probability threshold for voiced/unvoiced decision |
+| `transitionPenalty` | 0.5 | Penalty for large pitch jumps in HMM |
+| `selfTransitionProbability` | 0.99 | Probability of staying in same pitch state |
+| `yinThreshold` | 0.1 | Threshold for accepting pitch candidates |
+| `hopSize` | 512 samples | Analysis window overlap (~12ms at 44.1kHz) |
+
+#### Handling Polyphonic Audio
+
+Real music contains multiple simultaneous pitches. pYIN handles this by:
+
+1. **Multiple Candidates**: Keeping several pitch candidates per frame with associated probabilities
+2. **Subharmonic Filtering**: Removing candidates that are likely subharmonics of higher-frequency candidates
+3. **HMM Selection**: The Viterbi decoder selects the most consistent fundamental frequency over time
+
+For melody extraction in dense mixes, the multi-band analysis (below) helps isolate the lead instrument.
+
+#### Probabilistic Output
+
+Each pitch result includes:
+
+```typescript
+interface PitchResult {
+  timestamp: number;      // When this pitch was detected
+  frequency: number;      // Detected frequency in Hz
+  probability: number;    // Confidence (0-1) from pYIN HMM
+  isVoiced: boolean;      // Whether pitch was detected (vs silence/noise)
+  midiNote: number | null; // MIDI note number (e.g., 69 for A4)
+  noteName: string | null; // Note name (e.g., "C4", "F#5")
+  alternativeHypotheses?: { // Other possible pitches (for debugging)
+    frequency: number;
+    probability: number;
+  }[];
+}
+```
+
+The `probability` field is crucial for button mapping—lower-confidence pitches can be deprioritized or replaced with pattern-based button assignments.
+
+---
+
+### Multi-Band Pitch Analysis
+
+Pitch detection is more accurate when applied to pre-filtered frequency bands. The engine reuses the same band definitions and filtering infrastructure from rhythm generation.
+
+#### Why Analyze on Pre-Filtered Bands
+
+1. **Isolation**: Each band contains different instruments, making pitch detection easier
+2. **Consistency**: Uses the same filtering as rhythm generation, ensuring alignment
+3. **Efficiency**: Reuses already-filtered audio when available
+
+#### Band Characteristics and Typical Pitch Content
+
+| Band | Frequency Range | Typical Content | Pitch Usefulness |
+|------|-----------------|-----------------|------------------|
+| **Low** | 20-500 Hz | Bass, kick drum, sub frequencies | Limited—often percussive |
+| **Mid** | 500-2000 Hz | Vocals, lead melody, snare body | **Primary**—most melodic content |
+| **High** | 2000-20000 Hz | Hi-hats, cymbals, harmonics | Limited—often unpitched |
+
+The **mid band** typically contains the most useful pitch information for melody-based button mapping.
+
+#### Band Selection Strategy
+
+The `MultiBandPitchAnalyzer` automatically selects the **primary band** based on:
+
+1. Average probability of voiced frames (70% weight)
+2. Ratio of voiced to total frames (30% weight)
+
+This ensures the band with the most consistent, confident pitch detection is used for button mapping.
+
+```typescript
+const analyzer = new MultiBandPitchAnalyzer();
+const result = analyzer.analyze(audioBuffer);
+
+console.log('Primary band:', result.primaryBand); // Usually 'mid'
+
+// Access pitches from the best band
+const primaryPitches = analyzer.getPrimaryBandPitches(result);
+```
+
+#### Integration with MultiBandAnalyzer
+
+For efficiency, use pre-filtered audio from rhythm generation:
+
+```typescript
+// After running MultiBandAnalyzer for rhythm generation
+const rhythmAnalyzer = new MultiBandAnalyzer();
+const rhythmResult = rhythmAnalyzer.analyze(audioBuffer);
+
+// Get pre-filtered signals
+const preFilteredBands = rhythmAnalyzer.getFilteredSignals();
+
+// Use pre-filtered signals for pitch analysis (avoids redundant filtering)
+const pitchAnalyzer = new MultiBandPitchAnalyzer();
+const pitchResult = pitchAnalyzer.analyzePreFiltered(preFilteredBands, {
+  duration: audioBuffer.duration,
+});
+```
+
+---
+
+### Beat-Timestamped Pitch Detection
+
+Rather than analyzing the entire audio continuously, pitch detection is performed at specific timestamps from the generated rhythm patterns.
+
+#### Why Timestamp-Based Analysis
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Timestamp-based** (chosen) | Efficient, aligned with beats, direct integration | May miss pitch between beats |
+| Continuous | Complete pitch contour | Redundant with beat detection, slower |
+
+For rhythm games, we only need pitch at the moments when players press buttons—analyzing at beat timestamps is both efficient and accurate.
+
+#### Linking Pitch to GeneratedBeat Timestamps
+
+The `PitchBeatLinker` connects pitch detection to rhythm beats:
+
+```typescript
+import { PitchBeatLinker } from 'playlist-data-engine';
+
+const linker = new PitchBeatLinker();
+
+// Option 1: Analyze with automatic band filtering
+const linkedAnalysis = linker.link(
+  generatedRhythm.bandStreams, // From rhythm generation
+  audioBuffer
+);
+
+// Option 2: Analyze with pre-filtered audio (more efficient)
+const linkedAnalysis = linker.linkPreFiltered(
+  generatedRhythm.bandStreams,
+  preFilteredBands,
+  { duration: audioBuffer.duration }
+);
+
+// Access pitch at each beat
+for (const pitchAtBeat of linkedAnalysis.pitchByBeat) {
+  if (pitchAtBeat.pitch?.isVoiced) {
+    console.log(`Beat ${pitchAtBeat.beatIndex}: ${pitchAtBeat.pitch.noteName}`);
+  }
+}
+```
+
+#### Phrase-Level Pitch Correlation
+
+The linker can correlate pitches with detected rhythmic phrases using `RhythmicPhrase.sourceBand`:
+
+```typescript
+// Pass phrases from rhythm generation for correlation
+const linkedAnalysis = linker.link(
+  generatedRhythm.bandStreams,
+  audioBuffer,
+  generatedRhythm.phrases // Optional: enables phrase correlation
+);
+
+// Access pitches associated with each phrase
+for (const [phraseId, pitches] of linkedAnalysis.phrasePitchCorrelation) {
+  console.log(`Phrase ${phraseId}: ${pitches.length} pitches`);
+}
+```
+
+This enables patterns that respect both the rhythm and melody of repeated musical phrases.
+
+#### Composite Stream Pitch Derivation
+
+Since the composite stream is assembled from band stream sections, pitches can be derived without re-analyzing:
+
+```typescript
+// Derive pitches for composite stream
+const compositePitches = linker.deriveCompositePitches(
+  generatedRhythm.composite,
+  linkedAnalysis
+);
+
+// Derive pitches for all difficulty variants
+const variantPitches = linker.deriveAllVariantPitches(
+  generatedRhythm.difficultyVariants,
+  compositePitches
+);
+
+console.log('Easy pitches:', variantPitches.easy.length);
+console.log('Medium pitches:', variantPitches.medium.length);
+console.log('Hard pitches:', variantPitches.hard.length);
+```
+
+---
+
+## Melody Contour Analysis
+
+*This section documents how pitch direction and intervals are calculated for button mapping. See the [PitchBeatLinker](../src/core/generation/PitchBeatLinker.ts) source for implementation details.*
+
+### Pitch-to-Pitch Comparison
+
+Each beat's pitch is compared to the previous beat to determine:
+
+#### Direction Categories
+
+| Direction | Condition |
+|-----------|-----------|
+| `up` | Current pitch > Previous pitch (by >0.5 semitones) |
+| `down` | Current pitch < Previous pitch (by >0.5 semitones) |
+| `stable` | Pitch change ≤ 0.5 semitones |
+| `none` | No pitch detected at current or previous beat |
+
+#### Interval Calculation
+
+Intervals are measured in semitones and categorized for button mapping:
+
+| Category | Semitones | Example |
+|----------|-----------|---------|
+| `unison` | 0 | Same note |
+| `small` | 1-2 | Minor/major second |
+| `medium` | 3-4 | Minor/major third |
+| `large` | 5-7 | Perfect fourth to perfect fifth |
+| `very_large` | 8+ | Sixth or larger |
+
+### Contour Extraction
+
+The melody contour is analyzed at multiple time scales:
+
+- **Short-term** (1-2 beats): Immediate direction for quick reactions
+- **Medium-term** (4-8 beats): Phrase-level direction for pattern generation
+- **Long-term** (16+ beats): Overall melodic trend
+
+#### Segment Detection
+
+Consecutive beats with the same direction are grouped into segments:
+
+```typescript
+interface MelodySegment {
+  startTime: number;      // Segment start time
+  endTime: number;        // Segment end time
+  startPitch: string;     // Starting note (e.g., "C4")
+  endPitch: string;       // Ending note (e.g., "F#5")
+  direction: 'up' | 'down' | 'stable';
+  interval: number;       // Total semitones spanned
+}
+```
+
+---
+
+## Button Mapping Strategies
+
+*This section documents how detected pitches are converted to button assignments. See the [ButtonMapper](../src/core/generation/ButtonMapper.ts) source for implementation details.*
+
+### Controller Mode Overview
+
+The engine supports two controller modes with different button mapping philosophies:
+
+| Mode | Buttons | Axes | Best For |
+|------|---------|------|----------|
+| **DDR** | up, down, left, right | 2 (circular) | Dance pads, circular motion games |
+| **Guitar Hero** | 1, 2, 3, 4, 5 | 1 (horizontal) | Fret-based games, linear pitch mapping |
+
+Mode selection is via the `controllerMode` config option.
+
+### DDR Mode Strategy (4 Buttons, Circular Motion)
+
+DDR mode uses a **circular motion philosophy**: buttons are selected to create flowing, dance-like patterns.
+
+#### Circular State Transitions
+
+```
+up → right → down → left → up
+```
+
+Pitch direction determines the direction of circular movement:
+
+| Pitch Direction | Movement |
+|-----------------|----------|
+| Up (ascending) | Clockwise progression |
+| Down (descending) | Counter-clockwise progression |
+| Stable | Stay on current button or small movement |
+
+#### Interval Size Effects
+
+| Interval | Effect |
+|----------|--------|
+| Small (1-2 semitones) | Move 1 step in direction |
+| Medium (3-4 semitones) | Move 2 steps |
+| Large (5+ semitones) | Move 3 steps or jump across |
+
+#### Example
+
+"Ascending small interval from 'left' → 'up'" (clockwise 1 step)
+
+### Guitar Hero Mode Strategy (5 Buttons, 1 Axis)
+
+Guitar Hero mode uses a **fretboard metaphor**: lower-numbered buttons correspond to lower pitches.
+
+#### Fretboard Mapping
+
+| Button | Pitch Range |
+|--------|-------------|
+| 1 | Lowest pitch detected |
+| 2 | Low-mid pitch |
+| 3 | Middle pitch |
+| 4 | Mid-high pitch |
+| 5 | Highest pitch detected |
+
+The full pitch range of the song is mapped linearly across the 5 buttons.
+
+#### String Wrap Logic
+
+Instead of clamping at the edges (buttons 1 and 5), the mapping "wraps" like a guitar string:
+
+- Going below button 1 wraps to button 5
+- Going above button 5 wraps to button 1
+
+This creates continuous, flowing patterns even at the extremes.
+
+#### Interval Size Effects
+
+| Interval | Fret Jump |
+|----------|-----------|
+| Small (1-2 semitones) | Move 1 fret |
+| Medium (3-4 semitones) | Move 2 frets |
+| Large (5+ semitones) | Move 3+ frets |
+
+#### Example
+
+"Descending large interval from fret 3 → fret 1" (down 2 positions)
+
+### Probability-Based Blending
+
+The `pitchInfluenceWeight` parameter controls the balance between pitch-based and pattern-based button assignment:
+
+| Weight | Behavior |
+|--------|----------|
+| `1.0` | 100% pitch-based (follow melody exactly) |
+| `0.5` | 50/50 blend of pitch and patterns |
+| `0.0` | Pattern-only (skip pitch detection entirely) |
+
+#### Low-Probability Pitch Handling
+
+When pitch probability is low:
+1. The beat is marked for pattern-based replacement
+2. Pattern filling uses nearby button assignments
+3. Result is a smooth blend of melody and rhythm patterns
+
+### Difficulty-Based Variations
+
+| Difficulty | Mapping Strategy |
+|------------|-----------------|
+| **Easy** | Direction-only mapping, no large leaps, simpler patterns |
+| **Medium** | Direction + interval, leaps allowed, moderate complexity |
+| **Hard** | Full interval mapping, rapid changes, maximum complexity |
+
+---
+
+## Level Generation Examples
+
+### Basic Level Generation
+
+```typescript
+import { RhythmGenerator, PitchBeatLinker, ButtonMapper } from 'playlist-data-engine';
+
+// Step 1: Generate rhythm
+const rhythmGenerator = new RhythmGenerator({ difficulty: 'medium' });
+const rhythm = await rhythmGenerator.generate(audioBuffer, beatMap, interpolated);
+
+// Step 2: Link pitch to beats
+const linker = new PitchBeatLinker();
+const linkedPitch = linker.link(rhythm.bandStreams, audioBuffer);
+
+// Step 3: Derive composite pitches
+const compositePitches = linker.deriveCompositePitches(rhythm.composite, linkedPitch);
+
+// Step 4: Map buttons
+const mapper = new ButtonMapper({
+  controllerMode: 'ddr',
+  pitchInfluenceWeight: 0.8
+});
+const buttonMap = mapper.map(compositePitches, rhythm.composite);
+
+console.log(`Generated ${buttonMap.length} button assignments`);
+```
+
+### Pattern-Only Generation (No Pitch Analysis)
+
+```typescript
+import { RhythmGenerator, ButtonMapper } from 'playlist-data-engine';
+
+// Generate rhythm without pitch analysis
+const rhythmGenerator = new RhythmGenerator({ difficulty: 'easy' });
+const rhythm = await rhythmGenerator.generate(audioBuffer, beatMap, interpolated);
+
+// Map buttons using patterns only (pitchInfluenceWeight: 0)
+const mapper = new ButtonMapper({
+  controllerMode: 'guitar_hero',
+  pitchInfluenceWeight: 0  // Skips pitch detection entirely
+});
+const buttonMap = mapper.mapFromRhythm(rhythm.difficultyVariants.easy);
+```
+
+### Full Workflow: Audio → Rhythm → Pitch → Buttons → ChartedBeatMap
+
+```typescript
+import {
+  BeatMapGenerator,
+  BeatInterpolator,
+  unifyBeatMap,
+  RhythmGenerator,
+  PitchBeatLinker,
+  ButtonMapper
+} from 'playlist-data-engine';
+
+// Step 1: Generate beat map
+const beatMapGenerator = new BeatMapGenerator();
+const beatMap = await beatMapGenerator.generateBeatMap('song.mp3', 'track-001');
+
+// Step 2: Interpolate to fill gaps
+const interpolator = new BeatInterpolator();
+const interpolated = interpolator.interpolate(beatMap);
+
+// Step 3: Create unified beat map
+const unifiedMap = unifyBeatMap(interpolated);
+
+// Step 4: Generate procedural rhythm
+const rhythmGenerator = new RhythmGenerator({
+  difficulty: 'medium',
+  outputMode: 'composite'
+});
+const rhythm = await rhythmGenerator.generate(audioBuffer, beatMap, interpolated);
+
+// Step 5: Link pitch to beats
+const linker = new PitchBeatLinker();
+const linkedPitch = linker.link(rhythm.bandStreams, audioBuffer);
+
+// Step 6: Derive pitches for all difficulty variants
+const compositePitches = linker.deriveCompositePitches(rhythm.composite, linkedPitch);
+const variantPitches = linker.deriveAllVariantPitches(rhythm.difficultyVariants, compositePitches);
+
+// Step 7: Map buttons for each difficulty
+const mapper = new ButtonMapper({ controllerMode: 'ddr', pitchInfluenceWeight: 0.8 });
+const easyButtons = mapper.map(variantPitches.easy, rhythm.difficultyVariants.easy);
+const mediumButtons = mapper.map(variantPitches.medium, rhythm.difficultyVariants.medium);
+const hardButtons = mapper.map(variantPitches.hard, rhythm.difficultyVariants.hard);
+
+console.log('Level generation complete!');
+console.log(`  Easy: ${easyButtons.length} buttons`);
+console.log(`  Medium: ${mediumButtons.length} buttons`);
+console.log(`  Hard: ${hardButtons.length} buttons`);
+```
+
+### Serialization: Save and Load Generated Levels
+
+The `LevelSerializer` class provides methods to save and load generated levels. This is useful for:
+- Persisting generated levels to disk or cloud storage
+- Sharing levels between users
+- Caching generated levels to avoid re-generation
+
+```typescript
+import { LevelGenerator, LevelSerializer } from 'playlist-data-engine';
+
+// Generate a level
+const generator = new LevelGenerator({
+  difficulty: 'medium',
+  controllerMode: 'ddr',
+});
+const level = await generator.generate(audioBuffer, unifiedBeatMap);
+
+// === Save to JSON string ===
+const jsonString = LevelSerializer.toJSON(level);
+// Save to localStorage, send to server, etc.
+localStorage.setItem('saved-level', jsonString);
+
+// === Load from JSON string ===
+const loadedLevel = LevelSerializer.fromJSON(jsonString);
+console.log('Loaded level:', loadedLevel.metadata.difficulty);
+
+// === Export to FullBeatMapExportData format ===
+// This format is compatible with the playlist-data-showcase app
+const exportData = LevelSerializer.toExportData(level);
+console.log('Export format version:', exportData.version);
+console.log('Generation source:', exportData.generationSource); // 'procedural'
+
+// === Import from FullBeatMapExportData ===
+const reimportedLevel = LevelSerializer.fromExportData(exportData);
+
+// === Validate before importing unknown data ===
+const unknownData = JSON.parse(someJsonString);
+const result = LevelSerializer.validate(unknownData);
+if (result.success) {
+  const validLevel = LevelSerializer.fromExportData(result.data!);
+  console.log('Valid level loaded!');
+} else {
+  console.error('Validation failed:', result.errors);
+  console.warn('Warnings:', result.warnings);
+}
+
+// === Round-trip preservation ===
+// All level data is preserved through serialization
+const roundTripJson = LevelSerializer.toJSON(level);
+const roundTripLevel = LevelSerializer.fromJSON(roundTripJson);
+console.assert(
+  roundTripLevel.chart.beats.length === level.chart.beats.length,
+  'Beat count preserved'
+);
+```
+
+### Conversion: GeneratedLevel → ChartedBeatMap for BeatStream
+
+The `GeneratedLevel` output includes a `chart` property that is already a `ChartedBeatMap` ready for use with `BeatStream`. No additional conversion is needed.
+
+```typescript
+import { LevelGenerator, BeatStream } from 'playlist-data-engine';
+
+// Generate a level
+const generator = new LevelGenerator({
+  difficulty: 'medium',
+  controllerMode: 'ddr',
+  buttons: { pitchInfluenceWeight: 0.8 }
+});
+const level = await generator.generate(audioBuffer, unifiedBeatMap);
+
+// The chart property is already a ChartedBeatMap
+const chartedBeatMap = level.chart;
+
+// Create a BeatStream from the generated chart
+const beatStream = new BeatStream(chartedBeatMap, audioContext);
+
+// Connect to audio element for synchronization
+const audioElement = document.querySelector('audio');
+beatStream.connectAudioElement(audioElement);
+
+// Start playback
+audioElement.play();
+beatStream.start();
+
+// Listen for beat events (includes requiredKey from button mapping)
+beatStream.on('beat', (beat) => {
+  console.log(`Beat at ${beat.timestamp}s - Press key: ${beat.requiredKey}`);
+
+  // Check if player pressed the correct key
+  const playerPressedKey = 'up'; // From game input
+  const isCorrect = beatStream.checkButtonPress(
+    beat.timestamp,
+    playerPressedKey,
+    50 // ±50ms tolerance window
+  );
+
+  if (isCorrect) {
+    console.log('Perfect hit!');
+  }
+});
+
+// Access metadata about the generated level
+console.log('Level metadata:');
+console.log(`  Difficulty: ${level.metadata.difficulty}`);
+console.log(`  Keys used: ${level.metadata.buttonMetadata.keysUsed.join(', ')}`);
+console.log(`  Pitch-influenced beats: ${level.metadata.buttonMetadata.pitchInfluencedBeats}`);
+console.log(`  Patterns used: ${level.metadata.buttonMetadata.patternsUsed.join(', ')}`);
+
+if (level.metadata.pitchMetadata) {
+  console.log('Pitch analysis:');
+  console.log(`  Band used: ${level.metadata.pitchMetadata.bandUsed}`);
+  console.log(`  Melody range: ${level.metadata.pitchMetadata.melodyRange?.min} - ${level.metadata.pitchMetadata.melodyRange?.max}`);
+  console.log(`  Direction stats:`, level.metadata.pitchMetadata.directionStats);
+  console.log(`  Interval stats:`, level.metadata.pitchMetadata.intervalStats);
+}
+```
+
+---
+
+## Serialization Format
+
+The `LevelSerializer` class exports generated levels to the `FullBeatMapExportData` format, a unified JSON structure that supports both procedurally generated levels and manually charted levels. This format is fully compatible with the playlist-data-showcase app's import/export functionality.
+
+### Overview of FullBeatMapExportData Format
+
+The `FullBeatMapExportData` format contains all the data needed to reconstruct a complete rhythm game level:
+
+| Section | Purpose |
+|---------|---------|
+| **Format identification** | `version: 1` and `format: 'full-beatmap'` for type detection |
+| **Audio identification** | `audioId`, `audioTitle`, `duration` |
+| **Tempo information** | `quarterNoteBpm`, `quarterNoteConfidence` |
+| **Beat data** | `detectedBeats`, `mergedBeats`, `interpolatedMetadata` |
+| **Subdivision** | `config`, `beats`, `metadata` (optional) |
+| **Chart** | `style`, `keyCount`, `usedKeys` (optional) |
+| **Procedural extensions** | `generationSource`, `generationMetadata` (optional) |
+
+#### Core Structure
+
+```typescript
+interface FullBeatMapExportData {
+  // Format identification
+  version: 1;
+  format: 'full-beatmap';
+
+  // Audio identification
+  audioId: string;
+  audioTitle?: string;
+  exportedAt: number;  // Unix timestamp
+  duration: number;
+
+  // Tempo information
+  quarterNoteBpm: number;
+  quarterNoteConfidence: number;
+
+  // Beat data
+  detectedBeats: FullExportDetectedBeat[];
+  mergedBeats: FullExportMergedBeat[];
+  interpolatedMetadata: InterpolatedMetadataJSON;
+
+  // Subdivision (null if no subdivision applied)
+  subdivision: SubdivisionExportData | null;
+
+  // Chart metadata (null if no chart)
+  chart: ChartExportData | null;
+
+  // Procedural extensions (optional)
+  generationSource?: 'manual' | 'procedural';
+  generationMetadata?: ProceduralGenerationMetadata;
+}
+```
+
+### Procedural Extensions
+
+Procedurally generated levels include additional metadata that preserves the generation context. These fields are optional and are safely ignored by the showcase app during import.
+
+#### Root-Level Extensions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `generationSource` | `'manual' \| 'procedural'` | Indicates whether the level was created manually or procedurally |
+| `generationMetadata` | `ProceduralGenerationMetadata` | Detailed metadata about the generation process |
+
+#### ProceduralGenerationMetadata Structure
+
+```typescript
+interface ProceduralGenerationMetadata {
+  difficulty: string;              // 'easy', 'medium', or 'hard'
+  pitchInfluenceWeight: number;    // 0-1, how much pitch affected button mapping
+  patternsUsed: string[];          // IDs of button patterns used
+  controllerMode: 'ddr' | 'guitar_hero';
+  seed?: string;                   // For reproducibility
+  generatedAt: string;             // ISO timestamp
+
+  // Pitch analysis results (null if pitchInfluenceWeight = 0)
+  pitchBand?: 'low' | 'mid' | 'high';
+  directionStats?: {
+    up: number;
+    down: number;
+    stable: number;
+    none: number;
+  };
+  intervalStats?: {
+    unison: number;
+    small: number;
+    medium: number;
+    large: number;
+    very_large: number;
+  };
+
+  // Rhythm generation summary
+  rhythmMetadata?: {
+    difficulty: string;
+    bandsAnalyzed: ('low' | 'mid' | 'high')[];
+    transientsDetected: number;
+    averageDensity: number;
+  };
+}
+```
+
+#### Beat-Level Procedural Extensions
+
+Individual beats in `subdivision.beats[]` can include procedural-specific fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `quarterNoteIndex` | `number` | Index of the parent quarter note |
+| `subdivisionPosition` | `number` | Position within the quarter (0-3 for 16th, 0-2 for triplet) |
+| `sourceBand` | `'low' \| 'mid' \| 'high'` | Which frequency band this beat originated from |
+| `quantizationError` | `number` | How far (ms) the beat was moved during quantization |
+
+### Compatibility with Manual Charting
+
+The serialization format is designed for seamless interoperability between the data engine and the playlist-data-showcase app:
+
+#### Procedural Level → Showcase App Import
+
+When a procedurally generated level is exported and imported into the showcase app:
+
+1. **Required fields are preserved**: All beat timing, key assignments, and chart metadata work correctly
+2. **Procedural extensions are ignored**: The showcase app uses `.map()` to extract only needed fields
+3. **Chart playback works**: `requiredKey` values are used for key matching during gameplay
+
+```typescript
+// Export from engine
+const exportData = LevelSerializer.toExportData(generatedLevel);
+const json = JSON.stringify(exportData);
+
+// Import in showcase app - procedural fields are safely ignored
+// The showcase app extracts: timestamp, beatInMeasure, requiredKey, etc.
+```
+
+#### Manual Chart → Engine Import
+
+Manual charts exported from the showcase app can be imported into the engine:
+
+1. **Missing procedural fields get defaults**: `quarterNoteIndex = 0`, `subdivisionPosition = 0`, `sourceBand = 'mid'`
+2. **generationSource is absent**: The engine detects manual charts by the lack of `generationSource` field
+3. **Rhythm reconstruction**: Basic rhythm data is reconstructed from available beat information
+
+```typescript
+// Manual charts don't have generationMetadata
+if (!exportData.generationSource || exportData.generationSource === 'manual') {
+  // This is a manually charted level
+  // Procedural fields will use sensible defaults
+}
+```
+
+### Round-Trip Preservation
+
+The serialization format preserves all level data through save/load cycles:
+
+| Data | Preservation |
+|------|--------------|
+| **Beat timestamps** | ✅ Exact preservation |
+| **Key assignments** | ✅ `requiredKey` preserved for all beats |
+| **Chart metadata** | ✅ Style, key count, used keys preserved |
+| **Pitch metadata** | ✅ Direction/interval stats preserved for procedural levels |
+| **Rhythm metadata** | ✅ Density, transient count, bands analyzed preserved |
+| **Generation config** | ✅ Difficulty, controller mode, seed preserved |
+
+#### Round-Trip Example
+
+```typescript
+import { LevelGenerator, LevelSerializer } from 'playlist-data-engine';
+
+// Generate a level
+const level = await generator.generate(audioBuffer, unifiedBeatMap);
+
+// Export → Import → Re-export
+const export1 = LevelSerializer.toExportData(level);
+const reimported = LevelSerializer.fromExportData(export1);
+const export2 = LevelSerializer.toExportData(reimported);
+
+// Verify preservation
+console.assert(
+  JSON.stringify(export1) === JSON.stringify(export2),
+  'Round-trip should produce identical output'
+);
+```
+
+### Edge Cases
+
+#### Pattern-Only Levels (pitchInfluenceWeight = 0)
+
+When pitch influence is disabled during generation:
+
+- `generationMetadata.pitchBand` is absent
+- `generationMetadata.directionStats` is absent
+- `generationMetadata.intervalStats` is absent
+- `generationMetadata.pitchInfluenceWeight = 0`
+
+#### Levels Without Subdivision
+
+When no subdivision was applied:
+
+- `subdivision` is `null`
+- Beats are reconstructed from `mergedBeats` on import
+- Default `subdivisionType: 'quarter'` is used
+
+#### Levels Without Key Assignments
+
+When no chart was created:
+
+- `chart` is `null`
+- `requiredKey` is undefined on all beats
+- `usedKeys` array is empty
+
+### Type Definitions
+
+The complete type definitions are available in the engine:
+
+| Type | Location |
+|------|----------|
+| `FullBeatMapExportData` | [src/core/types/LevelExport.ts](../src/core/types/LevelExport.ts) |
+| `ProceduralGenerationMetadata` | [src/core/types/LevelExport.ts](../src/core/types/LevelExport.ts) |
+| `LevelSerializer` | [src/core/analysis/LevelSerializer.ts](../src/core/analysis/LevelSerializer.ts) |
+
+---
+
 ## References
 
 - [Beat Tracking by Dynamic Programming (Ellis, 2007)](https://www.ee.columbia.edu/~dpwe/pubs/Ellis07-beattrack.pdf)
 - [librosa beat tracking implementation](https://librosa.org/doc/latest/generated/librosa.beat.beat_track.html)
 - [librosa onset strength implementation](https://librosa.org/doc/latest/generated/librosa.onset.onset_strength.html)
+- [pYIN: A Fundamental Frequency Estimator (Mauch & Dixon, 2014)](https://ieeexplore.ieee.org/document/6853678)
+- [YIN: A Fundamental Frequency Estimator (De Cheveigné & Kawahara, 2002)](https://asa.scitation.org/doi/10.1121/1.1458024)
