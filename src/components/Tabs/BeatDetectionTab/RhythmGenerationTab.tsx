@@ -21,14 +21,14 @@ import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Tooltip } from '../../ui/Tooltip';
 import { CollapsibleSection } from '../../Party/CollapsibleSection';
-import { RhythmGenerationProgress } from '../../ui/RhythmGenerationProgress';
+import { RhythmGenerationProgress } from '../../ui/BeatDetectionTab/RhythmGenerationTab/RhythmGenerationProgress';
 import { TransientDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TransientDetectionPanel';
-import { MultiBandVisualization } from '../../ui/MultiBandVisualization';
-import { QuantizationPanel } from '../../ui/QuantizationPanel';
-import { DifficultyVariantsPanel } from '../../ui/DifficultyVariantsPanel';
-import { VariantComparisonView } from '../../ui/VariantComparisonView';
-import { PhraseDetectionPanel } from '../../ui/PhraseDetectionPanel';
-import { TimelineControls } from '../../ui/TimelineControls';
+import { MultiBandVisualization } from '../../ui/BeatDetectionTab/RhythmGenerationTab/MultiBandVisualization';
+import { QuantizationPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/QuantizationPanel';
+import { DifficultyVariantsPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/DifficultyVariantsPanel';
+import { VariantComparisonView } from '../../ui/BeatDetectionTab/RhythmGenerationTab/VariantComparisonView';
+import { PhraseDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/PhraseDetectionPanel';
+import { TimelineControls } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TimelineControls';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,

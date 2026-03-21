@@ -23,8 +23,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle, Zap, Circle } from 'lucide-react';
 import './RhythmGenerationProgress.css';
-import type { RhythmGenerationProgress as RhythmGenerationProgressType, RhythmGenerationPhase } from '../../types/rhythmGeneration';
-import { cn } from '../../utils/cn';
+import type { RhythmGenerationProgress as RhythmGenerationProgressType, RhythmGenerationPhase } from '../../../../types/rhythmGeneration';
+import { cn } from '../../../../utils/cn';
 
 // ============================================================
 // Types

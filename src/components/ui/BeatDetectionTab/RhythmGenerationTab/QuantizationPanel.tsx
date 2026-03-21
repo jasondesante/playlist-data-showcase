@@ -15,17 +15,17 @@
 import { useMemo, useState } from 'react';
 import { Grid3X3, TrendingUp, BarChart3 } from 'lucide-react';
 import './QuantizationPanel.css';
-import { GridDecisionTimeline } from './GridDecisionTimeline';
-import { QuantizedBeatTimeline } from './QuantizedBeatTimeline';
-import { QuantizationErrorHistogram } from './QuantizationErrorHistogram';
-import { ZoomControls } from './ZoomControls';
+import { GridDecisionTimeline } from '../../GridDecisionTimeline';
+import { QuantizedBeatTimeline } from '../../QuantizedBeatTimeline';
+import { QuantizationErrorHistogram } from '../../QuantizationErrorHistogram';
+import { ZoomControls } from '../../ZoomControls';
 import type {
     GeneratedRhythm,
     GeneratedBeat,
     GridDecision,
     Band,
     HighlightedRegion,
-} from '../../types/rhythmGeneration';
+} from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types

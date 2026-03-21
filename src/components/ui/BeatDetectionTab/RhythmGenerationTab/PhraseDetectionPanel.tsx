@@ -13,13 +13,13 @@
 
 import { useState, useMemo } from 'react';
 import { Music, TrendingUp, Hash, Clock, Layers, ChevronUp, ChevronDown } from 'lucide-react';
-import { PhrasePatternCard } from './PhrasePatternCard';
+import { PhrasePatternCard } from '../../PhrasePatternCard';
 import './PhraseDetectionPanel.css';
 import type {
     GeneratedRhythm,
     RhythmicPhrase,
     Band,
-} from '../../types/rhythmGeneration';
+} from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types

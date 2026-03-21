@@ -13,7 +13,7 @@
 
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { Play, Pause, ZoomIn, ZoomOut, SkipBack, SkipForward } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from '../../Button';
 import './TimelineControls.css';
 
 // ============================================================
@@ -157,11 +157,11 @@ function TimelineScrubber({ currentTime, duration, onSeek, bufferedRanges }: Scr
   // Calculate buffered percentage (for buffered indicator)
   const bufferedPercent = bufferedRanges
     ? bufferedRanges.reduce((total, range) => {
-        if (range.end <= currentTime) return total;
-        const visibleStart = Math.max(range.start, currentTime);
-        const visibleEnd = Math.min(range.end, duration);
-        return total + ((visibleEnd - visibleStart) / duration) * 100;
-      }, 0)
+      if (range.end <= currentTime) return total;
+      const visibleStart = Math.max(range.start, currentTime);
+      const visibleEnd = Math.min(range.end, duration);
+      return total + ((visibleEnd - visibleStart) / duration) * 100;
+    }, 0)
     : 0;
 
   return (

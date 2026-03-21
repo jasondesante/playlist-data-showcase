@@ -14,13 +14,13 @@
 import { useMemo, useState } from 'react';
 import { Trophy, BarChart3, Edit3, CheckCircle } from 'lucide-react';
 import './DifficultyVariantsPanel.css';
-import { ZoomControls } from './ZoomControls';
+import { ZoomControls } from '../../ZoomControls';
 import type {
     GeneratedRhythm,
     DifficultyVariant,
     DifficultyLevel,
     EditType,
-} from '../../types/rhythmGeneration';
+} from '../../../../types/rhythmGeneration';
 
 // Type alias for beats that can have extended grid types
 type VariantBeat = GeneratedRhythm['difficultyVariants']['easy']['beats'][number];

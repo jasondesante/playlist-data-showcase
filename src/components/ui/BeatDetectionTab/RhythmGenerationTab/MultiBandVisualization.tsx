@@ -16,8 +16,8 @@
 import { useMemo, useState } from 'react';
 import { Layers } from 'lucide-react';
 import './MultiBandVisualization.css';
-import { ZoomControls } from './ZoomControls';
-import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
+import { ZoomControls } from '../../ZoomControls';
+import type { GeneratedRhythm, TransientResult, Band } from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types

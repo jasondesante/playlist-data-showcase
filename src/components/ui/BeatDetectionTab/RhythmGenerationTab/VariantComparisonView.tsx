@@ -20,7 +20,7 @@ import type {
     DifficultyVariant,
     Band,
     EditType,
-} from '../../types/rhythmGeneration';
+} from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types
@@ -29,7 +29,7 @@ import type {
 /**
  * Extended grid type including simplified subdivisions for Easy difficulty
  */
-type ExtendedGridType = import('../../types/rhythmGeneration').GridType | 'straight_8th' | 'quarter_triplet';
+type ExtendedGridType = import('../../../../types/rhythmGeneration').GridType | 'straight_8th' | 'quarter_triplet';
 
 /**
  * A beat in a difficulty variant with extended grid type
