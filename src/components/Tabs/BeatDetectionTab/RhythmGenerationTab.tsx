@@ -17,32 +17,32 @@
 import { useState, useMemo, useCallback } from 'react';
 import { AlertTriangle, CheckCircle, Music, Zap, Layers, Grid3X3, Trophy, GitCompare } from 'lucide-react';
 import './RhythmGenerationTab.css';
-import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Tooltip } from '../ui/Tooltip';
-import { CollapsibleSection } from '../Party/CollapsibleSection';
-import { RhythmGenerationProgress } from '../ui/RhythmGenerationProgress';
-import { TransientDetectionPanel } from '../ui/TransientDetectionPanel';
-import { MultiBandVisualization } from '../ui/MultiBandVisualization';
-import { QuantizationPanel } from '../ui/QuantizationPanel';
-import { DifficultyVariantsPanel } from '../ui/DifficultyVariantsPanel';
-import { VariantComparisonView } from '../ui/VariantComparisonView';
-import { PhraseDetectionPanel } from '../ui/PhraseDetectionPanel';
-import { TimelineControls } from '../ui/TimelineControls';
+import { Card } from '../../ui/Card';
+import { Button } from '../../ui/Button';
+import { Tooltip } from '../../ui/Tooltip';
+import { CollapsibleSection } from '../../Party/CollapsibleSection';
+import { RhythmGenerationProgress } from '../../ui/RhythmGenerationProgress';
+import { TransientDetectionPanel } from '../../ui/BeatDetectionTab/RhythmGenerationTab/TransientDetectionPanel';
+import { MultiBandVisualization } from '../../ui/MultiBandVisualization';
+import { QuantizationPanel } from '../../ui/QuantizationPanel';
+import { DifficultyVariantsPanel } from '../../ui/DifficultyVariantsPanel';
+import { VariantComparisonView } from '../../ui/VariantComparisonView';
+import { PhraseDetectionPanel } from '../../ui/PhraseDetectionPanel';
+import { TimelineControls } from '../../ui/TimelineControls';
 import {
     useGeneratedRhythm,
     useRhythmGenerationProgress,
     useBeatDetectionActions,
-} from '../../store/beatDetectionStore';
-import { useAudioPlayerStore } from '../../store/audioPlayerStore';
-import { usePlaylistStore } from '../../store/playlistStore';
+} from '../../../store/beatDetectionStore';
+import { useAudioPlayerStore } from '../../../store/audioPlayerStore';
+import { usePlaylistStore } from '../../../store/playlistStore';
 import type {
     GeneratedRhythm,
     RhythmicPhrase,
     HighlightedRegion,
-} from '../../types/rhythmGeneration';
-import { getPhraseHighlightColor } from '../../types/rhythmGeneration';
-import { cn } from '../../utils/cn';
+} from '../../../types/rhythmGeneration';
+import { getPhraseHighlightColor } from '../../../types/rhythmGeneration';
+import { cn } from '../../../utils/cn';
 
 // ============================================================
 // Types
@@ -61,6 +61,8 @@ export interface RhythmGenerationTabProps {
     onSwitchToManual?: () => void;
     /** Callback when user wants to retry generation */
     onRetry?: () => void;
+    /** Callback when user wants to re-generate with a new intensity threshold */
+    onRegenerateWithThreshold?: (threshold: number) => void;
     /** Callback when generation is complete and user wants to proceed */
     onProceed?: () => void;
     /** Additional CSS class names */
@@ -120,6 +122,12 @@ interface RhythmGenerationResultProps {
     onSeek?: (time: number) => void;
     /** Callback to toggle play/pause */
     onPlayPause?: () => void;
+    /** The intensity threshold that was used during generation */
+    originalIntensityThreshold?: number;
+    /** Callback to re-run generation with a new threshold */
+    onRegenerateWithThreshold?: (threshold: number) => void;
+    /** Whether regeneration is in progress */
+    isRegenerating?: boolean;
 }
 
 function RhythmGenerationResult({
@@ -130,6 +138,9 @@ function RhythmGenerationResult({
     isPlaying = false,
     onSeek,
     onPlayPause,
+    originalIntensityThreshold = 0,
+    onRegenerateWithThreshold,
+    isRegenerating = false,
 }: RhythmGenerationResultProps) {
     const { metadata } = rhythm;
 
@@ -228,6 +239,9 @@ function RhythmGenerationResult({
                         currentTime={currentTime}
                         isPlaying={isPlaying}
                         onSeek={onSeek}
+                        originalIntensityThreshold={originalIntensityThreshold}
+                        onRegenerateWithThreshold={onRegenerateWithThreshold}
+                        isRegenerating={isRegenerating}
                     />
                 </CollapsibleSection>
 
@@ -356,9 +370,10 @@ export function RhythmGenerationTab({
     audioUrl: _audioUrl,
     difficulty: _difficulty = 'medium',
     outputMode: _outputMode = 'composite',
-    intensityThreshold: _intensityThreshold = 0.2,
+    intensityThreshold = 0.2,
     onSwitchToManual,
     onRetry,
+    onRegenerateWithThreshold,
     onProceed,
     className,
 }: RhythmGenerationTabProps) {
@@ -425,7 +440,12 @@ export function RhythmGenerationTab({
         }
     }, [isPlaying, pause, resume, currentUrl, selectedTrack, play]);
 
-    // Render based on state
+    // Handle re-generate with new threshold from TransientDetectionPanel
+    const handleRegenerateWithThreshold = useCallback((newThreshold: number) => {
+        if (onRegenerateWithThreshold) {
+            onRegenerateWithThreshold(newThreshold);
+        }
+    }, [onRegenerateWithThreshold]);    // Render based on state
     const renderContent = () => {
         // Loading state - show progress
         if (isGenerating && progress) {
@@ -455,6 +475,9 @@ export function RhythmGenerationTab({
                     isPlaying={isPlaying}
                     onSeek={handleSeek}
                     onPlayPause={handlePlayPause}
+                    originalIntensityThreshold={intensityThreshold}
+                    onRegenerateWithThreshold={handleRegenerateWithThreshold}
+                    isRegenerating={isGenerating}
                 />
             );
         }

@@ -176,7 +176,7 @@ vi.mock('./Button', () => ({
 }));
 
 // Import the component AFTER mocks are set up
-import { BeatPracticeView } from './BeatPracticeView';
+import { BeatPracticeView } from '../BeatPracticeView';
 
 describe('BeatPracticeView Multi-Tempo Display (Task 5.2)', () => {
   const mockOnExit = vi.fn();

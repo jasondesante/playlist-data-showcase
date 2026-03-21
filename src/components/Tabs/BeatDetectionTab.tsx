@@ -15,14 +15,14 @@ import { ChartEditor } from '../ui/ChartEditor';
 import { ChartEditorToolbar } from '../ui/ChartEditorToolbar';
 import { ChartPreviewTimeline } from '../ui/ChartPreviewTimeline';
 import { BeatMapSummary } from '../ui/BeatMapSummary';
-import { BeatPracticeView } from '../ui/BeatPracticeView';
+import { BeatPracticeView } from '../ui/BeatDetectionTab/BeatPracticeView';
 import { StepCompletionPrompt } from '../ui/StepCompletionPrompt';
 import { useBeatDetectionStore, useInterpolatedBeatMap, useSubdividedBeatMap, useChartStatistics, useCurrentStep, useStepCompletion, useStepAvailability, useStepNavigationDirection, useStepsForMode, useGenerationMode } from '../../store/beatDetectionStore';
 import { StepNav } from '../ui/StepNav';
 import { Tooltip } from '../ui/Tooltip';
 import { AutoLevelToggle } from '../ui/AutoLevelToggle';
 import { AutoLevelSettings } from '../ui/AutoLevelSettings';
-import { RhythmGenerationTab } from './RhythmGenerationTab';
+import { RhythmGenerationTab } from './BeatDetectionTab/RhythmGenerationTab';
 import type { AutoLevelSettings as AutoLevelSettingsType } from '../../types/rhythmGeneration';
 import { DEFAULT_AUTO_LEVEL_SETTINGS } from '../../types/rhythmGeneration';
 import { useRhythmGeneration } from '../../hooks/useRhythmGeneration';
@@ -554,6 +554,21 @@ export function BeatDetectionTab() {
                                         difficulty: autoLevelSettings.difficulty,
                                         outputMode: autoLevelSettings.outputMode,
                                         minimumTransientIntensity: autoLevelSettings.intensityThreshold,
+                                    });
+                                }
+                            }}
+                            onRegenerateWithThreshold={(newThreshold) => {
+                                // Update settings with new threshold
+                                setAutoLevelSettings(prev => ({
+                                    ...prev,
+                                    intensityThreshold: newThreshold,
+                                }));
+                                // Trigger regeneration with new threshold
+                                if (selectedTrack?.audio_url) {
+                                    generateRhythm(selectedTrack.audio_url, {
+                                        difficulty: autoLevelSettings.difficulty,
+                                        outputMode: autoLevelSettings.outputMode,
+                                        minimumTransientIntensity: newThreshold,
                                     });
                                 }
                             }}

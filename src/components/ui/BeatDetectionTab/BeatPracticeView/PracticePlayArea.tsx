@@ -20,11 +20,11 @@ import type {
   BeatStreamMode,
 } from '@/types';
 import type { ExtendedButtonPressResult, KeyLaneViewMode } from '@/types';
-import { BeatTimeline } from '../BeatTimeline';
-import { TapArea } from '../TapArea';
-import { KeyLaneView } from '../KeyLaneView';
-import { GrooveMeter } from '../GrooveMeter';
-import { ComboFeedbackDisplay } from '../ComboFeedbackDisplay';
+import { BeatTimeline } from '../../BeatTimeline';
+import { TapArea } from '../../TapArea';
+import { KeyLaneView } from '../../KeyLaneView';
+import { GrooveMeter } from '../../GrooveMeter';
+import { ComboFeedbackDisplay } from '../../ComboFeedbackDisplay';
 
 export interface PracticePlayAreaProps {
   // View mode

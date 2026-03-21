@@ -13,13 +13,13 @@
  * Part of Phase 4: Transient Detection Visualization (Task 4.1)
  */
 
-import { useState, useMemo, useCallback } from 'react';
-import { Zap, Filter, Layers } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Zap, Filter, Layers, RefreshCw } from 'lucide-react';
 import './TransientDetectionPanel.css';
-import { TransientTimeline } from './TransientTimeline';
-import { TransientInspector } from './TransientInspector';
-import { ZoomControls } from './ZoomControls';
-import type { GeneratedRhythm, TransientResult, Band } from '../../types/rhythmGeneration';
+import { TransientTimeline } from '../../TransientTimeline';
+import { TransientInspector } from '../../TransientInspector';
+import { ZoomControls } from '../../ZoomControls';
+import type { GeneratedRhythm, TransientResult, Band } from '../../../../types/rhythmGeneration';
 
 // ============================================================
 // Types
@@ -36,6 +36,12 @@ export interface TransientDetectionPanelProps {
     onSeek?: (time: number) => void;
     /** Additional CSS class names */
     className?: string;
+    /** The intensity threshold that was used during generation */
+    originalIntensityThreshold?: number;
+    /** Callback to re-run generation with a new threshold */
+    onRegenerateWithThreshold?: (threshold: number) => void;
+    /** Whether regeneration is in progress */
+    isRegenerating?: boolean;
 }
 
 /**
@@ -80,9 +86,29 @@ interface IntensityFilterProps {
     min?: number;
     max?: number;
     step?: number;
+    /** The threshold used during generation - if different from current, show re-run button */
+    originalThreshold?: number;
+    /** Callback to re-run generation with current threshold */
+    onRerun?: () => void;
+    /** Whether regeneration is in progress */
+    isRegenerating?: boolean;
 }
 
-function IntensityFilter({ value, onChange, totalTransients, hiddenCount, min = 0, max = 1, step = 0.05 }: IntensityFilterProps) {
+function IntensityFilter({
+    value,
+    onChange,
+    totalTransients,
+    hiddenCount,
+    min = 0,
+    max = 1,
+    step = 0.05,
+    originalThreshold = 0,
+    onRerun,
+    isRegenerating = false,
+}: IntensityFilterProps) {
+    // Show re-run button if threshold differs from original (with small epsilon for float comparison)
+    const thresholdChanged = Math.abs(value - originalThreshold) > 0.001;
+
     return (
         <div className="transient-intensity-filter">
             <label className="transient-intensity-label">
@@ -104,13 +130,29 @@ function IntensityFilter({ value, onChange, totalTransients, hiddenCount, min = 
                 <span>0%</span>
                 <span>100%</span>
             </div>
-            {hiddenCount > 0 && (
+            <div className="transient-intensity-hidden-row">
                 <div className="transient-intensity-hidden-count">
                     <span className="transient-intensity-hidden-label">Hidden:</span>
                     <span className="transient-intensity-hidden-value">{hiddenCount}</span>
                     <span className="transient-intensity-hidden-total">/ {totalTransients} transients</span>
                 </div>
-            )}
+                {thresholdChanged && onRerun && (
+                    <button
+                        className="transient-intensity-rerun"
+                        onClick={onRerun}
+                        disabled={isRegenerating}
+                        title={`Re-run generation with ${(value * 100).toFixed(0)}% threshold`}
+                    >
+                        <RefreshCw
+                            size={14}
+                            className={`transient-intensity-rerun-icon ${isRegenerating ? 'spinning' : ''}`}
+                        />
+                        <span className="transient-intensity-rerun-text">
+                            {isRegenerating ? 'Regenerating...' : `Re-run`}
+                        </span>
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
@@ -155,15 +197,17 @@ function BandToggle({ activeBand, onBandChange }: BandToggleProps) {
 interface BandBreakdownCardProps {
     band: Band;
     transients: TransientResult[];
+    totalCount: number;
+    hiddenCount: number;
     color: string;
     frequencyRange: string;
 }
 
-function BandBreakdownCard({ band, transients, color, frequencyRange }: BandBreakdownCardProps) {
+function BandBreakdownCard({ band, transients, totalCount, hiddenCount, color, frequencyRange }: BandBreakdownCardProps) {
     // Calculate statistics
-    const count = transients.length;
-    const avgIntensity = count > 0
-        ? transients.reduce((sum, t) => sum + t.intensity, 0) / count
+    const visibleCount = transients.length;
+    const avgIntensity = visibleCount > 0
+        ? transients.reduce((sum, t) => sum + t.intensity, 0) / visibleCount
         : 0;
 
     // Get detection method breakdown
@@ -179,7 +223,9 @@ function BandBreakdownCard({ band, transients, color, frequencyRange }: BandBrea
         <div className="transient-band-card" style={{ '--band-color': color } as React.CSSProperties}>
             <div className="transient-band-card-header">
                 <span className="transient-band-card-name">{band.charAt(0).toUpperCase() + band.slice(1)}</span>
-                <span className="transient-band-card-count">{count}</span>
+                <span className="transient-band-card-count">
+                    {hiddenCount > 0 ? `${visibleCount} / ${totalCount}` : visibleCount}
+                </span>
             </div>
             <div className="transient-band-card-range">{frequencyRange}</div>
             <div className="transient-band-card-stats">
@@ -218,6 +264,9 @@ export function TransientDetectionPanel({
     isPlaying = false,
     onSeek,
     className,
+    originalIntensityThreshold = 0,
+    onRegenerateWithThreshold,
+    isRegenerating = false,
 }: TransientDetectionPanelProps) {
     // Get transient analysis from the rhythm
     const transientAnalysis = rhythm.analysis.transientAnalysis;
@@ -245,18 +294,20 @@ export function TransientDetectionPanel({
     const anticipationWindow = baseAnticipationWindow / zoomLevel;
     const pastWindow = basePastWindow / zoomLevel;
 
-    // Group transients by band for breakdown cards
+    // Group transients by band for breakdown cards (filtered by intensity threshold)
     const transientsByBand = useMemo(() => {
         const groups: Record<Band, TransientResult[]> = {
             low: [],
             mid: [],
             high: [],
         };
-        allTransients.forEach((t) => {
+        // Only include transients that meet the intensity threshold
+        const filteredTransients = allTransients.filter((t) => t.intensity >= intensityThreshold);
+        filteredTransients.forEach((t) => {
             groups[t.band].push(t);
         });
         return groups;
-    }, [allTransients]);
+    }, [allTransients, intensityThreshold]);
 
     // Calculate total count
     const totalCount = allTransients.length;
@@ -264,6 +315,24 @@ export function TransientDetectionPanel({
     // Calculate hidden transients count based on intensity threshold
     const hiddenByIntensity = useMemo(() => {
         return allTransients.filter((t) => t.intensity < intensityThreshold).length;
+    }, [allTransients, intensityThreshold]);
+
+    // Calculate total count per band (unfiltered)
+    const totalByBand = useMemo(() => {
+        const counts: Record<Band, number> = { low: 0, mid: 0, high: 0 };
+        allTransients.forEach((t) => {
+            counts[t.band]++;
+        });
+        return counts;
+    }, [allTransients]);
+
+    // Calculate hidden count per band
+    const hiddenByBand = useMemo(() => {
+        const counts: Record<Band, number> = { low: 0, mid: 0, high: 0 };
+        allTransients.filter((t) => t.intensity < intensityThreshold).forEach((t) => {
+            counts[t.band]++;
+        });
+        return counts;
     }, [allTransients, intensityThreshold]);
 
     // Handle transient click for inspector
@@ -293,6 +362,9 @@ export function TransientDetectionPanel({
                     onChange={setIntensityThreshold}
                     totalTransients={totalCount}
                     hiddenCount={hiddenByIntensity}
+                    originalThreshold={originalIntensityThreshold}
+                    onRerun={onRegenerateWithThreshold ? () => onRegenerateWithThreshold(intensityThreshold) : undefined}
+                    isRegenerating={isRegenerating}
                 />
                 <BandToggle
                     activeBand={activeBand}
@@ -307,6 +379,8 @@ export function TransientDetectionPanel({
                         key={band}
                         band={band}
                         transients={transientsByBand[band]}
+                        totalCount={totalByBand[band]}
+                        hiddenCount={hiddenByBand[band]}
                         color={BAND_COLORS[band]}
                         frequencyRange={BAND_RANGES[band]}
                     />

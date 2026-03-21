@@ -602,8 +602,8 @@ vi.mock('../LevelUpDetailModal', () => ({
 }));
 
 // Import the component AFTER mocks are set up
-import { BeatPracticeView } from './BeatPracticeView';
-import { showToast } from './Toast';
+import { BeatPracticeView } from '../BeatPracticeView';
+import { showToast } from '../Toast';
 
 describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
     const mockOnExit = vi.fn();
@@ -667,7 +667,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             render(<BeatPracticeView onExit={mockOnExit} />);
 
             // Verify the action exists in the store
-            const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+            const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
             const storeState = useBeatDetectionStore() as { actions: { resetRhythmXP: () => void } };
 
             // Call resetRhythmXP
@@ -735,7 +735,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             render(<BeatPracticeView onExit={mockOnExit} />);
 
             // The character store should have addRhythmXP action
-            const { useCharacterStore } = await import('../../store/characterStore');
+            const { useCharacterStore } = await import('../../../store/characterStore');
             const storeState = useCharacterStore() as {
                 addRhythmXP: (seed: string, xp: number) => {
                     character: { level: number };
@@ -766,7 +766,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             render(<BeatPracticeView onExit={mockOnExit} />);
 
             // Get the character store
-            const { useCharacterStore } = await import('../../store/characterStore');
+            const { useCharacterStore } = await import('../../../store/characterStore');
             const storeState = useCharacterStore() as {
                 addRhythmXP: (seed: string, xp: number) => {
                     character: { level: number };
@@ -833,7 +833,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             expect(xpState.pendingGrooveEndBonus).not.toBeNull();
 
             // Clear bonuses via store action
-            const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+            const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
             const storeState = useBeatDetectionStore() as { actions: { clearPendingBonuses: () => void } };
             storeState.actions.clearPendingBonuses();
 
@@ -864,7 +864,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             };
 
             // Check via store action
-            const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+            const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
             const storeState = useBeatDetectionStore() as { actions: { hasUnclaimedXP: () => boolean } };
             expect(storeState.actions.hasUnclaimedXP()).toBe(true);
         });
@@ -876,7 +876,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             expect(xpState.sessionTotals).toBeNull();
 
             // Check via store action
-            const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+            const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
             const storeState = useBeatDetectionStore() as { actions: { hasUnclaimedXP: () => boolean } };
             expect(storeState.actions.hasUnclaimedXP()).toBe(false);
         });
@@ -904,7 +904,7 @@ describe('BeatPracticeView Rhythm XP Integration (Task 10.2)', () => {
             expect(xpState.sessionTotals).not.toBeNull();
 
             // Reset XP
-            const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+            const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
             const storeState = useBeatDetectionStore() as { actions: { resetRhythmXP: () => void } };
             storeState.actions.resetRhythmXP();
 

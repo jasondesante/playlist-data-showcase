@@ -11,8 +11,8 @@
  */
 
 import { Music, Layers, Settings, X } from 'lucide-react';
-import { Button } from '../Button';
-import type { DifficultyPreset } from '../../../types';
+import { Button } from '../../Button';
+import type { DifficultyPreset } from '../../../../types';
 
 interface PracticeHeaderProps {
   /** Current difficulty preset */

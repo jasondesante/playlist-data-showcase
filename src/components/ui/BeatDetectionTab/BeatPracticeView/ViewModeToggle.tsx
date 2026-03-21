@@ -9,7 +9,7 @@
  * Extracted from BeatPracticeView.tsx (Phase 10: Task 10.3)
  */
 import { Gamepad2 } from 'lucide-react';
-import type { SubdividedBeatMap } from '../../../types';
+import type { SubdividedBeatMap } from '../../../../types';
 import './ViewModeToggle.css';
 
 export type KeyLaneViewMode = 'off' | 'ddr' | 'guitar-hero';

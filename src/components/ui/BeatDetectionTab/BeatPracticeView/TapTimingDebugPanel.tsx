@@ -8,7 +8,7 @@
  */
 import { List } from 'react-window';
 import { Clock, Target } from 'lucide-react';
-import type { AccuracyThresholds, DifficultyPreset, ExtendedBeatAccuracy, TapStatistics, RhythmSessionTotals } from '../../../types';
+import type { AccuracyThresholds, DifficultyPreset, ExtendedBeatAccuracy, TapStatistics, RhythmSessionTotals } from '../../../../types';
 import './TapTimingDebugPanel.css';
 
 /**

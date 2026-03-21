@@ -281,7 +281,7 @@ vi.mock('./Button', () => ({
 }));
 
 // Import the component AFTER mocks are set up
-import { BeatPracticeView } from './BeatPracticeView';
+import { BeatPracticeView } from '../BeatPracticeView';
 
 describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
   const mockOnExit = vi.fn();
@@ -397,7 +397,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       expect(mockGrooveState?.hotness).toBe(0);
 
       // Call recordGrooveHit directly to verify state update
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
@@ -412,7 +412,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       expect(mockGrooveState?.streakLength).toBe(0);
 
       // Call recordGrooveHit directly to verify state update
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
 
@@ -442,7 +442,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // First hit to increase hotness
@@ -472,7 +472,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock and call recordGrooveHit multiple times directly
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // Simulate multiple hits
@@ -488,7 +488,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock and call recordGrooveHit multiple times directly
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
 
       // Simulate multiple hits
@@ -504,7 +504,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // Simulate hits to increase hotness
@@ -528,7 +528,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // Simulate hits to increase streak
@@ -552,7 +552,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; recordGrooveMiss: () => GrooveResult } };
 
       // First session of hits
@@ -595,7 +595,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; resetGrooveAnalyzer: () => void } };
 
       // Build up some groove
@@ -617,7 +617,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Get the store mock
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult; resetGrooveAnalyzer: () => void } };
 
       // Build up some groove
@@ -640,7 +640,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Build up some groove state
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
         storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
@@ -668,7 +668,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Build up some groove state
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
         storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
@@ -694,7 +694,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       const { rerender } = render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Build up some groove state
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
         storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
@@ -724,7 +724,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       const { rerender } = render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Build up some groove state
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
         storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');
@@ -750,7 +750,7 @@ describe('BeatPracticeView Groove Meter Integration (Task 8.3)', () => {
       render(<BeatPracticeView onExit={mockOnExit} />);
 
       // Build up some groove state
-      const { useBeatDetectionStore } = await import('../../store/beatDetectionStore');
+      const { useBeatDetectionStore } = await import('../../../store/beatDetectionStore');
       const storeState = useBeatDetectionStore() as { actions: { recordGrooveHit: (offset: number, bpm: number, currentTime: number, accuracy: string) => GrooveResult } };
       for (let i = 0; i < 5; i++) {
         storeState.actions.recordGrooveHit(0.01, 120, 1.0, 'perfect');

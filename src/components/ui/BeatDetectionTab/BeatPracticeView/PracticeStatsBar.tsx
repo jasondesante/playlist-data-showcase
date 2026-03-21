@@ -7,9 +7,9 @@
  * Part of the BeatPracticeView refactoring.
  */
 
-import { RhythmXPStats } from '../RhythmXPStats';
-import type { RhythmSessionTotals, RhythmXPResult, TempoSection } from '../../../types';
-import { formatTime } from '../../../utils/formatters';
+import { RhythmXPStats } from '../../RhythmXPStats';
+import type { RhythmSessionTotals, RhythmXPResult, TempoSection } from '../../../../types';
+import { formatTime } from '../../../../utils/formatters';
 
 interface PracticeStatsBarProps {
   /** Current rolling BPM from beat stream */

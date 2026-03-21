@@ -173,6 +173,62 @@
     color: hsl(var(--muted-foreground));
 }
 
+/* Row containing hidden count and re-run button */
+.transient-intensity-hidden-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.375rem;
+}
+
+/* Re-run button when threshold differs from original */
+.transient-intensity-rerun {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    background: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.transient-intensity-rerun:hover {
+    background: hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.5);
+}
+
+.transient-intensity-rerun:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.transient-intensity-rerun-icon {
+    color: hsl(var(--primary));
+}
+
+.transient-intensity-rerun-icon.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.transient-intensity-rerun-text {
+    color: hsl(var(--primary));
+    font-weight: 500;
+}
+
 /* Band Toggle */
 .transient-band-toggle {
     flex: 1;

@@ -52,24 +52,24 @@ import {
   useGrooveState,
   useBestGrooveHotness,
   useBestGrooveStreak,
-} from '../../store/beatDetectionStore';
-import { useBeatStream } from '../../hooks/useBeatStream';
-import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../hooks/useSubdivisionPlayback';
-import { useKeyboardInput } from '../../hooks/useKeyboardInput';
-import { useTrackDuration } from '../../hooks/useTrackDuration';
-import { useAudioPlayerStore } from '../../store/audioPlayerStore';
-import { useTapFeedback } from './TapArea';
-import { TapStats } from './TapStats';
-import { DifficultySettingsPanel } from './DifficultySettingsPanel';
-import { GrooveStats } from './GrooveStats';
-import { RhythmXPSessionStats } from './RhythmXPSessionStats';
-import { logger } from '../../utils/logger';
-import { showToast } from './Toast';
-import { LevelUpDetailModal } from '../LevelUpDetailModal';
+} from '../../../store/beatDetectionStore';
+import { useBeatStream } from '../../../hooks/useBeatStream';
+import { useSubdivisionPlayback, useSubdivisionPlaybackAvailable } from '../../../hooks/useSubdivisionPlayback';
+import { useKeyboardInput } from '../../../hooks/useKeyboardInput';
+import { useTrackDuration } from '../../../hooks/useTrackDuration';
+import { useAudioPlayerStore } from '../../../store/audioPlayerStore';
+import { useTapFeedback } from '../TapArea';
+import { TapStats } from '../TapStats';
+import { DifficultySettingsPanel } from '../DifficultySettingsPanel';
+import { GrooveStats } from '../GrooveStats';
+import { RhythmXPSessionStats } from '../RhythmXPSessionStats';
+import { logger } from '../../../utils/logger';
+import { showToast } from '../Toast';
+import { LevelUpDetailModal } from '../../LevelUpDetailModal';
 import type { LevelUpDetail } from 'playlist-data-engine';
-import type { SubdividedBeatMap } from '../../types';
-import { usePlaylistStore } from '../../store/playlistStore';
-import { useCharacterStore } from '../../store/characterStore';
+import type { SubdividedBeatMap } from '../../../types';
+import { usePlaylistStore } from '../../../store/playlistStore';
+import { useCharacterStore } from '../../../store/characterStore';
 
 /**
  * Minimum time between taps in milliseconds.

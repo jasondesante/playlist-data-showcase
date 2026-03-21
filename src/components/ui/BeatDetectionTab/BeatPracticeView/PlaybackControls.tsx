@@ -8,7 +8,7 @@
  */
 
 import { Play, Pause, SkipBack } from 'lucide-react';
-import { Button } from '../Button';
+import { Button } from '../../Button';
 
 interface PlaybackControlsProps {
   /** Whether audio is currently playing */
